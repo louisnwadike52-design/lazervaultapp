@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:mono_connect/mono_connect.dart';
 
 import '../../../../core/config/mono_config.dart';
+import 'package:lazervault/core/services/auto_logout_guard.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import '../../../open_banking/presentation/helpers/link_account_gate.dart';
 
 /// Production-ready Mono Connect Widget using native SDK
@@ -64,6 +67,37 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
     if (!context.mounted) return null;
   }
 
+  // CENTRAL identity prefill (all Mono entry points — deposit, direct debit,
+  // withdrawal, autosave, LazerBeam, statistics): when the caller didn't pass a
+  // BVN, quietly pull the backend-resolved verified identity (name/email/BVN
+  // from the pre-created Mono customer) so the widget NEVER re-asks a verified
+  // user for their BVN mid-flow. Best-effort with a hard timeout — a config
+  // hiccup falls back to the old ask-in-widget behaviour, never a block.
+  var effectiveName = customerName;
+  var effectiveEmail = customerEmail;
+  var effectiveBvn = customerBvn;
+  if (effectiveBvn == null || effectiveBvn.isEmpty) {
+    try {
+      final cfg = await serviceLocator<OpenBankingCubit>()
+          .connectConfigQuiet()
+          .timeout(const Duration(seconds: 6));
+      if (cfg != null) {
+        if (effectiveBvn == null || effectiveBvn.isEmpty) {
+          effectiveBvn = cfg['customer_bvn'];
+        }
+        if (effectiveName == null || effectiveName.trim().isEmpty) {
+          effectiveName = cfg['customer_name'];
+        }
+        if (effectiveEmail == null || effectiveEmail.trim().isEmpty) {
+          effectiveEmail = cfg['customer_email'];
+        }
+      }
+    } catch (_) {
+      // Prefill is an enhancement — proceed without it.
+    }
+    if (!context.mounted) return null;
+  }
+
   final completer = MonoConnectCompleter();
 
   // Track selected institution for result
@@ -92,17 +126,17 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
 
   // Use authenticated user's email directly - validated during signup
   // Production-grade: no fallback emails, use the real user data
-  final emailToUse = customerEmail ?? '';
+  final emailToUse = effectiveEmail ?? '';
 
   // Build customer config - required by the SDK
   final customer = MonoCustomer(
     newCustomer: MonoNewCustomer(
-      name: customerName ?? 'Lazervault User',
+      name: effectiveName ?? 'Lazervault User',
       email: emailToUse,
-      identity: (customerBvn != null && customerBvn.isNotEmpty)
+      identity: (effectiveBvn != null && effectiveBvn.isNotEmpty)
           ? MonoCustomerIdentity(
               type: 'bvn',
-              number: customerBvn,
+              number: effectiveBvn,
             )
           : null,
     ),
@@ -124,7 +158,7 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
   debugPrint('[MonoConnect] Scope: $scope');
   debugPrint('[MonoConnect] Institution ID: $institutionId');
   debugPrint('[MonoConnect] Reference: $ref');
-  debugPrint('[MonoConnect] Customer Name: ${customerName ?? 'Lazervault User'}');
+  debugPrint('[MonoConnect] Customer Name: ${effectiveName ?? 'Lazervault User'}');
   debugPrint('[MonoConnect] Customer Email: $emailToUse');
   debugPrint('[MonoConnect] Requires Business Approval: ${MonoConfig.requiresBusinessApproval}');
 
@@ -272,7 +306,14 @@ Future<dynamic> _launchCustomMonoBottomSheet(
       // Hand the modal's own context back to the caller so it can close THIS
       // sheet (and only this sheet) without touching the route underneath.
       onSheetContext?.call(sheetContext);
-      return Container(
+      // Suppress inactivity/background auto-logout for the ENTIRE Mono flow:
+      // during DirectPay/mandate setup the user backgrounds the app to send
+      // money from their bank app, returns minutes later and taps "I've made
+      // the payment" — without this the resume check logged them out mid-flow.
+      // AutoLogoutSuppressed releases on sheet dispose (success, X, or any
+      // dismissal), so auto-logout re-arms the moment the flow ends.
+      return AutoLogoutSuppressed(
+          child: Container(
       height: MediaQuery.of(context).size.height * 0.85, // 85% of screen
       decoration: BoxDecoration(
         color: Colors.white,
@@ -354,7 +395,7 @@ Future<dynamic> _launchCustomMonoBottomSheet(
           ),
         ],
       ),
-      );
+      ));
     },
   );
 }

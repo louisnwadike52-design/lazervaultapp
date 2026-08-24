@@ -261,6 +261,16 @@ class CryptoGrpcClient {
     return await _client.getCryptoWithdrawalStatus(request, options: options);
   }
 
+  /// Resolve a crypto send by its CRYPTO-SEND-* reference. Backs the p2p
+  /// money-bubble receipt: the server authorizes the SENDER or (for internal
+  /// sends) the RECIPIENT.
+  Future<GetCryptoWithdrawalStatusResponse> getCryptoWithdrawalByReference(
+      String reference) async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = GetCryptoWithdrawalStatusRequest()..reference = reference;
+    return await _client.getCryptoWithdrawalStatus(request, options: options);
+  }
+
   Future<GetUserCryptoWithdrawalsResponse> getUserCryptoWithdrawals({
     int page = 1,
     int perPage = 25,

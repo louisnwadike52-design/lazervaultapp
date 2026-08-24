@@ -328,8 +328,11 @@ Future<SwapFlowResult> runSwapFlow({
   // Build the details payload for the receipt UI. We don't have all the
   // server-known numbers yet (fees, exact fill); the receipt screen
   // refreshes via cubit state on terminal.
+  // Pass `terminal`, NOT cubit.state: an unrelated holdings/price emit can
+  // clobber cubit.state between the confirm and here (the terminal snapshot
+  // exists precisely to survive that race), which would blank the receipt.
   final details = _buildReceiptDetails(side, fromCurrency, toCurrency,
-      fromAmountMinor, cryptoSymbol, fromCryptoSymbol, cubit.state);
+      fromAmountMinor, cryptoSymbol, fromCryptoSymbol, terminal);
 
   final transactionId = (terminal is SwapCompleted)
       ? terminal.transactionId
@@ -428,10 +431,16 @@ CryptoTransactionDetails _buildReceiptDetails(
     pricePerUnit = double.tryParse(state.executionPrice) ?? 0.0;
   }
 
+  final bool isConvert = type == CryptoTransactionType.swap;
   final String cryptoAmount = isSell ? fromAmountStr : toAmountStr;
-  final double fiatAmount = isSell
-      ? (double.tryParse(toAmountStr) ?? 0.0)
-      : (double.tryParse(fromAmountStr) ?? (fromAmountMinor.toDouble() / 100.0));
+  // A crypto→crypto CONVERT has NO fiat value — fromAmountStr is a crypto qty,
+  // so treating it as fiat rendered "₦5.50" for 5.5 TRX. Show 0 (the receipt
+  // suppresses zero-value money rows) and carry both legs in metadata instead.
+  final double fiatAmount = isConvert
+      ? 0.0
+      : (isSell
+          ? (double.tryParse(toAmountStr) ?? 0.0)
+          : (double.tryParse(fromAmountStr) ?? 0.0));
 
   return CryptoTransactionDetails(
     type: type,
@@ -444,8 +453,8 @@ CryptoTransactionDetails _buildReceiptDetails(
     tradingFee: 0.0,
     totalAmount: fiatAmount,
     paymentMethod: 'Lazervault Wallet',
-    fromCrypto: type == CryptoTransactionType.swap ? fromCryptoSymbol.toUpperCase() : null,
-    toCrypto: type == CryptoTransactionType.swap ? cryptoSymbol.toUpperCase() : null,
+    fromCrypto: isConvert ? fromCryptoSymbol.toUpperCase() : null,
+    toCrypto: isConvert ? cryptoSymbol.toUpperCase() : null,
   );
 }
 

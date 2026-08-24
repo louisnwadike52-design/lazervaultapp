@@ -6903,6 +6903,8 @@ class GetProveKYCStatusResponse extends $pb.GeneratedMessage {
     $core.String? bvnMasked,
     $core.String? ninMasked,
     $core.String? reference,
+    $core.String? sessionState,
+    $core.String? failureReason,
   }) {
     final result = create();
     if (success != null) result.success = success;
@@ -6920,6 +6922,8 @@ class GetProveKYCStatusResponse extends $pb.GeneratedMessage {
     if (bvnMasked != null) result.bvnMasked = bvnMasked;
     if (ninMasked != null) result.ninMasked = ninMasked;
     if (reference != null) result.reference = reference;
+    if (sessionState != null) result.sessionState = sessionState;
+    if (failureReason != null) result.failureReason = failureReason;
     return result;
   }
 
@@ -6950,6 +6954,8 @@ class GetProveKYCStatusResponse extends $pb.GeneratedMessage {
     ..aOS(12, _omitFieldNames ? '' : 'bvnMasked')
     ..aOS(13, _omitFieldNames ? '' : 'ninMasked')
     ..aOS(14, _omitFieldNames ? '' : 'reference')
+    ..aOS(15, _omitFieldNames ? '' : 'sessionState')
+    ..aOS(16, _omitFieldNames ? '' : 'failureReason')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -7088,6 +7094,32 @@ class GetProveKYCStatusResponse extends $pb.GeneratedMessage {
   $core.bool hasReference() => $_has(13);
   @$pb.TagNumber(14)
   void clearReference() => $_clearField(14);
+
+  /// Session state for the CURRENT/latest Prove session, so the app can render
+  /// an explicit modal instead of guessing from copy:
+  ///   "" | "none"  — no session on record
+  ///   "pending"    — session in flight (widget open / webhook not landed)
+  ///   "verified"   — identity verified
+  ///   "failed"     — last session terminally failed (see failure_reason)
+  @$pb.TagNumber(15)
+  $core.String get sessionState => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set sessionState($core.String value) => $_setString(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasSessionState() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearSessionState() => $_clearField(15);
+
+  /// Machine-readable reason for session_state=failed: "cancelled" | "expired"
+  /// | "data_mismatch" | "rejected" (best-effort; may be empty).
+  @$pb.TagNumber(16)
+  $core.String get failureReason => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set failureReason($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasFailureReason() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearFailureReason() => $_clearField(16);
 }
 
 class Transaction extends $pb.GeneratedMessage {
@@ -9272,6 +9304,10 @@ class ConnectWidgetConfigResponse extends $pb.GeneratedMessage {
     $core.String? publicKey,
     $core.String? appId,
     $fixnum.Int64? linkFee,
+    $core.String? monoCustomerId,
+    $core.String? customerName,
+    $core.String? customerEmail,
+    $core.String? customerBvn,
   }) {
     final result = create();
     if (success != null) result.success = success;
@@ -9280,6 +9316,10 @@ class ConnectWidgetConfigResponse extends $pb.GeneratedMessage {
     if (publicKey != null) result.publicKey = publicKey;
     if (appId != null) result.appId = appId;
     if (linkFee != null) result.linkFee = linkFee;
+    if (monoCustomerId != null) result.monoCustomerId = monoCustomerId;
+    if (customerName != null) result.customerName = customerName;
+    if (customerEmail != null) result.customerEmail = customerEmail;
+    if (customerBvn != null) result.customerBvn = customerBvn;
     return result;
   }
 
@@ -9302,6 +9342,10 @@ class ConnectWidgetConfigResponse extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'publicKey')
     ..aOS(5, _omitFieldNames ? '' : 'appId')
     ..aInt64(6, _omitFieldNames ? '' : 'linkFee')
+    ..aOS(7, _omitFieldNames ? '' : 'monoCustomerId')
+    ..aOS(8, _omitFieldNames ? '' : 'customerName')
+    ..aOS(9, _omitFieldNames ? '' : 'customerEmail')
+    ..aOS(10, _omitFieldNames ? '' : 'customerBvn')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -9382,6 +9426,48 @@ class ConnectWidgetConfigResponse extends $pb.GeneratedMessage {
   $core.bool hasLinkFee() => $_has(5);
   @$pb.TagNumber(6)
   void clearLinkFee() => $_clearField(6);
+
+  /// Customer identity for the Connect widget. Without a customer, Mono makes
+  /// EVERY user "verify identity" in-widget regardless of their LazerVault KYC
+  /// tier. Preferred: mono_customer_id (pre-created cus_xxx, resolved via
+  /// GetOrCreateCustomer from the user's REAL verified data). Fallback: the
+  /// inline fields so the widget can pass {name, email, identity:{bvn}}.
+  /// All empty → widget behaves as before (in-widget verification).
+  @$pb.TagNumber(7)
+  $core.String get monoCustomerId => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set monoCustomerId($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasMonoCustomerId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearMonoCustomerId() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get customerName => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set customerName($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasCustomerName() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCustomerName() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get customerEmail => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set customerEmail($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasCustomerEmail() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearCustomerEmail() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get customerBvn => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set customerBvn($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasCustomerBvn() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearCustomerBvn() => $_clearField(10);
 }
 
 /// Link Bank Account
@@ -10681,6 +10767,7 @@ class RefreshLinkedAccountBalanceResponse extends $pb.GeneratedMessage {
     $core.bool? charged,
     $fixnum.Int64? feeMonoCost,
     $fixnum.Int64? feeLazervault,
+    $fixnum.Int64? feeDiscount,
   }) {
     final result = create();
     if (success != null) result.success = success;
@@ -10692,6 +10779,7 @@ class RefreshLinkedAccountBalanceResponse extends $pb.GeneratedMessage {
     if (charged != null) result.charged = charged;
     if (feeMonoCost != null) result.feeMonoCost = feeMonoCost;
     if (feeLazervault != null) result.feeLazervault = feeLazervault;
+    if (feeDiscount != null) result.feeDiscount = feeDiscount;
     return result;
   }
 
@@ -10718,6 +10806,7 @@ class RefreshLinkedAccountBalanceResponse extends $pb.GeneratedMessage {
     ..aOB(7, _omitFieldNames ? '' : 'charged')
     ..aInt64(8, _omitFieldNames ? '' : 'feeMonoCost')
     ..aInt64(9, _omitFieldNames ? '' : 'feeLazervault')
+    ..aInt64(10, _omitFieldNames ? '' : 'feeDiscount')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -10826,6 +10915,15 @@ class RefreshLinkedAccountBalanceResponse extends $pb.GeneratedMessage {
   $core.bool hasFeeLazervault() => $_has(8);
   @$pb.TagNumber(9)
   void clearFeeLazervault() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $fixnum.Int64 get feeDiscount => $_getI64(9);
+  @$pb.TagNumber(10)
+  set feeDiscount($fixnum.Int64 value) => $_setInt64(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasFeeDiscount() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearFeeDiscount() => $_clearField(10);
 }
 
 /// Reauthorization Token
@@ -13040,6 +13138,10 @@ class Deposit extends $pb.GeneratedMessage {
     $core.String? countryCode,
     $core.String? provider,
     $core.String? paymentType,
+    $fixnum.Int64? monoFee,
+    $fixnum.Int64? platformFee,
+    $fixnum.Int64? feeDiscount,
+    $core.String? debitRail,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -13063,6 +13165,10 @@ class Deposit extends $pb.GeneratedMessage {
     if (countryCode != null) result.countryCode = countryCode;
     if (provider != null) result.provider = provider;
     if (paymentType != null) result.paymentType = paymentType;
+    if (monoFee != null) result.monoFee = monoFee;
+    if (platformFee != null) result.platformFee = platformFee;
+    if (feeDiscount != null) result.feeDiscount = feeDiscount;
+    if (debitRail != null) result.debitRail = debitRail;
     return result;
   }
 
@@ -13100,6 +13206,10 @@ class Deposit extends $pb.GeneratedMessage {
     ..aOS(17, _omitFieldNames ? '' : 'countryCode')
     ..aOS(18, _omitFieldNames ? '' : 'provider')
     ..aOS(19, _omitFieldNames ? '' : 'paymentType')
+    ..aInt64(21, _omitFieldNames ? '' : 'monoFee')
+    ..aInt64(22, _omitFieldNames ? '' : 'platformFee')
+    ..aInt64(23, _omitFieldNames ? '' : 'feeDiscount')
+    ..aOS(24, _omitFieldNames ? '' : 'debitRail')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -13295,6 +13405,43 @@ class Deposit extends $pb.GeneratedMessage {
   $core.bool hasPaymentType() => $_has(18);
   @$pb.TagNumber(19)
   void clearPaymentType() => $_clearField(19);
+
+  /// Stored charge-time fee split (fee = mono_fee + platform_fee - fee_discount).
+  @$pb.TagNumber(21)
+  $fixnum.Int64 get monoFee => $_getI64(19);
+  @$pb.TagNumber(21)
+  set monoFee($fixnum.Int64 value) => $_setInt64(19, value);
+  @$pb.TagNumber(21)
+  $core.bool hasMonoFee() => $_has(19);
+  @$pb.TagNumber(21)
+  void clearMonoFee() => $_clearField(21);
+
+  @$pb.TagNumber(22)
+  $fixnum.Int64 get platformFee => $_getI64(20);
+  @$pb.TagNumber(22)
+  set platformFee($fixnum.Int64 value) => $_setInt64(20, value);
+  @$pb.TagNumber(22)
+  $core.bool hasPlatformFee() => $_has(20);
+  @$pb.TagNumber(22)
+  void clearPlatformFee() => $_clearField(22);
+
+  @$pb.TagNumber(23)
+  $fixnum.Int64 get feeDiscount => $_getI64(21);
+  @$pb.TagNumber(23)
+  set feeDiscount($fixnum.Int64 value) => $_setInt64(21, value);
+  @$pb.TagNumber(23)
+  $core.bool hasFeeDiscount() => $_has(21);
+  @$pb.TagNumber(23)
+  void clearFeeDiscount() => $_clearField(23);
+
+  @$pb.TagNumber(24)
+  $core.String get debitRail => $_getSZ(22);
+  @$pb.TagNumber(24)
+  set debitRail($core.String value) => $_setString(22, value);
+  @$pb.TagNumber(24)
+  $core.bool hasDebitRail() => $_has(22);
+  @$pb.TagNumber(24)
+  void clearDebitRail() => $_clearField(24);
 }
 
 /// Get Deposit Status
@@ -14230,6 +14377,7 @@ class CalculateDepositFeeResponse extends $pb.GeneratedMessage {
     $fixnum.Int64? fee,
     $fixnum.Int64? netAmount,
     $core.String? currency,
+    $fixnum.Int64? discount,
   }) {
     final result = create();
     if (success != null) result.success = success;
@@ -14239,6 +14387,7 @@ class CalculateDepositFeeResponse extends $pb.GeneratedMessage {
     if (fee != null) result.fee = fee;
     if (netAmount != null) result.netAmount = netAmount;
     if (currency != null) result.currency = currency;
+    if (discount != null) result.discount = discount;
     return result;
   }
 
@@ -14262,6 +14411,7 @@ class CalculateDepositFeeResponse extends $pb.GeneratedMessage {
     ..aInt64(5, _omitFieldNames ? '' : 'fee')
     ..aInt64(6, _omitFieldNames ? '' : 'netAmount')
     ..aOS(7, _omitFieldNames ? '' : 'currency')
+    ..aInt64(8, _omitFieldNames ? '' : 'discount')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -14351,6 +14501,15 @@ class CalculateDepositFeeResponse extends $pb.GeneratedMessage {
   $core.bool hasCurrency() => $_has(6);
   @$pb.TagNumber(7)
   void clearCurrency() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get discount => $_getI64(7);
+  @$pb.TagNumber(8)
+  set discount($fixnum.Int64 value) => $_setInt64(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasDiscount() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearDiscount() => $_clearField(8);
 }
 
 /// Consolidated fee quote for the deposit-link flow.
@@ -14437,18 +14596,21 @@ class DepositFeeQuoteRequest extends $pb.GeneratedMessage {
   void clearFirstTimeLink() => $_clearField(3);
 }
 
-/// One fee split into the Mono provider cost (→ MONO_COST) and the LazerVault
-/// margin (→ REVENUE). total = mono_cost + lazervault_fee.
+/// One fee split into the Mono provider cost (→ MONO_COST), the LazerVault
+/// margin (→ REVENUE) and the platform-funded discount (→ FEE_DISCOUNTS).
+/// total = mono_cost + lazervault_fee - discount (the CHARGED figure).
 class FeeLegBreakdown extends $pb.GeneratedMessage {
   factory FeeLegBreakdown({
     $fixnum.Int64? monoCost,
     $fixnum.Int64? lazervaultFee,
     $fixnum.Int64? total,
+    $fixnum.Int64? discount,
   }) {
     final result = create();
     if (monoCost != null) result.monoCost = monoCost;
     if (lazervaultFee != null) result.lazervaultFee = lazervaultFee;
     if (total != null) result.total = total;
+    if (discount != null) result.discount = discount;
     return result;
   }
 
@@ -14468,6 +14630,7 @@ class FeeLegBreakdown extends $pb.GeneratedMessage {
     ..aInt64(1, _omitFieldNames ? '' : 'monoCost')
     ..aInt64(2, _omitFieldNames ? '' : 'lazervaultFee')
     ..aInt64(3, _omitFieldNames ? '' : 'total')
+    ..aInt64(4, _omitFieldNames ? '' : 'discount')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -14517,6 +14680,15 @@ class FeeLegBreakdown extends $pb.GeneratedMessage {
   $core.bool hasTotal() => $_has(2);
   @$pb.TagNumber(3)
   void clearTotal() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get discount => $_getI64(3);
+  @$pb.TagNumber(4)
+  set discount($fixnum.Int64 value) => $_setInt64(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasDiscount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDiscount() => $_clearField(4);
 }
 
 class DepositFeeQuoteResponse extends $pb.GeneratedMessage {
@@ -14531,6 +14703,7 @@ class DepositFeeQuoteResponse extends $pb.GeneratedMessage {
     $fixnum.Int64? grandTotal,
     $fixnum.Int64? netAmount,
     $core.String? rail,
+    $fixnum.Int64? discountTotal,
   }) {
     final result = create();
     if (success != null) result.success = success;
@@ -14543,6 +14716,7 @@ class DepositFeeQuoteResponse extends $pb.GeneratedMessage {
     if (grandTotal != null) result.grandTotal = grandTotal;
     if (netAmount != null) result.netAmount = netAmount;
     if (rail != null) result.rail = rail;
+    if (discountTotal != null) result.discountTotal = discountTotal;
     return result;
   }
 
@@ -14571,6 +14745,7 @@ class DepositFeeQuoteResponse extends $pb.GeneratedMessage {
     ..aInt64(8, _omitFieldNames ? '' : 'grandTotal')
     ..aInt64(9, _omitFieldNames ? '' : 'netAmount')
     ..aOS(10, _omitFieldNames ? '' : 'rail')
+    ..aInt64(11, _omitFieldNames ? '' : 'discountTotal')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -14689,6 +14864,15 @@ class DepositFeeQuoteResponse extends $pb.GeneratedMessage {
   $core.bool hasRail() => $_has(9);
   @$pb.TagNumber(10)
   void clearRail() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $fixnum.Int64 get discountTotal => $_getI64(10);
+  @$pb.TagNumber(11)
+  set discountTotal($fixnum.Int64 value) => $_setInt64(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasDiscountTotal() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearDiscountTotal() => $_clearField(11);
 }
 
 /// Get Deposit Methods for a Country
@@ -16645,6 +16829,7 @@ class DirectDebitMandate extends $pb.GeneratedMessage {
     $fixnum.Int64? remainingLimit,
     $core.bool? switchProcessing,
     $core.String? pendingMethod,
+    $1.Timestamp? authAttemptedAt,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -16676,6 +16861,7 @@ class DirectDebitMandate extends $pb.GeneratedMessage {
     if (remainingLimit != null) result.remainingLimit = remainingLimit;
     if (switchProcessing != null) result.switchProcessing = switchProcessing;
     if (pendingMethod != null) result.pendingMethod = pendingMethod;
+    if (authAttemptedAt != null) result.authAttemptedAt = authAttemptedAt;
     return result;
   }
 
@@ -16728,6 +16914,8 @@ class DirectDebitMandate extends $pb.GeneratedMessage {
     ..aInt64(27, _omitFieldNames ? '' : 'remainingLimit')
     ..aOB(28, _omitFieldNames ? '' : 'switchProcessing')
     ..aOS(29, _omitFieldNames ? '' : 'pendingMethod')
+    ..aOM<$1.Timestamp>(30, _omitFieldNames ? '' : 'authAttemptedAt',
+        subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -17033,6 +17221,157 @@ class DirectDebitMandate extends $pb.GeneratedMessage {
   $core.bool hasPendingMethod() => $_has(28);
   @$pb.TagNumber(29)
   void clearPendingMethod() => $_clearField(29);
+
+  /// When the user last OPENED this mandate's Mono authorization (any device).
+  /// Drives the "Setting up" vs "Finish setup" distinction server-side: a
+  /// recent attempt on an awaiting mandate means the payment leg is likely
+  /// done and Mono is confirming (its link is spent) — the client must poll,
+  /// not reopen the dead link.
+  @$pb.TagNumber(30)
+  $1.Timestamp get authAttemptedAt => $_getN(29);
+  @$pb.TagNumber(30)
+  set authAttemptedAt($1.Timestamp value) => $_setField(30, value);
+  @$pb.TagNumber(30)
+  $core.bool hasAuthAttemptedAt() => $_has(29);
+  @$pb.TagNumber(30)
+  void clearAuthAttemptedAt() => $_clearField(30);
+  @$pb.TagNumber(30)
+  $1.Timestamp ensureAuthAttemptedAt() => $_ensure(29);
+}
+
+/// Mark Mandate Auth Attempt
+class MarkMandateAuthAttemptRequest extends $pb.GeneratedMessage {
+  factory MarkMandateAuthAttemptRequest({
+    $core.String? mandateId,
+    $core.bool? cleared,
+  }) {
+    final result = create();
+    if (mandateId != null) result.mandateId = mandateId;
+    if (cleared != null) result.cleared = cleared;
+    return result;
+  }
+
+  MarkMandateAuthAttemptRequest._();
+
+  factory MarkMandateAuthAttemptRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory MarkMandateAuthAttemptRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MarkMandateAuthAttemptRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'mandateId')
+    ..aOB(2, _omitFieldNames ? '' : 'cleared')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MarkMandateAuthAttemptRequest clone() =>
+      MarkMandateAuthAttemptRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MarkMandateAuthAttemptRequest copyWith(
+          void Function(MarkMandateAuthAttemptRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as MarkMandateAuthAttemptRequest))
+          as MarkMandateAuthAttemptRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MarkMandateAuthAttemptRequest create() =>
+      MarkMandateAuthAttemptRequest._();
+  @$core.override
+  MarkMandateAuthAttemptRequest createEmptyInstance() => create();
+  static $pb.PbList<MarkMandateAuthAttemptRequest> createRepeated() =>
+      $pb.PbList<MarkMandateAuthAttemptRequest>();
+  @$core.pragma('dart2js:noInline')
+  static MarkMandateAuthAttemptRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MarkMandateAuthAttemptRequest>(create);
+  static MarkMandateAuthAttemptRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get mandateId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set mandateId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasMandateId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMandateId() => $_clearField(1);
+
+  /// cleared=true removes the stamp (client detected an instant abandon —
+  /// the auth link is still fresh and Finish setup must reopen it).
+  @$pb.TagNumber(2)
+  $core.bool get cleared => $_getBF(1);
+  @$pb.TagNumber(2)
+  set cleared($core.bool value) => $_setBool(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCleared() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCleared() => $_clearField(2);
+}
+
+class MarkMandateAuthAttemptResponse extends $pb.GeneratedMessage {
+  factory MarkMandateAuthAttemptResponse({
+    $core.bool? success,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    return result;
+  }
+
+  MarkMandateAuthAttemptResponse._();
+
+  factory MarkMandateAuthAttemptResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory MarkMandateAuthAttemptResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MarkMandateAuthAttemptResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MarkMandateAuthAttemptResponse clone() =>
+      MarkMandateAuthAttemptResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MarkMandateAuthAttemptResponse copyWith(
+          void Function(MarkMandateAuthAttemptResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as MarkMandateAuthAttemptResponse))
+          as MarkMandateAuthAttemptResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MarkMandateAuthAttemptResponse create() =>
+      MarkMandateAuthAttemptResponse._();
+  @$core.override
+  MarkMandateAuthAttemptResponse createEmptyInstance() => create();
+  static $pb.PbList<MarkMandateAuthAttemptResponse> createRepeated() =>
+      $pb.PbList<MarkMandateAuthAttemptResponse>();
+  @$core.pragma('dart2js:noInline')
+  static MarkMandateAuthAttemptResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MarkMandateAuthAttemptResponse>(create);
+  static MarkMandateAuthAttemptResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
 }
 
 /// Get Mandate Request

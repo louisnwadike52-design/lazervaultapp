@@ -15,10 +15,21 @@ class AccountCardsSummaryLoading extends AccountCardsSummaryState {}
 class AccountCardsSummaryLoaded extends AccountCardsSummaryState {
   final List<AccountSummaryEntity> accountSummaries;
 
-  const AccountCardsSummaryLoaded(this.accountSummaries);
+  /// True while an EXPLICIT, user-initiated refresh (swipe-down → "Refresh
+  /// accounts") is in flight. The cards stay on screen (we don't drop back to
+  /// the full-area spinner), but the card shows a small refreshing indicator so
+  /// the user gets feedback even when the balance comes back unchanged. Only set
+  /// for manual refreshes — silent/background refetches keep this false so they
+  /// never flash a loader.
+  final bool isRefreshing;
+
+  const AccountCardsSummaryLoaded(
+    this.accountSummaries, {
+    this.isRefreshing = false,
+  });
 
   @override
-  List<Object?> get props => [accountSummaries];
+  List<Object?> get props => [accountSummaries, isRefreshing];
 }
 
 class AccountCardsSummaryError extends AccountCardsSummaryState {

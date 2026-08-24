@@ -34,6 +34,8 @@ import 'package:lazervault/src/features/funds/cubit/recurring_transfer_state.dar
 import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_config.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_modal.dart';
+import 'package:lazervault/src/features/funds/presentation/view/scheduled_transfers_list_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/recurring_transfers/recurring_transfers_list_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_error_bottomsheet.dart';
 import 'package:lazervault/src/features/widgets/category_selection.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/budget_warning_sheet.dart';
@@ -744,6 +746,115 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     if (result != null && mounted) {
       setState(() => selectedCategory = result);
     }
+  }
+
+  /// Chooser for everything time-based on a transfer: schedule THIS one,
+  /// make THIS one recurring, or jump to the management screens (upcoming
+  /// scheduled transfers / recurring rules). Each tile navigates or opens the
+  /// existing flow — the date picker and RecurringTransferModal are unchanged.
+  void _showScheduleOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetCtx) => SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 10.h),
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 10.h),
+            ListTile(
+              leading: const Icon(Icons.schedule, color: Color(0xFF2962FF)),
+              title: Text(
+                  scheduledDate == null
+                      ? 'Schedule this transfer'
+                      : 'Change schedule (${DateFormat('MMM d, HH:mm').format(scheduledDate!)})',
+                  style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+              subtitle: Text('Pick a future date and time — it sends itself',
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 12.sp)),
+              onTap: () {
+                Navigator.of(sheetCtx).pop();
+                _showSchedulePicker();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.repeat, color: Color(0xFF3B82F6)),
+              title: Text('Make this transfer recurring',
+                  style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+              subtitle: Text(
+                  _recurringConfig != null
+                      ? _recurringConfig!.summary
+                      : 'Repeat automatically — daily, weekly or monthly',
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 12.sp)),
+              onTap: () {
+                Navigator.of(sheetCtx).pop();
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => RecurringTransferModal(
+                    initialConfig: _recurringConfig,
+                    onConfigured: (config) {
+                      if (!mounted) return;
+                      setState(() {
+                        _recurringConfig = config;
+                        // Mutual exclusivity with one-off scheduling.
+                        scheduledDate = null;
+                      });
+                    },
+                  ),
+                );
+              },
+            ),
+            Divider(color: Colors.white.withValues(alpha: 0.08), height: 8.h),
+            ListTile(
+              leading: Icon(Icons.pending_actions_rounded,
+                  color: Colors.white.withValues(alpha: 0.8)),
+              title: Text('Scheduled transfers',
+                  style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+              subtitle: Text('View or cancel upcoming one-time transfers',
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 12.sp)),
+              onTap: () {
+                Navigator.of(sheetCtx).pop();
+                Get.to(() => const ScheduledTransfersListScreen());
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.event_repeat_rounded,
+                  color: Colors.white.withValues(alpha: 0.8)),
+              title: Text('Recurring transfers',
+                  style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+              subtitle: Text('Manage your repeating transfers',
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 12.sp)),
+              onTap: () {
+                Navigator.of(sheetCtx).pop();
+                Get.to(() => const RecurringTransfersListScreen());
+              },
+            ),
+            SizedBox(height: 14.h),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showSchedulePicker() async {
@@ -1475,10 +1586,26 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
                                       if (FeatureFlags.sendFundsPinIsRequired) {
                                         AnalyticsService.instance.trackSendFundsScreen('pin', 'long');
-                                        // Fee quoted live while the amount was typed (same
-                                        // TransferCubit) — shown on the PIN sheet so the user
-                                        // confirms the TOTAL debit. Internal transfers are free.
-                                        final longFeeQuote = context.read<TransferCubit>().lastFeeLoaded;
+                                        // Revalidate the fee against the CONFIRMED amount before
+                                        // showing it on the PIN sheet. The quote fired when the
+                                        // dialog opened is fire-and-forget, so it may be in-flight
+                                        // or errored here; fees are amount-dependent, so we reuse
+                                        // the cache only when it matches this amount+type and
+                                        // otherwise re-quote. Internal transfers resolve to free.
+                                        final bool longIsInternal =
+                                            _recipient!.bankName == 'LazerVault';
+                                        final longFeeQuote = await context
+                                            .read<TransferCubit>()
+                                            .ensureFeeForAmount(
+                                              amountMinorUnits: int.parse(amount),
+                                              currency: accountCurrency,
+                                              transferType:
+                                                  longIsInternal ? 'internal' : 'domestic',
+                                              destinationBankCode: longIsInternal
+                                                  ? null
+                                                  : _recipient!.sortCode,
+                                            );
+                                        if (!mounted) return;
                                         final longFeeMajor = (longFeeQuote?.fee ?? 0) / 100.0;
                                         final pinSuccess = await validateTransactionPin(
                                           context: context,
@@ -2974,7 +3101,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                         ? 'Schedule Transfer'
                                         : 'Scheduled: ${DateFormat('MMM d, HH:mm').format(scheduledDate!)}',
                                     onPressed:
-                                        isLoading ? null : _showSchedulePicker,
+                                        isLoading ? null : _showScheduleOptions,
                                     icon: Icon(
                                       Icons.schedule,
                                       color: scheduledDate != null

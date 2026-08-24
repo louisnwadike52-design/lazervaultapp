@@ -66,8 +66,14 @@ class MandateCancelled extends MandateState {
 class MandateError extends MandateState {
   final String message;
 
-  const MandateError({required this.message});
+  /// True when the failure is because the user's identity/profile is incomplete
+  /// (the backend returned KYC_REQUIRED — e.g. Direct Debit needs a real
+  /// email/phone/address that isn't on file). The UI should route to the KYC /
+  /// profile flow with [message] rather than showing a generic retry error.
+  final bool isKYCRequired;
+
+  const MandateError({required this.message, this.isKYCRequired = false});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, isKYCRequired];
 }

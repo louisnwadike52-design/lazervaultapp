@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/utils/logger.dart';
 import 'package:lazervault/src/features/open_banking/data/datasources/open_banking_grpc_datasource.dart';
 
 import '../domain/entities/mandate_entity.dart';
@@ -20,6 +22,46 @@ class MandateCubit extends Cubit<MandateState> {
   bool _operationInProgress = false;
 
   MandateCubit(this._dataSource) : super(MandateInitial());
+
+  /// Server-side authorization-attempt stamp (device-independent "Setting up"
+  /// signal). Best-effort passthrough.
+  Future<void> markAuthAttempt(String mandateId, {bool cleared = false}) =>
+      _dataSource.markMandateAuthAttempt(mandateId: mandateId, cleared: cleared);
+
+  /// Classify a mandate failure, log it to Loki (flow: 'mandate'), and build a
+  /// user-facing [MandateError]. A backend KYC_REQUIRED (the "no fake customer
+  /// data" gate — Direct Debit needs a real email/phone/address on file) is
+  /// surfaced with its actionable message + isKYCRequired so the UI routes to
+  /// verification instead of showing a raw gRPC error.
+  MandateError _mandateError(Object e, StackTrace st, String action,
+      [Map<String, dynamic> fields = const {}]) {
+    final raw = e is GrpcError ? (e.message ?? e.toString()) : e.toString();
+    final isKyc = raw.contains('KYC_REQUIRED') ||
+        raw.contains('verify your identity') ||
+        raw.contains('we need your address') ||
+        raw.contains('we need a valid email') ||
+        raw.contains('we need your phone') ||
+        raw.contains('complete your identity verification');
+    String userMsg;
+    if (isKyc) {
+      userMsg = raw.contains('KYC_REQUIRED:')
+          ? raw.split('KYC_REQUIRED:').last.trim()
+          : raw.trim();
+      if (userMsg.isEmpty) {
+        userMsg = 'Please complete your identity verification to continue.';
+      }
+    } else {
+      userMsg = 'Failed to $action. Please try again.';
+    }
+    AppLogger.error(
+      'mandate: $action failed${isKyc ? ' (KYC_REQUIRED)' : ''}',
+      error: e,
+      stackTrace: st,
+      flow: 'mandate',
+      fields: {...fields, 'kyc_required': isKyc},
+    );
+    return MandateError(message: userMsg, isKYCRequired: isKyc);
+  }
 
   /// Create a mandate for a linked bank account.
   ///
@@ -56,8 +98,9 @@ class MandateCubit extends Cubit<MandateState> {
         needsAuthorization: result.needsAuthorization,
         authorizationUrl: result.authorizationUrl,
       ));
-    } catch (e) {
-      emit(MandateError(message: 'Failed to create mandate: $e'));
+    } catch (e, st) {
+      emit(_mandateError(e, st, 'set up Direct Debit',
+          {'account_id': linkedAccountId, 'user_id': userId}));
     } finally {
       _operationInProgress = false;
     }
@@ -112,9 +155,16 @@ class MandateCubit extends Cubit<MandateState> {
       try {
         final fresh = await _dataSource.getMandate(mandateId: m.id, userId: userId);
         final existing = _mandatesByAccountId[fresh.linkedAccountId];
-        if (existing == null ||
-            existing.id != fresh.id ||
-            existing.status != fresh.status) {
+        // Same mandate → always take the fresh status. A DIFFERENT mandate on
+        // the same account only replaces the cached one if it is genuinely
+        // better — without this, iteration order let a stale awaiting mandate
+        // overwrite the active one (badge + rail decision both flipped wrong).
+        if (existing == null || existing.id == fresh.id) {
+          if (existing == null || existing.status != fresh.status) {
+            _mandatesByAccountId[fresh.linkedAccountId] = fresh;
+            changed = true;
+          }
+        } else if (_isBetterMandate(fresh, existing)) {
           _mandatesByAccountId[fresh.linkedAccountId] = fresh;
           changed = true;
         }
@@ -151,8 +201,8 @@ class MandateCubit extends Cubit<MandateState> {
       // Converge the "Switching…" badge to the confirmed state once Mono acks the
       // pause — every pause surface (deposit card, Manage sheet) gets this.
       pollSwitchUntilSettled(mandateId: mandateId, userId: userId);
-    } catch (e) {
-      emit(MandateError(message: 'Failed to pause mandate: $e'));
+    } catch (e, st) {
+      emit(_mandateError(e, st, 'pause Direct Debit'));
     } finally {
       _operationInProgress = false;
     }
@@ -176,8 +226,8 @@ class MandateCubit extends Cubit<MandateState> {
       // Converge the "Switching…" badge to the confirmed state once Mono acks the
       // reinstate — every reinstate surface (deposit card, Manage sheet) gets this.
       pollSwitchUntilSettled(mandateId: mandateId, userId: userId);
-    } catch (e) {
-      emit(MandateError(message: 'Failed to reinstate mandate: $e'));
+    } catch (e, st) {
+      emit(_mandateError(e, st, 'resume Direct Debit'));
     } finally {
       _operationInProgress = false;
     }
@@ -199,8 +249,8 @@ class MandateCubit extends Cubit<MandateState> {
       );
       _mandatesByAccountId.remove(linkedAccountId);
       emit(MandateCancelled(mandateId: mandateId));
-    } catch (e) {
-      emit(MandateError(message: 'Failed to cancel mandate: $e'));
+    } catch (e, st) {
+      emit(_mandateError(e, st, 'cancel Direct Debit'));
     } finally {
       _operationInProgress = false;
     }
@@ -250,8 +300,8 @@ class MandateCubit extends Cubit<MandateState> {
         needsAuthorization: result.needsAuthorization,
         authorizationUrl: result.authorizationUrl,
       ));
-    } catch (e) {
-      emit(MandateError(message: 'Failed to recreate mandate: $e'));
+    } catch (e, st) {
+      emit(_mandateError(e, st, 'set up Direct Debit'));
     } finally {
       _operationInProgress = false;
     }

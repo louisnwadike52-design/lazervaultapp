@@ -78,6 +78,21 @@ class ScannedCodeClassifier {
 
       // ── Pay a Lazervault user (dynamic, signed) → C2C transfer ──
       case 'lazervault_pay':
+        // v2.1 (My Account → My QR with an amount): carries a server-minted
+        // qr_code reference, NOT a token. Route it as a server QR — the
+        // token-only reading rejected it as "unsupported" even though every
+        // other scanner accepts it.
+        final qrRef = data['qr_code']?.toString();
+        if (qrRef != null && qrRef.isNotEmpty) {
+          return ScanPaymentIntent(
+            type: ScanIntentType.qrPay,
+            title: 'Lazervault payment',
+            subtitle: qrRef,
+            qrCode: qrRef,
+            amountEditable: false,
+            raw: raw,
+          );
+        }
         final payload = _decodeTokenPayload(data['token']?.toString());
         if (payload == null) return null;
         if (_isExpired(payload['exp'])) return null; // surfaced as "unrecognized/expired"

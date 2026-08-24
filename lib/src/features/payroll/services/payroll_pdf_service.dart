@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import '../domain/entities/pay_slip_entity.dart';
+import 'dart:ui' show Rect;
 
 class PayrollPdfService {
   static final _displayDateFormat = DateFormat('MMM dd, yyyy');
@@ -188,6 +189,9 @@ class PayrollPdfService {
       final file = await generatePaySlipPdf(slip);
 
       await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
         text:
             'Pay Slip - ${slip.employeeName} - Net Pay: ${_formatAmount(slip.netPay)}',
@@ -308,6 +312,9 @@ class PayrollPdfService {
       breakdown: breakdown,
     );
     await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       files: [XFile(file.path)],
       text:
           'Payroll Report ($periodStart to $periodEnd) - Net Paid: ${_formatAmount((summary['totalNet'] as num?)?.toDouble() ?? 0.0)}',

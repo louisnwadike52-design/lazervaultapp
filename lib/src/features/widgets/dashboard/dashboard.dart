@@ -35,6 +35,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/dashboard/widgets/dashboard_action_sheet.dart';
+import 'package:lazervault/src/features/widgets/dashboard/dashboard_refresh_signal.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'dashboard_widgets.dart';
@@ -109,15 +110,25 @@ class _DashboardState extends State<Dashboard> {
             : null;
       }
 
-      // Refresh account summaries
+      // Refresh account summaries. manualRefresh keeps the cards on screen and
+      // shows a small "Refreshing…" pill on the card (feedback even when the
+      // balance is unchanged); the network fetch always runs and re-persists the
+      // cache, so balances are revalidated regardless.
       await context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
             userId: userId,
             accessToken: accessToken,
             country: activeCountry,
+            manualRefresh: true,
           );
 
       // Refresh family invitations
       _familyInviteCubit.loadPendingInvitations();
+
+      // Broadcast the manual refresh so sections that own their own cubit
+      // instance (e.g. Recent Transactions) hard-reload + revalidate their cache
+      // in place. A shared serviceLocator fetch can't reach those factory
+      // instances, so they subscribe to this signal instead.
+      DashboardRefreshSignal.instance.fire();
     }
   }
 

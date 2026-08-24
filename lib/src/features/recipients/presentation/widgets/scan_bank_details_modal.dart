@@ -14,7 +14,11 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'scan_bank_details_modal_widgets.dart';
 
 
+// Shared surface tokens — kept in lockstep with SendFundsAmountSheet so the
+// scan sheet and the amount sheet it hands off to read as one flow.
 const Color _purple = Color.fromARGB(255, 78, 3, 208);
+const Color _card = Color(0xFFF3F4F6);
+const Color _textSecondary = Color(0xFF6B7280);
 
 // ── SmartScanResultSheet ────────────────────────────────────────────────────
 
@@ -51,6 +55,7 @@ class SmartScanResultSheet extends StatefulWidget {
 
 class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   late TextEditingController _accountNumberController;
+  final FocusNode _accountFocus = FocusNode();
   String? _selectedBankCode;
   String? _selectedBankName;
   bool _isVerifying = false;
@@ -61,11 +66,23 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   // 1.5: Track whether AccountVerificationCubit is available in the tree
   bool _hasVerificationCubit = false;
 
+  // Guidance shown when the user taps an always-active confirm button while a
+  // required field is still missing. Instead of a dead, greyed-out button
+  // (which left users confused — "why can't I tap Verify?"), the button stays
+  // tappable and, on tap, we point at exactly what to fix (enter the account
+  // number / pick the bank) and steer them there (focus the field / open the
+  // bank picker). Cleared as soon as the missing detail is supplied.
+  String? _validationHint;
+
   @override
   void initState() {
     super.initState();
+    // Sanitize the OCR account number to digits up front. The digits-only input
+    // formatter only guards TYPING — an OCR value with spaces/dashes (e.g.
+    // "0801 234 5678") would otherwise fail the length check and read as invalid
+    // even though it's a perfectly good account.
     _accountNumberController = TextEditingController(
-      text: widget.scanResult.accountNumber ?? '',
+      text: _digitsOnly(widget.scanResult.accountNumber ?? ''),
     );
     _selectedBankName = widget.scanResult.bankName;
     // Treat an empty/blank scanned code as "unresolved" so _bootstrap re-derives
@@ -172,6 +189,14 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
       'fcmb': 'first city monument',
       'fbn': 'first',
       'stanbic': 'stanbic ibtc',
+      // Fintech wallets + common OCR misreads → canonical single token so
+      // "MoneyPoint" / "Monie" resolve to Moniepoint and the wallet names match.
+      'moneypoint': 'moniepoint',
+      'monie': 'moniepoint',
+      'opay': 'opay',
+      'palmpay': 'palmpay',
+      'palm': 'palmpay',
+      'kuda': 'kuda',
     };
     final expanded = s
         .split(RegExp(r'\s+'))
@@ -192,6 +217,7 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   @override
   void dispose() {
     _accountNumberController.dispose();
+    _accountFocus.dispose();
     super.dispose();
   }
 
@@ -219,38 +245,55 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
     // Tapping anywhere on the sheet that isn't a field/button dismisses the
     // keyboard — while the user is editing an extracted field, a tap on empty
     // space closes the keyboard instead of leaving it stuck open.
+    // Keyboard-aware: lift the whole sheet above the keyboard and cap its height
+    // to the space that remains, so editing the account number can never bury
+    // the Verify button behind the keyboard (the "account captured but can't tap
+    // verify" report). Mirrors SendFundsAmountSheet's layout.
+    final media = MediaQuery.of(context);
+    final bottomInset = media.viewInsets.bottom;
+    final available = media.size.height - media.padding.top - bottomInset - 24.h;
+    final cap = media.size.height * 0.85;
+    // Guard the pathological case (an enormous keyboard on a tiny viewport) so
+    // the constraint can never go non-positive and assert.
+    final maxSheetHeight = available <= 0
+        ? cap
+        : (available < cap ? available : cap);
+
     Widget content = GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.opaque,
-      child: Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.8,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
-      ),
       child: Padding(
-        padding: EdgeInsets.all(24.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHandle(),
-            SizedBox(height: 16.h),
-            _buildHeader(),
-            SizedBox(height: 24.h),
-            Flexible(
-              child: SingleChildScrollView(
-                child: _buildBody(),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            _buildActions(),
-            SizedBox(height: MediaQuery.of(context).padding.bottom + 8.h),
-          ],
+        padding: EdgeInsets.only(bottom: bottomInset),
+        child: Container(
+        constraints: BoxConstraints(
+          maxHeight: maxSheetHeight,
         ),
-      ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHandle(),
+              SizedBox(height: 16.h),
+              _buildHeader(),
+              SizedBox(height: 24.h),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: _buildBody(),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              _buildActions(),
+              SizedBox(height: media.padding.bottom + 8.h),
+            ],
+          ),
+        ),
+        ),
       ),
     );
 
@@ -261,15 +304,30 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
 
   // ── Handle bar ──────────────────────────────────────────────────────────
 
-  Widget _buildHandle() => Center(
-        child: Container(
-          width: 40.w,
-          height: 4.h,
-          decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(2.r),
+  // Drag handle centered with an explicit close (X) on the right — mirrors
+  // SendFundsAmountSheet so the two sheets read as one flow, and gives a clear
+  // way out even when the keyboard is up.
+  Widget _buildHandle() => Row(
+        children: [
+          SizedBox(width: 22.sp),
+          Expanded(
+            child: Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
           ),
-        ),
+          GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            behavior: HitTestBehavior.opaque,
+            child: Icon(Icons.close_rounded, size: 22.sp, color: _textSecondary),
+          ),
+        ],
       );
 
   // ── Header ──────────────────────────────────────────────────────────────
@@ -509,25 +567,50 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
         SizedBox(height: 8.h),
         TextField(
           controller: _accountNumberController,
+          focusNode: _accountFocus,
           keyboardType: TextInputType.number,
-          maxLength: 10,
+          // 10-digit NUBAN, or the 11-digit phone that IS the account number for
+          // OPay / PalmPay / Moniepoint wallets (matches the manual bank-entry
+          // validator in add_recipient.dart).
+          maxLength: 11,
           decoration: _inputDecoration(
-            hint: 'Enter 10-digit account number',
+            hint: 'Enter account number',
             icon: Icons.numbers_outlined,
           ),
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onChanged: (_) => setState(() {}), // Rebuild to update button state
+          // Rebuild to refresh helper text; clear any "enter the account number"
+          // guidance the moment the user starts supplying it.
+          onChanged: (_) => setState(() {
+            if (_validationHint != null &&
+                _accountNumberController.text.isNotEmpty) {
+              _validationHint = null;
+            }
+          }),
         ),
         SizedBox(height: 16.h),
         _buildFieldLabel('Bank'),
         SizedBox(height: 8.h),
         _buildBankSelector(),
-        // 1.1: Show hint when account number is wrong length
+        // When OCR couldn't resolve the bank (the common MoneyPoint / OPay /
+        // PalmPay case), offer one-tap chips for the frequent fintech wallets so
+        // the user isn't forced to open + search the full picker.
+        if (_selectedBankCode == null) ...[
+          SizedBox(height: 10.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              for (final b in const ['OPay', 'PalmPay', 'Moniepoint', 'Kuda'])
+                _quickBankChip(b),
+            ],
+          ),
+        ],
+        // Show hint only when the number is present but not a valid length.
         if (_accountNumberController.text.isNotEmpty &&
-            _accountNumberController.text.length != 10) ...[
+            !_accountLengthOk(_accountNumberController.text)) ...[
           SizedBox(height: 8.h),
           Text(
-            'Account number must be 10 digits (currently ${_accountNumberController.text.length})',
+            'Account number should be 10 digits (or 11 for OPay/PalmPay) — you have ${_accountNumberController.text.length}',
             style: TextStyle(color: Colors.orange[700], fontSize: 12.sp),
           ),
         ],
@@ -1008,21 +1091,24 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
       );
 
   Widget _buildBankDetailsActions() {
-    final canVerify = !_isVerifying &&
-        _accountNumberController.text.length == 10 &&
-        _selectedBankCode != null &&
-        _hasVerificationCubit; // 1.5: Only enable if cubit exists
-
+    // The Verify button is ALWAYS tappable (never greyed) except while a verify
+    // is in-flight. If a required detail is missing, tapping surfaces a clear
+    // "do this next" hint (see _onVerifyAccount) and steers the user to it —
+    // instead of a dead button that leaves them wondering why it won't respond.
     return Column(
       children: [
+        if (_validationHint != null) ...[
+          _buildInlineHint(_validationHint!),
+          SizedBox(height: 10.h),
+        ],
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: canVerify ? _onVerifyAccount : null,
+            onPressed: _isVerifying ? null : _onVerifyAccount,
             style: ElevatedButton.styleFrom(
               backgroundColor: _purple,
               foregroundColor: Colors.white,
-              disabledBackgroundColor: Colors.grey[300],
+              disabledBackgroundColor: _purple.withValues(alpha: 0.6),
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
@@ -1040,17 +1126,6 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
                 : Text('Verify Account', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
           ),
         ),
-        // 1.5: Show warning if verification cubit not available
-        if (!_hasVerificationCubit &&
-            _accountNumberController.text.length == 10 &&
-            _selectedBankCode != null) ...[
-          SizedBox(height: 8.h),
-          Text(
-            'Account verification is not available. Please go back and try again.',
-            style: TextStyle(color: Colors.orange[700], fontSize: 12.sp),
-            textAlign: TextAlign.center,
-          ),
-        ],
       ],
     );
   }
@@ -1159,23 +1234,33 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
           ),
         ),
         if (hasPhone) ...[
+          SizedBox(height: 14.h),
+          // A phone number is ALSO the account number for OPay / PalmPay /
+          // Moniepoint wallets — but OCR can't tell which from the digits alone.
+          // Offer one-tap resolution: pick the wallet and we jump straight to a
+          // pre-filled, bank-selected Verify (no manual bank hunt). This is the
+          // "it couldn't tell PalmPay from OPay and wouldn't let me pick" fix.
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Paying an OPay / PalmPay wallet?',
+                style: TextStyle(color: Colors.grey[600], fontSize: 12.sp)),
+          ),
+          SizedBox(height: 8.h),
+          Row(
+            children: [
+              Expanded(child: _walletQuickChip('OPay')),
+              SizedBox(width: 10.w),
+              Expanded(child: _walletQuickChip('PalmPay')),
+            ],
+          ),
           SizedBox(height: 10.h),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () {
-                // 1.1: Switch to bank details view with phone number as account
-                setState(() {
-                  _disambiguatedType = 'bank_details';
-                  final phone = widget.scanResult.phoneNumber ?? '';
-                  final local = phone.startsWith('234')
-                      ? '0${phone.substring(3)}'
-                      : phone;
-                  _accountNumberController.text = local;
-                });
-              },
+              onPressed: () => _useAsBankAccount(),
               icon: const Icon(Icons.account_balance_outlined),
-              label: Text('Use as Bank Account', style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
+              label: Text('Use as bank account (pick bank)',
+                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: _purple,
                 side: BorderSide(color: _purple),
@@ -1296,11 +1381,48 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
 
   // ── Verify button handler ───────────────────────────────────────────────
 
-  Future<void> _onVerifyAccount() async {
-    if (!_hasVerificationCubit || _isVerifying) return;
-    final cubit = context.read<AccountVerificationCubit>();
+  /// A valid destination account: 10-digit NUBAN, or the 11-digit phone that
+  /// serves as the account number for OPay / PalmPay / Moniepoint wallets.
+  /// Mirrors the manual bank-entry validator (add_recipient.dart) so the scan
+  /// path accepts exactly what typing the account by hand would.
+  bool _accountLengthOk(String v) =>
+      v.length == 10 || (v.length == 11 && v.startsWith('0'));
 
-    setState(() => _isVerifying = true);
+  /// Strip everything but digits — used to clean OCR/phone values.
+  String _digitsOnly(String v) => v.replaceAll(RegExp(r'[^0-9]'), '');
+
+  Future<void> _onVerifyAccount() async {
+    if (_isVerifying) return;
+
+    // Validate on tap and STEER the user to whatever is missing, rather than
+    // gating behind a disabled button. Each branch tells them what to do and
+    // puts them where they can do it (focus the field / open the bank picker).
+    final acct = _accountNumberController.text.trim();
+    if (!_accountLengthOk(acct)) {
+      setState(() => _validationHint = acct.isEmpty
+          ? "Enter the recipient's account number"
+          : 'Account number should be 10 digits (or 11 for OPay/PalmPay) — you have ${acct.length}');
+      _accountFocus.requestFocus();
+      return;
+    }
+    if (_selectedBankCode == null) {
+      setState(() => _validationHint = "Select the recipient's bank to continue");
+      // Open the picker immediately so the guidance is one tap from resolved
+      // (the common OCR case: account read cleanly, bank logo/name didn't).
+      _showBankPicker(serviceLocator<BankRepository>().cachedSync(widget.country));
+      return;
+    }
+    if (!_hasVerificationCubit) {
+      setState(() => _validationHint =
+          'Account verification is unavailable right now. Please go back and try again.');
+      return;
+    }
+
+    final cubit = context.read<AccountVerificationCubit>();
+    setState(() {
+      _validationHint = null;
+      _isVerifying = true;
+    });
 
     // Drive the outcome deterministically off the awaited result instead of an
     // ambient BlocListener state-*change*. A cache hit (same account verified
@@ -1363,6 +1485,120 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
     );
   }
 
+  /// Switch a detected phone number into the bank-details flow, using the phone
+  /// as the account number (OPay/PalmPay/Moniepoint wallets are addressed by
+  /// phone). Optionally pre-select the wallet's bank so the user lands one tap
+  /// from Verify. Never moves money — the NIP name-enquiry + PIN still gate.
+  void _useAsBankAccount({String? presetBankName}) {
+    final raw = widget.scanResult.phoneNumber ?? '';
+    var local = _digitsOnly(raw);
+    if (local.startsWith('234')) local = '0${local.substring(3)}';
+    setState(() {
+      _disambiguatedType = 'bank_details';
+      if (local.isNotEmpty) _accountNumberController.text = local;
+      if (presetBankName != null) _selectedBankName = presetBankName;
+      _validationHint = null;
+    });
+    // Resolve against the canonical list so the code + logo line up; if the list
+    // is cold this is a no-op and the user still picks the bank (name already
+    // shows, and the picker self-heals a cold list).
+    if (presetBankName != null) _resolveBankCode(presetBankName);
+  }
+
+  /// One-tap wallet selector chip (OPay / PalmPay) for the phone flow.
+  Widget _walletQuickChip(String bankName) {
+    return GestureDetector(
+      onTap: () => _useAsBankAccount(presetBankName: bankName),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: _purple.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: _purple.withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            BankLogo(bankName: bankName, country: widget.country, size: 20, borderRadius: 5),
+            SizedBox(width: 8.w),
+            Text(bankName,
+                style: TextStyle(
+                    color: _purple, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Select a bank by name from a quick chip (bank-details flow) — resolves the
+  /// code against the warm list; if the list is cold the name still shows and
+  /// Verify steers to the picker.
+  void _selectBankByName(String name) {
+    setState(() {
+      _selectedBankName = name;
+      _validationHint = null;
+    });
+    _resolveBankCode(name);
+  }
+
+  /// Compact one-tap bank chip for the bank-details body's "common fintechs" row.
+  Widget _quickBankChip(String bankName) {
+    return GestureDetector(
+      onTap: () => _selectBankByName(bankName),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: _purple.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: _purple.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            BankLogo(bankName: bankName, country: widget.country, size: 18, borderRadius: 4),
+            SizedBox(width: 6.w),
+            Text(bankName,
+                style: TextStyle(
+                    color: _purple, fontSize: 12.5.sp, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Actionable guidance shown above a confirm button when the user taps it
+  /// with something still missing. Amber (a nudge, not a hard error) with an
+  /// arrow to read as "do this next".
+  Widget _buildInlineHint(String message) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.arrow_upward_rounded, color: Colors.orange[800], size: 18.sp),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: Colors.orange[900],
+                fontSize: 12.5.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildConfidenceBadge(double confidence) {
     final percent = (confidence * 100).round();
     final color = confidence >= 0.8
@@ -1407,10 +1643,10 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
   }) {
     return InputDecoration(
       filled: true,
-      fillColor: Colors.grey[50],
+      fillColor: _card,
       hintText: hint,
-      hintStyle: TextStyle(color: Colors.grey[500]),
-      prefixIcon: Icon(icon, color: Colors.grey[600]),
+      hintStyle: TextStyle(color: _textSecondary),
+      prefixIcon: Icon(icon, color: _textSecondary),
       counterText: '',
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.r),
@@ -1435,7 +1671,7 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
-          color: Colors.grey[50],
+          color: _card,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(color: Colors.grey[200]!),
         ),
@@ -1478,7 +1714,18 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
 
   void _showBankPicker(List<Map<String, String>> banks) {
     final searchController = TextEditingController();
-    List<Map<String, String>> filtered = List.from(banks);
+    List<Map<String, String>> available = List.from(banks);
+    List<Map<String, String>> filtered = List.from(available);
+    bool loading = false;
+
+    void applyFilter() {
+      final q = searchController.text.toLowerCase();
+      filtered = q.isEmpty
+          ? List.from(available)
+          : available
+              .where((b) => (b['name'] ?? '').toLowerCase().contains(q))
+              .toList();
+    }
 
     showModalBottomSheet(
       context: context,
@@ -1487,68 +1734,155 @@ class _SmartScanResultSheetState extends State<SmartScanResultSheet> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setPickerState) {
-            return Container(
-              height: MediaQuery.of(context).size.height * 0.6,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(24.r)),
-              ),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.all(16.w),
-                    child: TextField(
-                      controller: searchController,
-                      decoration: _inputDecoration(
-                        hint: 'Search banks...',
-                        icon: Icons.search,
+            // Self-heal a cold/offline list so the picker is NEVER a dead, empty
+            // sheet — the exact trap the auto-open-on-missing-bank path could
+            // otherwise fall into. Fetch on open (and on Retry), then re-filter.
+            Future<void> ensureBanks() async {
+              if (available.isNotEmpty || loading) return;
+              setPickerState(() => loading = true);
+              try {
+                await serviceLocator<BankRepository>().warmUp(widget.country);
+              } catch (_) {/* stays empty → empty-state + Retry below */}
+              final fresh =
+                  serviceLocator<BankRepository>().cachedSync(widget.country);
+              if (!mounted) return;
+              setPickerState(() {
+                available = List.from(fresh);
+                applyFilter();
+                loading = false;
+              });
+            }
+
+            if (available.isEmpty && !loading) {
+              WidgetsBinding.instance
+                  .addPostFrameCallback((_) => ensureBanks());
+            }
+
+            final kbd = MediaQuery.of(ctx).viewInsets.bottom;
+            return Padding(
+              padding: EdgeInsets.only(bottom: kbd),
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.6,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(24.r)),
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 12.h),
+                    Center(
+                      child: Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
                       ),
-                      onChanged: (query) {
-                        setPickerState(() {
-                          filtered = banks
-                              .where((b) => b['name']!
-                                  .toLowerCase()
-                                  .contains(query.toLowerCase()))
-                              .toList();
-                        });
-                      },
                     ),
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: filtered.length,
-                      itemBuilder: (ctx, index) {
-                        final bank = filtered[index];
-                        return ListTile(
-                          leading: BankLogo(
-                            bankName: bank['name'] ?? '',
-                            bankCode: bank['code'],
-                            country: widget.country,
-                            size: 36,
-                            borderRadius: 8,
-                          ),
-                          title: Text(
-                            bank['name'] ?? '',
-                            style: TextStyle(fontSize: 14.sp),
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _selectedBankCode = bank['code'];
-                              _selectedBankName = bank['name'];
-                            });
-                            Navigator.pop(ctx);
-                          },
-                        );
-                      },
+                    Padding(
+                      padding: EdgeInsets.all(16.w),
+                      child: TextField(
+                        controller: searchController,
+                        decoration: _inputDecoration(
+                          hint: 'Search banks...',
+                          icon: Icons.search,
+                        ),
+                        onChanged: (_) => setPickerState(applyFilter),
+                      ),
                     ),
-                  ),
-                ],
+                    Expanded(
+                      child: loading
+                          ? Center(child: LazerVaultLoader.small())
+                          : available.isEmpty
+                              ? _bankPickerEmptyState(ensureBanks)
+                              : filtered.isEmpty
+                                  ? Center(
+                                      child: Text(
+                                        'No banks match "${searchController.text}"',
+                                        style: TextStyle(
+                                            color: _textSecondary,
+                                            fontSize: 13.sp),
+                                      ),
+                                    )
+                                  : ListView.builder(
+                                      itemCount: filtered.length,
+                                      itemBuilder: (ctx, index) {
+                                        final bank = filtered[index];
+                                        return ListTile(
+                                          leading: BankLogo(
+                                            bankName: bank['name'] ?? '',
+                                            bankCode: bank['code'],
+                                            country: widget.country,
+                                            size: 36,
+                                            borderRadius: 8,
+                                          ),
+                                          title: Text(
+                                            bank['name'] ?? '',
+                                            style: TextStyle(fontSize: 14.sp),
+                                          ),
+                                          onTap: () {
+                                            setState(() {
+                                              _selectedBankCode = bank['code'];
+                                              _selectedBankName = bank['name'];
+                                              _validationHint = null;
+                                            });
+                                            Navigator.pop(ctx);
+                                          },
+                                        );
+                                      },
+                                    ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
         );
       },
+    ).whenComplete(searchController.dispose);
+  }
+
+  /// Empty-state for the bank picker when the list couldn't be loaded (offline
+  /// at open) — with a Retry that re-attempts the warm-up.
+  Widget _bankPickerEmptyState(Future<void> Function() onRetry) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.cloud_off_outlined, color: Colors.grey[400], size: 40.sp),
+            SizedBox(height: 12.h),
+            Text(
+              "Couldn't load the bank list",
+              style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              'Check your connection and try again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: _textSecondary, fontSize: 12.sp),
+            ),
+            SizedBox(height: 16.h),
+            OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: Icon(Icons.refresh, size: 18.sp),
+              label: const Text('Retry'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: _purple,
+                side: BorderSide(color: _purple),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

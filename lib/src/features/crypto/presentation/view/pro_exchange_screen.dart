@@ -26,7 +26,9 @@ const _div = Color(0xFF2D2D2D);
 // from each Crypto's `id` field in the response (Quidax /markets exposes
 // the same id-symbol relationship we mirror server-side).
 
-const _tfDays = {'1H': 1, '4H': 1, '1D': 1, '1W': 7, '1M': 30};
+// 1H and 4H were removed: both mapped to days:1 (same candles as 1D), so
+// three pills rendered IDENTICAL charts while animating as if they differed.
+const _tfDays = {'1D': 1, '1W': 7, '1M': 30};
 
 // _MarketEntry pairs the wire key (e.g. "btcngn") with the human label
 // ("BTC/NGN") and the CoinGecko id ("bitcoin") that getOHLCV expects.
@@ -103,6 +105,9 @@ class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProvid
       for (final asset in resp.assets) {
         final symbol = asset.symbol.toLowerCase();
         if (symbol.isEmpty) continue;
+        // Bridge-only assets (tradable via USDT, no <symbol><fiat> order book)
+        // used to populate the dropdown and 404 on every chart/book call.
+        if (!asset.hasLocalDirect) continue;
         markets.add(_MarketEntry(
           key: '$symbol$fiat',
           label: '${symbol.toUpperCase()}/${fiat.toUpperCase()}',
@@ -263,7 +268,9 @@ class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProvid
         Icon(up ? Icons.arrow_drop_up : Icons.arrow_drop_down, color: up ? _green : _red, size: 20.sp),
         Text('${up ? '+' : ''}${chg.toStringAsFixed(2)}%', style: _inter(14.sp, w: FontWeight.w600, c: up ? _green : _red)),
         SizedBox(width: 8.w),
-        Text('24h', style: _inter(12.sp, c: _txt2)),
+        // The change is computed over WHATEVER range is loaded — label it with
+        // the active timeframe, not a hardcoded "24h".
+        Text(_tf, style: _inter(12.sp, c: _txt2)),
       ]),
     ]);
   }

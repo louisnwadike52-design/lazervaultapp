@@ -859,7 +859,10 @@ Status: ${_formatStatus(payment.status)}
 ---
 Powered by Lazervault''';
 
-      SharePlus.instance.share(ShareParams(text: text, subject: 'Internet Bill Payment Receipt'));
+      SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: text, subject: 'Internet Bill Payment Receipt'));
     } finally {
       if (mounted) setState(() => _isSharing = false);
     }

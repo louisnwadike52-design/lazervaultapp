@@ -52,6 +52,21 @@ sealed class QrPayload {
               username: username,
               name: (decoded['name'] ?? username).toString(),
             );
+          case 'invoice':
+          case 'payment':
+            // Invoice QRs are payable only through the Invoices flow (or the
+            // AI scanner, which understands them) — name the situation
+            // instead of calling a valid Lazervault code "invalid".
+            return const InvalidQr(
+                reason:
+                    'This is an invoice QR. Open it with AI Scan to Pay, or pay it from the Invoices screen.');
+          case 'transfer':
+          case 'batch_transfer':
+            // Receipt QRs encode a completed transaction reference — they
+            // identify a payment, they can't start one.
+            return const InvalidQr(
+                reason:
+                    'This QR is a transaction receipt — it can\'t be used to make a payment.');
           default:
             return const InvalidQr();
         }
@@ -148,5 +163,11 @@ class LegacyTokenQr extends QrPayload {
 
 /// Unrecognised / malformed QR.
 class InvalidQr extends QrPayload {
-  const InvalidQr();
+  const InvalidQr({this.reason});
+
+  /// Optional user-facing explanation for a RECOGNIZED-but-unpayable code
+  /// (e.g. an invoice QR, a receipt QR). Null = genuinely unknown format.
+  /// Scanners show this instead of the generic "not a Lazervault code" so
+  /// scanning your own receipt/invoice isn't reported as corruption.
+  final String? reason;
 }

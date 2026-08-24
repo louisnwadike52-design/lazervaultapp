@@ -19,6 +19,7 @@ import 'link_bank_screen.dart';
 import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
 import 'package:lazervault/src/features/move_money/cubit/mandate_state.dart';
 import 'package:lazervault/src/features/move_money/domain/entities/mandate_entity.dart';
+import 'package:lazervault/src/features/move_money/domain/mandate_auth_attempt_store.dart';
 import 'package:lazervault/src/features/move_money/presentation/widgets/linked_account_state_chip.dart';
 import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_management_bottomsheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -56,6 +57,9 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
   @override
   void initState() {
     super.initState();
+    // Hydrate local auth-attempt stamps so _mandateChip can distinguish
+    // "Setting up" (confirming) from "Finish setup" synchronously.
+    MandateAuthAttemptStore.hydrate();
     _extractArguments();
     _fetchAccounts();
   }
@@ -96,8 +100,18 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
       state = LinkedAccountState.switching;
     } else if (mandate.isActive) {
       state = LinkedAccountState.directDebit;
-    } else if (mandate.isActivating || mandate.awaitingUserAuthorization) {
+    } else if (mandate.isActivating ||
+        (mandate.awaitingUserAuthorization &&
+            (mandate.authAttemptedRecently ||
+                MandateAuthAttemptStore.openedRecently(mandate.id)))) {
+      // Authorization GRANTED (status authorized, or the success stamp is
+      // recent) and the mandate is provisioning — genuinely "setting up".
       state = LinkedAccountState.settingUp;
+    } else if (mandate.awaitingUserAuthorization) {
+      // Authorization never granted (widget merely opened/closed, or never
+      // opened) — the account behaves as one-time; setup resumes from the
+      // management sheet this chip opens.
+      state = LinkedAccountState.oneTime;
     } else if (mandate.isPaused) {
       state = LinkedAccountState.oneTime;
     } else {
@@ -239,7 +253,9 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen>
       context: context,
       transactionId: txnId,
       transactionType: 'balance_refresh',
-      amount: feeNaira,
+      // Fee-only charge: a balance refresh has NO base amount, so pass amount 0
+      // and let the sheet render just the ₦fee (not "fee + fee").
+      amount: 0,
       fee: feeNaira,
       totalAmount: feeNaira,
       currency: 'NGN',

@@ -15,6 +15,7 @@ import '../widgets/asset_wallet_sheet.dart';
 import '../widgets/asset_network_badge.dart';
 import '../widgets/network_picker_sheet.dart';
 import '../widgets/price_quote_card.dart';
+import '../widgets/crypto_flow_guidance.dart';
 import 'swap_flow_dispatcher.dart';
 import 'all_assets_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -228,10 +229,30 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   }
 
   double get _toAmount => double.tryParse(_toAmountController.text) ?? 0.0;
-  
+
+  /// Minimum FROM amount so the RECEIVED asset clears its deliverability floor
+  /// (Quidax's minimum_withdrawal on the to-asset — converts deliver me→sub
+  /// exactly like buys). 0 = no known floor. +2% headroom for rate drift.
+  double get _minFromForDeliverable {
+    if (_toCrypto == null) return 0;
+    try {
+      final minTo = GetIt.I<CryptoConfigCubit>()
+          .config
+          .minDeliverableFor(_toCrypto!.symbol);
+      final rate = _exchangeRate;
+      if (minTo == null || rate <= 0) return 0;
+      return (minTo / rate) * 1.02;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   bool get _hasValidAmount {
     if (_fromHolding == null) return false;
-    return _fromAmount > 0 && _fromAmount <= _fromHolding!.quantity;
+    if (_fromAmount <= 0 || _fromAmount > _fromHolding!.quantity) return false;
+    final minFrom = _minFromForDeliverable;
+    if (minFrom > 0 && _fromAmount < minFrom) return false;
+    return true;
   }
 
   double get _exchangeRate {
@@ -362,6 +383,11 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                           SizedBox(height: 16.h),
                           const CryptoFiatWalletPill(
                               caption: 'Your wallet balance'),
+                          SizedBox(height: 12.h),
+                          const CryptoFlowGuidance(
+                            text:
+                                'Swaps trade one crypto directly for another — no fiat leaves your account. The new asset lands in your crypto wallet as soon as the swap fills.',
+                          ),
                           SizedBox(height: 24.h),
                           _buildLegalDisclaimer(),
                           SizedBox(height: 32.h),
@@ -818,7 +844,16 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(
-                'Insufficient balance. Available: ${balance?.toStringAsFixed(6) ?? 0} ${symbol.toUpperCase()}',
+                // Say WHICH constraint failed: below the to-asset's delivery
+                // minimum vs over the from-holding balance.
+                (_minFromForDeliverable > 0 &&
+                        _fromAmount < _minFromForDeliverable &&
+                        _fromAmount <= (balance ?? double.infinity))
+                    ? 'Minimum swap is ${_minFromForDeliverable.toStringAsFixed(6)} ${symbol.toUpperCase()}'
+                        '${_fromPrice > 0 ? ' (≈ ${CurrencySymbols.currentSymbol}${(_minFromForDeliverable * _fromPrice).toStringAsFixed(2)})' : ''} '
+                        '(so you receive at least the ${_toCrypto?.symbol.toUpperCase() ?? ''} network minimum)'
+                    : 'Insufficient balance. Available: ${balance?.toStringAsFixed(6) ?? 0} ${symbol.toUpperCase()}'
+                        '${_fromPrice > 0 && balance != null ? ' (≈ ${CurrencySymbols.currentSymbol}${(balance * _fromPrice).toStringAsFixed(2)})' : ''}',
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
                   color: Colors.red,

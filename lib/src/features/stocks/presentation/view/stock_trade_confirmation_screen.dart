@@ -111,6 +111,9 @@ Date: ${dateFormat.format(widget.order.createdAt)}
 ''';
 
     SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       text: receiptText,
       subject: '${widget.stock.symbol} Trade Receipt - Order #${widget.order.id}',
     )).then((_) {

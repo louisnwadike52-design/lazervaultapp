@@ -415,7 +415,7 @@ class EscrowPdfService {
         if (logo != null)
           pw.Image(logo, width: 120)
         else
-          pw.Text('LazerVault',
+          pw.Text('Lazervault',
               style: _ts(fontSize: 28, isBold: true)
                   .copyWith(color: PdfColors.blue800)),
         pw.Column(

@@ -7,6 +7,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import '../domain/entities/group_entities.dart';
+import 'dart:ui' show Rect;
 
 /// Service for generating PDF reports for group accounts
 class GroupAccountPdfService {
@@ -651,6 +652,9 @@ class GroupAccountPdfService {
   static Future<void> shareReport(File pdfFile, {String? subject}) async {
     await SharePlus.instance.share(
       ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(pdfFile.path)],
         subject: subject ?? 'Group Account Report',
       ),
@@ -904,6 +908,9 @@ class GroupAccountPdfService {
 
     await SharePlus.instance.share(
       ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: files.values.map((f) => XFile(f.path)).toList(),
         text: '${group.name} - Group Report with Spreadsheets',
         subject: 'Lazervault Group Report: ${group.name}',

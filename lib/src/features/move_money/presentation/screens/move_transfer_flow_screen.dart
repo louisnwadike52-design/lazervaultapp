@@ -29,6 +29,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../cubit/mandate_cubit.dart';
 import '../../cubit/mandate_state.dart';
+import '../../domain/mandate_auth_attempt_store.dart';
 import '../../cubit/move_money_cubit.dart';
 import '../../cubit/move_money_state.dart';
 import '../../domain/entities/mandate_entity.dart';
@@ -116,6 +117,10 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   @override
   void initState() {
     super.initState();
+    // Hydrate the local auth-attempt stamps so the debit-mode row can render
+    // "Direct Debit setting up" synchronously even when Beam is the first
+    // screen opened after an app restart. Safe to call repeatedly.
+    MandateAuthAttemptStore.hydrate();
     final args = Get.arguments;
     if (args is Map) {
       final destId = args['destinationLinkedAccountId'];
@@ -514,6 +519,13 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     // falls through to the "one-time / set up Direct Debit" path so the user can
     // resume their authorization.
     final mandateActivating = mandate != null && mandate.isActivating;
+    // Awaiting authorization BUT the auth widget was opened recently (this or
+    // any device): the payment leg is likely done and Mono is confirming at the
+    // bank — the link is SPENT, so this is "setting up", not "finish setup".
+    final mandateConfirming = mandate != null &&
+        mandate.awaitingUserAuthorization &&
+        (mandate.authAttemptedRecently ||
+            MandateAuthAttemptStore.openedRecently(mandate.id));
 
     // STATE-DRIVEN row — no switch. The system always uses the best rail for
     // the source automatically (mandate when ready, one-time DirectPay
@@ -540,6 +552,11 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       icon = Icons.hourglass_top_rounded;
       accent = const Color(0xFFFB923C);
       actionLabel = 'Finish setup';
+    } else if (mandateConfirming) {
+      title = 'Direct Debit setting up';
+      subtitle = 'Confirming your authorization with your bank…';
+      icon = Icons.hourglass_top_rounded;
+      accent = const Color(0xFFFB923C);
     } else {
       title = 'One-time approval';
       subtitle = 'You approve this transfer at your bank.';
@@ -552,7 +569,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     // DirectPay-vs-Direct-Debit info modal — same modal Deposit uses.
     final modeView = mandateReady
         ? MandateModeView.directDebit
-        : mandateActivating
+        : (mandateActivating || mandateConfirming)
             ? MandateModeView.settingUp
             : MandateModeView.oneTime;
 

@@ -718,7 +718,13 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           if (_selectedHolding != null) {
             setState(() {
               _isAmountInCrypto = true;
-              _amountController.text = (_selectedHolding!.quantity * percentage).toStringAsFixed(6);
+              // FLOOR to 6dp — toStringAsFixed rounds, so "All" (100%) could
+              // round the qty UP above the holding → instant "Insufficient
+              // balance" and a disabled Sell button. (sell_crypto_sheet floors
+              // for exactly this reason.)
+              final raw = _selectedHolding!.quantity * percentage;
+              _amountController.text =
+                  ((raw * 1e6).floorToDouble() / 1e6).toStringAsFixed(6);
             });
           }
         },
@@ -746,9 +752,10 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   Widget _buildOrderSummary() {
     // Display estimate; authoritative fee comes from server swap-quote
     // response. Rate sourced from CryptoConfigCubit (PR5d.4).
+    // ONE platform fee (spread). There is NO network fee on a sell — the crypto
+    // moves sub→master as a zero-fee internal Quidax transfer. The old 30/70
+    // "network/trading" split invented a fee category and misstated both.
     final fee = _resolveFee();
-    final networkFee = fee * 0.3;
-    final tradingFee = fee * 0.7;
     final netProceeds = _fiatAmount - fee;
 
     return Container(
@@ -796,9 +803,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           SizedBox(height: 8.h),
           _buildSummaryRow('Market value', '${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
-          _buildSummaryRow('Network fee', '${CurrencySymbols.currentSymbol}${networkFee.toStringAsFixed(2)}'),
-          SizedBox(height: 8.h),
-          _buildSummaryRow('Trading fee', '${CurrencySymbols.currentSymbol}${tradingFee.toStringAsFixed(2)}'),
+          _buildSummaryRow('Fee', '${CurrencySymbols.currentSymbol}${fee.toStringAsFixed(2)}'),
           SizedBox(height: 12.h),
           Container(
             height: 1.h,

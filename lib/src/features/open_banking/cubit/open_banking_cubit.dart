@@ -73,11 +73,34 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
         publicKey: publicKey,
         appId: appId,
         linkFeeMinor: int.tryParse(config['link_fee'] ?? '0') ?? 0,
+        monoCustomerId: config['mono_customer_id'] ?? '',
+        customerName: config['customer_name'] ?? '',
+        customerEmail: config['customer_email'] ?? '',
+        customerBvn: config['customer_bvn'] ?? '',
       ));
     } catch (e) {
       if (isClosed) return;
       _emitError(e, operation: 'getConnectConfig');
     }
+  }
+
+  /// Direct read access for flows that page through data without emitting
+  /// states (e.g. the AI-analytics statement export). Null on REST-only wiring.
+  OpenBankingGrpcDataSource? get grpcDataSource => _grpcDataSource;
+
+  /// Quietly fetch the Connect widget config (NO state emission) so any Mono
+  /// entry point can prefill the verified customer identity — name, email and
+  /// BVN — into the widget. Without the BVN, Mono re-asks the user to "verify
+  /// identity" in-widget on every direct-debit/link even at KYC tier 3.
+  /// Best-effort: returns null on any failure so a config hiccup never blocks
+  /// the flow (the widget then simply asks, as before).
+  Future<Map<String, String>?> connectConfigQuiet() async {
+    try {
+      if (useGrpc && _grpcDataSource != null) {
+        return await _grpcDataSource!.getConnectWidgetConfig();
+      }
+    } catch (_) {}
+    return null;
   }
 
   /// Quote the first-time bank-link fee (minor units, aggregated Mono cost +

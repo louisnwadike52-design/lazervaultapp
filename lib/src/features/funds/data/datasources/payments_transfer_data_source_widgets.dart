@@ -1,5 +1,30 @@
 part of 'payments_transfer_data_source.dart';
 
+/// Lightweight snapshot of a transfer's live status (from GetTransferStatus),
+/// used by the receipt screen to reflect pending → completed / failed.
+class TransferStatusSnapshot {
+  final String status;
+  final String? failureReason;
+  final double? amount; // major units, if the backend returned it
+  final double? fee; // major units
+  final DateTime? completedAt;
+
+  const TransferStatusSnapshot({
+    required this.status,
+    this.failureReason,
+    this.amount,
+    this.fee,
+    this.completedAt,
+  });
+
+  static const _terminal = {
+    'completed', 'success', 'successful', 'delivered',
+    'failed', 'cancelled', 'canceled', 'declined', 'rejected',
+    'reversed', 'refunded',
+  };
+  bool get isTerminal => _terminal.contains(status.toLowerCase());
+}
+
 /// Transfer types supported by the payments service
 enum TransferType {
   internal,  // C2C within LazerVault
@@ -147,6 +172,11 @@ abstract class IPaymentsTransferDataSource {
     required String currency,
     required String transferType,
   });
+
+  /// Current status of a transfer by its reference — drives the receipt screen's
+  /// pull-to-refresh / live reconciliation (pending → processing → completed /
+  /// failed). Returns null if the transfer can't be found or the lookup fails.
+  Future<TransferStatusSnapshot?> getTransferStatus({required String reference});
 
   /// ALL of the account's EXTERNAL bank transfers (any status: pending /
   /// processing / completed / failed / reversed), as UnifiedTransactions. These

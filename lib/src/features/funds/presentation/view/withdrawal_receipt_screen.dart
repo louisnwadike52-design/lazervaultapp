@@ -1,12 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:screenshot/screenshot.dart';
 
+import 'package:lazervault/src/features/banking/services/banking_websocket_service.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/payment_receipt_shared.dart';
+
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
+import 'package:lazervault/src/generated/banking.pb.dart' as banking_pb;
+import 'package:lazervault/src/generated/banking.pbgrpc.dart' as banking_grpc;
 
 /// Withdrawal receipt — a withdrawal variant of the send-funds (Beam) transfer
 /// receipt: same dark layout (status icon, title, amount, status badge, details
@@ -14,7 +24,7 @@ import 'package:lazervault/core/utilities/banks_data.dart';
 /// scanned to verify/look up the payout. The payout is asynchronous (held now,
 /// sent to the bank, settled via webhook/reconciler), so a processing status
 /// reads as "on its way" rather than a final "completed".
-class WithdrawalReceiptScreen extends StatelessWidget {
+class WithdrawalReceiptScreen extends StatefulWidget {
   final double amount;
   final double fee;
   final double totalDebited;
@@ -23,6 +33,15 @@ class WithdrawalReceiptScreen extends StatelessWidget {
   final String reference;
   final String currencySymbol;
   final String status; // backend status: pending|processing|completed|failed
+  // Opened FROM the history list: back returns there instead of force-routing
+  // to the dashboard (the dashboard route is right for the fresh post-payout
+  // receipt, wrong when the user is browsing history).
+  final bool fromHistory;
+
+  // When set, the receipt POLLS GetWithdrawalStatus until the payout settles
+  // (completed/failed) — the payout is asynchronous (webhook/reconciler), so a
+  // static "Processing" snapshot would never reflect the real outcome.
+  final String? withdrawalId;
 
   const WithdrawalReceiptScreen({
     super.key,
@@ -34,7 +53,27 @@ class WithdrawalReceiptScreen extends StatelessWidget {
     required this.reference,
     this.currencySymbol = '₦',
     this.status = 'processing',
+    this.withdrawalId,
+    this.fromHistory = false,
   });
+
+  @override
+  State<WithdrawalReceiptScreen> createState() => _WithdrawalReceiptScreenState();
+}
+
+class _WithdrawalReceiptScreenState extends State<WithdrawalReceiptScreen> {
+  late String status = widget.status;
+  Timer? _pollTimer;
+  StreamSubscription<BankingStatusEvent>? _wsSub;
+  final ScreenshotController _shot = ScreenshotController();
+
+  double get amount => widget.amount;
+  double get fee => widget.fee;
+  double get totalDebited => widget.totalDebited;
+  String get bankName => widget.bankName;
+  String get accountNumber => widget.accountNumber;
+  String get reference => widget.reference;
+  String get currencySymbol => widget.currencySymbol;
 
   static const _bg = Color(0xFF0A0A0A);
   static const _card = Color(0xFF1F1F1F);
@@ -47,6 +86,64 @@ class WithdrawalReceiptScreen extends StatelessWidget {
 
   bool get _completed => status == 'completed' || status == 'successful';
   bool get _failed => status == 'failed';
+  bool get _terminal => _completed || _failed;
+
+  @override
+  void initState() {
+    super.initState();
+    // Poll every 5s while non-terminal; the settlement webhook usually lands
+    // within seconds, the reconciler within ~2 minutes. Stops itself once the
+    // status is final (and never starts for an already-settled receipt).
+    if (!_terminal && widget.withdrawalId != null && widget.withdrawalId!.isNotEmpty) {
+      _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) => _refreshStatus());
+    }
+    // Live status over /ws/banking: banking-service publishes
+    // withdrawal.status_update events keyed to this reference — an event
+    // flips the receipt instantly; the poll above stays as the backstop.
+    if (!_terminal && reference.isNotEmpty) {
+      try {
+        _wsSub = serviceLocator<BankingWebSocketService>()
+            .filterByReference(reference)
+            .listen((_) => _refreshStatus());
+      } catch (_) {/* WS unavailable — polling covers */}
+    }
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    _wsSub?.cancel();
+    super.dispose();
+  }
+
+  /// From history → pop back to the list; fresh post-payout receipt → the
+  /// dashboard (its own back stack was cleared by Get.off on navigation).
+  void _exit() {
+    if (widget.fromHistory) {
+      Get.back();
+    } else {
+      Get.offAllNamed(AppRoutes.dashboard);
+    }
+  }
+
+  Future<void> _refreshStatus() async {
+    final id = widget.withdrawalId;
+    if (id == null || id.isEmpty || _terminal) return;
+    try {
+      final options = await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+      final resp = await serviceLocator<banking_grpc.BankingServiceClient>()
+          .getWithdrawalStatus(
+              banking_pb.GetWithdrawalStatusRequest()..withdrawalId = id,
+              options: options);
+      final fresh = resp.withdrawal.status;
+      if (mounted && fresh.isNotEmpty && fresh != status) {
+        setState(() => status = fresh);
+      }
+      if (_terminal) _pollTimer?.cancel();
+    } catch (_) {
+      // Transient — keep the last known status and try again next tick.
+    }
+  }
 
   Color get _statusColor => _completed
       ? _success
@@ -72,6 +169,40 @@ class WithdrawalReceiptScreen extends StatelessWidget {
           ? 'Failed'
           : 'Processing';
 
+  /// Share the receipt in the Revolut-style PDF layout (or a raster of it) —
+  /// same generator as transfer receipts, with the on-screen screenshot kept as
+  /// a fallback if PDF generation ever fails.
+  Future<void> _shareStyledReceipt() async {
+    final fmt = await pickReceiptFormat(context);
+    if (fmt == null || !mounted) return;
+    final destBank = BanksData.displayName(bankName, null);
+    try {
+      await shareBankingReceiptAs(
+        format: fmt,
+        shareText:
+            'Lazervault withdrawal receipt · ${_money(amount)} to $destBank · ref $reference',
+        details: {
+          'amount': amount,
+          'fee': fee,
+          'currency': currencyCodeForSymbol(currencySymbol),
+          'recipientName': destBank,
+          'recipientAccountMasked': accountNumber,
+          'recipientBankName': destBank,
+          'sourceAccountName': 'Lazervault wallet',
+          'reference': reference,
+          'status': status,
+          'transferType': 'Withdrawal',
+          'timestamp': DateTime.now(),
+        },
+      );
+    } catch (_) {
+      await shareReceiptCapture(_shot,
+          fileTag: 'withdrawal',
+          shareText:
+              'Lazervault withdrawal receipt · ${_money(amount)} to $destBank · ref $reference');
+    }
+  }
+
   String _money(double v) =>
       '$currencySymbol${v.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},')}';
 
@@ -81,7 +212,7 @@ class WithdrawalReceiptScreen extends StatelessWidget {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) Get.offAllNamed(AppRoutes.dashboard);
+        if (!didPop) _exit();
       },
       child: Scaffold(
         backgroundColor: _bg,
@@ -89,18 +220,30 @@ class WithdrawalReceiptScreen extends StatelessWidget {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
+            onPressed: _exit,
             icon: const Icon(Icons.close, color: Colors.white),
           ),
-          title: Text('Withdrawal Receipt',
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600)),
-          centerTitle: true,
+          // No app-bar title — the page body already carries the receipt
+          // identity; the bar keeps just close (left) + brand mark (right).
+          actions: [
+            Padding(
+              padding: EdgeInsets.only(right: 14.w),
+              child: const Center(child: ReceiptBrandMark()),
+            ),
+          ],
         ),
         body: SafeArea(
           child: Column(
             children: [
               Expanded(
-                child: SingleChildScrollView(
+                child: RefreshIndicator(
+                  color: _orange,
+                  backgroundColor: _card,
+                  onRefresh: _refreshStatus,
+                  child: Screenshot(
+                  controller: _shot,
+                  child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
                   padding: EdgeInsets.all(16.w),
                   child: Column(
                     children: [
@@ -154,6 +297,8 @@ class WithdrawalReceiptScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
+                ),
                 ),
               ),
               _buildActions(context),
@@ -240,8 +385,23 @@ class WithdrawalReceiptScreen extends StatelessWidget {
           ),
           SizedBox(width: 12.w),
           Expanded(
+            child: OutlinedButton.icon(
+              onPressed: _shareStyledReceipt,
+              icon: Icon(Icons.ios_share_rounded, size: 18.sp),
+              label: Text('Share',
+                  style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: _divider),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              ),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
             child: ElevatedButton(
-              onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
+              onPressed: _exit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: _orange,
                 foregroundColor: _onOrange,

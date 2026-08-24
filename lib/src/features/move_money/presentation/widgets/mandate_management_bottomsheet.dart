@@ -8,6 +8,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import '../../cubit/mandate_cubit.dart';
 import '../../cubit/mandate_state.dart';
 import '../../domain/entities/mandate_entity.dart';
+import '../../domain/mandate_auth_attempt_store.dart';
 import 'mandate_setup_bottomsheet.dart';
 import 'mandate_status_badge.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -75,6 +76,34 @@ class _MandateManagementSheet extends StatefulWidget {
 
 class _MandateManagementSheetState extends State<_MandateManagementSheet> {
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    // The badge + action branches read the local auth-granted stamp
+    // synchronously — hydrate so they work when this sheet is the first
+    // mandate surface opened after an app restart. Idempotent.
+    MandateAuthAttemptStore.hydrate();
+  }
+
+  /// Authorization was GRANTED (success callback, any device) and the mandate
+  /// is provisioning with Mono/the bank — nothing for the user to do, and the
+  /// spent auth link must not be reopened.
+  bool get _isSettingUp {
+    final m = widget.mandate;
+    if (m == null) return false;
+    return m.isActivating ||
+        (m.awaitingUserAuthorization &&
+            (m.authAttemptedRecently ||
+                MandateAuthAttemptStore.openedRecently(m.id)));
+  }
+
+  /// Mandate exists but authorization was never granted — resumable via the
+  /// setup sheet (CreateMandate reuses the same mandate + its Mono link).
+  bool get _needsAuthorization {
+    final m = widget.mandate;
+    return m != null && m.awaitingUserAuthorization && !_isSettingUp;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -223,12 +252,83 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                       ],
                     ),
                   ),
-                ] else if (widget.mandate!.isActive) ...[
+                ] else if (_isSettingUp) ...[
+                  // Authorization granted — Mono/NIBSS are provisioning. Read-
+                  // only: no CTA (the auth link is spent; reopening dead-ends).
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFB923C).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10.r),
+                      border: Border.all(
+                        color: const Color(0xFFFB923C).withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.hourglass_bottom,
+                            color: const Color(0xFFFB923C), size: 18.sp),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                            'Setting up Direct Debit — ${widget.bankName} is '
+                            'confirming your authorization. This can take up to '
+                            '30 minutes and completes automatically. One-time '
+                            'approval is used until it is live.',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFFDBA74),
+                              fontSize: 12.sp,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else if (_needsAuthorization) ...[
+                  // Authorization never granted — the account behaves as
+                  // one-time until the user finishes the bank authorization.
+                  _buildMethodExplainer(
+                    current: 'One-time (DirectPay)',
+                    detail:
+                        'Direct Debit isn\'t authorized yet — you approve each '
+                        'transfer at your bank until you finish the setup.',
+                  ),
+                  SizedBox(height: 12.h),
                   _buildActionButton(
                     context: context,
-                    label: 'Pause Direct Debit',
+                    label: 'Finish Direct Debit setup',
+                    color: const Color(0xFFF59E0B),
+                    icon: Icons.touch_app_outlined,
+                    isLoading: isLoading,
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      // Resumes the SAME mandate: CreateMandate's reuse ladder
+                      // re-points to it and reopens its Mono authorization.
+                      showMandateSetupBottomSheet(
+                        context: context,
+                        linkedAccountId: widget.linkedAccountId,
+                        userId: widget.userId,
+                        bankName: widget.bankName,
+                        accountName: widget.accountName,
+                      );
+                    },
+                  ),
+                ] else if (widget.mandate!.isActive) ...[
+                  // Direct Debit is ON → offer switching to one-time (DirectPay).
+                  // Mechanically this PAUSES the mandate (reversible, no re-auth) —
+                  // same DirectPay⇄Direct-Debit model as the deposit screen.
+                  _buildMethodExplainer(
+                    current: 'Direct Debit',
+                    detail:
+                        'Transfers reuse your saved authorization — no bank login each time.',
+                  ),
+                  SizedBox(height: 12.h),
+                  _buildActionButton(
+                    context: context,
+                    label: 'Switch to one-time (DirectPay)',
                     color: const Color(0xFFFBBF24),
-                    icon: Icons.pause_circle_outline,
+                    icon: Icons.swap_horiz_rounded,
                     isLoading: isLoading,
                     onPressed: () {
                       setState(() => _errorMessage = null);
@@ -239,11 +339,19 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                     },
                   ),
                 ] else if (widget.mandate!.status == MandateStatus.paused) ...[
+                  // One-time (DirectPay) is active (mandate paused) → offer
+                  // switching back to Direct Debit. Reinstates instantly, no re-auth.
+                  _buildMethodExplainer(
+                    current: 'One-time (DirectPay)',
+                    detail:
+                        'You approve each transfer at your bank. Switch to Direct Debit to skip that.',
+                  ),
+                  SizedBox(height: 12.h),
                   _buildActionButton(
                     context: context,
-                    label: 'Resume Direct Debit',
+                    label: 'Switch to Direct Debit',
                     color: const Color(0xFF10B981),
-                    icon: Icons.play_circle_outline,
+                    icon: Icons.swap_horiz_rounded,
                     isLoading: isLoading,
                     onPressed: () {
                       setState(() => _errorMessage = null);
@@ -374,6 +482,56 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
               color: Colors.white,
               fontSize: 13.sp,
               fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Shows which deposit/transfer method is currently active and what the
+  /// switch button below it does — so the DirectPay⇄Direct-Debit toggle reads
+  /// the same across the deposit screen, Financial Analytics and LazerBeam.
+  Widget _buildMethodExplainer({
+    required String current,
+    required String detail,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded,
+              color: const Color(0xFF9CA3AF), size: 18.sp),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Current method: $current',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  detail,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 11.5.sp,
+                    height: 1.4,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

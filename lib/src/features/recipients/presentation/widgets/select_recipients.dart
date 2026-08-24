@@ -1185,10 +1185,20 @@ class _SelectRecipientsState extends State<SelectRecipients>
       if (FeatureFlags.sendFundsPinIsRequired) {
         AnalyticsService.instance.trackSendFundsScreen('pin', 'short');
         var usedToken = '';
-        // Fee quoted live on the amount sheet (same TransferCubit instance) —
-        // surfaced on the PIN sheet so the user confirms the TOTAL debit.
-        // Internal transfers are free (no quote → no fee row).
-        final shortFeeQuote = context.read<TransferCubit>().lastFeeLoaded;
+        // Revalidate the fee against the CONFIRMED amount so the PIN sheet always
+        // shows the aggregated custom+provider fee for THIS amount. Fees are
+        // amount-dependent, so the amount-sheet's cached quote is only reused
+        // when it was quoted for the same amount+type; otherwise this re-quotes.
+        // (Previously we read lastFeeLoaded raw, which could be stale for a
+        // different amount, still in-flight, or absent → the fee row vanished.)
+        final shortFeeQuote =
+            await context.read<TransferCubit>().ensureFeeForAmount(
+                  amountMinorUnits: minor,
+                  currency: active.currency,
+                  transferType: isInternal ? 'internal' : 'domestic',
+                  destinationBankCode: isInternal ? null : r.sortCode,
+                );
+        if (!mounted) return;
         final shortFeeMajor = (shortFeeQuote?.fee ?? 0) / 100.0;
         final ok = await validateTransactionPin(
           context: context,
@@ -1562,6 +1572,14 @@ class _SelectRecipientsState extends State<SelectRecipients>
     );
   }
 
+  /// The logged-in user's REAL name (the actual sender). Used for the receipt's
+  /// "From" so it never falls back to a placeholder.
+  String _senderRealName() {
+    final p = context.read<AuthenticationCubit>().currentProfile;
+    if (p == null) return '';
+    return '${p.user.firstName} ${p.user.lastName}'.trim();
+  }
+
   Map<String, dynamic> _buildShortReceipt(
       TransferEntity res, RecipientModel r, AccountSummaryEntity active) {
     final isInternal =
@@ -1597,7 +1615,11 @@ class _SelectRecipientsState extends State<SelectRecipients>
       'recipientBankCode': r.sortCode,
       'sourceAccountInfo':
           '${active.accountType} •••• ${active.accountNumberLast4}',
-      'sourceAccountName': active.accountName ?? '',
+      // From = the ACTUAL sender. Prefer the logged-in user's real name; fall
+      // back to the source account holder name. NEVER a placeholder.
+      'sourceAccountName': _senderRealName().isNotEmpty
+          ? _senderRealName()
+          : (active.accountName ?? ''),
       'currency': active.currency,
       'transferId': res.transferId.toString(),
       'timestamp': res.createdAt,
@@ -3281,7 +3303,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
       shareText += '\nCurrency: ${recipient.currency}';
     }
     shareText += '\n\n-Sent from Lazervault';
-    SharePlus.instance.share(ShareParams(text: shareText));
+    SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: shareText));
   }
 
   /// Toggle favorite status

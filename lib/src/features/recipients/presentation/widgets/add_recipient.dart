@@ -117,6 +117,14 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
   bool _loadingSuggestions = false;
   Timer? _suggestDebounce;
 
+  // Account-FIRST: the Bank selection field is HIDDEN by default so the user
+  // feels they only need the account number. It's revealed as a FALLBACK only
+  // when auto-resolution can't pick the bank — i.e. the suggestion resolve
+  // returns nothing / errors / times out, OR the user dismisses the suggestion
+  // tooltip (its X, or tapping away). Reset to hidden whenever the account
+  // number is edited so re-entry is account-first again.
+  bool _bankFieldRevealed = false;
+
   // Anchored-popup ("tooltip") plumbing for the bank predictions. The overlay
   // floats just below the account-number field (autocomplete-style) instead of
   // pushing the Bank field down, and follows the field on scroll via LayerLink.
@@ -749,6 +757,13 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
         // Predictions now render as an anchored tooltip overlay (see
         // _buildSuggestionOverlay), so nothing occupies layout here — the Bank
         // field sits directly below with only a small gap.
+        // Bank field is HIDDEN by default (account-first) so users feel they only
+        // need the account number. It appears only as a FALLBACK: auto-resolve
+        // found no bank / errored / timed out, or the user dismissed the
+        // suggestion tooltip (X / tap-away), or once a bank is chosen.
+        if (_bankFieldRevealed ||
+            _selectedBankCode != null ||
+            _bankController.text != "Select Bank") ...[
         SizedBox(height: 10.h),
 
         // Bank Selection SECOND — pre-filled by tapping a suggestion, or picked
@@ -863,6 +878,7 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
             ),
           ],
         ),
+        ], // end account-first bank-field fallback gate
         // Show verification result if successful
         if (_verificationResult != null) ...[
           SizedBox(height: 16.h),
@@ -2497,6 +2513,9 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
 
     await SharePlus.instance.share(
       ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         text: message,
         subject: 'Join me on Lazervault',
         files: files.isEmpty ? null : files,
@@ -3287,6 +3306,9 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       if (!complete) {
         _bankSuggestions = [];
         _loadingSuggestions = false;
+        // Editing the account → back to account-first (hide the bank fallback)
+        // unless the user already manually picked a bank.
+        if (_selectedBankCode == null) _bankFieldRevealed = false;
       }
     });
     if (complete) {
@@ -3297,6 +3319,20 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       );
     }
     _syncSuggestOverlay();
+  }
+
+  /// Reveal the Bank selection field (the fallback) — used when auto-resolution
+  /// can't pick the bank or the user dismisses the suggestion tooltip.
+  void _revealBankField() {
+    if (_bankFieldRevealed) return;
+    setState(() => _bankFieldRevealed = true);
+  }
+
+  /// Dismiss the suggestion tooltip AND reveal the Bank field — the "X / tap
+  /// away" action, so the user can fall back to picking the bank manually.
+  void _dismissSuggestionsRevealBank() {
+    _suggestOverlay.hide();
+    _revealBankField();
   }
 
   /// Fetch bank suggestions for a complete account number. Guards against stale
@@ -3314,10 +3350,15 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
         _bankSuggestions = suggestions;
         _loadingSuggestions = false;
       });
+      // Auto-resolution couldn't pick a bank → reveal the manual bank field as
+      // the fallback (keeping the tooltip only when there ARE matches to tap).
+      if (suggestions.isEmpty) _revealBankField();
       _syncSuggestOverlay();
     } catch (_) {
       if (!mounted) return;
       setState(() => _loadingSuggestions = false);
+      // Resolve failed/timed out → fall back to the manual bank field.
+      _revealBankField();
       _syncSuggestOverlay();
     }
   }
@@ -3359,11 +3400,11 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
         (MediaQuery.of(context).size.width - 48.w);
     return Stack(
       children: [
-        // Tap-outside dismiss.
+        // Tap-outside dismiss → also reveal the manual bank field (fallback).
         Positioned.fill(
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
-            onTap: _suggestOverlay.hide,
+            onTap: _dismissSuggestionsRevealBank,
           ),
         ),
         CompositedTransformFollower(
@@ -3378,7 +3419,40 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
               width: width,
               child: Material(
                 color: Colors.transparent,
-                child: _buildSuggestionCard(),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    _buildSuggestionCard(),
+                    // Close (X) at the right end — dismiss the tooltip + reveal
+                    // the manual bank field.
+                    Positioned(
+                      top: -9.h,
+                      right: -9.w,
+                      child: GestureDetector(
+                        onTap: _dismissSuggestionsRevealBank,
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          padding: EdgeInsets.all(4.w),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: _kBrandPurple.withValues(alpha: 0.25)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.12),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(Icons.close_rounded,
+                              size: 15.sp, color: Colors.grey[700]),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -3664,11 +3738,21 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
     final accountNumber = _accountController.text.trim();
     final bankName = _bankController.text;
 
-    // Validate bank selection
-    if (bankName == "Select Bank") {
+    // Validate bank selection. In the account-FIRST flow the bank field is
+    // hidden, so a bare "select a bank" toast would point at nothing. Instead:
+    // one auto-resolved suggestion → use it (the happy path); otherwise REVEAL
+    // the manual bank field so the user can pick, rather than dead-ending.
+    if (bankName == "Select Bank" && _selectedBankCode == null) {
+      if (_bankSuggestions.length == 1) {
+        _selectSuggestion(_bankSuggestions.first);
+        return;
+      }
+      _revealBankField();
       Get.snackbar(
-        'Bank Required',
-        'Please select a bank first',
+        'Choose the bank',
+        _bankSuggestions.length > 1
+            ? 'Tap the correct bank from the suggestions, or pick it below.'
+            : "We couldn't auto-detect the bank — please pick it below.",
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.orange.withValues(alpha: 0.8),
         colorText: Colors.white,

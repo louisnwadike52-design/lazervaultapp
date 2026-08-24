@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_e
 import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_progress_indicator.dart';
 import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
 import 'package:lazervault/src/features/move_money/cubit/mandate_state.dart';
+import 'package:lazervault/src/features/move_money/domain/mandate_auth_attempt_store.dart';
 
 class AutoSaveSwipeableCard extends StatelessWidget {
   final AutoSaveRuleEntity rule;
@@ -246,6 +247,8 @@ class AutoSaveSwipeableCard extends StatelessWidget {
   Widget _buildMandateAlertChip() {
     if (!_isLinkedBankRule) return const SizedBox.shrink();
     final cubit = serviceLocator<MandateCubit>();
+    // Idempotent; the pill below reads the auth-granted stamp synchronously.
+    MandateAuthAttemptStore.hydrate();
     return BlocBuilder<MandateCubit, MandateState>(
       bloc: cubit,
       builder: (context, state) {
@@ -257,11 +260,24 @@ class AutoSaveSwipeableCard extends StatelessWidget {
         if (!known) return const SizedBox.shrink();
         final mandate = cubit.getMandateForAccount(rule.sourceLinkedAccountId);
         if (mandate != null && mandate.isActive) return const SizedBox.shrink();
-        final activating = mandate != null && mandate.isActivating;
+        // "Activating" includes a recently GRANTED authorization still
+        // provisioning with the bank (success stamp) — informational, not an
+        // action prompt.
+        final activating = mandate != null &&
+            (mandate.isActivating ||
+                (mandate.awaitingUserAuthorization &&
+                    (mandate.authAttemptedRecently ||
+                        MandateAuthAttemptStore.openedRecently(mandate.id))));
+        // Never-granted awaiting mandate → "finish", terminal/absent → "re-authorize".
+        final needsFinish =
+            !activating && mandate != null && mandate.awaitingUserAuthorization;
         final color =
             activating ? const Color(0xFF3B82F6) : const Color(0xFFFB923C);
-        final label =
-            activating ? 'Direct Debit activating' : 'Re-authorize Direct Debit';
+        final label = activating
+            ? 'Direct Debit setting up'
+            : needsFinish
+                ? 'Finish Direct Debit setup'
+                : 'Re-authorize Direct Debit';
         return Padding(
           padding: EdgeInsets.only(top: 8.h),
           child: Container(

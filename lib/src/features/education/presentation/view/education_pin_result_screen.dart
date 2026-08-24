@@ -251,7 +251,10 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
 
       buffer.writeln('Purchased via Lazervault');
 
-      SharePlus.instance.share(ShareParams(text: buffer.toString()));
+      SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: buffer.toString()));
     } finally {
       if (mounted) setState(() => _isSharing = false);
     }

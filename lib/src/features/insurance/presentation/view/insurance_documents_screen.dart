@@ -97,7 +97,10 @@ class _InsuranceDocumentsScreenState extends State<InsuranceDocumentsScreen> {
         parts.add('Terms & Conditions: $_termsUrl');
       }
 
-      await SharePlus.instance.share(ShareParams(text: parts.join('\n')));
+      await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: parts.join('\n')));
     } finally {
       if (mounted) setState(() => _isSharing = false);
     }

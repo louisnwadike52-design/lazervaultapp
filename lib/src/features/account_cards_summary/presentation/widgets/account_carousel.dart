@@ -1518,6 +1518,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           color: Colors.white,
                           duration: _panicRolling ? _kPanicRollDuration : const Duration(seconds: 3),
                           startDelay: _panicRolling ? Duration.zero : const Duration(milliseconds: 500),
+                          enableVibration: _panic.vibrationEnabled,
                           // Panic decoy shows instantly (no roll/countdown).
                           animate: _panicRolling || !_panic.isCamouflageOn,
                         ),

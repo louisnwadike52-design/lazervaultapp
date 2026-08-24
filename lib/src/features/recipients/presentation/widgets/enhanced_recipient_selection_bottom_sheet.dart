@@ -30,6 +30,12 @@ class EnhancedRecipientSelectionBottomSheet extends StatefulWidget {
   final bool allowContacts;
   final String? initialSearch;
 
+  /// When true, the saved-recipients list is filtered to EXTERNAL bank accounts
+  /// only (real 10-digit NUBAN, non-Lazervault) — so an external-payee picker
+  /// (e.g. Split Bills' bank receiver) never surfaces internal Lazervault users
+  /// that it would only reject after selection.
+  final bool externalOnly;
+
   const EnhancedRecipientSelectionBottomSheet({
     super.key,
     required this.onRecipientSelected,
@@ -38,6 +44,7 @@ class EnhancedRecipientSelectionBottomSheet extends StatefulWidget {
     this.allowLazertagUsers = true,
     this.allowContacts = true,
     this.initialSearch,
+    this.externalOnly = false,
   });
 
   @override
@@ -300,9 +307,18 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
   }
 
   List<RecipientModel> _filterRecipients(List<RecipientModel> recipients) {
-    if (_searchQuery.isEmpty || _searchQuery.startsWith('@')) return recipients;
-    
-    return recipients.where((recipient) {
+    // External-only mode: keep just real bank accounts (10-digit NUBAN, non-
+    // Lazervault) so an external-payee picker never lists internal users.
+    var list = recipients;
+    if (widget.externalOnly) {
+      list = list
+          .where((r) =>
+              !r.isInternalUserRecipient && r.accountNumber.length == 10)
+          .toList();
+    }
+    if (_searchQuery.isEmpty || _searchQuery.startsWith('@')) return list;
+
+    return list.where((recipient) {
       return recipient.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
              recipient.accountNumber.contains(_searchQuery) ||
              (recipient.alias?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);

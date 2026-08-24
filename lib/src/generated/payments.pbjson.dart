@@ -899,11 +899,12 @@ const TransferDetail$json = const {
     const {'1': 'failure_reason', '3': 18, '4': 1, '5': 9, '10': 'failureReason'},
     const {'1': 'created_at', '3': 19, '4': 1, '5': 9, '10': 'createdAt'},
     const {'1': 'completed_at', '3': 20, '4': 1, '5': 9, '10': 'completedAt'},
+    const {'1': 'scheduled_at', '3': 21, '4': 1, '5': 9, '10': 'scheduledAt'},
   ],
 };
 
 /// Descriptor for `TransferDetail`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List transferDetailDescriptor = $convert.base64Decode('Cg5UcmFuc2ZlckRldGFpbBIOCgJpZBgBIAEoCVICaWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEhIKBHR5cGUYAyABKAlSBHR5cGUSFgoGc3RhdHVzGAQgASgJUgZzdGF0dXMSFgoGYW1vdW50GAUgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYBiABKAlSCGN1cnJlbmN5EhAKA2ZlZRgHIAEoA1IDZmVlEioKEXNvdXJjZV9hY2NvdW50X2lkGAggASgJUg9zb3VyY2VBY2NvdW50SWQSLwoTZGVzdGluYXRpb25fYWNjb3VudBgJIAEoCVISZGVzdGluYXRpb25BY2NvdW50EjIKFWRlc3RpbmF0aW9uX2JhbmtfY29kZRgKIAEoCVITZGVzdGluYXRpb25CYW5rQ29kZRIyChVkZXN0aW5hdGlvbl9iYW5rX25hbWUYCyABKAlSE2Rlc3RpbmF0aW9uQmFua05hbWUSKQoQZGVzdGluYXRpb25fbmFtZRgMIAEoCVIPZGVzdGluYXRpb25OYW1lEi8KE2Rlc3RpbmF0aW9uX2NvdW50cnkYDSABKAlSEmRlc3RpbmF0aW9uQ291bnRyeRIcCglyZWZlcmVuY2UYDiABKAlSCXJlZmVyZW5jZRIhCgxwcm92aWRlcl9yZWYYDyABKAlSC3Byb3ZpZGVyUmVmEhoKCHByb3ZpZGVyGBAgASgJUghwcm92aWRlchIcCgluYXJyYXRpb24YESABKAlSCW5hcnJhdGlvbhIlCg5mYWlsdXJlX3JlYXNvbhgSIAEoCVINZmFpbHVyZVJlYXNvbhIdCgpjcmVhdGVkX2F0GBMgASgJUgljcmVhdGVkQXQSIQoMY29tcGxldGVkX2F0GBQgASgJUgtjb21wbGV0ZWRBdA==');
+final $typed_data.Uint8List transferDetailDescriptor = $convert.base64Decode('Cg5UcmFuc2ZlckRldGFpbBIOCgJpZBgBIAEoCVICaWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEhIKBHR5cGUYAyABKAlSBHR5cGUSFgoGc3RhdHVzGAQgASgJUgZzdGF0dXMSFgoGYW1vdW50GAUgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYBiABKAlSCGN1cnJlbmN5EhAKA2ZlZRgHIAEoA1IDZmVlEioKEXNvdXJjZV9hY2NvdW50X2lkGAggASgJUg9zb3VyY2VBY2NvdW50SWQSLwoTZGVzdGluYXRpb25fYWNjb3VudBgJIAEoCVISZGVzdGluYXRpb25BY2NvdW50EjIKFWRlc3RpbmF0aW9uX2JhbmtfY29kZRgKIAEoCVITZGVzdGluYXRpb25CYW5rQ29kZRIyChVkZXN0aW5hdGlvbl9iYW5rX25hbWUYCyABKAlSE2Rlc3RpbmF0aW9uQmFua05hbWUSKQoQZGVzdGluYXRpb25fbmFtZRgMIAEoCVIPZGVzdGluYXRpb25OYW1lEi8KE2Rlc3RpbmF0aW9uX2NvdW50cnkYDSABKAlSEmRlc3RpbmF0aW9uQ291bnRyeRIcCglyZWZlcmVuY2UYDiABKAlSCXJlZmVyZW5jZRIhCgxwcm92aWRlcl9yZWYYDyABKAlSC3Byb3ZpZGVyUmVmEhoKCHByb3ZpZGVyGBAgASgJUghwcm92aWRlchIcCgluYXJyYXRpb24YESABKAlSCW5hcnJhdGlvbhIlCg5mYWlsdXJlX3JlYXNvbhgSIAEoCVINZmFpbHVyZVJlYXNvbhIdCgpjcmVhdGVkX2F0GBMgASgJUgljcmVhdGVkQXQSIQoMY29tcGxldGVkX2F0GBQgASgJUgtjb21wbGV0ZWRBdBIhCgxzY2hlZHVsZWRfYXQYFSABKAlSC3NjaGVkdWxlZEF0');
 @$core.Deprecated('Use getTransferStatusRequestDescriptor instead')
 const GetTransferStatusRequest$json = const {
   '1': 'GetTransferStatusRequest',
@@ -927,6 +928,27 @@ const GetTransferStatusResponse$json = const {
 
 /// Descriptor for `GetTransferStatusResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getTransferStatusResponseDescriptor = $convert.base64Decode('ChlHZXRUcmFuc2ZlclN0YXR1c1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRI0Cgh0cmFuc2ZlchgEIAEoCzIYLnBheW1lbnRzLlRyYW5zZmVyRGV0YWlsUgh0cmFuc2Zlcg==');
+@$core.Deprecated('Use cancelScheduledTransferRequestDescriptor instead')
+const CancelScheduledTransferRequest$json = const {
+  '1': 'CancelScheduledTransferRequest',
+  '2': const [
+    const {'1': 'payment_id', '3': 1, '4': 1, '5': 9, '10': 'paymentId'},
+  ],
+};
+
+/// Descriptor for `CancelScheduledTransferRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cancelScheduledTransferRequestDescriptor = $convert.base64Decode('Ch5DYW5jZWxTY2hlZHVsZWRUcmFuc2ZlclJlcXVlc3QSHQoKcGF5bWVudF9pZBgBIAEoCVIJcGF5bWVudElk');
+@$core.Deprecated('Use cancelScheduledTransferResponseDescriptor instead')
+const CancelScheduledTransferResponse$json = const {
+  '1': 'CancelScheduledTransferResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_message', '3': 2, '4': 1, '5': 9, '10': 'errorMessage'},
+  ],
+};
+
+/// Descriptor for `CancelScheduledTransferResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cancelScheduledTransferResponseDescriptor = $convert.base64Decode('Ch9DYW5jZWxTY2hlZHVsZWRUcmFuc2ZlclJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSIwoNZXJyb3JfbWVzc2FnZRgCIAEoCVIMZXJyb3JNZXNzYWdl');
 @$core.Deprecated('Use getUserTransfersRequestDescriptor instead')
 const GetUserTransfersRequest$json = const {
   '1': 'GetUserTransfersRequest',

@@ -226,7 +226,7 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
     return Padding(
       padding: EdgeInsets.only(top: 16.h),
       child: Text(
-        'LazerVault',
+        'Lazervault',
         style: TextStyle(
           fontSize: 18.sp,
           fontWeight: FontWeight.w700,
@@ -630,6 +630,9 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
     await file.writeAsBytes(imageBytes);
     await SharePlus.instance.share(
       ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
         text: 'LazerVault Escrow Receipt - $_reference',
       ),

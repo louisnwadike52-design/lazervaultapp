@@ -118,7 +118,15 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
       final st = await _prove.status();
       if (mounted) setState(() => _status = st);
     } catch (_) {
-      // Status is best-effort; the screen still works without it.
+      // One silent retry after a short pause — a transient blip used to leave
+      // the tier card stale/empty with no recovery until a full re-entry.
+      await Future.delayed(const Duration(seconds: 3));
+      if (mounted) {
+        try {
+          final st = await _prove.status();
+          if (mounted) setState(() => _status = st);
+        } catch (_) {/* screen still works without it */}
+      }
     } finally {
       if (mounted) setState(() => _loadingStatus = false);
     }
@@ -870,6 +878,17 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
       // gone entirely.
       if (!sheetResult.success) {
         setState(() => _isSubmitting = false);
+        // Tell the user what's happening instead of silently returning — this
+        // is the single most common path (widget closed) and it used to render
+        // as "nothing happened". The long reconcile below keeps checking and
+        // surfaces an explicit verified/failed modal when the answer lands.
+        _showKycStatusSheet(
+          state: 'checking',
+          message:
+              'We\'re confirming your verification with our identity partner. '
+              'This can take a few minutes — you can keep using the app; '
+              'we\'ll notify you the moment it completes.',
+        );
         _reconcileAfterProcessing();
         return;
       }
@@ -948,25 +967,259 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
     } catch (_) {/* ignore */}
   }
 
-  /// After a "processing" completion, briefly reconcile the KYC status so the
-  /// tier card reflects the verification once the mono.prove webhook lands it
-  /// server-side. Bounded (not a continuous poll); stops as soon as the tier
-  /// advances or the user leaves the screen.
+  /// After a "processing" completion, reconcile the KYC status until Mono's
+  /// webhook lands it server-side. Field data: the success webhook arrives
+  /// 2.6–15.4 MINUTES after the widget closes — the old 4×3s window was ~75×
+  /// too short and read every slow success as a silent failure. Backoff:
+  /// 4×3s, then 6×10s, then 8×30s (~5.2 min foreground). Terminal outcomes
+  /// surface as explicit modals; on budget exhaustion the user is told the
+  /// push will deliver the result.
+  bool _reconciling = false;
+
   Future<void> _reconcileAfterProcessing() async {
-    for (var attempt = 0; attempt < 4; attempt++) {
-      await Future.delayed(const Duration(seconds: 3));
+    if (_reconciling) return; // one loop at a time — retries re-enter here
+    _reconciling = true;
+    try {
+      await _reconcileLoop();
+    } finally {
+      _reconciling = false;
+    }
+  }
+
+  Future<void> _reconcileLoop() async {
+    Duration delayFor(int attempt) {
+      if (attempt < 4) return const Duration(seconds: 3);
+      if (attempt < 10) return const Duration(seconds: 10);
+      return const Duration(seconds: 30);
+    }
+
+    for (var attempt = 0; attempt < 18; attempt++) {
+      await Future.delayed(delayFor(attempt));
       if (!mounted) return;
       try {
         final st = await _prove.status();
         if (!mounted) return;
         setState(() => _status = st);
         if (st.verified || st.tier >= 2) {
-          _toast('Your identity has been verified.', color: _success);
+          _dismissStatusSheetIfAny();
+          // AWAIT the sheet: _finishVerified ends in Get.back(), which pops the
+          // TOPMOST route — firing it while the sheet is open would pop the
+          // sheet instead of the screen and strand the user here.
+          await _showKycStatusSheet(
+            state: 'verified',
+            message: st.message.isNotEmpty
+                ? st.message
+                : 'Your identity has been verified.',
+          );
+          if (!mounted) return;
           _finishVerified();
+          return;
+        }
+        if (st.sessionFailed) {
+          // "cancelled" can race a genuine completion (the widget emits cancel
+          // when closed AFTER finishing) — give the success webhook a few more
+          // polls before surfacing a failure for that reason only.
+          if (st.failureReason == 'cancelled' && attempt < 15) {
+            continue;
+          }
+          _dismissStatusSheetIfAny();
+          _showKycStatusSheet(
+            state: 'failed',
+            reason: st.failureReason,
+            message: st.message,
+          );
           return;
         }
       } catch (_) {/* keep trying within the bound */}
     }
+    if (!mounted) return;
+    _dismissStatusSheetIfAny();
+    _showKycStatusSheet(
+      state: 'still_processing',
+      message:
+          'Verification is taking longer than usual. We\'ll send you a '
+          'notification the moment it completes — you can safely leave '
+          'this screen.',
+    );
+  }
+
+  /// Context of the currently-presented KYC status sheet (null when none).
+  /// Popping via the SHEET'S OWN context (checked mounted) can never pop the
+  /// screen itself — a raw rootNavigator.pop() raced user-dismissal and could
+  /// eat the KYC screen.
+  BuildContext? _statusSheetCtx;
+  bool get _statusSheetOpen => _statusSheetCtx != null;
+
+  void _dismissStatusSheetIfAny() {
+    final ctx = _statusSheetCtx;
+    _statusSheetCtx = null;
+    if (ctx != null && ctx.mounted) {
+      // Only pop while the sheet's route is actually current — during the
+      // ~200ms dismiss animation the context is still mounted but a pop would
+      // land on the ROUTE BELOW (this screen).
+      final route = ModalRoute.of(ctx);
+      if (route != null && route.isCurrent) {
+        Navigator.of(ctx).pop();
+      }
+    }
+  }
+
+  /// Explicit, state-keyed status modal for the verification lifecycle:
+  /// checking / verified / failed (cancelled | expired | data_mismatch |
+  /// rejected) / still_processing.
+  Future<void> _showKycStatusSheet({
+    required String state,
+    String reason = '',
+    String message = '',
+  }) async {
+    if (!mounted) return;
+    if (_statusSheetOpen) _dismissStatusSheetIfAny();
+    IconData icon;
+    Color color;
+    String title;
+    String body = message;
+    var showRetry = false;
+    switch (state) {
+      case 'verified':
+        icon = Icons.verified_rounded;
+        color = _success;
+        title = 'Identity verified 🎉';
+        if (body.isEmpty) body = 'Your identity has been verified.';
+        break;
+      case 'failed':
+        icon = Icons.error_outline_rounded;
+        color = const Color(0xFFEF4444);
+        showRetry = true;
+        switch (reason) {
+          case 'cancelled':
+            title = 'Verification cancelled';
+            if (body.isEmpty) {
+              body =
+                  'Your last verification attempt was cancelled before it finished. Please try again.';
+            }
+            break;
+          case 'expired':
+            title = 'Session expired';
+            if (body.isEmpty) {
+              body = 'Your verification session expired. Please try again.';
+            }
+            break;
+          case 'rejected':
+            title = 'Verification not approved';
+            if (body.isEmpty) {
+              body =
+                  'The facial check couldn\'t be approved. Make sure you\'re in good lighting and try again.';
+            }
+            break;
+          default: // data_mismatch
+            title = 'Details didn\'t match';
+            if (body.isEmpty) {
+              body =
+                  'The details you entered (like date of birth and phone number) must exactly match your BVN record. Please check them and try again.';
+            }
+        }
+        break;
+      case 'still_processing':
+        icon = Icons.notifications_active_outlined;
+        color = _accent;
+        title = 'Still processing';
+        break;
+      default: // checking
+        icon = Icons.hourglass_top_rounded;
+        color = _accent;
+        title = 'Confirming your verification';
+    }
+    BuildContext? mine;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      isScrollControlled: false,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) {
+        mine = ctx;
+        _statusSheetCtx = ctx;
+        return _statusSheetBody(ctx,
+            icon: icon,
+            color: color,
+            title: title,
+            body: body,
+            state: state,
+            showRetry: showRetry);
+      },
+    );
+    // Clear only OUR sheet's context (identity check against this call's own
+    // token): a replacement sheet may already have stored its ctx here, and
+    // nulling that would let a later dismiss/show pair stack sheets.
+    // ignore: use_build_context_synchronously — identity comparison only, the
+    // context is never USED after the await.
+    if (identical(_statusSheetCtx, mine)) {
+      _statusSheetCtx = null;
+    }
+  }
+
+  Widget _statusSheetBody(BuildContext ctx,
+      {required IconData icon,
+      required Color color,
+      required String title,
+      required String body,
+      required String state,
+      required bool showRetry}) {
+    return Padding(
+        padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 30.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Icon(icon, color: color, size: 44.sp),
+            SizedBox(height: 14.h),
+            Text(title,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white)),
+            SizedBox(height: 8.h),
+            Text(body,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    fontSize: 13.5.sp,
+                    height: 1.45,
+                    color: Colors.white.withValues(alpha: 0.7))),
+            SizedBox(height: 20.h),
+            if (showRetry)
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  _startVerification();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _accent,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
+                ),
+                child: const Text('Try again'),
+              )
+            else
+              ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: color.withValues(alpha: 0.9),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
+                ),
+                child: Text(state == 'verified' ? 'Done' : 'Okay'),
+              ),
+          ],
+        ),
+    );
   }
 
   /// Request camera + microphone BEFORE opening the Prove webview. Returns true

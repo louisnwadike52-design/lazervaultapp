@@ -25,6 +25,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/funds/presentation/view/withdrawal_receipt_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/withdrawal_history_screen.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/open_banking/presentation/mixins/linked_balance_refresh_mixin.dart';
@@ -492,6 +493,8 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
           reference: resp!.withdrawal.reference,
           currencySymbol: _currencySymbol,
           status: resp!.withdrawal.status,
+          // Live receipt: polls GetWithdrawalStatus until the payout settles.
+          withdrawalId: resp!.withdrawal.id,
         ));
   }
 
@@ -607,6 +610,29 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
             title: Text('Withdraw',
                 style: _inter(size: 18.sp, weight: FontWeight.w700, color: Colors.white)),
             iconTheme: const IconThemeData(color: Colors.white),
+            actions: [
+              // Withdrawal history — every past payout with its live status.
+              Padding(
+                padding: EdgeInsets.only(right: 8.w),
+                child: IconButton(
+                  tooltip: 'Withdrawal history',
+                  onPressed: () =>
+                      Get.to(() => const WithdrawalHistoryScreen()),
+                  icon: Container(
+                    padding: EdgeInsets.all(7.w),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.07),
+                      borderRadius: BorderRadius.circular(10.r),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.12)),
+                    ),
+                    child: Icon(Icons.receipt_long_rounded,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        size: 18.sp),
+                  ),
+                ),
+              ),
+            ],
           ),
           body: AppGradientBackground(
             child: Stack(
@@ -875,11 +901,17 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
           _buildLinkBankCta()
         else
           SizedBox(
-            height: 150.h,
+            // 150.h clipped the card column (logo row + name + account line +
+            // NUBAN + balance/refresh row exceed it on denser text scales) —
+            // the classic bottom-overflow stripes. Sized to fit the tallest
+            // card content plus the vertical breathing room below.
+            height: 182.h,
             child: ListView.separated(
               controller: _bankCarouselController,
               scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.zero,
+              // Small vertical padding so the card border/accent glow isn't
+              // clipped by the SizedBox edge.
+              padding: EdgeInsets.symmetric(vertical: 2.h),
               itemCount: _linkedAccounts.length + 1,
               separatorBuilder: (_, __) => SizedBox(width: 12.w),
               itemBuilder: (ctx, i) {
@@ -912,7 +944,9 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
           : _selectAccount(a),
       child: Container(
         width: 230.w,
-        padding: EdgeInsets.all(16.w),
+        // Symmetric padding tuned with the 182.h carousel slot: enough air on
+        // every edge without pushing the balance row past the card's bottom.
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 13.h),
         decoration: AppSurfaces.card(
           accent: needsReauth
               ? _warning
@@ -923,8 +957,10 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              // Chip/check vertically centered against the logo, not top-hung.
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _bankLogoAvatar(a.bankName, bankCode: a.bankCode, size: 38),
+                _bankLogoAvatar(a.bankName, bankCode: a.bankCode, size: 36),
                 const Spacer(),
                 if (needsReauth)
                   _reconnectChip(cardCtx, a)
@@ -934,6 +970,9 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                   _payoutStatusChip(a),
               ],
             ),
+            // Flexible gap: absorbs scale differences so the text block can
+            // never be pushed through the card's bottom edge (was a rigid
+            // Spacer inside an overflowing fixed-height slot).
             const Spacer(),
             Text(a.bankName.isNotEmpty ? a.bankName : 'Linked bank',
                 maxLines: 1,
@@ -954,8 +993,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
             // Mono balance read is BILLED PER ACCOUNT, so we NEVER auto-fetch — the
             // user taps refresh (fee-gated) to pull a live figure for THIS bank only.
             // A refresh here or on the deposit screen reflects on both (shared cubit).
-            Builder(builder: (_) {
-              final isRefreshing = cardCtx.select<OpenBankingCubit, bool>((c) {
+            // Select on the Builder's OWN context, never cardCtx: cardCtx is
+            // the ListView itemBuilder context, and item builders run during
+            // LAYOUT — provider throws its "add a Builder" error there, which
+            // replaced this row with an error widget and blew the card out
+            // ("BOTTOM OVERFLOWED BY 99941 PIXELS"). Same fix as the deposit
+            // carousel cards.
+            Builder(builder: (liveCtx) {
+              final isRefreshing = liveCtx.select<OpenBankingCubit, bool>((c) {
                 final s = c.state;
                 return s is BalanceRefreshing && s.accountId == a.id;
               });

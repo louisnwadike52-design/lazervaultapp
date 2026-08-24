@@ -9,6 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -521,10 +522,58 @@ class _LiveScanCameraViewState extends State<LiveScanCameraView>
         onResolved(result);
         return true;
       }
+      // SECOND PASS for hard surfaces (low-light chalk / faint handwriting on
+      // walls): when the raw frame yielded no meaningful digit run, re-run ML
+      // Kit on a contrast-stretched grayscale upscale of the same still. Cheap
+      // (one extra local inference), and exactly what recovers dim wall signs
+      // that the backend GPT round-trip would otherwise be burned on.
+      if (!_hasDigitRun(recognized.text)) {
+        final boosted = await _contrastBoostedCopy(path);
+        if (boosted != null && !_isDisposing) {
+          final second =
+              await recognizer.processImage(InputImage.fromFilePath(boosted));
+          if (_isDisposing) return false;
+          final retry = resolve(second.text);
+          if (retry != null) {
+            onResolved(retry);
+            return true;
+          }
+        }
+      }
     } catch (_) {
       // On-device OCR/parse hiccup → fall through to the backend handler.
     }
     return false;
+  }
+
+  /// True when [text] contains any run of ≥8 digits once separators collapse —
+  /// the cheap "did OCR see the number at all" gate for the second pass.
+  static bool _hasDigitRun(String text) {
+    final collapsed = text.replaceAll(RegExp(r'[\s\-.,·]'), '');
+    return RegExp(r'\d{8,}').hasMatch(collapsed);
+  }
+
+  /// Write a grayscale, contrast-stretched, 1.5× upscaled copy of the still to
+  /// a temp file for the second OCR pass. Returns null on any failure.
+  Future<String?> _contrastBoostedCopy(String path) async {
+    try {
+      final bytes = await File(path).readAsBytes();
+      var im = img.decodeImage(bytes);
+      if (im == null) return null;
+      im = img.grayscale(im);
+      // Stretch levels so faint marker strokes separate from the wall; a mild
+      // gamma lift also recovers under-exposed (no-flash) captures.
+      im = img.adjustColor(im, contrast: 1.4, gamma: 0.8);
+      if (im.width < 1600) {
+        im = img.copyResize(im, width: (im.width * 1.5).round());
+      }
+      final out = File(
+          '${File(path).parent.path}/boost_${DateTime.now().millisecondsSinceEpoch}.jpg');
+      await out.writeAsBytes(img.encodeJpg(im, quality: 92));
+      return out.path;
+    } catch (_) {
+      return null;
+    }
   }
 
   // Converts a live camera frame to an ML Kit InputImage. We request NV21 on

@@ -28,6 +28,38 @@ class _CryptoWalletsScreenState extends State<CryptoWalletsScreen> {
   String _searchQuery = '';
 
   @override
+  void initState() {
+    super.initState();
+    // Fresh live balances on mount — the wallet list is derived from holdings
+    // (see _walletsOf), so a stale mirror must not show outdated amounts.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<CryptoCubit>().refreshHoldingsLive();
+    });
+  }
+
+  /// The wallet list for this screen. `state.wallets` was NEVER populated by
+  /// the cubit (no fetch ever wrote it), so the screen permanently showed
+  /// "No crypto wallets" even for funded users. Derive the list from the LIVE
+  /// holdings instead (Quidax-truth balances the landing page already loads);
+  /// deposit addresses resolve on demand in the wallet detail / receive flow.
+  List<CryptoWalletModel> _walletsOf(CryptosLoaded state) {
+    if (state.wallets.isNotEmpty) return state.wallets;
+    return state.holdings
+        .where((h) => h.quantity > 0)
+        .map((h) => CryptoWalletModel(
+              id: h.id,
+              cryptoId: h.cryptoId,
+              cryptoSymbol: h.cryptoSymbol,
+              address: '',
+              balance: h.quantity,
+              walletType: 'trading',
+              chain: '',
+              cryptoName: h.cryptoName,
+            ))
+        .toList();
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -60,7 +92,7 @@ class _CryptoWalletsScreenState extends State<CryptoWalletsScreen> {
                     return const Center(child: LazerVaultLoader.small());
                   }
 
-                  final wallets = _filteredWallets(state.wallets);
+                  final wallets = _filteredWallets(_walletsOf(state));
 
                   if (wallets.isEmpty) {
                     return _buildEmptyState();

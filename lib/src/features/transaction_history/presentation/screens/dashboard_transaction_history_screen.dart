@@ -277,23 +277,55 @@ class _DashboardTransactionHistoryScreenState
                             (tx.metadata?['counterparty_user_id'] ??
                                     tx.metadata?['recipient_user_id'])
                                 ?.toString();
+                        // EXTERNAL transfers must repeat as EXTERNAL: the old
+                        // hardcoded type:'internal' routed the beneficiary's
+                        // BANK account number into the Lazervault-user lookup,
+                        // which correctly 404s ("couldn't find that recipient")
+                        // — every external repeat failed. The capture row's
+                        // metadata carries the destination bank name/code.
+                        final md = tx.metadata ?? const <String, dynamic>{};
+                        String mdStr(List<String> keys) {
+                          for (final k in keys) {
+                            final v = md[k]?.toString().trim() ?? '';
+                            if (v.isNotEmpty) return v;
+                          }
+                          return '';
+                        }
+
+                        final bankName = mdStr([
+                          'recipient_bank_name',
+                          'destination_bank_name',
+                          'bank_name',
+                        ]);
+                        final bankCode = mdStr([
+                          'destination_bank_code',
+                          'bank_code',
+                        ]);
+                        final hasInternalUid = counterpartyUid != null &&
+                            counterpartyUid.isNotEmpty;
+                        final isExternal = !hasInternalUid &&
+                            bankName.isNotEmpty &&
+                            !bankName.toLowerCase().contains('lazervault');
                         final recipient = RecipientModel(
                           id: '',
                           name: tx.counterpartyName ?? '',
                           accountNumber: tx.counterpartyAccount ?? '',
-                          bankName: 'LazerVault',
+                          bankName: isExternal ? bankName : 'LazerVault',
                           isFavorite: false,
-                          sortCode: '',
-                          type: 'internal',
-                          internalUserId: (counterpartyUid != null &&
-                                  counterpartyUid.isNotEmpty)
-                              ? counterpartyUid
-                              : null,
+                          sortCode: isExternal ? bankCode : '',
+                          type: isExternal ? 'external' : 'internal',
+                          internalUserId: hasInternalUid ? counterpartyUid : null,
                         );
                         SendFundsLauncher.open(
                           recipient: recipient,
                           autoContinue: true,
-                          prefillAmountMinor: (tx.amount * 100).toInt(),
+                          // Pre-fill the ACTUAL transfer amount, never amount+fee.
+                          // A COMPLETED external transfer's history row is the
+                          // capture ledger row whose amount = principal + fee, so
+                          // we prefer the backend-stamped `principal_minor`, then
+                          // subtract `total_fee_minor` if only the total is known;
+                          // internal/no-fee rows carry neither key → amount as-is.
+                          prefillAmountMinor: _repeatPrefillAmountMinor(tx),
                           prefillCurrency: tx.currency,
                         );
                       },
@@ -369,6 +401,19 @@ class _DashboardTransactionHistoryScreenState
         ),
       ),
     );
+  }
+
+  /// The ACTUAL transfer amount (minor units) to pre-fill on Repeat — never
+  /// amount+fee. Prefers the backend-stamped `principal_minor`; else subtracts
+  /// `total_fee_minor` from the (fee-inclusive) captured amount; else uses the
+  /// amount as-is (internal / no-fee rows carry neither key).
+  int _repeatPrefillAmountMinor(UnifiedTransaction tx) {
+    final meta = tx.metadata;
+    final principal = int.tryParse('${meta?['principal_minor'] ?? ''}') ?? 0;
+    if (principal > 0) return principal;
+    final total = (tx.amount * 100).round();
+    final fee = int.tryParse('${meta?['total_fee_minor'] ?? ''}') ?? 0;
+    return (fee > 0 && fee < total) ? total - fee : total;
   }
 
   Map<DateTime, List<UnifiedTransaction>> _groupByDate(

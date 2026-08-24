@@ -263,8 +263,9 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
         final quote = await serviceLocator<OpenBankingCubit>()
             .depositFeeQuote((saveAmount * 100).round());
         if (quote != null) {
-          feeNaira = quote.fee;
-          netNaira = quote.netAmount;
+          // Quote values are KOBO (gRPC minor units) — convert to naira.
+          feeNaira = quote.fee / 100;
+          netNaira = quote.netAmount / 100;
         }
       } catch (_) {
         // Quote unavailable — proceed; the backend still nets the fee and the

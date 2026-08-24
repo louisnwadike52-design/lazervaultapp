@@ -1557,6 +1557,8 @@ const GetProveKYCStatusResponse$json = {
     {'1': 'bvn_masked', '3': 12, '4': 1, '5': 9, '10': 'bvnMasked'},
     {'1': 'nin_masked', '3': 13, '4': 1, '5': 9, '10': 'ninMasked'},
     {'1': 'reference', '3': 14, '4': 1, '5': 9, '10': 'reference'},
+    {'1': 'session_state', '3': 15, '4': 1, '5': 9, '10': 'sessionState'},
+    {'1': 'failure_reason', '3': 16, '4': 1, '5': 9, '10': 'failureReason'},
   ],
 };
 
@@ -1570,7 +1572,8 @@ final $typed_data.Uint8List getProveKYCStatusResponseDescriptor = $convert.base6
     'JlcXVpcmVtZW50cxgJIAMoCVIQbmV4dFJlcXVpcmVtZW50cxIYCgdtZXNzYWdlGAogASgJUgdt'
     'ZXNzYWdlEigKEGRhaWx5X2xpbWl0X2tvYm8YCyABKANSDmRhaWx5TGltaXRLb2JvEh0KCmJ2bl'
     '9tYXNrZWQYDCABKAlSCWJ2bk1hc2tlZBIdCgpuaW5fbWFza2VkGA0gASgJUgluaW5NYXNrZWQS'
-    'HAoJcmVmZXJlbmNlGA4gASgJUglyZWZlcmVuY2U=');
+    'HAoJcmVmZXJlbmNlGA4gASgJUglyZWZlcmVuY2USIwoNc2Vzc2lvbl9zdGF0ZRgPIAEoCVIMc2'
+    'Vzc2lvblN0YXRlEiUKDmZhaWx1cmVfcmVhc29uGBAgASgJUg1mYWlsdXJlUmVhc29u');
 
 @$core.Deprecated('Use transactionDescriptor instead')
 const Transaction$json = {
@@ -2190,6 +2193,10 @@ const ConnectWidgetConfigResponse$json = {
     {'1': 'public_key', '3': 4, '4': 1, '5': 9, '10': 'publicKey'},
     {'1': 'app_id', '3': 5, '4': 1, '5': 9, '10': 'appId'},
     {'1': 'link_fee', '3': 6, '4': 1, '5': 3, '10': 'linkFee'},
+    {'1': 'mono_customer_id', '3': 7, '4': 1, '5': 9, '10': 'monoCustomerId'},
+    {'1': 'customer_name', '3': 8, '4': 1, '5': 9, '10': 'customerName'},
+    {'1': 'customer_email', '3': 9, '4': 1, '5': 9, '10': 'customerEmail'},
+    {'1': 'customer_bvn', '3': 10, '4': 1, '5': 9, '10': 'customerBvn'},
   ],
 };
 
@@ -2198,7 +2205,10 @@ final $typed_data.Uint8List connectWidgetConfigResponseDescriptor = $convert.bas
     'ChtDb25uZWN0V2lkZ2V0Q29uZmlnUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
     'IdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIM'
     'ZXJyb3JNZXNzYWdlEh0KCnB1YmxpY19rZXkYBCABKAlSCXB1YmxpY0tleRIVCgZhcHBfaWQYBS'
-    'ABKAlSBWFwcElkEhkKCGxpbmtfZmVlGAYgASgDUgdsaW5rRmVl');
+    'ABKAlSBWFwcElkEhkKCGxpbmtfZmVlGAYgASgDUgdsaW5rRmVlEigKEG1vbm9fY3VzdG9tZXJf'
+    'aWQYByABKAlSDm1vbm9DdXN0b21lcklkEiMKDWN1c3RvbWVyX25hbWUYCCABKAlSDGN1c3RvbW'
+    'VyTmFtZRIlCg5jdXN0b21lcl9lbWFpbBgJIAEoCVINY3VzdG9tZXJFbWFpbBIhCgxjdXN0b21l'
+    'cl9idm4YCiABKAlSC2N1c3RvbWVyQnZu');
 
 @$core.Deprecated('Use linkBankAccountRequestDescriptor instead')
 const LinkBankAccountRequest$json = {
@@ -2534,6 +2544,7 @@ const RefreshLinkedAccountBalanceResponse$json = {
     {'1': 'charged', '3': 7, '4': 1, '5': 8, '10': 'charged'},
     {'1': 'fee_mono_cost', '3': 8, '4': 1, '5': 3, '10': 'feeMonoCost'},
     {'1': 'fee_lazervault', '3': 9, '4': 1, '5': 3, '10': 'feeLazervault'},
+    {'1': 'fee_discount', '3': 10, '4': 1, '5': 3, '10': 'feeDiscount'},
   ],
 };
 
@@ -2544,7 +2555,8 @@ final $typed_data.Uint8List refreshLinkedAccountBalanceResponseDescriptor = $con
     'GAMgASgJUgxlcnJvck1lc3NhZ2USHwoLbmV3X2JhbGFuY2UYBCABKANSCm5ld0JhbGFuY2USGg'
     'oIY3VycmVuY3kYBSABKAlSCGN1cnJlbmN5EhAKA2ZlZRgGIAEoA1IDZmVlEhgKB2NoYXJnZWQY'
     'ByABKAhSB2NoYXJnZWQSIgoNZmVlX21vbm9fY29zdBgIIAEoA1ILZmVlTW9ub0Nvc3QSJQoOZm'
-    'VlX2xhemVydmF1bHQYCSABKANSDWZlZUxhemVydmF1bHQ=');
+    'VlX2xhemVydmF1bHQYCSABKANSDWZlZUxhemVydmF1bHQSIQoMZmVlX2Rpc2NvdW50GAogASgD'
+    'UgtmZWVEaXNjb3VudA==');
 
 @$core.Deprecated('Use getReauthorizationTokenRequestDescriptor instead')
 const GetReauthorizationTokenRequest$json = {
@@ -3215,6 +3227,10 @@ const Deposit$json = {
     {'1': 'country_code', '3': 17, '4': 1, '5': 9, '10': 'countryCode'},
     {'1': 'provider', '3': 18, '4': 1, '5': 9, '10': 'provider'},
     {'1': 'payment_type', '3': 19, '4': 1, '5': 9, '10': 'paymentType'},
+    {'1': 'mono_fee', '3': 21, '4': 1, '5': 3, '10': 'monoFee'},
+    {'1': 'platform_fee', '3': 22, '4': 1, '5': 3, '10': 'platformFee'},
+    {'1': 'fee_discount', '3': 23, '4': 1, '5': 3, '10': 'feeDiscount'},
+    {'1': 'debit_rail', '3': 24, '4': 1, '5': 9, '10': 'debitRail'},
   ],
   '9': [
     {'1': 20, '2': 21},
@@ -3235,7 +3251,9 @@ final $typed_data.Uint8List depositDescriptor = $convert.base64Decode(
     '5wcm90b2J1Zi5UaW1lc3RhbXBSCWNyZWF0ZWRBdBI9Cgxjb21wbGV0ZWRfYXQYECABKAsyGi5n'
     'b29nbGUucHJvdG9idWYuVGltZXN0YW1wUgtjb21wbGV0ZWRBdBIhCgxjb3VudHJ5X2NvZGUYES'
     'ABKAlSC2NvdW50cnlDb2RlEhoKCHByb3ZpZGVyGBIgASgJUghwcm92aWRlchIhCgxwYXltZW50'
-    'X3R5cGUYEyABKAlSC3BheW1lbnRUeXBlSgQIFBAV');
+    'X3R5cGUYEyABKAlSC3BheW1lbnRUeXBlEhkKCG1vbm9fZmVlGBUgASgDUgdtb25vRmVlEiEKDH'
+    'BsYXRmb3JtX2ZlZRgWIAEoA1ILcGxhdGZvcm1GZWUSIQoMZmVlX2Rpc2NvdW50GBcgASgDUgtm'
+    'ZWVEaXNjb3VudBIdCgpkZWJpdF9yYWlsGBggASgJUglkZWJpdFJhaWxKBAgUEBU=');
 
 @$core.Deprecated('Use getDepositStatusRequestDescriptor instead')
 const GetDepositStatusRequest$json = {
@@ -3442,6 +3460,7 @@ const CalculateDepositFeeResponse$json = {
     {'1': 'fee', '3': 5, '4': 1, '5': 3, '10': 'fee'},
     {'1': 'net_amount', '3': 6, '4': 1, '5': 3, '10': 'netAmount'},
     {'1': 'currency', '3': 7, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'discount', '3': 8, '4': 1, '5': 3, '10': 'discount'},
   ],
 };
 
@@ -3451,7 +3470,7 @@ final $typed_data.Uint8List calculateDepositFeeResponseDescriptor = $convert.bas
     'IdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIM'
     'ZXJyb3JNZXNzYWdlEhYKBmFtb3VudBgEIAEoA1IGYW1vdW50EhAKA2ZlZRgFIAEoA1IDZmVlEh'
     '0KCm5ldF9hbW91bnQYBiABKANSCW5ldEFtb3VudBIaCghjdXJyZW5jeRgHIAEoCVIIY3VycmVu'
-    'Y3k=');
+    'Y3kSGgoIZGlzY291bnQYCCABKANSCGRpc2NvdW50');
 
 @$core.Deprecated('Use depositFeeQuoteRequestDescriptor instead')
 const DepositFeeQuoteRequest$json = {
@@ -3482,13 +3501,15 @@ const FeeLegBreakdown$json = {
     {'1': 'mono_cost', '3': 1, '4': 1, '5': 3, '10': 'monoCost'},
     {'1': 'lazervault_fee', '3': 2, '4': 1, '5': 3, '10': 'lazervaultFee'},
     {'1': 'total', '3': 3, '4': 1, '5': 3, '10': 'total'},
+    {'1': 'discount', '3': 4, '4': 1, '5': 3, '10': 'discount'},
   ],
 };
 
 /// Descriptor for `FeeLegBreakdown`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List feeLegBreakdownDescriptor = $convert.base64Decode(
     'Cg9GZWVMZWdCcmVha2Rvd24SGwoJbW9ub19jb3N0GAEgASgDUghtb25vQ29zdBIlCg5sYXplcn'
-    'ZhdWx0X2ZlZRgCIAEoA1INbGF6ZXJ2YXVsdEZlZRIUCgV0b3RhbBgDIAEoA1IFdG90YWw=');
+    'ZhdWx0X2ZlZRgCIAEoA1INbGF6ZXJ2YXVsdEZlZRIUCgV0b3RhbBgDIAEoA1IFdG90YWwSGgoI'
+    'ZGlzY291bnQYBCABKANSCGRpc2NvdW50');
 
 @$core.Deprecated('Use depositFeeQuoteResponseDescriptor instead')
 const DepositFeeQuoteResponse$json = {
@@ -3518,6 +3539,7 @@ const DepositFeeQuoteResponse$json = {
     {'1': 'grand_total', '3': 8, '4': 1, '5': 3, '10': 'grandTotal'},
     {'1': 'net_amount', '3': 9, '4': 1, '5': 3, '10': 'netAmount'},
     {'1': 'rail', '3': 10, '4': 1, '5': 9, '10': 'rail'},
+    {'1': 'discount_total', '3': 11, '4': 1, '5': 3, '10': 'discountTotal'},
   ],
 };
 
@@ -3529,7 +3551,8 @@ final $typed_data.Uint8List depositFeeQuoteResponseDescriptor = $convert.base64D
     'JlbmN5EjkKC2Nvbm5lY3RfZmVlGAYgASgLMhguYmFua2luZy5GZWVMZWdCcmVha2Rvd25SCmNv'
     'bm5lY3RGZWUSOQoLZGVwb3NpdF9mZWUYByABKAsyGC5iYW5raW5nLkZlZUxlZ0JyZWFrZG93bl'
     'IKZGVwb3NpdEZlZRIfCgtncmFuZF90b3RhbBgIIAEoA1IKZ3JhbmRUb3RhbBIdCgpuZXRfYW1v'
-    'dW50GAkgASgDUgluZXRBbW91bnQSEgoEcmFpbBgKIAEoCVIEcmFpbA==');
+    'dW50GAkgASgDUgluZXRBbW91bnQSEgoEcmFpbBgKIAEoCVIEcmFpbBIlCg5kaXNjb3VudF90b3'
+    'RhbBgLIAEoA1INZGlzY291bnRUb3RhbA==');
 
 @$core.Deprecated('Use getDepositMethodsRequestDescriptor instead')
 const GetDepositMethodsRequest$json = {
@@ -4042,6 +4065,14 @@ const DirectDebitMandate$json = {
       '10': 'switchProcessing'
     },
     {'1': 'pending_method', '3': 29, '4': 1, '5': 9, '10': 'pendingMethod'},
+    {
+      '1': 'auth_attempted_at',
+      '3': 30,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'authAttemptedAt'
+    },
   ],
 };
 
@@ -4068,7 +4099,37 @@ final $typed_data.Uint8List directDebitMandateDescriptor = $convert.base64Decode
     'bhIbCgljYW5fZGViaXQYGSABKAhSCGNhbkRlYml0Eh0KCmlzX2V4cGlyZWQYGiABKAhSCWlzRX'
     'hwaXJlZBInCg9yZW1haW5pbmdfbGltaXQYGyABKANSDnJlbWFpbmluZ0xpbWl0EisKEXN3aXRj'
     'aF9wcm9jZXNzaW5nGBwgASgIUhBzd2l0Y2hQcm9jZXNzaW5nEiUKDnBlbmRpbmdfbWV0aG9kGB'
-    '0gASgJUg1wZW5kaW5nTWV0aG9k');
+    '0gASgJUg1wZW5kaW5nTWV0aG9kEkYKEWF1dGhfYXR0ZW1wdGVkX2F0GB4gASgLMhouZ29vZ2xl'
+    'LnByb3RvYnVmLlRpbWVzdGFtcFIPYXV0aEF0dGVtcHRlZEF0');
+
+@$core.Deprecated('Use markMandateAuthAttemptRequestDescriptor instead')
+const MarkMandateAuthAttemptRequest$json = {
+  '1': 'MarkMandateAuthAttemptRequest',
+  '2': [
+    {'1': 'mandate_id', '3': 1, '4': 1, '5': 9, '10': 'mandateId'},
+    {'1': 'cleared', '3': 2, '4': 1, '5': 8, '10': 'cleared'},
+  ],
+};
+
+/// Descriptor for `MarkMandateAuthAttemptRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List markMandateAuthAttemptRequestDescriptor =
+    $convert.base64Decode(
+        'Ch1NYXJrTWFuZGF0ZUF1dGhBdHRlbXB0UmVxdWVzdBIdCgptYW5kYXRlX2lkGAEgASgJUgltYW'
+        '5kYXRlSWQSGAoHY2xlYXJlZBgCIAEoCFIHY2xlYXJlZA==');
+
+@$core.Deprecated('Use markMandateAuthAttemptResponseDescriptor instead')
+const MarkMandateAuthAttemptResponse$json = {
+  '1': 'MarkMandateAuthAttemptResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+  ],
+};
+
+/// Descriptor for `MarkMandateAuthAttemptResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List markMandateAuthAttemptResponseDescriptor =
+    $convert.base64Decode(
+        'Ch5NYXJrTWFuZGF0ZUF1dGhBdHRlbXB0UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
+        'Vzcw==');
 
 @$core.Deprecated('Use getMandateRequestDescriptor instead')
 const GetMandateRequest$json = {

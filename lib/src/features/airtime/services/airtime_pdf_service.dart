@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import '../domain/entities/airtime_transaction.dart';
 import '../domain/entities/network_provider.dart';
+import 'dart:ui' show Rect;
 
 class AirtimePdfService {
   static final _displayDateFormat = DateFormat('MMM dd, yyyy');
@@ -372,6 +373,9 @@ class AirtimePdfService {
       final amount = transaction.amount.toStringAsFixed(2);
 
       await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
         text:
             'Airtime Purchase Receipt - $currencySymbol$amount to ${transaction.displayRecipientNumber}',

@@ -1024,6 +1024,9 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
   void _inviteContact(DeviceContact contact) {
     final to = contact.name.isNotEmpty ? contact.name : 'there';
     SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       text: 'Hi $to, join me on Lazervault — fast, secure transfers. '
           'Download the app: https://lazervault.app',
     ));

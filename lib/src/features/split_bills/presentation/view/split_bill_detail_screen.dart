@@ -581,7 +581,12 @@ class _SplitBillDetailView extends StatelessWidget {
       SplitBillParticipantStatus.inProgress => (
           Icons.sync,
           const Color(0xFF4834D4),
-          'Payment in progress',
+          // A share can still be settling AFTER the bill itself closed
+          // (external bank payouts confirm asynchronously) — say so instead of
+          // a bare "in progress" on a completed/cancelled bill.
+          bill.status == SplitBillStatus.active
+              ? 'Payment in progress'
+              : 'Payment settling — completes automatically',
         ),
       SplitBillParticipantStatus.pending => (
           Icons.schedule,

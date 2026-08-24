@@ -123,6 +123,66 @@ class AccountSummaryEntity extends Equatable {
     this.clearingEstimate,
   }) : isUp = trendPercentage > 0; // Calculate isUp here
 
+  /// Serialize for the local dashboard cache (shown instantly on login before
+  /// the live revalidation lands — see AccountCardsSummaryCubit). Only plain
+  /// fields; `isUp`/`displayName` are derived and reconstructed.
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'accountType': accountType,
+        'currency': currency,
+        'balance': balance,
+        'availableBalance': availableBalance,
+        'reservedBalance': reservedBalance,
+        'accountNumberLast4': accountNumberLast4,
+        'accountNumber': accountNumber,
+        'bankName': bankName,
+        'accountName': accountName,
+        'trendPercentage': trendPercentage,
+        'isPrimary': isPrimary,
+        'accountLabel': accountLabel,
+        'status': status,
+        'isFamilyAccount': isFamilyAccount,
+        'familyTotalBalance': familyTotalBalance,
+        'memberAllocatedBalance': memberAllocatedBalance,
+        'memberRemainingBalance': memberRemainingBalance,
+        'memberCount': memberCount,
+        'allowMemberContributions': allowMemberContributions,
+        'familyAccountId': familyAccountId,
+        'virtualAccountId': virtualAccountId,
+        'familyStatus': familyStatus,
+        'fundDistributionMode': fundDistributionMode,
+        'clearingEstimate': clearingEstimate,
+      };
+
+  factory AccountSummaryEntity.fromJson(Map<String, dynamic> j) =>
+      AccountSummaryEntity(
+        id: j['id'] as String? ?? '',
+        accountType: j['accountType'] as String? ?? '',
+        currency: j['currency'] as String? ?? 'NGN',
+        balance: (j['balance'] as num?)?.toDouble() ?? 0,
+        availableBalance: (j['availableBalance'] as num?)?.toDouble() ?? 0,
+        reservedBalance: (j['reservedBalance'] as num?)?.toDouble() ?? 0,
+        accountNumberLast4: j['accountNumberLast4'] as String? ?? '',
+        accountNumber: j['accountNumber'] as String?,
+        bankName: j['bankName'] as String?,
+        accountName: j['accountName'] as String?,
+        trendPercentage: (j['trendPercentage'] as num?)?.toDouble() ?? 0,
+        isPrimary: j['isPrimary'] as bool? ?? false,
+        accountLabel: j['accountLabel'] as String?,
+        status: j['status'] as String? ?? 'active',
+        isFamilyAccount: j['isFamilyAccount'] as bool? ?? false,
+        familyTotalBalance: (j['familyTotalBalance'] as num?)?.toDouble(),
+        memberAllocatedBalance: (j['memberAllocatedBalance'] as num?)?.toDouble(),
+        memberRemainingBalance: (j['memberRemainingBalance'] as num?)?.toDouble(),
+        memberCount: j['memberCount'] as int?,
+        allowMemberContributions: j['allowMemberContributions'] as bool?,
+        familyAccountId: j['familyAccountId'] as String?,
+        virtualAccountId: j['virtualAccountId'] as String?,
+        familyStatus: j['familyStatus'] as String?,
+        fundDistributionMode: j['fundDistributionMode'] as String?,
+        clearingEstimate: j['clearingEstimate'] as String?,
+      );
+
   /// Pending balance (funds in clearing or holds, not yet available)
   double get pendingBalance => (balance - availableBalance).clamp(0.0, double.infinity);
 

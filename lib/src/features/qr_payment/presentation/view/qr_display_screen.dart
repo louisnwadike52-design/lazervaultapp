@@ -369,7 +369,10 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
       final text = qr.amount > 0
           ? 'Pay me ${qr.currency} ${qr.amount.toStringAsFixed(2)} via QR Pay. Code: ${qr.qrCode}'
           : 'Pay me via QR Pay. Code: ${qr.qrCode}';
-      SharePlus.instance.share(ShareParams(text: text));
+      SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: text));
     }
   }
 }

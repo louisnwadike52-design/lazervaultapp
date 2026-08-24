@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/src/features/qr_payment/domain/entities/qr_payment_entity.dart';
 import 'package:lazervault/src/features/qr_payment/domain/entities/qr_transaction_entity.dart';
+import 'dart:ui' show Rect;
 
 class QRPayPdfService {
   static Future<String> downloadReceipt({
@@ -50,6 +51,9 @@ class QRPayPdfService {
     final filePath = await downloadReceipt(transaction: transaction);
     await SharePlus.instance.share(
       ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(filePath)],
         subject: 'QR Pay Receipt - ${transaction.referenceNumber}',
       ),
@@ -99,6 +103,9 @@ class QRPayPdfService {
     final filePath = await downloadQRCodeSummary(qrCode: qrCode);
     await SharePlus.instance.share(
       ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(filePath)],
         subject: 'QR Code Summary - ${qrCode.id}',
       ),

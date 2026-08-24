@@ -9,6 +9,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/src/features/banking/services/banking_websocket_service.dart';
+import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:lazervault/src/features/move_money/domain/entities/move_transfer.dart';
 import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
 import 'package:lazervault/src/features/funds/services/batch_transfer_pdf_service.dart';
@@ -84,33 +85,125 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     _initLiveStatus();
   }
 
+  // The reference the backend broadcasts status against. LazerBeam supplies an
+  // explicit `liveStatusReference`; a regular transfer uses its own reference
+  // (provider ref for external, internal/transfer ref otherwise) — the banking
+  // WS `filterByReference` matches on reference OR transferId.
+  String? get _liveReference {
+    final explicit = transferDetails['liveStatusReference'] as String?;
+    if (explicit != null && explicit.isNotEmpty) return explicit;
+    final candidates = [
+      transferDetails['reference'],
+      transferDetails['providerReference'],
+      transferDetails['internalReference'],
+      transferDetails['transferId'],
+      transferDetails['transactionId'],
+    ];
+    for (final c in candidates) {
+      final s = c?.toString() ?? '';
+      if (s.isNotEmpty) return s;
+    }
+    return null;
+  }
+
+  bool get _canLiveUpdate => _statusFetch != null || _liveReference != null;
+
+  bool _statusIsTerminal() {
+    if (_liveTransfer != null) return _liveTransfer!.status.isTerminal;
+    final s = (transferDetails['status'] as String? ?? '').toLowerCase();
+    const terminal = {
+      'completed', 'success', 'successful', 'delivered',
+      'failed', 'cancelled', 'canceled', 'declined', 'rejected',
+      'reversed', 'refunded',
+    };
+    return terminal.contains(s);
+  }
+
   void _initLiveStatus() {
-    if (_statusFetch == null) return;
-    _refreshLiveStatus();
-    final wsRef = transferDetails['liveStatusReference'] as String?;
-    if (wsRef != null && wsRef.isNotEmpty) {
+    if (!_canLiveUpdate) return;
+    // Batch has its own per-recipient status model — don't drive a single status.
+    if (_isBatch) return;
+    _refreshLiveStatus(); // fetch-on-load
+    if (_statusIsTerminal()) return; // already settled — nothing to watch
+
+    if (_statusFetch != null) {
+      // LazerBeam / move-money: push via the banking WS (best-effort; fetch-on-
+      // load + pull-to-refresh back it up).
+      final wsRef = transferDetails['liveStatusReference'] as String?;
+      if (wsRef != null && wsRef.isNotEmpty) {
+        try {
+          _wsSub = serviceLocator<BankingWebSocketService>()
+              .filterByReference(wsRef)
+              .listen((_) => _refreshLiveStatus());
+        } catch (_) {/* WS unavailable — covered by fetch + pull-to-refresh */}
+      }
+      return;
+    }
+
+    // Generic transfer (external/internal): the bounded poll is the reliable
+    // driver, and we ALSO subscribe the banking WS on the reference —
+    // banking-service now publishes withdrawal/deposit status events to
+    // /ws/banking, and any transfer event that lands flips the receipt
+    // instantly (best-effort; the poll still covers delivery gaps).
+    if (_liveReference != null) {
       try {
         _wsSub = serviceLocator<BankingWebSocketService>()
-            .filterByReference(wsRef)
+            .filterByReference(_liveReference!)
             .listen((_) => _refreshLiveStatus());
-      } catch (_) {
-        // WS unavailable — fetch-on-load + pull-to-refresh still cover us.
-      }
+      } catch (_) {/* WS unavailable — poll covers */}
+      _startBoundedStatusPoll();
     }
   }
 
+  static const _statusPollInterval = Duration(seconds: 6);
+  static const _statusPollMaxTicks = 20; // ~2 min ceiling, then give up
+  Timer? _statusPollTimer;
+  int _statusPollTicks = 0;
+
+  void _startBoundedStatusPoll() {
+    _statusPollTimer?.cancel();
+    _statusPollTicks = 0;
+    _statusPollTimer = Timer.periodic(_statusPollInterval, (timer) async {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      _statusPollTicks++;
+      await _refreshLiveStatus();
+      if (_statusIsTerminal() || _statusPollTicks >= _statusPollMaxTicks) {
+        timer.cancel();
+        _statusPollTimer = null;
+      }
+    });
+  }
+
   Future<void> _refreshLiveStatus() async {
-    final fetch = _statusFetch;
-    if (fetch == null || _statusRefreshing) return;
+    if (_statusRefreshing || _isBatch) return;
     _statusRefreshing = true;
     try {
-      final t = await fetch();
-      if (!mounted) return;
-      setState(() => _liveTransfer = t);
-      if (t.status.isTerminal) {
-        _wsSub?.cancel();
-        _wsSub = null;
+      final fetch = _statusFetch;
+      if (fetch != null) {
+        // LazerBeam / move-money path — rich MoveTransfer status.
+        final t = await fetch();
+        if (!mounted) return;
+        setState(() => _liveTransfer = t);
+        if (t.status.isTerminal) _stopLiveUpdates();
+        return;
       }
+      // Generic transfer — status-by-reference via GetTransferStatus.
+      final ref = _liveReference;
+      if (ref == null) return;
+      final snap = await serviceLocator<IPaymentsTransferDataSource>()
+          .getTransferStatus(reference: ref);
+      if (snap == null || !mounted) return;
+      setState(() {
+        transferDetails['status'] = snap.status;
+        if (snap.fee != null && (transferDetails['fee'] == null ||
+            (transferDetails['fee'] as num).toDouble() == 0)) {
+          transferDetails['fee'] = snap.fee;
+        }
+      });
+      if (snap.isTerminal) _stopLiveUpdates();
     } catch (_) {
       // Keep the last known status; pull-to-refresh can retry.
     } finally {
@@ -118,9 +211,17 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     }
   }
 
+  void _stopLiveUpdates() {
+    _wsSub?.cancel();
+    _wsSub = null;
+    _statusPollTimer?.cancel();
+    _statusPollTimer = null;
+  }
+
   @override
   void dispose() {
     _wsSub?.cancel();
+    _statusPollTimer?.cancel();
     super.dispose();
   }
 
@@ -159,20 +260,175 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     _qrData = jsonEncode(qrMap);
   }
 
+  /// Ask whether to produce the SENDER's copy (shows the fee + total paid) or the
+  /// RECIPIENT's copy (amount received only — no fee). Only meaningful when a fee
+  /// was charged; for a free (e.g. internal) transfer both copies are identical,
+  /// so we skip the prompt and default to the sender copy. Returns null if the
+  /// user dismisses the sheet (→ caller aborts).
+  Future<ReceiptCopyType?> _resolveCopyType() async {
+    final fee = (transferDetails['fee'] as num?)?.toDouble() ?? 0.0;
+    if (_isBatch || fee <= 0) return ReceiptCopyType.sender;
+    return _showCopyTypeSheet();
+  }
+
+  Future<ReceiptCopyType?> _showCopyTypeSheet() {
+    return Get.bottomSheet<ReceiptCopyType>(
+      Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2D2D2D),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text('Choose receipt copy',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700)),
+            SizedBox(height: 4.h),
+            Text(
+              'Pick who this receipt is for — the fee only appears on your (sender) copy.',
+              style: TextStyle(
+                  color: const Color(0xFF9CA3AF), fontSize: 12.sp, height: 1.3),
+            ),
+            SizedBox(height: 16.h),
+            _copyOptionTile(
+              icon: Icons.account_balance_wallet_outlined,
+              iconColor: const Color(0xFF3B82F6),
+              label: "Sender's copy",
+              description: 'Includes the transfer fee and total paid.',
+              onTap: () => Get.back(result: ReceiptCopyType.sender),
+            ),
+            SizedBox(height: 10.h),
+            _copyOptionTile(
+              icon: Icons.person_outline_rounded,
+              iconColor: const Color(0xFF10B981),
+              label: "Recipient's copy",
+              description: 'Amount received only — no fee shown.',
+              onTap: () => Get.back(result: ReceiptCopyType.recipient),
+            ),
+            SizedBox(height: 16.h),
+            TextButton(
+              onPressed: () => Get.back(),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                foregroundColor: const Color(0xFF9CA3AF),
+              ),
+              child: Text('Cancel',
+                  style: TextStyle(
+                      fontSize: 14.sp, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  Widget _copyOptionTile({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String description,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFF161616),
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: const Color(0xFF2D2D2D)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(icon, color: iconColor, size: 22.sp),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600)),
+                    SizedBox(height: 2.h),
+                    Text(description,
+                        style: TextStyle(
+                            color: const Color(0xFF9CA3AF),
+                            fontSize: 11.sp,
+                            height: 1.3)),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded,
+                  color: const Color(0xFF9CA3AF), size: 20.sp),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _downloadReceipt() async {
     if (_isDownloading) return;
+    // Batch receipts are PDF-only (BatchTransferPdfService) and have no
+    // sender/recipient split — skip both sheets.
+    if (_isBatch) {
+      setState(() => _isDownloading = true);
+      try {
+        final filePath =
+            await BatchTransferPdfService.downloadReceipt(receiptData: transferDetails);
+        _downloadSavedSnack(filePath);
+      } catch (_) {
+        _downloadFailedSnack();
+      } finally {
+        if (mounted) setState(() => _isDownloading = false);
+      }
+      return;
+    }
+    final copyType = await _resolveCopyType();
+    if (copyType == null) return; // user dismissed the copy-type sheet
+    final format = await _showFormatSheet('Download');
+    if (format == null) return; // user dismissed the format sheet
     setState(() => _isDownloading = true);
 
     try {
-      final filePath = _isBatch
-          ? await BatchTransferPdfService.downloadReceipt(
-              receiptData: transferDetails)
-          : await TagPayPdfService.downloadTransferReceipt(
-              transferDetails: transferDetails,
-            );
+      final filePath = await TagPayPdfService.downloadTransferReceipt(
+        transferDetails: transferDetails,
+        copyType: copyType,
+        format: format,
+      );
       Get.snackbar(
         'Receipt Saved',
-        'PDF receipt saved to $filePath',
+        '${format.ext.toUpperCase()} receipt saved to $filePath',
         backgroundColor: const Color(0xFF10B981),
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -192,30 +448,137 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     }
   }
 
-  Future<void> _shareReceipt() async {
-    if (_isSharing) return;
-    setState(() => _isSharing = true);
+  void _downloadSavedSnack(String filePath) {
+    Get.snackbar('Receipt Saved', 'Receipt saved to $filePath',
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: EdgeInsets.all(16.w));
+  }
 
-    try {
-      if (_isBatch) {
-        await BatchTransferPdfService.shareReceipt(receiptData: transferDetails);
-      } else {
-        await TagPayPdfService.shareTransferReceipt(
-          transferDetails: transferDetails,
-        );
-      }
-    } catch (e) {
-      Get.snackbar(
-        'Share Failed',
-        'Could not share receipt. Please try again.',
+  void _downloadFailedSnack() {
+    Get.snackbar('Save Failed', 'Could not save receipt. Please try again.',
         backgroundColor: const Color(0xFFEF4444),
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
-        margin: EdgeInsets.all(16.w),
-      );
-    } finally {
-      setState(() => _isSharing = false);
+        margin: EdgeInsets.all(16.w));
+  }
+
+  Future<void> _shareReceipt() async {
+    if (_isSharing) return;
+    if (_isBatch) {
+      setState(() => _isSharing = true);
+      try {
+        await BatchTransferPdfService.shareReceipt(receiptData: transferDetails);
+      } catch (_) {
+        _shareFailedSnack();
+      } finally {
+        if (mounted) setState(() => _isSharing = false);
+      }
+      return;
     }
+    // Capture the iOS share-popover anchor BEFORE the async sheets so we never
+    // touch context across an async gap.
+    final shareOrigin = TagPayPdfService.shareOriginFromContext(context);
+    final copyType = await _resolveCopyType();
+    if (copyType == null) return; // user dismissed the copy-type sheet
+    final format = await _showFormatSheet('Share');
+    if (format == null) return; // user dismissed the format sheet
+    setState(() => _isSharing = true);
+
+    try {
+      await TagPayPdfService.shareTransferReceipt(
+        transferDetails: transferDetails,
+        copyType: copyType,
+        format: format,
+        sharePositionOrigin: shareOrigin,
+      );
+    } catch (e) {
+      _shareFailedSnack();
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
+    }
+  }
+
+  void _shareFailedSnack() {
+    Get.snackbar('Share Failed', 'Could not share receipt. Please try again.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: EdgeInsets.all(16.w));
+  }
+
+  /// Second sheet (after the copy-type sheet): choose PDF / JPG / PNG. [action]
+  /// is "Download" or "Share" for the copy. Returns null if dismissed.
+  Future<ReceiptFileFormat?> _showFormatSheet(String action) {
+    Widget tile(ReceiptFileFormat fmt, IconData icon, Color color, String desc) {
+      return _copyOptionTile(
+        icon: icon,
+        iconColor: color,
+        label: '$action as ${fmt.ext.toUpperCase()}',
+        description: desc,
+        onTap: () => Get.back(result: fmt),
+      );
+    }
+
+    return Get.bottomSheet<ReceiptFileFormat>(
+      Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2D2D2D),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text('Choose format',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700)),
+            SizedBox(height: 4.h),
+            Text('Pick the file type for your receipt.',
+                style: TextStyle(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 12.sp,
+                    height: 1.3)),
+            SizedBox(height: 16.h),
+            tile(ReceiptFileFormat.pdf, Icons.picture_as_pdf_outlined,
+                const Color(0xFFEF4444), 'Vector document — best for printing.'),
+            SizedBox(height: 10.h),
+            tile(ReceiptFileFormat.jpg, Icons.image_outlined,
+                const Color(0xFF3B82F6), 'Compact image — easy to share in chats.'),
+            SizedBox(height: 10.h),
+            tile(ReceiptFileFormat.png, Icons.photo_outlined,
+                const Color(0xFF10B981), 'Lossless image — sharp on any screen.'),
+            SizedBox(height: 16.h),
+            TextButton(
+              onPressed: () => Get.back(),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                foregroundColor: const Color(0xFF9CA3AF),
+              ),
+              child: Text('Cancel',
+                  style:
+                      TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
   }
 
   @override
@@ -244,7 +607,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
                 onRefresh: _refreshLiveStatus,
                 color: const Color(0xFF3B82F6),
                 backgroundColor: const Color(0xFF1F1F1F),
-                notificationPredicate: (_) => _statusFetch != null,
+                notificationPredicate: (_) => _canLiveUpdate,
                 child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(
                     parent: BouncingScrollPhysics()),
@@ -564,6 +927,25 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
             fontWeight: FontWeight.w700,
           ),
         ),
+        // Fee + total right under the amount so it reflects in the REAL-TIME
+        // flow (previously the fee only appeared in the details rows / history).
+        // Hidden for batch (its own per-recipient math) and for free transfers.
+        if (!_isBatch && ((transferDetails['fee'] as num?)?.toDouble() ?? 0) > 0)
+          Builder(builder: (_) {
+            final fee = (transferDetails['fee'] as num?)!.toDouble();
+            return Padding(
+              padding: EdgeInsets.only(top: 4.h),
+              child: Text(
+                '+ $currencySymbol${fee.toStringAsFixed(2)} fee · '
+                '$currencySymbol${(amount + fee).toStringAsFixed(2)} total',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            );
+          }),
         SizedBox(height: 6.h),
         Text(
           titleText,
@@ -1052,7 +1434,26 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  /// Brand casing at DISPLAY time only: the stored internal-transfer sentinel
+  /// stays 'LazerVault' (comparisons + saved beneficiaries depend on it), but
+  /// the user always reads "Lazervault" (CLAUDE.md §0 brand rule).
+  // Display-only brand normalization: bank registries return the company's own
+  // account as "LAZERVAULT LTD" variants — any name containing the brand
+  // collapses to plain "Lazervault" (never mutate stored/enquiry values).
+  String _brandCase(String v) {
+    if (v.toUpperCase().contains('LAZERVAULT')) {
+      // Preserve surrounding context only when the value is MORE than the
+      // company name itself (e.g. "Transfer to LAZERVAULT LTD").
+      final collapsed = v.replaceAll(
+          RegExp(r'lazervault[\s\-]*(ltd|limited)?\.?', caseSensitive: false),
+          'Lazervault');
+      return collapsed.replaceAll('LazerVault', 'Lazervault');
+    }
+    return v.replaceAll('LazerVault', 'Lazervault');
+  }
+
+  Widget _buildDetailRow(String label, String rawValue) {
+    final value = _brandCase(rawValue);
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
       child: Row(
@@ -1110,7 +1511,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
               children: [
                 Flexible(
                   child: Text(
-                    bankName,
+                    _brandCase(bankName),
                     textAlign: TextAlign.right,
                     style: GoogleFonts.inter(
                       fontSize: 13.sp,

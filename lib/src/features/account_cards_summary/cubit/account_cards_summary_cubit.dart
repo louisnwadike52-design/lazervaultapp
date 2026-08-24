@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import '../domain/entities/account_summary_entity.dart';
@@ -144,6 +146,7 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     String? country,
     String? period,
     bool silent = false,
+    bool manualRefresh = false,
   }) async {
     if (isClosed) return;
 
@@ -160,10 +163,40 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     }
 
     _currentUserId = userId;
-    // A silent refresh (e.g. after the account-actions sheet closes so a
-    // freeze/unfreeze shows up) keeps the current cards on screen instead of
-    // flashing the loading state.
-    if (!silent) emit(AccountCardsSummaryLoading());
+    if (manualRefresh) {
+      // EXPLICIT user refresh (swipe-down → "Refresh accounts"). The network
+      // fetch below ALWAYS runs and re-persists the cache, so balances are
+      // revalidated even when the amount comes back unchanged. Keep the current
+      // cards on screen (don't collapse to the full-area spinner) and flag
+      // isRefreshing so the card shows a small loader — the user gets feedback
+      // that a refresh happened regardless of whether the number moved. Fall
+      // back to the plain spinner only when there's nothing to show yet.
+      final existing = _currentSummaries.isNotEmpty
+          ? _currentSummaries
+          : (await _loadCachedSummaries(userId) ?? const []);
+      if (existing.isNotEmpty) {
+        _currentSummaries = existing;
+        emit(AccountCardsSummaryLoaded(existing, isRefreshing: true));
+        _autoSelectPersonalAccount(existing);
+      } else {
+        emit(AccountCardsSummaryLoading());
+      }
+    } else if (!silent) {
+      // On a fresh (non-silent) load — e.g. right after login — show the LAST
+      // KNOWN balances from the local cache INSTANTLY instead of a loading state,
+      // then revalidate in the background. The animated balance counter tweens
+      // from the cached value to the fresh value, so a changed balance animates
+      // and an unchanged one just stays put. Only fall back to the spinner when we
+      // have nothing cached yet (very first login on this device).
+      final cached = await _loadCachedSummaries(userId);
+      if (cached != null && cached.isNotEmpty) {
+        _currentSummaries = cached;
+        emit(AccountCardsSummaryLoaded(cached));
+        _autoSelectPersonalAccount(cached);
+      } else {
+        emit(AccountCardsSummaryLoading());
+      }
+    }
     final result = await _getAccountSummariesUseCase.call(
       userId: userId,
       accessToken: accessToken,
@@ -177,6 +210,14 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
         // the mutation (freeze) already succeeded server-side; just keep what
         // we have if the follow-up fetch hiccups.
         if (silent && _currentSummaries.isNotEmpty) return;
+        // A MANUAL refresh that fails but has cards on screen: clear the
+        // refreshing loader and keep the (last-known) cards rather than wiping
+        // them with a full error screen. The dashboard surfaces the failure via
+        // its own snackbar.
+        if (manualRefresh && _currentSummaries.isNotEmpty) {
+          emit(AccountCardsSummaryLoaded(_currentSummaries));
+          return;
+        }
         emit(AccountCardsSummaryError(
           failure.message,
           statusCode: failure.statusCode,
@@ -192,11 +233,42 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
           });
         _currentSummaries = sorted;
         emit(AccountCardsSummaryLoaded(sorted));
+        // Persist the fresh balances so the NEXT login renders instantly from
+        // cache (and the counter animates cache → fresh) instead of a spinner.
+        _saveCachedSummaries(userId, sorted);
 
         // Auto-select personal account matching current locale's currency
         _autoSelectPersonalAccount(summaries);
       },
     );
+  }
+
+  static String _cacheKey(String userId) => 'acct_summaries_cache_$userId';
+
+  /// Persist the latest summaries for instant cached render on next login.
+  /// Best-effort — a storage failure must never break the live dashboard.
+  Future<void> _saveCachedSummaries(
+      String userId, List<AccountSummaryEntity> summaries) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final payload = jsonEncode(summaries.map((s) => s.toJson()).toList());
+      await prefs.setString(_cacheKey(userId), payload);
+    } catch (_) {/* cache is an optimization, not a source of truth */}
+  }
+
+  /// Read the last-known summaries for [userId], or null when none/corrupt.
+  Future<List<AccountSummaryEntity>?> _loadCachedSummaries(String userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_cacheKey(userId));
+      if (raw == null || raw.isEmpty) return null;
+      final list = (jsonDecode(raw) as List)
+          .map((e) => AccountSummaryEntity.fromJson(e as Map<String, dynamic>))
+          .toList();
+      return list;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Automatically select the personal account that matches the current locale's currency

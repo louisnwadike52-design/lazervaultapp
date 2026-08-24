@@ -228,16 +228,20 @@ class Deposit extends Equatable {
       ];
 }
 
-/// Fee calculation result
+/// Fee calculation result. `fee` is the CHARGED aggregate (already net of any
+/// platform-funded discount); `discount` is what the platform absorbed — shown
+/// as a "you save" line when > 0.
 class DepositFeeCalculation {
   final double amount;
   final double fee;
   final double netAmount;
+  final double discount;
 
   const DepositFeeCalculation({
     required this.amount,
     required this.fee,
     required this.netAmount,
+    this.discount = 0,
   });
 
   factory DepositFeeCalculation.fromJson(Map<String, dynamic> json) {
@@ -245,25 +249,30 @@ class DepositFeeCalculation {
       amount: (json['amount'] as num).toDouble() / 100,
       fee: (json['fee'] as num).toDouble() / 100,
       netAmount: (json['net_amount'] as num).toDouble() / 100,
+      discount: ((json['discount'] as num?) ?? 0).toDouble() / 100,
     );
   }
 }
 
-/// One fee split into the Mono provider cost and the LazerVault margin. All
-/// amounts are in MINOR units (kobo). total = monoCost + lazervaultFee.
+/// One fee split into the Mono provider cost, the LazerVault margin and the
+/// platform-funded discount. All amounts are in MINOR units (kobo).
+/// total = monoCost + lazervaultFee - discount (the CHARGED figure).
 class FeeLeg {
   final int monoCost;
   final int lazervaultFee;
   final int total;
+  final int discount;
 
-  const FeeLeg({this.monoCost = 0, this.lazervaultFee = 0, this.total = 0});
+  const FeeLeg(
+      {this.monoCost = 0, this.lazervaultFee = 0, this.total = 0, this.discount = 0});
 
   bool get isFree => total <= 0;
 }
 
 /// Consolidated fee quote for the deposit-link flow: the one-time connect fee
 /// (first-time link only) + the per-deposit fee for the chosen rail. Amounts in
-/// MINOR units (kobo).
+/// MINOR units (kobo). `discountTotal` = combined platform-funded discount
+/// already subtracted from `grandTotal` ("you save").
 class DepositFeeQuote {
   final int amount;
   final FeeLeg connectFee;
@@ -271,6 +280,7 @@ class DepositFeeQuote {
   final int grandTotal;
   final int netAmount;
   final String rail; // "direct_debit" | "direct_pay"
+  final int discountTotal;
 
   const DepositFeeQuote({
     required this.amount,
@@ -279,6 +289,7 @@ class DepositFeeQuote {
     this.grandTotal = 0,
     this.netAmount = 0,
     this.rail = 'direct_pay',
+    this.discountTotal = 0,
   });
 
   /// True when nothing is chargeable — the modal can then skip the fee sheet.

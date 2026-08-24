@@ -25,7 +25,6 @@ import 'user_holdings_screen.dart';
 import 'price_alerts_screen.dart';
 import 'auto_orders_screen.dart';
 import 'crypto_transaction_history_screen.dart';
-import 'crypto_receipt_screen.dart';
 import 'smart_trading_screen.dart';
 import '../../../lifestyle/presentation/screens/partner_webview_screen.dart';
 import '../../../settings/presentation/widgets/webview_bottom_sheet.dart';
@@ -1140,17 +1139,10 @@ class _CryptoScreenState extends State<CryptoScreen> {
         historyType = CryptoTransactionType.deposit;
     }
 
-    CryptoTransactionStatus historyStatus;
-    switch (txn.status.toLowerCase()) {
-      case 'completed':
-      case 'success':
-        historyStatus = CryptoTransactionStatus.completed;
-      case 'pending':
-      case 'processing':
-        historyStatus = CryptoTransactionStatus.pending;
-      default:
-        historyStatus = CryptoTransactionStatus.failed;
-    }
+    // Shared mapper — MUST stay identical to the view-all history screen.
+    // (The old local switch collapsed swap_pending/reversed/refunded into
+    // "failed", so the landing badge disagreed with view-all.)
+    final historyStatus = mapBackendCryptoTxStatus(txn.status);
 
     return CryptoTransactionHistory(
       id: txn.id,
@@ -1340,7 +1332,7 @@ class _CryptoScreenState extends State<CryptoScreen> {
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
-                    transaction.status.name.toUpperCase(),
+                    cryptoTxStatusLabel(transaction.status).toUpperCase(),
                     style: TextStyle(
                       fontSize: 10.sp,
                       fontWeight: FontWeight.w600,
@@ -1417,151 +1409,11 @@ class _CryptoScreenState extends State<CryptoScreen> {
   }
 
   void _showTransactionDetails(CryptoTransactionHistory transaction) {
-    Get.bottomSheet(
-      Container(
-        height: Get.height * 0.6,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24.r),
-            topRight: Radius.circular(24.r),
-          ),
-        ),
-        child: Column(
-          children: [
-            Container(
-              margin: EdgeInsets.only(top: 12.h),
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[600],
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(24.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                          'Transaction Details',
-                          style: TextStyle(
-                            fontSize: 20.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                        GestureDetector(
-                          onTap: () => Get.back(),
-                          child: Icon(Icons.close, color: Colors.white, size: 24.sp),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 24.h),
-                    _buildDetailItem('Transaction ID', transaction.id),
-                    _buildDetailItem('Type', _getTransactionTitleForHistory(transaction)),
-                    _buildDetailItem('Amount', '${transaction.amount} ${transaction.cryptoSymbol}'),
-                    _buildDetailItem('Value', '${CurrencySymbols.currentSymbol}${transaction.gbpAmount.toStringAsFixed(2)}'),
-                    _buildDetailItem('Fee', '${CurrencySymbols.currentSymbol}${transaction.fee.toStringAsFixed(2)}'),
-                    _buildDetailItem('Status', transaction.status.name.toUpperCase()),
-                    _buildDetailItem('Date', _formatTransactionDateTime(transaction.timestamp)),
-                    if (transaction.type == CryptoTransactionType.swap) ...[
-                      _buildDetailItem('From', transaction.fromCrypto ?? 'Unknown'),
-                      _buildDetailItem('To', transaction.toCrypto ?? 'Unknown'),
-                    ],
-                    SizedBox(height: 24.h),
-                    if (transaction.status == CryptoTransactionStatus.completed)
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => _viewTransactionReceipt(transaction),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-                            padding: EdgeInsets.symmetric(vertical: 16.h),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.r),
-                            ),
-                          ),
-                          child: Text(
-                            'View Receipt',
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                            ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      isScrollControlled: true,
-    );
+    // Straight to the full-page receipt (shared builder, real details) —
+    // the intermediate details bottomsheet was removed by request.
+    openCryptoTransactionReceipt(transaction);
   }
 
-  Widget _buildDetailItem(String label, String value) {
-    return Padding(
-                        padding: EdgeInsets.only(bottom: 16.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: Colors.white.withValues(alpha: 0.7),
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
-            ),
-          ),
-              ],
-            ),
-          );
-        }
-
-  void _viewTransactionReceipt(CryptoTransactionHistory transaction) {
-    Get.back(); // Close bottom sheet
-    
-    // Create transaction details
-    final transactionDetails = CryptoTransactionDetails(
-      type: transaction.type,
-      cryptoName: transaction.cryptoName,
-      cryptoSymbol: transaction.cryptoSymbol,
-      cryptoAmount: transaction.amount,
-      pricePerUnit: transaction.gbpAmount / double.parse(transaction.amount),
-      fiatAmount: transaction.gbpAmount,
-      networkFee: transaction.fee * 0.3,
-      tradingFee: transaction.fee * 0.7,
-      totalAmount: transaction.gbpAmount + transaction.fee,
-      paymentMethod: 'Card',
-      fromCrypto: transaction.fromCrypto,
-      toCrypto: transaction.toCrypto,
-    );
-    
-    // Create receipt
-    final receipt = CryptoTransactionReceipt(
-      transactionId: transaction.id,
-      transactionDetails: transactionDetails,
-      timestamp: transaction.timestamp,
-      status: transaction.status,
-    );
-    
-    Get.to(() => CryptoReceiptScreen(receipt: receipt, fromHistory: true));
-  }
 
   // Helper methods for transaction history
   Color _getTransactionTypeColorForHistory(CryptoTransactionType type) {
@@ -1609,21 +1461,8 @@ class _CryptoScreenState extends State<CryptoScreen> {
     }
   }
 
-  Color _getTransactionStatusColor(CryptoTransactionStatus status) {
-    switch (status) {
-      case CryptoTransactionStatus.completed:
-        return Colors.green;
-      case CryptoTransactionStatus.pending:
-      case CryptoTransactionStatus.verifying:
-        return Colors.orange;
-      case CryptoTransactionStatus.failed:
-        return Colors.red;
-      case CryptoTransactionStatus.refunded:
-        return const Color(0xFF9CA3AF);
-      case CryptoTransactionStatus.manualReview:
-        return const Color(0xFFFB923C);
-    }
-  }
+  Color _getTransactionStatusColor(CryptoTransactionStatus status) =>
+      cryptoTxStatusColor(status);
 
   String _formatTransactionDateTime(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} at ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
@@ -1655,7 +1494,7 @@ class _CryptoScreenState extends State<CryptoScreen> {
             children: [
               _buildFeatureCard(
                 'Smart Trading',
-                'AI-powered insights',
+                'Market sentiment & signals',
                 Icons.psychology,
                 Colors.purple,
               ),
@@ -1667,12 +1506,12 @@ class _CryptoScreenState extends State<CryptoScreen> {
               ),
               _buildFeatureCard(
                 'Pro Exchange',
-                'Advanced trading tools',
+                'Live charts & market depth',
                 Icons.candlestick_chart,
                 Colors.orange,
               ),
               _buildFeatureCard(
-                'Learn & Earn',
+                'Crypto Academy',
                 'Crypto education',
                 Icons.school,
                 Colors.green,
@@ -1747,7 +1586,7 @@ class _CryptoScreenState extends State<CryptoScreen> {
       case 'Pro Exchange':
         Get.to(() => const ProExchangeScreen());
         break;
-      case 'Learn & Earn':
+      case 'Crypto Academy':
         Get.to(() => const LearnEarnScreen());
         break;
       default:

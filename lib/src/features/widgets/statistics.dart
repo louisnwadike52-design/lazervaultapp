@@ -264,7 +264,9 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
       context: context,
       transactionId: txnId,
       transactionType: 'balance_refresh',
-      amount: feeNaira,
+      // Fee-only charge: a balance refresh has NO base amount, so pass amount 0
+      // and let the sheet render just the ₦fee (not "fee + fee").
+      amount: 0,
       fee: feeNaira,
       totalAmount: feeNaira,
       currency: 'NGN',
@@ -533,9 +535,10 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
     );
   }
 
-  /// Segmented Lazervault | Both | Bank source selector — one tap to switch
-  /// scope (replaces the old chip → sheet → tile flow). "Both" sits in the
-  /// middle as the union of the two. Drives [_statsSource] + the cubit scope.
+  /// Segmented Lazervault | Bank | Both source selector — one tap to switch
+  /// scope (replaces the old chip → sheet → tile flow). "Both" (the union) sits
+  /// LAST so the two single-source scopes lead. Drives [_statsSource] + the
+  /// cubit scope; a switch re-fetches ONLY the newly-active scope.
   Widget _buildSourceToggle() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -550,9 +553,9 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
           _sourceSegment(StatisticsSource.lazervault, 'Lazervault',
               Icons.account_balance_wallet_rounded),
           _sourceSegment(
-              StatisticsSource.both, 'Both', Icons.dashboard_rounded),
-          _sourceSegment(
               StatisticsSource.bank, 'Bank', Icons.account_balance_rounded),
+          _sourceSegment(
+              StatisticsSource.both, 'Both', Icons.dashboard_rounded),
         ],
       ),
     );

@@ -40,6 +40,7 @@ import 'package:lazervault/src/features/move_money/cubit/mandate_state.dart';
 import 'package:lazervault/src/features/move_money/domain/entities/mandate_entity.dart';
 import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_management_bottomsheet.dart';
 import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_status_badge.dart';
+import 'package:lazervault/src/features/move_money/presentation/widgets/linked_account_state_chip.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';

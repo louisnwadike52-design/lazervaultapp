@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/p2p_chat/domain/entities/p2p_message_entity.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import 'package:lazervault/src/features/crypto/presentation/view/send_crypto_receipt_screen.dart';
 import 'package:lazervault/src/features/recipients/domain/usecases/get_recipients_usecase.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
@@ -63,6 +64,10 @@ class P2PTransferBubble extends StatelessWidget {
   bool get _canSendAgain {
     if (!_isSentByMe) return false;
     if (message.isTransferRequest) return false;
+    // Crypto bubbles must NEVER open the fiat send flow: transferAmount is the
+    // asset's minor units (satoshi-scale) and would prefill as kobo — a 0.001
+    // BTC bubble would auto-continue a ₦1,000 FIAT send to the recipient.
+    if (message.isCryptoTransfer) return false;
     if (otherUserId == null || otherUserId!.isEmpty) return false;
     // Don't offer for failed or pending transfers
     final status = message.transferStatus?.toLowerCase();
@@ -84,10 +89,20 @@ class P2PTransferBubble extends StatelessWidget {
     final IconData icon;
     final String label;
 
+    final failedStatus = message.transferStatus?.toLowerCase();
+    final isFailed = failedStatus == 'failed' ||
+        failedStatus == 'reversed' ||
+        failedStatus == 'cancelled';
     if (isRequest) {
       iconColor = const Color(0xFFFB923C); // orange
       icon = Icons.request_page_outlined;
       label = isMe ? 'Money Requested' : 'Payment Request';
+    } else if (isFailed) {
+      iconColor = const Color(0xFFEF4444); // red
+      icon = Icons.error_outline_rounded;
+      label = message.isCryptoTransfer
+          ? 'Crypto Send Failed'
+          : 'Transfer Failed';
     } else if (isScheduled) {
       iconColor = const Color(0xFFF59E0B); // amber
       icon = Icons.schedule;
@@ -95,21 +110,25 @@ class P2PTransferBubble extends StatelessWidget {
     } else if (isSent) {
       iconColor = const Color(0xFFEF4444); // red
       icon = Icons.arrow_upward;
-      label = 'Money Sent';
+      label = message.isCryptoTransfer ? 'Crypto Sent' : 'Money Sent';
     } else {
       iconColor = const Color(0xFF10B981); // green
       icon = Icons.arrow_downward;
-      label = 'Money Received';
+      label = message.isCryptoTransfer ? 'Crypto Received' : 'Money Received';
     }
 
     final currency = message.transferCurrency ?? 'NGN';
     final amount = message.transferAmountMajor;
-    final formattedAmount = amount != null
-        ? NumberFormat.currency(
-            symbol: _getCurrencySymbol(currency),
-            decimalDigits: 2,
-          ).format(amount)
-        : '${_getCurrencySymbol(currency)}0.00';
+    final formattedAmount = message.isCryptoTransfer
+        ? (message.cryptoTransferLabel.isEmpty
+            ? 'Crypto'
+            : message.cryptoTransferLabel)
+        : (amount != null
+            ? NumberFormat.currency(
+                symbol: _getCurrencySymbol(currency),
+                decimalDigits: 2,
+              ).format(amount)
+            : '${_getCurrencySymbol(currency)}0.00');
 
     // Show transfer status if available and not completed
     final transferStatus = message.transferStatus;
@@ -234,12 +253,16 @@ class P2PTransferBubble extends StatelessWidget {
     final isSent = _isSentByMe;
     final currency = message.transferCurrency ?? 'NGN';
     final amount = message.transferAmountMajor;
-    final formattedAmount = amount != null
-        ? NumberFormat.currency(
-            symbol: _getCurrencySymbol(currency),
-            decimalDigits: 2,
-          ).format(amount)
-        : '${_getCurrencySymbol(currency)}0.00';
+    final formattedAmount = message.isCryptoTransfer
+        ? (message.cryptoTransferLabel.isEmpty
+            ? 'Crypto'
+            : message.cryptoTransferLabel)
+        : (amount != null
+            ? NumberFormat.currency(
+                symbol: _getCurrencySymbol(currency),
+                decimalDigits: 2,
+              ).format(amount)
+            : '${_getCurrencySymbol(currency)}0.00');
 
     final transferStatus = message.transferStatus;
     final statusLabel = (transferStatus != null && transferStatus.isNotEmpty)
@@ -263,10 +286,16 @@ class P2PTransferBubble extends StatelessWidget {
 
     final ref = _cleanTransferRef;
     final canSendAgain = _canSendAgain;
+    final sheetFailed = transferStatus == 'failed' ||
+        transferStatus == 'reversed' ||
+        transferStatus == 'cancelled';
     final showReceipt = transferStatus == null ||
         transferStatus.isEmpty ||
         transferStatus == 'completed' ||
-        transferStatus == 'success';
+        transferStatus == 'success' ||
+        // A FAILED crypto send still deserves its receipt — the fail reason
+        // only renders there (the fiat proof stays completed-only).
+        (message.isCryptoTransfer && sheetFailed && (ref?.isNotEmpty ?? false));
     final hasActions = showReceipt || canSendAgain;
 
     showModalBottomSheet(
@@ -330,9 +359,17 @@ class P2PTransferBubble extends StatelessWidget {
             ),
             SizedBox(height: 12.h),
             Text(
-              isSent ? 'Money Sent' : 'Money Received',
+              sheetFailed
+                  ? (message.isCryptoTransfer
+                      ? 'Crypto Send Failed'
+                      : 'Transfer Failed')
+                  : (message.isCryptoTransfer
+                      ? (isSent ? 'Crypto Sent' : 'Crypto Received')
+                      : (isSent ? 'Money Sent' : 'Money Received')),
               style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
+                color: sheetFailed
+                    ? const Color(0xFFEF4444)
+                    : const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -391,6 +428,19 @@ class P2PTransferBubble extends StatelessWidget {
                         child: OutlinedButton.icon(
                           onPressed: () {
                             Navigator.of(ctx).pop();
+                            // CRYPTO bubble → the crypto send receipt, hydrated
+                            // by reference from crypto-service (the server
+                            // authorizes sender OR recipient). Fiat continues
+                            // to the transfer proof below.
+                            if (message.isCryptoTransfer) {
+                              if (ref == null || ref.isEmpty) {
+                                return; // nothing to hydrate the receipt from
+                              }
+                              Get.to(() => SendCryptoReceiptScreen.fromLookup(
+                                    reference: ref,
+                                  ));
+                              return;
+                            }
                             // Legal-grade proof: "From"/"To" must carry real
                             // FULL names (never "You"), since this receipt is
                             // shareable evidence. Current user comes from the

@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
+import 'package:uuid/uuid.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/core/services/account_manager.dart';
@@ -21,6 +22,7 @@ import 'package:lazervault/src/features/crypto/cubit/crypto_withdraw_cubit.dart'
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_asset_avatar.dart';
 import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_fiat_wallet_pill.dart';
+import 'package:lazervault/src/features/crypto/presentation/widgets/crypto_flow_guidance.dart';
 import 'package:lazervault/src/features/crypto/presentation/utils/crypto_address_validator.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_address_scanner_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/send_crypto_receipt_screen.dart';
@@ -32,6 +34,7 @@ import 'package:lazervault/src/features/transaction_pin/services/transaction_pin
 import 'package:lazervault/src/generated/crypto.pbgrpc.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
+import 'package:grpc/grpc.dart' show GrpcError;
 part 'send_crypto_screen_widgets.dart';
 
 
@@ -68,6 +71,17 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
   CryptoHolding? _selected;
   bool _isInternal = false;
   bool _isSubmitting = false;
+
+  // Idempotency intent for the CURRENT form contents. Minted once (UUID v4) and
+  // REUSED across retries so a timeout-then-retry short-circuits server-side to
+  // the same withdrawal instead of firing a second irreversible send (the old
+  // per-tap 'WD-<millis>-<sym>' id defeated the server's intent dedup entirely
+  // and could even collide across users). Cleared whenever the user edits any
+  // send-defining field (amount/recipient/network/asset) or a send completes,
+  // so a NEW send never reuses a consumed intent.
+  String? _pendingIntentId;
+  String _claimIntentId() => _pendingIntentId ??= const Uuid().v4();
+  void _invalidateIntent() => _pendingIntentId = null;
 
   // The amount field can be entered in FIAT or CRYPTO; the toggle flips the unit
   // and converts the current value so the trade size is preserved. Defaults to
@@ -153,6 +167,76 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       context.read<CryptoCubit>().refreshHoldingsLive();
     });
     if (_selected != null) _loadNetworks();
+    // Any edit to the send-defining fields voids the pending idempotency
+    // intent: a retry after an edit is a NEW send, not a replay.
+    _amountController.addListener(_invalidateIntent);
+    _addressController.addListener(_invalidateIntent);
+    _networkController.addListener(_invalidateIntent);
+    // Auto-select the network matching a pasted address's format (the user
+    // can still change it manually — the dropdown stays enabled).
+    _addressController.addListener(_autoDetectNetwork);
+  }
+
+  /// True when the current network selection came from address-format
+  /// detection (drives the "auto-detected" hint under the selector).
+  bool _networkAutoDetected = false;
+
+  /// Infer the network slug from an address's FORMAT, constrained to this
+  /// asset's withdraw-enabled networks. Null when ambiguous or unrecognized —
+  /// never guesses across look-alike chains.
+  String? _inferNetworkFromAddress(String raw) {
+    final a = raw.trim();
+    if (a.length < 20 || _networks.isEmpty) return null;
+    bool has(String slug) => _networks.any((n) => n.network == slug);
+    final evm = RegExp(r'^0x[0-9a-fA-F]{40}$');
+    if (evm.hasMatch(a)) {
+      // A 0x address is valid on EVERY EVM chain. Auto-pick only when the
+      // asset offers exactly one EVM network; otherwise prefer its default
+      // network if that default is EVM — else leave the choice to the user.
+      const evmNets = [
+        'erc20', 'bep20', 'polygon', 'arbitrum', 'optimism',
+        'celo', 'base', 'lisk', 'avax', 'espace', 'zksync',
+      ];
+      final avail = evmNets.where(has).toList();
+      if (avail.length == 1) return avail.first;
+      if (avail.isEmpty) return null;
+      final def = _networks.firstWhere((n) => n.isDefault,
+          orElse: () => _networks.first);
+      return avail.contains(def.network) ? def.network : null;
+    }
+    if (RegExp(r'^T[1-9A-HJ-NP-Za-km-z]{33}$').hasMatch(a) && has('trc20')) {
+      return 'trc20';
+    }
+    if ((a.startsWith('bc1') ||
+            RegExp(r'^[13][1-9A-HJ-NP-Za-km-z]{25,39}$').hasMatch(a)) &&
+        has('btc')) {
+      return 'btc';
+    }
+    if (RegExp(r'^r[1-9A-HJ-NP-Za-km-z]{24,34}$').hasMatch(a) && has('xrp')) {
+      return 'xrp';
+    }
+    if ((a.startsWith('EQ') || a.startsWith('UQ')) && has('ton')) return 'ton';
+    if ((a.startsWith('ltc1') ||
+            RegExp(r'^[LM][1-9A-HJ-NP-Za-km-z]{25,39}$').hasMatch(a)) &&
+        has('ltc')) {
+      return 'ltc';
+    }
+    if (RegExp(r'^[1-9A-HJ-NP-Za-km-z]{32,44}$').hasMatch(a)) {
+      if (has('solana')) return 'solana';
+      if (has('sol')) return 'sol';
+    }
+    return null;
+  }
+
+  void _autoDetectNetwork() {
+    if (_isInternal || _networks.isEmpty) return;
+    final inferred = _inferNetworkFromAddress(_addressController.text);
+    if (inferred != null && inferred != _selectedNetwork) {
+      setState(() {
+        _selectedNetwork = inferred;
+        _networkAutoDetected = true;
+      });
+    }
   }
 
   /// Load the withdraw-enabled network catalogue for the selected asset from
@@ -243,6 +327,131 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     }
   }
 
+  /// Blocking network confirmation for ON-CHAIN sends. Returns true only when
+  /// the user explicitly confirms the recipient receives on [network].
+  Future<bool> _confirmNetworkCrossCheck(String network, String token) async {
+    final net = network.toUpperCase();
+    final res = await showModalBottomSheet<bool>(
+      context: context,
+      isDismissible: false,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 22.h, 20.w, 28.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Icon(Icons.warning_amber_rounded,
+                color: const Color(0xFFF59E0B), size: 40.sp),
+            SizedBox(height: 12.h),
+            Text('Sending $token on $net',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white)),
+            SizedBox(height: 8.h),
+            Text(
+              'Crypto sent on the wrong network is lost forever and cannot be '
+              'recovered by anyone. Double-check that the recipient\'s wallet '
+              'or exchange accepts $token on the $net network.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  color: Colors.white.withValues(alpha: 0.65),
+                  height: 1.45),
+            ),
+            SizedBox(height: 20.h),
+            Row(children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: BorderSide(color: Colors.white.withValues(alpha: 0.22)),
+                    padding: EdgeInsets.symmetric(vertical: 13.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
+                  ),
+                  child: const Text('Go back'),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF7C5CFF),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 13.h),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
+                  ),
+                  child: Text('Yes, it\'s $net'),
+                ),
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+    return res == true;
+  }
+
+  /// Modal (not a toast) for network-incompatibility on the advanced internal
+  /// path — the user needs to actually read this and pick another network.
+  void _showNetworkIssueSheet(String title, String message) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 22.h, 20.w, 28.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Icon(Icons.link_off_rounded,
+                color: const Color(0xFFEF4444), size: 38.sp),
+            SizedBox(height: 12.h),
+            Text(title,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white)),
+            SizedBox(height: 8.h),
+            Text(message,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    color: Colors.white.withValues(alpha: 0.65),
+                    height: 1.45)),
+            SizedBox(height: 18.h),
+            ElevatedButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7C5CFF),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 13.h),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+              ),
+              child: const Text('Choose another network'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _onSend() async {
     if (_selected == null || _isSubmitting) return;
     // Claim SYNCHRONOUSLY to close the double-tap window: _isSubmitting was
@@ -281,7 +490,11 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       if (minMinor != null && minMinor > 0) {
         final minCrypto = minMinor / math.pow(10, cfg.decimalsFor(sym));
         if (amount < minCrypto) {
-          _toast('Minimum is $minCrypto ${sym.toUpperCase()}');
+          // Speak both units when the price is known — the user may be
+          // typing in fiat mode and a crypto-only floor reads as noise.
+          final minFiat = _priceOf > 0 ? minCrypto * _priceOf : 0.0;
+          _toast('Minimum is $minCrypto ${sym.toUpperCase()}'
+              '${minFiat > 0 ? ' (≈ ${CurrencySymbols.currentSymbol}${minFiat.toStringAsFixed(2)})' : ''}');
           _releaseSend();
           return;
         }
@@ -339,6 +552,23 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       return;
     }
 
+    // ON-CHAIN cross-check: a deliberate, blocking confirm of the NETWORK
+    // before any money step. Wrong-network sends are irreversible — inline
+    // validation catches structurally-wrong addresses, but an EVM address is
+    // valid on every EVM chain, so only the user can confirm the recipient's
+    // side actually receives on this network.
+    if (!_isInternal || _advancedOnNetwork) {
+      final okNet = await _confirmNetworkCrossCheck(
+        _networkValue(),
+        _selected!.cryptoSymbol.toUpperCase(),
+      );
+      if (!mounted) return;
+      if (!okNet) {
+        _releaseSend();
+        return;
+      }
+    }
+
     setState(() => _isSubmitting = true);
 
     // Compute the on-wire routing:
@@ -354,25 +584,53 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     if (_isInternal && _advancedOnNetwork) {
       final net = _networkValue();
       try {
-        final res = await _client.resolveRecipientWallet(
-          recipientUserId: _recipientUserId!,
-          currency: _selected!.cryptoSymbol.toLowerCase(),
-          network: net,
-        );
-        if (!mounted) return;
-        if (res.address.isEmpty) {
+        // The backend provisions the recipient's sub-account AND the
+        // (currency, network) deposit address on demand — a first-ever send
+        // to this recipient may return an address that is still GENERATING.
+        // Address creation normally completes within seconds, so retry the
+        // resolve briefly before giving up instead of bouncing the user.
+        var address = '';
+        for (var attempt = 0; attempt < 3; attempt++) {
+          if (attempt > 0) {
+            await Future<void>.delayed(const Duration(seconds: 2));
+            if (!mounted) return;
+          }
+          final res = await _client.resolveRecipientWallet(
+            recipientUserId: _recipientUserId!,
+            currency: _selected!.cryptoSymbol.toLowerCase(),
+            network: net,
+          );
+          if (!mounted) return;
+          address = res.address;
+          if (address.isNotEmpty) break;
+        }
+        if (address.isEmpty) {
           setState(() => _isSubmitting = false);
-          _toast(
-              'The recipient’s ${net.toUpperCase()} address is still being set up. Please try again shortly');
+          _showNetworkIssueSheet(
+              'Wallet still being set up',
+              'The recipient\'s ${net.toUpperCase()} address is still being '
+                  'created. Try again in a moment — or use the default '
+                  'Lazervault transfer (no network), which is instant and free.');
           return;
         }
         recipientType = 'coin_address';
-        fundUid = res.address;
+        fundUid = address;
         sendNetwork = net;
-      } catch (_) {
+      } catch (e) {
         if (mounted) setState(() => _isSubmitting = false);
-        _toast(
-            'Couldn’t get the recipient’s address on that network. Please try another network');
+        // Surface the server's specific reason when it sent one (recipient
+        // can't receive on this network / not set up yet / transient) —
+        // claiming "network not supported" for every failure was misleading.
+        final serverMsg = e is GrpcError ? (e.message ?? '') : '';
+        _showNetworkIssueSheet(
+            'Couldn\'t resolve recipient\'s wallet',
+            serverMsg.isNotEmpty
+                ? '$serverMsg\n\nThe default Lazervault transfer (no network) '
+                    'is always instant and free.'
+                : 'The recipient\'s wallet doesn\'t accept ${_selected!.cryptoSymbol.toUpperCase()} '
+                    'on ${_networkValue().toUpperCase()}. Choose a network their '
+                    'wallet supports — the default Lazervault transfer (no network) '
+                    'is always instant and free.');
         return;
       }
     } else if (_isInternal) {
@@ -394,8 +652,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       return;
     }
 
-    final intentId =
-        'WD-${DateTime.now().millisecondsSinceEpoch}-${_selected!.cryptoSymbol}';
+    final intentId = _claimIntentId();
     final cubit = context.read<CryptoWithdrawCubit>();
 
     // PIN bottom-sheet. onPinValidated callback runs the saga. The mixin
@@ -411,7 +668,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       title: 'Confirm Send',
       message: 'Send ${amount.toStringAsFixed(6)} ${_selected!.cryptoSymbol.toUpperCase()}',
       showProcessingPhase: false,
-      onPinValidated: (_) async {
+      onPinValidated: (verificationToken) async {
         if (!mounted) return;
         // Snapshot the submitted send so the receipt screen can render the
         // crypto amount / recipient / network without re-reading the form.
@@ -421,6 +678,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
           recipient: recipient,
           network: sendNetwork,
           note: _noteController.text.trim(),
+          narration: _narrationController.text.trim(),
           isInternal: _isInternal,
         );
         _receiptShown = false;
@@ -438,6 +696,13 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
           // (default sub→sub and advanced on-network address).
           recipientUserId: _isInternal ? (_recipientUserId ?? '') : '',
           recipientUsername: _isInternal ? (_recipientUsername ?? '') : '',
+          // Server-side PIN gate: the saga now REJECTS sends without a PIN /
+          // verification token (send was the only irreversible money path
+          // that skipped it). Every other crypto flow already forwards this.
+          transactionPin: verificationToken,
+          // MUST be the same id the PIN sheet minted the token against — the
+          // saga validates token↔client_intent_id as a pair.
+          clientIntentId: intentId,
         );
       },
     );
@@ -515,7 +780,19 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                   'Transaction fee',
                   (_isInternal && !_advancedOnNetwork)
                       ? 'Free'
-                      : 'Network fee applies',
+                      // The selected network's withdraw fee is already known
+                      // client-side — show the real number, not a vague label.
+                      : () {
+                          final n = _networks
+                              .where((n) => n.network == _selectedNetwork)
+                              .toList();
+                          final fee = n.isNotEmpty
+                              ? n.first.withdrawFeeDecimal.trim()
+                              : '';
+                          return fee.isNotEmpty && fee != '0'
+                              ? '$fee ${_selected?.cryptoSymbol.toUpperCase() ?? ''} network fee'
+                              : 'Network fee applies';
+                        }(),
                 ),
                 if (!_isInternal || _advancedOnNetwork) ...[
                   const SizedBox(height: 8),
@@ -598,6 +875,16 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Block back-nav while a submit is in flight: popping mid-send closes the
+    // cubit under the awaited submit — the send still executes server-side but
+    // the user loses the receipt and any error surface.
+    return PopScope(
+      canPop: !_isSubmitting,
+      child: _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
@@ -646,21 +933,39 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
               child: ListView(
                 children: [
                   _buildAssetCard(holdings),
-                  // Active network for this asset — shown on BOTH tabs. Quidax
-                  // holds one unified balance per currency; this is the chain
-                  // the balance is received/sent on, with any others as "+N".
+                  // One row: the asset's active network badge (left) and the
+                  // user's personal fiat wallet balance as a compact chip at
+                  // the row's right edge — declutters two stacked full-width
+                  // rows into one.
                   if (_selected != null) ...[
                     SizedBox(height: 10.h),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: AssetNetworkBadge(
-                        symbol: _selected!.cryptoSymbol,
-                        heldHint: true,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: AssetNetworkBadge(
+                            symbol: _selected!.cryptoSymbol,
+                            heldHint: true,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        const CryptoFiatWalletPill(compact: true),
+                      ],
+                    ),
+                  ] else ...[
+                    SizedBox(height: 10.h),
+                    const Align(
+                      alignment: Alignment.centerRight,
+                      child: CryptoFiatWalletPill(compact: true),
                     ),
                   ],
                   SizedBox(height: 12.h),
-                  const CryptoFiatWalletPill(caption: 'Your wallet balance'),
+                  CryptoFlowGuidance(
+                    icon: Icons.warning_amber_rounded,
+                    text: _isInternal
+                        ? 'Lazervault-to-Lazervault transfers are instant and free.'
+                        : 'On-chain sends can\'t be reversed — double-check the address and network before you confirm.',
+                  ),
                   SizedBox(height: 12.h),
                   _buildRecipientToggle(),
                   SizedBox(height: 12.h),
@@ -686,7 +991,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                   if (!_isInternal) ...[
                     SizedBox(height: 12.h),
                     _buildField(_destinationTagController,
-                        'Destination tag (optional)'),
+                        'Destination tag (optional)', maxLength: 64),
                   ],
                   SizedBox(height: 12.h),
                   _buildField(_noteController, 'Transaction note (optional)'),
@@ -740,6 +1045,8 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       return;
     }
     _receiptShown = true;
+    // The intent is consumed — a future send from this screen is a NEW send.
+    _invalidateIntent();
 
     // Push the receipt and REMOVE the send screen (+ any intermediate routes)
     // down to the named crypto landing, so ONE Back from the receipt returns to
@@ -756,6 +1063,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
           recipient: sent.recipient,
           network: sent.network,
           note: sent.note,
+          narration: sent.narration,
           isInternal: sent.isInternal,
           createdAt: DateTime.now(),
           initialStatus: status,
@@ -914,6 +1222,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     if (!mounted) return;
     setState(() {
       _selected = h;
+      _invalidateIntent();
       _networks = const [];
       _selectedNetwork = null;
       _networkController.clear();
@@ -927,61 +1236,108 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (sheetCtx) => Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF0A0A0A),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
-        ),
-        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 44.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                    color: const Color(0xFF2D2D2D),
-                    borderRadius: BorderRadius.circular(2.r)),
-              ),
+      // StatefulBuilder so the search field can filter live — the sheet used
+      // to be a bare unsorted list a 20-wallet user had to scroll blind.
+      builder: (sheetCtx) => StatefulBuilder(builder: (ctx, setSheetState) {
+        var query = '';
+        return StatefulBuilder(builder: (ctx2, setInner) {
+          final q = query.trim().toLowerCase();
+          final filtered = q.isEmpty
+              ? holdings
+              : holdings
+                  .where((h) =>
+                      h.cryptoSymbol.toLowerCase().contains(q) ||
+                      h.cryptoName.toLowerCase().contains(q))
+                  .toList();
+          return Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF0A0A0A),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+              border: Border.all(color: const Color(0xFF2D2D2D)),
             ),
-            SizedBox(height: 16.h),
-            Text('Select asset to send',
-                style: GoogleFonts.inter(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white)),
-            SizedBox(height: 8.h),
-            Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: holdings.length,
-                itemBuilder: (_, i) {
-                  final h = holdings[i];
-                  return ListTile(
-                    contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
-                    onTap: () => Navigator.of(sheetCtx).pop(h),
-                    leading: _assetChip(h.cryptoSymbol, size: 38),
-                    title: Text(h.cryptoSymbol.toUpperCase(),
-                        style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15.sp)),
-                    subtitle: Text(h.cryptoName,
-                        style: GoogleFonts.inter(
-                            color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
-                    trailing: Text(_trimNum(h.quantity),
-                        style: GoogleFonts.inter(
-                            color: Colors.white, fontSize: 14.sp)),
-                  );
-                },
-              ),
+            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 44.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                        color: const Color(0xFF2D2D2D),
+                        borderRadius: BorderRadius.circular(2.r)),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Text('Select asset to send',
+                    style: GoogleFonts.inter(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
+                SizedBox(height: 10.h),
+                TextField(
+                  autofocus: false,
+                  onChanged: (v) => setInner(() => query = v),
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                  decoration: InputDecoration(
+                    hintText: 'Search by name or symbol',
+                    hintStyle: GoogleFonts.inter(
+                        color: const Color(0xFF6B7280), fontSize: 13.sp),
+                    prefixIcon: Icon(Icons.search,
+                        color: const Color(0xFF9CA3AF), size: 20.sp),
+                    filled: true,
+                    fillColor: const Color(0xFF161616),
+                    contentPadding: EdgeInsets.symmetric(vertical: 10.h),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Flexible(
+                  child: filtered.isEmpty
+                      ? Padding(
+                          padding: EdgeInsets.all(24.w),
+                          child: Center(
+                            child: Text('No matching assets',
+                                style: GoogleFonts.inter(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 13.sp)),
+                          ),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: filtered.length,
+                          itemBuilder: (_, i) {
+                            final h = filtered[i];
+                            return ListTile(
+                              contentPadding:
+                                  EdgeInsets.symmetric(horizontal: 4.w),
+                              onTap: () => Navigator.of(sheetCtx).pop(h),
+                              leading: _assetChip(h.cryptoSymbol, size: 38),
+                              title: Text(h.cryptoSymbol.toUpperCase(),
+                                  style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15.sp)),
+                              subtitle: Text(h.cryptoName,
+                                  style: GoogleFonts.inter(
+                                      color: const Color(0xFF9CA3AF),
+                                      fontSize: 12.sp)),
+                              trailing: Text(_trimNum(h.quantity),
+                                  style: GoogleFonts.inter(
+                                      color: Colors.white, fontSize: 14.sp)),
+                            );
+                          },
+                        ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          );
+        });
+      }),
     );
     if (picked != null) _selectAsset(picked);
   }
@@ -1041,6 +1397,19 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
 
   /// Amount input card with a Max button, unit toggle (fiat/crypto), live ≈
   /// conversion, and over-balance error.
+  /// Effective send floor for the SELECTED network in token units:
+  /// max(Quidax minimum_withdrawal, Quidax network fee) — both synced
+  /// server-side into the network catalogue. The fee floor mirrors the
+  /// backend gate: sending less than the on-chain fee is never sensible.
+  /// 0 = unknown/no floor.
+  double _minSendCrypto() {
+    final sel = _networks.where((n) => n.network == _selectedNetwork).toList();
+    if (sel.isEmpty) return 0;
+    final min = double.tryParse(sel.first.minWithdrawDecimal.trim()) ?? 0;
+    final fee = double.tryParse(sel.first.withdrawFeeDecimal.trim()) ?? 0;
+    return fee > min ? fee : min;
+  }
+
   Widget _buildAmountCard() {
     final h = _selected;
     final over = h != null && _cryptoAmount > h.quantity;
@@ -1087,13 +1456,21 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                       // exceeds balance → "Amount exceeds your balance"; crypto
                       // _trimNum rounds at 8dp → same over-balance tick. Flooring
                       // leaves only dust unsent (money-safe, never an over-send).
-                      onTap: () => setState(() => _amountController.text =
-                          _amountInFiat
-                              ? ((h.quantity * _priceOf * 100).floorToDouble() /
-                                      100)
-                                  .toStringAsFixed(2)
-                              : _trimNum((h.quantity * 1e8).floorToDouble() /
-                                  1e8)),
+                      onTap: () => setState(() {
+                        // External sends: Quidax deducts the network fee on
+                        // top, so a full-balance Max always failed or starved
+                        // the fee. Subtract the selected network's withdraw
+                        // fee so Max is actually sendable.
+                        var maxQty = h.quantity;
+                        if (!_isInternal || _advancedOnNetwork) {
+                          maxQty -= _selectedNetworkFee();
+                          if (maxQty < 0) maxQty = 0;
+                        }
+                        _amountController.text = _amountInFiat
+                            ? ((maxQty * _priceOf * 100).floorToDouble() / 100)
+                                .toStringAsFixed(2)
+                            : _trimNum((maxQty * 1e8).floorToDouble() / 1e8);
+                      }),
                       child: Container(
                         padding:
                             EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
@@ -1121,6 +1498,11 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     inputFormatters: [
+                      // Some locale keyboards only offer a comma decimal
+                      // separator — accept it and normalize to '.' so the
+                      // value parses instead of silently becoming 0.
+                      TextInputFormatter.withFunction((oldV, newV) =>
+                          newV.copyWith(text: newV.text.replaceAll(',', '.'))),
                       FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$'))
                     ],
                     style: GoogleFonts.inter(
@@ -1172,6 +1554,34 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                     style: GoogleFonts.inter(
                         fontSize: 13.sp,
                         color: Colors.white.withValues(alpha: 0.55))),
+              ],
+              // Network minimum (Quidax's minimum_withdrawal, synced server-
+              // side) — shown in the unit being typed so the floor is visible
+              // BEFORE the send is rejected. Applies to every ON-CHAIN send:
+              // external addresses AND the advanced internal-on-network path.
+              // Default internal Lazervault transfers have no network minimum.
+              if ((!_isInternal || _advancedOnNetwork) && h != null) ...[
+                () {
+                  final minC = _minSendCrypto();
+                  if (minC <= 0) return const SizedBox.shrink();
+                  final minFiat = _priceOf > 0 ? minC * _priceOf : 0.0;
+                  final belowMin = _cryptoAmount > 0 && _cryptoAmount < minC;
+                  final label = _amountInFiat && minFiat > 0
+                      ? 'Min $fiatSym${minFiat.toStringAsFixed(2)} (${_trimNum(minC)} $sym)'
+                      : 'Min ${_trimNum(minC)} $sym'
+                          '${minFiat > 0 ? ' (≈$fiatSym${minFiat.toStringAsFixed(2)})' : ''}';
+                  return Padding(
+                    padding: EdgeInsets.only(top: 6.h),
+                    child: Text(label,
+                        style: GoogleFonts.inter(
+                            fontSize: 12.sp,
+                            fontWeight:
+                                belowMin ? FontWeight.w600 : FontWeight.w400,
+                            color: belowMin
+                                ? const Color(0xFFEF4444)
+                                : Colors.white.withValues(alpha: 0.45))),
+                  );
+                }(),
               ],
             ],
           ),
@@ -1280,6 +1690,21 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                             style: GoogleFonts.inter(
                                 color: const Color(0xFF9CA3AF),
                                 fontSize: 12.sp)),
+                      // Advanced on-network sends: surface the recipient's
+                      // resolved deposit address + chain so the user sees
+                      // exactly where the crypto will land, not just a name.
+                      if (_advancedOnNetwork) ...[
+                        SizedBox(height: 3.h),
+                        Text(
+                          _advRecipientAddress == null
+                              ? 'Resolving ${_networkLabel()} address…'
+                              : _advRecipientAddress!.isEmpty
+                                  ? '${_networkLabel()} address is being created…'
+                                  : '${_networkLabel()} · ${_shortAddr(_advRecipientAddress!)}',
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFF10B981), fontSize: 11.sp),
+                        ),
+                      ],
                     ],
                   )
                 : Text('Select a Lazervault recipient',
@@ -1290,6 +1715,7 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
             GestureDetector(
               onTap: () => setState(() {
                 _recipientUserId = null;
+                _invalidateIntent();
                 _recipientUsername = null;
                 _recipientDisplay = null;
               }),
@@ -1335,7 +1761,10 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
           Switch.adaptive(
             value: _advancedOnNetwork,
             activeTrackColor: const Color(0xFF4E03D0),
-            onChanged: (v) => setState(() => _advancedOnNetwork = v),
+            onChanged: (v) {
+              setState(() => _advancedOnNetwork = v);
+              if (v) _resolveAdvancedRecipientAddress();
+            },
           ),
         ]),
       ),
@@ -1362,11 +1791,46 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
     }
     setState(() {
       _recipientUserId = result.userId;
+      _invalidateIntent();
       _recipientUsername = result.username;
       _recipientDisplay = result.displayName.isNotEmpty
           ? result.displayName
           : (result.name.isNotEmpty ? result.name : result.username);
     });
+    _resolveAdvancedRecipientAddress();
+  }
+
+  /// Recipient's resolved deposit address for the advanced on-network path.
+  /// null = not resolved yet / not applicable; '' = provisioning in progress.
+  String? _advRecipientAddress;
+
+  String _shortAddr(String a) =>
+      a.length <= 18 ? a : '${a.substring(0, 10)}…${a.substring(a.length - 6)}';
+
+  /// Eagerly resolve (and provision if missing) the internal recipient's
+  /// deposit address for the chosen network so the card can SHOW where the
+  /// crypto will land before the user confirms. Best-effort — the submit path
+  /// re-resolves authoritatively with retries.
+  Future<void> _resolveAdvancedRecipientAddress() async {
+    if (!_isInternal || !_advancedOnNetwork) return;
+    final uid = _recipientUserId;
+    final net = _networkValue();
+    final sym = _selected?.cryptoSymbol.toLowerCase();
+    if (uid == null || uid.isEmpty || net.isEmpty || sym == null) return;
+    setState(() => _advRecipientAddress = null);
+    try {
+      final res = await _client.resolveRecipientWallet(
+        recipientUserId: uid,
+        currency: sym,
+        network: net,
+      );
+      if (!mounted) return;
+      setState(() => _advRecipientAddress = res.address);
+    } catch (_) {
+      if (!mounted) return;
+      // Leave as unresolved — the submit path surfaces the real error.
+      setState(() => _advRecipientAddress = '');
+    }
   }
 
   Widget _buildNetworkSelector() {
@@ -1454,6 +1918,17 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                if (hasSelection && _networkAutoDetected) ...[
+                  SizedBox(height: 2.h),
+                  Text(
+                    'Auto-detected from the address — change if needed',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF10B981),
+                      fontSize: 10.5.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -1518,9 +1993,13 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
           'Pick the network to send on. Sending on the wrong network can lose funds.',
     );
     if (chosen == null || !mounted) return;
-    setState(() => _selectedNetwork = chosen);
+    setState(() {
+      _selectedNetwork = chosen;
+      _networkAutoDetected = false; // manual pick overrides auto-detection
+    });
     // A valid address for the old chain may be invalid for the new one.
     _revalidateAddress();
+    _resolveAdvancedRecipientAddress();
   }
 
   /// Re-runs address validation against the current network. Called when the
@@ -1538,8 +2017,25 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
 
   /// True when the form can be submitted. External sends additionally require a
   /// non-empty, structurally-valid destination address.
+  /// The selected network's withdraw fee (crypto units) from the synced
+  /// catalogue; 0 when unknown (free-text fallback / internal default path).
+  double _selectedNetworkFee() {
+    final net = _networkValue().toLowerCase();
+    for (final n in _networks) {
+      if (n.network.toLowerCase() == net) {
+        return double.tryParse(n.withdrawFeeDecimal.trim()) ?? 0.0;
+      }
+    }
+    return 0.0;
+  }
+
   bool get _canSubmit {
-    if (_isInternal) return true;
+    if (_cryptoAmount <= 0) return false;
+    if (_isInternal) {
+      // A recipient must be chosen — the CTA used to light up on a fully
+      // empty internal form and every miss was a post-tap toast.
+      return (_recipientUserId ?? '').isNotEmpty;
+    }
     final addr = _addressController.text.trim();
     if (addr.isEmpty) return false;
     return _addressError == null;
@@ -1684,12 +2180,19 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
   Widget _buildField(TextEditingController c, String label,
       {TextInputType? keyboardType,
       List<TextInputFormatter>? inputFormatters,
-      ValueChanged<String>? onChanged}) {
+      ValueChanged<String>? onChanged,
+      int maxLength = 140}) {
     return TextField(
       controller: c,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       onChanged: onChanged,
+      maxLength: maxLength,
+      buildCounter: (_,
+              {required int currentLength,
+              required bool isFocused,
+              int? maxLength}) =>
+          null,
       style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
       decoration: InputDecoration(
         filled: true,

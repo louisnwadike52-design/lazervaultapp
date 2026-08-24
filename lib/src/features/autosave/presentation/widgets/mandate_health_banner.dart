@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_e
 import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
 import 'package:lazervault/src/features/move_money/cubit/mandate_state.dart';
 import 'package:lazervault/src/features/move_money/domain/entities/mandate_entity.dart';
+import 'package:lazervault/src/features/move_money/domain/mandate_auth_attempt_store.dart';
 import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_management_bottomsheet.dart';
 
 /// Warning banner shown on a linked-bank autosave rule (bank inflow) when the
@@ -39,6 +40,10 @@ class MandateHealthBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!_isLinkedBankRule) return const SizedBox.shrink();
 
+    // Fire-and-forget, idempotent — makes the local auth-attempt stamps
+    // available to _copyFor even when autosave is the first mandate surface
+    // opened after an app restart.
+    MandateAuthAttemptStore.hydrate();
     final cubit = serviceLocator<MandateCubit>();
     return BlocBuilder<MandateCubit, MandateState>(
       bloc: cubit,
@@ -83,6 +88,20 @@ class MandateHealthBanner extends StatelessWidget {
       );
     }
     if (mandate != null && mandate.awaitingUserAuthorization) {
+      // Auth widget opened recently (this or any device): the payment leg is
+      // likely done and the bank is confirming — informational, no CTA into
+      // the spent Mono link.
+      if (mandate.authAttemptedRecently ||
+          MandateAuthAttemptStore.openedRecently(mandate.id)) {
+        return const _BannerCopy(
+          title: 'Direct Debit is setting up',
+          body:
+              'Your bank is confirming your authorization — this can take up '
+              'to 30 minutes and completes automatically.',
+          cta: 'View status',
+          info: true,
+        );
+      }
       return const _BannerCopy(
         title: 'Finish setting up Direct Debit',
         body:

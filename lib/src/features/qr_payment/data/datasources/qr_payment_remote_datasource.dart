@@ -135,6 +135,11 @@ class QRPaymentRemoteDataSourceImpl implements QRPaymentRemoteDataSource {
 
     if (statusFilter != null) {
       request.statusFilter = _statusToProto(statusFilter);
+    } else {
+      // No explicit filter = the history screen wants EVERYTHING. Without
+      // this flag the proto3 enum default (0 == PENDING) acted as a hidden
+      // "pending only" filter and paid/cancelled/expired QRs never showed.
+      request.includeAll = true;
     }
 
     final options = await grpcClient.callOptions;

@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:ui' show Rect;
 
 /// Pulls a generated statement from its signed `downloadUrl` to local disk and
 /// exposes open/print/share actions over the saved file.
@@ -71,7 +72,10 @@ class StatementFileService {
       final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (launched) return;
     }
-    await SharePlus.instance.share(ShareParams(files: [XFile(path)]));
+    await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),files: [XFile(path)]));
   }
 
   /// Send a PDF at [path] to the system print dialog.
@@ -82,6 +86,9 @@ class StatementFileService {
 
   /// Share a saved file via the system share sheet.
   Future<void> shareFile(String path) async {
-    await SharePlus.instance.share(ShareParams(files: [XFile(path)]));
+    await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),files: [XFile(path)]));
   }
 }

@@ -187,7 +187,9 @@ class PanicBalanceService extends ChangeNotifier {
     _longPressTrigger = p.getBool(_k(_kLongPressTrigger)) ?? true;
     _soundEnabled = p.getBool(_k(_kSound)) ?? false;
     _soundChoice = p.getString(_k(_kSoundChoice)) ?? _defaultSoundAsset;
-    _vibrationEnabled = p.getBool(_k(_kVibration)) ?? false;
+    // Default ON: the balance-roll haptic is a core dashboard feel; users who
+    // dislike it turn it off in Settings → Notifications & Display.
+    _vibrationEnabled = p.getBool(_k(_kVibration)) ?? true;
     _activeLabel = p.getString(_k(_kActiveLabel));
     final raw = p.getString(_k(_kPresets));
     if (raw != null && raw.isNotEmpty) {

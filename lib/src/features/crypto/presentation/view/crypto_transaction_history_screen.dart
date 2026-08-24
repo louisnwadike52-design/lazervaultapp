@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/crypto/presentation/view/send_crypto_receipt_screen.dart';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -74,37 +75,10 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
     }
   }
 
-  CryptoTransactionStatus _mapStatus(String status) {
-    // Maps the backend's raw status string onto the UI enum. Mirrors the
-    // saga's status set (migrations 007 + 018 + 020). Default falls
-    // through to verifying — the most conservative UI label — rather
-    // than to completed, so an unknown future-status doesn't show a
-    // misleading green badge.
-    switch (status.toLowerCase()) {
-      case 'completed':
-      case 'success':
-        return CryptoTransactionStatus.completed;
-      case 'quote_pending':
-      case 'submitting':
-      case 'swap_pending':
-      case 'pending':
-      case 'processing':
-        return CryptoTransactionStatus.pending;
-      case 'failed':
-      case 'reversed':
-      case 'error':
-        return CryptoTransactionStatus.failed;
-      case 'refunded':
-      case 'refund_pending':
-        return CryptoTransactionStatus.refunded;
-      case 'manual_review':
-        return CryptoTransactionStatus.manualReview;
-      case 'submission_unknown':
-        return CryptoTransactionStatus.verifying;
-      default:
-        return CryptoTransactionStatus.verifying;
-    }
-  }
+  CryptoTransactionStatus _mapStatus(String status) =>
+      // Shared mapper — keeps this screen's badges identical to the crypto
+      // landing page's recent-transactions section.
+      mapBackendCryptoTxStatus(status);
 
   @override
   void initState() {
@@ -668,203 +642,9 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
   }
 
   void _showTransactionDetails(CryptoTransactionHistory transaction) {
-    Get.bottomSheet(
-      Container(
-        height: Get.height * 0.85,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24.r),
-            topRight: Radius.circular(24.r),
-          ),
-        ),
-        child: Column(
-          children: [
-            Container(
-              margin: EdgeInsets.only(top: 12.h),
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[600],
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(24.w),
-                child: _buildTransactionDetailsContent(transaction),
-              ),
-            ),
-          ],
-        ),
-      ),
-      isScrollControlled: true,
-    );
-  }
-
-  Widget _buildTransactionDetailsContent(CryptoTransactionHistory transaction) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Transaction Details',
-              style: GoogleFonts.inter(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            GestureDetector(
-              onTap: () => Get.back(),
-              child: Icon(Icons.close, color: Colors.white, size: 24.sp),
-            ),
-          ],
-        ),
-        SizedBox(height: 24.h),
-        _buildDetailSection('Basic Information', [
-          _buildDetailRow('Transaction ID', transaction.id),
-          _buildDetailRow('Type', _getTransactionTitle(transaction)),
-          _buildDetailRow('Status', transaction.status.name.toUpperCase()),
-          _buildDetailRow('Date & Time', _formatDateTime(transaction.timestamp)),
-        ]),
-        SizedBox(height: 24.h),
-        _buildDetailSection('Transaction Details', [
-          _buildDetailRow('Cryptocurrency', transaction.cryptoName),
-          _buildDetailRow('Amount', '${transaction.amount} ${transaction.cryptoSymbol}'),
-          _buildDetailRow('${CurrencySymbols.currentCurrency} Value', '${CurrencySymbols.currentSymbol}${transaction.gbpAmount.toStringAsFixed(2)}'),
-          _buildDetailRow('Fee', '${CurrencySymbols.currentSymbol}${transaction.fee.toStringAsFixed(2)}'),
-          if (transaction.type == CryptoTransactionType.swap) ...[
-            _buildDetailRow('From', transaction.fromCrypto ?? 'Unknown'),
-            _buildDetailRow('To', transaction.toCrypto ?? 'Unknown'),
-          ],
-        ]),
-        SizedBox(height: 24.h),
-        _buildDetailSection('Security & Compliance', [
-          _buildDetailRow('Blockchain Network', _getBlockchainNetwork(transaction.cryptoSymbol)),
-          _buildDetailRow('Encryption', '256-bit SSL'),
-          _buildDetailRow('Regulation', 'FCA Authorized'),
-          _buildDetailRow('Storage', 'Cold Storage Wallet'),
-        ]),
-        SizedBox(height: 32.h),
-        if (transaction.status == CryptoTransactionStatus.completed)
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => _viewReceipt(transaction),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-              ),
-              child: Text(
-                'View Receipt',
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildDetailSection(String title, List<Widget> children) {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.inter(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 12.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _viewReceipt(CryptoTransactionHistory transaction) {
-    Get.back(); // Close bottom sheet
-    
-    // Create transaction details
-    final transactionDetails = CryptoTransactionDetails(
-      type: transaction.type,
-      cryptoName: transaction.cryptoName,
-      cryptoSymbol: transaction.cryptoSymbol,
-      cryptoAmount: transaction.amount,
-      pricePerUnit: () {
-        final qty = double.tryParse(transaction.amount) ?? 0.0;
-        return qty > 0 ? transaction.gbpAmount / qty : 0.0;
-      }(),
-      fiatAmount: transaction.gbpAmount,
-      networkFee: transaction.fee * 0.3,
-      tradingFee: transaction.fee * 0.7,
-      totalAmount: transaction.gbpAmount + transaction.fee,
-      paymentMethod: 'Card',
-      fromCrypto: transaction.fromCrypto,
-      toCrypto: transaction.toCrypto,
-    );
-    
-    // Create receipt
-    final receipt = CryptoTransactionReceipt(
-      transactionId: transaction.id,
-      transactionDetails: transactionDetails,
-      timestamp: transaction.timestamp,
-      status: transaction.status,
-    );
-    
-    Get.to(() => CryptoReceiptScreen(receipt: receipt, fromHistory: true));
+    // Straight to the full-page receipt (shared builder, real details) —
+    // the intermediate details bottomsheet was removed by request.
+    openCryptoTransactionReceipt(transaction);
   }
 
   Color _getTransactionTypeColor(CryptoTransactionType type) {
@@ -912,59 +692,11 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
     }
   }
 
-  Color _getStatusColor(CryptoTransactionStatus status) {
-    switch (status) {
-      case CryptoTransactionStatus.completed:
-        return Colors.green;
-      case CryptoTransactionStatus.pending:
-      case CryptoTransactionStatus.verifying:
-        return Colors.orange;
-      case CryptoTransactionStatus.failed:
-        return Colors.red;
-      case CryptoTransactionStatus.refunded:
-        // Neutral grey — neither a "good" nor a "bad" outcome; the user
-        // got their fiat back but the trade didn't happen.
-        return const Color(0xFF9CA3AF);
-      case CryptoTransactionStatus.manualReview:
-        // Deep amber so admin-attention rows stand out from regular
-        // pending. Visible without being alarming.
-        return const Color(0xFFFB923C);
-    }
-  }
+  Color _getStatusColor(CryptoTransactionStatus status) =>
+      cryptoTxStatusColor(status);
 
-  /// Human-readable label shown in the badge next to the status colour.
-  /// Kept short so the row stays single-line on narrow screens.
-  String _getStatusLabel(CryptoTransactionStatus status) {
-    switch (status) {
-      case CryptoTransactionStatus.completed:
-        return 'Completed';
-      case CryptoTransactionStatus.pending:
-        return 'Processing';
-      case CryptoTransactionStatus.failed:
-        return 'Failed';
-      case CryptoTransactionStatus.refunded:
-        return 'Refunded';
-      case CryptoTransactionStatus.manualReview:
-        return 'Under Review';
-      case CryptoTransactionStatus.verifying:
-        return 'Verifying';
-    }
-  }
-
-  String _getBlockchainNetwork(String symbol) {
-    switch (symbol.toUpperCase()) {
-      case 'BTC':
-        return 'Bitcoin Network';
-      case 'ETH':
-        return 'Ethereum Network';
-      case 'BNB':
-        return 'Binance Smart Chain';
-      case 'SOL':
-        return 'Solana Network';
-      default:
-        return 'Ethereum Network (ERC-20)';
-    }
-  }
+  String _getStatusLabel(CryptoTransactionStatus status) =>
+      cryptoTxStatusLabel(status);
 
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} at ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';

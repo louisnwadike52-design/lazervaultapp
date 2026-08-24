@@ -5,11 +5,15 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:uuid/uuid.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pb.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 part 'auto_orders_screen_widgets.dart';
 
 
@@ -28,16 +32,25 @@ TextStyle _inter(double size, {FontWeight w = FontWeight.w400, Color c = Colors.
 String _fmtPrice(double p) =>
     p >= 1 ? p.toStringAsFixed(2) : (p >= 0.01 ? p.toStringAsFixed(4) : p.toStringAsFixed(6));
 
-class _CreateSheetState extends State<_CreateSheet> {
+class _CreateSheetState extends State<_CreateSheet>
+    with TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      serviceLocator<ITransactionPinService>();
+
   final _priceCtrl = TextEditingController();
   final _amountCtrl = TextEditingController();
-  final _pinCtrl = TextEditingController();
   final _searchCtrl = TextEditingController();
   List<CryptoMessage> _assets = [], _filtered = [];
   CryptoMessage? _selected;
   final String _side = 'buy'; // buy-only for now (sell needs saga ToAmount support)
   String _dir = 'below';
   bool _loadingAssets = false, _creating = false, _picking = false;
+
+  // Stable per-sheet idempotency key: a retry after a timeout (where the first
+  // call actually succeeded server-side) must NOT mint a second order + second
+  // fiat hold. The server dedups on this key.
+  final String _idem = 'AUTOORDER-${const Uuid().v4()}';
 
   String get _ccy => CurrencySymbols.currentCurrency;
   String get _sym => CurrencySymbols.currentSymbol;
@@ -52,7 +65,6 @@ class _CreateSheetState extends State<_CreateSheet> {
   void dispose() {
     _priceCtrl.dispose();
     _amountCtrl.dispose();
-    _pinCtrl.dispose();
     _searchCtrl.dispose();
     super.dispose();
   }
@@ -82,7 +94,6 @@ class _CreateSheetState extends State<_CreateSheet> {
     if (_selected == null) return;
     final price = double.tryParse(_priceCtrl.text);
     final amount = double.tryParse(_amountCtrl.text);
-    final pin = _pinCtrl.text.trim();
     if (price == null || price <= 0) {
       _toast('Enter a valid target price');
       return;
@@ -91,30 +102,48 @@ class _CreateSheetState extends State<_CreateSheet> {
       _toast('Enter a valid amount');
       return;
     }
-    if (pin.length < 4) {
-      _toast('Enter your transaction PIN');
-      return;
-    }
     final accountId = serviceLocator<AccountManager>().activeAccountId ?? '';
     if (accountId.isEmpty) {
       _toast('No active account selected');
       return;
     }
 
+    // Standard transaction-PIN bottomsheet (same as buy/sell/send/swap) —
+    // the backend's VerifyPinOrToken accepts the sheet's minted token in the
+    // transaction_pin field, so no inline PIN text field is needed here.
     setState(() => _creating = true);
-    try {
-      await widget.client.createAutoOrder(
-        accountId: accountId,
-        side: _side,
-        cryptoId: _selected!.id,
-        fiatCurrency: _ccy,
-        triggerDirection: _dir,
-        targetPrice: price,
-        amountMinor: (amount * 100).round(),
-        transactionPin: pin,
-      );
+    var created = false;
+    final ok = await validateTransactionPin(
+      context: context,
+      transactionId: _idem,
+      transactionType: 'crypto_auto_order',
+      amount: amount,
+      currency: _ccy,
+      title: 'Authorise auto order',
+      message:
+          '${_side == 'buy' ? 'Buy' : 'Sell'} ${_selected!.symbol.toUpperCase()} when price is $_dir $_sym${_fmtPrice(price)}',
+      showProcessingPhase: true,
+      successMessage: 'Auto order created',
+      onPinValidated: (token) async {
+        await widget.client.createAutoOrder(
+          accountId: accountId,
+          side: _side,
+          cryptoId: _selected!.id,
+          fiatCurrency: _ccy,
+          triggerDirection: _dir,
+          targetPrice: price,
+          amountMinor: (amount * 100).round(),
+          transactionPin: token,
+          idempotencyKey: _idem,
+        );
+        created = true;
+      },
+    );
+    if (!mounted) return;
+    setState(() => _creating = false);
+    if (ok && created) {
       widget.onCreated();
-      if (mounted) Navigator.pop(context);
+      Navigator.pop(context);
       Get.snackbar(
         'Auto order created',
         '${_side == 'buy' ? 'Buy' : 'Sell'} ${_selected!.symbol.toUpperCase()} when $_dir $_sym${_fmtPrice(price)}',
@@ -122,9 +151,6 @@ class _CreateSheetState extends State<_CreateSheet> {
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
       );
-    } catch (e) {
-      setState(() => _creating = false);
-      _toast('Could not create auto order: ${e.toString().replaceAll('Exception: ', '')}', error: true);
     }
   }
 
@@ -262,20 +288,9 @@ class _CreateSheetState extends State<_CreateSheet> {
               style: _inter(16),
               decoration: _inputDeco(hint: '0.00', prefix: '$_sym '),
             ),
-            SizedBox(height: 16.h),
-            // PIN
-            Text('Transaction PIN', style: _inter(13, w: FontWeight.w500, c: _sub)),
-            SizedBox(height: 8.h),
-            TextField(
-              controller: _pinCtrl,
-              obscureText: true,
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              style: _inter(16),
-              decoration: _inputDeco(hint: 'Enter PIN to authorise').copyWith(counterText: ''),
-            ),
             SizedBox(height: 20.h),
+            // Authorisation happens in the standard transaction-PIN bottomsheet
+            // when the user taps Create — no inline PIN field.
             SizedBox(
                 width: double.infinity,
                 height: 50.h,

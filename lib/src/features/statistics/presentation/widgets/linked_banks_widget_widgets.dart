@@ -236,6 +236,28 @@ class _BankAccountItem extends StatelessWidget {
                       ),
                     ),
                   ],
+                  // Export this bank's synced statement (CSV/PDF share) —
+                  // reads the locally-accumulated store, costs nothing.
+                  SizedBox(width: 6.w),
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => LinkedBankStatementExportSheet.show(context,
+                        account: account),
+                    child: Tooltip(
+                      message: 'Export statement',
+                      child: Container(
+                        width: 32.w,
+                        height: 32.w,
+                        decoration: BoxDecoration(
+                          color:
+                              const Color(0xFF581CD9).withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(9.r),
+                        ),
+                        child: Icon(Icons.ios_share_rounded,
+                            size: 15.sp, color: const Color(0xFF8B5CF6)),
+                      ),
+                    ),
+                  ),
                 ]);
               }),
           ],

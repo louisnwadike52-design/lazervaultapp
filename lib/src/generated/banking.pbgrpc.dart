@@ -508,6 +508,17 @@ class BankingServiceClient extends $grpc.Client {
     return $createUnaryCall(_$createMandate, request, options: options);
   }
 
+  /// Record that the user OPENED the mandate's Mono authorization webview —
+  /// device-independent "Setting up" signal (see DirectDebitMandate.auth_attempted_at).
+  $grpc.ResponseFuture<$0.MarkMandateAuthAttemptResponse>
+      markMandateAuthAttempt(
+    $0.MarkMandateAuthAttemptRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$markMandateAuthAttempt, request,
+        options: options);
+  }
+
   /// Get mandate status
   $grpc.ResponseFuture<$0.MandateResponse> getMandate(
     $0.GetMandateRequest request, {
@@ -955,6 +966,11 @@ class BankingServiceClient extends $grpc.Client {
           '/banking.BankingService/CreateMandate',
           ($0.CreateMandateRequest value) => value.writeToBuffer(),
           $0.MandateResponse.fromBuffer);
+  static final _$markMandateAuthAttempt = $grpc.ClientMethod<
+          $0.MarkMandateAuthAttemptRequest, $0.MarkMandateAuthAttemptResponse>(
+      '/banking.BankingService/MarkMandateAuthAttempt',
+      ($0.MarkMandateAuthAttemptRequest value) => value.writeToBuffer(),
+      $0.MarkMandateAuthAttemptResponse.fromBuffer);
   static final _$getMandate =
       $grpc.ClientMethod<$0.GetMandateRequest, $0.MandateResponse>(
           '/banking.BankingService/GetMandate',
@@ -1572,6 +1588,15 @@ abstract class BankingServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.CreateMandateRequest.fromBuffer(value),
         ($0.MandateResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.MarkMandateAuthAttemptRequest,
+            $0.MarkMandateAuthAttemptResponse>(
+        'MarkMandateAuthAttempt',
+        markMandateAuthAttempt_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.MarkMandateAuthAttemptRequest.fromBuffer(value),
+        ($0.MarkMandateAuthAttemptResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetMandateRequest, $0.MandateResponse>(
         'GetMandate',
         getMandate_Pre,
@@ -2255,6 +2280,15 @@ abstract class BankingServiceBase extends $grpc.Service {
 
   $async.Future<$0.MandateResponse> createMandate(
       $grpc.ServiceCall call, $0.CreateMandateRequest request);
+
+  $async.Future<$0.MarkMandateAuthAttemptResponse> markMandateAuthAttempt_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.MarkMandateAuthAttemptRequest> $request) async {
+    return markMandateAuthAttempt($call, await $request);
+  }
+
+  $async.Future<$0.MarkMandateAuthAttemptResponse> markMandateAuthAttempt(
+      $grpc.ServiceCall call, $0.MarkMandateAuthAttemptRequest request);
 
   $async.Future<$0.MandateResponse> getMandate_Pre($grpc.ServiceCall $call,
       $async.Future<$0.GetMandateRequest> $request) async {

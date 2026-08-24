@@ -17,6 +17,7 @@ import '../../cubit/crypto_config_cubit.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../domain/entities/crypto_entity.dart';
 import '../widgets/price_quote_card.dart';
+import '../widgets/crypto_flow_guidance.dart';
 import '../widgets/network_picker_sheet.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pbgrpc.dart' show QuidaxAssetNetwork;
@@ -59,6 +60,9 @@ class BuyCryptoSheet extends StatefulWidget {
 class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixin {
   final TextEditingController _amountController = TextEditingController();
   bool _isTransacting = false;
+  // Last server rejection (e.g. the min-deliverable message with the exact
+  // "Try ₦X or more" figure) — rendered as a persistent in-sheet banner.
+  String? _serverError;
   // Fiat-input by default for a buy (you spend NGN to get crypto).
   bool _isAmountInCrypto = false;
   // Live rate from PriceQuoteCard; falls back to the entity's currentPrice.
@@ -82,7 +86,10 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
   @override
   void initState() {
     super.initState();
-    _amountController.addListener(() => setState(() {}));
+    _amountController.addListener(() => setState(() {
+          // Editing the amount clears the stale server rejection banner.
+          _serverError = null;
+        }));
     _loadNetworks();
     // The AccountCardsSummaryCubit is loaded app-wide (dashboard); the
     // BlocBuilder below reads its current spendable balance for the pay-from
@@ -112,7 +119,28 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
       // Flat fiat notional floor (~$1 in the user's currency) as a backstop.
       final fiatFloor =
           (cfg.minOrderFor(CurrencySymbols.currentCurrency) ?? 0) / 100.0;
-      return math.max(minFromCrypto, fiatFloor);
+      // Deliverability floor (Quidax's per-network minimum_withdrawal, synced
+      // server-side): the bought crypto must clear it or the buy executes and
+      // auto-refunds. +2%% headroom so rate drift between quote refreshes
+      // doesn't land the user just under the line at confirm.
+      double minFromDeliverable = 0;
+      final deliverableMin = cfg.minDeliverableFor(sym);
+      if (deliverableMin != null && rate > 0) {
+        minFromDeliverable = deliverableMin * rate * 1.02;
+      }
+      return math.max(math.max(minFromCrypto, fiatFloor), minFromDeliverable);
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// Minimum purchase in CRYPTO units (deliverability floor), or 0 if unknown.
+  double _minCrypto() {
+    try {
+      return GetIt.I<CryptoConfigCubit>()
+              .config
+              .minDeliverableFor(widget.crypto.symbol) ??
+          0;
     } catch (_) {
       return 0;
     }
@@ -121,13 +149,53 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
   String? _amountError(double available) {
     if (_amountController.text.isEmpty || _fiatAmount <= 0) return null;
     final min = _minFiat();
+    // Balance can't reach the minimum at all → one clear message instead of
+    // bouncing between "Minimum is…" and "Exceeds your wallet balance".
+    // Judge against the fee AT THE MINIMUM (what a min-sized buy would cost),
+    // not the fee of whatever is typed — a huge typed amount's fee wrongly
+    // flipped well-funded wallets into "insufficient".
+    double feeAtMin;
+    try {
+      feeAtMin = GetIt.I<CryptoConfigCubit>()
+          .config
+          .feeForOp('buy', min, CurrencySymbols.currentCurrency);
+    } catch (_) {
+      feeAtMin = min * _feeDisplayRate();
+    }
+    if (min > 0 && available > 0 && available < min + feeAtMin) {
+      return 'Insufficient balance — the minimum ${widget.crypto.symbol.toUpperCase()} '
+          'purchase is ${CurrencySymbols.currentSymbol}${min.toStringAsFixed(2)}. '
+          'Top up to continue.';
+    }
     if (min > 0 && _fiatAmount < min) {
-      return 'Minimum is ${CurrencySymbols.currentSymbol}${min.toStringAsFixed(2)}';
+      final sym = widget.crypto.symbol.toUpperCase();
+      final minC = _minCrypto();
+      // Speak in the unit the user is TYPING, with the other in parentheses.
+      if (_isAmountInCrypto && minC > 0) {
+        return 'Minimum is ${_trimNum(minC)} $sym '
+            '(≈ ${CurrencySymbols.currentSymbol}${min.toStringAsFixed(2)})';
+      }
+      return 'Minimum is ${CurrencySymbols.currentSymbol}${min.toStringAsFixed(2)}'
+          '${minC > 0 ? ' (${_trimNum(minC)} $sym)' : ''}';
     }
     // The backend charges the platform fee ON TOP of the subtotal (holds
     // subtotal + fee), so the wallet must cover the TOTAL, not just the subtotal.
     if (_fiatAmount + _resolveFee() > available) {
-      return 'Exceeds your wallet balance';
+      // The affordable maximum must solve maxFiat + fee(maxFiat) = available —
+      // subtracting the fee of the CURRENTLY TYPED (over-budget) amount
+      // massively understated it (a ₦2.6M attempt's ₦13k fee shrank a ₦19.8k
+      // wallet's shown max from ~14 USDT to ~4.8 USDT).
+      final feeRate = _fiatAmount > 0 ? _resolveFee() / _fiatAmount : 0.0;
+      final maxFiat =
+          (feeRate >= 0 ? available / (1 + feeRate) : available).clamp(0.0, available).toDouble();
+      if (_isAmountInCrypto) {
+        final r = _rate();
+        final maxC = r > 0 ? maxFiat / r : 0.0;
+        return 'Exceeds your wallet balance'
+            '${maxC > 0 ? ' (max ≈ ${_trimNum(maxC)} ${widget.crypto.symbol.toUpperCase()})' : ''}';
+      }
+      return 'Exceeds your wallet balance'
+          '${maxFiat > 0 ? ' (max ≈ ${CurrencySymbols.currentSymbol}${maxFiat.toStringAsFixed(2)})' : ''}';
     }
     return null;
   }
@@ -532,7 +600,40 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
                 SizedBox(height: 16.h),
                 if (_fiatAmount > 0) _buildOrderSummary(),
                 SizedBox(height: 12.h),
-                _buildPayFrom(available, canCover, sym),
+                _buildPayFrom(available, canCover, sym, personal),
+                SizedBox(height: 12.h),
+                const CryptoFlowGuidance(
+                  text:
+                      'You pay the total (amount + fee) from this account; the crypto is delivered to your Lazervault crypto wallet as soon as the trade fills.',
+                ),
+                if (_serverError != null) ...[
+                  SizedBox(height: 12.h),
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.5)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.error_outline,
+                            size: 16.sp, color: const Color(0xFFEF4444)),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(_serverError!,
+                              style: GoogleFonts.inter(
+                                  fontSize: 12.5.sp,
+                                  height: 1.35,
+                                  color: const Color(0xFFFECACA))),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 SizedBox(height: 18.h),
                 _buildBuyButton(enabled),
                 SizedBox(height: 8.h),
@@ -628,7 +729,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
                     // platform fee — the wallet must cover subtotal+fee, so
                     // setting the subtotal to the full balance made total>balance
                     // and permanently disabled the Buy button ("Exceeds wallet").
-                    if (available > 0 && !_isAmountInCrypto) ...[
+                    if (available > 0) ...[
                       SizedBox(width: 8.w),
                       _maxChip(() => setState(() {
                         double feeAtFull;
@@ -643,7 +744,18 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
                         }
                         final maxSpend =
                             (available - feeAtFull).clamp(0.0, available);
-                        _amountController.text = maxSpend.toStringAsFixed(2);
+                        if (_isAmountInCrypto) {
+                          // Crypto mode: max buyable qty, FLOORED at 6dp so
+                          // rounding never parses back above the balance.
+                          final r = _rate();
+                          if (r > 0) {
+                            final maxC =
+                                ((maxSpend / r) * 1e6).floorToDouble() / 1e6;
+                            _amountController.text = maxC.toStringAsFixed(6);
+                          }
+                        } else {
+                          _amountController.text = maxSpend.toStringAsFixed(2);
+                        }
                       })),
                     ],
                   ]),
@@ -801,12 +913,67 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
                   fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.4)));
         }
         final min = _minFiat();
+        final minC = _minCrypto();
+        final r = _rate();
+        final tkr = widget.crypto.symbol.toUpperCase();
         final parts = <String>[];
-        if (min > 0) parts.add('Min $sym${min.toStringAsFixed(0)}');
-        if (available > 0) parts.add('Max $sym${available.toStringAsFixed(0)}');
+        // The "max" is just the spendable balance — when it's BELOW the
+        // minimum, showing both reads as a contradiction ("Min ₦3,451 · Max
+        // ₦2,837"). Collapse to the minimum + an explicit insufficient-balance
+        // flag instead.
+        // Spendable must solve spendable + fee(spendable) = available. Using
+        // the fee of the TYPED amount made an over-budget entry shrink the
+        // shown Max (a ₦2.6M attempt's ₦13k fee turned a ₦19.8k wallet's max
+        // into ~₦6.7k) — the hint must be independent of what's typed.
+        final feeAtFull = () {
+          try {
+            return GetIt.I<CryptoConfigCubit>()
+                .config
+                .feeForOp('buy', available, CurrencySymbols.currentCurrency);
+          } catch (_) {
+            return available * _feeDisplayRate();
+          }
+        }();
+        final feeRate = available > 0 ? feeAtFull / available : 0.0;
+        final spendable = (feeRate >= 0 ? available / (1 + feeRate) : available)
+            .clamp(0.0, available)
+            .toDouble();
+        final balanceBelowMin = min > 0 && available > 0 && spendable < min;
+        // Min/Max in the unit the user is TYPING so the numbers are directly
+        // comparable to the field value; the fiat equivalent rides along for
+        // the crypto-unit min so the cost is never a surprise.
+        if (_isAmountInCrypto) {
+          if (minC > 0) {
+            parts.add('Min ${_trimNum(minC)} $tkr'
+                '${min > 0 ? ' (≈$sym${min.toStringAsFixed(0)})' : ''}');
+          }
+          if (balanceBelowMin) {
+            parts.add('Insufficient balance');
+          } else if (available > 0 && r > 0) {
+            parts.add('Max ≈${_trimNum(spendable / r)} $tkr');
+          }
+        } else {
+          if (min > 0) {
+            parts.add('Min $sym${min.toStringAsFixed(0)}'
+                '${minC > 0 ? ' (${_trimNum(minC)} $tkr)' : ''}');
+          }
+          if (balanceBelowMin) {
+            parts.add('Insufficient balance');
+          } else if (available > 0) {
+            parts.add('Max $sym${available.toStringAsFixed(0)}');
+          }
+        }
+        // Red when the typed amount is below the floor OR the balance can't
+        // reach it at all — the floor must be unmissable before the Buy tap.
+        final belowMin = _fiatAmount > 0 && min > 0 && _fiatAmount < min;
+        final alert = belowMin || balanceBelowMin;
         return Text(parts.join(' · '),
             style: GoogleFonts.inter(
-                fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.45)));
+                fontSize: 12.sp,
+                fontWeight: alert ? FontWeight.w600 : FontWeight.w400,
+                color: alert
+                    ? const Color(0xFFEF4444)
+                    : Colors.white.withValues(alpha: 0.45)));
       },
     );
   }
@@ -846,7 +1013,16 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
     );
   }
 
-  Widget _buildPayFrom(double available, bool canCover, String sym) {
+  Widget _buildPayFrom(double available, bool canCover, String sym,
+      AccountSummaryEntity? account) {
+    // Name the ACTUAL funding account ("Personal account") instead of the
+    // generic "Lazervault Wallet" so the user knows exactly which wallet pays.
+    String accountLabel = 'Lazervault Wallet';
+    final t = (account?.accountType ?? '').trim();
+    if (t.isNotEmpty) {
+      accountLabel =
+          '${t[0].toUpperCase()}${t.substring(1).toLowerCase()} account';
+    }
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
@@ -864,7 +1040,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Lazervault Wallet',
+              Text(accountLabel,
                   style: GoogleFonts.inter(
                       fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white)),
               SizedBox(height: 2.h),
@@ -979,7 +1155,19 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
     // error message, so cancelling the quote/PIN froze the button forever.)
     if (mounted) {
       if (!result.initiated && (result.message ?? '').isNotEmpty) {
-        Get.snackbar('Trade failed', result.message!, snackPosition: SnackPosition.BOTTOM);
+        // In-sheet banner (persistent, red, right above the CTA) — the old
+        // bottom snackbar was easy to miss behind the sheet. Keep a loud
+        // snackbar too for redundancy.
+        setState(() => _serverError = result.message);
+        Get.snackbar(
+          'Trade failed',
+          result.message!,
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: const Color(0xFFB91C1C),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 6),
+          margin: EdgeInsets.all(12.w),
+        );
       }
       setState(() => _isTransacting = false);
     }

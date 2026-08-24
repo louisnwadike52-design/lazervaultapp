@@ -111,6 +111,9 @@ ${widget.trades.map((trade) => '  ${trade.action} ${trade.sharesToTrade} ${trade
 ''';
 
     SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       text: receiptText,
       subject: 'Rebalance Receipt - $_rebalanceId',
     )).then((_) {

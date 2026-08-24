@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:intl/intl.dart';
+import 'dart:ui' show Rect;
 
 class AutoSaveExportHelper {
   /// Export a list of autosave rules to CSV format and share
@@ -71,6 +72,9 @@ class AutoSaveExportHelper {
     final String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
     // Share the CSV file
     await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       text: csv,
       subject: 'AutoSave Rules Export - $timestamp',
     ));
@@ -104,6 +108,9 @@ class AutoSaveExportHelper {
     final String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
     // Share the JSON file
     await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       text: jsonString,
       subject: 'AutoSave Rules Export - $timestamp',
     ));
@@ -169,6 +176,9 @@ Rule: ${rule.name}
 ''';
 
     await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       text: summary,
       subject: 'AutoSave Rules Summary Report',
     ));

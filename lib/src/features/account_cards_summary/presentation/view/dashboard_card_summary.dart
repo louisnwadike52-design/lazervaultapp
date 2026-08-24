@@ -26,6 +26,7 @@ import 'package:lazervault/src/features/virtual_account/domain/services/va_provi
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.dart';
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/funds/presentation/view/deposit_receipt_screen.dart';
 
 // Wrapper Widget to Provide the Cubit
 class DashboardCardSummary extends StatelessWidget {
@@ -344,6 +345,10 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
                 );
               }
             } else if (event.eventType == 'transfer_in' || event.eventType == 'deposit') {
+              // The deposit receipt IS the confirmation — while it's on screen
+              // (pushed over the dashboard, whose listener stays alive), don't
+              // pop the deposit text as a snackbar over it.
+              if (DepositReceiptScreen.isShowing) return;
               LVSnackbar.showSuccess(
                 title: 'Funds Received',
                 message: event.amount != null
@@ -452,6 +457,13 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
                     final accountSummaries = state is AccountCardsSummaryLoaded
                         ? state.accountSummaries
                         : (state as AccountBalanceUpdated).accountSummaries;
+                    // True only during an explicit user refresh (swipe-down →
+                    // "Refresh accounts"). Keeps the card visible and overlays a
+                    // small "Refreshing…" pill so there's feedback even when the
+                    // balance returns unchanged. Silent/background refetches keep
+                    // isRefreshing=false, so this never appears on login/resume.
+                    final isRefreshing = state is AccountCardsSummaryLoaded &&
+                        state.isRefreshing;
                     // Check if user has no accounts (non-Nigeria or accounts not yet created)
                     if (accountSummaries.isEmpty) {
                       final isSupported = EmptyAccountState.isCountrySupported(countryCode);
@@ -480,10 +492,45 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
                       );
                     }
 
-                    return AccountCarousel(
+                    final carousel = AccountCarousel(
                       accountSummaries: accountSummaries,
                       onShowDetails: _showCardDetailsSheet,
                       compact: widget.compact,
+                    );
+                    if (!isRefreshing) return carousel;
+                    // Overlay (never replaces) — the cards stay fully readable
+                    // while a small pill signals the manual refresh in flight.
+                    return Stack(
+                      children: [
+                        carousel,
+                        Positioned(
+                          top: 0,
+                          right: 4.w,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 10.w, vertical: 5.h),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.28),
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const LazerVaultLoader(size: 14),
+                                SizedBox(width: 6.w),
+                                Text(
+                                  'Refreshing…',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     );
                   }
                   return SizedBox(

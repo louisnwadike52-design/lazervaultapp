@@ -16,6 +16,10 @@ enum LinkedAccountState {
   /// Mandate authorized but still activating with NIBSS — one-time approval meanwhile.
   settingUp,
 
+  /// Mandate created but the bank authorization was never completed (the user
+  /// closed the Mono webview). Actionable: tap to finish the authorization.
+  finishSetup,
+
   /// One-time DirectPay — the user approves each transaction at their bank.
   oneTime,
 
@@ -58,6 +62,8 @@ _ChipCfg _configFor(LinkedAccountState s) {
       return const _ChipCfg(Color(0xFF10B981), Icons.autorenew, 'Direct Debit');
     case LinkedAccountState.settingUp:
       return const _ChipCfg(Color(0xFFFB923C), Icons.hourglass_bottom, 'Setting up');
+    case LinkedAccountState.finishSetup:
+      return const _ChipCfg(Color(0xFFF59E0B), Icons.touch_app_outlined, 'Finish setup');
     case LinkedAccountState.oneTime:
       return const _ChipCfg(Color(0xFF9CA3AF), Icons.bolt, 'One-time');
     case LinkedAccountState.verified:

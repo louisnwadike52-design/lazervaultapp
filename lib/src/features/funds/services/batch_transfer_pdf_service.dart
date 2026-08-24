@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
+import 'dart:ui' show Rect;
 
 /// Production-grade batch transfer receipt PDF service
 /// Generates professional, Revolut-style downloadable and shareable PDF receipts
@@ -850,6 +851,9 @@ class BatchTransferPdfService {
       final batchId = receiptData['batchId']?.toString() ?? '';
 
       await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
         text:
             'Lazervault Batch Transfer Receipt - $currencySymbol${totalAmount.toStringAsFixed(2)} to $recipientCount recipients',
@@ -1177,6 +1181,9 @@ class BatchTransferPdfService {
           transfer['recipientName'] as String? ?? 'Recipient';
 
       await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
         text:
             'Lazervault Transfer Receipt - $currencySymbol${amount.toStringAsFixed(2)} to $recipientName',

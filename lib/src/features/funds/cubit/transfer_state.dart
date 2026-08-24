@@ -66,16 +66,29 @@ final class TransferFeeLoaded extends TransferState {
   final int totalAmount; // Minor units
   final List<FeeBreakdownItem> breakdown;
 
+  /// The exact amount (minor units) and transfer type this quote was fetched
+  /// for. Fees are AMOUNT-DEPENDENT — the provider fee scales with the amount
+  /// and the platform fee can be a percentage-with-cap — so a cached quote is
+  /// only valid for the SAME amount + type it was quoted at. Callers must
+  /// revalidate against these before trusting the cached `fee` (see
+  /// [TransferCubit.ensureFeeForAmount]). Default 0/'' marks an unqualified
+  /// quote (older call sites) which is always treated as stale.
+  final int quotedForAmountMinor;
+  final String quotedForType;
+
   const TransferFeeLoaded({
     required this.fee,
     required this.currency,
     required this.feeType,
     required this.totalAmount,
     required this.breakdown,
+    this.quotedForAmountMinor = 0,
+    this.quotedForType = '',
   });
 
   @override
-  List<Object?> get props => [fee, currency, feeType, totalAmount, breakdown];
+  List<Object?> get props =>
+      [fee, currency, feeType, totalAmount, breakdown, quotedForAmountMinor, quotedForType];
 }
 
 final class TransferFeeError extends TransferState {

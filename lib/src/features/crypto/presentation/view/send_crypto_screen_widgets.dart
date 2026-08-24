@@ -9,6 +9,7 @@ class _SentDetails {
   final String recipient;
   final String network;
   final String note;
+  final String narration;
   final bool isInternal;
   const _SentDetails({
     required this.amount,
@@ -16,6 +17,7 @@ class _SentDetails {
     required this.recipient,
     required this.network,
     required this.note,
+    this.narration = '',
     required this.isInternal,
   });
 }

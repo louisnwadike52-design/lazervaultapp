@@ -6,8 +6,12 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/qr_payment/domain/qr_payload_parser.dart';
 import 'package:lazervault/src/features/qr_payment/domain/repositories/qr_payment_repository.dart';
 part 'qr_scanner_screen_widgets.dart';
@@ -171,13 +175,22 @@ class _QRScannerScreenState extends State<QRScannerScreen>
       case LegacyTokenQr():
         _handleLegacyTokenQR(payload);
         return;
-      case InvalidQr():
-        _showError('Invalid QR Code', 'This QR code is not a Lazervault code.');
+      case InvalidQr(:final reason):
+        _showError(reason != null ? 'Can\'t pay this QR' : 'Invalid QR Code',
+            reason ?? 'This QR code is not a Lazervault code.');
         return;
     }
   }
 
   String? _getCurrentUserId() {
+    // Must be the USER id — QR payloads carry user ids. The previous
+    // implementation returned the active ACCOUNT id (a different UUID), so
+    // the equality below could never be true and the self-scan guard was
+    // silently dead in this scanner.
+    try {
+      final auth = context.read<AuthenticationCubit>().state;
+      if (auth is AuthenticationSuccess) return auth.profile.user.id;
+    } catch (_) {}
     try {
       final accountManager = GetIt.I<AccountManager>();
       return accountManager.activeAccountDetails?.id;
@@ -234,28 +247,19 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                 'Cannot Pay Yourself', 'You cannot scan your own QR code.');
             return;
           }
-          final out = <String, dynamic>{
-            'recipientId': entity.userId,
-            'username': entity.username,
-            'name': entity.fullName,
-            'scannedAt': DateTime.now().toIso8601String(),
-            'qr_version': '2.1',
-          };
-          if (entity.amount > 0) {
-            out['amount'] = (entity.amount * 100).round(); // minor units
-            out['currency'] = entity.currency;
-          }
+          // SYNC FIX: a server-backed `QR-…` code must be PAID through the
+          // qr-pay rail (ProcessQRPayment), not converted into an ordinary
+          // transfer. The old recipient-conversion moved the money fine but
+          // never marked the QR paid — the generator's "Paid" watchers
+          // (My QR screen / QR display websocket+poll) never fired, and the
+          // reconciler paged ops about a routine successful payment. Route
+          // to the same confirmation screen the QR-pay scanner uses; it
+          // marks the QR paid, notifies the generator, and stays fee-free
+          // (internal transfer) exactly like the send-funds path would be.
           _cancelTimeout();
-          Get.back(result: out);
-          Get.snackbar(
-            'QR Verified',
-            'Ready to send to ${entity.fullName}',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green.withValues(alpha: 0.8),
-            colorText: Colors.white,
-            icon: Icon(Icons.check_circle, color: Colors.white),
-            duration: Duration(seconds: 2),
-          );
+          Get.offNamed(AppRoutes.qrPaymentConfirmation, arguments: {
+            'qr_code': qrCode,
+          });
         },
       );
     } catch (e) {

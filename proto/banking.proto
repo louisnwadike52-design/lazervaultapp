@@ -12,23 +12,9 @@ import "google/api/annotations.proto";
 // =====================================================
 
 service BankingService {
-    // Virtual Accounts
-    rpc CreateVirtualAccount(CreateVirtualAccountRequest) returns (VirtualAccountResponse) {
-        option (google.api.http) = {
-            post: "/api/v1/accounts"
-            body: "*"
-        };
-    }
-    rpc GetVirtualAccount(GetVirtualAccountRequest) returns (VirtualAccountResponse) {
-        option (google.api.http) = {
-            get: "/api/v1/accounts/{account_number}"
-        };
-    }
-    rpc GetUserVirtualAccounts(GetUserVirtualAccountsRequest) returns (VirtualAccountsResponse) {
-        option (google.api.http) = {
-            get: "/api/v1/users/{user_id}/accounts"
-        };
-    }
+    // NOTE: Virtual-account RPCs removed — accounts-service is the single
+    // source of truth for accounts + virtual-account details. banking-service
+    // reads account info via the accounts-service gRPC client.
 
     // Domestic Transfers
     rpc InitiateDomesticTransfer(DomesticTransferRequest) returns (TransferResponse) {
@@ -110,12 +96,6 @@ service BankingService {
     rpc VerifyNINForSignup(VerifyNINForSignupRequest) returns (SignupIdentityVerificationResponse) {
         option (google.api.http) = {
             post: "/api/v1/internal/verify/nin"
-            body: "*"
-        };
-    }
-    rpc CreateVirtualAccountForUser(CreateVirtualAccountForUserRequest) returns (VirtualAccountResponse) {
-        option (google.api.http) = {
-            post: "/api/v1/internal/accounts/create"
             body: "*"
         };
     }
@@ -206,9 +186,9 @@ service BankingService {
             body: "*"
         };
     }
-    rpc GetPrimaryAccount(GetPrimaryAccountRequest) returns (VirtualAccountResponse) {
+    rpc GetProveKYCStatus(GetProveKYCStatusRequest) returns (GetProveKYCStatusResponse) {
         option (google.api.http) = {
-            get: "/api/v1/users/{user_id}/primary-account"
+            get: "/api/v1/kyc/prove/status"
         };
     }
 
@@ -322,14 +302,9 @@ service BankingService {
     }
 
     // ===== EXTERNAL TRANSACTION SYNC =====
-
-    // Sync transactions for all linked accounts
-    rpc SyncAllAccountTransactions(SyncAllAccountTransactionsRequest) returns (SyncAllAccountTransactionsResponse) {
-        option (google.api.http) = {
-            post: "/api/v1/linked-accounts/sync-all"
-            body: "*"
-        };
-    }
+    // NOTE: SyncAllAccountTransactions (bulk unattended Mono refresh of ALL linked
+    // accounts) was REMOVED — cost-incurring bulk refresh is gone. Only per-account
+    // sync remains below.
 
     // Sync transactions for a specific account
     rpc SyncExternalTransactions(SyncExternalTransactionsRequest) returns (SyncExternalTransactionsResponse) {
@@ -348,7 +323,9 @@ service BankingService {
 
     // Aggregated analytics over synced external-bank transactions for the
     // AI budgeting / statistics screen. Filterable to ONE linked bank
-    // (linked_account_id) or ALL linked banks (empty).
+    // (linked_account_id) or ALL linked banks (empty). Returns current +
+    // previous window totals, category breakdowns and a daily expense series
+    // so the client can merge with wallet analytics for combined views.
     rpc GetExternalBankAnalytics(GetExternalBankAnalyticsRequest) returns (GetExternalBankAnalyticsResponse) {
         option (google.api.http) = {
             get: "/api/v1/linked-accounts/analytics"
@@ -373,6 +350,15 @@ service BankingService {
         };
     }
 
+    // Refresh a single Mono-linked account's transactions + balance on
+    // demand. Service-to-service only (no gateway route): financial-products-
+    // service calls this for accounts that back an active external_inflow
+    // autosave rule, so inflow detection is TARGETED instead of banking
+    // sweeping every linked account. Refreshing emits external.inflow.detected
+    // for any new credit, same as the webhook/sweep paths.
+    rpc RefreshLinkedAccount(RefreshLinkedAccountRequest) returns (RefreshLinkedAccountResponse) {
+    }
+
     // Get deposit status
     rpc GetDepositStatus(GetDepositStatusRequest) returns (DepositResponse) {
         option (google.api.http) = {
@@ -384,6 +370,15 @@ service BankingService {
     rpc GetUserDeposits(GetUserDepositsRequest) returns (DepositsResponse) {
         option (google.api.http) = {
             get: "/api/v1/users/{user_id}/deposits"
+        };
+    }
+
+    // Admin: list all deposits with filters (used by admin-gateway).
+    // Returns paginated direct_debits rows for the admin dashboard so ops
+    // can track collections per payment method (Apple Pay, card, etc.).
+    rpc AdminListDeposits(AdminListDepositsRequest) returns (AdminListDepositsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/admin/deposits"
         };
     }
 
@@ -402,16 +397,16 @@ service BankingService {
         };
     }
 
-    // Consolidated fee quote for the deposit-link flow: one-time connect fee
-    // (first-time link only) + per-deposit fee for the chosen rail, each broken
-    // down into Mono cost + LazerVault margin. Powers the fee-disclosure modal.
+    // Consolidated fee quote for the deposit-link flow: the one-time connect fee
+    // (only for a first-time link) + the per-deposit fee for the chosen rail,
+    // each broken down into the Mono cost and the LazerVault margin. Powers the
+    // single fee-disclosure modal shown before Mono Connect / DirectPay.
     rpc GetDepositFeeQuote(DepositFeeQuoteRequest) returns (DepositFeeQuoteResponse) {
         option (google.api.http) = {
             post: "/api/v1/deposits/fee-quote"
             body: "*"
         };
     }
-
 
     // Get available deposit methods for a country
     rpc GetDepositMethods(GetDepositMethodsRequest) returns (GetDepositMethodsResponse) {
@@ -426,6 +421,15 @@ service BankingService {
     rpc CreateMandate(CreateMandateRequest) returns (MandateResponse) {
         option (google.api.http) = {
             post: "/api/v1/mandates"
+            body: "*"
+        };
+    }
+
+    // Record that the user OPENED the mandate's Mono authorization webview —
+    // device-independent "Setting up" signal (see DirectDebitMandate.auth_attempted_at).
+    rpc MarkMandateAuthAttempt(MarkMandateAuthAttemptRequest) returns (MarkMandateAuthAttemptResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/mandates/{mandate_id}/auth-attempt"
             body: "*"
         };
     }
@@ -799,6 +803,10 @@ message BanksResponse {
     string error_code = 2;
     string error_message = 3;
     repeated Bank banks = 4;
+    // provider is the account-verification/bank-list provider that served this
+    // response (mono | flutterwave | paystack), selected from the admin-tunable
+    // `account_verify_provider` system setting. Observability only.
+    string provider = 5;
 }
 
 message Bank {
@@ -1045,19 +1053,21 @@ message TransactionsResponse {
 }
 
 // ===== CONNECT FINANCIAL DATA (Mono Bank Data) =====
+// Mono's statement/insights/income/creditworthiness payloads are rich and
+// variable, so they are returned as a raw JSON string the client decodes.
 message GetAccountStatementRequest {
-    string account_id = 1;
-    string user_id = 2;
-    string period = 3;
-    string output = 4;
+    string account_id = 1; // linked account UUID
+    string user_id = 2;    // resolved from auth context; optional override
+    string period = 3;     // e.g. "last12months"
+    string output = 4;     // "" for JSON, "pdf" for an async PDF job
 }
 
 message AccountStatementResponse {
     bool success = 1;
     string error_code = 2;
     string error_message = 3;
-    string json = 4;
-    string pdf_job_id = 5;
+    string json = 4;       // raw statement JSON (transactions + meta)
+    string pdf_job_id = 5; // when output=pdf
     string pdf_url = 6;
 }
 
@@ -1069,15 +1079,15 @@ message GetStatementInsightsRequest {
 message GetAccountIncomeRequest {
     string account_id = 1;
     string user_id = 2;
-    int32 period = 3;
+    int32 period = 3; // months to consider; 0 = lifetime
 }
 
 message AssessCreditworthinessRequest {
     string account_id = 1;
     string user_id = 2;
-    int64 principal = 3;
+    int64 principal = 3;     // kobo
     double interest_rate = 4;
-    int32 term = 5;
+    int32 term = 5;          // months
     bool run_credit_check = 6;
 }
 
@@ -1085,19 +1095,23 @@ message ConnectDataResponse {
     bool success = 1;
     string error_code = 2;
     string error_message = 3;
-    string json = 4;
+    string json = 4; // raw Mono data as JSON
 }
 
 // ===== MONO PROVE — 3-TIER KYC =====
 message InitiateProveKYCRequest {
-    string user_id = 1;
-    string id_type = 2;
+    string user_id = 1;      // resolved from auth context; optional override
+    string id_type = 2;      // "bvn" | "nin"
     string id_number = 3;
     string first_name = 4;
     string last_name = 5;
-    string phone = 6;
+    string phone = 6;        // must be linked to the BVN
     string email = 7;
     string address = 8;
+    // ADVISORY ONLY — no longer selects the Mono billing level. The Mono Prove
+    // PRODUCT level (kyc_level, billed per the SLA) is admin-pinned server-side
+    // via the kyc.mono.prove_level system_setting (default tier_1). Kept for
+    // wire compatibility; banking-service ignores it when calling Mono.
     string tier = 9;
     string redirect_url = 10;
 }
@@ -1106,10 +1120,10 @@ message InitiateProveKYCResponse {
     bool success = 1;
     string error_code = 2;
     string error_message = 3;
-    string mono_url = 4;
-    string reference = 5;
+    string mono_url = 4;     // hosted Prove URL to open in a webview
+    string reference = 5;    // pass back to CompleteProveKYC on redirect
     string session_id = 6;
-    string status = 7;
+    string status = 7;       // "pending"
 }
 
 message CompleteProveKYCRequest {
@@ -1128,6 +1142,45 @@ message CompleteProveKYCResponse {
     string first_name = 8;
     string last_name = 9;
     string date_of_birth = 10;
+    // Tier tracking: what the completed steps leave the user at + what's next.
+    int32 tier = 11;
+    string tier_name = 12;
+    string message = 13;
+    repeated string completed_steps = 14;
+    int32 next_tier = 15;
+    repeated string next_requirements = 16;
+    int64 daily_limit_kobo = 17;
+}
+
+message GetProveKYCStatusRequest {
+    string user_id = 1; // resolved from auth context
+}
+
+message GetProveKYCStatusResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    bool verified = 4;
+    int32 tier = 5;
+    string tier_name = 6;
+    repeated string completed_steps = 7;
+    int32 next_tier = 8;
+    repeated string next_requirements = 9;
+    string message = 10;
+    int64 daily_limit_kobo = 11;
+    string bvn_masked = 12;
+    string nin_masked = 13;
+    string reference = 14;
+    // Session state for the CURRENT/latest Prove session, so the app can render
+    // an explicit modal instead of guessing from copy:
+    //   "" | "none"  — no session on record
+    //   "pending"    — session in flight (widget open / webhook not landed)
+    //   "verified"   — identity verified
+    //   "failed"     — last session terminally failed (see failure_reason)
+    string session_state = 15;
+    // Machine-readable reason for session_state=failed: "cancelled" | "expired"
+    // | "data_mismatch" | "rejected" (best-effort; may be empty).
+    string failure_reason = 16;
 }
 
 message Transaction {
@@ -1308,6 +1361,17 @@ message ConnectWidgetConfigResponse {
     string public_key = 4;      // Mono public key for widget
     string app_id = 5;          // Mono app ID
     int64 link_fee = 6;         // First-time link fee (minor units, LazerVault REVENUE); 0 = free
+
+    // Customer identity for the Connect widget. Without a customer, Mono makes
+    // EVERY user "verify identity" in-widget regardless of their LazerVault KYC
+    // tier. Preferred: mono_customer_id (pre-created cus_xxx, resolved via
+    // GetOrCreateCustomer from the user's REAL verified data). Fallback: the
+    // inline fields so the widget can pass {name, email, identity:{bvn}}.
+    // All empty → widget behaves as before (in-widget verification).
+    string mono_customer_id = 7;
+    string customer_name = 8;
+    string customer_email = 9;
+    string customer_bvn = 10;
 }
 
 // Link Bank Account
@@ -1408,11 +1472,13 @@ message SetDefaultLinkedAccountResponse {
 message RefreshLinkedAccountBalanceRequest {
     string account_id = 1;
     string user_id = 2;
-    // Cost-confirmed refresh: call quote_only=true for the fee, then again with
-    // the txPIN verification_token to charge (→ REVENUE) + do the live Mono read.
+    // A live refresh is COST-CONFIRMED: the app first calls quote_only=true to
+    // get the fee, shows a cost modal + txPIN, then calls again with the
+    // verification_token to charge the fee (→ REVENUE) and do the live Mono read.
+    // quote_only=true never charges nor reads Mono.
     bool quote_only = 3;
-    string verification_token = 4;
-    string transaction_id = 5;
+    string verification_token = 4;    // txPIN verification token (charge path)
+    string transaction_id = 5;        // idempotency/replay id for txPIN validation
 }
 
 message RefreshLinkedAccountBalanceResponse {
@@ -1421,8 +1487,11 @@ message RefreshLinkedAccountBalanceResponse {
     string error_message = 3;
     int64 new_balance = 4;            // Updated balance in minor units
     string currency = 5;
-    int64 fee = 6;                    // Refresh fee in minor units (quote + charged)
+    int64 fee = 6;                    // Aggregated refresh fee in minor units (quote + charged) = fee_mono_cost + fee_lazervault
     bool charged = 7;                 // true when the fee was actually debited
+    int64 fee_mono_cost = 8;          // Mono balance-inquiry COST leg (→ MONO_COST at settlement)
+    int64 fee_lazervault = 9;         // LazerVault margin leg (→ REVENUE at settlement)
+    int64 fee_discount = 10;          // Platform-funded discount leg (→ FEE_DISCOUNTS); fee = cost + margin - discount
 }
 
 // Reauthorization Token
@@ -1476,26 +1545,8 @@ message ExternalBankTransaction {
     string metadata = 20;
 }
 
-// Sync All Account Transactions
-message SyncAllAccountTransactionsRequest {
-    string user_id = 1;
-    string sync_type = 2;             // 'full', 'incremental'
-}
-
-message SyncAllAccountTransactionsResponse {
-    bool success = 1;
-    int32 total_accounts_synced = 2;
-    int32 total_transactions_synced = 3;
-    repeated AccountSyncResult accounts = 4;
-}
-
-message AccountSyncResult {
-    string account_id = 1;
-    string bank_name = 2;
-    int32 transactions_synced = 3;
-    bool success = 4;
-    string error = 5;
-}
+// (SyncAllAccountTransactionsRequest/Response + AccountSyncResult removed with the
+// bulk SyncAllAccountTransactions RPC.)
 
 // Sync External Transactions
 message SyncExternalTransactionsRequest {
@@ -1513,7 +1564,6 @@ message SyncExternalTransactionsResponse {
     repeated ExternalBankTransaction transactions = 5;
 }
 
-// Get Account With Transactions
 // ===== EXTERNAL BANK ANALYTICS =====
 
 message GetExternalBankAnalyticsRequest {
@@ -1521,26 +1571,28 @@ message GetExternalBankAnalyticsRequest {
     string linked_account_id = 2;     // optional: one bank; empty = all linked banks
     string start_date = 3;            // RFC3339; required
     string end_date = 4;              // RFC3339; required
+    // Previous comparison window (for trend %). Optional; when empty the
+    // service mirrors the current window length immediately before start.
     string prev_start_date = 5;
     string prev_end_date = 6;
 }
 
 message ExternalPeriodTotals {
-    double total_income = 1;
-    double total_expenses = 2;
+    double total_income = 1;          // major units
+    double total_expenses = 2;        // major units
     int32 transaction_count = 3;
 }
 
 message ExternalCategoryTotal {
     string category = 1;
-    double amount = 2;
+    double amount = 2;                // major units
     int32 transaction_count = 3;
-    double percentage = 4;
+    double percentage = 4;            // of the type total
 }
 
 message ExternalDailyPoint {
-    string date = 1;
-    double expense_amount = 2;
+    string date = 1;                  // YYYY-MM-DD
+    double expense_amount = 2;        // major units
 }
 
 message GetExternalBankAnalyticsResponse {
@@ -1550,10 +1602,11 @@ message GetExternalBankAnalyticsResponse {
     repeated ExternalCategoryTotal expense_categories = 4;
     repeated ExternalCategoryTotal income_categories = 5;
     repeated ExternalDailyPoint daily_expenses = 6;
-    int32 linked_account_count = 7;
+    int32 linked_account_count = 7;   // how many banks contributed
     string error_message = 8;
 }
 
+// Get Account With Transactions
 message GetAccountWithTransactionsRequest {
     string account_id = 1;
     int32 limit = 2;                  // Default 50
@@ -1583,6 +1636,18 @@ message RefreshAccountTransactionsResponse {
 // OPEN BANKING - DEPOSITS (DIRECT DEBIT) MESSAGES
 // =====================================================
 
+// Refresh a single linked account (service-to-service, targeted inflow detection)
+message RefreshLinkedAccountRequest {
+    string user_id = 1;
+    string linked_account_id = 2;
+}
+
+message RefreshLinkedAccountResponse {
+    bool success = 1;
+    int64 new_credits = 2;      // count of newly-synced credit rows (inflows emitted)
+    string error_message = 3;
+}
+
 // Initiate Deposit
 message InitiateDepositRequest {
     string user_id = 1;
@@ -1595,6 +1660,35 @@ message InitiateDepositRequest {
     bool use_recurring_access = 7;    // If true, create mandate; if false, use DirectPay (one-time)
     string country_code = 8;          // "NG", "GH", "KE", "ZA", "US", "GB"
     string currency = 9;              // For provider routing
+    // payment_method restricts the hosted-checkout page to a single rail.
+    // Empty = let Flutterwave decide. Known values: "apple_pay", "card",
+    // "bank_transfer", "ussd", "mobile_money". Persisted on direct_debits
+    // so admin dashboard can attribute and filter.
+    string payment_method = 10;
+    // ===== AutoSave / labeled-credit overrides (service-to-service) =====
+    // When set, the wallet credit at settlement uses these instead of the
+    // default Type "deposit" / Description "Deposit from <bank>". The
+    // description MUST start with "AutoSave" for autosave-originated pulls
+    // (the on-deposit autosave consumer's recursion guard keys on it).
+    string credit_type_override = 11;        // e.g. "auto_save"
+    string credit_description_override = 12; // e.g. "AutoSave (external_inflow): <rule>"
+    string external_reference = 13;          // source external_txn_id for audit
+    // recurring_only marks a NON-INTERACTIVE caller (autosave scheduled /
+    // external-inflow pull): no human is present to complete a one-time
+    // DirectPay authorization. When true AND no debitable mandate exists, the
+    // deposit MUST fail with needs_mandate instead of silently downgrading to
+    // interactive DirectPay — which would strand the money and let the caller
+    // record a phantom "successful" save. Interactive user deposits leave this
+    // false so they keep the DirectPay fallback.
+    bool recurring_only = 14;
+    // Transaction-PIN gate for interactive bank-rail deposits. The client shows
+    // the aggregated deposit fee on the tx-PIN sheet, then sends the minted
+    // verification_token (bound to transaction_id). InitiateDeposit PreValidates
+    // it before creating the debit when a deposit fee applies. Empty for
+    // non-interactive service callers (autosave/scheduled) — those never charge a
+    // human-facing PIN.
+    string verification_token = 15;
+    string transaction_id = 16;
 }
 
 message DepositResponse {
@@ -1639,6 +1733,11 @@ message Deposit {
     string provider = 18;             // "mono", "flutterwave"
     string payment_type = 19;         // "card", "mobilemoneyghana", "mpesa", "bank_transfer"
     reserved 20;                      // was is_simulated (removed: no test-deposit path in production)
+    // Stored charge-time fee split (fee = mono_fee + platform_fee - fee_discount).
+    int64 mono_fee = 21;              // Mono provider cost portion (→ MONO_COST)
+    int64 platform_fee = 22;          // LazerVault GROSS margin, pre-discount (→ REVENUE)
+    int64 fee_discount = 23;          // Platform-funded discount (→ FEE_DISCOUNTS)
+    string debit_rail = 24;           // rail the fee was priced on: "directpay" | "directdebit"
 }
 
 // Get Deposit Status
@@ -1660,6 +1759,44 @@ message DepositsResponse {
     string error_message = 3;
     repeated Deposit deposits = 4;
     int32 total = 5;
+}
+
+// Admin paginated listing of all deposits (direct_debits rows). Filters are
+// AND-combined; an empty string means "no filter for that field".
+message AdminListDepositsRequest {
+    string status = 1;          // pending | processing | completed | failed
+    string payment_method = 2;  // apple_pay | card | bank_transfer | ussd | ...
+    string currency = 3;        // NGN, USD, GBP, ...
+    string provider = 4;        // flutterwave, mono
+    string country_code = 5;
+    int32 page = 6;             // 1-indexed; defaults to 1
+    int32 per_page = 7;         // defaults to 50, capped at 200
+}
+
+message AdminListDepositsResponse {
+    repeated AdminDepositRow deposits = 1;
+    int32 total = 2;
+    int32 page = 3;
+    int32 per_page = 4;
+}
+
+message AdminDepositRow {
+    string id = 1;
+    string user_id = 2;
+    string reference = 3;
+    string provider = 4;
+    string payment_method = 5;  // direct_debits.payment_type
+    string status = 6;
+    int64 amount_minor_units = 7;
+    int64 fee_minor_units = 8;
+    string currency = 9;
+    string country_code = 10;
+    string destination_account_id = 11;
+    string narration = 12;
+    string payment_url = 13;
+    string provider_ref = 14;
+    string created_at = 15;
+    string updated_at = 16;
 }
 
 // Cancel Deposit
@@ -1684,9 +1821,10 @@ message CalculateDepositFeeResponse {
     string error_code = 2;
     string error_message = 3;
     int64 amount = 4;                 // Original amount
-    int64 fee = 5;                    // Fee in minor units
+    int64 fee = 5;                    // CHARGED fee in minor units (already discounted)
     int64 net_amount = 6;             // Amount after fee deduction
     string currency = 7;
+    int64 discount = 8;               // Platform-funded discount included in the quote (fee+discount = undiscounted)
 }
 
 // Consolidated fee quote for the deposit-link flow.
@@ -1696,12 +1834,14 @@ message DepositFeeQuoteRequest {
     bool first_time_link = 3;         // include the one-time connect fee (bank not yet linked)
 }
 
-// One fee split into the Mono provider cost (MONO_COST) and the LazerVault
-// margin (REVENUE). total = mono_cost + lazervault_fee.
+// One fee split into the Mono provider cost (→ MONO_COST), the LazerVault
+// margin (→ REVENUE) and the platform-funded discount (→ FEE_DISCOUNTS).
+// total = mono_cost + lazervault_fee - discount (the CHARGED figure).
 message FeeLegBreakdown {
     int64 mono_cost = 1;
     int64 lazervault_fee = 2;
     int64 total = 3;
+    int64 discount = 4;
 }
 
 message DepositFeeQuoteResponse {
@@ -1712,9 +1852,10 @@ message DepositFeeQuoteResponse {
     string currency = 5;
     FeeLegBreakdown connect_fee = 6;  // One-time bank-link fee (all zero unless first_time_link)
     FeeLegBreakdown deposit_fee = 7;  // Per-deposit fee for the chosen rail
-    int64 grand_total = 8;            // connect_fee.total + deposit_fee.total
+    int64 grand_total = 8;            // connect_fee.total + deposit_fee.total (discounted)
     int64 net_amount = 9;             // amount - deposit_fee.total (what lands in the wallet)
     string rail = 10;                 // "direct_debit" | "direct_pay"
+    int64 discount_total = 11;        // connect_fee.discount + deposit_fee.discount ("you save")
 }
 
 // Get Deposit Methods for a Country
@@ -1819,11 +1960,15 @@ message CalculateWithdrawalFeeResponse {
     string error_code = 2;
     string error_message = 3;
     int64 amount = 4;
-    int64 fee = 5;
-    int64 total_debit = 6;
+    int64 fee = 5;              // AGGREGATED fee shown to the user = platform_fee + provider_cost
+    int64 total_debit = 6;      // amount + fee
     int64 min_amount = 7;
     int64 max_amount = 8;
     string currency = 9;
+    // Split of the aggregated fee — for transparency/audit. The user pays `fee`;
+    // settlement books platform_fee → REVENUE and the actual FW payout → FLUTTERWAVE_COST.
+    int64 platform_fee = 10;    // LazerVault margin (→ REVENUE)
+    int64 provider_cost = 11;   // estimated Flutterwave payout cost (→ FLUTTERWAVE_COST)
 }
 
 // Resolve Account Name
@@ -1840,6 +1985,10 @@ message ResolveAccountNameResponse {
     string account_name = 5;
     string bank_code = 6;
     string bank_name = 7;
+    // provider is the verification provider that resolved this account
+    // (mono | flutterwave | paystack), selected from the admin-tunable
+    // `account_verify_provider` system setting. Observability only.
+    string provider = 8;
 }
 
 // =====================================================
@@ -1930,6 +2079,25 @@ message DirectDebitMandate {
     // Deposit-method switch (Direct Debit <-> one-time DirectPay) tracking
     bool switch_processing = 28;      // A pause/reinstate is awaiting Mono confirmation
     string pending_method = 29;       // Method being switched TO: "direct_debit" / "one_time" / ""
+
+    // When the user last OPENED this mandate's Mono authorization (any device).
+    // Drives the "Setting up" vs "Finish setup" distinction server-side: a
+    // recent attempt on an awaiting mandate means the payment leg is likely
+    // done and Mono is confirming (its link is spent) — the client must poll,
+    // not reopen the dead link.
+    google.protobuf.Timestamp auth_attempted_at = 30;
+}
+
+// Mark Mandate Auth Attempt
+message MarkMandateAuthAttemptRequest {
+    string mandate_id = 1;
+    // cleared=true removes the stamp (client detected an instant abandon —
+    // the auth link is still fresh and Finish setup must reopen it).
+    bool cleared = 2;
+}
+
+message MarkMandateAuthAttemptResponse {
+    bool success = 1;
 }
 
 // Get Mandate Request

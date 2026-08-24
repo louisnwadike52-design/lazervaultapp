@@ -60,6 +60,8 @@ class TransferCubit extends Cubit<TransferState> {
           feeType: 'flat',
           totalAmount: amountMinorUnits,
           breakdown: const [FeeBreakdownItem(label: 'Transfer Fee', amount: 0)],
+          quotedForAmountMinor: amountMinorUnits,
+          quotedForType: transferType,
         );
         lastFeeLoaded = feeState;
         emit(feeState);
@@ -83,12 +85,110 @@ class TransferCubit extends Cubit<TransferState> {
         feeType: 'flat',
         totalAmount: amountMinorUnits + fee,
         breakdown: [FeeBreakdownItem(label: 'Transfer Fee', amount: fee)],
+        quotedForAmountMinor: amountMinorUnits,
+        quotedForType: transferType,
       );
       lastFeeLoaded = feeState;
       emit(feeState);
     } catch (e) {
       if (isClosed) return;
       emit(TransferFeeError(message: 'Failed to get transfer fee: $e'));
+    }
+  }
+
+  /// Return a fee quote that is GUARANTEED to be for [amountMinorUnits] +
+  /// [transferType]. Because fees are amount-dependent (provider fee scales
+  /// with amount; platform fee may be percentage-with-cap), the cached
+  /// [lastFeeLoaded] is only trustworthy when it was quoted for the exact same
+  /// amount and type — otherwise it's silently wrong (e.g. a ₦10k quote shown
+  /// on a ₦50k confirm). This is the single revalidation gate every confirm /
+  /// PIN sheet should use instead of reading [lastFeeLoaded] directly:
+  ///   • cache HIT (same amount+type) → return it, no redundant network call;
+  ///   • cache MISS / stale / null / errored → re-quote synchronously.
+  /// Returns null only if the (re)quote fails, so callers can decide whether to
+  /// block the confirm or proceed without a fee row.
+  Future<TransferFeeLoaded?> ensureFeeForAmount({
+    required int amountMinorUnits,
+    required String currency,
+    required String transferType,
+    String? destinationBankCode,
+  }) async {
+    final cached = lastFeeLoaded;
+    if (cached != null &&
+        cached.quotedForAmountMinor == amountMinorUnits &&
+        cached.quotedForType == transferType &&
+        cached.currency == currency) {
+      // Stale-while-revalidate: hand back the cached fee INSTANTLY (no spinner)
+      // and revalidate in the BACKGROUND so an admin fee-config change (e.g. new
+      // range bands) propagates without blocking or flashing a loading state.
+      _revalidateFeeInBackground(
+        amountMinorUnits: amountMinorUnits,
+        currency: currency,
+        transferType: transferType,
+        cachedFee: cached.fee,
+      );
+      return cached;
+    }
+    await getTransferFee(
+      amountMinorUnits: amountMinorUnits,
+      currency: currency,
+      transferType: transferType,
+      destinationBankCode: destinationBankCode,
+    );
+    // getTransferFee updates lastFeeLoaded on success and leaves it untouched
+    // (emitting TransferFeeError) on failure — so only return a quote that
+    // actually matches the requested amount, never a stale one.
+    final fresh = lastFeeLoaded;
+    if (fresh != null &&
+        fresh.quotedForAmountMinor == amountMinorUnits &&
+        fresh.quotedForType == transferType) {
+      return fresh;
+    }
+    return null;
+  }
+
+  /// Background (non-blocking, NO loading emit) fee revalidation. Fetches the
+  /// current fee and, ONLY if it differs from [cachedFee] AND the cache still
+  /// corresponds to this amount, updates the cache + emits a fresh
+  /// TransferFeeLoaded so the fee row updates to the new value. Silent on error
+  /// — the cached value stays authoritative until a real re-quote. This is what
+  /// makes an admin range-fee change take effect on the app without the user
+  /// ever seeing a spinner.
+  Future<void> _revalidateFeeInBackground({
+    required int amountMinorUnits,
+    required String currency,
+    required String transferType,
+    required int cachedFee,
+  }) async {
+    if (transferType == 'internal') return; // internal is always free
+    try {
+      final fee = await paymentsTransferDataSource.getTransferFee(
+        amountMinorUnits: amountMinorUnits,
+        currency: currency,
+        transferType: transferType,
+      );
+      if (isClosed || fee == cachedFee) return;
+      // Guard against a race: the user may have moved to a different amount
+      // while this fetch was in flight — only replace a still-matching cache.
+      final cur = lastFeeLoaded;
+      if (cur == null ||
+          cur.quotedForAmountMinor != amountMinorUnits ||
+          cur.quotedForType != transferType) {
+        return;
+      }
+      final feeState = TransferFeeLoaded(
+        fee: fee,
+        currency: currency,
+        feeType: 'flat',
+        totalAmount: amountMinorUnits + fee,
+        breakdown: [FeeBreakdownItem(label: 'Transfer Fee', amount: fee)],
+        quotedForAmountMinor: amountMinorUnits,
+        quotedForType: transferType,
+      );
+      lastFeeLoaded = feeState;
+      emit(feeState);
+    } catch (_) {
+      // Keep the cached value; a real re-quote will correct it if needed.
     }
   }
 

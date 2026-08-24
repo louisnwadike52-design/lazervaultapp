@@ -85,9 +85,23 @@ String parseScannedCryptoAddress(String raw) {
     }
   }
 
-  // Strip an EIP-681 chain suffix (`@chainId`) and any query string.
+  // EIP-681 TOKEN-TRANSFER URIs (`ethereum:0xTOKEN@1/transfer?address=0xRECIPIENT
+  // &uint256=…`): the path segment is the TOKEN CONTRACT, not the recipient.
+  // Naively truncating at `@`/`?` returned the contract address — a scanned
+  // wallet USDT QR would have sent funds to the USDT contract (unrecoverable).
+  // The recipient lives in the `address=` query parameter; prefer it.
+  final addrParam =
+      RegExp(r'[?&]address=([^&]+)').firstMatch(s)?.group(1)?.trim();
+  if (addrParam != null && addrParam.isNotEmpty) {
+    return Uri.decodeComponent(addrParam).trim();
+  }
+
+  // Strip an EIP-681 chain suffix (`@chainId`), any `/transfer`-style function
+  // path, and any query string.
   final at = s.indexOf('@');
   if (at > 0) s = s.substring(0, at);
+  final slash = s.indexOf('/');
+  if (slash > 0) s = s.substring(0, slash);
   final q = s.indexOf('?');
   if (q > 0) s = s.substring(0, q);
   return s.trim();

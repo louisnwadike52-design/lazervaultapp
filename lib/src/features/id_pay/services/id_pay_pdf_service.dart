@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import '../domain/entities/id_pay_entity.dart';
 import '../domain/entities/id_pay_transaction_entity.dart';
+import 'dart:ui' show Rect;
 
 class IDPayPdfService {
   static final _dateFormat = DateFormat('yyyy-MM-dd');
@@ -585,6 +586,9 @@ class IDPayPdfService {
       final amount = transaction.amount.toStringAsFixed(2);
 
       await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
         text:
             'PayID Transfer Receipt - $currencySymbol$amount to ${transaction.recipientName}',
@@ -641,6 +645,9 @@ class IDPayPdfService {
           : 'Flexible amount';
 
       await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
         text:
             'PayID Invoice - ${idPay.displayPayId} - $amountText from ${idPay.creatorName}',

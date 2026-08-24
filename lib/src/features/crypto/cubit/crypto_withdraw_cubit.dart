@@ -89,13 +89,18 @@ class CryptoWithdrawCubit extends Cubit<CryptoWithdrawState> {
     String transactionPin = '',
     String recipientUserId = '',
     String recipientUsername = '',
+    String? clientIntentId,
   }) async {
     emit(const CryptoWithdrawSubmitting());
 
-    // Generate a fresh intent id per attempt so retries after a failure
-    // produce a new server-side row rather than short-circuiting on the
-    // idempotency key.
-    final intentId = _uuid.v4();
+    // The caller's id wins when provided: the PIN verification token is
+    // BOUND server-side to the transaction id the PIN sheet was shown with,
+    // and the saga validates it against client_intent_id. Minting a separate
+    // UUID here broke that binding — every UI send failed with
+    // "PIN verification token is invalid, expired, or already used".
+    // Fresh per attempt either way, so retries never short-circuit on the
+    // idempotency key with a stale token.
+    final intentId = clientIntentId ?? _uuid.v4();
     _lastIntentId = intentId;
 
     try {
@@ -197,6 +202,18 @@ class CryptoWithdrawCubit extends Cubit<CryptoWithdrawState> {
     if (s.contains("recipient isn't set up") ||
         s.contains('recipient_not_provisioned')) {
       return 'The recipient isn’t set up to receive crypto yet.';
+    }
+    // Server-authored guidance that should pass through VERBATIM — the saga
+    // writes these as complete user-facing sentences (network gates, balance
+    // + fee guard, daily cap, ambiguous-provider guidance).
+    if (s.contains('you can send up to') ||
+        s.contains('daily crypto limit') ||
+        s.contains('choose the network') ||
+        s.contains('not a supported network') ||
+        s.contains('currently disabled') ||
+        s.contains('check your send history')) {
+      final m = RegExp(r'(?:message:|desc = )\s*(.+)$').firstMatch(s);
+      if (m != null) return m.group(1)!.trim();
     }
     // Fallback: NEVER dump the raw gRPC/exception string. Route through the
     // shared sanitizer — clean validation messages (e.g. "minimum send is 0.9

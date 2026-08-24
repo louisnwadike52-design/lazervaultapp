@@ -8,6 +8,7 @@ import 'package:lazervault/core/services/chat_sound_settings.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/panic_balance_service.dart';
 import 'package:lazervault/src/features/fraud_detection/data/fraud_detection_service.dart';
 import 'package:lazervault/core/services/service_usage_service.dart';
 import 'package:lazervault/core/theme/theme_controller.dart';
@@ -499,6 +500,8 @@ class _SettingsViewState extends State<_SettingsView> {
           'notifications', 'push', 'email notifications', 'sms',
           'dark mode', 'theme', 'display', 'sound', 'alerts',
           'chat sound', 'message sound', 'vibration', 'haptics',
+          'balance vibration', 'balance update', 'vibrate on balance',
+          'haptic feedback', 'balance animation', 'account update',
         ],
       ),
       // Voice & Chat Assistant — hidden unless the admin enables it via the
@@ -1305,6 +1308,19 @@ class _SettingsViewState extends State<_SettingsView> {
           onChanged: (v) {
             setState(() => _pushOverride = v); // instant flip
             update(push: v); // persist in background
+          },
+        ),
+        // Haptic pulse while the dashboard balance ANIMATES — after login and
+        // on live websocket updates (transfers, deposits, any service). Local
+        // device preference (persisted on-device), ON by default.
+        _switchTile(
+          icon: Icons.vibration_rounded,
+          title: 'Vibrate on balance updates',
+          subtitle: 'Haptic pulse while your balance animates',
+          value: serviceLocator<PanicBalanceService>().vibrationEnabled,
+          onChanged: (v) async {
+            await serviceLocator<PanicBalanceService>().setVibrationEnabled(v);
+            if (mounted) setState(() {});
           },
         ),
         _switchTile(

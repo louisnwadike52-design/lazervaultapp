@@ -359,9 +359,11 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
               style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
             );
           }
+          // Quote values are KOBO (gRPC minor units) — convert to naira.
           return Text(
-            'Fee ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(q.fee, 'NGN')} per save — '
-            '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(q.netAmount, 'NGN')} reaches your goal.',
+            'Fee ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(q.fee / 100, 'NGN')} per save — '
+            '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(q.netAmount / 100, 'NGN')} reaches your goal.'
+            '${q.discount > 0 ? ' You save ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(q.discount / 100, 'NGN')} (discount).' : ''}',
             style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.white, fontWeight: FontWeight.w600),
           );
         },

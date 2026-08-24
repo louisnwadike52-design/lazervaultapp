@@ -51,6 +51,12 @@ class OpenBankingGrpcDataSource {
         // First-time link fee in minor units (0 = free). The link flow shows
         // this + takes a txPIN before linking when > 0.
         'link_fee': response.linkFee.toString(),
+        // Customer identity for the Connect widget — without it Mono makes
+        // every user "verify identity" in-widget regardless of KYC tier.
+        'mono_customer_id': response.monoCustomerId,
+        'customer_name': response.customerName,
+        'customer_email': response.customerEmail,
+        'customer_bvn': response.customerBvn,
       };
     } on GrpcError catch (e) {
       throw _mapGrpcError(e, 'getConnectWidgetConfig');
@@ -505,6 +511,7 @@ class OpenBankingGrpcDataSource {
         amount: response.amount.toInt().toDouble(),
         fee: response.fee.toInt().toDouble(),
         netAmount: response.netAmount.toInt().toDouble(),
+        discount: response.discount.toInt().toDouble(),
       );
     } on GrpcError catch (e) {
       throw _mapGrpcError(e, 'calculateDepositFee');
@@ -539,6 +546,7 @@ class OpenBankingGrpcDataSource {
             monoCost: b?.monoCost.toInt() ?? 0,
             lazervaultFee: b?.lazervaultFee.toInt() ?? 0,
             total: b?.total.toInt() ?? 0,
+            discount: b?.discount.toInt() ?? 0,
           );
 
       return DepositFeeQuote(
@@ -548,6 +556,7 @@ class OpenBankingGrpcDataSource {
         grandTotal: response.grandTotal.toInt(),
         netAmount: response.netAmount.toInt(),
         rail: response.rail,
+        discountTotal: response.discountTotal.toInt(),
       );
     } on GrpcError catch (e) {
       throw _mapGrpcError(e, 'getDepositFeeQuote');
@@ -931,6 +940,30 @@ class OpenBankingGrpcDataSource {
   // MANDATES (Direct Debit Variable Recurring Payments)
   // =====================================================
 
+  /// Stamp (or clear) the mandate's SERVER-side authorization-attempt marker —
+  /// device-independent: any logged-in device then renders an awaiting mandate
+  /// with a recent attempt as "Setting up" instead of a Finish-setup CTA that
+  /// would reopen the spent Mono link. Best-effort; never throws into UI.
+  Future<void> markMandateAuthAttempt({
+    required String mandateId,
+    bool cleared = false,
+  }) async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      await _client.markMandateAuthAttempt(
+        banking_pb.MarkMandateAuthAttemptRequest(
+          mandateId: mandateId,
+          cleared: cleared,
+        ),
+        options: callOptions.mergedWith(
+          CallOptions(timeout: const Duration(seconds: 10)),
+        ),
+      );
+    } catch (_) {
+      // Best-effort — the local MandateAuthAttemptStore remains the fallback.
+    }
+  }
+
   /// Create a direct debit mandate for a linked account.
   ///
   /// Optional [userEmail], [userName], [userPhone] are forwarded as gRPC
@@ -1190,6 +1223,8 @@ class OpenBankingGrpcDataSource {
       endDate: proto.hasEndDate() ? proto.endDate.toDateTime() : DateTime.now(),
       createdAt: proto.hasCreatedAt() ? proto.createdAt.toDateTime() : DateTime.now(),
       authorizedAt: proto.hasAuthorizedAt() ? proto.authorizedAt.toDateTime() : null,
+      authAttemptedAt:
+          proto.hasAuthAttemptedAt() ? proto.authAttemptedAt.toDateTime() : null,
       readyAt: proto.hasReadyAt() ? proto.readyAt.toDateTime() : null,
       lastDebitAt: proto.hasLastDebitAt() ? proto.lastDebitAt.toDateTime() : null,
       cancelledAt: proto.hasCancelledAt() ? proto.cancelledAt.toDateTime() : null,
@@ -1248,6 +1283,11 @@ class OpenBankingGrpcDataSource {
     try {
       final request = banking_pb.GetAccountWithTransactionsRequest(
         accountId: accountId,
+        // These were silently DROPPED before — every call returned the same
+        // first page, which broke statement pagination (and any export that
+        // pages by offset).
+        limit: limit,
+        offset: offset,
       );
       final callOptions = await _callOptionsHelper.withAuth();
 

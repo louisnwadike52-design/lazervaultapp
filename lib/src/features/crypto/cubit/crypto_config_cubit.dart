@@ -61,6 +61,11 @@ class CryptoRuntimeConfig extends Equatable {
   /// [feeDisplayFallbackBps].
   final Map<String, CryptoOpFee> opFees;
 
+  /// Token → minimum DELIVERABLE amount in token units (Quidax's per-network
+  /// minimum_withdrawal, synced server-side). A buy quoted below this is
+  /// rejected — the sheets use it to show the floor inline as the user types.
+  final Map<String, double> minDeliverable;
+
   const CryptoRuntimeConfig({
     required this.minOrderMinorUnits,
     required this.currencyDecimals,
@@ -71,7 +76,15 @@ class CryptoRuntimeConfig extends Equatable {
     required this.supportedQuoteCurrencies,
     required this.feeDisplayFallbackBps,
     this.opFees = const {},
+    this.minDeliverable = const {},
   });
+
+  /// Minimum deliverable amount for [symbol] in token units, or null when no
+  /// floor is known (no Quidax-synced value and no seed).
+  double? minDeliverableFor(String symbol) {
+    final v = minDeliverable[symbol.toLowerCase()];
+    return (v != null && v > 0) ? v : null;
+  }
 
   /// Estimated Lazervault fee (major fiat units) for an operation, honoring the
   /// admin's percentage/fixed choice. Falls back to [feeDisplayFallbackBps]
@@ -117,6 +130,9 @@ class CryptoRuntimeConfig extends Equatable {
         refreshGraceSeconds: 2,
         supportedQuoteCurrencies: ['ngn', 'usdt'],
         feeDisplayFallbackBps: 150,
+        // Mirrors the server seed; replaced by Quidax-synced values on the
+        // first config RPC.
+        minDeliverable: {'eth': 0.001},
       );
 
   /// Returns the per-currency minimum order in minor units, or null if not
@@ -156,6 +172,7 @@ class CryptoRuntimeConfig extends Equatable {
         supportedQuoteCurrencies,
         feeDisplayFallbackBps,
         opFees,
+        minDeliverable,
       ];
 }
 
@@ -265,6 +282,14 @@ class CryptoConfigCubit extends Cubit<CryptoConfigState> {
             : {
                 for (final entry in resp.opFee.entries)
                   entry.key.toLowerCase(): CryptoOpFee.parse(entry.value),
+              },
+        minDeliverable: resp.minDeliverableAmounts.isEmpty
+            ? state.config.minDeliverable
+            : {
+                for (final entry in resp.minDeliverableAmounts.entries)
+                  if (double.tryParse(entry.value) != null &&
+                      double.parse(entry.value) > 0)
+                    entry.key.toLowerCase(): double.parse(entry.value),
               },
       );
       _lastFetchedAt = now;

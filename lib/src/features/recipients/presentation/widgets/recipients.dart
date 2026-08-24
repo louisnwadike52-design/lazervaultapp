@@ -65,7 +65,10 @@ class _RecipientsState extends State<Recipients> {
     if (recipient.currency != null) {
       shareText += '\nCurrency: ${recipient.currency}';
     }
-    SharePlus.instance.share(ShareParams(text: shareText));
+    SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: shareText));
   }
 
   void _showUpdateAliasDialog(BuildContext context, RecipientModel recipient) {

@@ -10,6 +10,7 @@ import '../../domain/usecases/get_my_points_balance_usecase.dart';
 import '../../domain/usecases/get_my_points_history_usecase.dart';
 import '../../domain/usecases/get_points_config_usecase.dart';
 import 'referral_state.dart';
+import 'dart:ui' show Rect;
 
 class ReferralCubit extends Cubit<ReferralState> {
   final GetMyReferralCodeUseCase _getMyReferralCodeUseCase;
@@ -157,7 +158,10 @@ class ReferralCubit extends Cubit<ReferralState> {
           'Join Lazervault using my referral code: $code and get ${currencySymbol}50 bonus! '
           'Download the app now: https://lazervault.com';
 
-      await SharePlus.instance.share(ShareParams(text: message));
+      await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: message));
     } catch (e) {
       if (isClosed) return;
       emit(ReferralError('Failed to share code: $e'));

@@ -16,6 +16,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/receipt_metadata_humanizer.dart';
 part 'unified_transaction_receipt_widgets.dart';
 
 
@@ -35,6 +36,11 @@ class UnifiedTransactionReceipt extends StatefulWidget {
   final String repeatLabel;
   final Color? repeatColor;
 
+  /// When set, the receipt body becomes pull-to-refresh — used by receipts
+  /// whose status can still change (crypto send/buy/swap/sell polling) so the
+  /// user can force a status re-check with the familiar gesture.
+  final Future<void> Function()? onRefresh;
+
   const UnifiedTransactionReceipt({
     super.key,
     required this.transaction,
@@ -43,6 +49,7 @@ class UnifiedTransactionReceipt extends StatefulWidget {
     this.onRepeat,
     this.repeatLabel = 'Repeat transaction',
     this.repeatColor,
+    this.onRefresh,
   });
 
   @override
@@ -169,21 +176,33 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                       color: _bgColor,
                       child: FadeTransition(
                         opacity: _fadeAnimation,
-                        child: SingleChildScrollView(
-                          physics: const BouncingScrollPhysics(),
-                          padding: EdgeInsets.symmetric(horizontal: 20.w),
-                          child: Column(
-                            children: [
-                              if (capturing) _buildBrandingHeader(),
-                              SizedBox(height: 8.h),
-                              _buildHeader(),
-                              SizedBox(height: 16.h),
-                              _buildDetailsCard(),
-                              SizedBox(height: 24.h),
-                              if (capturing) _buildBrandingFooter(),
-                            ],
-                          ),
-                        ),
+                        child: Builder(builder: (context) {
+                          final scroll = SingleChildScrollView(
+                            physics: widget.onRefresh != null
+                                ? const AlwaysScrollableScrollPhysics(
+                                    parent: BouncingScrollPhysics())
+                                : const BouncingScrollPhysics(),
+                            padding: EdgeInsets.symmetric(horizontal: 20.w),
+                            child: Column(
+                              children: [
+                                if (capturing) _buildBrandingHeader(),
+                                SizedBox(height: 8.h),
+                                _buildHeader(),
+                                SizedBox(height: 16.h),
+                                _buildDetailsCard(),
+                                SizedBox(height: 24.h),
+                                if (capturing) _buildBrandingFooter(),
+                              ],
+                            ),
+                          );
+                          if (widget.onRefresh == null) return scroll;
+                          return RefreshIndicator(
+                            onRefresh: widget.onRefresh!,
+                            color: const Color(0xFF8B5CF6),
+                            backgroundColor: _cardColor,
+                            child: scroll,
+                          );
+                        }),
                       ),
                     ),
                   ),
@@ -232,7 +251,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
               ),
               SizedBox(width: 7.w),
               Text(
-                'LazerVault',
+                'Lazervault',
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w600,
@@ -271,7 +290,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     return Padding(
       padding: EdgeInsets.only(top: 16.h),
       child: Text(
-        'LazerVault',
+        'Lazervault',
         style: TextStyle(
           fontSize: 18.sp,
           fontWeight: FontWeight.w700,
@@ -414,7 +433,9 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
 
     final rows = <_DetailEntry>[
       // Counterparty info (recipient/sender details)
-      if (tx.counterpartyName != null && tx.counterpartyName!.isNotEmpty)
+      if (tx.counterpartyName != null &&
+          tx.counterpartyName!.isNotEmpty &&
+          !_isPlaceholderValue(tx.counterpartyName!))
         _DetailEntry(
           tx.flow == TransactionFlow.incoming ? 'From' : 'To',
           tx.counterpartyName!,
@@ -424,11 +445,14 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       if (bankName != null && bankName.isNotEmpty)
         _DetailEntry('Bank', bankName,
             logoBankName: bankName, logoBankCode: bankCode),
-      if (tx.description != null)
-        _DetailEntry('Description', tx.description!),
+      if (tx.description != null && !_isPlaceholderValue(tx.description!))
+        _DetailEntry('Description', _cleanDescription(tx.description!)),
       if (tx.transactionReference != null)
         _DetailEntry('Reference', tx.transactionReference!, copyable: true),
-      _DetailEntry('Type', tx.serviceType.displayName),
+      // An unmapped service type reads as "Type: Unknown" — noise, not
+      // information. Hide the row instead.
+      if (tx.serviceType != TransactionServiceType.unknown)
+        _DetailEntry('Type', tx.serviceType.displayName),
       _DetailEntry(
         'Category',
         tx.flow == TransactionFlow.incoming
@@ -456,15 +480,30 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       'bank_code', 'destination_bank_code',
       'recipient_name', 'counterparty_name',
       'recipient_account', 'counterparty_account',
+      // OPS plumbing — meaningful in the admin dashboard's transaction
+      // details (where the raw metadata is shown), never to the user.
+      // e.g. "source: stale_transfer_reconciler" on a reconciler-settled
+      // transfer read as noise/alarming on a customer receipt.
+      'source', 'reconciliation_source', 'rollback_trigger',
+      'changed_by', 'recovered_by', 'reconciled_at',
+      'provider', 'provider_ref', 'provider_reference',
+      'idempotency_key', 'client_intent_id', 'webhook_event_id',
     };
     if (tx.metadata != null) {
       for (final entry in tx.metadata!.entries) {
         if (_hiddenKeys.contains(entry.key)) continue;
+        // Never render provider placeholders ("Anonymous customer", "Unknown").
+        if (_isPlaceholderValue(entry.value.toString())) continue;
         if (entry.value != null && entry.value.toString().isNotEmpty) {
-          rows.add(_DetailEntry(
-            _formatKey(entry.key),
+          // Ledger plumbing (kobo / crypto minor units) is converted to human
+          // naira values or hidden — raw *_minor rows never reach a receipt.
+          final human = humanizeReceiptMetadataEntry(
+            entry.key,
             entry.value.toString(),
-          ));
+            formatKey: _formatKey,
+          );
+          if (human == null) continue;
+          rows.add(_DetailEntry(human.label, human.value));
         }
       }
     }
@@ -624,7 +663,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           onTap: _isDownloading
               ? () {}
               : _supportsPdfReceipt
-                  ? _downloadPdfReceipt
+                  ? () => _withReceiptOptions('Download', _downloadPdfReceipt)
                   : _downloadReceipt,
         ),
       );
@@ -637,7 +676,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         onTap: _isSharing
             ? () {}
             : _supportsPdfReceipt
-                ? _sharePdfReceipt
+                ? () => _withReceiptOptions('Share', _sharePdfReceipt)
                 : _shareReceipt,
       ),
     );
@@ -871,6 +910,157 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   }
 
   /// Download PDF receipt for transfers
+  // Options chosen in the pre-share/download sheets. Defaults keep legacy
+  // behavior when a sheet is dismissed mid-way.
+  ReceiptCopyType _chosenCopy = ReceiptCopyType.sender;
+  ReceiptFileFormat _chosenFormat = ReceiptFileFormat.pdf;
+
+  /// The fee on a transfer receipt (parsed from the display metadata). Only a
+  /// fee-bearing transfer offers distinct sender/recipient copies.
+  double get _receiptFee => double.tryParse(
+          (tx.metadata?['Fee'] ?? '').toString().replaceAll(RegExp(r'[^0-9.]'), '')) ??
+      0.0;
+
+  /// Ask the user which COPY (sender/recipient — transfers with a fee only)
+  /// and which FORMAT (PDF / PNG / JPG) before running [action].
+  Future<void> _withReceiptOptions(
+      String actionLabel, Future<void> Function() action) async {
+    final offerCopy =
+        tx.serviceType == TransactionServiceType.transfer && _receiptFee > 0;
+    if (offerCopy) {
+      final copy = await _showReceiptCopySheet();
+      if (copy == null || !mounted) return;
+      _chosenCopy = copy;
+    } else {
+      _chosenCopy = ReceiptCopyType.sender;
+    }
+    final format = await _showReceiptFormatSheet(actionLabel);
+    if (format == null || !mounted) return;
+    _chosenFormat = format;
+    await action();
+  }
+
+  Future<ReceiptCopyType?> _showReceiptCopySheet() {
+    return showModalBottomSheet<ReceiptCopyType>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Choose receipt copy',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700)),
+              SizedBox(height: 4.h),
+              Text("The sender's copy shows the fee; the recipient's copy shows only the amount received.",
+                  style: TextStyle(
+                      color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+              SizedBox(height: 14.h),
+              _receiptOptionTile(ctx, Icons.call_made_rounded,
+                  const Color(0xFF3B82F6), "Sender's copy",
+                  'Amount + fee — your own record.',
+                  () => Navigator.of(ctx).pop(ReceiptCopyType.sender)),
+              SizedBox(height: 10.h),
+              _receiptOptionTile(ctx, Icons.call_received_rounded,
+                  const Color(0xFF10B981), "Recipient's copy",
+                  'Amount received only — for the other party.',
+                  () => Navigator.of(ctx).pop(ReceiptCopyType.recipient)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<ReceiptFileFormat?> _showReceiptFormatSheet(String actionLabel) {
+    return showModalBottomSheet<ReceiptFileFormat>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Choose format',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700)),
+              SizedBox(height: 14.h),
+              _receiptOptionTile(ctx, Icons.picture_as_pdf_outlined,
+                  const Color(0xFFEF4444), '$actionLabel as PDF',
+                  'Vector document — best for printing.',
+                  () => Navigator.of(ctx).pop(ReceiptFileFormat.pdf)),
+              SizedBox(height: 10.h),
+              _receiptOptionTile(ctx, Icons.image_outlined,
+                  const Color(0xFF3B82F6), '$actionLabel as JPG',
+                  'Compact image — easy to share in chats.',
+                  () => Navigator.of(ctx).pop(ReceiptFileFormat.jpg)),
+              SizedBox(height: 10.h),
+              _receiptOptionTile(ctx, Icons.photo_outlined,
+                  const Color(0xFF8B5CF6), '$actionLabel as PNG',
+                  'Lossless image with full quality.',
+                  () => Navigator.of(ctx).pop(ReceiptFileFormat.png)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _receiptOptionTile(BuildContext ctx, IconData icon, Color color,
+      String label, String description, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14.r),
+      child: Container(
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2A2A2A),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: const Color(0xFF3A3A3A)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 22.sp),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600)),
+                  SizedBox(height: 2.h),
+                  Text(description,
+                      style: TextStyle(
+                          color: const Color(0xFF9CA3AF), fontSize: 11.5.sp)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded,
+                color: const Color(0xFF9CA3AF), size: 20.sp),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _downloadPdfReceipt() async {
     if (_isDownloading) return;
     setState(() => _isDownloading = true);
@@ -895,14 +1085,16 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         return;
       }
 
-      final filePath =
-          tx.serviceType == TransactionServiceType.crypto
-              ? await TagPayPdfService.downloadCryptoReceipt(transaction: tx)
-              : await TagPayPdfService.downloadUnifiedTransferReceipt(
-                  transaction: tx,
-                );
+      final filePath = tx.serviceType == TransactionServiceType.crypto
+          ? await TagPayPdfService.downloadCryptoReceipt(
+              transaction: tx, format: _chosenFormat)
+          : await TagPayPdfService.downloadUnifiedTransferReceipt(
+              transaction: tx,
+              copyType: _chosenCopy,
+              format: _chosenFormat,
+            );
 
-      _showSnackbar('PDF receipt saved to $filePath');
+      _showSnackbar('Receipt saved to $filePath');
     } catch (e) {
       _showSnackbar('Error saving PDF receipt: $e', isError: true);
     } finally {
@@ -919,10 +1111,13 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         await TagPayPdfService.shareCryptoReceipt(
           transaction: tx,
           sharePositionOrigin: _shareOrigin(),
+          format: _chosenFormat,
         );
       } else {
         await TagPayPdfService.shareUnifiedTransferReceipt(
           transaction: tx,
+          copyType: _chosenCopy,
+          format: _chosenFormat,
         );
       }
     } catch (e) {

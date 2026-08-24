@@ -2216,6 +2216,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         // links are surfaced separately on the contribution details body
         // (creator section), so we don't need bespoke buttons here.
         SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
           text: _buildShareText(contribution),
           subject: contribution.title,
         ));
@@ -2459,6 +2462,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                           tooltip: 'Share transcript',
                           onPressed: () {
                             SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
                               text: _buildTranscriptText(transcript, contribution),
                               subject: 'Transcript ${contribution.title}',
                             ));
@@ -3553,6 +3559,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       
       // Share the payment details
       await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         text: shareText,
         subject: 'Payment Receipt for ${_currentContribution?.title ?? 'Contribution'}',
       ));

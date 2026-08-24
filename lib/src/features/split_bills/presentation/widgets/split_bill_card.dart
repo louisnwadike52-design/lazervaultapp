@@ -52,9 +52,10 @@ class SplitBillCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        bill.description.isNotEmpty
-                            ? bill.description
-                            : 'Split Bill',
+                        // Prefer the bill's TITLE (its primary label); the old
+                        // description-first read rendered titled bills as the
+                        // generic "Split Bill".
+                        bill.displayTitle,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,
@@ -130,7 +131,10 @@ class SplitBillCard extends StatelessWidget {
               paidCount: bill.paidCount,
               totalParticipants: bill.totalParticipants,
               paidAmount: bill.paidAmount,
-              totalAmount: bill.totalAmount - bill.creatorShare,
+              // paidAmount INCLUDES the creator's own share when they are a
+              // co-payer, so the denominator must be the full total — the old
+              // (total - creatorShare) denominator let the bar exceed 100%.
+              totalAmount: bill.totalAmount,
               currency: bill.currency,
             ),
             if (isIncoming && myParticipant != null) ...[

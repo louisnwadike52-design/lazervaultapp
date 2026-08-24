@@ -77,3 +77,4 @@ venv/
 .venv/
 __pycache__/
 *.pyc
+ios/build/

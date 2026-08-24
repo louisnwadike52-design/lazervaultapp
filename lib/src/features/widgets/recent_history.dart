@@ -9,6 +9,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
+import 'package:lazervault/src/features/widgets/dashboard/dashboard_refresh_signal.dart';
 import 'package:lazervault/src/features/widgets/recent_history_list.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -49,6 +50,18 @@ class _RecentHistoryState extends State<RecentHistory> {
     _localeSub = localeManager.countryStream
         .distinct()
         .listen((_) => _cubit.loadAllTransactions());
+
+    // Explicit dashboard refresh (swipe-down → "Refresh accounts"): hard-reload
+    // this list too. Foreground (background:false) so it visibly reloads, and
+    // refreshTransactions() clears the repo's scoped cache first — a true
+    // revalidation, not a cache-served page.
+    DashboardRefreshSignal.instance.listenable.addListener(_onManualRefresh);
+  }
+
+  void _onManualRefresh() {
+    if (!mounted) return;
+    _lastAutoFetch = DateTime.now(); // suppress the visibility auto-fetch racing this
+    _cubit.refreshTransactions(background: false);
   }
 
   /// Fires as the section scrolls in/out of view. On each fresh entry into view
@@ -81,6 +94,7 @@ class _RecentHistoryState extends State<RecentHistory> {
   void dispose() {
     _accountSub?.cancel();
     _localeSub?.cancel();
+    DashboardRefreshSignal.instance.listenable.removeListener(_onManualRefresh);
     super.dispose();
   }
 

@@ -76,6 +76,11 @@ class MandateEntity extends Equatable {
   final DateTime createdAt;
   final DateTime? authorizedAt;
   final DateTime? readyAt;
+
+  /// When this mandate's authorization was last GRANTED (the auth widget's
+  /// explicit success callback — SERVER-side stamp via MarkMandateAuthAttempt,
+  /// device-independent). Never set on a mere widget open/close.
+  final DateTime? authAttemptedAt;
   final DateTime? lastDebitAt;
   final DateTime? cancelledAt;
   final String reference;
@@ -112,6 +117,7 @@ class MandateEntity extends Equatable {
     required this.createdAt,
     this.authorizedAt,
     this.readyAt,
+    this.authAttemptedAt,
     this.lastDebitAt,
     this.cancelledAt,
     this.reference = '',
@@ -137,6 +143,14 @@ class MandateEntity extends Equatable {
   bool get awaitingUserAuthorization =>
       status == MandateStatus.awaitingAuthorization ||
       status == MandateStatus.pending;
+
+  /// Authorization was GRANTED recently (any device): Mono/NIBSS are
+  /// provisioning the mandate and its auth link is SPENT — surfaces must show
+  /// "Setting up" + poll, never reopen the link. Without this (and without a
+  /// local success stamp) an awaiting mandate renders as plain "One-time".
+  bool get authAttemptedRecently =>
+      authAttemptedAt != null &&
+      DateTime.now().difference(authAttemptedAt!) < const Duration(minutes: 40);
 
   /// Temporarily paused by the user — reinstate to use again.
   bool get isPaused => status == MandateStatus.paused;

@@ -470,7 +470,10 @@ class _InsurancePurchaseReceiptScreenState
         'Reference: $reference\n'
         'Status: ${status.replaceAll('_', ' ').toUpperCase()}\n\n'
         'Purchased on Lazervault.';
-    SharePlus.instance.share(ShareParams(text: text));
+    SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: text));
   }
 
   Widget _buildReceiptRow(String label, String value, {bool isAmount = false}) {

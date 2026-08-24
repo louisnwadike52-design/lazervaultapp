@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 import '../../../../../core/services/injection_container.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
@@ -78,7 +79,10 @@ class _SmartTradingScreenState extends State<SmartTradingScreen> {
           .then<Object?>((r) => r, onError: (_) => null)
           .timeout(budget, onTimeout: () => null),
       _client
-          .getCryptoNews(currencies: ['BTC', 'ETH', 'SOL'], limit: 20)
+          // No currency filter: the CoinGecko-trending fallback rarely contains
+          // BTC/ETH/SOL, so filtering to that set returned ZERO items whenever
+          // the primary news provider was down.
+          .getCryptoNews(currencies: const [], limit: 20)
           .then<Object?>((r) => r, onError: (_) => null)
           .timeout(budget, onTimeout: () => null),
     ]);
@@ -114,10 +118,13 @@ class _SmartTradingScreenState extends State<SmartTradingScreen> {
   }
 
   String _formatLargeNumber(double value) {
-    if (value >= 1e12) return '\$${(value / 1e12).toStringAsFixed(2)}T';
-    if (value >= 1e9) return '\$${(value / 1e9).toStringAsFixed(2)}B';
-    if (value >= 1e6) return '\$${(value / 1e6).toStringAsFixed(2)}M';
-    return '\$${value.toStringAsFixed(0)}';
+    // The backend resolves these figures in the USER'S locale currency (the
+    // x-currency header) — a hardcoded '$' rendered NGN trillions as dollars.
+    final sym = CurrencySymbols.currentSymbol;
+    if (value >= 1e12) return '$sym${(value / 1e12).toStringAsFixed(2)}T';
+    if (value >= 1e9) return '$sym${(value / 1e9).toStringAsFixed(2)}B';
+    if (value >= 1e6) return '$sym${(value / 1e6).toStringAsFixed(2)}M';
+    return '$sym${value.toStringAsFixed(0)}';
   }
 
   Color _sentimentColor(String sentiment) {
@@ -223,8 +230,31 @@ class _SmartTradingScreenState extends State<SmartTradingScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _buildFearGreedGauge() {
-    final value = _currentFearGreed?.value ?? 50;
-    final classification = _currentFearGreed?.classification ?? 'Neutral';
+    // No feed → say so. Defaulting to "50 / Neutral" drew a convincing gauge
+    // showing a fabricated reading on a screen whose whole point is a signal.
+    if (_currentFearGreed == null) {
+      return Container(
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.sentiment_neutral, color: Colors.white.withValues(alpha: 0.4), size: 22.sp),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                'Fear & Greed index unavailable right now — pull to refresh.',
+                style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.white.withValues(alpha: 0.6)),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    final value = _currentFearGreed!.value;
+    final classification = _currentFearGreed!.classification;
     final color = _fearGreedColor(value);
 
     // Determine trend from history
@@ -396,6 +426,30 @@ class _SmartTradingScreenState extends State<SmartTradingScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _buildNewsSentiment() {
+    // Empty feed → honest empty state instead of a grey bar with (0)(0)(0).
+    if (_newsItems.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('News Sentiment',
+              style: GoogleFonts.inter(
+                  fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+          SizedBox(height: 12.h),
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Text(
+              'No market news available right now — pull to refresh.',
+              style: GoogleFonts.inter(
+                  fontSize: 13.sp, color: Colors.white.withValues(alpha: 0.6)),
+            ),
+          ),
+        ],
+      );
+    }
     int bullish = 0, bearish = 0, neutral = 0;
     for (final item in _newsItems) {
       final s = item.sentiment.toLowerCase();

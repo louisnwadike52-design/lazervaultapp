@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import '../domain/entities/gift_card_entity.dart';
+import 'dart:ui' show Rect;
 
 class GiftCardPdfService {
   static final _displayDateFormat = DateFormat('MMM dd, yyyy');
@@ -463,6 +464,9 @@ class GiftCardPdfService {
       final amount = giftCard.originalAmount.toStringAsFixed(2);
 
       await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
         text:
             'Gift Card Receipt - ${giftCard.brandName} $currencySymbol$amount',

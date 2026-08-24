@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/mandate_entity.dart';
+import '../../domain/mandate_auth_attempt_store.dart';
 import 'linked_account_state_chip.dart';
 
 /// Maps a [MandateEntity] (or null) to the canonical [LinkedAccountState] used
@@ -19,7 +20,14 @@ LinkedAccountState linkedAccountStateForMandate(MandateEntity? mandate) {
       return LinkedAccountState.settingUp;
     case MandateStatus.awaitingAuthorization:
     case MandateStatus.pending:
-      // User hasn't authorized yet (e.g. cancelled the sheet) → not set up.
+      // Authorization GRANTED recently (success stamp, any device): Mono/the
+      // bank is provisioning — "Setting up" until the status converges.
+      if (mandate.authAttemptedRecently ||
+          MandateAuthAttemptStore.openedRecently(mandate.id)) {
+        return LinkedAccountState.settingUp;
+      }
+      // Authorization never granted (a mere widget open/close changes
+      // nothing) → the account behaves as one-time.
       return LinkedAccountState.oneTime;
     case MandateStatus.paused:
       return LinkedAccountState.paused;
@@ -44,6 +52,11 @@ class MandateStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Fire-and-forget, idempotent: the mapper reads the local auth-granted
+    // stamp synchronously, so hydrate here — the single chokepoint covering
+    // every badge consumer (Beam, autosave, management, move cards) even when
+    // that screen is the first mandate surface after an app restart.
+    MandateAuthAttemptStore.hydrate();
     return LinkedAccountStateChip(
       state: linkedAccountStateForMandate(mandate),
       onTap: onTap,

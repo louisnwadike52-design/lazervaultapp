@@ -560,6 +560,9 @@ class _EscrowInvoiceScreenState extends State<EscrowInvoiceScreen> {
     await file.writeAsBytes(bytes);
     await SharePlus.instance.share(
       ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
         text: 'Lazervault Escrow Agreement - ${_deal!.reference}',
       ),

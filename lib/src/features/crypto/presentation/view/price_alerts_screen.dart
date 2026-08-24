@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/core/utils/friendly_error.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pb.dart';
@@ -344,16 +345,22 @@ class _CreateSheetState extends State<_CreateSheet> {
     }
     setState(() => _creating = true);
     try {
+      // The prefilled target comes from currentPrice, which is fetched in the
+      // USER'S locale currency — storing it as 'USD' made "above" alerts never
+      // fire and "below" alerts fire instantly for non-USD users.
       await widget.client.createPriceAlert(
-          cryptoId: _selected!.id, targetPrice: price, direction: _dir, fiatCurrency: 'USD');
+          cryptoId: _selected!.id,
+          targetPrice: price,
+          direction: _dir,
+          fiatCurrency: CurrencySymbols.currentCurrency);
       widget.onCreated();
       if (mounted) Navigator.pop(context);
       Get.snackbar('Alert created',
-          '${_selected!.symbol.toUpperCase()} ${_dir == 'above' ? 'above' : 'below'} \$${_fmtPrice(price)}',
+          '${_selected!.symbol.toUpperCase()} ${_dir == 'above' ? 'above' : 'below'} ${CurrencySymbols.currentSymbol}${_fmtPrice(price)}',
           backgroundColor: _card, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
-    } catch (_) {
+    } catch (e) {
       if (mounted) setState(() => _creating = false);
-      Get.snackbar('Error', 'Could not create alert. Please try again.',
+      Get.snackbar('Error', 'Could not create alert: ${friendlyError(e)}',
           backgroundColor: _red.withValues(alpha: 0.9), colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
     }
   }
@@ -426,18 +433,18 @@ class _CreateSheetState extends State<_CreateSheet> {
               Row(children: [
                 Icon(Icons.info_outline_rounded, color: _sub, size: 14.sp),
                 SizedBox(width: 6.w),
-                Text('Current price \$${_fmtPrice(_selected!.currentPrice)}', style: _inter(12, c: _sub)),
+                Text('Current price ${CurrencySymbols.currentSymbol}${_fmtPrice(_selected!.currentPrice)}', style: _inter(12, c: _sub)),
               ]),
             ],
             SizedBox(height: 18.h),
             // Target price
-            Text('Target price (USD)', style: _inter(13, w: FontWeight.w500, c: _sub)),
+            Text('Target price (${CurrencySymbols.currentCurrency})', style: _inter(13, w: FontWeight.w500, c: _sub)),
             SizedBox(height: 8.h),
             TextField(
               controller: _priceCtrl,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               onChanged: (_) => setState(() {}),
-              style: _inter(16), decoration: _inputDeco(hint: '0.00', prefix: '\$ '),
+              style: _inter(16), decoration: _inputDeco(hint: '0.00', prefix: '${CurrencySymbols.currentSymbol} '),
             ),
             SizedBox(height: 18.h),
             // Direction

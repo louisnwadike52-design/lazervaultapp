@@ -185,8 +185,10 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
           currency: payload.currency,
         );
         return;
-      case InvalidQr():
-        _rejectInvalid();
+      case InvalidQr(:final reason):
+        // A recognized-but-unpayable code (invoice / receipt QR) gets its
+        // specific explanation instead of the generic "invalid" toast.
+        _rejectInvalid(message: reason);
         return;
     }
   }

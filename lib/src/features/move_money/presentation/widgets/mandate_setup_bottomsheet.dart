@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,6 +11,7 @@ import '../../../funds/presentation/widgets/directpay_authorization_sheet.dart';
 import '../../cubit/mandate_cubit.dart';
 import '../../cubit/mandate_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/move_money/domain/mandate_auth_attempt_store.dart';
 
 /// Bottom sheet shown after account linking to offer mandate setup.
 ///
@@ -84,6 +86,15 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
   String? _errorMessage;
 
   @override
+  void initState() {
+    super.initState();
+    // The spent-link guard reads the local stamp synchronously; make sure it's
+    // hydrated even when this sheet is reached without visiting the deposit
+    // screen first (Beam, autosave, linked-accounts). Safe to call repeatedly.
+    MandateAuthAttemptStore.hydrate();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocConsumer<MandateCubit, MandateState>(
       listener: (context, state) async {
@@ -95,6 +106,30 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
           final navigator = Navigator.of(context);
           final cubit = context.read<MandateCubit>();
           if (state.needsAuthorization && state.authorizationUrl != null) {
+            // SPENT-LINK GUARD: if this device already opened this mandate's
+            // authorization recently, the payment leg is likely done and Mono
+            // is confirming it at the bank (up to ~30 min) — the link is spent
+            // and reopening it dead-ends in Mono's "Configuration error".
+            // Poll instead and tell the user it completes automatically.
+            if (state.mandate.authAttemptedRecently ||
+                MandateAuthAttemptStore.openedRecently(state.mandate.id)) {
+              cubit.pollMandateStatus(
+                mandateId: state.mandate.id,
+                userId: widget.userId,
+              );
+              Get.snackbar(
+                'Confirming with your bank',
+                'Your authorization was received and is being confirmed by '
+                    'your bank — this can take up to 30 minutes and completes '
+                    'automatically. No need to authorize again.',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.92),
+                colorText: Colors.white,
+                duration: const Duration(seconds: 5),
+              );
+              if (mounted) navigator.pop(true);
+              return;
+            }
             // Authorize the mandate IN-APP. This used to bounce to an external
             // browser (LaunchMode.externalApplication) with no progress and no
             // status refresh on return. Reuse the shared Mono webview sheet in
@@ -108,12 +143,27 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
               redirectPath: '/mandate/callback',
               flow: DirectPayFlow.mandate,
             );
+            // Stamp ONLY on the explicit success callback — merely opening the
+            // widget means nothing (a user can open/close it at will) and must
+            // NOT flip the badge to "Setting up". A granted authorization is
+            // the real signal: from here the mandate is provisioning with the
+            // bank/NIBSS, so surfaces show "Setting up" while Mono converges.
+            // Server-side stamp so ANY device (relogin, other phone) sees it —
+            // the local store is only the offline fallback.
             if (authResult.success) {
+              await MandateAuthAttemptStore.markOpened(state.mandate.id);
+              unawaited(cubit.markAuthAttempt(state.mandate.id));
               cubit.pollMandateStatus(
                 mandateId: state.mandate.id,
                 userId: widget.userId,
               );
             }
+            // Pop with the AUTHORIZATION outcome, not a blanket success: when
+            // the user closes the Mono webview, the mandate is stranded in
+            // awaiting_authorization and callers must not treat the setup as
+            // done (the deposit card shows "Finish setup" to resume it).
+            if (mounted) navigator.pop(authResult.success);
+            return;
           }
           if (mounted) navigator.pop(true);
         } else if (state is MandateError) {

@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/funds/presentation/view/deposit_history_screen.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/open_banking/presentation/mixins/linked_balance_refresh_mixin.dart';
@@ -55,6 +57,7 @@ import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_
 import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_management_bottomsheet.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/move_money/domain/mandate_auth_attempt_store.dart';
 part 'deposit_funds_screen_widgets.dart';
 
 
@@ -201,6 +204,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   // mandate — we badge the ones that do. Cached locally so the carousel
   // survives OpenBankingCubit state changes during a deposit.
   List<LinkedBankAccount> _linkedAccounts = [];
+  // Section-level state for the "Deposit again" carousel: loading covers the
+  // window from screen-open until the fetch resolves (previously the section
+  // was an invisible gap that popped in); error renders a compact retry row.
+  bool _linkedAccountsLoading = false;
+  bool _linkedAccountsError = false;
   // One-time "how to refresh a linked-bank balance" guide is evaluated once per
   // screen instance (persisted per-user so it's shown once, ever).
   bool _refreshGuideChecked = false;
@@ -243,6 +251,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _loadUserMandates();
         _loadLinkedAccounts();
+        // Hydrate the mandate auth-attempt stamps so the linked-account cards
+        // can distinguish 'confirming at the bank' from 'finish setup'.
+        MandateAuthAttemptStore.hydrate();
       });
     }
     // Listen to amount changes to update button state
@@ -394,6 +405,19 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       debugPrint('[Deposit] _loadLinkedAccounts: auth not ready, skipping');
       return;
     }
+    // Seed instantly from the singleton cubit's cache so a RE-entry shows the
+    // saved banks with no gap/pop-in; the fetch below then refreshes them.
+    final cached = serviceLocator<OpenBankingCubit>().linkedAccounts;
+    setState(() {
+      if (_linkedAccounts.isEmpty && cached.isNotEmpty) {
+        _linkedAccounts = List.of(cached);
+      }
+      // Only show the section loader when there is nothing to render yet —
+      // a background refresh over visible cards must not flip the UI back
+      // to a spinner.
+      _linkedAccountsLoading = _linkedAccounts.isEmpty;
+      _linkedAccountsError = false;
+    });
     debugPrint('[Deposit] _loadLinkedAccounts: fetching for ${authState.profile.user.id}');
     serviceLocator<OpenBankingCubit>().fetchLinkedAccounts(
       userId: authState.profile.user.id,
@@ -1281,24 +1305,49 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           ValueListenableBuilder<DepositFeeCalculation?>(
             valueListenable: _feePreview,
             builder: (_, calc, __) {
-              if (calc == null || calc.fee <= 0) return const SizedBox.shrink();
+              // Show when a fee applies OR a platform-funded discount fully
+              // waived it (a free promo deposit should say so, not hide).
+              if (calc == null || (calc.fee <= 0 && calc.discount <= 0)) {
+                return const SizedBox.shrink();
+              }
+              final feeText = calc.fee <= 0
+                  ? 'Free · you receive ₦${(calc.netAmount / 100).toStringAsFixed(2)}'
+                  : '₦${(calc.fee / 100).toStringAsFixed(2)} · you receive ₦${(calc.netAmount / 100).toStringAsFixed(2)}';
               return Padding(
                 padding: EdgeInsets.only(top: 8.h),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Transaction fee',
-                        style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.6), fontSize: 12.sp)),
-                    Flexible(
-                      child: Text(
-                        '₦${(calc.fee / 100).toStringAsFixed(2)} · you receive ₦${(calc.netAmount / 100).toStringAsFixed(2)}',
-                        textAlign: TextAlign.right,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.w600),
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Transaction fee',
+                            style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.6), fontSize: 12.sp)),
+                        Flexible(
+                          child: Text(
+                            feeText,
+                            textAlign: TextAlign.right,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
                     ),
+                    // Platform-funded discount — the single "you save" line.
+                    if (calc.discount > 0)
+                      Padding(
+                        padding: EdgeInsets.only(top: 2.h),
+                        child: Text(
+                          'You save ₦${(calc.discount / 100).toStringAsFixed(2)} — discount applied',
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                              color: const Color(0xFF10B981),
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
                   ],
                 ),
               );
@@ -1379,29 +1428,69 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     // the carousel's slot so the section's identity stays present
     // (instead of an invisible gap that later pops in).
     if (_linkedAccounts.isEmpty) {
-      if (!isLoading) return const SizedBox.shrink();
-      return Container(
-        margin: EdgeInsets.only(bottom: 24.h),
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
-        decoration: BoxDecoration(
-          color: const Color(0xFF241C3D).withValues(alpha: 0.40),
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.06),
-            width: 1,
+      BoxDecoration sectionBox() => BoxDecoration(
+            color: const Color(0xFF241C3D).withValues(alpha: 0.40),
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.06),
+              width: 1,
+            ),
+          );
+      if (isLoading || _linkedAccountsLoading) {
+        return Container(
+          margin: EdgeInsets.only(bottom: 24.h),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+          decoration: sectionBox(),
+          child: LazerVaultLoadingRow(
+            label: 'Loading linked accounts',
+            padding: EdgeInsets.zero,
+            labelStyle: TextStyle(
+              color: Colors.white.withValues(alpha: 0.85),
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
+            ),
+            loaderSize: 22,
           ),
-        ),
-        child: LazerVaultLoadingRow(
-          label: 'Loading linked accounts',
-          padding: EdgeInsets.zero,
-          labelStyle: TextStyle(
-            color: Colors.white.withValues(alpha: 0.85),
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w500,
+        );
+      }
+      // Fetch failed with nothing cached — compact retry row instead of a
+      // silent gap, so the user knows their saved banks exist and can reload.
+      if (_linkedAccountsError) {
+        return Container(
+          margin: EdgeInsets.only(bottom: 24.h),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+          decoration: sectionBox(),
+          child: Row(
+            children: [
+              Icon(Icons.wifi_off_rounded,
+                  color: Colors.white.withValues(alpha: 0.55), size: 18.sp),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(
+                  "Couldn't load your linked banks.",
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    fontSize: 13.sp,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: _loadLinkedAccounts,
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF8B5CF6),
+                  padding: EdgeInsets.symmetric(horizontal: 10.w),
+                  minimumSize: Size(0, 32.h),
+                ),
+                child: Text('Retry',
+                    style: TextStyle(
+                        fontSize: 13.sp, fontWeight: FontWeight.w700)),
+              ),
+            ],
           ),
-          loaderSize: 22,
-        ),
-      );
+        );
+      }
+      // Loaded fine and the user simply has no linked banks yet — no section.
+      return const SizedBox.shrink();
     }
     // Rebuild on mandate-cache changes so the Persistent badge stays accurate.
     return BlocBuilder<MandateCubit, MandateState>(
@@ -1443,14 +1532,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 padding: EdgeInsets.symmetric(vertical: 2.h),
                 itemCount: accounts.length,
                 separatorBuilder: (_, __) => SizedBox(width: 12.w),
-                // Use the itemBuilder's OWN context (a descendant of the
-                // OpenBankingCubit provider) — NOT the captured outer `context`.
-                // itemBuilder runs lazily during the ListView's build, so a
-                // context.select on the outer context fires "outside the build
-                // method of a widget". The per-item context keeps the per-card
-                // rebuild-on-refresh behaviour and removes the red error box.
-                itemBuilder: (itemContext, i) =>
-                    _buildLinkedAccountCard(itemContext, accounts[i]),
+                // Each card sits inside its OWN Builder: ListView item
+                // builders run during LAYOUT (not inside any widget's build
+                // method), so the card's per-account `context.select` throws
+                // provider's "add a Builder" red box if given the itemBuilder
+                // context directly. The Builder gives the select a real build
+                // scope of its own, keeping the per-card rebuild-on-refresh.
+                itemBuilder: (_, i) => Builder(
+                  builder: (cardContext) =>
+                      _buildLinkedAccountCard(cardContext, accounts[i]),
+                ),
               ),
             ),
             SizedBox(height: 24.h),
@@ -2336,7 +2427,56 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       userEmail: user.email,
       userName: '${user.firstName} ${user.lastName}'.trim(),
     );
-    if (ok && mounted) _loadUserMandates();
+    if (!mounted) return;
+    // Reload EITHER WAY so the card reflects the new state ("Setting up" on a
+    // granted authorization; plain "One-time" when it wasn't granted).
+    _loadUserMandates();
+    if (ok) {
+      Get.snackbar(
+        'Setting up Direct Debit',
+        'Authorization received — ${account.bankName} is activating your '
+            'Direct Debit. Deposits use one-time approval until it is live.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.92),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+      );
+    }
+    if (!ok) {
+      final m = serviceLocator<MandateCubit>().getMandateForAccount(account.id);
+      final confirming = m != null &&
+          (m.authAttemptedRecently ||
+              MandateAuthAttemptStore.openedRecently(m.id));
+      if (confirming) {
+        // Authorization was granted on an earlier attempt and the bank is
+        // still confirming — the card reads "Setting up"; match it (a
+        // finish-setup nag would send them into the spent Mono link).
+        Get.snackbar(
+          'Setting up Direct Debit',
+          'Your authorization is being confirmed by ${account.bankName} — this '
+              'can take up to 30 minutes and completes automatically.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFFFB923C).withValues(alpha: 0.95),
+          colorText: Colors.black,
+          duration: const Duration(seconds: 4),
+        );
+      } else if (m != null && m.awaitingUserAuthorization) {
+        // They started (a mandate exists) but abandoned the bank
+        // authorization — point them at the resume path.
+        Get.snackbar(
+          'Setup not finished',
+          'Your bank authorization wasn\'t completed. Open the '
+              '${account.bankName} card menu and choose "Finish Direct Debit '
+              'setup" to complete it.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.95),
+          colorText: Colors.black,
+          duration: const Duration(seconds: 4),
+        );
+      }
+      // No mandate at all ("Not Now" on the explainer) — a deliberate
+      // decline; respect it silently.
+    }
   }
 
   /// Well-styled confirmation before flipping a linked account's deposit
@@ -2508,14 +2648,25 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     debugPrint('[Deposit] Opening in-app mandate authorization sheet');
     _progressController.updateStage(DirectPayStage.authorizing);
 
+    final mandateId = mandate?.id ?? '';
     final result = await showDirectPayAuthorizationSheet(
       context: context,
       flow: DirectPayFlow.mandate,
       paymentUrl: url,
-      paymentId: mandate?.id ?? '',
+      paymentId: mandateId,
       reference: mandate?.reference,
       redirectPath: '/mandate/callback',
     );
+    // Stamp ONLY on the explicit success callback — opening the widget means
+    // nothing (a user can open/close it at will) and must not change state.
+    // A granted authorization is the real signal: the mandate is now
+    // provisioning with the bank/NIBSS, so surfaces render "Setting up" while
+    // Mono converges. Server-side stamp so ANY device sees it; the local
+    // store is the offline fallback.
+    if (result.success && mandateId.isNotEmpty) {
+      await MandateAuthAttemptStore.markOpened(mandateId);
+      unawaited(serviceLocator<MandateCubit>().markAuthAttempt(mandateId));
+    }
     if (!mounted) return;
 
     if (result.success) {
@@ -2684,6 +2835,15 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     // second pause/reinstate before the first settles.
     final isSwitching = rawMandate != null && rawMandate.switchProcessing;
     final switchingToDirectDebit = isSwitching && rawMandate.isSwitchingToDirectDebit;
+    // Awaiting authorization BUT the auth widget was opened recently (this or
+    // any device): the payment leg is likely done and Mono is confirming at
+    // the bank — the link is SPENT, so show "Setting up" status instead of a
+    // Finish-setup CTA that would dead-end. Mirrors _accessModeForAccount.
+    final isConfirmingAuth = rawMandate != null &&
+        rawMandate.awaitingUserAuthorization &&
+        (rawMandate.authAttemptedRecently ||
+            MandateAuthAttemptStore.openedRecently(rawMandate.id));
+    if (isConfirmingAuth) _pollConfirmingMandate(rawMandate.id);
     showModalBottomSheet(
       context: screenCtx,
       backgroundColor: Colors.transparent,
@@ -2738,14 +2898,20 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                     if (ok && mounted) _switchToOneTime(account, rawMandate);
                   },
                 )
-              else if (isActivating)
-                // Already authorized + activating with NIBSS. Show status, not a
-                // "switch to Direct Debit" CTA (it's already being set up). Tap
-                // opens the same info modal as the card badge.
+              else if (isActivating || isConfirmingAuth)
+                // Already authorized + activating with NIBSS, OR the user just
+                // completed the auth widget and Mono is confirming it at the
+                // bank (spent link). Either way it's already being set up —
+                // show status, not a "Finish setup" CTA. Tap opens the same
+                // info modal as the card badge.
                 ListTile(
                   leading: Icon(Icons.hourglass_bottom, color: const Color(0xFFFB923C)),
                   title: Text('Setting up Direct Debit', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
-                  subtitle: Text('Authorized. Activating with your bank. Deposits use one-time approval until it is live.', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
+                  subtitle: Text(
+                      isActivating
+                          ? 'Authorized. Activating with your bank. Deposits use one-time approval until it is live.'
+                          : 'Confirming your authorization with your bank — this can take up to 30 minutes and completes automatically.',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
                   trailing: Icon(Icons.info_outline, color: const Color(0xFFFB923C).withValues(alpha: 0.85), size: 18.sp),
                   onTap: () {
                     Navigator.of(sheetCtx).pop();
@@ -2754,9 +2920,23 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 )
               else
                 ListTile(
-                  leading: Icon(Icons.link, color: const Color(0xFF10B981)),
-                  title: Text('Switch to Direct Debit (persistent)', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
-                  subtitle: Text('Skip bank login on future deposits', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
+                  leading: Icon(
+                      rawMandate != null && rawMandate.awaitingUserAuthorization
+                          ? Icons.touch_app_outlined
+                          : Icons.link,
+                      color: rawMandate != null && rawMandate.awaitingUserAuthorization
+                          ? const Color(0xFFF59E0B)
+                          : const Color(0xFF10B981)),
+                  title: Text(
+                      rawMandate != null && rawMandate.awaitingUserAuthorization
+                          ? 'Finish Direct Debit setup'
+                          : 'Switch to Direct Debit (persistent)',
+                      style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+                  subtitle: Text(
+                      rawMandate != null && rawMandate.awaitingUserAuthorization
+                          ? 'Your bank authorization wasn\'t completed. Tap to finish.'
+                          : 'Skip bank login on future deposits',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
                   onTap: () async {
                     Navigator.of(sheetCtx).pop();
                     // A paused mandate reinstates instantly (a real Mono state
@@ -2909,7 +3089,39 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     if (m.switchProcessing) return 'switching';
     if (m.isActive) return 'persistent';
     if (m.isActivating) return 'pending';
+    if (m.awaitingUserAuthorization) {
+      // Authorization GRANTED recently (any device — the stamp is only written
+      // on the widget's explicit success callback): Mono/the bank is
+      // provisioning the mandate, so show "Setting up" and poll to converge.
+      if (m.authAttemptedRecently || MandateAuthAttemptStore.openedRecently(m.id)) {
+        _pollConfirmingMandate(m.id);
+        return 'pending';
+      }
+      // Mandate exists but authorization was never granted (the user merely
+      // opened/closed the Mono widget, or never opened it). Deposits use the
+      // one-time rail, so the badge honestly reads "One-time" — resuming the
+      // Direct Debit setup stays available in the account action sheet.
+      return 'onetime';
+    }
     return 'onetime';
+  }
+
+  // Throttled status poll for a mandate whose authorization is confirming at
+  // the bank — flips the card to Direct Debit as soon as Mono reports it.
+  DateTime? _lastConfirmingPoll;
+  void _pollConfirmingMandate(String mandateId) {
+    final now = DateTime.now();
+    if (_lastConfirmingPoll != null &&
+        now.difference(_lastConfirmingPoll!) < const Duration(seconds: 30)) {
+      return;
+    }
+    _lastConfirmingPoll = now;
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    serviceLocator<MandateCubit>().pollMandateStatus(
+      mandateId: mandateId,
+      userId: authState.profile.user.id,
+    );
   }
 
   /// State-coloured edge for a linked-account card: green when Direct Debit is
@@ -2972,11 +3184,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                           style: TextStyle(color: Colors.white.withValues(alpha: 0.55), fontSize: 12.sp)),
                     ),
                     SizedBox(width: 8.w),
-                    _accessChip(
-                      mode: _accessModeForAccount(account),
-                      onTap: () => _showAccessModeInfo(_accessModeForAccount(account), account),
-                      showInfo: true,
-                    ),
+                    Builder(builder: (rowCtx) {
+                      final rowMode = _accessModeForAccount(account);
+                      return _accessChip(
+                        mode: rowMode,
+                        onTap: () => _showAccessModeInfo(rowMode, account),
+                        showInfo: true,
+                      );
+                    }),
                   ],
                 ),
               ],
@@ -3477,7 +3692,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       // ._dismiss) before invoking these callbacks — so these are POST-dismiss
       // side effects ONLY and must NOT pop again (double-pop would remove the
       // wrong route). whenComplete below resets _isProgressSheetShown.
-      builder: (sheetContext) => DirectPayProgressBottomsheet(
+      // AutoLogoutSuppressed: the user may background the app mid-flow (e.g.
+      // to approve/send the payment from their bank app) while this rail waits
+      // on the webhook — auto-logout must not fire until the sheet closes.
+      builder: (sheetContext) => AutoLogoutSuppressed(
+          child: DirectPayProgressBottomsheet(
         controller: _progressController,
         onSuccess: () {
           _isProgressSheetShown = false;
@@ -3512,7 +3731,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           _cancelLinkWatchdog();
           _saveAndGoToKyc();
         },
-      ),
+      )),
     ).whenComplete(() {
       _isProgressSheetShown = false;
       _cancelLinkWatchdog();
@@ -4335,6 +4554,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           ? state.message
           : 'This service is temporarily unavailable. Please try again in a moment.';
       debugPrint('[Deposit] backend unreachable: $state');
+      // The passive carousel fetch may be what died here — resolve its section
+      // state so the loader can't spin forever (retry row when still empty).
+      if (mounted && _linkedAccountsLoading) {
+        setState(() {
+          _linkedAccountsLoading = false;
+          _linkedAccountsError = _linkedAccounts.isEmpty;
+        });
+      }
       // ONLY surface this while a deposit/link is actually in flight (progress
       // sheet up). ServiceUnavailable/Offline carry no operation, so the same
       // state also fires for the passive background _loadLinkedAccounts on screen
@@ -4354,6 +4581,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       // Don't surface link/unlink-list errors as a deposit failure (they're
       // background loads for the carousel); only deposit-flow errors matter.
       if (state.operation == 'fetchLinkedAccounts' || state.operation == 'unlinkAccount') {
+        // But DO resolve the carousel's section state so it can't spin
+        // forever — an empty carousel shows a compact retry row instead.
+        if (mounted && state.operation == 'fetchLinkedAccounts') {
+          setState(() {
+            _linkedAccountsLoading = false;
+            _linkedAccountsError = _linkedAccounts.isEmpty;
+          });
+        }
         return;
       }
       // Code-first KYC routing: the cubit preserves the backend error CODE, so
@@ -4421,7 +4656,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     } else if (state is LinkedAccountsLoaded) {
       // Cache the user's linked banks for the "Deposit again" carousel.
       if (mounted) {
-        setState(() => _linkedAccounts = state.accounts);
+        setState(() {
+          _linkedAccounts = state.accounts;
+          _linkedAccountsLoading = false;
+          _linkedAccountsError = false;
+        });
       }
       // One-time educational guide: how to see a live linked-bank balance.
       _maybeShowBalanceRefreshGuide(state.accounts);
@@ -4583,6 +4822,22 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         ),
       ),
       actions: [
+            // Deposit history — every past deposit with its live status.
+            IconButton(
+              tooltip: 'Deposit history',
+              onPressed: () => Get.to(() => const DepositHistoryScreen()),
+              icon: Container(
+                padding: EdgeInsets.all(6.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.07),
+                  borderRadius: BorderRadius.circular(10.r),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.12)),
+                ),
+                child: Icon(Icons.receipt_long_rounded,
+                    color: Colors.white.withValues(alpha: 0.9), size: 17.sp),
+              ),
+            ),
             // Single integrated voice surface: ServiceVoiceButton drives the
             // production voice agent (the old local speech_to_text Icons.mic
             // toggle was a duplicate and has been removed).
@@ -4591,14 +4846,21 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
             // copy-paste leftover that sent the agent to the wrong
             // service). Chat icon follows so users can also drive the
             // same flow via text.
+            // Sized to MATCH the history chip (≈17.sp icon in a ~30px chip) so
+            // the three app-bar actions read as one consistent row.
             ServiceVoiceButton(
               serviceName: 'deposits',
+              buttonSize: 30.w,
+              iconSize: 17.sp,
             ),
             SizedBox(width: 8.w),
             MicroserviceChatIcon(
               serviceName: 'Deposits',
               sourceContext: 'deposits',
+              size: 30,
+              iconSize: 17,
             ),
+            SizedBox(width: 8.w),
 ],
     );
   }

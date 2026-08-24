@@ -165,6 +165,13 @@ class PaymentsServiceClient extends $grpc.Client {
       ($0.GetUserTransfersRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.GetUserTransfersResponse.fromBuffer(value));
+  static final _$cancelScheduledTransfer = $grpc.ClientMethod<
+          $0.CancelScheduledTransferRequest,
+          $0.CancelScheduledTransferResponse>(
+      '/payments.PaymentsService/CancelScheduledTransfer',
+      ($0.CancelScheduledTransferRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.CancelScheduledTransferResponse.fromBuffer(value));
   static final _$getTransferFee =
       $grpc.ClientMethod<$0.GetTransferFeeRequest, $0.GetTransferFeeResponse>(
           '/payments.PaymentsService/GetTransferFee',
@@ -655,6 +662,13 @@ class PaymentsServiceClient extends $grpc.Client {
       $0.GetUserTransfersRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getUserTransfers, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CancelScheduledTransferResponse>
+      cancelScheduledTransfer($0.CancelScheduledTransferRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$cancelScheduledTransfer, request,
+        options: options);
   }
 
   $grpc.ResponseFuture<$0.GetTransferFeeResponse> getTransferFee(
@@ -1232,6 +1246,15 @@ abstract class PaymentsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetUserTransfersRequest.fromBuffer(value),
         ($0.GetUserTransfersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CancelScheduledTransferRequest,
+            $0.CancelScheduledTransferResponse>(
+        'CancelScheduledTransfer',
+        cancelScheduledTransfer_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.CancelScheduledTransferRequest.fromBuffer(value),
+        ($0.CancelScheduledTransferResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetTransferFeeRequest,
             $0.GetTransferFeeResponse>(
         'GetTransferFee',
@@ -1864,6 +1887,12 @@ abstract class PaymentsServiceBase extends $grpc.Service {
     return getUserTransfers(call, await request);
   }
 
+  $async.Future<$0.CancelScheduledTransferResponse> cancelScheduledTransfer_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.CancelScheduledTransferRequest> request) async {
+    return cancelScheduledTransfer(call, await request);
+  }
+
   $async.Future<$0.GetTransferFeeResponse> getTransferFee_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.GetTransferFeeRequest> request) async {
@@ -2240,6 +2269,8 @@ abstract class PaymentsServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.GetTransferStatusRequest request);
   $async.Future<$0.GetUserTransfersResponse> getUserTransfers(
       $grpc.ServiceCall call, $0.GetUserTransfersRequest request);
+  $async.Future<$0.CancelScheduledTransferResponse> cancelScheduledTransfer(
+      $grpc.ServiceCall call, $0.CancelScheduledTransferRequest request);
   $async.Future<$0.GetTransferFeeResponse> getTransferFee(
       $grpc.ServiceCall call, $0.GetTransferFeeRequest request);
   $async.Future<$0.GetDailyUsageResponse> getDailyUsage(

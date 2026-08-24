@@ -205,10 +205,22 @@ class ConnectConfigLoaded extends OpenBankingState {
   /// screen shows the cost + takes a txPIN before completing the link.
   final int linkFeeMinor;
 
+  /// Customer identity for the Connect widget. Without a customer, Mono makes
+  /// EVERY user "verify identity" in-widget regardless of KYC tier. Prefer
+  /// [monoCustomerId] (pre-created cus_xxx); fall back to the inline fields.
+  final String monoCustomerId;
+  final String customerName;
+  final String customerEmail;
+  final String customerBvn;
+
   const ConnectConfigLoaded({
     required this.publicKey,
     required this.appId,
     this.linkFeeMinor = 0,
+    this.monoCustomerId = '',
+    this.customerName = '',
+    this.customerEmail = '',
+    this.customerBvn = '',
   });
 
   @override

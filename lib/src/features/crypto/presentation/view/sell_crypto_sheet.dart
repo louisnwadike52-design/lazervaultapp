@@ -20,6 +20,7 @@ import '../../../../../core/services/injection_container.dart';
 import '../widgets/asset_network_badge.dart';
 import '../widgets/network_picker_sheet.dart';
 import '../widgets/price_quote_card.dart';
+import '../widgets/crypto_flow_guidance.dart';
 import 'swap_flow_dispatcher.dart';
 
 /// Streamlined SELL bottom sheet.
@@ -234,8 +235,24 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
       return 'You only hold ${h.quantity.toStringAsFixed(6)} ${widget.crypto.symbol.toUpperCase()}';
     }
     final min = _minFiat();
+    // Whole holding below the sell minimum → one clear message instead of an
+    // unreachable "Minimum is ₦X" the user can never satisfy.
+    final maxFiat = h.quantity * _price();
+    if (min > 0 && maxFiat > 0 && maxFiat < min) {
+      return 'Your ${widget.crypto.symbol.toUpperCase()} holding '
+          '(≈${CurrencySymbols.currentSymbol}${maxFiat.toStringAsFixed(2)}) is below the '
+          '${CurrencySymbols.currentSymbol}${min.toStringAsFixed(2)} sell minimum.';
+    }
     if (min > 0 && _fiatAmount < min) {
-      return 'Minimum is ${CurrencySymbols.currentSymbol}${min.toStringAsFixed(2)}';
+      final price = _price();
+      if (_isAmountInCrypto && price > 0) {
+        return 'Minimum is ${_trimNum(min / price)} ${widget.crypto.symbol.toUpperCase()} '
+            '(≈ ${CurrencySymbols.currentSymbol}${min.toStringAsFixed(2)})';
+      }
+      // Fiat mode: show the crypto equivalent too so the floor stays clear
+      // whichever unit the user thinks in.
+      return 'Minimum is ${CurrencySymbols.currentSymbol}${min.toStringAsFixed(2)}'
+          '${price > 0 ? ' (≈ ${_trimNum(min / price)} ${widget.crypto.symbol.toUpperCase()})' : ''}';
     }
     return null;
   }
@@ -285,6 +302,11 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
                   _buildOrderSummary(),
                 SizedBox(height: 12.h),
                 const CryptoFiatWalletPill(caption: 'Proceeds land here'),
+                SizedBox(height: 12.h),
+                const CryptoFlowGuidance(
+                  text:
+                      'Your sale settles on the exchange, then the proceeds (minus the fee shown above) are credited to this account — usually within seconds.',
+                ),
                 SizedBox(height: 20.h),
                 _buildSellButton(h),
                 SizedBox(height: 8.h),
@@ -628,12 +650,43 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
         }
         final min = _minFiat();
         final maxFiat = (h?.quantity ?? 0) * _price();
+        final price = _price();
+        final tkr = widget.crypto.symbol.toUpperCase();
+        final minC = price > 0 && min > 0 ? min / price : 0.0;
         final parts = <String>[];
-        if (min > 0) parts.add('Min $sym${min.toStringAsFixed(0)}');
-        if (maxFiat > 0) parts.add('Max $sym${maxFiat.toStringAsFixed(0)}');
+        // Holding worth less than the sell minimum → "Min ₦X · Max ₦Y" reads
+        // as a contradiction. Collapse to the minimum + why it can't be met.
+        final holdingBelowMin = min > 0 && maxFiat > 0 && maxFiat < min;
+        // Min/Max in the unit being TYPED, with the other in parentheses.
+        if (_isAmountInCrypto) {
+          if (minC > 0) {
+            parts.add('Min ${_trimNum(minC)} $tkr (≈$sym${min.toStringAsFixed(0)})');
+          }
+          if (holdingBelowMin) {
+            parts.add('Holding too small to sell');
+          } else if (h != null && h.quantity > 0) {
+            parts.add('Max ${_trimNum(h.quantity)} $tkr');
+          }
+        } else {
+          if (min > 0) {
+            parts.add('Min $sym${min.toStringAsFixed(0)}'
+                '${minC > 0 ? ' (${_trimNum(minC)} $tkr)' : ''}');
+          }
+          if (holdingBelowMin) {
+            parts.add('Holding too small to sell');
+          } else if (maxFiat > 0) {
+            parts.add('Max $sym${maxFiat.toStringAsFixed(0)}');
+          }
+        }
+        final belowMin = _fiatAmount > 0 && min > 0 && _fiatAmount < min;
+        final alert = belowMin || holdingBelowMin;
         return Text(parts.join(' · '),
             style: GoogleFonts.inter(
-                fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.45)));
+                fontSize: 12.sp,
+                fontWeight: alert ? FontWeight.w600 : FontWeight.w400,
+                color: alert
+                    ? const Color(0xFFEF4444)
+                    : Colors.white.withValues(alpha: 0.45)));
       },
     );
   }

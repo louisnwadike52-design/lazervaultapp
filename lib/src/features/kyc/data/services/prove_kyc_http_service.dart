@@ -54,6 +54,8 @@ class ProveKycStatus {
     required this.nextTier,
     required this.nextRequirements,
     required this.message,
+    this.sessionState = '',
+    this.failureReason = '',
   });
   final bool verified;
   final int tier;
@@ -63,7 +65,17 @@ class ProveKycStatus {
   final List<String> nextRequirements;
   final String message;
 
+  /// Machine-readable state of the latest Prove session:
+  /// '' | 'none' | 'pending' | 'verified' | 'failed'.
+  final String sessionState;
+
+  /// When [sessionState] is 'failed': 'cancelled' | 'expired' |
+  /// 'data_mismatch' | 'rejected'.
+  final String failureReason;
+
   bool get isMaxTier => tier >= 3;
+  bool get sessionFailed => sessionState == 'failed';
+  bool get sessionPending => sessionState == 'pending';
 }
 
 /// Thrown for any Prove KYC failure, with a clean user-facing message.
@@ -272,6 +284,10 @@ class ProveKycHttpService {
       nextRequirements:
           _asStringList(data['nextRequirements'] ?? data['next_requirements']),
       message: (data['message'] ?? '').toString(),
+      sessionState:
+          (data['sessionState'] ?? data['session_state'] ?? '').toString(),
+      failureReason:
+          (data['failureReason'] ?? data['failure_reason'] ?? '').toString(),
     );
   }
 

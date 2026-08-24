@@ -4,11 +4,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../core/services/injection_container.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pb.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../../data/models/crypto_model.dart';
+import 'crypto_detail_screen.dart';
 part 'learn_earn_screen_widgets.dart';
 
 
@@ -185,6 +188,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
   List<CryptoMessage> _topCryptos = [];
   List<CryptoNewsItem> _newsItems = [];
   bool _isLoadingDiscover = true;
+  bool _isDiscoverFetching = false; // in-flight guard for the tab listener
   String? _discoverError;
 
   // Lessons backed by crypto_learn_lessons (migration 031). Grouped
@@ -201,7 +205,10 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
-      if (_tabController.index == 1 && _isLoadingDiscover && _discoverError == null) {
+      // Reload whenever Discover is opened with nothing to show — the old
+      // guard (_isLoadingDiscover && no error) fired exactly once, so a failed
+      // first load left a sticky error with no retry on re-entering the tab.
+      if (_tabController.index == 1 && _topCryptos.isEmpty && !_isDiscoverFetching) {
         _loadDiscoverData();
       }
     });
@@ -305,6 +312,8 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
   }
 
   Future<void> _loadDiscoverData() async {
+    if (_isDiscoverFetching) return;
+    _isDiscoverFetching = true;
     setState(() {
       _isLoadingDiscover = true;
       _discoverError = null;
@@ -312,7 +321,9 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     try {
       final results = await Future.wait([
         _grpcClient.getTopCryptos(limit: 10, vsCurrency: 'usd'),
-        _grpcClient.getCryptoNews(currencies: ['btc', 'eth', 'sol', 'bnb'], limit: 10),
+        // No currency filter — the trending fallback rarely contains these
+        // majors, so the filtered result was usually empty.
+        _grpcClient.getCryptoNews(currencies: const [], limit: 10),
       ]);
       if (!mounted) return;
       setState(() {
@@ -326,6 +337,8 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
         _discoverError = 'Unable to load market data. Pull down to retry.';
         _isLoadingDiscover = false;
       });
+    } finally {
+      _isDiscoverFetching = false;
     }
   }
 
@@ -371,7 +384,9 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           ),
           SizedBox(width: 16.w),
           Text(
-            'Learn & Earn',
+            // "Learn & Earn" promised rewards no layer of the stack implements —
+            // renamed until a real earn mechanism ships.
+            'Crypto Academy',
             style: GoogleFonts.inter(
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
@@ -570,7 +585,13 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     final pctChange = crypto.priceChangePercentage24h;
     final isPositive = pctChange >= 0;
 
-    return Container(
+    // Tappable → asset detail, matching every other asset list in the app
+    // (was a dead-end Container). CryptoModel.fromProto handles the pb→entity
+    // conversion the detail screen expects.
+    return GestureDetector(
+      onTap: () => Get.to(() =>
+          CryptoDetailScreen(crypto: CryptoModel.fromProto(crypto).toEntity())),
+      child: Container(
       margin: EdgeInsets.only(bottom: 8.h),
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
@@ -649,6 +670,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -672,7 +694,14 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     final timeAgo = news.hasPublishedAt() ? _formatTimeAgo(news.publishedAt.toDateTime()) : '';
     final sentiment = news.sentiment.isNotEmpty ? news.sentiment : null;
 
-    return Container(
+    // Tappable → open the article (news.url was silently discarded before —
+    // a headline the user couldn't read). Smart Trading's cards already do this.
+    return GestureDetector(
+      onTap: news.url.isEmpty
+          ? null
+          : () => launchUrl(Uri.parse(news.url),
+              mode: LaunchMode.externalApplication),
+      child: Container(
       margin: EdgeInsets.only(bottom: 10.h),
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
@@ -719,6 +748,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
             ],
           ),
         ],
+      ),
       ),
     );
   }

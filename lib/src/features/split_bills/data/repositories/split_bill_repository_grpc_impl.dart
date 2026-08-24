@@ -318,7 +318,9 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
       case StatusCode.aborted:
         throw Exception(e.message ?? 'Transfer failed');
       default:
-        throw Exception(e.message ?? 'Unknown error');
+        // Raw gRPC/server strings are for logs + the admin dashboard only —
+        // the user always gets a calm, generic line.
+        throw Exception('Something went wrong. Please try again.');
     }
   }
 

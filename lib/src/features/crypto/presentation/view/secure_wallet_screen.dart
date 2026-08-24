@@ -9,6 +9,7 @@ import '../../cubit/crypto_state.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'crypto_wallets_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/crypto/data/models/crypto_wallet_model.dart';
 
 // Secure Wallet — opens from the LazerVault Services row on the crypto
 // landing page. Educational on the security model (licensed custody,
@@ -114,6 +115,37 @@ class SecureWalletScreen extends StatelessWidget {
   Widget _buildInventoryCard(BuildContext context) {
     return BlocBuilder<CryptoCubit, CryptoState>(
       builder: (context, state) {
+        if (state is CryptoError) {
+          return Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: Colors.red.withValues(alpha: 0.30)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.red, size: 20.sp),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Text(
+                    'Could not load your wallets.',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 13.sp,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.read<CryptoCubit>().loadCryptos(),
+                  child: Text('Retry',
+                      style: GoogleFonts.inter(
+                          color: _accent, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                ),
+              ],
+            ),
+          );
+        }
         if (state is! CryptosLoaded) {
           return Container(
             padding: EdgeInsets.all(16.w),
@@ -145,8 +177,25 @@ class SecureWalletScreen extends StatelessWidget {
           );
         }
 
-        final wallets = state.wallets;
         final holdings = state.holdings;
+        // `state.wallets` is never populated by the cubit (no fetch writes
+        // it), which blanked this card and the wallets screen even for funded
+        // users — derive the list from the live holdings instead.
+        final wallets = state.wallets.isNotEmpty
+            ? state.wallets
+            : holdings
+                .where((h) => h.quantity > 0)
+                .map((h) => CryptoWalletModel(
+                      id: h.id,
+                      cryptoId: h.cryptoId,
+                      cryptoSymbol: h.cryptoSymbol,
+                      address: '',
+                      balance: h.quantity,
+                      walletType: 'trading',
+                      chain: '',
+                      cryptoName: h.cryptoName,
+                    ))
+                .toList();
         // Sum custodied value across all holdings — same number shown
         // on the landing-page portfolio overview, so the user sees
         // consistent figures across screens.
@@ -303,9 +352,9 @@ class SecureWalletScreen extends StatelessWidget {
                             ),
                             child: Center(
                               child: Text(
-                                w.cryptoSymbol.toUpperCase().substring(
-                                    0,
-                                    w.cryptoSymbol.length >= 2 ? 2 : 1),
+                                w.cryptoSymbol
+                                    .toUpperCase()
+                                    .substring(0, w.cryptoSymbol.length.clamp(0, 2)),
                                 style: GoogleFonts.inter(
                                   color: Colors.white,
                                   fontSize: 10.sp,

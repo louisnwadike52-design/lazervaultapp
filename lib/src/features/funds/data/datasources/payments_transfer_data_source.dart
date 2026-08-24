@@ -431,6 +431,37 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
     return response.fee.toInt();
   }
 
+  @override
+  Future<TransferStatusSnapshot?> getTransferStatus(
+      {required String reference}) async {
+    if (reference.isEmpty) return null;
+    try {
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.getTransferStatus(
+          payments.GetTransferStatusRequest(reference: reference),
+          options: callOptions.mergedWith(
+            CallOptions(timeout: const Duration(seconds: 15)),
+          ),
+        );
+      });
+      if (!response.success || !response.hasTransfer()) return null;
+      final t = response.transfer;
+      return TransferStatusSnapshot(
+        status: t.status,
+        failureReason: t.failureReason.isNotEmpty ? t.failureReason : null,
+        amount: t.amount != 0 ? t.amount.toDouble() / 100.0 : null,
+        fee: t.fee != 0 ? t.fee.toDouble() / 100.0 : null,
+        completedAt: t.hasCompletedAt() && t.completedAt.isNotEmpty
+            ? DateTime.tryParse(t.completedAt)
+            : null,
+      );
+    } catch (_) {
+      // Best-effort — the receipt keeps its last-known status on failure.
+      return null;
+    }
+  }
+
   /// Custom retry logic for transfers - don't retry business logic failures
   /// or any error from operations that consume single-use verification tokens.
   bool _shouldRetryTransfer(dynamic error) {

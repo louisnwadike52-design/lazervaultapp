@@ -104,15 +104,21 @@ class SplitBillPdfService {
                   padding: const pw.EdgeInsets.symmetric(
                       horizontal: 12, vertical: 4),
                   decoration: pw.BoxDecoration(
-                    color: PdfColors.green50,
+                    // Badge follows the REAL status — an in-progress share must
+                    // never be stamped PAID (money-representation defect).
+                    color: status.toLowerCase() == 'paid'
+                        ? PdfColors.green50
+                        : PdfColors.orange50,
                     borderRadius: pw.BorderRadius.circular(12),
                   ),
                   child: pw.Text(
-                    'PAID',
+                    status.toUpperCase(),
                     style: pw.TextStyle(
                       fontSize: 12,
                       fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.green800,
+                      color: status.toLowerCase() == 'paid'
+                          ? PdfColors.green800
+                          : PdfColors.orange800,
                     ),
                   ),
                 ),

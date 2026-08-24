@@ -30,6 +30,10 @@ class _LinkBankScreenState extends State<LinkBankScreen>
   String? _publicKey;
   String? _appId;
   bool _configLoaded = false;
+  String _monoCustomerId = '';
+  String _customerName = '';
+  String _customerEmail = '';
+  String _customerBvn = '';
 
   @override
   void initState() {
@@ -73,6 +77,24 @@ class _LinkBankScreenState extends State<LinkBankScreen>
 
   void _loadMonoWidget() {
     if (_publicKey == null || _appId == null) return;
+
+    // Customer identity for the widget — without it Mono makes EVERY user
+    // "verify identity" in-widget regardless of their LazerVault KYC tier.
+    // Prefer the pre-created cus_ id; fall back to inline name/email(+BVN).
+    String esc(String s) => s
+        .replaceAll(r'\', r'\\')
+        .replaceAll('"', r'\"')
+        .replaceAll('\n', ' ');
+    String customerJs = '';
+    if (_monoCustomerId.isNotEmpty) {
+      customerJs = 'data: { customer: { id: "${esc(_monoCustomerId)}" } },';
+    } else if (_customerName.isNotEmpty && _customerEmail.isNotEmpty) {
+      final identity = _customerBvn.isNotEmpty
+          ? ', identity: { type: "bvn", number: "${esc(_customerBvn)}" }'
+          : '';
+      customerJs =
+          'data: { customer: { name: "${esc(_customerName)}", email: "${esc(_customerEmail)}"$identity } },';
+    }
 
     final html = '''
 <!DOCTYPE html>
@@ -118,6 +140,7 @@ class _LinkBankScreenState extends State<LinkBankScreen>
   <script>
     const connect = new Connect({
       key: "$_publicKey",
+      $customerJs
       onSuccess: function(data) {
         // Send code back to Flutter
         MonoConnect.postMessage(JSON.stringify({
@@ -259,6 +282,10 @@ class _LinkBankScreenState extends State<LinkBankScreen>
             setState(() {
               _publicKey = state.publicKey;
               _appId = state.appId;
+              _monoCustomerId = state.monoCustomerId;
+              _customerName = state.customerName;
+              _customerEmail = state.customerEmail;
+              _customerBvn = state.customerBvn;
               _configLoaded = true;
             });
             _loadMonoWidget();

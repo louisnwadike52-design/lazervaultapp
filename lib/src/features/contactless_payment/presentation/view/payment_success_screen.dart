@@ -238,7 +238,10 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
       buffer.writeln('Powered by Lazervault');
 
       await SharePlus.instance.share(
-          ShareParams(text: buffer.toString(), subject: 'Payment Receipt'));
+          ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: buffer.toString(), subject: 'Payment Receipt'));
     }
   }
 

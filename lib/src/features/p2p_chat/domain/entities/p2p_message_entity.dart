@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 /// A single user's reaction to a message (WhatsApp-style, one per user).
 class P2PReaction {
   final String userId;
@@ -80,9 +81,55 @@ class P2PMessageEntity {
   bool get isMedia => isImage || isVoice;
   bool get isTransfer => isTransferGeneric || isTransferSent || isTransferReceived || isTransferRequest;
 
-  /// Transfer amount in major units (e.g., Naira). Returns null if no amount.
-  double? get transferAmountMajor =>
-      transferAmount != null ? transferAmount! / 100.0 : null;
+  /// Fiat currency codes whose bubble amounts are stored as ×100 minor units.
+  /// Anything else is a CRYPTO transfer: the bubble stores the asset's own
+  /// ledger minor units (sats-style scales).
+  static const _fiatTransferCodes = {
+    'NGN', '', 'USD', 'GBP', 'EUR', 'GHS', 'KES', 'ZAR',
+  };
+
+  /// True when this transfer bubble carries crypto (internal user-to-user
+  /// crypto send), not fiat.
+  bool get isCryptoTransfer =>
+      !_fiatTransferCodes.contains((transferCurrency ?? '').toUpperCase());
+
+  /// Ledger minor-unit decimals per crypto symbol — mirrors the backend's
+  /// LedgerMinorUnitDecimals (6-dp stables, 8-dp everything else).
+  static int cryptoLedgerDecimals(String symbol) {
+    switch (symbol.toLowerCase()) {
+      case 'usdt':
+      case 'usdc':
+      case 'busd':
+      case 'cngn':
+      case 'axcnh':
+      case 'qdx':
+        return 6;
+      default:
+        return 8;
+    }
+  }
+
+  /// Transfer amount in major units (e.g., Naira — or the crypto quantity for
+  /// a crypto bubble). Returns null if no amount.
+  double? get transferAmountMajor {
+    if (transferAmount == null) return null;
+    if (isCryptoTransfer) {
+      final dec = cryptoLedgerDecimals(transferCurrency ?? '');
+      return transferAmount! / math.pow(10, dec);
+    }
+    return transferAmount! / 100.0;
+  }
+
+  /// Compact crypto amount label, e.g. "0.0005 BTC". Empty for fiat bubbles.
+  String get cryptoTransferLabel {
+    if (!isCryptoTransfer || transferAmount == null) return '';
+    final qty = transferAmountMajor ?? 0;
+    var s = qty.toStringAsFixed(8);
+    if (s.contains('.')) {
+      s = s.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    }
+    return '$s ${(transferCurrency ?? '').toUpperCase()}';
+  }
 
   /// Currency symbol for the transfer's currency (falls back to the code).
   String get transferCurrencySymbol {
@@ -110,6 +157,10 @@ class P2PMessageEntity {
   /// and the "replying to" banner (shown identically to both parties, so it
   /// carries the amount but not a direction like "you sent"). e.g. "💸 ₦5,000".
   String get transferSnippet {
+    if (isCryptoTransfer) {
+      final label = cryptoTransferLabel;
+      return label.isEmpty ? '🪙 Crypto transfer' : '🪙 $label';
+    }
     final amt = transferAmountMajor;
     if (amt == null) return '💸 Money transfer';
     final formatted = amt == amt.roundToDouble()

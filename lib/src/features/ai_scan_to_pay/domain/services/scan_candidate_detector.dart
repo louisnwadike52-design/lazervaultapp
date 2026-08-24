@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/ai_scan_to_pay/domain/services/scan_text_normalizer.dart';
 /// What kind of payable identifier the on-device OCR spotted in a camera frame.
 enum ScanCandidateType { account, phone, amount, username, email }
 
@@ -48,7 +49,10 @@ class ScanCandidateDetector {
 
   /// Returns the best payable candidate found in [rawText], or `null`.
   ScanCandidate? detect(String rawText) {
-    final text = rawText.replaceAll('\n', ' ');
+    // Repair handwriting OCR (broken digit runs + O/I/S/B/Z confusables)
+    // BEFORE matching — chalk-on-wall signs never produce a clean contiguous
+    // \d{10}, and the glyph flicker also defeated the stability gate.
+    final text = augmentDigitRuns(rawText.replaceAll('\n', ' '));
     if (text.trim().isEmpty) return null;
 
     // 1) Email — unambiguous internal user.

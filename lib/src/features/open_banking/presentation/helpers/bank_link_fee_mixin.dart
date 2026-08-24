@@ -190,14 +190,37 @@ Future<bool> showDepositFeeAgreementSheet(
               style:
                   GoogleFonts.inter(color: textSecondary, fontSize: 12.sp)),
           SizedBox(height: 12.h),
-          // Connection fee — only for a first-time link.
-          if (!quote.connectFee.isFree)
+          // Connection fee — only for a first-time link. Rows show the
+          // UNDISCOUNTED amount (total + discount) so together with the green
+          // discount row they sum exactly to "Total fees" below.
+          if (quote.connectFee.total + quote.connectFee.discount > 0)
             feeRow('Bank connection', 'One-time, charged from your wallet',
-                quote.connectFee.total),
+                quote.connectFee.total + quote.connectFee.discount),
           // Per-deposit fee for the chosen rail.
-          if (!quote.depositFee.isFree)
+          if (quote.depositFee.total + quote.depositFee.discount > 0)
             feeRow('Deposit fee', '$railLabel · deducted from this deposit',
-                quote.depositFee.total),
+                quote.depositFee.total + quote.depositFee.discount),
+          // Platform-funded discount already subtracted from the totals above —
+          // shown as its own green "you save" row when a promo is running.
+          if (quote.discountTotal > 0)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 6.h),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Discount applied',
+                      style: GoogleFonts.inter(
+                          color: const Color(0xFF10B981),
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600)),
+                  Text('−${_formatKobo(quote.discountTotal)}',
+                      style: GoogleFonts.inter(
+                          color: const Color(0xFF10B981),
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ),
           Padding(
             padding: EdgeInsets.symmetric(vertical: 8.h),
             child: Divider(color: divider, height: 1),

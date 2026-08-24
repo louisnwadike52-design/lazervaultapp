@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' show Rect;
 import 'package:csv/csv.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
@@ -43,6 +44,12 @@ class TransactionExportHelper {
       ShareParams(
         files: [XFile(file.path)],
         text: 'Lazervault Transaction History',
+        // iOS requires a non-zero popover anchor; omitting it makes share_plus
+        // pass CGRectZero and the whole export throws PlatformException
+        // ("sharePositionOrigin: argument must be set … must be non-zero") —
+        // the "Export failed" the user hit. A 1×1 rect at the origin is always
+        // inside the view's coordinate space (same fallback as receipts).
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       ),
     );
   }

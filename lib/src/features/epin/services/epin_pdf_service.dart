@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import '../domain/entities/epin_entities.dart';
+import 'dart:ui' show Rect;
 
 /// Renders / shares a recharge-card (ePIN) order as the classic Nigerian
 /// recharge-card printout: a LANDSCAPE grid of small cards (4 per row), each
@@ -393,6 +394,9 @@ class EPinPdfService {
     final file = await generateReceipt(order: order, vendorName: vendorName);
     final denom = _denomLabel(order);
     await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       files: [XFile(file.path)],
       text:
           'Recharge cards ${order.reference} — ${order.quantity}${denom.isNotEmpty ? ' x $denom' : ''}${order.network.trim().isNotEmpty ? ' (${order.network})' : ''}',

@@ -6345,6 +6345,7 @@ class TransferDetail extends $pb.GeneratedMessage {
     ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureReason')
     ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
     ..aOS(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt')
+    ..aOS(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduledAt')
     ..hasRequiredFields = false
   ;
 
@@ -6370,6 +6371,7 @@ class TransferDetail extends $pb.GeneratedMessage {
     $core.String? failureReason,
     $core.String? createdAt,
     $core.String? completedAt,
+    $core.String? scheduledAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -6431,6 +6433,9 @@ class TransferDetail extends $pb.GeneratedMessage {
     }
     if (completedAt != null) {
       _result.completedAt = completedAt;
+    }
+    if (scheduledAt != null) {
+      _result.scheduledAt = scheduledAt;
     }
     return _result;
   }
@@ -6634,6 +6639,15 @@ class TransferDetail extends $pb.GeneratedMessage {
   $core.bool hasCompletedAt() => $_has(19);
   @$pb.TagNumber(20)
   void clearCompletedAt() => clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.String get scheduledAt => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set scheduledAt($core.String v) { $_setString(20, v); }
+  @$pb.TagNumber(21)
+  $core.bool hasScheduledAt() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearScheduledAt() => clearField(21);
 }
 
 class GetTransferStatusRequest extends $pb.GeneratedMessage {
@@ -6772,6 +6786,114 @@ class GetTransferStatusResponse extends $pb.GeneratedMessage {
   void clearTransfer() => clearField(4);
   @$pb.TagNumber(4)
   TransferDetail ensureTransfer() => $_ensure(3);
+}
+
+class CancelScheduledTransferRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelScheduledTransferRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentId')
+    ..hasRequiredFields = false
+  ;
+
+  CancelScheduledTransferRequest._() : super();
+  factory CancelScheduledTransferRequest({
+    $core.String? paymentId,
+  }) {
+    final _result = create();
+    if (paymentId != null) {
+      _result.paymentId = paymentId;
+    }
+    return _result;
+  }
+  factory CancelScheduledTransferRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CancelScheduledTransferRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CancelScheduledTransferRequest clone() => CancelScheduledTransferRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CancelScheduledTransferRequest copyWith(void Function(CancelScheduledTransferRequest) updates) => super.copyWith((message) => updates(message as CancelScheduledTransferRequest)) as CancelScheduledTransferRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CancelScheduledTransferRequest create() => CancelScheduledTransferRequest._();
+  CancelScheduledTransferRequest createEmptyInstance() => create();
+  static $pb.PbList<CancelScheduledTransferRequest> createRepeated() => $pb.PbList<CancelScheduledTransferRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CancelScheduledTransferRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CancelScheduledTransferRequest>(create);
+  static CancelScheduledTransferRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get paymentId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set paymentId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPaymentId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPaymentId() => clearField(1);
+}
+
+class CancelScheduledTransferResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelScheduledTransferResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..hasRequiredFields = false
+  ;
+
+  CancelScheduledTransferResponse._() : super();
+  factory CancelScheduledTransferResponse({
+    $core.bool? success,
+    $core.String? errorMessage,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (errorMessage != null) {
+      _result.errorMessage = errorMessage;
+    }
+    return _result;
+  }
+  factory CancelScheduledTransferResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CancelScheduledTransferResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CancelScheduledTransferResponse clone() => CancelScheduledTransferResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CancelScheduledTransferResponse copyWith(void Function(CancelScheduledTransferResponse) updates) => super.copyWith((message) => updates(message as CancelScheduledTransferResponse)) as CancelScheduledTransferResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CancelScheduledTransferResponse create() => CancelScheduledTransferResponse._();
+  CancelScheduledTransferResponse createEmptyInstance() => create();
+  static $pb.PbList<CancelScheduledTransferResponse> createRepeated() => $pb.PbList<CancelScheduledTransferResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CancelScheduledTransferResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CancelScheduledTransferResponse>(create);
+  static CancelScheduledTransferResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorMessage => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorMessage($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorMessage() => clearField(2);
 }
 
 class GetUserTransfersRequest extends $pb.GeneratedMessage {

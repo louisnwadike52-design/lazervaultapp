@@ -5,12 +5,52 @@ import 'package:barcode/barcode.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
+import 'package:printing/printing.dart';
+import 'package:image/image.dart' as img;
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/types/unified_transaction.dart';
 import '../domain/entities/tag_pay_entity.dart';
 import '../domain/entities/user_tag_entity.dart';
+import 'package:lazervault/src/features/widgets/receipt_metadata_humanizer.dart';
+
+/// Which party a transfer receipt is generated FOR. Drives whether the fee is
+/// shown: the SENDER paid amount + fee, so their copy itemises the fee; the
+/// RECIPIENT received only the amount (the fee never touches them), so their
+/// copy shows just the amount + transaction details — never the sender's fee.
+enum ReceiptCopyType {
+  sender,
+  recipient;
+
+  bool get isRecipient => this == ReceiptCopyType.recipient;
+
+  /// Caption stamped on the PDF so a printed/shared copy is unambiguous.
+  String get label => switch (this) {
+        ReceiptCopyType.sender => "Sender's Copy",
+        ReceiptCopyType.recipient => "Recipient's Copy",
+      };
+}
+
+/// Output format the user picks for a shareable/downloadable receipt. PNG/JPG
+/// are rasterised from the SAME PDF layout so all three formats look identical.
+enum ReceiptFileFormat {
+  pdf,
+  png,
+  jpg;
+
+  String get ext => name; // pdf | png | jpg
+  String get label => switch (this) {
+        ReceiptFileFormat.pdf => 'PDF document',
+        ReceiptFileFormat.png => 'PNG image',
+        ReceiptFileFormat.jpg => 'JPG image',
+      };
+  String get mime => switch (this) {
+        ReceiptFileFormat.pdf => 'application/pdf',
+        ReceiptFileFormat.png => 'image/png',
+        ReceiptFileFormat.jpg => 'image/jpeg',
+      };
+}
 
 class TagPayPdfService {
   static final _dateFormat = DateFormat('yyyy-MM-dd');
@@ -74,16 +114,35 @@ class TagPayPdfService {
     }
   }
 
-  /// Load fonts that support unicode characters
+  /// Load fonts that support unicode characters (₦, —, etc). BUNDLED Inter is
+  /// the primary source — receipts must render correctly offline and instantly.
+  /// The old CDN-only fetch was version-pinned and started 404ing when Google
+  /// rotated the URL, silently degrading every receipt to Helvetica (no ₦
+  /// glyph) after an unbounded network wait that made Share look frozen.
   static Future<void> _loadFonts() async {
     if (_regularFont != null && _boldFont != null) return;
 
+    // 1) Bundled assets — instant, offline, can't rot.
     try {
-      // Try loading Inter font from Google Fonts CDN
-      final regularResponse = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.ttf'));
-      final boldResponse = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYAZ9hiA.ttf'));
+      final regular = await rootBundle.load('assets/fonts/Inter-Regular.ttf');
+      final bold = await rootBundle.load('assets/fonts/Inter-Bold.ttf');
+      _regularFont = pw.Font.ttf(regular);
+      _boldFont = pw.Font.ttf(bold);
+      return;
+    } catch (_) {
+      // Asset missing (shouldn't happen) — fall through to network.
+    }
+
+    // 2) Last-resort CDN fetch, bounded so Share can never hang on bad network.
+    try {
+      final regularResponse = await http
+          .get(Uri.parse(
+              'https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf'))
+          .timeout(const Duration(seconds: 5));
+      final boldResponse = await http
+          .get(Uri.parse(
+              'https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZg.ttf'))
+          .timeout(const Duration(seconds: 5));
 
       if (regularResponse.statusCode == 200 && boldResponse.statusCode == 200) {
         _regularFont = pw.Font.ttf(regularResponse.bodyBytes.buffer.asByteData());
@@ -164,7 +223,7 @@ class TagPayPdfService {
                                 fontSize: 10, color: PdfColors.grey600)),
                         pw.SizedBox(height: 4),
                         pw.Text(
-                            senderName.isNotEmpty ? senderName.toUpperCase() : 'LAZERVAULT USER',
+                            senderName.toUpperCase(),
                             style: _getTextStyle(fontSize: 14, isBold: true)),
                         if (senderTag.isNotEmpty)
                           pw.Text('@$senderTag',
@@ -179,7 +238,7 @@ class TagPayPdfService {
                     child: _buildSummaryTable(
                       createdDate: createdDate,
                       status: tag.isPaid ? 'Paid' : (tag.isCancelled ? 'Cancelled' : 'Pending'),
-                      type: 'TagPay Invoice',
+                      type: 'Tagpay Invoice',
                     ),
                   ),
                 ],
@@ -266,7 +325,7 @@ class TagPayPdfService {
                       createdDate: transactionDate,
                       completedDate: completedDate,
                       status: transaction.statusDisplay,
-                      type: 'TagPay Transfer',
+                      type: 'Tagpay Transfer',
                     ),
                   ),
                 ],
@@ -366,7 +425,7 @@ class TagPayPdfService {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text(
-          senderName.isNotEmpty ? senderName.toUpperCase() : 'LAZERVAULT USER',
+          senderName.toUpperCase(),
           style: _getTextStyle(fontSize: 14, isBold: true),
         ),
         pw.SizedBox(height: 4),
@@ -474,6 +533,59 @@ class TagPayPdfService {
     );
   }
 
+  /// Fund-transfer details card: amount + fee SEPARATE, ONE "Transfer Reference"
+  /// (no Tagpay reference, no duplicate Transaction Id). Distinct from the TagPay
+  /// card below so each service owns its own fields.
+  static pw.Widget _buildFundTransferDetails({
+    required String currencySymbol,
+    required String amount,
+    required String fee,
+    required String description,
+    required String transferReference,
+    // SENDER copy itemises Fee + Total Paid (amount + fee). RECIPIENT copy hides
+    // the fee entirely — the recipient received exactly `amount`; the fee is the
+    // sender's cost and must never appear on the beneficiary's copy.
+    bool showFee = true,
+    String? totalPaid,
+  }) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          'Transfer details',
+          style: _getTextStyle(fontSize: 16, isBold: true),
+        ),
+        pw.SizedBox(height: 12),
+        pw.Container(
+          padding: const pw.EdgeInsets.all(16),
+          decoration: pw.BoxDecoration(
+            color: PdfColors.grey50,
+            borderRadius: pw.BorderRadius.circular(8),
+            border: pw.Border.all(color: PdfColors.grey200),
+          ),
+          child: pw.Column(
+            children: [
+              _buildDetailRow(
+                  showFee ? 'Amount' : 'Amount Received',
+                  '$currencySymbol$amount',
+                  isBold: true),
+              if (showFee) ...[
+                _buildDetailRow('Fee', '$currencySymbol$fee'),
+                if (totalPaid != null && totalPaid.isNotEmpty)
+                  _buildDetailRow('Total Paid', '$currencySymbol$totalPaid',
+                      isBold: true),
+              ],
+              if (description.isNotEmpty)
+                _buildDetailRow('Description', description),
+              _buildDetailRow('Transfer Reference', transferReference),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Tagpay details card. Keeps its OWN "Tagpay Reference" field (no PascalCase).
   static pw.Widget _buildTransferDetails({
     required String currencySymbol,
     required String amount,
@@ -499,15 +611,28 @@ class TagPayPdfService {
           child: pw.Column(
             children: [
               _buildDetailRow('Amount', '$currencySymbol$amount', isBold: true),
-              _buildDetailRow('Fee', '${currencySymbol}0.00'),
               _buildDetailRow('Reference', reference),
-              _buildDetailRow('TagPay Reference', tagPayReference),
+              _buildDetailRow('Tagpay Reference', tagPayReference),
               _buildDetailRow('Transaction Id', transactionId),
             ],
           ),
         ),
       ],
     );
+  }
+
+  /// Clean a transfer reference for display: drop a redundant "_transfer" /
+  /// "-transfer" suffix. The id already carries a "TRF" prefix, so leaving the
+  /// suffix would say "transfer" twice (e.g. "TRF-abc_transfer").
+  static String _cleanTransferRef(String ref) {
+    var r = ref.trim();
+    for (final suffix in const ['_transfer', '-transfer', ' transfer']) {
+      if (r.toLowerCase().endsWith(suffix)) {
+        r = r.substring(0, r.length - suffix.length).trim();
+        break;
+      }
+    }
+    return r;
   }
 
   static pw.Widget _buildDetailRow(String label, String value,
@@ -561,7 +686,7 @@ class TagPayPdfService {
             children: [
               _buildDetailRow(
                 'Name',
-                recipientName.isNotEmpty ? recipientName : 'Lazervault User',
+                recipientName,
               ),
               if (recipientTag.isNotEmpty)
                 _buildDetailRow('Tag', '@$recipientTag'),
@@ -572,7 +697,7 @@ class TagPayPdfService {
     );
   }
 
-  static pw.Widget _buildFooter({String transactionType = 'TagPay transfer'}) {
+  static pw.Widget _buildFooter({String transactionType = 'Tagpay transfer'}) {
     return pw.Column(
       children: [
         pw.Divider(color: PdfColors.grey300),
@@ -705,8 +830,8 @@ class TagPayPdfService {
 
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
-        text: 'TagPay Invoice - $currencySymbol$amount ${isOutgoing ? "to" : "from"} ${recipientName.isNotEmpty ? recipientName : "@$recipientTag"}',
-        subject: 'Lazervault TagPay Invoice',
+        text: 'Tagpay Invoice - $currencySymbol$amount ${isOutgoing ? "to" : "from"} ${recipientName.isNotEmpty ? recipientName : "@$recipientTag"}',
+        subject: 'Lazervault Tagpay Invoice',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
@@ -774,8 +899,8 @@ class TagPayPdfService {
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text:
-            'TagPay Transfer Receipt - $currencySymbol$amount to @${transaction.receiverTagPay}',
-        subject: 'Lazervault TagPay Transfer Confirmation',
+            'Tagpay Transfer Receipt - $currencySymbol$amount to @${transaction.receiverTagPay}',
+        subject: 'Lazervault Tagpay Transfer Confirmation',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
@@ -833,7 +958,7 @@ class TagPayPdfService {
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.Text(
-                          senderName.isNotEmpty ? senderName.toUpperCase() : 'LAZERVAULT USER',
+                          senderName.toUpperCase(),
                           style: _getTextStyle(fontSize: 14, isBold: true),
                         ),
                         pw.SizedBox(height: 4),
@@ -852,7 +977,7 @@ class TagPayPdfService {
                       createdDate: paidDate,
                       completedDate: paidDate,
                       status: 'Completed',
-                      type: 'TagPay Transfer',
+                      type: 'Tagpay Transfer',
                     ),
                   ),
                 ],
@@ -863,7 +988,7 @@ class TagPayPdfService {
               _buildTransferDetails(
                 currencySymbol: currencySymbol,
                 amount: amount,
-                reference: tag.description.isNotEmpty ? tag.description : 'TagPay payment',
+                reference: tag.description.isNotEmpty ? tag.description : 'Tagpay payment',
                 tagPayReference: reference,
                 transactionId: tag.id,
               ),
@@ -943,8 +1068,8 @@ class TagPayPdfService {
 
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
-        text: 'TagPay Receipt - $currencySymbol$amount ${isOutgoing ? "to" : "from"} @$recipientTag',
-        subject: 'Lazervault TagPay Receipt',
+        text: 'Tagpay Receipt - $currencySymbol$amount ${isOutgoing ? "to" : "from"} @$recipientTag',
+        subject: 'Lazervault Tagpay Receipt',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {
@@ -957,6 +1082,7 @@ class TagPayPdfService {
   /// Generate a transfer receipt PDF from map-based transfer details
   static Future<File> generateFundTransferReceipt({
     required Map<String, dynamic> transferDetails,
+    ReceiptCopyType copyType = ReceiptCopyType.sender,
   }) async {
     await _loadFonts();
     final pdf = pw.Document();
@@ -967,9 +1093,12 @@ class TagPayPdfService {
     final currency = transferDetails['currency'] as String? ?? 'NGN';
     final currencySymbol = _currencySymbolFor(currency);
     final fee = (transferDetails['fee'] as num?)?.toDouble() ?? 0.0;
+    // Recipient copy hides the fee (it's the sender's cost); sender copy itemises
+    // fee + total paid (amount + fee).
+    final showFee = !copyType.isRecipient;
 
     final recipientName =
-        _pdfSafe(transferDetails['recipientName'] as String?) ?? 'Recipient';
+        _pdfSafe(transferDetails['recipientName'] as String?) ?? '';
     final recipientAccount =
         _pdfSafe(transferDetails['recipientAccountMasked'] as String?);
     final recipientBank =
@@ -1005,7 +1134,21 @@ class TagPayPdfService {
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               _buildInvoiceHeader(logo, generatedDate, isInvoice: false),
-              pw.SizedBox(height: 24),
+              pw.SizedBox(height: 8),
+              // Which party this copy is for (Sender's / Recipient's Copy).
+              pw.Container(
+                padding:
+                    const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.grey100,
+                  borderRadius: pw.BorderRadius.circular(4),
+                ),
+                child: pw.Text(
+                  copyType.label.toUpperCase(),
+                  style: _getTextStyle(fontSize: 9, color: PdfColors.grey700),
+                ),
+              ),
+              pw.SizedBox(height: 16),
 
               // Sender and Summary
               pw.Row(
@@ -1021,7 +1164,7 @@ class TagPayPdfService {
                                 fontSize: 10, color: PdfColors.grey600)),
                         pw.SizedBox(height: 4),
                         pw.Text(
-                            (sourceAccountName ?? 'LAZERVAULT USER').toUpperCase(),
+                            (sourceAccountName ?? '').toUpperCase(),
                             style: _getTextStyle(fontSize: 14, isBold: true)),
                         if (sourceAccountInfo != null && sourceAccountInfo.isNotEmpty)
                           pw.Text(sourceAccountInfo,
@@ -1044,21 +1187,18 @@ class TagPayPdfService {
               ),
               pw.SizedBox(height: 32),
 
-              // Transfer Details
-              _buildTransferDetails(
+              // Transfer Details — SENDER copy: amount + fee + total paid.
+              // RECIPIENT copy: amount received only (no fee).
+              _buildFundTransferDetails(
                 currencySymbol: currencySymbol,
                 amount: amount.toStringAsFixed(2),
-                reference: narration ?? 'Fund Transfer',
-                tagPayReference: reference.isNotEmpty ? reference : transferId,
-                transactionId: transferId,
+                fee: fee.toStringAsFixed(2),
+                showFee: showFee,
+                totalPaid: showFee ? (amount + fee).toStringAsFixed(2) : null,
+                description: narration ?? '',
+                transferReference: _cleanTransferRef(
+                    reference.isNotEmpty ? reference : transferId),
               ),
-              pw.SizedBox(height: 8),
-              if (fee > 0)
-                pw.Container(
-                  padding: const pw.EdgeInsets.symmetric(horizontal: 16),
-                  child: _buildDetailRow(
-                      'Fee', '$currencySymbol${fee.toStringAsFixed(2)}'),
-                ),
               pw.SizedBox(height: 24),
 
               // Beneficiary Details
@@ -1122,9 +1262,13 @@ class TagPayPdfService {
   /// Generate a transfer receipt PDF from UnifiedTransaction (for transaction history)
   static Future<File> generateUnifiedTransferReceipt({
     required UnifiedTransaction transaction,
+    ReceiptCopyType copyType = ReceiptCopyType.sender,
+    ReceiptFileFormat format = ReceiptFileFormat.pdf,
   }) async {
     final metadata = transaction.metadata ?? {};
-    return generateFundTransferReceipt(
+    return generateTransferReceiptFile(
+      copyType: copyType,
+      format: format,
       transferDetails: {
         'amount': transaction.amount,
         'currency': transaction.currency,
@@ -1150,13 +1294,75 @@ class TagPayPdfService {
     );
   }
 
+  /// Rasterise page 1 of a generated receipt PDF to a PNG/JPG file. Reuses the
+  /// exact PDF layout, so the image is a pixel-faithful copy of the document.
+  static Future<File> _rasterizeReceipt({
+    required File pdfFile,
+    required ReceiptFileFormat format,
+    required String baseName,
+  }) async {
+    final pdfBytes = await pdfFile.readAsBytes();
+    // 200 dpi = crisp on-screen + printable without a huge file.
+    final raster = await Printing.raster(pdfBytes, pages: [0], dpi: 200).first;
+    final Uint8List bytes;
+    if (format == ReceiptFileFormat.jpg) {
+      final image = img.Image.fromBytes(
+        width: raster.width,
+        height: raster.height,
+        bytes: raster.pixels.buffer,
+        numChannels: 4,
+        order: img.ChannelOrder.rgba,
+      );
+      // JPG has no alpha — encode flattens onto the (already white) background.
+      bytes = img.encodeJpg(image, quality: 92);
+    } else {
+      bytes = await raster.toPng();
+    }
+    final out = await getTemporaryDirectory();
+    final file = File('${out.path}/$baseName.${format.ext}');
+    await file.writeAsBytes(bytes);
+    return file;
+  }
+
+  /// Produce a transfer-receipt FILE in the requested [format] for [copyType].
+  /// PDF returns the vector document; PNG/JPG rasterise page 1 of that same PDF
+  /// so all three formats are visually identical.
+  static Future<File> generateTransferReceiptFile({
+    required Map<String, dynamic> transferDetails,
+    ReceiptCopyType copyType = ReceiptCopyType.sender,
+    ReceiptFileFormat format = ReceiptFileFormat.pdf,
+  }) async {
+    final pdfFile = await generateFundTransferReceipt(
+        transferDetails: transferDetails, copyType: copyType);
+    if (format == ReceiptFileFormat.pdf) return pdfFile;
+
+    final reference = (transferDetails['reference'] as String?) ?? '';
+    final transferId = transferDetails['transferId']?.toString() ??
+        transferDetails['transactionId']?.toString() ??
+        '';
+    final rawRef = reference.isNotEmpty
+        ? reference
+        : (transferId.isNotEmpty ? transferId : 'transfer');
+    final safeRef = rawRef.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+    final suffix = copyType.isRecipient ? 'recipient' : 'sender';
+    return _rasterizeReceipt(
+      pdfFile: pdfFile,
+      format: format,
+      baseName: 'transfer_receipt_${safeRef}_$suffix',
+    );
+  }
+
   /// Download transfer receipt from map details
   static Future<String> downloadTransferReceipt({
     required Map<String, dynamic> transferDetails,
+    ReceiptCopyType copyType = ReceiptCopyType.sender,
+    ReceiptFileFormat format = ReceiptFileFormat.pdf,
   }) async {
     try {
-      final file =
-          await generateFundTransferReceipt(transferDetails: transferDetails);
+      final file = await generateTransferReceiptFile(
+          transferDetails: transferDetails,
+          copyType: copyType,
+          format: format);
 
       Directory? directory;
       if (Platform.isAndroid) {
@@ -1182,7 +1388,8 @@ class TagPayPdfService {
           : transferId.isNotEmpty
               ? transferId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')
               : 'transfer';
-      final fileName = 'transfer_receipt_$safeRef.pdf';
+      final copySuffix = copyType.isRecipient ? '_recipient' : '_sender';
+      final fileName = 'transfer_receipt_$safeRef$copySuffix.${format.ext}';
       final savedFile = File('${directory.path}/$fileName');
       await file.copy(savedFile.path);
 
@@ -1196,21 +1403,25 @@ class TagPayPdfService {
   static Future<void> shareTransferReceipt({
     required Map<String, dynamic> transferDetails,
     Rect? sharePositionOrigin,
+    ReceiptCopyType copyType = ReceiptCopyType.sender,
+    ReceiptFileFormat format = ReceiptFileFormat.pdf,
   }) async {
     try {
-      final file =
-          await generateFundTransferReceipt(transferDetails: transferDetails);
+      final file = await generateTransferReceiptFile(
+          transferDetails: transferDetails,
+          copyType: copyType,
+          format: format);
 
       final currency = transferDetails['currency'] as String? ?? 'NGN';
       final amount = (transferDetails['amount'] as num?)?.toDouble() ?? 0.0;
       final currencySymbol = _currencySymbolFor(currency);
       final recipientName =
-          transferDetails['recipientName'] as String? ?? 'Recipient';
+          transferDetails['recipientName'] as String? ?? '';
 
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text:
-            'Lazervault Transfer Receipt - $currencySymbol${amount.toStringAsFixed(2)} to $recipientName',
+            'Lazervault Transfer Receipt (${copyType.label}) - $currencySymbol${amount.toStringAsFixed(2)} to $recipientName',
         subject: 'Lazervault Transfer Receipt',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
@@ -1222,9 +1433,12 @@ class TagPayPdfService {
   /// Download transfer receipt from UnifiedTransaction (for transaction history)
   static Future<String> downloadUnifiedTransferReceipt({
     required UnifiedTransaction transaction,
+    ReceiptCopyType copyType = ReceiptCopyType.sender,
+    ReceiptFileFormat format = ReceiptFileFormat.pdf,
   }) async {
     try {
-      final file = await generateUnifiedTransferReceipt(transaction: transaction);
+      final file = await generateUnifiedTransferReceipt(
+          transaction: transaction, copyType: copyType, format: format);
 
       Directory? directory;
       if (Platform.isAndroid) {
@@ -1244,7 +1458,7 @@ class TagPayPdfService {
 
       final safeRef = (transaction.transactionReference ?? transaction.id)
           .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
-      final fileName = 'transfer_receipt_$safeRef.pdf';
+      final fileName = 'transfer_receipt_$safeRef.${format.ext}';
       final savedFile = File('${directory.path}/$fileName');
       await file.copy(savedFile.path);
 
@@ -1258,9 +1472,12 @@ class TagPayPdfService {
   static Future<void> shareUnifiedTransferReceipt({
     required UnifiedTransaction transaction,
     Rect? sharePositionOrigin,
+    ReceiptCopyType copyType = ReceiptCopyType.sender,
+    ReceiptFileFormat format = ReceiptFileFormat.pdf,
   }) async {
     try {
-      final file = await generateUnifiedTransferReceipt(transaction: transaction);
+      final file = await generateUnifiedTransferReceipt(
+          transaction: transaction, copyType: copyType, format: format);
 
       final currencySymbol = _currencySymbolFor(transaction.currency);
       final amount = transaction.amount.toStringAsFixed(2);
@@ -1313,13 +1530,18 @@ class TagPayPdfService {
         'LazerVault Wallet';
 
     // Every metadata entry becomes a label/value row, in insertion order.
+    // Minor-unit plumbing (kobo / crypto minor scales) is humanized to naira
+    // or dropped — a customer receipt never shows raw ledger units.
     final detailRows = <pw.Widget>[];
     metadata.forEach((k, v) {
       final val = _pdfSafe(v?.toString());
       if (val == null || val.isEmpty) return;
+      final human = humanizeReceiptMetadataEntry(k, val);
+      if (human == null) return;
       detailRows.add(pw.Padding(
         padding: const pw.EdgeInsets.symmetric(vertical: 3),
-        child: _buildDetailRow(_pdfSafe(k) ?? k, val),
+        child: _buildDetailRow(
+            _pdfSafe(human.label) ?? human.label, _pdfSafe(human.value) ?? human.value),
       ));
     });
 
@@ -1424,8 +1646,10 @@ class TagPayPdfService {
   /// Download the crypto PDF receipt to the device Downloads/Documents dir.
   static Future<String> downloadCryptoReceipt({
     required UnifiedTransaction transaction,
+    ReceiptFileFormat format = ReceiptFileFormat.pdf,
   }) async {
-    final file = await generateCryptoReceipt(transaction: transaction);
+    final file = await generateCryptoReceiptFile(
+        transaction: transaction, format: format);
     Directory? directory;
     if (Platform.isAndroid) {
       directory = Directory('/storage/emulated/0/Download');
@@ -1448,11 +1672,30 @@ class TagPayPdfService {
   }
 
   /// Share the crypto PDF receipt via the system share sheet.
+  /// Produce the crypto receipt in the requested format (PNG/JPG rasterise the
+  /// same PDF layout).
+  static Future<File> generateCryptoReceiptFile({
+    required UnifiedTransaction transaction,
+    ReceiptFileFormat format = ReceiptFileFormat.pdf,
+  }) async {
+    final pdfFile = await generateCryptoReceipt(transaction: transaction);
+    if (format == ReceiptFileFormat.pdf) return pdfFile;
+    final safeRef = (transaction.transactionReference ?? transaction.id)
+        .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+    return _rasterizeReceipt(
+      pdfFile: pdfFile,
+      format: format,
+      baseName: 'crypto_receipt_$safeRef',
+    );
+  }
+
   static Future<void> shareCryptoReceipt({
     required UnifiedTransaction transaction,
     Rect? sharePositionOrigin,
+    ReceiptFileFormat format = ReceiptFileFormat.pdf,
   }) async {
-    final file = await generateCryptoReceipt(transaction: transaction);
+    final file = await generateCryptoReceiptFile(
+        transaction: transaction, format: format);
     await SharePlus.instance.share(ShareParams(
       files: [XFile(file.path)],
       text:

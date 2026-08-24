@@ -120,6 +120,9 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
     return UnifiedTransactionReceipt(
       transaction: _toUnifiedTransaction(_receipt),
       fromHistory: widget.fromHistory,
+      // Pull-to-refresh forces an immediate status re-check (the same poll
+      // the 4s timer runs) — useful once the bounded polling window lapses.
+      onRefresh: _pollOnce,
     );
   }
 

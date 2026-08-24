@@ -26,6 +26,15 @@ String classifyDomain(String category, String description, String reference,
   final svc = serviceName.toLowerCase();
   final s = '$category $description $reference'.toLowerCase();
 
+  // Crypto REFUNDS (undeliverable buy auto-refund, send/swap reversals) are
+  // fiat CREDITS from crypto-service — without this branch the generic
+  // "credit ⇒ Crypto sell" heuristic mislabelled every refund as a sale.
+  final looksCrypto = svc.contains('crypto') || s.contains('crypto');
+  if (looksCrypto &&
+      (s.contains('refund') || s.contains('revers') || s.contains('rollback'))) {
+    return 'crypto_refund';
+  }
+
   // 1) service_name is authoritative for the shared hold_capture bucket.
   if (svc.contains('giftcard')) return 'giftcard';
   if (svc.contains('crypto')) return 'crypto';
@@ -76,6 +85,8 @@ String? titleForDomain(String domain, String typeLower) {
       // Wallet history only shows the fiat legs: a debit is a BUY, a credit a
       // SELL (swap/send never touch the fiat wallet).
       return credit ? 'Crypto sell' : 'Crypto buy';
+    case 'crypto_refund':
+      return 'Crypto refund';
     case 'exchange':
       return 'Currency Exchange';
     case 'insurance':
@@ -104,6 +115,7 @@ String? titleForDomain(String domain, String typeLower) {
 TransactionServiceType? serviceTypeForDomain(String domain) {
   switch (domain) {
     case 'crypto':
+    case 'crypto_refund':
       return TransactionServiceType.crypto;
     case 'exchange':
       return TransactionServiceType.exchange;

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
@@ -15,7 +16,6 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/account_ve
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/account_suggestion.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
-import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced_recipient_selection_bottom_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/username_search_bottom_sheet.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 import '../cubit/split_bill_cubit.dart';
@@ -23,6 +23,7 @@ import '../cubit/split_bill_state.dart';
 import '../../domain/entities/split_bill_entity.dart';
 import '../../domain/repositories/split_bill_repository.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 part 'create_split_bill_screen_widgets.dart';
 
 
@@ -1039,19 +1040,19 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
   /// not an in-app user). On pick we prefill the account + bank and re-resolve
   /// the holder name so the confirmed name is always current.
   Future<void> _pickSavedExternalRecipient() async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetCtx) => EnhancedRecipientSelectionBottomSheet(
-        allowLazertagUsers: false,
-        allowContacts: false,
-        onRecipientSelected: (recipient) {
-          Navigator.pop(sheetCtx);
-          _applySavedExternalRecipient(recipient);
-        },
-      ),
+    // Same UNIFIED profile-search sheet the send-funds flow uses (the old
+    // EnhancedRecipientSelectionBottomSheet required a RecipientCubit provider
+    // this route never supplies — it red-screened the moment it opened).
+    // internalOnly:false surfaces saved EXTERNAL bank recipients; a picked
+    // internal user is rejected by _applySavedExternalRecipient's guard with
+    // a clear "choose a bank recipient" message.
+    final picked = await UnifiedUserSearchSheet.show(
+      context,
+      title: 'Saved bank recipients',
+      internalOnly: false,
     );
+    if (picked == null || !mounted) return;
+    _applySavedExternalRecipient(picked.toRecipientModel());
   }
 
   void _applySavedExternalRecipient(RecipientModel r) {
@@ -1066,7 +1067,15 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       );
       return;
     }
-    final bankCode = r.sortCode.trim();
+    var bankCode = r.sortCode.trim();
+    // Saved recipients from the unified search carry the bank NAME but not the
+    // code (toRecipientModel has no code source) — resolve it from the bank
+    // list by name so the pick is FULLY auto-selected: without this the form
+    // showed the bank prefilled yet "Next" still demanded a bank selection,
+    // forcing the user to re-tap the recipient they had just chosen.
+    if (bankCode.isEmpty && r.displayBankName.trim().isNotEmpty) {
+      bankCode = _bankCodeForName(r.displayBankName) ?? '';
+    }
     _receiverAccountNumberController.text = acct;
     setState(() {
       _receiverBankSuggestions = const [];
@@ -1076,12 +1085,74 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       _receiverBankCode = bankCode.isNotEmpty ? bankCode : null;
     });
     // With a known bank code we can verify directly; otherwise resolve the bank
-    // from the account number (account-first), exactly like manual entry.
+    // from the account number (account-first), exactly like manual entry —
+    // auto-selecting the suggestion that matches the saved bank name.
     if (bankCode.isNotEmpty) {
       _verifyReceiverBankAccount();
     } else {
-      _suggestReceiverBanks(acct);
+      _suggestReceiverBanksAutoPick(acct, preferredBankName: r.displayBankName);
     }
+  }
+
+  /// Resolve a bank's NIP code from its display name against the on-device
+  /// bank list (canonical, noise-word-tolerant match). Null when ambiguous or
+  /// unknown — the account-first suggestion path then covers it.
+  String? _bankCodeForName(String bankName) {
+    List<Map<String, String>> banks;
+    try {
+      banks = serviceLocator<BankRepository>().cachedSync(_bankCountry);
+    } catch (_) {
+      return null;
+    }
+    String canon(String s) => s
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]'), '')
+        .replaceAll(RegExp(r'(bank|plc|mfb|microfinance|limited|ltd|nigeria|ng)'), '');
+    final want = canon(bankName);
+    if (want.isEmpty) return null;
+    String? code;
+    for (final b in banks) {
+      final have = canon(b['name'] ?? '');
+      if (have.isEmpty) continue;
+      if (have == want || have.contains(want) || want.contains(have)) {
+        if (code != null && code != b['code']) return null; // ambiguous
+        code = b['code'];
+      }
+    }
+    return (code != null && code.isNotEmpty) ? code : null;
+  }
+
+  /// Account-first suggestions with AUTO-PICK: when the resolved suggestions
+  /// contain a bank matching [preferredBankName] — or there is exactly one
+  /// suggestion — select it immediately instead of making the user tap a chip
+  /// for a recipient they already chose.
+  Future<void> _suggestReceiverBanksAutoPick(String accountNumber,
+      {String? preferredBankName}) async {
+    setState(() => _suggestingReceiverBanks = true);
+    final suggestions =
+        await context.read<AccountVerificationCubit>().suggestBanks(
+              accountNumber: accountNumber,
+              country: _bankCountry,
+            );
+    if (!mounted) return;
+    AccountSuggestion? auto;
+    if (suggestions.length == 1) {
+      auto = suggestions.first;
+    } else if (preferredBankName != null && preferredBankName.trim().isNotEmpty) {
+      final want = preferredBankName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+      for (final s in suggestions) {
+        final have = s.bankName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+        if (have == want || have.contains(want) || want.contains(have)) {
+          auto = s;
+          break;
+        }
+      }
+    }
+    setState(() {
+      _suggestingReceiverBanks = false;
+      _receiverBankSuggestions = auto != null ? const [] : suggestions;
+    });
+    if (auto != null) _selectReceiverSuggestion(auto);
   }
 
   void _verifyReceiverBankAccount() {

@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
@@ -310,9 +311,25 @@ class _ReceiveCryptoScreenState extends State<ReceiveCryptoScreen> {
               ]),
             )
           else ...[
-            // QR + address. We render the address only — QR widget would need
-            // the qr_flutter package; using a plain placeholder works on every
-            // platform and the user can still tap-to-copy.
+            // Scannable QR of the deposit address (qr_flutter is already a
+            // dependency and used across the app) — the address-only rendering
+            // forced recipients to copy-paste, defeating the send-flow scanner.
+            Center(
+              child: Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: QrImageView(
+                  data: _address,
+                  version: QrVersions.auto,
+                  size: 180.w,
+                  backgroundColor: Colors.white,
+                ),
+              ),
+            ),
+            SizedBox(height: 12.h),
             Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(

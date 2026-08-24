@@ -48,8 +48,11 @@ class _AutoOrdersScreenState extends State<AutoOrdersScreen> {
       await _load();
       Get.snackbar('Cancelled', 'Auto order cancelled and any reserved funds released',
           backgroundColor: _card, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
-    } catch (_) {
-      Get.snackbar('Error', 'Could not cancel auto order',
+    } catch (e) {
+      // The swipe already dismissed the tile optimistically — reload so it
+      // reappears (the hold is still live) and say WHY the cancel failed.
+      await _load();
+      Get.snackbar('Error', 'Could not cancel auto order: ${friendlyError(e)}',
           backgroundColor: _red.withValues(alpha: 0.9), colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
     }
   }
@@ -141,7 +144,7 @@ class _AutoOrdersScreenState extends State<AutoOrdersScreen> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 40.w),
             child: Text(
-                'Buy or sell automatically when the price hits your target. Funds for a buy are reserved up front. Tap + to create one.',
+                'Buy automatically when the price hits your target. Funds are reserved up front. Tap + to create one.',
                 textAlign: TextAlign.center,
                 style: _inter(14, c: _sub)),
           ),

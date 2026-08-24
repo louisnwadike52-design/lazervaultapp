@@ -555,7 +555,13 @@ class _LinkedBankRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
-                  'Set up Direct Debit',
+                  // A granted-but-provisioning mandate is already being set
+                  // up — the pill mirrors the badge instead of implying a
+                  // fresh setup is needed.
+                  linkedAccountStateForMandate(mandate) ==
+                          LinkedAccountState.settingUp
+                      ? 'Setting up…'
+                      : 'Set up Direct Debit',
                   style: GoogleFonts.inter(
                     color: _onDepositTint,
                     fontSize: 11.sp,
