@@ -57,6 +57,10 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
   static const _currency = 'NGN';
 
   final _accountController = TextEditingController();
+  // Amount for VARIABLE-price plans (backend flags them amount==0, e.g.
+  // Spectranet/Swift recharge): the user picks the denomination; the backend
+  // enforces Flutterwave's live min/max pre-charge and refunds out-of-bounds.
+  final _amountController = TextEditingController();
 
   List<InternetProviderEntity> _providers = const [];
   // Set when the initial provider fetch fails so the chips row can offer an
@@ -162,6 +166,7 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
     _sub?.cancel();
     _packageState.dispose();
     _accountController.dispose();
+    _amountController.dispose();
     super.dispose();
   }
 
@@ -254,8 +259,25 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
         );
   }
 
+  /// Variable-price plan: the backend lists it with amount 0 (Flutterwave
+  /// catalogue "any amount" item) — the user supplies the amount.
+  bool get _isVariablePackage => _package != null && _package!.amount <= 0;
+
+  double get _enteredAmount =>
+      double.tryParse(
+          _amountController.text.replaceAll(',', '').trim()) ??
+      0;
+
+  /// The amount this purchase will charge: the package's fixed price, or the
+  /// user-entered amount for a variable-price plan.
+  double get _effectiveAmount =>
+      _isVariablePackage ? _enteredAmount : (_package?.amount ?? 0);
+
   bool get _ready =>
-      _provider != null && _validation != null && _package != null;
+      _provider != null &&
+      _validation != null &&
+      _package != null &&
+      _effectiveAmount > 0;
 
   Future<void> _openPackageSheet() async {
     if (_provider == null) return;
@@ -269,13 +291,20 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
         accent: _accent,
         listenable: _packageState,
         labelOf: (p) => p.name,
-        trailingOf: (p) => '₦${p.amount.toStringAsFixed(0)}',
+        trailingOf: (p) =>
+            p.amount > 0 ? '₦${p.amount.toStringAsFixed(0)}' : 'Enter amount',
         subtitleOf: (p) => p.validity,
         emptyLabel: 'No plans available',
         onRetry: _reloadPackages,
       ),
     );
-    if (picked != null && mounted) setState(() => _package = picked);
+    if (picked != null && mounted) {
+      setState(() {
+        _package = picked;
+        // A fixed-price pick invalidates any variable amount typed earlier.
+        if (picked.amount > 0) _amountController.clear();
+      });
+    }
   }
 
   // ── Purchase (runs INSIDE the TX-PIN sheet's processing beat) ──────────────
@@ -288,6 +317,7 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
     final account = _accountController.text.trim();
     final txnId = 'internet_${DateTime.now().millisecondsSinceEpoch}_$account';
 
+    final payAmount = _effectiveAmount;
     InternetPaymentEntity? result;
     setState(() => _submitting = true);
     try {
@@ -295,11 +325,11 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
         context: context,
         transactionId: txnId,
         transactionType: 'internet_purchase',
-        amount: pkg.amount,
+        amount: payAmount,
         currency: _currency,
         title: 'Confirm subscription',
         message:
-            'Pay $_currency ${pkg.amount.toStringAsFixed(0)} for ${pkg.name} on ${p.name} (${_validation!.customerName})',
+            'Pay $_currency ${payAmount.toStringAsFixed(0)} for ${pkg.name} on ${p.name} (${_validation!.customerName})',
         showProcessingPhase: true,
         successMessage: 'Subscription request sent',
         onPinValidated: (token) async {
@@ -319,7 +349,7 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
               customerNumber: account,
               serviceType: p.serviceId,
               packageId: pkg.id,
-              amount: pkg.amount,
+              amount: payAmount,
               transactionId: txnId,
               verificationToken: token,
               idempotencyKey: txnId,
@@ -513,6 +543,12 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
         _label('Plan'),
         SizedBox(height: 8.h),
         _packageSelector(),
+        if (_isVariablePackage) ...[
+          SizedBox(height: 20.h),
+          _label('Amount'),
+          SizedBox(height: 8.h),
+          _variableAmountField(),
+        ],
         if (_ready) ...[
           SizedBox(height: 20.h),
           _confirmationCard(),
@@ -685,7 +721,10 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
             ),
           ),
           if (_package != null)
-            Text('₦${_package!.amount.toStringAsFixed(0)}',
+            Text(
+                _package!.amount > 0
+                    ? '₦${_package!.amount.toStringAsFixed(0)}'
+                    : 'Your amount',
                 style: GoogleFonts.inter(
                     color: const Color(0xFF10B981),
                     fontSize: 15.sp,
@@ -693,6 +732,44 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
           SizedBox(width: 6.w),
           Icon(Icons.keyboard_arrow_down, color: _muted, size: 22.sp),
         ]),
+      ),
+    );
+  }
+
+  /// Amount entry for VARIABLE-price plans (Spectranet/Swift recharge). The
+  /// backend re-checks Flutterwave's live min/max pre-charge, so an
+  /// out-of-range amount fails with a clear message and a full refund.
+  Widget _variableAmountField() {
+    return TextField(
+      controller: _amountController,
+      keyboardType: const TextInputType.numberWithOptions(decimal: false),
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      onChanged: (_) => setState(() {}),
+      style: GoogleFonts.inter(
+          color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600),
+      decoration: InputDecoration(
+        hintText: 'Enter recharge amount',
+        hintStyle:
+            GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp),
+        prefixText: '₦ ',
+        prefixStyle: GoogleFonts.inter(
+            color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600),
+        filled: true,
+        fillColor: _card,
+        contentPadding:
+            EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14.r),
+          borderSide: const BorderSide(color: _border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14.r),
+          borderSide: const BorderSide(color: _border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14.r),
+          borderSide: const BorderSide(color: _accent),
+        ),
       ),
     );
   }
@@ -714,7 +791,7 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
         SizedBox(height: 10.h),
         Divider(color: _border, height: 1),
         SizedBox(height: 10.h),
-        _row('You pay', '₦${_package!.amount.toStringAsFixed(0)}',
+        _row('You pay', '₦${_effectiveAmount.toStringAsFixed(0)}',
             valueColor: const Color(0xFF10B981), bold: true),
       ]),
     );
@@ -801,8 +878,8 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
         child: _submitting
             ? SizedBox(width: 20.w, height: 20.w, child: LazerVaultLoader.small())
             : Text(
-                _package != null
-                    ? 'Pay ₦${_package!.amount.toStringAsFixed(0)}'
+                _package != null && _effectiveAmount > 0
+                    ? 'Pay ₦${_effectiveAmount.toStringAsFixed(0)}'
                     : 'Pay subscription',
                 style: GoogleFonts.inter(
                     fontSize: 15.sp, fontWeight: FontWeight.w700)),
