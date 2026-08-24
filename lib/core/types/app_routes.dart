@@ -55,7 +55,6 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String electricityBillReceipt = '/electricity-bill/receipt';
   static const String electricityBillHistory = '/electricity-bill/history';
   static const String electricityBillBeneficiaries = '/electricity-bill/beneficiaries';
-  static const String electricityBillAddBeneficiary = '/electricity-bill/beneficiaries/add';
   static const String electricityBillAutoRecharge = '/electricity-bill/auto-recharge';
   static const String electricityBillReminders = '/electricity-bill/reminders';
   static const String electricityBillCreateReminder = '/electricity-bill/reminders/create';

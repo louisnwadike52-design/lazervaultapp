@@ -403,18 +403,19 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
     );
     if (!mounted) return;
     if (beneficiaries.isEmpty) {
-      // Can't create an auto-recharge without a saved meter — route to
-      // the add-beneficiary screen so the user can save one first.
+      // Can't create an auto-recharge without a saved meter. Saving happens
+      // inside the payment flow (verified meters only — the standalone
+      // add-beneficiary form was removed), so send the user there.
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
-              'Save a meter first, then set up an auto-recharge.'),
+              'Pay a bill with "Save beneficiary" on first, then set up an auto-recharge.'),
           backgroundColor: const Color(0xFFFB923C),
           action: SnackBarAction(
-            label: 'Add Meter',
+            label: 'Pay a Bill',
             textColor: Colors.white,
             onPressed: () =>
-                Get.toNamed(AppRoutes.electricityBillAddBeneficiary),
+                Get.toNamed(AppRoutes.electricityBillHome),
           ),
         ),
       );

@@ -436,29 +436,9 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Get.toNamed(AppRoutes.electricityBillAddBeneficiary);
-          if (result is BillBeneficiaryEntity) {
-            // User chose "Proceed to Payment" from add beneficiary
-            _proceedToPayment(result);
-            return;
-          }
-          // Refresh list in case a new beneficiary was added
-          if (!context.mounted) return;
-          context.read<BeneficiaryCubit>().getBeneficiaries();
-        },
-        backgroundColor: const Color(0xFF4E03D0),
-        icon: Icon(Icons.add, size: 24.sp),
-        label: Text(
-          'Add Beneficiary',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+      // No standalone "Add Beneficiary" surface: a beneficiary is a VERIFIED
+      // meter, so saving happens inside the payment flow (the save toggle
+      // before pay / the receipt), never from a disconnected form.
     );
   }
 
@@ -653,7 +633,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
             ),
             SizedBox(height: 12.h),
             Text(
-              'Save frequently used meter numbers\nfor quick and easy payments',
+              'Pay an electricity bill and turn on\n"Save beneficiary" to add one here',
               style: GoogleFonts.inter(
                 color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 14.sp,

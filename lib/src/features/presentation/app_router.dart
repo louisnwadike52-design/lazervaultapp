@@ -395,7 +395,6 @@ import 'package:lazervault/src/features/electricity_bill/presentation/view/payme
 import 'package:lazervault/src/features/electricity_bill/presentation/view/payment_receipt_screen.dart' as bill_receipt;
 import 'package:lazervault/src/features/electricity_bill/presentation/view/payment_history_screen.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/view/beneficiaries_screen.dart';
-import 'package:lazervault/src/features/electricity_bill/presentation/view/add_beneficiary_screen.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/view/auto_recharge_list_screen.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/view/reminders_screen.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/view/create_reminder_screen.dart';
@@ -3362,19 +3361,8 @@ GetPage(
       },
       transition: Transition.rightToLeft,
     ),
-    GetPage(
-      name: AppRoutes.electricityBillAddBeneficiary,
-      page: () {
-        return MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => serviceLocator<ElectricityBillCubit>()),
-            BlocProvider(create: (_) => serviceLocator<BeneficiaryCubit>()),
-          ],
-          child: const AddBeneficiaryScreen(),
-        );
-      },
-      transition: Transition.rightToLeft,
-    ),
+    // The standalone electricity add-beneficiary screen was removed:
+    // beneficiaries are saved from the payment flow (verified meters only).
     GetPage(
       name: AppRoutes.electricityBillAutoRecharge,
       page: () {
