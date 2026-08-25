@@ -35,6 +35,15 @@ String classifyDomain(String category, String description, String reference,
     return 'crypto_refund';
   }
 
+  // Zero-amount crypto rows written EXPLICITLY into the unified history:
+  // a crypto→crypto swap (category `crypto_convert`) and an outbound crypto
+  // send (category `crypto_send`). Neither moves fiat, so the generic
+  // credit⇒sell / debit⇒buy heuristic below mislabels them ("Crypto sell
+  // +₦0.00" for a USDT→XRP swap). The category is authoritative.
+  final cat = category.toLowerCase();
+  if (cat.contains('crypto_convert')) return 'crypto_swap';
+  if (cat.contains('crypto_send')) return 'crypto_send';
+
   // 1) service_name is authoritative for the shared hold_capture bucket.
   if (svc.contains('giftcard')) return 'giftcard';
   if (svc.contains('crypto')) return 'crypto';
@@ -87,6 +96,10 @@ String? titleForDomain(String domain, String typeLower) {
       return credit ? 'Crypto sell' : 'Crypto buy';
     case 'crypto_refund':
       return 'Crypto refund';
+    case 'crypto_swap':
+      return 'Crypto swap';
+    case 'crypto_send':
+      return 'Crypto send';
     case 'exchange':
       return 'Currency Exchange';
     case 'insurance':
@@ -116,6 +129,8 @@ TransactionServiceType? serviceTypeForDomain(String domain) {
   switch (domain) {
     case 'crypto':
     case 'crypto_refund':
+    case 'crypto_swap':
+    case 'crypto_send':
       return TransactionServiceType.crypto;
     case 'exchange':
       return TransactionServiceType.exchange;

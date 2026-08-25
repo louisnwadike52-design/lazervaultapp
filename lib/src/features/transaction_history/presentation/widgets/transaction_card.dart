@@ -183,6 +183,16 @@ class TransactionCard extends StatelessWidget {
 
   /// Green for incoming, white for outgoing, no +/- on outgoing
   String _formatAmount() {
+    // Crypto-denominated rows (swap/send) pre-format their display \u2014 never
+    // "\u20A60.00". A swap's full legs are too wide for this trailing column, so
+    // show the received leg; the subtitle carries the full conversion.
+    final override = transaction.amountDisplayOverride;
+    if (override != null && override.isNotEmpty) {
+      final compact = override.contains('\u2192')
+          ? override.split('\u2192').last.trim()
+          : override;
+      return '${transaction.flow.prefix}$compact';
+    }
     final symbol = transaction.currency == 'NGN'
         ? '\u20A6'
         : transaction.currency == 'USD'

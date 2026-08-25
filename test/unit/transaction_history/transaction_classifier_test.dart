@@ -91,6 +91,48 @@ void main() {
     });
   });
 
+  group('zero-amount crypto rows (crypto_convert / crypto_send)', () {
+    // Written explicitly by crypto-service into the unified history with
+    // amount 0 — the category is authoritative, and MUST beat the generic
+    // credit⇒sell / debit⇒buy heuristic ("Crypto sell +₦0.00" bug).
+    test('crypto_convert credit → Crypto swap, never Crypto sell', () {
+      expect(
+          title('crypto_convert', 'credit',
+              'Converted 1.7000000000000000000 USDT → 1.08 XRP',
+              'crypto-service',
+              ref: 'CRYPTO-6e232840'),
+          'Crypto swap');
+    });
+
+    test('crypto_send debit → Crypto send, never Crypto buy', () {
+      expect(
+          title('crypto_send', 'debit', 'Sent 5.000000 USDT to chris',
+              'crypto-service',
+              ref: 'CRYPTO-abc'),
+          'Crypto send');
+    });
+
+    test('swap/send resolve to the crypto service type', () {
+      expect(serviceTypeForDomain('crypto_swap'), TransactionServiceType.crypto);
+      expect(serviceTypeForDomain('crypto_send'), TransactionServiceType.crypto);
+      expect(
+          classifyDomain('crypto_convert', 'Converted 1.7 USDT → 1.08 XRP',
+              'CRYPTO-6e232840', 'crypto-service'),
+          'crypto_swap');
+      expect(
+          classifyDomain('crypto_send', 'Sent 5 USDT to chris', 'CRYPTO-abc',
+              'crypto-service'),
+          'crypto_send');
+    });
+
+    test('a reversed/refunded crypto row still reads as a refund', () {
+      expect(
+          classifyDomain('crypto_send', 'Refund: send reversed', 'CRYPTO-abc',
+              'crypto-service'),
+          'crypto_refund');
+    });
+  });
+
   group('edge cases', () {
     test('partial / overage capture categories still resolve by service_name',
         () {

@@ -593,8 +593,9 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     final createdAt =
         DateTime.tryParse(protoTx.createdAt)?.toLocal() ?? DateTime.now();
 
-    // Determine transaction flow from type
-    final flow = protoTx.type.toLowerCase() == 'credit'
+    // Determine transaction flow from type (crypto swaps override to neutral
+    // below — they move no fiat, so neither +green nor -white applies).
+    var flow = protoTx.type.toLowerCase() == 'credit'
         ? TransactionFlow.incoming
         : protoTx.type.toLowerCase() == 'debit'
             ? TransactionFlow.outgoing
@@ -655,6 +656,52 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       metadata['balance_after'] = protoTx.balanceAfter;
     }
 
+    // Zero-amount crypto rows (crypto_convert swap / crypto_send) carry their
+    // real story in metadata — the fiat amount is honestly 0, so build a
+    // crypto-denominated presentation from the metadata legs instead of
+    // rendering "+₦0.00". Backend amounts arrive at full ledger precision
+    // ("1.7000000000000000000"); trim for display everywhere.
+    final catLower = protoTx.category.toLowerCase();
+    final opValue = (metadata['op']?.toString() ?? '').toLowerCase();
+    final isCryptoSwap =
+        catLower.contains('crypto_convert') || opValue == 'convert';
+    final isCryptoSend = !isCryptoSwap &&
+        (catLower.contains('crypto_send') || opValue == 'send');
+    String? amountDisplayOverride;
+    String? assetSymbol;
+    String? descriptionOverride;
+    if (isCryptoSwap) {
+      flow = TransactionFlow.neutral;
+      final fromCcy =
+          (metadata['from_currency']?.toString() ?? '').toUpperCase();
+      final toCcy = (metadata['to_currency']?.toString() ?? '').toUpperCase();
+      final fromAmt =
+          _trimCryptoAmount(metadata['from_amount']?.toString() ?? '');
+      final toAmt = _trimCryptoAmount(metadata['to_amount']?.toString() ?? '');
+      if (fromCcy.isNotEmpty &&
+          toCcy.isNotEmpty &&
+          fromAmt.isNotEmpty &&
+          toAmt.isNotEmpty) {
+        amountDisplayOverride = '$fromAmt $fromCcy → $toAmt $toCcy';
+        descriptionOverride = 'Converted $fromAmt $fromCcy to $toAmt $toCcy';
+        metadata['from_amount'] = fromAmt;
+        metadata['to_amount'] = toAmt;
+      }
+      if (toCcy.isNotEmpty) assetSymbol = toCcy;
+    } else if (isCryptoSend) {
+      final ccy = (metadata['currency']?.toString() ?? '').toUpperCase();
+      final amt = _trimCryptoAmount(metadata['amount']?.toString() ?? '');
+      if (ccy.isNotEmpty && amt.isNotEmpty) {
+        amountDisplayOverride = '$amt $ccy';
+        metadata['amount'] = amt;
+        final recipient = metadata['recipient']?.toString() ?? '';
+        if (recipient.isNotEmpty) {
+          descriptionOverride = 'Sent $amt $ccy to $recipient';
+        }
+      }
+      if (ccy.isNotEmpty) assetSymbol = ccy;
+    }
+
     // Counterparty name — DIRECTION-AWARE. For an OUTGOING (debit) transfer the
     // counterparty to display is the RECEIVER; for an INCOMING (credit) transfer
     // it's the SENDER. Prefer the backend's per-perspective `counterparty_name`,
@@ -678,9 +725,26 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         : (metadata['recipient_account'] as String?
             ?? metadata['counterparty_account'] as String?);
 
-    // Fallback: try to parse account number from description
-    if (counterpartyAccount == null && protoTx.description.isNotEmpty) {
-      final accountMatch = RegExp(r'\b(\d{10,})\b').firstMatch(protoTx.description);
+    // Crypto sends name their recipient in metadata (username or truncated
+    // address) — surface it as the counterparty so the receipt shows "To".
+    if (isCryptoSend && (counterpartyName == null || counterpartyName.isEmpty)) {
+      final recipient = metadata['recipient']?.toString();
+      if (recipient != null && recipient.isNotEmpty) {
+        counterpartyName = recipient;
+      }
+    }
+
+    // Fallback: try to parse account number from description. Never for
+    // zero-amount crypto rows — and never digits after a decimal point: the
+    // fractional part of a full-precision crypto amount
+    // ("1.7000000000000000000 USDT") is 10+ digits and was being rendered as
+    // an "Account 7000000000000000000" row.
+    if (counterpartyAccount == null &&
+        !isCryptoSwap &&
+        !isCryptoSend &&
+        protoTx.description.isNotEmpty) {
+      final accountMatch =
+          RegExp(r'(?<![.\d])(\d{10,})\b').firstMatch(protoTx.description);
       if (accountMatch != null) {
         counterpartyAccount = accountMatch.group(1);
       }
@@ -767,7 +831,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       id: protoTx.id,
       serviceType: serviceType,
       title: title,
-      description: protoTx.description.isNotEmpty ? protoTx.description : null,
+      description: descriptionOverride ??
+          (protoTx.description.isNotEmpty ? protoTx.description : null),
       amount: protoTx.amount,
       currency: accountManager.activeAccountDetails?.currency ?? 'NGN',
       createdAt: createdAt,
@@ -777,7 +842,20 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       metadata: metadata.isNotEmpty ? metadata : null,
       counterpartyName: counterpartyName,
       counterpartyAccount: counterpartyAccount,
+      amountDisplayOverride: amountDisplayOverride,
+      assetSymbol: assetSymbol,
     );
+  }
+
+  /// Trims a full-precision ledger amount string ("1.7000000000000000000")
+  /// to its human form ("1.7") without float round-tripping, so 18-decimal
+  /// crypto precision can never be corrupted by double parsing.
+  String _trimCryptoAmount(String raw) {
+    var s = raw.trim();
+    if (s.isEmpty || !s.contains('.')) return s;
+    s = s.replaceAll(RegExp(r'0+$'), '');
+    if (s.endsWith('.')) s = s.substring(0, s.length - 1);
+    return s.isEmpty ? '0' : s;
   }
 
   // Transaction classification (domain/title/type) lives in

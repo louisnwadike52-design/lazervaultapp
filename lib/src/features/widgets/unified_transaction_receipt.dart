@@ -366,13 +366,19 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
             ),
           ),
         SizedBox(height: 10.h),
-        Text(
-          _formattedAmount,
-          style: TextStyle(
-            fontSize: 28.sp,
-            fontWeight: FontWeight.w700,
-            color: _amountColor,
-            fontFamily: 'Inter',
+        // FittedBox: crypto swap heroes are wide ("1.7 USDT → 1.08 XRP") —
+        // scale down instead of wrapping/overflowing.
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            _formattedAmount,
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: 28.sp,
+              fontWeight: FontWeight.w700,
+              color: _amountColor,
+              fontFamily: 'Inter',
+            ),
           ),
         ),
         SizedBox(height: 6.h),
@@ -431,7 +437,25 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         ?? tx.metadata?['destination_bank_code'] as String?
         ?? tx.metadata?['recipient_bank_code'] as String?;
 
+    // Crypto swap/send rows carry their legs in metadata (`op` stamped by
+    // crypto-service). Render them as first-class From/To rows and swap-aware
+    // Category/Currency values instead of raw key dumps + a misleading fiat
+    // "Currency: NGN" on a USDT→XRP conversion.
+    final md = tx.metadata ?? const <String, dynamic>{};
+    final cryptoOp = (md['op']?.toString() ?? '').toLowerCase();
+    final isSwap = cryptoOp == 'convert';
+    final isSend = cryptoOp == 'send';
+    final swapFromCcy = (md['from_currency']?.toString() ?? '').toUpperCase();
+    final swapToCcy = (md['to_currency']?.toString() ?? '').toUpperCase();
+    final swapFromAmt = md['from_amount']?.toString() ?? '';
+    final swapToAmt = md['to_amount']?.toString() ?? '';
+    final sendCcy = (md['currency']?.toString() ?? '').toUpperCase();
+
     final rows = <_DetailEntry>[
+      if (isSwap && swapFromAmt.isNotEmpty && swapFromCcy.isNotEmpty)
+        _DetailEntry('From', '$swapFromAmt $swapFromCcy'),
+      if (isSwap && swapToAmt.isNotEmpty && swapToCcy.isNotEmpty)
+        _DetailEntry('To', '$swapToAmt $swapToCcy'),
       // Counterparty info (recipient/sender details)
       if (tx.counterpartyName != null &&
           tx.counterpartyName!.isNotEmpty &&
@@ -455,13 +479,22 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         _DetailEntry('Type', tx.serviceType.displayName),
       _DetailEntry(
         'Category',
-        tx.flow == TransactionFlow.incoming
-            ? 'Credit'
-            : tx.flow == TransactionFlow.outgoing
-                ? 'Debit'
-                : 'Neutral',
+        isSwap
+            ? 'Swap'
+            : tx.flow == TransactionFlow.incoming
+                ? 'Credit'
+                : tx.flow == TransactionFlow.outgoing
+                    ? 'Debit'
+                    : 'Neutral',
       ),
-      _DetailEntry('Currency', tx.currency.toUpperCase()),
+      _DetailEntry(
+        'Currency',
+        isSwap && swapFromCcy.isNotEmpty && swapToCcy.isNotEmpty
+            ? '$swapFromCcy → $swapToCcy'
+            : isSend && sendCcy.isNotEmpty
+                ? sendCcy
+                : tx.currency.toUpperCase(),
+      ),
       _DetailEntry('Transaction ID', tx.id, copyable: true),
       if (_isScheduledTransfer)
         _DetailEntry(
@@ -473,7 +506,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     ];
 
     // Add metadata rows (skip internal/already-shown keys)
-    const _hiddenKeys = {
+    const baseHiddenKeys = {
       'scheduledAt', 'status',
       'balance_before', 'balance_after',
       'bank_name', 'destination_bank_name', 'recipient_bank_name',
@@ -489,9 +522,19 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       'provider', 'provider_ref', 'provider_reference',
       'idempotency_key', 'client_intent_id', 'webhook_event_id',
     };
+    // Swap/send legs are already rendered as first-class rows above (From/To/
+    // Currency + the To counterparty), so the raw metadata keys would repeat
+    // them at full ledger precision ("To amount: 1.080000000000000000").
+    final hiddenKeys = {
+      ...baseHiddenKeys,
+      if (isSwap || isSend) ...{
+        'op', 'from_amount', 'to_amount', 'from_currency', 'to_currency',
+        'amount', 'currency', 'recipient', 'recipient_type',
+      },
+    };
     if (tx.metadata != null) {
       for (final entry in tx.metadata!.entries) {
-        if (_hiddenKeys.contains(entry.key)) continue;
+        if (hiddenKeys.contains(entry.key)) continue;
         // Never render provider placeholders ("Anonymous customer", "Unknown").
         if (_isPlaceholderValue(entry.value.toString())) continue;
         if (entry.value != null && entry.value.toString().isNotEmpty) {

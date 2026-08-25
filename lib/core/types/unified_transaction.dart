@@ -57,6 +57,12 @@ class UnifiedTransaction extends Equatable {
 
   /// Format amount with currency symbol and flow indicator
   String get formattedAmount {
+    // Crypto-denominated rows (swap/send) pre-format their display — a swap
+    // shows its legs ("1.7 USDT → 1.08 XRP"), never a fiat "₦0.00".
+    final override = amountDisplayOverride;
+    if (override != null && override.isNotEmpty) {
+      return '${flow.prefix}$override';
+    }
     final symbol = currency == 'NGN' ? '₦' : currency == 'USD' ? '\$' : currency;
     return '${flow.prefix}$symbol${amount.toStringAsFixed(2)}';
   }
@@ -106,6 +112,9 @@ class UnifiedTransaction extends Equatable {
       'metadata': metadata,
       'counterpartyName': counterpartyName,
       'counterpartyAccount': counterpartyAccount,
+      'amountDisplayOverride': amountDisplayOverride,
+      'assetImageUrl': assetImageUrl,
+      'assetSymbol': assetSymbol,
     };
   }
 
@@ -132,6 +141,9 @@ class UnifiedTransaction extends Equatable {
       metadata: json['metadata'] as Map<String, dynamic>?,
       counterpartyName: json['counterpartyName'] as String?,
       counterpartyAccount: json['counterpartyAccount'] as String?,
+      amountDisplayOverride: json['amountDisplayOverride'] as String?,
+      assetImageUrl: json['assetImageUrl'] as String?,
+      assetSymbol: json['assetSymbol'] as String?,
     );
   }
 
