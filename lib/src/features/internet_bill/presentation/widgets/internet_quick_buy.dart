@@ -417,7 +417,10 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
       title: 'Auto-renew schedule',
       ctaLabel: 'Save schedule',
       successMessage: 'Schedule saved',
-      initialAmount: pkg.amount,
+      // Variable-price plans have amount 0 — seed the schedule with the
+      // amount the user actually entered so an auto-renew is never created
+      // for ₦0.
+      initialAmount: _effectiveAmount,
       onSubmit: ({
         required double amount,
         required String frequency,
