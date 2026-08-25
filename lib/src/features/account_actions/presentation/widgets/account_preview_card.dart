@@ -164,10 +164,15 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
   bool get _isConvertOnly =>
       _currency.isNotEmpty && !_depositCapableCurrencies.contains(_currency);
 
-  /// True when a REAL provisioned deposit number is present (not masked/partial).
+  /// True when a REAL provisioned deposit number is present (not masked/
+  /// partial, and not one of the legacy internally-generated "LV…"
+  /// pseudo-numbers that predate real foreign virtual accounts — those must
+  /// never render as a bank number, and their presence must not hide the
+  /// FCY activation path).
   bool get _hasRealNumber {
-    final raw = (widget.accountArgs['accountNumber'] as String?) ?? '';
+    final raw = ((widget.accountArgs['accountNumber'] as String?) ?? '').trim();
     if (raw.contains('•')) return false;
+    if (raw.toUpperCase().startsWith('LV')) return false;
     return raw.replaceAll(RegExp(r'[^0-9]'), '').length >= 6;
   }
 
