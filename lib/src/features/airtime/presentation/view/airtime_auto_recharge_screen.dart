@@ -361,7 +361,7 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
       case '9MOBILE':
         return const Color(0xFF00A651);
       default:
-        return const Color(0xFF4E03D0);
+        return const Color(0xFFA78BFA);
     }
   }
 

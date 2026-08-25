@@ -323,7 +323,7 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
               label: 'Exchange Rate',
               value:
                   '1 ${_country.currencyCode} ≈ ${_fxRate.toStringAsFixed(4)} $displayedSenderCurrency',
-              valueColor: const Color(0xFF4E03D0),
+              valueColor: const Color(0xFFA78BFA),
               valueSize: 12.sp,
             ),
           ],
@@ -458,11 +458,11 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
                     width: 36.w,
                     height: 36.w,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                      color: const Color(0xFFA78BFA).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(Icons.account_balance_wallet,
-                        color: const Color(0xFF4E03D0), size: 18.sp),
+                        color: const Color(0xFFA78BFA), size: 18.sp),
                   ),
                   SizedBox(width: 12.w),
                   Expanded(

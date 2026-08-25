@@ -84,13 +84,30 @@ class IntlAirtimeCubit extends Cubit<IntlAirtimeState> {
       if (operator != null) {
         emit(IntlAirtimeOperatorDetected(operator: operator));
       } else {
-        emit(const IntlAirtimeError(
-            message: 'Could not detect operator for this number'));
+        emit(const IntlAirtimeOperatorDetectionFailed(
+            message:
+                'We couldn\'t detect this number\'s network — please pick it below.'));
       }
     } catch (e) {
       if (isClosed) return;
-      emit(IntlAirtimeError(message: _friendlyErrorMessage(e)));
+      // Detection failure is RECOVERABLE (Reloadly 404s on ported/unknown
+      // ranges, e.g. every GB number). Emitting IntlAirtimeError here left
+      // the screen silent — it has no error branch — so the field just span
+      // and nothing happened. Manual selection stays available.
+      emit(IntlAirtimeOperatorDetectionFailed(message: _detectFailureMessage(e)));
     }
+  }
+
+  /// Friendly text for a failed auto-detect. Provider "could not auto detect"
+  /// responses become guidance, not an error dump.
+  String _detectFailureMessage(Object e) {
+    final raw = e.toString().toLowerCase();
+    if (raw.contains('auto detect') ||
+        raw.contains('not found') ||
+        raw.contains('404')) {
+      return 'We couldn\'t detect this number\'s network — please pick it below.';
+    }
+    return _friendlyErrorMessage(e);
   }
 
   // ---------------------------------------------------------------------------

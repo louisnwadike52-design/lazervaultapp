@@ -64,6 +64,19 @@ class IntlAirtimeOperatorDetected extends IntlAirtimeState {
   List<Object?> get props => [operator];
 }
 
+/// Auto-detection ran but could not resolve an operator (Reloadly answers 404
+/// for countries with heavy number portability, e.g. GB). NOT a hard error —
+/// the user simply picks the network manually — so it carries its own state
+/// instead of [IntlAirtimeError], which would blank the operator grid.
+class IntlAirtimeOperatorDetectionFailed extends IntlAirtimeState {
+  final String message;
+
+  const IntlAirtimeOperatorDetectionFailed({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
 /// Purchase submission in progress.
 class IntlAirtimePurchasing extends IntlAirtimeState {
   const IntlAirtimePurchasing();

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../widgets/bill_receipt_qr_block.dart';
 import '../../domain/entities/airtime_transaction.dart';
+import '../../services/intl_airtime_pdf_service.dart';
 
 /// International airtime receipt. Mirrors the electricity bill receipt
 /// layout (status hero → consolidated details card → BillReceiptQrBlock →
@@ -15,8 +16,17 @@ import '../../domain/entities/airtime_transaction.dart';
 /// receipt instead of two disjoint cards. Matches the airtime local
 /// receipt and the send-funds transfer receipt visually so all LazerVault
 /// receipts read as siblings.
-class IntlReceiptScreen extends StatelessWidget {
+class IntlReceiptScreen extends StatefulWidget {
   const IntlReceiptScreen({super.key});
+
+  @override
+  State<IntlReceiptScreen> createState() => _IntlReceiptScreenState();
+}
+
+class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
+  bool _isDownloading = false;
+  bool _isSharing = false;
+  IntlAirtimeReceiptData? _receiptData;
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +85,23 @@ class IntlReceiptScreen extends StatelessWidget {
     }
 
     final fromHistory = args['fromHistory'] == true;
+
+    // Snapshot for the PDF/share actions — the same intl-only payload the
+    // card renders, so the document can never drift from the screen.
+    _receiptData = IntlAirtimeReceiptData(
+      reference: reference,
+      paymentId: paymentId,
+      amountPaid: amountPaid,
+      senderCurrency: senderCurrency,
+      deliveredAmount: deliveredAmount,
+      deliveredCurrency: deliveredCurrency,
+      fxRateUsed: fxRateUsed,
+      phoneNumber: phoneNumber,
+      operatorName: operatorName,
+      countryName: countryName,
+      isSuccess: isSuccess,
+      timestamp: timestamp,
+    );
 
     return PopScope(
       canPop: false,
@@ -421,10 +448,115 @@ class IntlReceiptScreen extends StatelessWidget {
   // Bottom actions — Done primary + Send More secondary on success.
   // ---------------------------------------------------------------------------
 
+  Future<void> _downloadReceipt() async {
+    final data = _receiptData;
+    if (data == null || _isDownloading) return;
+    setState(() => _isDownloading = true);
+    try {
+      final path = await IntlAirtimePdfService.downloadReceipt(data);
+      if (!mounted) return;
+      Get.snackbar(
+        'Receipt saved',
+        'Saved to ${path.split('/').last}',
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      Get.snackbar(
+        'Download failed',
+        'We could not save the receipt. Please try again.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
+    }
+  }
+
+  Future<void> _shareReceipt() async {
+    final data = _receiptData;
+    if (data == null || _isSharing) return;
+    setState(() => _isSharing = true);
+    try {
+      await IntlAirtimePdfService.shareReceipt(data);
+    } catch (_) {
+      if (!mounted) return;
+      Get.snackbar(
+        'Share failed',
+        'We could not share the receipt. Please try again.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
+    }
+  }
+
+  Widget _secondaryAction({
+    required IconData icon,
+    required String label,
+    required bool busy,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: OutlinedButton.icon(
+        onPressed: busy ? null : onTap,
+        icon: busy
+            ? SizedBox(
+                width: 14.w,
+                height: 14.w,
+                child: const CircularProgressIndicator(
+                    strokeWidth: 2, color: Color(0xFFA78BFA)),
+              )
+            : Icon(icon, size: 16.sp, color: const Color(0xFFA78BFA)),
+        label: Text(
+          label,
+          style: GoogleFonts.inter(
+            color: Colors.white.withValues(alpha: 0.9),
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Color(0xFF2D2D2D)),
+          padding: EdgeInsets.symmetric(vertical: 12.h),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        ),
+      ),
+    );
+  }
+
   Widget _buildBottomActions(bool isSuccess) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Download + Share are only meaningful for a delivered purchase.
+        if (isSuccess) ...[
+          Row(
+            children: [
+              _secondaryAction(
+                icon: Icons.download_rounded,
+                label: 'Download',
+                busy: _isDownloading,
+                onTap: _downloadReceipt,
+              ),
+              SizedBox(width: 10.w),
+              _secondaryAction(
+                icon: Icons.share_rounded,
+                label: 'Share',
+                busy: _isSharing,
+                onTap: _shareReceipt,
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+        ],
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -452,7 +584,12 @@ class IntlReceiptScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
-              onPressed: () => Get.offAllNamed(AppRoutes.airtime),
+              // Back into the INTERNATIONAL flow (country picker) — this used
+              // to dump the user on the domestic Buy tab.
+              onPressed: () => Get.offNamedUntil(
+                AppRoutes.intlAirtimeCountrySelection,
+                (route) => route.settings.name == AppRoutes.airtime,
+              ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xFF2D2D2D)),
                 padding: EdgeInsets.symmetric(vertical: 12.h),

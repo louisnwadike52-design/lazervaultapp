@@ -85,6 +85,9 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
   /// Corresponding sender-currency amount for the selected fixed denomination.
   double _selectedSenderFixed = 0;
   String? _phoneError;
+  /// Inline guidance shown when operator auto-detection can't resolve the
+  /// number (cleared on a successful detect or a new phone edit).
+  String? _detectHint;
   String? _amountError;
   Timer? _debounce;
 
@@ -248,6 +251,8 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
   void _onPhoneChanged() {
     final err = _phoneError;
     if (err != null) setState(() => _phoneError = null);
+    // A fresh edit invalidates any previous detect guidance.
+    if (_detectHint != null) setState(() => _detectHint = null);
 
     _debounce?.cancel();
     // Match validation: strip a single trunk-0 before length-checking so
@@ -420,9 +425,20 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
           setState(() {
             _selectedOperator = state.operator;
             _operatorAutoDetected = true;
+            _detectHint = null;
             _selectedDestFixed = 0;
             _selectedSenderFixed = 0;
           });
+        } else if (state is IntlAirtimeOperatorDetectionFailed) {
+          // Recoverable: show guidance and hand control to the manual
+          // network picker. Previously this state didn't exist and the
+          // failure surfaced as nothing at all — the field just spun.
+          setState(() {
+            _operatorAutoDetected = false;
+            _detectHint = state.message;
+          });
+        } else if (state is IntlAirtimeError) {
+          setState(() => _detectHint = state.message);
         }
       },
       child: Scaffold(
@@ -467,6 +483,26 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
                 Text(
                   _phoneError!,
                   style: TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp),
+                ),
+              ],
+              // Auto-detect couldn't resolve the network (common for GB and
+              // other heavily ported ranges). Guidance, not an error — the
+              // network grid below stays fully usable.
+              if (_phoneError == null && _detectHint != null) ...[
+                SizedBox(height: 6.h),
+                Row(
+                  children: [
+                    Icon(Icons.info_outline,
+                        size: 14.sp, color: const Color(0xFFA78BFA)),
+                    SizedBox(width: 6.w),
+                    Expanded(
+                      child: Text(
+                        _detectHint!,
+                        style: TextStyle(
+                            color: const Color(0xFFA78BFA), fontSize: 12.sp),
+                      ),
+                    ),
+                  ],
                 ),
               ],
               SizedBox(height: 20.h),
@@ -927,14 +963,14 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
               borderRadius: BorderRadius.circular(8.r),
               border: Border.all(
                 color: active
-                    ? const Color(0xFF4E03D0)
+                    ? const Color(0xFFA78BFA)
                     : const Color(0xFF2D2D2D),
               ),
             ),
             child: Text(
               '${op.destCurrencyCode} ${amt.toStringAsFixed(0)}',
               style: TextStyle(
-                color: active ? const Color(0xFF4E03D0) : Colors.white,
+                color: active ? const Color(0xFFA78BFA) : Colors.white,
                 fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -1002,12 +1038,12 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             decoration: BoxDecoration(
               color: selected
-                  ? const Color(0xFF4E03D0).withValues(alpha: 0.15)
+                  ? const Color(0xFFA78BFA).withValues(alpha: 0.15)
                   : const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(10.r),
               border: Border.all(
                 color: selected
-                    ? const Color(0xFF4E03D0)
+                    ? const Color(0xFFA78BFA)
                     : const Color(0xFF2D2D2D),
                 width: selected ? 1.5 : 1,
               ),
@@ -1020,7 +1056,7 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
                   '${op.destCurrencyCode} ${dest.toStringAsFixed(0)}',
                   style: TextStyle(
                     color: selected
-                        ? const Color(0xFF4E03D0)
+                        ? const Color(0xFFA78BFA)
                         : Colors.white,
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w700,

@@ -199,12 +199,12 @@ class _IntlOperatorBottomSheetState extends State<IntlOperatorBottomSheet> {
                             padding: EdgeInsets.all(14.w),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
+                                  ? const Color(0xFFA78BFA).withValues(alpha: 0.1)
                                   : const Color(0xFF0A0A0A),
                               borderRadius: BorderRadius.circular(12.r),
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFF4E03D0)
+                                    ? const Color(0xFFA78BFA)
                                     : const Color(0xFF2D2D2D),
                                 width: isSelected ? 1.5 : 1,
                               ),

@@ -119,14 +119,14 @@ class BillReminderItem extends StatelessWidget {
       case 'completed':
         return const Color(0xFF10B981);
       case 'notified':
-        return const Color(0xFF4E03D0);
+        return const Color(0xFFA78BFA);
       case 'cancelled':
         return const Color(0xFF6B7280);
       case 'paused':
         return const Color(0xFF9CA3AF);
       case 'pending':
       default:
-        return isDue ? const Color(0xFFF59E0B) : const Color(0xFF4E03D0);
+        return isDue ? const Color(0xFFF59E0B) : const Color(0xFFA78BFA);
     }
   }
 
@@ -368,7 +368,7 @@ class BillReminderItem extends StatelessWidget {
                     SizedBox(width: 8.w),
                   ],
                   if (!_isCompleted && onEdit != null) ...[
-                    _iconBtn(Icons.edit, const Color(0xFF4E03D0), onEdit!),
+                    _iconBtn(Icons.edit, const Color(0xFFA78BFA), onEdit!),
                     SizedBox(width: 8.w),
                   ],
                   if (onDelete != null)

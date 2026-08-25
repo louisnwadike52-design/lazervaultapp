@@ -209,13 +209,13 @@ class _IntlCountrySelectionScreenState
                   padding:
                       EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                    color: const Color(0xFFA78BFA).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
                     '${country.operatorCount} networks',
                     style: TextStyle(
-                      color: const Color(0xFF4E03D0),
+                      color: const Color(0xFFA78BFA),
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w500,
                     ),
