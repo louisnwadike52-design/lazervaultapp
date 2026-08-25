@@ -127,87 +127,114 @@ class AccountUpdateAnnouncementService {
     }
   }
 
+  /// A polished centered dialog — shown AFTER login lands on the dashboard
+  /// (the fetch + gating run in the background post-frame, so the login flow
+  /// is never blocked; the dialog appears once the check completes).
   Future<void> _showModal(
       BuildContext context, AccountUpdateAnnouncement ann) async {
-    await showModalBottomSheet<void>(
+    await showGeneralDialog<void>(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      isDismissible: true,
-      builder: (ctx) => Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF16162A),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      barrierDismissible: true,
+      barrierLabel: 'Account update',
+      barrierColor: Colors.black.withValues(alpha: 0.65),
+      transitionDuration: const Duration(milliseconds: 220),
+      transitionBuilder: (ctx, anim, _, child) => FadeTransition(
+        opacity: anim,
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.94, end: 1).animate(
+              CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          child: child,
         ),
-        padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 32.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 44.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2.r),
+      ),
+      pageBuilder: (ctx, _, __) => Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            width: 340.w,
+            margin: EdgeInsets.symmetric(horizontal: 24.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF16162A),
+              borderRadius: BorderRadius.circular(24.r),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  blurRadius: 40,
+                  offset: const Offset(0, 16),
                 ),
-              ),
+              ],
             ),
-            SizedBox(height: 20.h),
-            Container(
-              width: 56.w,
-              height: 56.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
-              ),
-              child: Icon(Icons.account_balance_outlined,
-                  color: const Color(0xFF9B6DFF), size: 28.sp),
-            ),
-            SizedBox(height: 16.h),
-            Text(ann.title,
-                style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w700)),
-            SizedBox(height: 12.h),
-            Text(ann.body,
-                style: GoogleFonts.inter(
-                    color: const Color(0xFFB6B9C6),
-                    fontSize: 14.sp,
-                    height: 1.55)),
-            SizedBox(height: 24.h),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(ctx).pop();
-                  Get.toNamed(AppRoutes.myAccount);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4E03D0),
-                  padding: EdgeInsets.symmetric(vertical: 15.h),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14.r)),
+            padding: EdgeInsets.fromLTRB(24.w, 28.h, 24.w, 20.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 64.w,
+                  height: 64.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color(0xFF4E03D0).withValues(alpha: 0.35),
+                        const Color(0xFF4E03D0).withValues(alpha: 0.12),
+                      ],
+                    ),
+                    border: Border.all(
+                        color: const Color(0xFF9B6DFF).withValues(alpha: 0.35)),
+                  ),
+                  child: Icon(Icons.account_balance_outlined,
+                      color: const Color(0xFF9B6DFF), size: 30.sp),
                 ),
-                child: Text(ann.cta,
+                SizedBox(height: 18.h),
+                Text(ann.title,
+                    textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                         color: Colors.white,
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600)),
-              ),
-            ),
-            SizedBox(height: 10.h),
-            Center(
-              child: TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: Text('Got it',
+                        fontSize: 19.sp,
+                        fontWeight: FontWeight.w700,
+                        height: 1.3)),
+                SizedBox(height: 12.h),
+                Text(ann.body,
+                    textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
-              ),
+                        color: const Color(0xFFB6B9C6),
+                        fontSize: 13.5.sp,
+                        height: 1.6)),
+                SizedBox(height: 24.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      Get.toNamed(AppRoutes.myAccount);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4E03D0),
+                      padding: EdgeInsets.symmetric(vertical: 15.h),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14.r)),
+                    ),
+                    child: Text(ann.cta,
+                        style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600)),
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: Text('Got it',
+                      style: GoogleFonts.inter(
+                          color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -2,6 +2,9 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+
+import 'package:lazervault/core/types/app_routes.dart';
 
 /// Reusable account/card preview shown at the top of the account-actions bottom
 /// sheet (and anywhere a "card" needs to be previewed with live status).
@@ -147,6 +150,12 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
   /// perpetual "being set up".
   static const Set<String> _depositCapableCurrencies = {'NGN', 'GHS', 'KES', 'ZAR'};
 
+  /// Currencies with a real FOREIGN virtual-account path (Fincra individual
+  /// accounts: USD ACH/Swift, GBP FPS/CHAPS, EUR SEPA) — offered as an
+  /// "activate" flow from the card face; once issued, the account row
+  /// carries a real number and the normal deposit face takes over.
+  static const Set<String> _fcyCapableCurrencies = {'USD', 'GBP', 'EUR'};
+
   String get _currency =>
       ((widget.accountArgs['currency'] as String?) ?? '').trim().toUpperCase();
 
@@ -241,26 +250,60 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
           ),
           SizedBox(height: 4.h),
           if (_isConvertOnly && !_hasRealNumber)
-            // No bank-transfer number exists for this currency (e.g. USD/GBP) —
-            // it's funded by converting from another wallet, not by a deposit.
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+            // No deposit number YET for this currency. It can still be funded
+            // by conversion — and for USD/GBP/EUR the user can now ACTIVATE a
+            // real foreign virtual account (Fincra individual accounts), so
+            // offer that path directly on the card face.
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.swap_horiz_rounded,
-                    color: Colors.white.withValues(alpha: 0.9), size: 18.sp),
-                SizedBox(width: 6.w),
-                Expanded(
-                  child: Text(
-                    'Fund by converting from another wallet',
-                    maxLines: 2,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.95),
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w600,
-                      height: 1.2,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.swap_horiz_rounded,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        size: 18.sp),
+                    SizedBox(width: 6.w),
+                    Expanded(
+                      child: Text(
+                        'Fund by converting from another wallet',
+                        maxLines: 2,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.95),
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                          height: 1.2,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (_fcyCapableCurrencies.contains(_currency)) ...[
+                  SizedBox(height: 8.h),
+                  GestureDetector(
+                    onTap: () => Get.toNamed(AppRoutes.fcyActivation,
+                        arguments: {'currency': _currency}),
+                    behavior: HitTestBehavior.opaque,
+                    child: Row(
+                      children: [
+                        Icon(Icons.language_rounded,
+                            color: const Color(0xFF9B6DFF), size: 16.sp),
+                        SizedBox(width: 6.w),
+                        Text(
+                          'Activate international deposits',
+                          style: TextStyle(
+                            color: const Color(0xFF9B6DFF),
+                            fontSize: 12.5.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(width: 4.w),
+                        Icon(Icons.chevron_right_rounded,
+                            color: const Color(0xFF9B6DFF), size: 16.sp),
+                      ],
                     ),
                   ),
-                ),
+                ],
               ],
             )
           else

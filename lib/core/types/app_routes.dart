@@ -48,6 +48,10 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String billsHub = '/bills';
 
   // Electricity Bill Payment Routes
+  // Foreign-currency (USD/GBP/EUR) virtual-account activation — the Fincra
+  // FCY KYC flow. Args: {'currency': 'USD'|'GBP'|'EUR'}.
+  static const String fcyActivation = '/accounts/fcy-activation';
+
   static const String electricityBillHome = '/electricity-bill';
   static const String electricityBillMeterInput = '/electricity-bill/meter-input';
   static const String electricityBillConfirmation = '/electricity-bill/confirmation';

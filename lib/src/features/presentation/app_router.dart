@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/fcy_account/presentation/fcy_activation_screen.dart';
 import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/send_funds/presentation/chatbot_transfer_screen.dart';
@@ -669,6 +670,13 @@ class AppRouter {
       name: AppRoutes.onboarding,
       page: () => const OnboardingCarouselScreen(),
       transition: Transition.fadeIn,
+    ),
+    // Foreign-currency (USD/GBP/EUR) account activation — the Fincra FCY
+    // KYC + document flow. Self-contained (own service; no cubit needed).
+    GetPage(
+      name: AppRoutes.fcyActivation,
+      page: () => const FCYActivationScreen(),
+      transition: Transition.rightToLeft,
     ),
     // ── Phone + Passcode auth flow ──────────────────────────────────────
     GetPage(
