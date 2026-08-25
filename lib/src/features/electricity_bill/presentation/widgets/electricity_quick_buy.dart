@@ -659,7 +659,7 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
           Switch.adaptive(
             value: _autoEnabled,
             onChanged: _onToggleAuto,
-            activeThumbColor: _accent,
+            activeThumbColor: const Color(0xFFA78BFA),
           ),
         ]),
       ),

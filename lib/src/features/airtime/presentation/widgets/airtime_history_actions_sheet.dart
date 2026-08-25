@@ -9,7 +9,6 @@ import '../../../../../core/widgets/bill_history_actions_sheet.dart';
 import '../../../../../core/widgets/bill_reminder_create_sheet.dart';
 import '../../data/datasources/intl_airtime_remote_datasource.dart';
 import '../../domain/entities/airtime_transaction.dart';
-import '../../domain/entities/country.dart';
 import '../../domain/entities/intl_airtime_country.dart';
 import '../../domain/entities/network_provider.dart';
 import '../../domain/repositories/airtime_repository.dart';
@@ -338,14 +337,15 @@ class AirtimeHistoryActionsSheet {
       return;
     }
 
+    // Repeat lands on the MAIN quick-buy (Buy tab) with everything
+    // prefilled — the separate legacy purchase flow was removed.
     Get.toNamed(
-      AppRoutes.airtimePurchase,
+      AppRoutes.airtime,
+      preventDuplicates: false,
       arguments: {
-        'isRepeat': true,
-        'country': DefaultCountries.nigeria,
         'phoneNumber': t.recipientPhoneNumber,
         'amount': t.amount,
-        'networkType': t.networkProvider.name,
+        'networkCode': t.networkProvider.name,
       },
     );
   }

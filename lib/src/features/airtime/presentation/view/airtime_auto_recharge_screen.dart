@@ -58,6 +58,11 @@ class _AirtimeAutoRechargeScreenState extends State<AirtimeAutoRechargeScreen> {
           if (state is AirtimeBeneficiariesLoaded) {
             // Beneficiaries loaded — now load auto-recharges.
             context.read<AirtimeCubit>().loadAutoRecharges();
+          } else if (state is AirtimeBeneficiariesError) {
+            // Beneficiary load failed — still fetch the auto-recharges
+            // (they render fine without nicknames). Without this branch a
+            // beneficiary error left _isLoading true → permanent shimmer.
+            context.read<AirtimeCubit>().loadAutoRecharges();
           } else if (state is AirtimeAutoRechargesLoaded) {
             setState(() {
               _autoRecharges = state.autoRecharges;

@@ -133,22 +133,36 @@ class _AirtimePaymentConfirmationScreenState
     // that's the only case the user needs to act on.
 
     // 1. Save as contact ─────────────────────────────────────────────
-    if (_saveAsContact && beneficiaryId == null) {
+    // Auto-recharge NEEDS a saved beneficiary, so a pending auto-recharge
+    // also forces the save even when the save toggle was off. The id is
+    // resolved from the repository RETURN VALUE (mirroring electricity) —
+    // reading it from cubit.state raced the trailing beneficiary-list
+    // refresh and lost every time, silently killing auto-recharge setup.
+    if (beneficiaryId == null && (_saveAsContact || _enableAutoRecharge)) {
+      final networkCode =
+          _networkCode ?? tx.networkProvider.shortName.toUpperCase();
       try {
-        await cubit.saveBeneficiary(
+        final saved = await cubit.saveBeneficiary(
           phoneNumber: tx.recipientPhoneNumber,
-          networkCode:
-              _networkCode ?? tx.networkProvider.shortName.toUpperCase(),
+          networkCode: networkCode,
           networkName: _networkName ?? tx.networkProvider.displayName,
           nickname: (_nickname?.isNotEmpty ?? false) ? _nickname : null,
         );
-        // The cubit emits AirtimeBeneficiarySaved with the new entity.
-        final state = cubit.state;
-        if (state is AirtimeBeneficiarySaved) {
-          beneficiaryId = state.beneficiary.id;
-        }
+        beneficiaryId = saved?.id;
       } catch (_) {
-        if (mounted) {
+        // Possibly already saved (duplicate) — recover the id by matching
+        // the phone number in the existing list before giving up.
+        try {
+          final existing = await cubit.repository
+              .getAirtimeBeneficiaries(networkCode: networkCode);
+          for (final b in existing) {
+            if (b.phoneNumber == tx.recipientPhoneNumber) {
+              beneficiaryId = b.id;
+              break;
+            }
+          }
+        } catch (_) {}
+        if (beneficiaryId == null && _saveAsContact && mounted) {
           _softInfo('Save failed',
               'We couldn\'t save the contact. Try again from the recipient screen.');
         }
@@ -156,12 +170,14 @@ class _AirtimePaymentConfirmationScreenState
     }
 
     // 2. Auto-recharge ───────────────────────────────────────────────
-    // Skipped silently when no beneficiary id is available — the user
-    // chose not to save, so badgering them with "Save the contact
-    // first" would be patronising. They can still set up auto-recharge
-    // from the saved-contact options sheet later.
     if (_enableAutoRecharge && _autoRechargePref != null) {
-      if (beneficiaryId == null) return;
+      if (beneficiaryId == null) {
+        if (mounted) {
+          _softInfo('Auto-recharge couldn\'t be enabled',
+              'Payment succeeded, but the schedule didn\'t save. Retry from the auto-recharge screen.');
+        }
+        return;
+      }
       try {
         final pref = _autoRechargePref!;
         await cubit.createAutoRecharge(
@@ -174,6 +190,11 @@ class _AirtimePaymentConfirmationScreenState
           executionHour: pref['executionHour'] as int?,
           executionMinute: pref['executionMinute'] as int?,
         );
+        if (mounted) {
+          _softInfo('Auto-recharge is on',
+              'We\'ll top up ${tx.recipientPhoneNumber} automatically on your schedule.',
+              isSuccess: true);
+        }
       } catch (_) {
         if (mounted) {
           _softInfo('Auto-recharge couldn\'t be enabled',

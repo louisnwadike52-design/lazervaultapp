@@ -410,7 +410,13 @@ class AirtimeCubit extends Cubit<AirtimeState> {
     }
   }
 
-  Future<void> saveBeneficiary({
+  /// Saves the recipient and RETURNS the saved entity. Callers that need
+  /// the new beneficiary id (e.g. the receipt's auto-recharge setup) must
+  /// use the return value — `state` is NOT a reliable carrier here because
+  /// the trailing [loadBeneficiaries] refresh replaces
+  /// [AirtimeBeneficiarySaved] before the await completes (this exact race
+  /// silently killed post-purchase auto-recharge creation).
+  Future<AirtimeBeneficiary?> saveBeneficiary({
     required String phoneNumber,
     required String networkCode,
     required String networkName,
@@ -427,11 +433,12 @@ class AirtimeCubit extends Cubit<AirtimeState> {
         countryCode: countryCode,
         operatorId: operatorId,
       );
-      if (isClosed) return;
+      if (isClosed) return saved;
       emit(AirtimeBeneficiarySaved(beneficiary: saved));
       await loadBeneficiaries();
+      return saved;
     } catch (e) {
-      if (isClosed) return;
+      if (isClosed) return null;
       emit(AirtimeBeneficiariesError(message: _friendlyErrorMessage(e)));
       rethrow;
     }

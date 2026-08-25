@@ -117,7 +117,7 @@ class NetworkProvidersCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
-                        color: const Color(0xFF4E03D0),
+                        color: const Color(0xFFA78BFA),
                       ),
                     ),
                   );
@@ -254,11 +254,9 @@ class NetworkProvidersCard extends StatelessWidget {
                         DefaultCountries.nigeria,
                         provider,
                       );
-                      Get.toNamed(AppRoutes.airtimeRecipientInput, arguments: {
-                        'country': DefaultCountries.nigeria,
-                        'networkProvider': provider,
-                        'isBuyForSelf': true,
-                      });
+                      Get.toNamed(AppRoutes.airtime,
+                          preventDuplicates: false,
+                          arguments: {'networkCode': provider.shortName});
                     },
                     child: Container(
                       margin: EdgeInsets.only(bottom: 10.h),
@@ -341,11 +339,9 @@ class NetworkProvidersCard extends StatelessWidget {
           DefaultCountries.nigeria,
           provider,
         );
-        Get.toNamed(AppRoutes.airtimeRecipientInput, arguments: {
-          'country': DefaultCountries.nigeria,
-          'networkProvider': provider,
-          'isBuyForSelf': true,
-        });
+        Get.toNamed(AppRoutes.airtime,
+            preventDuplicates: false,
+            arguments: {'networkCode': provider.shortName});
       },
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),

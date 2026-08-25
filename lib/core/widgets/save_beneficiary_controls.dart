@@ -24,6 +24,9 @@ const _card = Color(0xFF1F1F1F);
 const _border = Color(0xFF2D2D2D);
 const _muted = Color(0xFF9CA3AF);
 const _green = Color(0xFF10B981);
+// Lighter purple for small accents (switch thumb, dialog Save action) —
+// the brand purple 0xFF4E03D0 is illegible on the near-black card.
+const _accentLight = Color(0xFFA78BFA);
 
 /// Prompt for a beneficiary nickname. Returns the trimmed nickname, or `null`
 /// if the user cancels or submits an empty value.
@@ -105,7 +108,7 @@ class SaveBeneficiaryToggleRow extends StatelessWidget {
           Switch.adaptive(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: accent,
+            activeThumbColor: _accentLight,
           ),
         ],
       ),
@@ -274,7 +277,7 @@ class _BeneficiaryNicknameDialogState
           onPressed: _submit,
           child: Text('Save',
               style: GoogleFonts.inter(
-                  color: widget.accent,
+                  color: _accentLight,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w700)),
         ),

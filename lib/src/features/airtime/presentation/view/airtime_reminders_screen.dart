@@ -153,8 +153,7 @@ class _AirtimeRemindersScreenState extends State<AirtimeRemindersScreen>
     // The purchase screen only prefills under its repeat-purchase hand-off,
     // which locks the phone to the recipient — exactly right for a reminder.
     final phone = _contactPhoneById[r.beneficiaryId ?? ''] ?? '';
-    Get.toNamed(AppRoutes.airtimePurchase, arguments: {
-      if (phone.isNotEmpty) 'isRepeat': true,
+    Get.toNamed(AppRoutes.airtime, preventDuplicates: false, arguments: {
       if (phone.isNotEmpty) 'phoneNumber': phone,
       if ((r.amount ?? 0) > 0) 'amount': r.amount,
     });

@@ -215,7 +215,7 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
                 child: Text(
                   'View All',
                   style: GoogleFonts.inter(
-                    color: _primary,
+                    color: const Color(0xFFA78BFA),
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
                   ),

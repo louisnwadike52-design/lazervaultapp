@@ -444,7 +444,7 @@ class _WaterQuickBuyState extends State<WaterQuickBuy> with TransactionPinMixin 
           Switch.adaptive(
             value: _autoEnabled,
             onChanged: _onToggleAuto,
-            activeThumbColor: _accent,
+            activeThumbColor: const Color(0xFFA78BFA),
           ),
         ]),
       ),

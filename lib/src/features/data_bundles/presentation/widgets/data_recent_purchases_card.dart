@@ -142,7 +142,7 @@ class _DataRecentPurchasesCardState extends State<DataRecentPurchasesCard> {
             style: GoogleFonts.inter(
               fontSize: 13.sp,
               fontWeight: FontWeight.w600,
-              color: widget.accent,
+              color: const Color(0xFFA78BFA),
             ),
           ),
         ),

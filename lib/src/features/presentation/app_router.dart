@@ -238,11 +238,6 @@ import 'package:lazervault/src/features/airtime/presentation/view/intl_country_s
 import 'package:lazervault/src/features/airtime/presentation/view/intl_airtime_purchase_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/intl_review_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/intl_receipt_screen.dart';
-import 'package:lazervault/src/features/airtime/presentation/view/airtime_purchase_screen.dart';
-import 'package:lazervault/src/features/airtime/presentation/view/recipient_input_screen.dart';
-import 'package:lazervault/src/features/airtime/presentation/view/amount_selection_screen.dart';
-import 'package:lazervault/src/features/airtime/presentation/view/airtime_review_screen.dart';
-import 'package:lazervault/src/features/airtime/presentation/view/airtime_payment_processing_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_payment_confirmation_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_history_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_details_screen.dart';
@@ -2235,49 +2230,6 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
 GetPage(
-      name: AppRoutes.airtimePurchase,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<AirtimeCubit>(),
-        child: const AirtimePurchaseScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.airtimeRecipientInput,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<AirtimeCubit>(),
-        child: const RecipientInputScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.airtimeAmountSelection,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<AirtimeCubit>(),
-        child: const AmountSelectionScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.airtimeReview,
-      page: () => MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (_) => serviceLocator<AirtimeCubit>()),
-          BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
-        ],
-        child: const AirtimeReviewScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.airtimePaymentProcessing,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<AirtimeCubit>(),
-        child: const AirtimePaymentProcessingScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
       name: AppRoutes.airtimePaymentConfirmation,
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeCubit>(),

@@ -317,7 +317,7 @@ class _BillReminderCreateSheetState extends State<BillReminderCreateSheet> {
                 style: TextStyle(color: _textMuted, fontSize: 12.sp),
               ),
               value: _isRecurring,
-              activeThumbColor: _accent,
+              activeThumbColor: const Color(0xFFA78BFA),
               onChanged: (v) => setState(() => _isRecurring = v),
             ),
             if (_isRecurring) ...[

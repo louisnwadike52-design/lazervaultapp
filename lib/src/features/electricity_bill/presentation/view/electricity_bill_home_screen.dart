@@ -502,7 +502,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                 child: Text(
                   'View All',
                   style: GoogleFonts.inter(
-                    color: InvoiceThemeColors.primaryPurple,
+                    color: InvoiceThemeColors.primaryPurpleLight,
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
                   ),

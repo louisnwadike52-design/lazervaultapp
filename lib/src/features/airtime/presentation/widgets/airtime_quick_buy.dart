@@ -95,6 +95,11 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
   String? _autoSummary;
   Map<String, dynamic>? _autoPref;
 
+  /// Network requested by a hand-off (repeat purchase / beneficiary /
+  /// network tile). Applied once providers are loaded, and only when
+  /// auto-detection hasn't already resolved a network from the number.
+  String? _argNetworkCode;
+
   @override
   void initState() {
     super.initState();
@@ -114,7 +119,26 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
           await serviceLocator<AirtimeRepository>().getNetworkProviders(_country);
       if (!mounted) return;
       setState(() => _providers = list.where((p) => p.isActive).toList());
+      _applyArgNetwork();
     } catch (_) {/* best-effort */}
+  }
+
+  /// Apply a hand-off's requested network once providers are known — only
+  /// when nothing is selected yet, so prefix auto-detection still wins for
+  /// numbers it can resolve.
+  void _applyArgNetwork() {
+    final code = _argNetworkCode;
+    if (code == null || _network != null || _providers.isEmpty) return;
+    final lc = code.toLowerCase();
+    for (final p in _providers) {
+      if (p.shortName.toLowerCase() == lc ||
+          p.name.toLowerCase() == lc ||
+          p.id.toLowerCase() == lc) {
+        _selectNetworkManually(p);
+        _argNetworkCode = null;
+        return;
+      }
+    }
   }
 
   /// Best-effort read of the user's saved airtime contacts so we can flag an
@@ -156,12 +180,27 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
   }
 
   Future<void> _prefillFromProfile() async {
-    // A hand-off (reminder "top up", repeat purchase, beneficiary pick) may
-    // navigate here with the recipient's number — that wins over the user's
-    // own profile number.
+    // A hand-off (reminder "top up", repeat purchase, beneficiary pick,
+    // network tile) may navigate here with the previous transaction's
+    // details — phone, amount AND network all prefill so the user only has
+    // to confirm. This replaced the separate legacy purchase flow screens.
     final args = Get.arguments;
     if (args is Map) {
-      final v = args['phoneNumber'];
+      final amt = args['amount'] ?? args['prefillAmount'];
+      final amtVal = amt is num
+          ? amt.toDouble()
+          : double.tryParse(amt?.toString() ?? '');
+      if (amtVal != null && amtVal > 0 && _amountController.text.isEmpty) {
+        _amountController.text = amtVal == amtVal.roundToDouble()
+            ? amtVal.toInt().toString()
+            : amtVal.toString();
+      }
+      final net = args['networkCode'] ?? args['networkType'];
+      if (net is String && net.trim().isNotEmpty) {
+        _argNetworkCode = net.trim();
+        _applyArgNetwork();
+      }
+      final v = args['phoneNumber'] ?? args['prefillPhone'];
       final argPhone = _toLocalNg(v is String ? v : '');
       if (argPhone.isNotEmpty && _phoneController.text.isEmpty) {
         _phoneController.text = argPhone; // triggers _onPhoneChanged → detect
@@ -477,7 +516,7 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
           Switch.adaptive(
             value: _autoEnabled,
             onChanged: _onToggleAuto,
-            activeThumbColor: _accent,
+            activeThumbColor: const Color(0xFFA78BFA),
           ),
         ]),
       ),

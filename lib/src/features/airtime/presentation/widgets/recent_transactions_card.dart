@@ -158,7 +158,7 @@ class RecentTransactionsCard extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 13.sp,
               fontWeight: FontWeight.w600,
-              color: accent,
+              color: const Color(0xFFA78BFA),
             ),
           ),
         ),

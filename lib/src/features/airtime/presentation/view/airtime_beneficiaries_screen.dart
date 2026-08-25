@@ -330,7 +330,7 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
             child: Text(
               'View All',
               style: TextStyle(
-                color: const Color(0xFF4E03D0),
+                color: const Color(0xFFA78BFA),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -423,11 +423,11 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
               onTap: () {
                 Navigator.of(ctx).pop();
                 Get.toNamed(
-                  AppRoutes.airtimeRecipientInput,
+                  AppRoutes.airtime,
+                  preventDuplicates: false,
                   arguments: {
                     'phoneNumber': beneficiary.phoneNumber,
                     'networkCode': beneficiary.networkCode,
-                    'networkName': beneficiary.networkName,
                   },
                 );
               },
@@ -611,11 +611,11 @@ class _AirtimeBeneficiariesScreenState extends State<AirtimeBeneficiariesScreen>
         onTap: () {
           Get.back(); // close the sheet
           Get.toNamed(
-            AppRoutes.airtimeRecipientInput,
+            AppRoutes.airtime,
+            preventDuplicates: false,
             arguments: {
               'phoneNumber': b.phoneNumber,
               'networkCode': b.networkCode,
-              'networkName': b.networkName,
             },
           );
         },
