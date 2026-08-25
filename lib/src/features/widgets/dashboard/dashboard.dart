@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/src/features/widgets/app_services_builder.dart';
+import 'package:lazervault/core/services/account_update_announcement_service.dart';
 import 'package:lazervault/src/features/onboarding/dashboard_walkthrough.dart';
 import 'package:lazervault/src/features/widgets/all_services_bottom_sheet.dart';
 import 'package:lazervault/src/features/account_cards_summary/presentation/view/dashboard_card_summary.dart';
@@ -83,6 +84,14 @@ class _DashboardState extends State<Dashboard> {
     final walkthroughUserId =
         context.read<AuthenticationCubit>().currentProfile?.user.id ?? '';
     DashboardWalkthrough.maybeStart(context, userId: walkthroughUserId);
+    // Server-driven account-update announcement (VA provider migration):
+    // shown once per user per version, after first frame so it can never
+    // block dashboard load. Best-effort end to end.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      AccountUpdateAnnouncementService.instance
+          .maybeShow(context, userId: walkthroughUserId);
+    });
   }
 
   @override
