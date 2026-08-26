@@ -105,8 +105,12 @@ class ExchangeHistoryActionsSheet {
             color: ExchangeTheme.warning,
             label: 'Report Issue',
             onTap: () {
+              // Navigator's context — Get.back() disposes this sheet's own,
+              // and a disposed context cannot host the dialog.
+              final ctx = Get.context;
               Get.back();
-              ReportIssueDialog.show(context, tx);
+              if (ctx == null) return;
+              ReportIssueDialog.show(ctx, tx);
             },
           ),
       ],

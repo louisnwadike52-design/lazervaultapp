@@ -184,6 +184,12 @@ class CableTVHistoryActionsSheet {
                   'amount': p.amount > 0 ? p.amount : null,
                   if (variationCode.isNotEmpty) 'packageId': variationCode,
                   if (packageName.isNotEmpty) 'planName': packageName,
+                  // Hand over the saved smart card we already resolved above.
+                  // Without it the screen has no provider to load packages
+                  // for, so the package dropdown stayed empty and the
+                  // pre-filled package had nothing to reconcile against.
+                  if (existingBeneficiary != null)
+                    'beneficiary': existingBeneficiary,
                 },
               );
             },
@@ -257,9 +263,15 @@ class CableTVHistoryActionsSheet {
                   )
                 : null,
             onTap: () async {
+              // Capture the NAVIGATOR's context before Get.back() disposes
+              // this sheet's own. The save sheet opens a modal against the
+              // context it is handed, and a disposed one cannot host a route
+              // — which is why this action silently did nothing.
+              final ctx = Get.context;
               Get.back();
+              if (ctx == null) return;
               await SaveCableTVBeneficiarySheet.show(
-                context,
+                ctx,
                 smartCardNumber: smartCardNumber,
                 providerCode: providerCode.isNotEmpty ? providerCode : 'UNKNOWN',
                 providerName: providerName.isNotEmpty ? providerName : 'Unknown',

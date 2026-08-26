@@ -286,8 +286,12 @@ class ElectricityHistoryActionsSheet {
                 )
               : null,
           onTap: () {
+            // Navigator's context — Get.back() disposes this sheet's own, so
+            // the `context.mounted` check that used to sit here ALWAYS
+            // failed and neither sheet below ever opened.
+            final ctx = Get.context;
             Get.back();
-            if (!context.mounted) return;
+            if (ctx == null) return;
             if (isSaved) {
               // Rename inline via the shared sheet; no page navigation.
               // The repo's updateBeneficiary persists server-side; every
@@ -296,7 +300,7 @@ class ElectricityHistoryActionsSheet {
               // next open) re-queries through getBeneficiaries, so the
               // new nickname propagates without extra plumbing.
               RenameMeterSheet.show(
-                context,
+                ctx,
                 beneficiary: savedBeneficiary!,
               );
             } else {
@@ -306,7 +310,7 @@ class ElectricityHistoryActionsSheet {
               // customer name/address came back with the original
               // payment), so an inline sheet matches the rename UX and
               // keeps the user in the history list.
-              SaveMeterSheet.show(context, payment: payment);
+              SaveMeterSheet.show(ctx, payment: payment);
             }
           },
         ),

@@ -50,7 +50,7 @@ class _CreateCableTVReminderScreenState
 
   // Package state
   TVPackageEntity? _selectedPackage;
-  TVPackageEntity? _editFallbackPackage;
+  TVPackageEntity? _prefillFallbackPackage;
   List<TVPackageEntity>? _loadedPackages;
   bool _packagesLoading = false;
   String? _packagesError;
@@ -92,7 +92,7 @@ class _CreateCableTVReminderScreenState
       // real catalog loads.
       if (existing.variationCode != null &&
           existing.variationCode!.isNotEmpty) {
-        _editFallbackPackage = TVPackageEntity(
+        _prefillFallbackPackage = TVPackageEntity(
           id: existing.variationCode!,
           name: existing.variationCode!,
           variationCode: existing.variationCode!,
@@ -100,7 +100,7 @@ class _CreateCableTVReminderScreenState
           providerId: '',
           validity: '',
         );
-        _selectedPackage = _editFallbackPackage;
+        _selectedPackage = _prefillFallbackPackage;
       }
       if (existing.beneficiaryId.isNotEmpty) {
         _pendingEditBeneficiaryId = existing.beneficiaryId;
@@ -108,6 +108,28 @@ class _CreateCableTVReminderScreenState
     } else {
       final title = args['title'] as String?;
       if (title != null) _titleController.text = title;
+
+      // Pre-fill the package this reminder is being set FOR. The history
+      // sheet has always sent packageId/planName/amount; nothing read them,
+      // so a reminder raised from a past purchase arrived with the package
+      // and amount blank and the user re-picked both by hand.
+      //
+      // Same mechanism edit mode uses: a synthetic entity populates the UI
+      // straight away and is swapped for the real catalogue row once the
+      // packages load.
+      final packageId = (args['packageId'] as String?)?.trim() ?? '';
+      if (packageId.isNotEmpty) {
+        final planName = (args['planName'] as String?)?.trim() ?? '';
+        _prefillFallbackPackage = TVPackageEntity(
+          id: packageId,
+          name: planName.isNotEmpty ? planName : packageId,
+          variationCode: packageId,
+          amount: (args['amount'] as num?)?.toDouble() ?? 0.0,
+          providerId: '',
+          validity: '',
+        );
+        _selectedPackage = _prefillFallbackPackage;
+      }
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -320,12 +342,12 @@ class _CreateCableTVReminderScreenState
                 _loadedPackages = state.packages;
                 _packagesLoading = false;
                 _packagesError = null;
-                if (_editFallbackPackage != null) {
+                if (_prefillFallbackPackage != null) {
                   final match = state.packages.where(
-                    (p) => p.variationCode == _editFallbackPackage!.variationCode,
+                    (p) => p.variationCode == _prefillFallbackPackage!.variationCode,
                   );
                   _selectedPackage =
-                      match.isNotEmpty ? match.first : _editFallbackPackage;
+                      match.isNotEmpty ? match.first : _prefillFallbackPackage;
                 } else if (_selectedPackage != null) {
                   final match = state.packages.where(
                     (p) => p.variationCode == _selectedPackage!.variationCode,

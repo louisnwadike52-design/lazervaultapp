@@ -277,6 +277,9 @@ class DataHistoryActionsSheet {
                   )
                 : null,
             onTap: () async {
+              // Navigator's context — Get.back() disposes this sheet's own,
+              // and a disposed context cannot host the save modal.
+              final ctx = Get.context;
               Get.back();
               final resolvedName =
                   _resolveNetworkName(networkCode, networkName);
@@ -297,8 +300,9 @@ class DataHistoryActionsSheet {
                 );
                 return;
               }
+              if (ctx == null) return;
               await SaveDataBeneficiarySheet.show(
-                context,
+                ctx,
                 phoneNumber: p.phoneNumber,
                 networkCode: networkCode,
                 networkName: resolvedName,

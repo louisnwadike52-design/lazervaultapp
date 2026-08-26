@@ -89,8 +89,14 @@ class AirtimeHistoryActionsSheet {
             color: const Color(0xFFFB923C),
             label: 'Set Reminder',
             onTap: () async {
+              // Capture the NAVIGATOR's context before Get.back() disposes
+              // this sheet's own. The reminder sheet is a modal route hosted
+              // by whatever context it is handed, and the `context.mounted`
+              // guards here were testing the dead one — so this action
+              // returned before it could show anything at all.
+              final ctx = Get.context;
               Get.back();
-              if (!context.mounted) return;
+              if (ctx == null) return;
               // Go straight to the reminder sheet. This used to force the
               // save-contact sheet open first and abort the whole action if the
               // user dismissed it — so "Set Reminder" showed a nickname form and
@@ -123,9 +129,8 @@ class AirtimeHistoryActionsSheet {
                   debugPrint('[AirtimeActions] reminder beneficiary bind failed: $e');
                 }
               }
-              if (!context.mounted) return;
               await BillReminderCreateSheet.show(
-                context,
+                ctx,
                 subtitle:
                     '${t.networkProvider.displayName} \u00B7 ${t.recipientPhoneNumber}',
                 defaultTitle: 'Buy airtime for ${t.recipientPhoneNumber}',
@@ -184,9 +189,13 @@ class AirtimeHistoryActionsSheet {
                   )
                 : null,
             onTap: () async {
+              // Navigator's context — Get.back() disposes this sheet's own,
+              // and a disposed context cannot host the save modal.
+              final ctx = Get.context;
               Get.back();
+              if (ctx == null) return;
               await SaveAirtimeBeneficiarySheet.show(
-                context,
+                ctx,
                 phoneNumber: t.recipientPhoneNumber,
                 networkCode: t.networkProvider.name,
                 networkName: t.networkProvider.displayName,

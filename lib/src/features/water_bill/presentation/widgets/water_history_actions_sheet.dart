@@ -228,9 +228,13 @@ class WaterHistoryActionsSheet {
                   )
                 : null,
             onTap: () async {
+              // Navigator's context — Get.back() disposes this sheet's own,
+              // and a disposed context cannot host the save modal.
+              final ctx = Get.context;
               Get.back();
+              if (ctx == null) return;
               await SaveWaterBeneficiarySheet.show(
-                context,
+                ctx,
                 accountNumber: accountNumber,
                 providerCode:
                     providerCode.isNotEmpty ? providerCode : 'UNKNOWN',
