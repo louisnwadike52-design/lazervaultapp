@@ -775,6 +775,29 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
   // Actions
   // ---------------------------------------------------------------------------
 
+  /// Whether this failure is "the plan you picked is not sold by the provider
+  /// that would have fulfilled it".
+  ///
+  /// The backend sets this refund source after releasing the hold, because a
+  /// generic failure here has no useful next step: retrying sends the same
+  /// unlistable plan to the same gateway. Providers do not share plan codes, so
+  /// the only correct move is to pick again from the catalogue of whoever will
+  /// actually charge.
+  bool _needsCatalogueReselect(DataPurchaseEntity p) =>
+      p.isFailed && p.refundSource == 'catalogue_reselect_required';
+
+  /// Sends the customer back to choose again. Re-entering plan selection
+  /// re-fetches the list, so what they see is the catalogue of the gateway that
+  /// will charge, and whatever they pick is addressable in its own payload.
+  void _reselectPlan(DataPurchaseEntity p) {
+    Get.offAllNamed(
+      AppRoutes.dataBundlesHome,
+      arguments: {
+        if (p.phoneNumber.isNotEmpty) 'phoneNumber': p.phoneNumber,
+      },
+    );
+  }
+
   Widget _buildActions(
     DataPurchaseEntity purchase,
     String networkName,
@@ -789,6 +812,38 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
         !purchase.isInternational &&
         purchase.phoneNumber.isNotEmpty &&
         !_beneficiarySaved;
+    if (_needsCatalogueReselect(purchase)) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 12.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Your money has been returned. The plan you chose is not sold by '
+              'the provider handling this purchase, so please choose again from '
+              'the current list.',
+              style: GoogleFonts.inter(
+                  color: const Color(0xFFFB923C), fontSize: 12.5.sp, height: 1.35),
+            ),
+            SizedBox(height: 10.h),
+            ElevatedButton(
+              onPressed: () => _reselectPlan(purchase),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4E03D0),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+              ),
+              child: Text('Choose another plan',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      );
+    }
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 12.h),
       child: Row(

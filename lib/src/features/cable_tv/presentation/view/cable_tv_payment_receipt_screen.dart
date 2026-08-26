@@ -697,11 +697,19 @@ class _CableTVPaymentReceiptScreenState
   /// they do not retype it. Re-entering the flow re-fetches the package list, so
   /// what they see next is the catalogue of the gateway that will charge.
   void _reselectPackage(CableTVPaymentEntity payment) {
+    // The smart-card screen builds its provider from `providerCode`, and with
+    // an empty one it can only bounce the customer back with a snackbar. Send
+    // them somewhere that works instead of somewhere that fails politely.
+    final code = payment.providerId.trim();
+    if (code.isEmpty) {
+      Get.offAllNamed(AppRoutes.cableTVHome);
+      return;
+    }
     Get.offAllNamed(
       AppRoutes.cableTVSmartCardInput,
       arguments: {
         'smartCardNumber': payment.customerNumber,
-        'providerCode': payment.providerId,
+        'providerCode': code,
       },
     );
   }
