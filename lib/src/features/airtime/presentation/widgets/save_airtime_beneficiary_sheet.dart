@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 
@@ -132,6 +133,18 @@ class _SaveAirtimeBeneficiarySheetState
       }
       if (!mounted) return;
       Navigator.of(context).pop(true);
+      // Confirm the write. The sheet used to just vanish, which reads exactly
+      // like a dismissal — the user had no way to tell a save from a cancel.
+      Get.snackbar(
+        widget.isEditing ? 'Contact updated' : 'Contact saved',
+        nickname.isEmpty
+            ? widget.phoneNumber
+            : '$nickname \u00B7 ${widget.phoneNumber}',
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
     } catch (e) {
       if (mounted) {
         setState(() {

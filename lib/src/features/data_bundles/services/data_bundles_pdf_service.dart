@@ -1,11 +1,11 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/receipt_download.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import '../domain/entities/data_purchase_entity.dart';
 import 'dart:ui' show Rect;
 
@@ -29,19 +29,19 @@ class DataBundlesPdfService {
   static Future<void> _loadFonts() async {
     if (_regularFont != null && _boldFont != null) return;
 
+    // Load Inter from the BUNDLE, not over HTTP.
+    //
+    // This used to fetch the font from a CDN on every cold receipt. Offline —
+    // or on a slow link — the fetch failed and the PDF silently fell back to
+    // the built-in Helvetica, which latin1-encodes text and THROWS on any code
+    // unit above 255. The fonts already ship in assets/fonts, so the network
+    // was never needed and the fallback is now genuinely last-resort.
     try {
-      final regularResponse = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.ttf'));
-      final boldResponse = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYAZ9hiA.ttf'));
-
-      if (regularResponse.statusCode == 200 &&
-          boldResponse.statusCode == 200) {
-        _regularFont =
-            pw.Font.ttf(regularResponse.bodyBytes.buffer.asByteData());
-        _boldFont = pw.Font.ttf(boldResponse.bodyBytes.buffer.asByteData());
-      }
-    } catch (e) {
+      final regular = await rootBundle.load('assets/fonts/Inter-Regular.ttf');
+      final bold = await rootBundle.load('assets/fonts/Inter-Bold.ttf');
+      _regularFont = pw.Font.ttf(regular);
+      _boldFont = pw.Font.ttf(bold);
+    } catch (_) {
       _regularFont = null;
       _boldFont = null;
     }
@@ -71,7 +71,11 @@ class DataBundlesPdfService {
     final pdf = pw.Document();
     final logo = await _loadLogo();
     final generatedDate = _displayDateFormat.format(DateTime.now());
-    final currencySymbol = 'NGN ';
+    // Follow the purchase's own currency. This was hardcoded to NGN, so an
+    // international bundle (Ghana, Kenya, …) printed a naira amount and a
+    // "Nigerian Naira" line on a receipt for money charged in another currency.
+    final currencyCode = _ascii(purchase.resolvedCurrency).toUpperCase();
+    final currencySymbol = '${currencyCode.isEmpty ? 'NGN' : currencyCode} ';
     final receiptNumber =
         'DATA-${purchase.reference.length > 12 ? purchase.reference.substring(0, 12) : purchase.reference}';
 
@@ -281,7 +285,7 @@ class DataBundlesPdfService {
               ),
               _buildDetailRow(
                 'Currency',
-                'Nigerian Naira',
+                _currencyLabel(currencySymbol.trim()),
               ),
               _buildDetailRow(
                 'Reference',
@@ -337,8 +341,43 @@ class DataBundlesPdfService {
     );
   }
 
+  /// Strips anything outside printable ASCII.
+  ///
+  /// The embedded font is fetched over HTTP and silently falls back to the
+  /// base-14 Helvetica when that fails; that fallback latin1-encodes every
+  /// string and THROWS on any code unit above 255. Backend-supplied values
+  /// reach this PDF verbatim — a plan name containing a naira sign, or a
+  /// contact name with an accent, would crash receipt generation while
+  /// offline. Same guard the international airtime receipt already uses.
+  static String _ascii(String input) =>
+      input.replaceAll(RegExp(r'[^\x20-\x7E]'), '').trim();
+
+  /// Human label for a currency code, without pretending every receipt is NGN.
+  static String _currencyLabel(String code) {
+    switch (code.toUpperCase()) {
+      case 'NGN':
+        return 'Nigerian Naira';
+      case 'USD':
+        return 'US Dollar';
+      case 'GBP':
+        return 'British Pound';
+      case 'EUR':
+        return 'Euro';
+      case 'GHS':
+        return 'Ghanaian Cedi';
+      case 'KES':
+        return 'Kenyan Shilling';
+      case 'ZAR':
+        return 'South African Rand';
+      default:
+        return code.isEmpty ? 'Nigerian Naira' : code;
+    }
+  }
+
   static pw.Widget _buildDetailRow(String label, String value,
       {bool isBold = false}) {
+    label = _ascii(label);
+    value = _ascii(value);
     return pw.Container(
       padding: const pw.EdgeInsets.symmetric(vertical: 6),
       child: pw.Row(
@@ -447,29 +486,12 @@ class DataBundlesPdfService {
         planName: planName,
       );
 
-      Directory? directory;
-      if (Platform.isAndroid) {
-        // App-specific external files dir — always writable, no permission
-        // needed. A direct write to /storage/emulated/0/Download fails under
-        // Android scoped storage (API 30+), so never hardcode that path.
-        directory = (await getExternalStorageDirectory()) ??
-            await getApplicationDocumentsDirectory();
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-      } else {
-        directory = await getDownloadsDirectory();
-      }
-
-      if (directory == null) {
-        throw Exception('Could not access downloads directory');
-      }
-
+      // Save, then OPEN. On Android the saved location is not browsable, so a
+      // "saved to Downloads" message sent users looking for a file they could
+      // not find; opening it hands them the receipt directly.
       final fileName =
           'data_bundle_receipt_${purchase.reference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}.pdf';
-      final savedFile = File('${directory.path}/$fileName');
-      await file.copy(savedFile.path);
-
-      return savedFile.path;
+      return ReceiptDownload.saveAndOpen(source: file, fileName: fileName);
     } catch (e) {
       throw Exception('Failed to download receipt: $e');
     }

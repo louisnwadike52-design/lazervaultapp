@@ -404,9 +404,16 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
         required int executionMinute,
       }) async {
         if (!mounted) return;
+        // A recurring schedule binds to a saved beneficiary, so enabling
+        // auto-renew does cause a contact to be saved. Ask for the name FIRST
+        // rather than flipping the toggle on behind the user: it used to switch
+        // "Save contact" on with no nickname, so the contact was created
+        // unnamed and the toggle claimed a save the user never described.
+        final ensured = await _ensureNicknameForAutoRenew();
+        if (!mounted) return;
         setState(() {
           _autoEnabled = true;
-          _saveContact = true; // recurring schedule needs a saved beneficiary
+          _saveContact = ensured;
           // RolloverPreference uses dayOfWeek 0-6 (Sun..Sat); the sheet emits
           // 1-7 (Mon..Sun) → map Sun(7)→0, Mon..Sat(1..6) stay.
           _rolloverPref = RolloverPreference(
@@ -775,6 +782,30 @@ class _DataQuickBuyState extends State<DataQuickBuy> with TransactionPinMixin {
       value: _saveContact,
       onChanged: _onToggleSaveContact,
     );
+  }
+
+  /// Ensures a nickname exists before auto-renew causes a contact to be saved.
+  ///
+  /// Returns whether the "Save contact" toggle should read as ON. An
+  /// already-saved recipient needs nothing (it keeps its existing name); a new
+  /// one is named by the user. If they skip naming it, the schedule still needs
+  /// the beneficiary — the purchase payload creates it regardless — but the
+  /// toggle stays OFF rather than advertising a contact the user never named.
+  Future<bool> _ensureNicknameForAutoRenew() async {
+    if (_existingBeneficiary != null) return false;
+    if (_saveContact && (_saveNickname?.isNotEmpty ?? false)) return true;
+    final nickname = await promptBeneficiaryNickname(
+      context,
+      accent: _accent,
+      title: 'Name this contact',
+      prompt:
+          'Auto-renew saves this number so the schedule can find it. Give it a nickname.',
+      hint: 'e.g. Mum, Brother, Office',
+      initial: _saveNickname ?? '',
+    );
+    if (nickname == null || nickname.trim().isEmpty) return false;
+    _saveNickname = nickname.trim();
+    return true;
   }
 
   Future<void> _onToggleSaveContact(bool value) async {

@@ -1,8 +1,8 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/receipt_download.dart';
 
 import 'package:flutter/material.dart' show Rect;
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -72,15 +72,19 @@ class IntlAirtimePdfService {
 
   static Future<void> _loadFonts() async {
     if (_regularFont != null && _boldFont != null) return;
+
+    // Load Inter from the BUNDLE, not over HTTP.
+    //
+    // This used to fetch the font from a CDN on every cold receipt. Offline —
+    // or on a slow link — the fetch failed and the PDF silently fell back to
+    // the built-in Helvetica, which latin1-encodes text and THROWS on any code
+    // unit above 255. The fonts already ship in assets/fonts, so the network
+    // was never needed and the fallback is now genuinely last-resort.
     try {
-      final regular = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.ttf'));
-      final bold = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYAZ9hiA.ttf'));
-      if (regular.statusCode == 200 && bold.statusCode == 200) {
-        _regularFont = pw.Font.ttf(regular.bodyBytes.buffer.asByteData());
-        _boldFont = pw.Font.ttf(bold.bodyBytes.buffer.asByteData());
-      }
+      final regular = await rootBundle.load('assets/fonts/Inter-Regular.ttf');
+      final bold = await rootBundle.load('assets/fonts/Inter-Bold.ttf');
+      _regularFont = pw.Font.ttf(regular);
+      _boldFont = pw.Font.ttf(bold);
     } catch (_) {
       _regularFont = null;
       _boldFont = null;
@@ -274,25 +278,13 @@ class IntlAirtimePdfService {
   /// Saves the PDF to a user-accessible directory and returns its path.
   static Future<String> downloadReceipt(IntlAirtimeReceiptData data) async {
     final generated = await generateReceipt(data);
-    Directory? directory;
-    if (Platform.isAndroid) {
-      // App-specific external dir: always writable, no runtime permission.
-      // Writing straight to /storage/emulated/0/Download fails on API 30+.
-      directory = (await getExternalStorageDirectory()) ??
-          await getApplicationDocumentsDirectory();
-    } else if (Platform.isIOS) {
-      directory = await getApplicationDocumentsDirectory();
-    } else {
-      directory = await getDownloadsDirectory();
-    }
-    if (directory == null) {
-      throw Exception('Could not access a downloads directory');
-    }
+    // Save, then OPEN — the Android save location is not browsable.
     final safeRef =
         data.displayReference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
-    final saved = File('${directory.path}/intl_airtime_receipt_$safeRef.pdf');
-    await generated.copy(saved.path);
-    return saved.path;
+    return ReceiptDownload.saveAndOpen(
+      source: generated,
+      fileName: 'intl_airtime_receipt_$safeRef.pdf',
+    );
   }
 
   /// Shares the PDF through the system sheet. The accompanying text is ASCII

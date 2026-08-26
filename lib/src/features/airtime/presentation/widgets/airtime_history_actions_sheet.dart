@@ -33,18 +33,25 @@ class AirtimeHistoryActionsSheet {
     if (canSaveContact && isCompleted) {
       try {
         final repo = GetIt.I<AirtimeRepository>();
-        final beneficiaries = await repo.getAirtimeBeneficiaries(
-          networkCode: t.networkProvider.name,
-        );
-        final match = beneficiaries.where(
-          (b) => b.phoneNumber == t.recipientPhoneNumber,
-        );
-        if (match.isNotEmpty) {
-          existingId = match.first.id;
-          existingNickname = match.first.nickname;
+        // Fetch UNFILTERED and match locally. The server stores network codes
+        // upper-cased while this passed the Dart enum name ("mtn"), and the
+        // filter was a case-sensitive equality — so every saved contact came
+        // back empty and the sheet offered "Save Contact" for numbers already
+        // saved. Matching on the phone number here is also simply the right
+        // test: it is the number that identifies the contact.
+        final beneficiaries = await repo.getAirtimeBeneficiaries();
+        final wanted = _digitsOnly(t.recipientPhoneNumber);
+        for (final b in beneficiaries) {
+          if (_digitsOnly(b.phoneNumber) == wanted) {
+            existingId = b.id;
+            existingNickname = b.nickname;
+            break;
+          }
         }
-      } catch (_) {
-        // Proceed without saved-contact detection
+      } catch (e) {
+        // Detection failed — the sheet still works, but say so rather than
+        // silently presenting an already-saved contact as unsaved.
+        debugPrint('[AirtimeActions] saved-contact lookup failed: $e');
       }
     }
 
@@ -83,21 +90,13 @@ class AirtimeHistoryActionsSheet {
             label: 'Set Reminder',
             onTap: () async {
               Get.back();
-              final savedOk = await _ensureBeneficiarySaved(
-                context,
-                isSaved: isSaved,
-                canSave: canSaveContact,
-                phoneNumber: t.recipientPhoneNumber,
-                networkCode: t.networkProvider.name,
-                networkName: t.networkProvider.displayName,
-                countryCode: t.isInternational
-                    ? (t.metadata?['country_code'] ??
-                            t.metadata?['countryCode'] ??
-                            'NG')
-                        .toString()
-                    : 'NG',
-              );
-              if (savedOk == false || !context.mounted) return;
+              if (!context.mounted) return;
+              // Go straight to the reminder sheet. This used to force the
+              // save-contact sheet open first and abort the whole action if the
+              // user dismissed it — so "Set Reminder" showed a nickname form and
+              // then silently did nothing. A reminder does NOT need a saved
+              // contact: the backend stores beneficiary_id as an optional
+              // varchar defaulting to '', and only the title is required.
               final repo = GetIt.I<AirtimeRepository>();
               // Look up the saved beneficiary so the reminder binds to it
               // on the backend (for recurring fire-and-buy later).
@@ -193,28 +192,12 @@ class AirtimeHistoryActionsSheet {
     );
   }
 
-  /// If the contact is not yet saved, shows the save-beneficiary sheet inline.
-  /// Returns `true` when the contact is already saved or was just saved
-  /// successfully, `false` if the user dismissed the save sheet.
-  static Future<bool> _ensureBeneficiarySaved(
-    BuildContext context, {
-    required bool isSaved,
-    required bool canSave,
-    required String phoneNumber,
-    required String networkCode,
-    required String networkName,
-    required String countryCode,
-  }) async {
-    if (isSaved || !canSave) return true;
-    if (!context.mounted) return false;
-    final saved = await SaveAirtimeBeneficiarySheet.show(
-      context,
-      phoneNumber: phoneNumber,
-      networkCode: networkCode,
-      networkName: networkName,
-      countryCode: countryCode,
-    );
-    return saved == true;
+  /// Compares phone numbers by their digits alone, so a stored "07067334850"
+  /// still matches a "+2347067334850" (or a spaced/hyphenated) rendering of the
+  /// same line. Only the trailing 10 digits are significant for NG numbers.
+  static String _digitsOnly(String raw) {
+    final digits = raw.replaceAll(RegExp(r'[^0-9]'), '');
+    return digits.length > 10 ? digits.substring(digits.length - 10) : digits;
   }
 
   static void _navigateReceipt(AirtimeTransaction t) {

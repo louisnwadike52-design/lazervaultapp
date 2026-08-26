@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/utils/receipt_download.dart';
 
 import '../../../../../core/types/app_routes.dart';
 import '../../../widgets/bill_receipt_qr_block.dart';
 import '../../domain/entities/data_purchase_entity.dart';
 import '../../data/datasources/intl_data_remote_datasource.dart';
+import '../../services/intl_data_pdf_service.dart';
 
 /// International Data receipt. Mirrors the intl_airtime receipt screen
 /// shape: status icon, dual-amount card (you paid vs recipient got +
@@ -79,13 +81,15 @@ class IntlDataReceiptScreen extends StatelessWidget {
           : tx.dataPlan;
       isSuccess = tx.isCompleted;
 
-      // Some builds expose metadata through a dynamic `metadata`
-      // field on DataPurchaseEntity; reflectively read to avoid
-      // hard-coupling before the backend ships intl metadata.
+      // Read the PARSED metadata map.
+      //
+      // This previously reached for `tx.metadata` dynamically and tested
+      // `is Map` — but that field is a raw JSON STRING, so the test was always
+      // false and this entire FX / operator / country hydration never ran. The
+      // entity already exposes the decoded map.
       try {
-        final dyn = (tx as dynamic).metadata;
-        if (dyn is Map) {
-          final meta = dyn;
+        final meta = tx.metadataMap;
+        if (meta.isNotEmpty) {
           final destAmt = meta['delivered_amount'] ?? meta['dest_amount'];
           if (destAmt is num && deliveredAmount == 0) {
             deliveredAmount = destAmt.toDouble();
@@ -206,7 +210,24 @@ class IntlDataReceiptScreen extends StatelessWidget {
                 ),
               ),
             ),
-            _buildActions(isSuccess),
+            _buildActions(
+              isSuccess,
+              IntlDataReceiptData(
+                reference: reference,
+                paymentId: paymentId,
+                amountPaid: amountPaid,
+                senderCurrency: senderCurrency,
+                deliveredAmount: deliveredAmount,
+                deliveredCurrency: deliveredCurrency,
+                fxRateUsed: fxRateUsed,
+                phoneNumber: phoneNumber,
+                operatorName: operatorName,
+                countryName: countryName,
+                bundleDescription: bundleDescription,
+                isSuccess: isSuccess,
+                timestamp: DateTime.now(),
+              ),
+            ),
           ],
         ),
       ),
@@ -441,7 +462,7 @@ class IntlDataReceiptScreen extends StatelessWidget {
   Widget _divider() =>
       const Divider(color: Color(0xFF2D2D2D), height: 1);
 
-  Widget _buildActions(bool isSuccess) {
+  Widget _buildActions(bool isSuccess, IntlDataReceiptData receipt) {
     return Container(
       padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 32.h),
       child: Column(
@@ -469,6 +490,11 @@ class IntlDataReceiptScreen extends StatelessWidget {
           ),
           if (isSuccess) ...[
             SizedBox(height: 12.h),
+            // Download + Share. This receipt previously offered neither, so an
+            // international data purchase dead-ended with no way to keep or
+            // send proof of it — the one thing a receipt exists for.
+            _IntlDataReceiptActions(receipt: receipt),
+            SizedBox(height: 12.h),
             SizedBox(
               width: double.infinity,
               height: 54.h,
@@ -494,6 +520,146 @@ class IntlDataReceiptScreen extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// Download + Share for an international data receipt.
+///
+/// Kept as its own stateful widget so the receipt screen stays stateless: the
+/// only state here is which button is busy, and it belongs with the buttons.
+class _IntlDataReceiptActions extends StatefulWidget {
+  const _IntlDataReceiptActions({required this.receipt});
+
+  final IntlDataReceiptData receipt;
+
+  @override
+  State<_IntlDataReceiptActions> createState() =>
+      _IntlDataReceiptActionsState();
+}
+
+class _IntlDataReceiptActionsState extends State<_IntlDataReceiptActions> {
+  bool _downloading = false;
+  bool _sharing = false;
+
+  Future<void> _download() async {
+    if (_downloading) return;
+    setState(() => _downloading = true);
+    try {
+      await IntlDataPdfService.downloadReceipt(widget.receipt);
+      if (!mounted) return;
+      Get.snackbar(
+        ReceiptDownload.successTitle,
+        ReceiptDownload.successBody,
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      // Say that it failed. A silent failure here reads as "nothing happened",
+      // and the user taps again expecting a different outcome.
+      Get.snackbar(
+        'Could not save the receipt',
+        'Please try again.',
+        backgroundColor: const Color(0xFFB91C1C),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } finally {
+      if (mounted) setState(() => _downloading = false);
+    }
+  }
+
+  Future<void> _share() async {
+    if (_sharing) return;
+    setState(() => _sharing = true);
+    try {
+      await IntlDataPdfService.shareReceipt(widget.receipt);
+    } catch (e) {
+      if (!mounted) return;
+      Get.snackbar(
+        'Could not share the receipt',
+        'Please try again.',
+        backgroundColor: const Color(0xFFB91C1C),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: SizedBox(
+            height: 54.h,
+            child: OutlinedButton.icon(
+              onPressed: _downloading ? null : _download,
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF2D2D2D)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+              ),
+              icon: _downloading
+                  ? SizedBox(
+                      width: 16.w,
+                      height: 16.w,
+                      child: const CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : Icon(Icons.download_outlined,
+                      color: Colors.white, size: 18.sp),
+              label: Text(
+                'Download',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: SizedBox(
+            height: 54.h,
+            child: OutlinedButton.icon(
+              onPressed: _sharing ? null : _share,
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF2D2D2D)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+              ),
+              icon: _sharing
+                  ? SizedBox(
+                      width: 16.w,
+                      height: 16.w,
+                      child: const CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : Icon(Icons.ios_share, color: Colors.white, size: 18.sp),
+              label: Text(
+                'Share',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

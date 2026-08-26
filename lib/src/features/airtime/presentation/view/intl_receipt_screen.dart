@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/receipt_download.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -453,11 +454,13 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
     if (data == null || _isDownloading) return;
     setState(() => _isDownloading = true);
     try {
-      final path = await IntlAirtimePdfService.downloadReceipt(data);
+      await IntlAirtimePdfService.downloadReceipt(data);
       if (!mounted) return;
+      // The file name alone told users nothing they could act on, and on
+      // Android the location is not browsable — so say what actually happens.
       Get.snackbar(
-        'Receipt saved',
-        'Saved to ${path.split('/').last}',
+        ReceiptDownload.successTitle,
+        ReceiptDownload.successBody,
         backgroundColor: const Color(0xFF10B981),
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,

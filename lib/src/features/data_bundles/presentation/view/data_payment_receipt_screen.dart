@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/receipt_download.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -281,8 +282,17 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
-    final purchase = _purchase ?? args['purchase'] as DataPurchaseEntity;
+    // Null-safe: these were hard casts, so any entry without a 'purchase'
+    // object threw inside build() and showed a red screen. That is reachable in
+    // production — the chat "Open full receipt" deeplink routes data receipts
+    // here with {payment_id, bill_type} and no purchase object at all.
+    final args = Get.arguments is Map<String, dynamic>
+        ? Get.arguments as Map<String, dynamic>
+        : const <String, dynamic>{};
+    final purchase = _purchase ?? _argsPurchase();
+    if (purchase == null) {
+      return _buildUnavailableReceipt(context);
+    }
     // Prefer the explicit arg (fresh purchase flow sends it), then the
     // metadata stored server-side at purchase time (migration 2026-04:
     // backend now writes metadata.plan_name), then the variation code
@@ -353,6 +363,74 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
     );
   }
 
+  /// True when the receipt was opened from a history list rather than by
+  /// completing a purchase.
+  bool get _openedFromHistory {
+    final args = Get.arguments;
+    return args is Map && args['fromHistory'] == true;
+  }
+
+  /// Shown when we were handed no purchase to render.
+  ///
+  /// This replaces a hard cast that threw inside build(). A receipt we cannot
+  /// build is a missing record, not a crash — and it is emphatically not a
+  /// failed payment, which is how a null object used to surface.
+  Widget _buildUnavailableReceipt(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0B1020),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
+          onPressed: () => _openedFromHistory
+              ? Get.back()
+              : Get.offAllNamed(AppRoutes.dataBundlesHome),
+        ),
+      ),
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 32.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.receipt_long_outlined,
+                  color: Colors.white.withValues(alpha: 0.4), size: 48.sp),
+              SizedBox(height: 16.h),
+              Text(
+                'Receipt unavailable',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'We could not load the details for this purchase. Open it from '
+                'your data history to see the full receipt.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.65),
+                  fontSize: 13.sp,
+                  height: 1.5,
+                ),
+              ),
+              SizedBox(height: 24.h),
+              TextButton(
+                onPressed: () => Get.offAllNamed(AppRoutes.dataBundlesHome),
+                child: Text(
+                  'Go to Data',
+                  style: TextStyle(color: const Color(0xFF3B82F6), fontSize: 14.sp),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildTopBar() {
     return Padding(
       padding: EdgeInsets.fromLTRB(12.w, 2.h, 12.w, 0),
@@ -364,7 +442,18 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
             // the bills hub — users deep in the data flow expect to return
             // to the scope they started in, and the hub is one more tap
             // away from there anyway.
-            onPressed: () => Get.offAllNamed(AppRoutes.dataBundlesHome),
+            // Opened FROM history, back means back — returning to the list the
+            // user came from. Only a fresh purchase resets the stack to the
+            // landing, because there is no meaningful history behind it.
+            // (Both intl receipts already honour this flag; this one ignored
+            // it and wiped the stack either way.)
+            onPressed: () {
+              if (_openedFromHistory) {
+                Get.back();
+              } else {
+                Get.offAllNamed(AppRoutes.dataBundlesHome);
+              }
+            },
             icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -850,12 +939,44 @@ Date: ${DateFormat('MMM dd, yyyy · hh:mm a').format(_parsedTimestamp(purchase))
 Status: ${purchase.displayStatus}
 ---
 Powered by Lazervault''';
-      SharePlus.instance.share(
-        ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: text, subject: 'Data Bundle Purchase Receipt'),
-      );
+      // PDF generation failed, so share the details as text instead — but say
+      // so. Silently downgrading left the user believing they had shared a
+      // receipt document when they had shared a paragraph.
+      //
+      // AWAITED: previously fire-and-forget, so `finally` cleared the busy flag
+      // before the sheet resolved and a second failure went unhandled.
+      try {
+        await SharePlus.instance.share(
+          ShareParams(
+            // iOS: a non-zero popover anchor is required — CGRectZero throws
+            // PlatformException and the share silently fails on iPhone/iPad.
+            sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+            text: text,
+            subject: 'Data Bundle Purchase Receipt',
+          ),
+        );
+        if (mounted) {
+          Get.snackbar(
+            'Shared as text',
+            "We couldn't build the PDF, so the details were shared instead.",
+            backgroundColor: const Color(0xFFF59E0B),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM,
+            duration: const Duration(seconds: 3),
+          );
+        }
+      } catch (_) {
+        if (mounted) {
+          Get.snackbar(
+            'Could not share the receipt',
+            'Please try again.',
+            backgroundColor: const Color(0xFFB91C1C),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM,
+            duration: const Duration(seconds: 3),
+          );
+        }
+      }
     } finally {
       if (mounted) setState(() => _isSharing = false);
     }
@@ -869,14 +990,14 @@ Powered by Lazervault''';
     if (_isDownloading) return;
     setState(() => _isDownloading = true);
     try {
-      final path = await DataBundlesPdfService.downloadReceipt(
+      await DataBundlesPdfService.downloadReceipt(
         purchase: purchase,
         network: networkName,
         planName: planName,
       );
       Get.snackbar(
-        'Download Complete',
-        'Receipt saved: ${path.split('/').last}',
+        ReceiptDownload.successTitle,
+        ReceiptDownload.successBody,
         backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.9),
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,

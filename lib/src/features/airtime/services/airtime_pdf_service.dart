@@ -1,11 +1,11 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/receipt_download.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import '../domain/entities/airtime_transaction.dart';
 import '../domain/entities/network_provider.dart';
 import 'dart:ui' show Rect;
@@ -52,17 +52,19 @@ class AirtimePdfService {
   static Future<void> _loadFonts() async {
     if (_regularFont != null && _boldFont != null) return;
 
+    // Load Inter from the BUNDLE, not over HTTP.
+    //
+    // This used to fetch the font from a CDN on every cold receipt. Offline —
+    // or on a slow link — the fetch failed and the PDF silently fell back to
+    // the built-in Helvetica, which latin1-encodes text and THROWS on any code
+    // unit above 255. The fonts already ship in assets/fonts, so the network
+    // was never needed and the fallback is now genuinely last-resort.
     try {
-      final regularResponse = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.ttf'));
-      final boldResponse = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYAZ9hiA.ttf'));
-
-      if (regularResponse.statusCode == 200 && boldResponse.statusCode == 200) {
-        _regularFont = pw.Font.ttf(regularResponse.bodyBytes.buffer.asByteData());
-        _boldFont = pw.Font.ttf(boldResponse.bodyBytes.buffer.asByteData());
-      }
-    } catch (e) {
+      final regular = await rootBundle.load('assets/fonts/Inter-Regular.ttf');
+      final bold = await rootBundle.load('assets/fonts/Inter-Bold.ttf');
+      _regularFont = pw.Font.ttf(regular);
+      _boldFont = pw.Font.ttf(bold);
+    } catch (_) {
       _regularFont = null;
       _boldFont = null;
     }
@@ -334,29 +336,11 @@ class AirtimePdfService {
     try {
       final file = await generateReceipt(transaction: transaction);
 
-      Directory? directory;
-      if (Platform.isAndroid) {
-        // App-specific external files dir — always writable, no permission
-        // needed. A direct write to /storage/emulated/0/Download fails under
-        // Android scoped storage (API 30+), so never hardcode that path.
-        directory = (await getExternalStorageDirectory()) ??
-            await getApplicationDocumentsDirectory();
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-      } else {
-        directory = await getDownloadsDirectory();
-      }
-
-      if (directory == null) {
-        throw Exception('Could not access downloads directory');
-      }
-
+      // Save, then OPEN — the Android save location is not browsable, so
+      // handing the user the receipt beats naming a folder they cannot reach.
       final fileName =
           'airtime_receipt_${transaction.transactionReference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}.pdf';
-      final savedFile = File('${directory.path}/$fileName');
-      await file.copy(savedFile.path);
-
-      return savedFile.path;
+      return ReceiptDownload.saveAndOpen(source: file, fileName: fileName);
     } catch (e) {
       throw Exception('Failed to download receipt: $e');
     }
