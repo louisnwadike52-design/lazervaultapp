@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -353,6 +354,44 @@ class _InternetPaymentReceiptScreenState
         .join(' ');
   }
 
+  /// Whether the backend stopped this order because the package the customer
+  /// chose is not listed by the gateway that would have fulfilled it.
+  ///
+  /// The backend stamps this on the payment's metadata after releasing the
+  /// hold. Internet packages are listed from one gateway's catalogue, and
+  /// gateways do not share item codes — so a generic "failed" here is
+  /// unactionable: retrying sends the same unlistable code to the same place.
+  bool _needsCatalogueReselect(InternetPaymentEntity payment) {
+    if (!payment.isFailed) return false;
+    final meta = payment.metadata;
+    if (meta.isEmpty) return false;
+    try {
+      final decoded = jsonDecode(meta);
+      if (decoded is Map) {
+        return decoded['catalogue_reselect']?.toString() == 'true';
+      }
+    } catch (_) {
+      // Malformed metadata is not a reason to mis-route the customer.
+    }
+    return false;
+  }
+
+  /// Sends the customer back to choose again, with the account number
+  /// prefilled so they do not retype it. Re-entering the flow re-fetches the
+  /// package list, so what they see next is the catalogue of the gateway that
+  /// will actually charge, and whatever they pick is addressable in its own
+  /// payload by construction.
+  void _reselectPackage(InternetPaymentEntity payment) {
+    Get.offAllNamed(
+      AppRoutes.internetBillHome,
+      arguments: <String, dynamic>{
+        if (payment.customerNumber.isNotEmpty)
+          'accountNumber': payment.customerNumber,
+        if (payment.providerId.isNotEmpty) 'providerCode': payment.providerId,
+      },
+    );
+  }
+
   Color _statusColor(String status) {
     switch (status.toLowerCase()) {
       case 'completed':
@@ -468,6 +507,73 @@ class _InternetPaymentReceiptScreenState
                       ),
                     ),
                     SizedBox(height: 20.h),
+
+                    // The chosen package is not sold by the gateway that would
+                    // have charged. The money is already back; a plain retry
+                    // would send the same unlistable code to the same place, so
+                    // offer the only step that can work — pick again from the
+                    // list the fulfilling gateway actually serves.
+                    if (_needsCatalogueReselect(payment)) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(14.w),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFB923C).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: const Color(0xFFFB923C).withValues(alpha: 0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Choose a plan again',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFFB923C),
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 6.h),
+                            Text(
+                              'Your money has been returned. The plan you chose is not '
+                              'sold by the provider handling this purchase, so please '
+                              'choose again from the current list.',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFFB923C),
+                                fontSize: 12.5.sp,
+                                height: 1.35,
+                              ),
+                            ),
+                            SizedBox(height: 10.h),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () => _reselectPackage(payment),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF4E03D0),
+                                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12.r),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Choose another plan',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 16.h),
+                    ],
 
                     // Pending payment banner
                     if (payment.isPending) ...[
