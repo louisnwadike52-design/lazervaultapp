@@ -109,12 +109,36 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
             message: failure.message,
             isUnavailable: _isUnavailable(failure),
           )),
-      (validationResult) => emit(MeterValidated(
-        validationResult: validationResult,
-        providerCode: providerCode,
-        meterNumber: meterNumber,
-        meterType: meterType,
-      )),
+      (validationResult) {
+        // A response is not a confirmation. The backend answers a REJECTED
+        // meter with a normal success envelope carrying is_valid=false, and
+        // this emitted MeterValidated regardless — so every disco a user
+        // picked came back looking confirmed. The smart path already made
+        // this distinction; the manual path did not.
+        //
+        // Require a customer NAME as well: that is what the payer checks
+        // before releasing money, and an electricity vend cannot be recalled
+        // once the token is issued.
+        final confirmed = validationResult.isValid &&
+            validationResult.customerName.trim().isNotEmpty;
+        if (!confirmed) {
+          emit(MeterValidationFailed(
+            message: 'We could not confirm this meter with the provider. '
+                'Please check the meter number and provider.',
+            // The provider ANSWERED and did not recognise it. That is a
+            // verdict, not an outage, so the screen must not offer to
+            // continue on the customer's own confirmation.
+            isUnavailable: false,
+          ));
+          return;
+        }
+        emit(MeterValidated(
+          validationResult: validationResult,
+          providerCode: providerCode,
+          meterNumber: meterNumber,
+          meterType: meterType,
+        ));
+      },
     );
   }
 

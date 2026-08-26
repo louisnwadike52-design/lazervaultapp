@@ -131,8 +131,13 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
       if (!mounted) return;
       if (s is SmartMeterValidated) {
         setState(() {
-          _meter = s.result.isValid ? s.result : null;
-          _validateError = s.result.isValid ? null : s.result.message;
+          // Require a customer NAME, not just is_valid. The name is what the
+          // payer checks before releasing money, and a nameless "valid" gives
+          // them nothing to check against.
+          final confirmed =
+              s.result.isValid && s.result.customerName.trim().isNotEmpty;
+          _meter = confirmed ? s.result : null;
+          _validateError = confirmed ? null : s.result.message;
           _validating = false;
         });
         // Provider now resolved — re-run the dedup probe with the disco scoped.
@@ -154,13 +159,20 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
       } else if (s is MeterValidated) {
         // Manual (provider-scoped) validation resolved the customer — promote it
         // into the same `_meter` shape the rest of the flow uses.
+        //
+        // isValid is taken from the RESULT, not hardcoded. It used to be
+        // written as `true` here, which threw away the backend's answer: a
+        // rejected meter arrives as a normal response with is_valid=false, so
+        // whatever disco the user picked was promoted to a confirmed card.
+        // The cubit now only emits this state for a confirmed, NAMED meter,
+        // and this reflects it rather than asserting it.
         final v = s.validationResult;
         final disco = _manualDisco;
         setState(() {
           _validating = false;
           _manualUnverified = false;
           _meter = SmartMeterValidationResult(
-            isValid: true,
+            isValid: v.isValid,
             customerName: v.customerName,
             customerAddress: v.customerAddress,
             meterType: (v.meterType == MeterType.postpaid)
@@ -808,8 +820,13 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
             style: GoogleFonts.inter(color: _muted, fontSize: 12.sp)),
       ]);
     }
+    // Defence in depth: only a confirmed, NAMED meter renders as verified.
+    // The state machine should never set `_meter` otherwise, but this is the
+    // last thing standing between a rejected meter and a green tick.
     final m = _meter;
-    if (m != null) return _verifiedCard(m);
+    if (m != null && m.isValid && m.customerName.trim().isNotEmpty) {
+      return _verifiedCard(m);
+    }
     if (_validateError != null || _manualMode) return _manualFallback();
     return const SizedBox.shrink();
   }
