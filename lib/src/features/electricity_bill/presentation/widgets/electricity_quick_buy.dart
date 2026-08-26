@@ -344,8 +344,19 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
 
   // A payable target exists when the meter was verified (auto OR manual), or the
   // user picked a disco manually and chose to proceed without name verification.
+  /// A meter is only "confirmed" when the provider returned a NAME.
+  ///
+  /// Checked here as well as at render time so it gates the PAY BUTTON, not
+  /// just the tick. A nameless result reached the verified card in production
+  /// and enabled payment with nothing for the customer to check against, so the
+  /// name requirement belongs on the path to money, not only on the decoration.
+  bool get _meterConfirmed {
+    final m = _meter;
+    return m != null && m.isValid && m.customerName.trim().isNotEmpty;
+  }
+
   bool get _hasTarget =>
-      _meter != null || (_manualMode && _manualUnverified);
+      _meterConfirmed || (_manualMode && _manualUnverified);
   bool get _ready => _hasTarget && _amountValid && _phoneValid;
 
   MeterType get _meterType => _meter != null
@@ -824,8 +835,8 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
     // The state machine should never set `_meter` otherwise, but this is the
     // last thing standing between a rejected meter and a green tick.
     final m = _meter;
-    if (m != null && m.isValid && m.customerName.trim().isNotEmpty) {
-      return _verifiedCard(m);
+    if (_meterConfirmed) {
+      return _verifiedCard(m!);
     }
     if (_validateError != null || _manualMode) return _manualFallback();
     return const SizedBox.shrink();
