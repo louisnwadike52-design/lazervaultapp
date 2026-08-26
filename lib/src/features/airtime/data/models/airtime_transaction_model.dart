@@ -2,6 +2,7 @@ import 'dart:convert';
 import '../../../../generated/utility-payments.pb.dart' as pb;
 import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/entities/network_provider.dart';
+import '../../../../../core/utils/ng_network_prefixes.dart';
 
 class AirtimeTransactionModel extends AirtimeTransaction {
   const AirtimeTransactionModel({
@@ -33,7 +34,8 @@ class AirtimeTransactionModel extends AirtimeTransaction {
     return AirtimeTransactionModel(
       id: payment.id,
       transactionReference: payment.reference,
-      networkProvider: _networkTypeFromBillType(payment.providerId),
+      networkProvider: _networkTypeFromBillType(payment.providerId,
+          phone: response.phoneNumber),
       recipientPhoneNumber: response.phoneNumber,
       amount: payment.amount,
       currency: currency,
@@ -67,8 +69,8 @@ class AirtimeTransactionModel extends AirtimeTransaction {
     return AirtimeTransactionModel(
       id: payment.id,
       transactionReference: payment.reference,
-      networkProvider: _networkTypeFromBillType(
-          payment.providerId.isNotEmpty ? payment.providerId : recipientPhone),
+      networkProvider: _networkTypeFromBillType(payment.providerId,
+          phone: recipientPhone),
       recipientPhoneNumber: recipientPhone,
       recipientName: recipientName,
       amount: payment.amount,
@@ -132,7 +134,11 @@ class AirtimeTransactionModel extends AirtimeTransaction {
       id: payment.id,
       transactionReference: payment.reference,
       networkProvider: _networkTypeFromMetadata(
-          payment.providerId, billType, mergedMeta),
+          payment.providerId, billType, mergedMeta,
+          // customerNumber is always populated, where metadata.phone_number is
+          // only present on some rows — pass it so prefix detection has a
+          // number to work with even when metadata is sparse.
+          phone: payment.customerNumber),
       recipientPhoneNumber: payment.customerNumber,
       amount: payment.amount,
       currency: currency,
@@ -144,19 +150,23 @@ class AirtimeTransactionModel extends AirtimeTransaction {
     );
   }
 
-  /// Smarter network-type derivation that takes intl operators into
-  /// account. The legacy `_networkTypeFromBillType` did string-matching
-  /// on `providerId` — but for intl rows the providerId is a UUID with
-  /// no operator hint, so it always defaulted to `mtn` (the bug that
-  /// made South-Africa purchases show "MTN Nigeria" in recents).
+  /// Derives the network a transaction was placed against.
   ///
-  /// Order:
-  ///   1. Intl rows → match against operator_name from metadata so the
-  ///      display reads "Cell C / MTN Ghana / Vodacom" etc.
-  ///   2. Local rows → fall back to the original providerId match.
-  ///   3. Last resort → `mtn` (Nigerian default).
+  /// Order, most authoritative first:
+  ///   1. Intl rows → `operator_name` from metadata, so the display reads
+  ///      "Cell C / MTN Ghana / Vodacom" rather than a Nigerian carrier.
+  ///   2. `operator_id` / `network_name` / `network` from metadata — what the
+  ///      purchase was actually placed against.
+  ///   3. The recipient's own NCC prefix (domestic rows only).
+  ///   4. A `providerId` that happens to name the network.
+  ///   5. Last resort → `mtn`.
+  ///
+  /// Steps 2 and 3 are the fix for receipts stating the wrong carrier: rows
+  /// whose providerId is a UUID fell straight from 1 to 5 and claimed MTN for
+  /// every network.
   static NetworkProviderType _networkTypeFromMetadata(
-      String providerId, String billType, Map<String, dynamic> meta) {
+      String providerId, String billType, Map<String, dynamic> meta,
+      {String phone = ''}) {
     String? operatorHint;
     if (billType == 'intl_airtime') {
       operatorHint = (meta['operator_name'] ?? meta['operatorName'])
@@ -239,13 +249,84 @@ class AirtimeTransactionModel extends AirtimeTransaction {
         // Fall through to the providerId-based match below.
       }
     }
-    // Local Nigerian providers come back with a string that contains
-    // the network short name in providerId. For unknown providers we
-    // return mtn as a final last resort — for intl rows the
-    // displayTitle getter on AirtimeTransaction reads operator_name
-    // from metadata directly, so a wrong enum here only affects the
-    // network-coloured avatar (not the user-facing copy).
-    return _networkTypeFromBillType(providerId);
+    // Local Nigerian rows. providerId USUALLY carries the network short name
+    // ("MTN"), but not always — some rows carry a UUID instead, and then the
+    // substring match below finds nothing and the last resort claims MTN.
+    //
+    // That is not a harmless default. A real production row read
+    // provider_id=02dd9d0f-…, customer_number=07012406678 (an Airtel prefix),
+    // metadata.operator_id="AIRTEL" — and the receipt displayed "MTN Nigeria".
+    // The comment here used to argue a wrong enum only tinted the avatar, but
+    // the payment receipt renders networkProvider.displayName as the Network
+    // field, so it states the wrong carrier to the customer on a document they
+    // keep.
+    //
+    // The authoritative answer was in metadata all along: operator_id is what
+    // the purchase was actually placed against. Ask it first, then the phone's
+    // own prefix, and only then fall back to string-matching an id that may be
+    // opaque.
+    final metaNetwork = _networkFromMetadata(meta);
+    if (metaNetwork != null) return metaNetwork;
+
+    // NCC prefixes are Nigerian, so they are only evidence for a domestic
+    // number. Running them over an international MSISDN could match a foreign
+    // number onto a Nigerian carrier purely by digit coincidence.
+    final isIntl = billType == 'intl_airtime';
+    final effectivePhone =
+        phone.isNotEmpty ? phone : (meta['phone_number']?.toString() ?? '');
+    if (!isIntl) {
+      final byPrefix = _networkFromPhone(effectivePhone);
+      if (byPrefix != null) return byPrefix;
+    }
+
+    return _networkTypeFromBillType(providerId,
+        phone: isIntl ? '' : effectivePhone);
+  }
+
+  /// Reads the network the purchase was actually placed against.
+  ///
+  /// Keys confirmed against live rows: airtime writes `operator_id` ("AIRTEL"),
+  /// data writes `network_name` ("MTN") and `network` ("mtn-data").
+  static NetworkProviderType? _networkFromMetadata(Map<String, dynamic> meta) {
+    for (final key in const [
+      'operator_id',
+      'operatorId',
+      'network_name',
+      'networkName',
+      'network',
+      'network_code',
+    ]) {
+      final raw = meta[key]?.toString().toLowerCase().trim();
+      if (raw == null || raw.isEmpty) continue;
+      // Order matters: "9mobile"/"etisalat" before the generic checks, and
+      // never substring-match "mtn" against something like "mtn-data" wrongly
+      // — that IS mtn, so containment is correct here.
+      if (raw.contains('9mobile') || raw.contains('etisalat')) {
+        return NetworkProviderType.ninemobile;
+      }
+      if (raw.contains('airtel')) return NetworkProviderType.airtel;
+      if (raw.contains('glo')) return NetworkProviderType.glo;
+      if (raw.contains('mtn')) return NetworkProviderType.mtn;
+    }
+    return null;
+  }
+
+  /// Falls back to the NCC prefix allocation, the same canonical map the
+  /// quick-buys detect with, so a receipt never contradicts what the user saw
+  /// when they typed the number.
+  static NetworkProviderType? _networkFromPhone(String phone) {
+    switch (NgNetworkPrefixes.detect(phone)) {
+      case 'mtn':
+        return NetworkProviderType.mtn;
+      case 'airtel':
+        return NetworkProviderType.airtel;
+      case 'glo':
+        return NetworkProviderType.glo;
+      case 'etisalat':
+        return NetworkProviderType.ninemobile;
+      default:
+        return null;
+    }
   }
 
   static AirtimeTransactionStatus _statusFromString(String status) {
@@ -263,14 +344,35 @@ class AirtimeTransactionModel extends AirtimeTransaction {
     }
   }
 
-  static NetworkProviderType _networkTypeFromBillType(String providerId) {
+  /// Derives the network from an id that MAY name it, falling back to the
+  /// recipient's own number.
+  ///
+  /// [providerId] is only sometimes a network short name — plenty of rows carry
+  /// a UUID, and a UUID matches none of the branches below. The old code then
+  /// returned mtn unconditionally, so any such row claimed MTN no matter which
+  /// line was topped up. Passing [phone] lets the NCC prefix allocation answer
+  /// instead, which is authoritative for a Nigerian number and is the same map
+  /// the quick-buys detect with.
+  static NetworkProviderType _networkTypeFromBillType(String providerId,
+      {String phone = ''}) {
     final lower = providerId.toLowerCase();
-    if (lower.contains('mtn')) return NetworkProviderType.mtn;
-    if (lower.contains('airtel')) return NetworkProviderType.airtel;
-    if (lower.contains('glo')) return NetworkProviderType.glo;
+    // 9mobile/etisalat first: neither substring collides with the others, but
+    // keeping the most specific check ahead of the rest is what stops a future
+    // brand alias from being swallowed.
     if (lower.contains('9mobile') || lower.contains('etisalat')) {
       return NetworkProviderType.ninemobile;
     }
+    if (lower.contains('airtel')) return NetworkProviderType.airtel;
+    if (lower.contains('glo')) return NetworkProviderType.glo;
+    if (lower.contains('mtn')) return NetworkProviderType.mtn;
+
+    final byPrefix = _networkFromPhone(phone.isNotEmpty ? phone : providerId);
+    if (byPrefix != null) return byPrefix;
+
+    // Nothing identified it. mtn remains the last resort because the enum has
+    // no unknown member and every caller renders SOMETHING, but by this point
+    // both the metadata and the number have been asked, so a Nigerian top-up
+    // reaching here is genuinely unidentifiable rather than merely unmatched.
     return NetworkProviderType.mtn;
   }
 
