@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -668,6 +670,42 @@ class _CableTVPaymentReceiptScreenState
     );
   }
 
+  /// Whether this failure is "the package you picked is not sold by the
+  /// provider that would have fulfilled it".
+  ///
+  /// The backend stamps this on the payment's metadata after releasing the hold,
+  /// because there is nothing useful the customer can do with a generic failure
+  /// here: retrying sends the same unlistable package to the same gateway.
+  /// Providers do not share package codes, so the only correct next step is to
+  /// pick again from the catalogue of whoever will actually charge.
+  bool _needsCatalogueReselect(CableTVPaymentEntity payment) {
+    if (!payment.isFailed) return false;
+    final meta = payment.metadata;
+    if (meta.isEmpty) return false;
+    try {
+      final decoded = jsonDecode(meta);
+      if (decoded is Map) {
+        return decoded['catalogue_reselect']?.toString() == 'true';
+      }
+    } catch (_) {
+      // Malformed metadata is not a reason to mis-route the customer.
+    }
+    return false;
+  }
+
+  /// Sends the customer back to choose again, with the smart card prefilled so
+  /// they do not retype it. Re-entering the flow re-fetches the package list, so
+  /// what they see next is the catalogue of the gateway that will charge.
+  void _reselectPackage(CableTVPaymentEntity payment) {
+    Get.offAllNamed(
+      AppRoutes.cableTVSmartCardInput,
+      arguments: {
+        'smartCardNumber': payment.customerNumber,
+        'providerCode': payment.providerId,
+      },
+    );
+  }
+
   Widget _buildActions(BuildContext context, CableTVPaymentEntity payment) {
     return Container(
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 16.h),
@@ -683,6 +721,31 @@ class _CableTVPaymentReceiptScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (_needsCatalogueReselect(payment)) ...[
+            Text(
+              'Your money has been returned. The package you chose is not sold by '
+              'the provider handling this payment, so please choose again from the '
+              'current list.',
+              style: GoogleFonts.inter(
+                  color: const Color(0xFFFB923C), fontSize: 12.5.sp, height: 1.35),
+            ),
+            SizedBox(height: 10.h),
+            ElevatedButton(
+              onPressed: () => _reselectPackage(payment),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4E03D0),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+              ),
+              child: Text('Choose another package',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600)),
+            ),
+            SizedBox(height: 12.h),
+          ],
           Row(
             children: [
               // Share Receipt
