@@ -98,18 +98,31 @@ class AirtimeHistoryActionsSheet {
               // contact: the backend stores beneficiary_id as an optional
               // varchar defaulting to '', and only the title is required.
               final repo = GetIt.I<AirtimeRepository>();
-              // Look up the saved beneficiary so the reminder binds to it
-              // on the backend (for recurring fire-and-buy later).
-              String? beneficiaryId;
-              try {
-                final bens = await repo.getAirtimeBeneficiaries();
-                for (final b in bens) {
-                  if (b.phoneNumber == t.recipientPhoneNumber) {
-                    beneficiaryId = b.id;
-                    break;
+              // Bind the reminder to the saved beneficiary so a recurring
+              // reminder can fire-and-buy against it later.
+              //
+              // Reuse the lookup already done above where it ran, and match on
+              // digits — never on raw string equality. The server stores
+              // "+2347067334850" where the transaction carries "07067334850",
+              // so an equality test never matched and every reminder was
+              // created unbound, even for a contact that was plainly saved.
+              String? beneficiaryId = existingId;
+              if (beneficiaryId == null) {
+                try {
+                  final bens = await repo.getAirtimeBeneficiaries();
+                  final wanted = _digitsOnly(t.recipientPhoneNumber);
+                  for (final b in bens) {
+                    if (_digitsOnly(b.phoneNumber) == wanted) {
+                      beneficiaryId = b.id;
+                      break;
+                    }
                   }
+                } catch (e) {
+                  // Unbound is a valid reminder — beneficiary_id is optional
+                  // server-side — so carry on rather than failing the action.
+                  debugPrint('[AirtimeActions] reminder beneficiary bind failed: $e');
                 }
-              } catch (_) {}
+              }
               if (!context.mounted) return;
               await BillReminderCreateSheet.show(
                 context,
