@@ -649,7 +649,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
-              'Processing in the background — your electricity token will '
+              'Processing in the background. Your electricity token will '
               'appear on the receipt once the provider confirms.',
               style: GoogleFonts.inter(
                 fontSize: 12.sp,

@@ -565,7 +565,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     // provider's SMS lands, and the user needs to know the token will
     // appear here when it arrives.
     if (payment.isPrepaid) {
-      return 'Token pending — we will show it on this receipt as soon as the provider sends it (usually via SMS within a few minutes).';
+      return 'Your token is on the way. It will appear on this receipt as soon as your provider sends it, usually within a few minutes, and also by SMS.';
     }
     if (payment.isPending || payment.isProcessing) {
       return 'Waiting for confirmation from the provider.';
@@ -655,7 +655,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
                 Text(
                   'Your electricity token will appear here as soon as '
                   '${payment.providerName.isEmpty ? "the provider" : payment.providerName} '
-                  'delivers it (typically a few minutes — also sent via SMS).',
+                  'delivers it, typically within a few minutes. It is also sent by SMS.',
                   style: GoogleFonts.inter(
                     color: const Color(0xFFFB923C).withValues(alpha: 0.9),
                     fontSize: 12.sp,
