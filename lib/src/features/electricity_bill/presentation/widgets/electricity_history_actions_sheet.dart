@@ -153,17 +153,22 @@ class ElectricityHistoryActionsSheet {
             color: const Color(0xFFFB923C),
             label: 'Set Reminder',
             onTap: () async {
+              // Take a context that OUTLIVES this sheet before closing it.
+              //
+              // Everything below ran against the sheet's own context after
+              // Get.back() had unmounted it, so the save prompt returned null
+              // and the `!context.mounted` guard tripped — the action did
+              // nothing at all, silently, every time. Get.context is the
+              // navigator's, which is still mounted after the sheet pops.
+              final ctx = Get.context;
               Get.back();
-              final beneficiary = await _ensureBeneficiarySaved(
-                context,
-                existing: savedBeneficiary,
-                payment: payment,
-              );
-              if (beneficiary == null) return;
+              if (ctx == null) return;
+              // No save gate: a reminder does not need a saved meter. The
+              // backend stores beneficiary_id as optional, and requiring one
+              // only added a way for this to fail quietly.
               final repo = GetIt.I<ElectricityBillRepository>();
-              if (!context.mounted) return;
               await BillReminderCreateSheet.show(
-                context,
+                ctx,
                 subtitle:
                     '${payment.providerName} \u00B7 ${payment.meterNumber}',
                 defaultTitle:
@@ -182,7 +187,10 @@ class ElectricityHistoryActionsSheet {
                     description: description,
                     reminderDate: reminderDate,
                     amount: amount,
-                    beneficiaryId: beneficiary.id,
+                    // Bind to the saved meter when there IS one, otherwise
+                    // leave it unbound: beneficiary_id is optional server-side,
+                    // and an unbound reminder is far better than no reminder.
+                    beneficiaryId: savedBeneficiary?.id ?? '',
                     isRecurring: isRecurring,
                     recurrenceType: recurrenceType == null
                         ? null
@@ -203,20 +211,24 @@ class ElectricityHistoryActionsSheet {
             color: const Color(0xFF10B981),
             label: 'Set Auto-Recharge',
             onTap: () async {
+              // Auto-recharge genuinely REQUIRES a saved beneficiary — the
+              // recurring worker needs a meter to bill against — so the prompt
+              // stays. What changes is that it now runs against a context that
+              // is still mounted: it used to run against this sheet's own
+              // context after Get.back() had disposed it, so it returned null
+              // without ever appearing and the action died silently.
+              final ctx = Get.context;
               Get.back();
-              // Auto-recharge requires a saved beneficiary (the recurring
-              // worker needs a meter to bill against); prompt to save
-              // inline via the sheet when not already done, then scope the
-              // create flow to the returned beneficiary.
+              if (ctx == null) return;
               final beneficiary = await _ensureBeneficiarySaved(
-                context,
+                ctx,
                 existing: savedBeneficiary,
                 payment: payment,
               );
-              if (beneficiary == null || !context.mounted) return;
+              if (beneficiary == null) return;
               final repo = GetIt.I<ElectricityBillRepository>();
               await BillAutoRechargeCreateSheet.show(
-                context,
+                ctx,
                 subtitle:
                     '${beneficiary.providerName} \u00B7 ${beneficiary.meterNumber}',
                 onSubmit: ({

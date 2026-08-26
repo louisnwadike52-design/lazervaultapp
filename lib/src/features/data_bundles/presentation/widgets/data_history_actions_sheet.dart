@@ -186,17 +186,17 @@ class DataHistoryActionsSheet {
             icon: Icons.notifications_active,
             color: const Color(0xFFFB923C),
             label: 'Set Reminder',
-            onTap: () async {
+            onTap: () {
               Get.back();
-              final savedOk = await _ensureBeneficiarySaved(
-                context,
-                isSaved: isSaved,
-                phoneNumber: p.phoneNumber,
-                networkCode: networkCode,
-                networkName: networkName,
-                countryCode: countryCode,
-              );
-              if (savedOk == false) return;
+              // Go straight to the reminder screen.
+              //
+              // This used to force the save-contact sheet open first and abort
+              // if it did not come back true. Get.back() has already unmounted
+              // this context by then, so the gate returned false without ever
+              // showing anything and the action silently did nothing — which is
+              // exactly what an unsaved contact hit every time. A reminder does
+              // not need a saved contact anyway: the backend stores
+              // beneficiary_id as an optional field.
               Get.toNamed(
                 AppRoutes.dataBundlesReminderCreate,
                 arguments: {
@@ -216,17 +216,14 @@ class DataHistoryActionsSheet {
             label: 'Set Rollover',
             onTap: () async {
             Get.back();
-            // Ensure beneficiary is saved first (same pattern as Set Reminder).
-            final savedOk = await _ensureBeneficiarySaved(
-              context,
-              isSaved: isSaved,
-              phoneNumber: p.phoneNumber,
-              networkCode: networkCode,
-              networkName: networkName,
-              countryCode: countryCode,
-            );
-            if (savedOk == false) return;
-            // Re-fetch the saved beneficiary so we have a real entity.
+            // No save-contact gate: the rollover screen already handles having
+            // no beneficiary (see the else branch below), so requiring one only
+            // created a way for this action to do nothing at all — the gate ran
+            // against a context Get.back() had just unmounted and returned
+            // false without showing anything.
+            //
+            // Binding to an existing saved contact is still worth doing, so it
+            // is attempted best-effort and never blocks the navigation.
             DataBeneficiary? beneficiary;
             try {
               final ds = GetIt.I<DataBeneficiaryRemoteDataSource>();
@@ -318,27 +315,7 @@ class DataHistoryActionsSheet {
   /// If the contact is not yet saved, shows the save-beneficiary sheet inline.
   /// Returns `true` when the contact is already saved or was just saved
   /// successfully, `false` if the user dismissed the save sheet.
-  static Future<bool> _ensureBeneficiarySaved(
-    BuildContext context, {
-    required bool isSaved,
-    required String phoneNumber,
-    required String networkCode,
-    required String networkName,
-    required String countryCode,
-  }) async {
-    if (isSaved) return true;
-    if (!context.mounted) return false;
-    final resolvedName = _resolveNetworkName(networkCode, networkName);
-    if (networkCode.isEmpty && resolvedName.isEmpty) return false;
-    final saved = await SaveDataBeneficiarySheet.show(
-      context,
-      phoneNumber: phoneNumber,
-      networkCode: networkCode,
-      networkName: resolvedName,
-      countryCode: countryCode,
-    );
-    return saved == true;
-  }
+
 
   static String _statusLabel(DataPurchaseEntity p) {
     if (p.isCompleted) return 'Completed';

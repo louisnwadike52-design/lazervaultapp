@@ -143,15 +143,13 @@ class WaterHistoryActionsSheet {
             label: 'Set Reminder',
             onTap: () async {
               Get.back();
-              final saved = await _ensureBeneficiarySaved(
-                context,
-                existing: existingBeneficiary,
-                accountNumber: accountNumber,
-                providerCode: providerCode,
-                providerName: providerName,
-                customerName: p.customerName,
-              );
-              if (saved == false) return;
+              // No save-contact gate here.
+              //
+              // Get.back() has already unmounted this context, so the gate's
+              // own `if (!context.mounted) return false` fired before it could
+              // show anything, the caller returned on false, and the action did
+              // nothing at all — every time, for any contact not already saved.
+              // These screens do not require a saved beneficiary to open.
               final title = accountNumber.isEmpty
                   ? 'Pay $providerName'
                   : 'Pay $providerName · $accountNumber';
@@ -171,15 +169,13 @@ class WaterHistoryActionsSheet {
             label: 'Set Auto-Pay',
             onTap: () async {
               Get.back();
-              final saved = await _ensureBeneficiarySaved(
-                context,
-                existing: existingBeneficiary,
-                accountNumber: accountNumber,
-                providerCode: providerCode,
-                providerName: providerName,
-                customerName: p.customerName,
-              );
-              if (saved == false) return;
+              // No save-contact gate here.
+              //
+              // Get.back() has already unmounted this context, so the gate's
+              // own `if (!context.mounted) return false` fired before it could
+              // show anything, the caller returned on false, and the action did
+              // nothing at all — every time, for any contact not already saved.
+              // These screens do not require a saved beneficiary to open.
               final ds = GetIt.I<WaterBeneficiaryRemoteDataSource>();
               WaterBeneficiary? beneficiary = existingBeneficiary;
               if (beneficiary == null) {
@@ -253,25 +249,7 @@ class WaterHistoryActionsSheet {
   /// Save-gate for Reminder + Auto-Pay — both features require a
   /// persisted beneficiary. Returns true when already saved or saved
   /// inline; false when the user dismisses the sheet.
-  static Future<bool> _ensureBeneficiarySaved(
-    BuildContext context, {
-    required WaterBeneficiary? existing,
-    required String accountNumber,
-    required String providerCode,
-    required String providerName,
-    required String customerName,
-  }) async {
-    if (existing != null) return true;
-    if (!context.mounted) return false;
-    final saved = await SaveWaterBeneficiarySheet.show(
-      context,
-      accountNumber: accountNumber,
-      providerCode: providerCode.isNotEmpty ? providerCode : 'UNKNOWN',
-      providerName: providerName.isNotEmpty ? providerName : 'Unknown',
-      customerName: customerName,
-    );
-    return saved == true;
-  }
+
 
   /// Minimal `WaterProviderEntity` assembled from history-row data.
   /// The customer-input screen reads `providerCode` + `providerName`;

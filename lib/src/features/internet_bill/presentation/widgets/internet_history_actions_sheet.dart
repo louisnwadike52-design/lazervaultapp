@@ -169,14 +169,13 @@ class InternetHistoryActionsSheet {
             label: 'Set Reminder',
             onTap: () async {
               Get.back();
-              final savedOk = await _ensureBeneficiarySaved(
-                context,
-                isSaved: isSaved,
-                accountNumber: accountNumber,
-                providerCode: providerCode,
-                providerName: providerName,
-              );
-              if (savedOk == false) return;
+              // No save-contact gate here.
+              //
+              // Get.back() has already unmounted this context, so the gate's
+              // own `if (!context.mounted) return false` fired before it could
+              // show anything, the caller returned on false, and the action did
+              // nothing at all — every time, for any contact not already saved.
+              // These screens do not require a saved beneficiary to open.
               final title = accountNumber.isEmpty
                   ? 'Renew $providerName'
                   : 'Renew $providerName \u00B7 $accountNumber';
@@ -198,14 +197,13 @@ class InternetHistoryActionsSheet {
             label: 'Set Rollover',
             onTap: () async {
               Get.back();
-              final savedOk = await _ensureBeneficiarySaved(
-                context,
-                isSaved: isSaved,
-                accountNumber: accountNumber,
-                providerCode: providerCode,
-                providerName: providerName,
-              );
-              if (savedOk == false) return;
+              // No save-contact gate here.
+              //
+              // Get.back() has already unmounted this context, so the gate's
+              // own `if (!context.mounted) return false` fired before it could
+              // show anything, the caller returned on false, and the action did
+              // nothing at all — every time, for any contact not already saved.
+              // These screens do not require a saved beneficiary to open.
               // Route to the dedicated create-rollover screen with the
               // beneficiary pre-filled + locked. Much cleaner than
               // piggybacking on the purchase flow — the user just
@@ -287,23 +285,7 @@ class InternetHistoryActionsSheet {
   /// persisted beneficiary. Returns true when the contact is already
   /// saved or is saved inline; false when the user dismisses the
   /// sheet.
-  static Future<bool> _ensureBeneficiarySaved(
-    BuildContext context, {
-    required bool isSaved,
-    required String accountNumber,
-    required String providerCode,
-    required String providerName,
-  }) async {
-    if (isSaved) return true;
-    if (!context.mounted) return false;
-    final saved = await SaveInternetBeneficiarySheet.show(
-      context,
-      accountNumber: accountNumber,
-      providerCode: providerCode.isNotEmpty ? providerCode : 'UNKNOWN',
-      providerName: providerName.isNotEmpty ? providerName : 'Unknown',
-    );
-    return saved == true;
-  }
+
 
   /// Minimal `InternetProviderEntity` assembled from history-row data.
   /// The account-input screen only reads `serviceId` (for input rules)
