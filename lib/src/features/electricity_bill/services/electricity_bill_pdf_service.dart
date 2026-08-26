@@ -4,10 +4,9 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:lazervault/core/utils/receipt_download.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import '../domain/entities/bill_payment_entity.dart';
-import 'dart:ui' show Rect;
 
 class ElectricityBillPdfService {
   static final _dateFormat = DateFormat('yyyy-MM-dd');
@@ -72,23 +71,33 @@ class ElectricityBillPdfService {
     }
   }
 
-  /// Load fonts that support unicode characters
+  /// Strips anything outside printable ASCII.
+  ///
+  /// Provider data reaches this receipt verbatim: disco names, customer names
+  /// and addresses come straight from the biller. When the bundled font fails
+  /// to load the package falls back to built-in Helvetica, which latin1-encodes
+  /// every string and THROWS on any code unit above 255 — so a single curly
+  /// quote or accented character in an address would crash the download instead
+  /// of producing a receipt. Sanitising every value makes that fallback safe.
+  static String _ascii(String input) =>
+      input.replaceAll(RegExp(r'[^\x20-\x7E]'), '').trim();
+
+  /// Loads the BUNDLED Inter faces.
+  ///
+  /// These used to be fetched from fonts.gstatic.com at generation time, which
+  /// made a receipt depend on the network and on Google keeping a versioned URL
+  /// alive. Offline, or once that URL moved, every download silently dropped to
+  /// Helvetica. The fonts ship in the app, so load them from there.
   static Future<void> _loadFonts() async {
     if (_regularFont != null && _boldFont != null) return;
-
     try {
-      // Try loading Inter font from Google Fonts CDN
-      final regularResponse = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.ttf'));
-      final boldResponse = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYAZ9hiA.ttf'));
-
-      if (regularResponse.statusCode == 200 && boldResponse.statusCode == 200) {
-        _regularFont = pw.Font.ttf(regularResponse.bodyBytes.buffer.asByteData());
-        _boldFont = pw.Font.ttf(boldResponse.bodyBytes.buffer.asByteData());
-      }
-    } catch (e) {
-      // Fallback to default fonts if loading fails
+      final regular = await rootBundle.load('assets/fonts/Inter-Regular.ttf');
+      final bold = await rootBundle.load('assets/fonts/Inter-Bold.ttf');
+      _regularFont = pw.Font.ttf(regular);
+      _boldFont = pw.Font.ttf(bold);
+    } catch (_) {
+      // Every string is ASCII-sanitised, so the built-in fallback renders
+      // correctly rather than throwing.
       _regularFont = null;
       _boldFont = null;
     }
@@ -569,30 +578,14 @@ class ElectricityBillPdfService {
   }) async {
     try {
       final file = await generateReceipt(payment: payment);
-
-      Directory? directory;
-      if (Platform.isAndroid) {
-        // App-specific external files dir — always writable, no permission
-        // needed. A direct write to /storage/emulated/0/Download fails under
-        // Android scoped storage (API 30+), so never hardcode that path.
-        directory = (await getExternalStorageDirectory()) ??
-            await getApplicationDocumentsDirectory();
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-      } else {
-        directory = await getDownloadsDirectory();
-      }
-
-      if (directory == null) {
-        throw Exception('Could not access downloads directory');
-      }
-
       final fileName =
           'electricity_receipt_${payment.referenceNumber.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}.pdf';
-      final savedFile = File('${directory.path}/$fileName');
-      await file.copy(savedFile.path);
-
-      return savedFile.path;
+      // Shared helper: saves to the platform's writable location and OPENS the
+      // file. On Android scoped storage the save location is not browsable in
+      // Files, so "saved to Downloads" was a promise the app could not keep;
+      // opening it hands the receipt straight to a viewer the user can share
+      // or re-save from.
+      return ReceiptDownload.saveAndOpen(source: file, fileName: fileName);
     } catch (e) {
       throw Exception('Failed to download receipt: $e');
     }
@@ -613,9 +606,12 @@ class ElectricityBillPdfService {
         // PlatformException and the share silently fails on iPhone/iPad.
         sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
-        text:
-            'Electricity Payment Receipt - $currencySymbol$amount to ${payment.providerName} (Meter: ${payment.meterNumber})',
-        subject: 'Lazervault Electricity Payment Receipt',
+        text: _ascii(
+            'LazerVault electricity receipt\n'
+            'Provider: ${payment.providerName}\n'
+            'Meter: ${payment.meterNumber}\n'
+            'Amount: $currencySymbol$amount'),
+        subject: 'LazerVault electricity receipt',
       ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');

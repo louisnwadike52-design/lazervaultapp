@@ -118,6 +118,10 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
   // couldn't confirm the customer name — we let the user proceed anyway
   // (many prepaid meters accept payment without a name lookup).
   bool _manualUnverified = false;
+  /// True when the last verification attempt could not reach any provider, as
+  /// opposed to a provider answering that the meter is not theirs. Only the
+  /// former lets the customer continue on their own confirmation.
+  bool _verifyUnavailable = false;
   bool get _manualMode => _manualDisco != null;
 
   @override
@@ -134,10 +138,13 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
         // Provider now resolved — re-run the dedup probe with the disco scoped.
         _recomputeExistingBeneficiary();
       } else if (s is SmartMeterValidationFailed) {
-        // Auto-detect couldn't resolve the disco — fall back to manual pick.
+        // Auto-detect did not resolve the disco. Fall back to the picker, which
+        // is the faster path anyway: the disco is printed on the customer's
+        // bill, and naming it is one provider call instead of a sweep.
         setState(() {
           _meter = null;
           _validateError = s.message;
+          _verifyUnavailable = s.isUnavailable;
           _validating = false;
         });
       } else if (s is SmartMeterValidating) {
@@ -171,12 +178,16 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
         });
         _recomputeExistingBeneficiary();
       } else if (s is MeterValidationFailed) {
-        // Provider couldn't confirm the name — allow proceeding on the manual
-        // disco (prepaid meters often can't be name-verified).
         setState(() {
           _validating = false;
-          _manualUnverified = _manualMode;
-          if (!_manualMode) _validateError = s.message;
+          // Only offer to continue when we could not REACH the provider. If the
+          // disco answered and does not have this meter, continuing would send
+          // money to a meter that provider says does not exist, and an
+          // electricity vend cannot be recalled. That case keeps the customer
+          // on the screen to correct the number or the disco.
+          _manualUnverified = _manualMode && s.isUnavailable;
+          _verifyUnavailable = s.isUnavailable;
+          if (!_manualMode || !s.isUnavailable) _validateError = s.message;
         });
       } else if (s is ProvidersLoaded) {
         _fetchingProviders = false;
@@ -277,6 +288,7 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
         _validateError = null;
         _manualDisco = null;
         _manualUnverified = false;
+        _verifyUnavailable = false;
       });
     }
     _recomputeExistingBeneficiary();
@@ -294,6 +306,7 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
     setState(() {
       _validating = true;
       _manualUnverified = false;
+      _verifyUnavailable = false;
       _validateError = null;
     });
     context.read<ElectricityBillCubit>().validateMeter(
@@ -840,8 +853,17 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
               color: const Color(0xFFFB923C), size: 15.sp),
           SizedBox(width: 6.w),
           Expanded(
+            // Two different situations, two different messages. Saying "we
+            // could not confirm" when the disco actually rejected the meter
+            // sends people to retry a number that will never work; saying the
+            // meter is invalid when a provider was merely unreachable tells
+            // them their real meter does not exist.
             child: Text(
-                "We couldn't detect your disco automatically. Select it below.",
+                _verifyUnavailable
+                    ? 'We could not reach the electricity providers just now. '
+                        'Choose your provider below to try again.'
+                    : 'We could not match this meter automatically. '
+                        'Choose your provider below to continue.',
                 style: GoogleFonts.inter(
                     color: const Color(0xFFFB923C), fontSize: 12.sp)),
           ),
@@ -899,11 +921,35 @@ class _ElectricityQuickBuyState extends State<ElectricityQuickBuy>
                 color: const Color(0xFFFB923C), size: 16.sp),
             SizedBox(width: 8.w),
             Expanded(
-              child: Text(
-                  "We couldn't confirm the customer name for this meter. "
-                  'Double-check the meter number — you can still continue.',
-                  style: GoogleFonts.inter(
-                      color: Colors.white, fontSize: 12.sp)),
+              // The customer is being asked to take on a risk we normally carry
+              // for them, so the copy has to be straight about three things:
+              // what we could not do, what could go wrong, and that the choice
+              // is theirs. Naming the consequence (a token issued to the wrong
+              // meter cannot be reversed) is what makes "continue" an informed
+              // decision rather than a shrug.
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Meter not confirmed',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  SizedBox(height: 3.h),
+                  Text(
+                    "${disco?.providerName ?? 'This provider'} could not be reached to confirm "
+                    'the account name for this meter. Please check that the meter number and '
+                    'provider are correct before you continue, as tokens sent to the wrong '
+                    'meter cannot be reversed.',
+                    style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 11.5.sp,
+                        height: 1.35),
+                  ),
+                ],
+              ),
             ),
           ]),
         ),

@@ -7,6 +7,7 @@ import '../../domain/entities/bill_payment_entity.dart';
 import '../../domain/entities/provider_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
 import '../../../../../core/utils/user_friendly_error.dart';
+import '../../../../core/errors/failures.dart';
 import 'electricity_bill_state.dart';
 
 class ElectricityBillCubit extends Cubit<ElectricityBillState> {
@@ -101,7 +102,13 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(MeterValidationFailed(message: failure.message)),
+      // UNAVAILABLE means no provider could be reached, so nothing was decided
+      // about this meter. Carrying that through is what lets the screen offer
+      // "continue if you are sure" instead of claiming the number is wrong.
+      (failure) => emit(MeterValidationFailed(
+            message: failure.message,
+            isUnavailable: _isUnavailable(failure),
+          )),
       (validationResult) => emit(MeterValidated(
         validationResult: validationResult,
         providerCode: providerCode,
@@ -121,7 +128,10 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
 
     if (isClosed) return;
     result.fold(
-      (failure) => emit(SmartMeterValidationFailed(message: failure.message)),
+      (failure) => emit(SmartMeterValidationFailed(
+            message: failure.message,
+            isUnavailable: _isUnavailable(failure),
+          )),
       (smartResult) {
         if (smartResult.isValid) {
           emit(SmartMeterValidated(result: smartResult));
@@ -356,5 +366,22 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
   void reset() {
     if (isClosed) return;
     emit(ElectricityBillInitial());
+  }
+
+  /// Whether a failure means we could not REACH any provider, as opposed to a
+  /// provider telling us the meter is not theirs.
+  ///
+  /// The backend returns gRPC UNAVAILABLE for the first case only. Network and
+  /// deadline failures count too: in all of them nothing was decided about the
+  /// meter, so the customer may proceed on their own confirmation rather than
+  /// being told their number is wrong.
+  bool _isUnavailable(Failure failure) {
+    if (failure is! ServerFailure) return false;
+    // statusCode is declared dynamic and may be an int, so normalise through
+    // toString rather than calling a String method on it.
+    final code = failure.statusCode?.toString().toUpperCase() ?? '';
+    return code == 'UNAVAILABLE' ||
+        code == 'DEADLINE_EXCEEDED' ||
+        code == 'UNKNOWN';
   }
 }

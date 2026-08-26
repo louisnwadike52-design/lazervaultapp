@@ -57,10 +57,20 @@ class MeterValidated extends ElectricityBillState {
 class MeterValidationFailed extends ElectricityBillState {
   final String message;
 
-  MeterValidationFailed({required this.message});
+  /// True when NO provider could be reached, so nothing was decided about the
+  /// meter.
+  ///
+  /// This is different from the provider answering and not recognising the
+  /// number, and the difference decides what the customer may do next. If we
+  /// simply could not ask, they may continue on their own confirmation; if the
+  /// disco answered and disowned the meter, continuing would send money to a
+  /// meter that provider says does not exist, so the flow must stop.
+  final bool isUnavailable;
+
+  MeterValidationFailed({required this.message, this.isUnavailable = false});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, isUnavailable];
 }
 
 // Smart Meter Validation States
@@ -78,10 +88,13 @@ class SmartMeterValidated extends ElectricityBillState {
 class SmartMeterValidationFailed extends ElectricityBillState {
   final String message;
 
-  SmartMeterValidationFailed({required this.message});
+  /// True when no provider could be reached (see [MeterValidationFailed.isUnavailable]).
+  final bool isUnavailable;
+
+  SmartMeterValidationFailed({required this.message, this.isUnavailable = false});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, isUnavailable];
 }
 
 // Payment States
