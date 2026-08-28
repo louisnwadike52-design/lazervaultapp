@@ -172,6 +172,9 @@ class _WaterQuickBuyState extends State<WaterQuickBuy> with TransactionPinMixin 
       _provider = p;
       _validation = null;
       _validateError = null;
+      // A different provider has its own min/max bounds, so an armed
+      // auto-pay amount may no longer be valid — clear it.
+      _clearPendingAutoPay();
     });
     _recomputeExistingBeneficiary();
     if (_customerController.text.trim().length >= 4) _validateCustomer();
@@ -318,18 +321,29 @@ class _WaterQuickBuyState extends State<WaterQuickBuy> with TransactionPinMixin 
   }
 
   // ── Inline auto-pay ────────────────────────────────────────────────────────
+
+  /// What the auto-pay schedule itself needs: just a provider (the amount and
+  /// cadence are captured inside the sheet). Deliberately NOT [_ready], which
+  /// also demands the customer-validation RPC — gating on that hid this card
+  /// entirely while "Save this account" stayed visible, so the feature looked
+  /// like it didn't exist. The pay path still enforces [_ready].
+  bool get _canScheduleAutoPay => _provider != null;
+
+  /// Drops an un-submitted auto-pay selection. Safe inside `setState`.
+  void _clearPendingAutoPay() {
+    _autoEnabled = false;
+    _autoSummary = null;
+    _rolloverAmount = null;
+    _rolloverFrequency = null;
+    _rolloverDayOfWeek = null;
+    _rolloverDayOfMonth = null;
+    _rolloverExecutionHour = null;
+    _rolloverExecutionMinute = null;
+  }
+
   Future<void> _onToggleAuto(bool value) async {
     if (!value) {
-      setState(() {
-        _autoEnabled = false;
-        _autoSummary = null;
-        _rolloverAmount = null;
-        _rolloverFrequency = null;
-        _rolloverDayOfWeek = null;
-        _rolloverDayOfMonth = null;
-        _rolloverExecutionHour = null;
-        _rolloverExecutionMinute = null;
-      });
+      setState(_clearPendingAutoPay);
       return;
     }
     await _openAutoRechargeSheet();
@@ -405,48 +419,58 @@ class _WaterQuickBuyState extends State<WaterQuickBuy> with TransactionPinMixin 
 
   Widget _autoRechargeCard() {
     final on = _autoEnabled && _rolloverAmount != null;
-    return GestureDetector(
-      onTap: on ? _openAutoRechargeSheet : null,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: _card,
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: _border),
+    final canSchedule = _canScheduleAutoPay;
+    return Opacity(
+      opacity: canSchedule ? 1 : 0.5,
+      child: GestureDetector(
+        onTap: (on && canSchedule) ? _openAutoRechargeSheet : null,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            color: _card,
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: _border),
+          ),
+          child: Row(children: [
+            Container(
+              width: 36.w,
+              height: 36.w,
+              decoration: BoxDecoration(
+                color: _accent.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Icon(Icons.autorenew, color: _accent, size: 18.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Auto-pay',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600)),
+                  SizedBox(height: 2.h),
+                  Text(
+                    on
+                        ? (_autoSummary ?? 'Pay this bill on a schedule')
+                        : canSchedule
+                            ? 'Pay this bill on a schedule'
+                            : 'Pick a provider to set up auto-pay',
+                    style: GoogleFonts.inter(color: _muted, fontSize: 11.sp),
+                  ),
+                ],
+              ),
+            ),
+            Switch.adaptive(
+              value: _autoEnabled,
+              onChanged: canSchedule ? _onToggleAuto : null,
+              activeThumbColor: const Color(0xFFA78BFA),
+            ),
+          ]),
         ),
-        child: Row(children: [
-          Container(
-            width: 36.w,
-            height: 36.w,
-            decoration: BoxDecoration(
-              color: _accent.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Icon(Icons.autorenew, color: _accent, size: 18.sp),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Auto-pay',
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600)),
-                SizedBox(height: 2.h),
-                Text(on ? _autoSummary! : 'Pay this bill on a schedule',
-                    style: GoogleFonts.inter(color: _muted, fontSize: 11.sp)),
-              ],
-            ),
-          ),
-          Switch.adaptive(
-            value: _autoEnabled,
-            onChanged: _onToggleAuto,
-            activeThumbColor: const Color(0xFFA78BFA),
-          ),
-        ]),
       ),
     );
   }
@@ -475,9 +499,12 @@ class _WaterQuickBuyState extends State<WaterQuickBuy> with TransactionPinMixin 
         if (_ready) ...[
           SizedBox(height: 20.h),
           _confirmationCard(),
-          SizedBox(height: 12.h),
-          _autoRechargeCard(),
         ],
+        // Auto-pay sits OUTSIDE the `_ready` gate so it is discoverable
+        // without waiting on the customer-validation RPC
+        // (see [_canScheduleAutoPay]).
+        SizedBox(height: 12.h),
+        _autoRechargeCard(),
         SizedBox(height: 14.h),
         _saveBeneficiaryToggle(),
         SizedBox(height: 16.h),

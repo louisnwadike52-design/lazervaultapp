@@ -24,7 +24,14 @@ import '../../domain/entities/smart_card_validation_entity.dart';
 import '../../domain/entities/tv_package_entity.dart';
 import '../widgets/cable_tv_rollover_preference_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+
+
 part 'cable_tv_payment_confirmation_screen_widgets.dart';
+
+/// Upper bound on the saved-state probe. The probe only decides whether to
+/// pre-tick / lock the save + auto-renew toggles, so it must never be able
+/// to block them from rendering. On timeout we fail open and show them.
+const Duration _probeTimeout = Duration(seconds: 8);
 
 
 /// Confirm-payment screen for cable TV subscriptions. Mirrors the data
@@ -134,7 +141,10 @@ class _CableTVPaymentConfirmationScreenState
       final providerCode = provider.serviceId.toLowerCase();
 
       final ds = GetIt.I<CableTVBeneficiaryRemoteDataSource>();
-      final beneficiaries = await ds.getBeneficiaries();
+      // Fail OPEN: a hung probe must never leave the toggles stuck behind
+      // the 'Checking saved state…' spinner — that hides auto-renew entirely.
+      final beneficiaries =
+          await ds.getBeneficiaries().timeout(_probeTimeout);
       CableTVBeneficiary? match;
       for (final b in beneficiaries) {
         if (b.smartCardNumber == smartCardNumber &&
@@ -147,7 +157,9 @@ class _CableTVPaymentConfirmationScreenState
       CableTVAutoRecharge? autoMatch;
       if (match != null) {
         try {
-          final recharges = await ds.getAutoRecharges(status: 'active');
+          final recharges = await ds
+              .getAutoRecharges(status: 'active')
+              .timeout(_probeTimeout);
           for (final ar in recharges) {
             if (ar.beneficiaryId == match.id && ar.status == 'active') {
               autoMatch = ar;

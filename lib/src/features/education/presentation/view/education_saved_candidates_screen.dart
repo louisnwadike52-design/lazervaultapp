@@ -8,6 +8,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_beneficiary_item.dart';
 import '../../domain/entities/education_beneficiary.dart';
 import '../../domain/entities/education_provider_entity.dart';
+import '../../domain/repositories/education_repository.dart';
 import '../cubit/education_beneficiary_cubit.dart';
 import '../cubit/education_beneficiary_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -28,6 +29,9 @@ class _EducationSavedCandidatesScreenState
   List<EducationBeneficiary>? _beneficiaries;
   bool _loading = true;
   String? _error;
+  /// Guards against double-taps on "Buy PIN" while the provider
+  /// catalogue is being resolved.
+  bool _resolvingRebuy = false;
 
   static const Color _primary = Color(0xFF4E03D0);
 
@@ -289,29 +293,105 @@ class _EducationSavedCandidatesScreenState
     );
   }
 
-  /// Route a saved candidate into the purchase flow. Builds a minimal
-  /// synthetic `EducationProviderEntity` and passes `rebuyPurchase` so
-  /// the purchase screen pre-fills billers code + phone if available.
-  void _startRepeatPurchase(EducationBeneficiary b) {
-    final provider = EducationProviderEntity(
-      id: b.providerCode,
-      name: b.providerName,
-      serviceId: b.examType.toLowerCase(),
-      variationCode: '',
-      logoUrl: '',
-      isActive: true,
-      amount: b.lastAmount ?? 0,
-      description: b.providerName,
-    );
-    Get.toNamed(
-      AppRoutes.educationPurchase,
-      arguments: <String, dynamic>{
-        'provider': provider,
-        'rebuyPurchase': <String, dynamic>{
-          'billersCode': b.candidateNumber,
-          'quantity': 1,
+  /// Route a saved candidate into the purchase flow with the REAL provider.
+  ///
+  /// This used to synthesise an `EducationProviderEntity` with
+  /// `variationCode: ''` and `amount: lastAmount ?? 0`. Both are load-bearing:
+  /// `education_payment_processing_screen.dart` sends `provider.variationCode`
+  /// straight to `purchasePin`, and the purchase screen prices the order off
+  /// `provider.amount`. So a repeat purchase went out with an empty variation
+  /// code — and at ₦0 whenever the candidate had no recorded `lastAmount`.
+  ///
+  /// We now resolve the live provider by code/exam type and refuse to
+  /// navigate if it can't be found, rather than starting an unfulfillable
+  /// purchase.
+  Future<void> _startRepeatPurchase(EducationBeneficiary b) async {
+    if (_resolvingRebuy) return;
+    setState(() => _resolvingRebuy = true);
+    try {
+      final result = await GetIt.I<EducationRepository>()
+          .getProviders(activeOnly: true)
+          .timeout(const Duration(seconds: 12));
+      if (!mounted) return;
+
+      EducationProviderEntity? provider;
+      String? failureMessage;
+      result.fold(
+        (failure) => failureMessage = failure.message,
+        (providers) => provider = _matchProvider(providers, b),
+      );
+
+      if (failureMessage != null) {
+        _snack('Couldn\'t load exam products', failureMessage!);
+        return;
+      }
+      final resolved = provider;
+      if (resolved == null) {
+        _snack(
+          '${b.providerName} unavailable',
+          'This exam product isn\'t currently on sale, so we can\'t start a '
+              'repeat purchase. Try again from the Education home screen.',
+        );
+        return;
+      }
+
+      Get.toNamed(
+        AppRoutes.educationPurchase,
+        arguments: <String, dynamic>{
+          'provider': resolved,
+          'rebuyPurchase': <String, dynamic>{
+            'billersCode': b.candidateNumber,
+            'quantity': 1,
+          },
         },
-      },
+      );
+    } catch (_) {
+      if (!mounted) return;
+      _snack(
+        'Couldn\'t start repeat purchase',
+        'We couldn\'t reach the exam-product catalogue. Check your connection '
+            'and try again.',
+      );
+    } finally {
+      if (mounted) setState(() => _resolvingRebuy = false);
+    }
+  }
+
+  /// Match a saved candidate to a live provider. Providers are keyed
+  /// inconsistently across billers, so try id, then serviceId/exam type,
+  /// then name — all case-insensitively.
+  EducationProviderEntity? _matchProvider(
+    List<EducationProviderEntity> providers,
+    EducationBeneficiary b,
+  ) {
+    if (providers.isEmpty) return null;
+    final code = b.providerCode.toLowerCase();
+    final exam = b.examType.toLowerCase();
+    final name = b.providerName.toLowerCase();
+    for (final p in providers) {
+      if (p.id.toLowerCase() == code) return p;
+    }
+    for (final p in providers) {
+      if (p.serviceId.toLowerCase() == exam) return p;
+    }
+    for (final p in providers) {
+      if (p.serviceId.toLowerCase() == code) return p;
+    }
+    for (final p in providers) {
+      if (p.name.toLowerCase() == name) return p;
+    }
+    return null;
+  }
+
+  void _snack(String title, String message) {
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: const Color(0xFF1F1F1F),
+      colorText: Colors.white,
+      duration: const Duration(seconds: 5),
+      margin: EdgeInsets.all(16.w),
     );
   }
 

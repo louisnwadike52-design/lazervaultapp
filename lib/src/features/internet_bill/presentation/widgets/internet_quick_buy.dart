@@ -219,6 +219,10 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
       _validation = null;
       _validateError = null;
       _package = null;
+      // Changing provider invalidates the plan the schedule was built
+      // around, so drop any pending auto-renew rather than carrying a
+      // stale amount/summary into the purchase.
+      _clearPendingAutoRenew();
     });
     _fetchingPackages = true;
     _packageState.value =
@@ -279,6 +283,18 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
       _package != null &&
       _effectiveAmount > 0;
 
+  /// What the auto-renew schedule itself actually needs: a provider, a plan
+  /// and a non-zero amount. Deliberately does NOT require [_validation] —
+  /// [_openAutoRechargeSheet] only reads provider + package, and the pay path
+  /// still enforces [_ready], so an unvalidated account can never be charged.
+  ///
+  /// Keeping these separate is the fix for auto-renew being invisible: the
+  /// card used to sit inside `if (_ready)`, so it only appeared once the
+  /// account-validation RPC came back, while "Save this account" showed
+  /// immediately. Users reasonably concluded the feature didn't exist.
+  bool get _canScheduleAutoRenew =>
+      _provider != null && _package != null && _effectiveAmount > 0;
+
   Future<void> _openPackageSheet() async {
     if (_provider == null) return;
     final picked = await showModalBottomSheet<InternetPackageEntity>(
@@ -299,12 +315,24 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
       ),
     );
     if (picked != null && mounted) {
+      final changed = picked.id != _package?.id;
       setState(() {
         _package = picked;
         // A fixed-price pick invalidates any variable amount typed earlier.
         if (picked.amount > 0) _amountController.clear();
+        // The schedule is priced off the selected plan, so a different plan
+        // must not silently inherit the previous plan's amount/summary.
+        if (changed) _clearPendingAutoRenew();
       });
     }
+  }
+
+  /// Drops an un-submitted auto-renew selection. Safe to call inside an
+  /// existing `setState` — it only mutates fields.
+  void _clearPendingAutoRenew() {
+    _autoEnabled = false;
+    _autoSummary = null;
+    _rolloverPref = null;
   }
 
   // ── Purchase (runs INSIDE the TX-PIN sheet's processing beat) ──────────────
@@ -481,48 +509,63 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
 
   Widget _autoRechargeCard() {
     final on = _autoEnabled && _rolloverPref != null;
-    return GestureDetector(
-      onTap: on ? _openAutoRechargeSheet : null,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: _card,
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: _border),
+    final canSchedule = _canScheduleAutoRenew;
+    // Tapping the body re-opens the schedule editor once one exists; before
+    // that the Switch is the affordance. When we can't schedule yet the whole
+    // card is inert and explains why, rather than being hidden outright.
+    return Opacity(
+      opacity: canSchedule ? 1 : 0.5,
+      child: GestureDetector(
+        onTap: (on && canSchedule) ? _openAutoRechargeSheet : null,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            color: _card,
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: _border),
+          ),
+          child: Row(children: [
+            Container(
+              width: 36.w,
+              height: 36.w,
+              decoration: BoxDecoration(
+                color: _accent.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Icon(Icons.autorenew, color: _accent, size: 18.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Auto-renew',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600)),
+                  SizedBox(height: 2.h),
+                  // `_autoSummary` is only non-null while `on`, so read it
+                  // defensively rather than with `!`.
+                  Text(
+                    on
+                        ? (_autoSummary ?? 'Renew this plan on a schedule')
+                        : canSchedule
+                            ? 'Renew this plan on a schedule'
+                            : 'Pick a plan to set up auto-renew',
+                    style: GoogleFonts.inter(color: _muted, fontSize: 11.sp),
+                  ),
+                ],
+              ),
+            ),
+            Switch.adaptive(
+              value: _autoEnabled,
+              onChanged: canSchedule ? _onToggleAuto : null,
+              activeThumbColor: const Color(0xFFA78BFA),
+            ),
+          ]),
         ),
-        child: Row(children: [
-          Container(
-            width: 36.w,
-            height: 36.w,
-            decoration: BoxDecoration(
-              color: _accent.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Icon(Icons.autorenew, color: _accent, size: 18.sp),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Auto-renew',
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600)),
-                SizedBox(height: 2.h),
-                Text(on ? _autoSummary! : 'Renew this plan on a schedule',
-                    style: GoogleFonts.inter(color: _muted, fontSize: 11.sp)),
-              ],
-            ),
-          ),
-          Switch.adaptive(
-            value: _autoEnabled,
-            onChanged: _onToggleAuto,
-            activeThumbColor: const Color(0xFFA78BFA),
-          ),
-        ]),
       ),
     );
   }
@@ -555,9 +598,12 @@ class _InternetQuickBuyState extends State<InternetQuickBuy>
         if (_ready) ...[
           SizedBox(height: 20.h),
           _confirmationCard(),
-          SizedBox(height: 12.h),
-          _autoRechargeCard(),
         ],
+        // Auto-renew sits OUTSIDE the `_ready` gate so it is discoverable
+        // from the moment a plan is picked — it must not wait on the
+        // account-validation RPC (see [_canScheduleAutoRenew]).
+        SizedBox(height: 12.h),
+        _autoRechargeCard(),
         SizedBox(height: 14.h),
         _saveBeneficiaryToggle(),
         SizedBox(height: 16.h),

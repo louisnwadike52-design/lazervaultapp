@@ -12,7 +12,14 @@ import '../../domain/entities/water_beneficiary.dart';
 import '../../domain/entities/water_provider_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/screens/partner_webview_screen.dart';
+
+
 part 'water_bill_payment_confirmation_screen_new_widgets.dart';
+
+/// Upper bound on the saved-state probe. The probe only decides whether to
+/// pre-tick / lock the save + auto-renew toggles, so it must never be able
+/// to block them from rendering. On timeout we fail open and show them.
+const Duration _probeTimeout = Duration(seconds: 8);
 
 
 /// Water Bill payment confirmation.
@@ -63,7 +70,9 @@ class _WaterBillPaymentConfirmationScreenNewState
       final providerCode = provider.providerCode.toUpperCase();
 
       final ds = GetIt.I<WaterBeneficiaryRemoteDataSource>();
-      final beneficiaries = await ds.getBeneficiaries();
+      // Fail OPEN: a hung probe must never hide the auto-pay toggle.
+      final beneficiaries =
+          await ds.getBeneficiaries().timeout(_probeTimeout);
       WaterBeneficiary? match;
       for (final b in beneficiaries) {
         if (b.accountNumber == customerNumber &&
@@ -76,7 +85,9 @@ class _WaterBillPaymentConfirmationScreenNewState
       WaterAutoRecharge? autoMatch;
       if (match != null) {
         try {
-          final recharges = await ds.getAutoRecharges(status: 'active');
+          final recharges = await ds
+              .getAutoRecharges(status: 'active')
+              .timeout(_probeTimeout);
           for (final ar in recharges) {
             if (ar.beneficiaryId == match.id && ar.status == 'active') {
               autoMatch = ar;

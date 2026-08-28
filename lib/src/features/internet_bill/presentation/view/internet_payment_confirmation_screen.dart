@@ -19,7 +19,14 @@ import '../cubit/internet_beneficiary_cubit.dart';
 import '../widgets/internet_rollover_preference_sheet.dart';
 import '../../data/datasources/internet_beneficiary_remote_datasource.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+
+
 part 'internet_payment_confirmation_screen_widgets.dart';
+
+/// Upper bound on the saved-state probe. The probe only decides whether to
+/// pre-tick / lock the save + auto-renew toggles, so it must never be able
+/// to block them from rendering. On timeout we fail open and show them.
+const Duration _probeTimeout = Duration(seconds: 8);
 
 
 /// Confirm-payment screen for internet subscriptions. Mirrors the data
@@ -84,8 +91,11 @@ class _InternetPaymentConfirmationScreenState
       final providerCode = _providerCodeFor(provider.serviceId);
 
       final ds = GetIt.I<InternetBeneficiaryRemoteDataSource>();
-      final beneficiaries =
-          await ds.getBeneficiaries(providerCode: providerCode);
+      // Fail OPEN: a hung probe must never leave the toggles stuck behind
+      // the loading state — that hides the rollover option entirely.
+      final beneficiaries = await ds
+          .getBeneficiaries(providerCode: providerCode)
+          .timeout(_probeTimeout);
       InternetBeneficiary? match;
       for (final b in beneficiaries) {
         if (b.accountNumber == accountNumber &&
@@ -97,7 +107,9 @@ class _InternetPaymentConfirmationScreenState
 
       InternetAutoRecharge? rolloverMatch;
       if (match != null) {
-        final recharges = await ds.getAutoRecharges(status: 'active');
+        final recharges = await ds
+            .getAutoRecharges(status: 'active')
+            .timeout(_probeTimeout);
         for (final ar in recharges) {
           if (ar.beneficiaryId == match.id && ar.status == 'active') {
             rolloverMatch = ar;

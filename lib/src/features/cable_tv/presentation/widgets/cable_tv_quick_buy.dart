@@ -217,6 +217,9 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
       _validation = null;
       _validateError = null;
       _package = null;
+      // Changing provider invalidates the package the schedule was priced
+      // from, so drop any pending auto-renew instead of carrying it over.
+      _clearPendingAutoRenew();
     });
     _fetchingPackages = true;
     _packageState.value = const BillListFetchState<TVPackageEntity>.loading();
@@ -278,7 +281,15 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
         onRetry: _reloadPackages,
       ),
     );
-    if (picked != null && mounted) setState(() => _package = picked);
+    if (picked != null && mounted) {
+      final changed = picked.id != _package?.id;
+      setState(() {
+        _package = picked;
+        // A different package has a different price, so an already-armed
+        // auto-renew must not inherit the previous package's amount.
+        if (changed) _clearPendingAutoRenew();
+      });
+    }
   }
 
   // ── Purchase (runs INSIDE the TX-PIN sheet's processing beat) ──────────────
@@ -372,13 +383,24 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
   }
 
   // ── Inline auto-renew ────────────────────────────────────────────────────────
+
+  /// What the auto-renew schedule itself needs: a provider and a package to
+  /// price it from. Deliberately NOT [_ready] — that also demands the
+  /// smart-card validation RPC, which used to hide this card entirely while
+  /// "Save this smart card" was visible, so the feature looked absent. The
+  /// pay path still enforces [_ready], so nothing can be charged unvalidated.
+  bool get _canScheduleAutoRenew => _provider != null && _package != null;
+
+  /// Drops an un-submitted auto-renew selection. Safe inside `setState`.
+  void _clearPendingAutoRenew() {
+    _autoEnabled = false;
+    _autoSummary = null;
+    _rolloverPref = null;
+  }
+
   Future<void> _onToggleAuto(bool value) async {
     if (!value) {
-      setState(() {
-        _autoEnabled = false;
-        _autoSummary = null;
-        _rolloverPref = null;
-      });
+      setState(_clearPendingAutoRenew);
       return;
     }
     await _openAutoRechargeSheet();
@@ -456,48 +478,59 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
 
   Widget _autoRechargeCard() {
     final on = _autoEnabled && _rolloverPref != null;
-    return GestureDetector(
-      onTap: on ? _openAutoRechargeSheet : null,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: _card,
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: _border),
+    final canSchedule = _canScheduleAutoRenew;
+    return Opacity(
+      opacity: canSchedule ? 1 : 0.5,
+      child: GestureDetector(
+        onTap: (on && canSchedule) ? _openAutoRechargeSheet : null,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            color: _card,
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: _border),
+          ),
+          child: Row(children: [
+            Container(
+              width: 36.w,
+              height: 36.w,
+              decoration: BoxDecoration(
+                color: _accent.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Icon(Icons.autorenew, color: _accent, size: 18.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Auto-renew',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600)),
+                  SizedBox(height: 2.h),
+                  Text(
+                    on
+                        ? (_autoSummary ??
+                            'Renew this subscription on a schedule')
+                        : canSchedule
+                            ? 'Renew this subscription on a schedule'
+                            : 'Pick a package to set up auto-renew',
+                    style: GoogleFonts.inter(color: _muted, fontSize: 11.sp),
+                  ),
+                ],
+              ),
+            ),
+            Switch.adaptive(
+              value: _autoEnabled,
+              onChanged: canSchedule ? _onToggleAuto : null,
+              activeThumbColor: const Color(0xFFA78BFA),
+            ),
+          ]),
         ),
-        child: Row(children: [
-          Container(
-            width: 36.w,
-            height: 36.w,
-            decoration: BoxDecoration(
-              color: _accent.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Icon(Icons.autorenew, color: _accent, size: 18.sp),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Auto-renew',
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600)),
-                SizedBox(height: 2.h),
-                Text(on ? _autoSummary! : 'Renew this subscription on a schedule',
-                    style: GoogleFonts.inter(color: _muted, fontSize: 11.sp)),
-              ],
-            ),
-          ),
-          Switch.adaptive(
-            value: _autoEnabled,
-            onChanged: _onToggleAuto,
-            activeThumbColor: const Color(0xFFA78BFA),
-          ),
-        ]),
       ),
     );
   }
@@ -528,9 +561,12 @@ class _CableTVQuickBuyState extends State<CableTVQuickBuy>
         if (_ready) ...[
           SizedBox(height: 20.h),
           _confirmationCard(),
-          SizedBox(height: 12.h),
-          _autoRechargeCard(),
         ],
+        // Auto-renew sits OUTSIDE the `_ready` gate so it is discoverable as
+        // soon as a package is picked, rather than waiting on the smart-card
+        // validation RPC (see [_canScheduleAutoRenew]).
+        SizedBox(height: 12.h),
+        _autoRechargeCard(),
         SizedBox(height: 14.h),
         _saveBeneficiaryControl(),
         SizedBox(height: 16.h),
