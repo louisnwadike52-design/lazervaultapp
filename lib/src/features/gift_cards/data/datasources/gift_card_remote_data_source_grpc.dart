@@ -196,9 +196,9 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
       case pb.BuyErrorCode.BUY_ERROR_PROVIDER_MISMATCH:
         return 'Gift card catalog has been updated. Please browse brands again and try your purchase.';
       case pb.BuyErrorCode.BUY_ERROR_OUT_OF_STOCK:
-        return 'This gift card is currently sold out. Please try a different card.';
+        return 'This gift card is currently sold out. You have not been charged. Please try a different card.';
       case pb.BuyErrorCode.BUY_ERROR_PRODUCT_UNAVAILABLE:
-        return 'This gift card is temporarily unavailable. Please try again later.';
+        return 'This gift card is not available right now. You have not been charged. Please try a different card or amount.';
       case pb.BuyErrorCode.BUY_ERROR_DUPLICATE_ORDER:
         return 'This order is already being processed.';
       case pb.BuyErrorCode.BUY_ERROR_RATE_LIMITED:

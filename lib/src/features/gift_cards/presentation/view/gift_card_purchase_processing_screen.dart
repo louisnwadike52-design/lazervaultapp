@@ -32,6 +32,10 @@ class _GiftCardPurchaseProcessingScreenState
     extends State<GiftCardPurchaseProcessingScreen> {
   bool _purchaseStarted = false;
   bool _hasError = false;
+
+  /// False when retrying cannot succeed (card unavailable / sold out), which
+  /// swaps the primary action from "Try Again" to browsing other cards.
+  bool _errorRetryable = true;
   String _errorTitle = '';
   String _errorMessage = '';
   IconData _errorIcon = Icons.error_outline;
@@ -436,6 +440,10 @@ class _GiftCardPurchaseProcessingScreenState
     String message = 'An error occurred while processing your purchase.';
     IconData icon = Icons.error_outline;
     Color iconColor = const Color(0xFFEF4444);
+    // Retrying an unavailable card just fails again. Offering "Try Again" as
+    // the primary action there trains people to hammer a button that cannot
+    // work; the useful move is to go pick a different card.
+    bool retryable = true;
 
     if (state is GiftCardInsufficientFunds) {
       title = 'Insufficient Funds';
@@ -446,8 +454,10 @@ class _GiftCardPurchaseProcessingScreenState
     } else if (state is GiftCardSoldOut) {
       title = 'Sold Out';
       message =
-          '${state.brandName} gift cards are currently sold out. Please try again later.';
+          '${state.brandName} gift cards are currently sold out. You have not been charged. Please try a different card.';
       icon = Icons.inventory_2_outlined;
+      iconColor = const Color(0xFFFB923C);
+      retryable = false;
     } else if (state is GiftCardNetworkError) {
       title = 'Network Error';
       message = friendlyGiftCardError(state.message);
@@ -476,6 +486,18 @@ class _GiftCardPurchaseProcessingScreenState
       icon = Icons.search_off_rounded;
     } else if (state is GiftCardPurchaseError) {
       message = friendlyGiftCardError(state.message);
+      // The server distinguishes "this card cannot be sold right now" from a
+      // generic failure, and only sends it once the hold is released. Present
+      // it as its own outcome rather than a scary red error.
+      final lower = message.toLowerCase();
+      if (lower.contains('not available') ||
+          lower.contains('unavailable') ||
+          lower.contains('sold out')) {
+        title = 'Not Available';
+        icon = Icons.inventory_2_outlined;
+        iconColor = const Color(0xFFFB923C);
+        retryable = false;
+      }
     }
 
     setState(() {
@@ -484,6 +506,7 @@ class _GiftCardPurchaseProcessingScreenState
       _errorMessage = message;
       _errorIcon = icon;
       _errorIconColor = iconColor;
+      _errorRetryable = retryable;
     });
   }
 
@@ -533,7 +556,14 @@ class _GiftCardPurchaseProcessingScreenState
             SizedBox(
               width: double.infinity,
               child: GestureDetector(
-                onTap: _retryPurchase,
+                // Primary action is whatever can actually succeed. Retrying an
+                // unavailable card cannot, so it becomes "Browse other cards"
+                // and lands on the catalogue with the stack cleared, so Back
+                // never returns to a dead processing screen for a purchase that
+                // already resolved.
+                onTap: _errorRetryable
+                    ? _retryPurchase
+                    : () => Get.offAllNamed(AppRoutes.giftCards),
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
@@ -549,7 +579,7 @@ class _GiftCardPurchaseProcessingScreenState
                   ),
                   child: Center(
                     child: Text(
-                      'Try Again',
+                      _errorRetryable ? 'Try Again' : 'Browse other cards',
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
@@ -561,26 +591,30 @@ class _GiftCardPurchaseProcessingScreenState
               ),
             ),
             SizedBox(height: 12.h),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () => Get.offAllNamed(AppRoutes.giftCards),
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14.r),
+            // Only shown alongside "Try Again". When the card is unavailable
+            // the primary button already goes here, so a second control saying
+            // the same thing is noise.
+            if (_errorRetryable)
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Get.offAllNamed(AppRoutes.giftCards),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
                   ),
-                ),
-                child: Text(
-                  'Back to Gift Cards',
-                  style: GoogleFonts.inter(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF9CA3AF),
+                  child: Text(
+                    'Back to Gift Cards',
+                    style: GoogleFonts.inter(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF9CA3AF),
+                    ),
                   ),
                 ),
               ),
-            ),
             SizedBox(height: 20.h),
           ],
         ),
