@@ -24,28 +24,39 @@ const Color _preOrderAmberSoft = Color(0x1AF59E0B);
 /// Compact pill for a catalogue tile. Keep it small: it sits alongside the
 /// price on a dense grid card.
 class PreOrderBadge extends StatelessWidget {
-  const PreOrderBadge({super.key});
+  const PreOrderBadge({super.key, this.solid = false});
+
+  /// Solid fill for placement over a light surface (the white logo plate on a
+  /// catalogue tile), where the translucent amber wash would wash out.
+  final bool solid;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
       decoration: BoxDecoration(
-        color: _preOrderAmberSoft,
+        color: solid ? _preOrderAmber : _preOrderAmberSoft,
         borderRadius: BorderRadius.circular(6.r),
-        border: Border.all(color: _preOrderAmber.withValues(alpha: 0.35)),
+        border: Border.all(
+          color:
+              solid ? _preOrderAmber : _preOrderAmber.withValues(alpha: 0.35),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.schedule_rounded, size: 10.sp, color: _preOrderAmber),
+          Icon(
+            Icons.schedule_rounded,
+            size: 10.sp,
+            color: solid ? Colors.white : _preOrderAmber,
+          ),
           SizedBox(width: 3.w),
           Text(
             'Pre-order',
             style: GoogleFonts.inter(
               fontSize: 9.sp,
               fontWeight: FontWeight.w600,
-              color: _preOrderAmber,
+              color: solid ? Colors.white : _preOrderAmber,
             ),
           ),
         ],

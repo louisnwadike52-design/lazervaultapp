@@ -723,30 +723,44 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                height: 32.h,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12.r),
-                  child: CachedNetworkImage(
-                    imageUrl: brand.logoUrl,
-                    fit: BoxFit.contain,
-                    placeholder: (context, url) => Icon(
-                      Icons.image_rounded,
-                      color: Colors.grey.shade400,
-                      size: 24.sp,
+              // Pre-order marker overlays the logo plate rather than adding a
+              // row: the tile is a fixed 1.28 aspect ratio with a Spacer, so an
+              // extra line of content risks a RenderFlex overflow on shorter
+              // screens. Solid fill because the plate underneath is white.
+              Stack(
+                children: [
+                  Container(
+                    height: 32.h,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
-                    errorWidget: (context, url, error) => Icon(
-                      Icons.card_giftcard_rounded,
-                      color: Colors.grey.shade400,
-                      size: 24.sp,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12.r),
+                      child: CachedNetworkImage(
+                        imageUrl: brand.logoUrl,
+                        fit: BoxFit.contain,
+                        placeholder: (context, url) => Icon(
+                          Icons.image_rounded,
+                          color: Colors.grey.shade400,
+                          size: 24.sp,
+                        ),
+                        errorWidget: (context, url, error) => Icon(
+                          Icons.card_giftcard_rounded,
+                          color: Colors.grey.shade400,
+                          size: 24.sp,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  if (brand.preOrder)
+                    Positioned(
+                      top: 3.h,
+                      right: 3.w,
+                      child: const PreOrderBadge(solid: true),
+                    ),
+                ],
               ),
               SizedBox(height: 8.h),
               Text(
@@ -796,12 +810,6 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                     color: const Color(0xFF10B981),
                   ),
                 ),
-              ],
-              // Pre-order caveat next to the price: the two facts that decide
-              // whether to tap are "what does it cost" and "when do I get it".
-              if (brand.preOrder) ...[
-                SizedBox(height: 3.h),
-                const PreOrderBadge(),
               ],
               if (brand.discountPercentage > 0)
                 Container(
