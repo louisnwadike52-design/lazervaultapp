@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
+import 'widgets/pre_order_notice.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/widgets/rich_card_text.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
@@ -82,10 +83,13 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
       _searchController.clear();
       await context.read<GiftCardCubit>().loadGiftCardBrands(
             category: _selectedCategory,
-            countryCode: _selectedCountryCode.isEmpty ? null : _selectedCountryCode,
+            countryCode:
+                _selectedCountryCode.isEmpty ? null : _selectedCountryCode,
           );
     } else {
-      await context.read<GiftCardCubit>().loadSellableCards(countryCode: _kSellCountryCode);
+      await context
+          .read<GiftCardCubit>()
+          .loadSellableCards(countryCode: _kSellCountryCode);
     }
   }
 
@@ -125,56 +129,58 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
           // Opaque tap-outside-to-dismiss for the catalog search field (the
           // global translucent dismiss in main.dart only fires on empty space).
           body: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: GiftCardBackground(child: SafeArea(
-            child: Column(
-              children: [
-                // Header stays static; everything below rises + fades in on load.
-                _buildHeader(),
-                Expanded(
-                  child: ServiceEntranceAnimation(
-                    child: Column(
-                      children: [
-                        SizedBox(height: 12.h),
-                        _buildQuickActions(),
-                        SizedBox(height: 12.h),
-                        _buildBuySellToggle(),
-                        SizedBox(height: 8.h),
-                        _buildSearchAndFilters(),
-                        Expanded(
-                          child: RefreshIndicator(
-                    onRefresh: _onRefresh,
-                    color: InvoiceThemeColors.primaryPurple,
-                    backgroundColor: const Color(0xFF1F1F1F),
-                    // `buildWhen` filters out cubit emissions that belong
-                    // to the OTHER tab's data fetch (SellableCards*,
-                    // SellRate*, SupportedCountriesLoaded, etc.). Without
-                    // it, `context.watch` rebuilt the brand grid every
-                    // time loadSellableCards()/loadSupportedCountries()
-                    // (both kicked off from initState) emitted a state,
-                    // which dropped through the brand-grid fall-through
-                    // and re-triggered loadGiftCardBrands() + flashed
-                    // shimmer over a settled "no brand" / loaded grid.
-                    child: BlocBuilder<GiftCardCubit, GiftCardState>(
-                      buildWhen: (prev, curr) {
-                        return _currentTab == 0
-                            ? _isBrandTabState(curr)
-                            : _isSellTabState(curr);
-                      },
-                      builder: (context, state) => _currentTab == 0
-                          ? _buildBrandsList(state)
-                          : _buildSellableCardsList(state),
-                    ),
-                          ),
+              behavior: HitTestBehavior.opaque,
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: GiftCardBackground(
+                  child: SafeArea(
+                child: Column(
+                  children: [
+                    // Header stays static; everything below rises + fades in on load.
+                    _buildHeader(),
+                    Expanded(
+                      child: ServiceEntranceAnimation(
+                        child: Column(
+                          children: [
+                            SizedBox(height: 12.h),
+                            _buildQuickActions(),
+                            SizedBox(height: 12.h),
+                            _buildBuySellToggle(),
+                            SizedBox(height: 8.h),
+                            _buildSearchAndFilters(),
+                            Expanded(
+                              child: RefreshIndicator(
+                                onRefresh: _onRefresh,
+                                color: InvoiceThemeColors.primaryPurple,
+                                backgroundColor: const Color(0xFF1F1F1F),
+                                // `buildWhen` filters out cubit emissions that belong
+                                // to the OTHER tab's data fetch (SellableCards*,
+                                // SellRate*, SupportedCountriesLoaded, etc.). Without
+                                // it, `context.watch` rebuilt the brand grid every
+                                // time loadSellableCards()/loadSupportedCountries()
+                                // (both kicked off from initState) emitted a state,
+                                // which dropped through the brand-grid fall-through
+                                // and re-triggered loadGiftCardBrands() + flashed
+                                // shimmer over a settled "no brand" / loaded grid.
+                                child:
+                                    BlocBuilder<GiftCardCubit, GiftCardState>(
+                                  buildWhen: (prev, curr) {
+                                    return _currentTab == 0
+                                        ? _isBrandTabState(curr)
+                                        : _isSellTabState(curr);
+                                  },
+                                  builder: (context, state) => _currentTab == 0
+                                      ? _buildBrandsList(state)
+                                      : _buildSellableCardsList(state),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ))),
+              ))),
         ),
       ),
     );
@@ -194,7 +200,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(22.r),
               ),
-              child: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18.sp),
+              child: Icon(Icons.arrow_back_ios_new,
+                  color: Colors.white, size: 18.sp),
             ),
           ),
           SizedBox(width: 12.w),
@@ -230,7 +237,6 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
       ),
     );
   }
-
 
   // Quick actions section — My Cards + Sales History
   Widget _buildQuickActions() {
@@ -329,9 +335,13 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                 controller: _searchController,
                 style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: _currentTab == 0 ? 'Search gift cards...' : 'Search sellable cards...',
-                  hintStyle: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF6B7280)),
-                  prefixIcon: Icon(Icons.search, size: 20.sp, color: const Color(0xFF6B7280)),
+                  hintText: _currentTab == 0
+                      ? 'Search gift cards...'
+                      : 'Search sellable cards...',
+                  hintStyle: GoogleFonts.inter(
+                      fontSize: 14.sp, color: const Color(0xFF6B7280)),
+                  prefixIcon: Icon(Icons.search,
+                      size: 20.sp, color: const Color(0xFF6B7280)),
                   suffixIcon: ValueListenableBuilder<TextEditingValue>(
                     valueListenable: _searchController,
                     builder: (context, value, _) {
@@ -341,7 +351,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                           _searchController.clear();
                           _onSearchChanged('');
                         },
-                        child: Icon(Icons.close, size: 18.sp, color: const Color(0xFF9CA3AF)),
+                        child: Icon(Icons.close,
+                            size: 18.sp, color: const Color(0xFF9CA3AF)),
                       );
                     },
                   ),
@@ -389,7 +400,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     if (_currentTab == 0) {
       // Buy tab: server-side search
       context.read<GiftCardCubit>().searchGiftCardBrands(query,
-        countryCode: _selectedCountryCode.isEmpty ? null : _selectedCountryCode);
+          countryCode:
+              _selectedCountryCode.isEmpty ? null : _selectedCountryCode);
     } else {
       // Sell tab: client-side filter
       setState(() => _sellSearchQuery = query.trim().toLowerCase());
@@ -462,7 +474,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
   void _showCategorySelection() {
     final categories = [
       {'slug': '', 'name': 'All Categories'},
-      ..._dynamicCategories.map((c) => {'slug': c, 'name': _getCategoryName(c)}),
+      ..._dynamicCategories
+          .map((c) => {'slug': c, 'name': _getCategoryName(c)}),
     ];
 
     showModalBottomSheet(
@@ -480,7 +493,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
             children: [
               Center(
                 child: Container(
-                  width: 40.w, height: 4.h,
+                  width: 40.w,
+                  height: 4.h,
                   margin: EdgeInsets.only(bottom: 16.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFF2D2D2D),
@@ -489,31 +503,44 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                 ),
               ),
               Text('Select Category',
-                style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600)),
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600)),
               SizedBox(height: 12.h),
               ...categories.map((cat) {
-                final isSelected = _selectedCategory == (cat['slug']!.isEmpty ? null : cat['slug']);
+                final isSelected = _selectedCategory ==
+                    (cat['slug']!.isEmpty ? null : cat['slug']);
                 return ListTile(
                   dense: true,
                   contentPadding: EdgeInsets.symmetric(horizontal: 8.w),
                   leading: Icon(
                     isSelected ? Icons.check_circle : Icons.circle_outlined,
-                    color: isSelected ? InvoiceThemeColors.primaryPurple : const Color(0xFF6B7280),
+                    color: isSelected
+                        ? InvoiceThemeColors.primaryPurple
+                        : const Color(0xFF6B7280),
                     size: 20.sp,
                   ),
                   title: Text(cat['name']!,
-                    style: GoogleFonts.inter(
-                      color: isSelected ? InvoiceThemeColors.primaryPurple : Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    )),
+                      style: GoogleFonts.inter(
+                        color: isSelected
+                            ? InvoiceThemeColors.primaryPurple
+                            : Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w400,
+                      )),
                   onTap: () {
                     Navigator.pop(ctx);
                     final newCat = cat['slug']!.isEmpty ? null : cat['slug'];
                     setState(() => _selectedCategory = newCat);
                     _searchController.clear();
-                    final cc = _selectedCountryCode.isEmpty ? null : _selectedCountryCode;
-                    context.read<GiftCardCubit>().loadGiftCardBrands(category: newCat, countryCode: cc);
+                    final cc = _selectedCountryCode.isEmpty
+                        ? null
+                        : _selectedCountryCode;
+                    context
+                        .read<GiftCardCubit>()
+                        .loadGiftCardBrands(category: newCat, countryCode: cc);
                   },
                 );
               }),
@@ -557,9 +584,11 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     } else if (state is GiftCardBrandsLoaded) {
       return _buildBrandsGrid(state.brands, hasNext: state.hasNext);
     } else if (state is GiftCardBrandsLoadingMore) {
-      return _buildBrandsGrid(state.currentBrands, hasNext: true, isLoadingMore: true);
+      return _buildBrandsGrid(state.currentBrands,
+          hasNext: true, isLoadingMore: true);
     } else if (state is GiftCardBrandsSearched) {
-      return _buildBrandsGrid(state.brands, hasNext: context.read<GiftCardCubit>().hasNextPage);
+      return _buildBrandsGrid(state.brands,
+          hasNext: context.read<GiftCardCubit>().hasNextPage);
     } else if (state is GiftCardBrandsEmpty) {
       return _buildEmptyState();
     } else if (state is GiftCardTimeoutError) {
@@ -574,7 +603,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
       // Trigger initial load if needed
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.read<GiftCardCubit>().loadGiftCardBrands(
-              countryCode: _selectedCountryCode.isEmpty ? null : _selectedCountryCode,
+              countryCode:
+                  _selectedCountryCode.isEmpty ? null : _selectedCountryCode,
             );
       });
       return _buildLoadingGrid();
@@ -628,7 +658,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     );
   }
 
-  Widget _buildBrandsGrid(List<GiftCardBrand> brands, {bool hasNext = false, bool isLoadingMore = false}) {
+  Widget _buildBrandsGrid(List<GiftCardBrand> brands,
+      {bool hasNext = false, bool isLoadingMore = false}) {
     if (brands.isEmpty) {
       return _buildEmptyState();
     }
@@ -766,6 +797,12 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                   ),
                 ),
               ],
+              // Pre-order caveat next to the price: the two facts that decide
+              // whether to tap are "what does it cost" and "when do I get it".
+              if (brand.preOrder) ...[
+                SizedBox(height: 3.h),
+                const PreOrderBadge(),
+              ],
               if (brand.discountPercentage > 0)
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
@@ -832,15 +869,17 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
               ),
               SizedBox(height: 24.h),
               ElevatedButton(
-                onPressed: () => context.read<GiftCardCubit>().loadGiftCardBrands(
-                      countryCode: _selectedCountryCode,
-                    ),
+                onPressed: () =>
+                    context.read<GiftCardCubit>().loadGiftCardBrands(
+                          countryCode: _selectedCountryCode,
+                        ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: InvoiceThemeColors.primaryPurple,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                   elevation: 0,
                 ),
                 child: Text(
@@ -895,7 +934,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     if (countryCode.length == 2) {
       final int firstLetter = countryCode.codeUnitAt(0) - 0x41 + 0x1F1E6;
       final int secondLetter = countryCode.codeUnitAt(1) - 0x41 + 0x1F1E6;
-      return String.fromCharCode(firstLetter) + String.fromCharCode(secondLetter);
+      return String.fromCharCode(firstLetter) +
+          String.fromCharCode(secondLetter);
     }
     return CountrySelectionBottomsheet.getFlag(countryCode);
   }
@@ -949,13 +989,17 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                   alignment: Alignment.center,
                   margin: EdgeInsets.all(4.w),
                   decoration: BoxDecoration(
-                    color: _currentTab == 0 ? InvoiceThemeColors.primaryPurple : Colors.transparent,
+                    color: _currentTab == 0
+                        ? InvoiceThemeColors.primaryPurple
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Text(
                     'Buy',
                     style: GoogleFonts.inter(
-                      color: _currentTab == 0 ? Colors.white : const Color(0xFF9CA3AF),
+                      color: _currentTab == 0
+                          ? Colors.white
+                          : const Color(0xFF9CA3AF),
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                     ),
@@ -971,20 +1015,26 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                     _searchController.clear();
                     _sellSearchQuery = '';
                     setState(() => _currentTab = 1);
-                    context.read<GiftCardCubit>().loadSellableCards(countryCode: _kSellCountryCode);
+                    context
+                        .read<GiftCardCubit>()
+                        .loadSellableCards(countryCode: _kSellCountryCode);
                   }
                 },
                 child: Container(
                   alignment: Alignment.center,
                   margin: EdgeInsets.all(4.w),
                   decoration: BoxDecoration(
-                    color: _currentTab == 1 ? InvoiceThemeColors.primaryPurple : Colors.transparent,
+                    color: _currentTab == 1
+                        ? InvoiceThemeColors.primaryPurple
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Text(
                     'Sell',
                     style: GoogleFonts.inter(
-                      color: _currentTab == 1 ? Colors.white : const Color(0xFF9CA3AF),
+                      color: _currentTab == 1
+                          ? Colors.white
+                          : const Color(0xFF9CA3AF),
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1057,7 +1107,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
         childAspectRatio: 1.2,
       ),
       itemCount: filteredCards.length,
-      itemBuilder: (context, index) => _buildSellableCardTile(filteredCards[index]),
+      itemBuilder: (context, index) =>
+          _buildSellableCardTile(filteredCards[index]),
     );
   }
 
@@ -1191,13 +1242,16 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
               ),
               SizedBox(height: 24.h),
               ElevatedButton(
-                onPressed: () => context.read<GiftCardCubit>().loadSellableCards(countryCode: _kSellCountryCode),
+                onPressed: () => context
+                    .read<GiftCardCubit>()
+                    .loadSellableCards(countryCode: _kSellCountryCode),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: InvoiceThemeColors.primaryPurple,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                   elevation: 0,
                 ),
                 child: Text(
@@ -1215,5 +1269,4 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
       ],
     );
   }
-
 }

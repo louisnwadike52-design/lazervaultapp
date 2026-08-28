@@ -1,13 +1,13 @@
 import 'package:equatable/equatable.dart';
 part 'gift_card_entity_widgets.dart';
 
-
 class GiftCardBrand extends Equatable {
   final String id;
   final String name;
   final String logoUrl;
   final String category;
   final String description;
+
   /// Recipient (card face value) denominations
   final List<double> denominations;
   final double minAmount;
@@ -18,27 +18,41 @@ class GiftCardBrand extends Equatable {
   final String countryCode;
   final List<GiftCardDenomination> fixedDenominations;
   final double discountPercentage;
+
   /// Recipient/card currency (e.g., "GBP", "USD") — the gift card's face currency
   final String currencyCode;
   final String redemptionInstructions;
+
   /// Provider that supplies this gift card brand (e.g., "reloadly", "prestmit")
   final String providerName;
+
   /// Sender (payment) currency code — what Reloadly charges (e.g., "NGN")
   final String senderCurrencyCode;
+
   /// Sender (payment) denominations — wholesale prices matching each recipient denomination
   final List<double> senderDenominations;
+
   /// Fixed sender denomination objects (paired with recipient denominations)
   final List<GiftCardDenomination> fixedSenderDenominations;
   final double minSenderAmount;
   final double maxSenderAmount;
   final double senderFee;
   final double senderFeePercentage;
+
   /// Reloadly's authoritative denomination model.
   ///   "FIXED" — only listed `fixedDenominations` are valid amounts
   ///   "RANGE" — any value in [minAmount, maxAmount] is valid
   ///   ""      — upstream didn't supply; fall back to the
   ///             fixedDenominations.empty heuristic.
   final String denominationType;
+
+  /// True when the provider does NOT fulfil this card instantly: the order is
+  /// accepted and the code arrives later.
+  ///
+  /// Prestmit flags most of its catalogue this way; Reloadly always sends
+  /// false. Surfaced before payment because "buy a gift card" otherwise
+  /// implies a code on the very next screen.
+  final bool preOrder;
 
   const GiftCardBrand({
     required this.id,
@@ -66,6 +80,7 @@ class GiftCardBrand extends Equatable {
     this.senderFee = 0.0,
     this.senderFeePercentage = 0.0,
     this.denominationType = '',
+    this.preOrder = false,
   });
 
   /// True when Reloadly says this brand accepts custom amounts in the
@@ -118,13 +133,33 @@ class GiftCardBrand extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, name, logoUrl, category, description, denominations,
-    minAmount, maxAmount, isActive, termsAndConditions, productId,
-    countryCode, fixedDenominations, discountPercentage, currencyCode,
-    redemptionInstructions, providerName, senderCurrencyCode,
-    senderDenominations, fixedSenderDenominations, minSenderAmount,
-    maxSenderAmount, senderFee, senderFeePercentage,
-  ];
+        id,
+        name,
+        logoUrl,
+        category,
+        description,
+        denominations,
+        minAmount,
+        maxAmount,
+        isActive,
+        termsAndConditions,
+        productId,
+        countryCode,
+        fixedDenominations,
+        discountPercentage,
+        currencyCode,
+        redemptionInstructions,
+        providerName,
+        senderCurrencyCode,
+        senderDenominations,
+        fixedSenderDenominations,
+        minSenderAmount,
+        maxSenderAmount,
+        senderFee,
+        senderFeePercentage,
+        denominationType,
+        preOrder,
+      ];
 
   Map<String, dynamic> toJson() {
     return {
@@ -147,12 +182,14 @@ class GiftCardBrand extends Equatable {
       'providerName': providerName,
       'senderCurrencyCode': senderCurrencyCode,
       'senderDenominations': senderDenominations,
-      'fixedSenderDenominations': fixedSenderDenominations.map((d) => d.toJson()).toList(),
+      'fixedSenderDenominations':
+          fixedSenderDenominations.map((d) => d.toJson()).toList(),
       'minSenderAmount': minSenderAmount,
       'maxSenderAmount': maxSenderAmount,
       'senderFee': senderFee,
       'senderFeePercentage': senderFeePercentage,
       'denominationType': denominationType,
+      'preOrder': preOrder,
     };
   }
 
@@ -164,8 +201,9 @@ class GiftCardBrand extends Equatable {
       category: json['category'] as String? ?? '',
       description: json['description'] as String? ?? '',
       denominations: (json['denominations'] as List<dynamic>?)
-          ?.map((e) => (e as num).toDouble())
-          .toList() ?? [],
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          [],
       minAmount: (json['minAmount'] as num?)?.toDouble() ?? 0.0,
       maxAmount: (json['maxAmount'] as num?)?.toDouble() ?? 0.0,
       isActive: json['isActive'] as bool? ?? true,
@@ -173,24 +211,33 @@ class GiftCardBrand extends Equatable {
       productId: json['productId'] as int? ?? 0,
       countryCode: json['countryCode'] as String? ?? '',
       fixedDenominations: (json['fixedDenominations'] as List<dynamic>?)
-          ?.map((e) => GiftCardDenomination.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [],
-      discountPercentage: (json['discountPercentage'] as num?)?.toDouble() ?? 0.0,
+              ?.map((e) =>
+                  GiftCardDenomination.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      discountPercentage:
+          (json['discountPercentage'] as num?)?.toDouble() ?? 0.0,
       currencyCode: json['currencyCode'] as String? ?? '',
       redemptionInstructions: json['redemptionInstructions'] as String? ?? '',
       providerName: json['providerName'] as String? ?? '',
       senderCurrencyCode: json['senderCurrencyCode'] as String? ?? '',
       senderDenominations: (json['senderDenominations'] as List<dynamic>?)
-          ?.map((e) => (e as num).toDouble())
-          .toList() ?? [],
-      fixedSenderDenominations: (json['fixedSenderDenominations'] as List<dynamic>?)
-          ?.map((e) => GiftCardDenomination.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [],
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          [],
+      fixedSenderDenominations:
+          (json['fixedSenderDenominations'] as List<dynamic>?)
+                  ?.map((e) =>
+                      GiftCardDenomination.fromJson(e as Map<String, dynamic>))
+                  .toList() ??
+              [],
       minSenderAmount: (json['minSenderAmount'] as num?)?.toDouble() ?? 0.0,
       maxSenderAmount: (json['maxSenderAmount'] as num?)?.toDouble() ?? 0.0,
       senderFee: (json['senderFee'] as num?)?.toDouble() ?? 0.0,
-      senderFeePercentage: (json['senderFeePercentage'] as num?)?.toDouble() ?? 0.0,
+      senderFeePercentage:
+          (json['senderFeePercentage'] as num?)?.toDouble() ?? 0.0,
       denominationType: json['denominationType'] as String? ?? '',
+      preOrder: json['preOrder'] as bool? ?? false,
     );
   }
 }

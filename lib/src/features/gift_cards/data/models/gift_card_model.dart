@@ -61,13 +61,19 @@ class GiftCardModel extends GiftCard {
       status: proto.status,
       purchaseDate: proto.purchaseDate,
       expiryDate: proto.expiryDate,
-      recipientEmail: proto.recipientEmail.isEmpty ? null : proto.recipientEmail,
+      recipientEmail:
+          proto.recipientEmail.isEmpty ? null : proto.recipientEmail,
       recipientName: proto.recipientName.isEmpty ? null : proto.recipientName,
       message: proto.message.isEmpty ? null : proto.message,
-      providerTransactionId: proto.providerTransactionId.isEmpty ? null : proto.providerTransactionId,
-      redemptionCode: proto.redemptionCode.isEmpty ? null : proto.redemptionCode,
+      providerTransactionId: proto.providerTransactionId.isEmpty
+          ? null
+          : proto.providerTransactionId,
+      redemptionCode:
+          proto.redemptionCode.isEmpty ? null : proto.redemptionCode,
       redemptionPin: proto.redemptionPin.isEmpty ? null : proto.redemptionPin,
-      redemptionInstructions: proto.redemptionInstructions.isEmpty ? null : proto.redemptionInstructions,
+      redemptionInstructions: proto.redemptionInstructions.isEmpty
+          ? null
+          : proto.redemptionInstructions,
       countryCode: proto.countryCode.isEmpty ? null : proto.countryCode,
       providerProductId: proto.providerProductId.toInt(),
       discountPercentage: proto.discountPercentage,
@@ -101,7 +107,8 @@ class GiftCardModel extends GiftCard {
       redemptionInstructions: json['redemptionInstructions'] as String?,
       countryCode: json['countryCode'] as String?,
       providerProductId: json['providerProductId'] as int? ?? 0,
-      discountPercentage: (json['discountPercentage'] as num?)?.toDouble() ?? 0.0,
+      discountPercentage:
+          (json['discountPercentage'] as num?)?.toDouble() ?? 0.0,
       senderAmount: (json['senderAmount'] as num?)?.toDouble() ?? 0.0,
       senderCurrency: json['senderCurrency'] as String? ?? '',
       createdAt: json['createdAt'] as String? ?? '',
@@ -137,6 +144,7 @@ class GiftCardBrandModel extends GiftCardBrand {
     super.senderFee,
     super.senderFeePercentage,
     super.denominationType,
+    super.preOrder,
   });
 
   factory GiftCardBrandModel.fromProto(pb.GiftCardBrand proto) {
@@ -177,6 +185,7 @@ class GiftCardBrandModel extends GiftCardBrand {
       senderFee: proto.senderFee,
       senderFeePercentage: proto.senderFeePercentage,
       denominationType: proto.denominationType,
+      preOrder: proto.preOrder,
     );
   }
 
@@ -188,8 +197,9 @@ class GiftCardBrandModel extends GiftCardBrand {
       category: json['category'] as String? ?? '',
       description: json['description'] as String? ?? '',
       denominations: (json['denominations'] as List<dynamic>?)
-          ?.map((e) => (e as num).toDouble())
-          .toList() ?? [],
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          [],
       minAmount: (json['minAmount'] as num?)?.toDouble() ?? 0.0,
       maxAmount: (json['maxAmount'] as num?)?.toDouble() ?? 0.0,
       isActive: json['isActive'] as bool? ?? true,
@@ -197,23 +207,33 @@ class GiftCardBrandModel extends GiftCardBrand {
       productId: json['productId'] as int? ?? 0,
       countryCode: json['countryCode'] as String? ?? '',
       fixedDenominations: (json['fixedDenominations'] as List<dynamic>?)
-          ?.map((e) => GiftCardDenomination.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [],
-      discountPercentage: (json['discountPercentage'] as num?)?.toDouble() ?? 0.0,
+              ?.map((e) =>
+                  GiftCardDenomination.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      discountPercentage:
+          (json['discountPercentage'] as num?)?.toDouble() ?? 0.0,
       currencyCode: json['currencyCode'] as String? ?? '',
       redemptionInstructions: json['redemptionInstructions'] as String? ?? '',
       providerName: json['providerName'] as String? ?? '',
       senderCurrencyCode: json['senderCurrencyCode'] as String? ?? '',
       senderDenominations: (json['senderDenominations'] as List<dynamic>?)
-          ?.map((e) => (e as num).toDouble())
-          .toList() ?? [],
-      fixedSenderDenominations: (json['fixedSenderDenominations'] as List<dynamic>?)
-          ?.map((e) => GiftCardDenomination.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [],
+              ?.map((e) => (e as num).toDouble())
+              .toList() ??
+          [],
+      fixedSenderDenominations:
+          (json['fixedSenderDenominations'] as List<dynamic>?)
+                  ?.map((e) =>
+                      GiftCardDenomination.fromJson(e as Map<String, dynamic>))
+                  .toList() ??
+              [],
       minSenderAmount: (json['minSenderAmount'] as num?)?.toDouble() ?? 0.0,
       maxSenderAmount: (json['maxSenderAmount'] as num?)?.toDouble() ?? 0.0,
       senderFee: (json['senderFee'] as num?)?.toDouble() ?? 0.0,
-      senderFeePercentage: (json['senderFeePercentage'] as num?)?.toDouble() ?? 0.0,
+      senderFeePercentage:
+          (json['senderFeePercentage'] as num?)?.toDouble() ?? 0.0,
+      denominationType: json['denominationType'] as String? ?? '',
+      preOrder: json['preOrder'] as bool? ?? false,
     );
   }
 }

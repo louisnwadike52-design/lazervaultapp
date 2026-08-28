@@ -123,18 +123,18 @@ class _GiftCardPurchaseProcessingScreenState
 
     final args = widget.purchaseArgs;
     context.read<GiftCardCubit>().purchaseGiftCardWithToken(
-      brandId: args.brand.id,
-      amount: args.amount,
-      brand: args.brand,
-      userBalance: args.userBalance,
-      transactionId: args.transactionId,
-      verificationToken: args.verificationToken,
-      productId: args.productId,
-      countryCode: args.countryCode,
-      providerName: args.providerName,
-      senderAmount: args.senderAmount,
-      senderCurrency: args.senderCurrency,
-    );
+          brandId: args.brand.id,
+          amount: args.amount,
+          brand: args.brand,
+          userBalance: args.userBalance,
+          transactionId: args.transactionId,
+          verificationToken: args.verificationToken,
+          productId: args.productId,
+          countryCode: args.countryCode,
+          providerName: args.providerName,
+          senderAmount: args.senderAmount,
+          senderCurrency: args.senderCurrency,
+        );
   }
 
   void _retryPurchase() {
@@ -163,94 +163,103 @@ class _GiftCardPurchaseProcessingScreenState
     // released when this screen is disposed, whatever the outcome.
     return AutoLogoutSuppressed(
       child: PopScope(
-      canPop: false,
-      child: Scaffold(
-        backgroundColor: kGiftCardBgTop,
-        body: GiftCardBackground(child: BlocListener<GiftCardCubit, GiftCardState>(
-          listener: (context, state) {
-            if (state is GiftCardPurchaseCompleted) {
-              _stopPolling();
-              Get.offNamed(
-                AppRoutes.giftCardDetails,
-                arguments: state.giftCard,
-              );
-            } else if (state is GiftCardPurchaseAwaitingProvider) {
-              // Async path: backend returned the row but the provider hasn't
-              // confirmed yet. Poll GetGiftCard until it flips to terminal
-              // (request/response, no WebSocket).
-              _startPolling(state.giftCard);
-            } else if (state is GiftCardPurchaseError ||
-                state is GiftCardInsufficientFunds ||
-                state is GiftCardNetworkError ||
-                state is GiftCardSoldOut ||
-                state is GiftCardTimeoutError ||
-                state is GiftCardServerUnavailable ||
-                state is GiftCardValidationError ||
-                state is GiftCardNotFound) {
-              _stopPolling();
-              _setErrorState(state);
-            }
-          },
-          child: BlocBuilder<GiftCardCubit, GiftCardState>(
-            builder: (context, state) {
-              if (_hasError) return _buildErrorView();
-
-              double progress = 0.0;
-              String currentStep = 'Initializing...';
-
-              if (state is GiftCardPurchaseProcessing) {
-                progress = state.progress;
-                currentStep = state.currentStep;
+        canPop: false,
+        child: Scaffold(
+          backgroundColor: kGiftCardBgTop,
+          body: GiftCardBackground(
+              child: BlocListener<GiftCardCubit, GiftCardState>(
+            listener: (context, state) {
+              if (state is GiftCardPurchaseCompleted) {
+                _stopPolling();
+                Get.offNamed(
+                  AppRoutes.giftCardDetails,
+                  arguments: state.giftCard,
+                );
               } else if (state is GiftCardPurchaseAwaitingProvider) {
-                // Async path: row exists, provider call still pending.
-                // Show steady waiting state until the WebSocket flips us
-                // to Completed via _handleBalanceEvent + refresh.
-                progress = 0.75;
-                currentStep =
-                    'Waiting for confirmation from the provider.';
+                // Async path: backend returned the row but the provider hasn't
+                // confirmed yet. Poll GetGiftCard until it flips to terminal
+                // (request/response, no WebSocket).
+                _startPolling(state.giftCard);
+              } else if (state is GiftCardPurchaseError ||
+                  state is GiftCardInsufficientFunds ||
+                  state is GiftCardNetworkError ||
+                  state is GiftCardSoldOut ||
+                  state is GiftCardTimeoutError ||
+                  state is GiftCardServerUnavailable ||
+                  state is GiftCardValidationError ||
+                  state is GiftCardNotFound) {
+                _stopPolling();
+                _setErrorState(state);
               }
-
-              return SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.all(20.w),
-                  child: Column(
-                    children: [
-                      SizedBox(height: 60.h),
-                      _buildAnimatedIcon(),
-                      SizedBox(height: 40.h),
-                      Text(
-                        'Processing Your Purchase',
-                        style: GoogleFonts.inter(
-                          fontSize: 22.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 12.h),
-                      Text(
-                        currentStep,
-                        style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          color: const Color(0xFF9CA3AF),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 40.h),
-                      _buildProgressBar(progress),
-                      SizedBox(height: 40.h),
-                      _buildStepIndicators(progress),
-                      const Spacer(),
-                      _buildSecurityMessage(),
-                      SizedBox(height: 20.h),
-                    ],
-                  ),
-                ),
-              );
             },
-          ),
-        )),
-      ),
+            child: BlocBuilder<GiftCardCubit, GiftCardState>(
+              builder: (context, state) {
+                if (_hasError) return _buildErrorView();
+
+                final isPreOrder = widget.purchaseArgs.brand.preOrder;
+                double progress = 0.0;
+                String currentStep = 'Initializing...';
+
+                if (state is GiftCardPurchaseProcessing) {
+                  progress = state.progress;
+                  currentStep = state.currentStep;
+                } else if (state is GiftCardPurchaseAwaitingProvider) {
+                  // Async path: row exists, provider call still pending.
+                  // Show steady waiting state until the WebSocket flips us
+                  // to Completed via _handleBalanceEvent + refresh.
+                  progress = 0.75;
+                  currentStep = isPreOrder
+                      // A pre-order can take hours. Telling this user to "wait"
+                      // implies a code is seconds away and leaves them staring at
+                      // a spinner that will not resolve while they watch.
+                      ? 'Your order is placed. The supplier releases the code '
+                          'shortly, and we will notify you when it lands.'
+                      : 'Waiting for confirmation from the provider.';
+                }
+
+                return SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.all(20.w),
+                    child: Column(
+                      children: [
+                        SizedBox(height: 60.h),
+                        _buildAnimatedIcon(),
+                        SizedBox(height: 40.h),
+                        Text(
+                          isPreOrder
+                              ? 'Pre-order Placed'
+                              : 'Processing Your Purchase',
+                          style: GoogleFonts.inter(
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 12.h),
+                        Text(
+                          currentStep,
+                          style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            color: const Color(0xFF9CA3AF),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 40.h),
+                        _buildProgressBar(progress),
+                        SizedBox(height: 40.h),
+                        _buildStepIndicators(progress),
+                        const Spacer(),
+                        _buildSecurityMessage(),
+                        SizedBox(height: 20.h),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          )),
+        ),
       ),
     );
   }
@@ -304,8 +313,8 @@ class _GiftCardPurchaseProcessingScreenState
             value: progress,
             minHeight: 6.h,
             backgroundColor: const Color(0xFF1F1F1F),
-            valueColor:
-                const AlwaysStoppedAnimation<Color>(InvoiceThemeColors.primaryPurple),
+            valueColor: const AlwaysStoppedAnimation<Color>(
+                InvoiceThemeColors.primaryPurple),
           ),
         ),
       ],
@@ -462,7 +471,8 @@ class _GiftCardPurchaseProcessingScreenState
       iconColor = const Color(0xFFFB923C);
     } else if (state is GiftCardNotFound) {
       title = 'Not Found';
-      message = 'The gift card brand could not be found. It may have been removed from the catalog.';
+      message =
+          'The gift card brand could not be found. It may have been removed from the catalog.';
       icon = Icons.search_off_rounded;
     } else if (state is GiftCardPurchaseError) {
       message = friendlyGiftCardError(state.message);
@@ -528,7 +538,10 @@ class _GiftCardPurchaseProcessingScreenState
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [InvoiceThemeColors.primaryPurple, Color(0xFF6366F1)],
+                      colors: [
+                        InvoiceThemeColors.primaryPurple,
+                        Color(0xFF6366F1)
+                      ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     ),

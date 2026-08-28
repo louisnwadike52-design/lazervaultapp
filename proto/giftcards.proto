@@ -561,6 +561,11 @@ message GiftCardBrand {
   // didn't supply it — clients fall back to the
   // fixedDenominations.empty heuristic.
   string denomination_type = 25;
+  // pre_order marks a card the provider does NOT fulfil instantly: the order
+  // is accepted and the code is delivered later, asynchronously. Prestmit
+  // flags most of its catalogue this way; Reloadly always sends false.
+  // The app MUST surface this before payment.
+  bool pre_order = 26;
 }
 
 // Fixed denomination from Reloadly

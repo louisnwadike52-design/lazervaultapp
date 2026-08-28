@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
+import 'widgets/pre_order_notice.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/widgets/rich_card_text.dart';
 import 'package:flutter/services.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
@@ -242,6 +243,10 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                         children: [
                           SizedBox(height: 10.h),
                           _buildBrandCard(),
+                          if (widget.brand.preOrder) ...[
+                            SizedBox(height: 12.h),
+                            const PreOrderNotice(),
+                          ],
                           SizedBox(height: 16.h),
                           _buildAmountSelection(),
                           SizedBox(height: 16.h),
@@ -992,9 +997,16 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
       // buffer).
       final priceNotice =
           'Final price is calculated at the time of purchase using the provider\'s latest rate.';
+      // Pre-order cards are not fulfilled instantly. The PIN sheet is the last
+      // moment before money moves, so the caveat is repeated here even though
+      // the purchase screen already showed it: this is the point of consent.
+      final deliveryNotice = widget.brand.preOrder
+          ? '\n\nDelivery is not instant. This card is a pre-order, so you pay '
+              'now and the code is delivered once the supplier releases it.'
+          : '';
       final confirmMessage = isMultiCur
-          ? 'Purchase ${widget.brand.name} $_recipientCurrency ${_formatAmount(amount)} gift card for about $_senderCurrency ${_formatAmount(senderAmt)}.\n\n$priceNotice'
-          : 'Confirm purchase of $displayCurrency ${_formatAmount(displayAmount)} ${widget.brand.name} gift card.\n\n$priceNotice';
+          ? 'Purchase ${widget.brand.name} $_recipientCurrency ${_formatAmount(amount)} gift card for about $_senderCurrency ${_formatAmount(senderAmt)}.\n\n$priceNotice$deliveryNotice'
+          : 'Confirm purchase of $displayCurrency ${_formatAmount(displayAmount)} ${widget.brand.name} gift card.\n\n$priceNotice$deliveryNotice';
 
       String? verificationToken;
 
