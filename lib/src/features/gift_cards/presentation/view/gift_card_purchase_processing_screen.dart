@@ -11,6 +11,7 @@ import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'widgets/gift_card_error_widget.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -153,7 +154,15 @@ class _GiftCardPurchaseProcessingScreenState
       _startPurchase(context);
     });
 
-    return PopScope(
+    // AutoLogoutSuppressed: this screen shows a provider call that can run
+    // longer than the inactivity timeout (default 60s,
+    // session_inactivity_logout_seconds). It takes no touch input, so the
+    // watcher counted it as idle and logged the user out MID-PURCHASE —
+    // observed live on an Amazon Canada buy: the saga was still running when
+    // the session ended and the result screen was never shown. Suppression is
+    // released when this screen is disposed, whatever the outcome.
+    return AutoLogoutSuppressed(
+      child: PopScope(
       canPop: false,
       child: Scaffold(
         backgroundColor: kGiftCardBgTop,
@@ -241,6 +250,7 @@ class _GiftCardPurchaseProcessingScreenState
             },
           ),
         )),
+      ),
       ),
     );
   }
