@@ -16,6 +16,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class PurchaseGiftCardScreen extends StatefulWidget {
   final GiftCardBrand brand;
+
   /// When set, the screen renders in "repeat purchase" mode:
   /// the amount is pre-selected and locked (denomination pills +
   /// custom-amount input both hidden), and the buy CTA is active
@@ -67,7 +68,8 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
     }
     // Range-based: generate smart suggestions within min/max
     if (widget.brand.minAmount > 0 && widget.brand.maxAmount > 0) {
-      return _generateRangeDenominations(widget.brand.minAmount, widget.brand.maxAmount);
+      return _generateRangeDenominations(
+          widget.brand.minAmount, widget.brand.maxAmount);
     }
     return [25, 50, 100, 250, 500];
   }
@@ -165,16 +167,43 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         '${_formatAmount(minS)} – ${_formatAmount(maxS)}';
   }
 
-  /// For range-based products, calculate the local currency price using backend-provided fee config.
-  /// Uses: (recipientAmount * fxRate) + margin% + flatFee
-  /// The FX rate is derived from backend's minSenderAmount/minAmount (real Reloadly rate + fees).
-  /// At purchase time, the backend recalculates with live rates — this is display-only.
+  /// For range-based products, estimate the local-currency price from the two
+  /// priced anchors the backend sends.
+  ///
+  /// minSenderAmount / maxSenderAmount are RETAIL: the backend applies the
+  /// same fee and rounding the buy saga will charge, so the fee is carried
+  /// inside these numbers rather than shown as a separate line.
+  ///
+  /// Interpolating between both anchors rather than scaling off the minimum
+  /// matters whenever the fee has a flat component or a floor. Retail is
+  /// `face x rate + fee`, so a single ratio taken at the minimum folds the
+  /// whole flat leg into the slope and then re-applies it in proportion,
+  /// overstating every larger amount. Two anchors recover the slope and the
+  /// constant separately and cancel that error.
+  ///
+  /// Display-only either way: the backend reprices at live rates at purchase
+  /// time and the confirmation screen shows the authoritative figure.
   double? _estimateSenderAmount(double recipientAmount) {
     if (!_isRangeBased) return null;
-    if (widget.brand.minAmount <= 0 || widget.brand.minSenderAmount <= 0) return null;
-    // The ratio already includes margin + flat fee (baked in by the backend retail pricing)
-    final rateWithFees = widget.brand.minSenderAmount / widget.brand.minAmount;
-    return recipientAmount * rateWithFees;
+    if (widget.brand.minAmount <= 0 || widget.brand.minSenderAmount <= 0) {
+      return null;
+    }
+
+    final minAmt = widget.brand.minAmount;
+    final maxAmt = widget.brand.maxAmount;
+    final minSender = widget.brand.minSenderAmount;
+    final maxSender = widget.brand.maxSenderAmount;
+
+    if (maxAmt > minAmt && maxSender > 0) {
+      final slope = (maxSender - minSender) / (maxAmt - minAmt);
+      final intercept = minSender - (slope * minAmt);
+      final estimate = (recipientAmount * slope) + intercept;
+      if (estimate > 0) return estimate;
+    }
+
+    // Single usable anchor: fall back to scaling off the minimum. Exact when
+    // the fee is percentage-only, slightly high when a flat leg is present.
+    return recipientAmount * (minSender / minAmt);
   }
 
   @override
@@ -193,40 +222,41 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
       // opaque wrapper here catches every body tap (children still win their
       // own taps first), and onDrag dismisses on scroll.
       body: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: GiftCardBackground(child: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                physics: const BouncingScrollPhysics(),
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 10.h),
-                      _buildBrandCard(),
-                      SizedBox(height: 16.h),
-                      _buildAmountSelection(),
-                      SizedBox(height: 16.h),
-                      _buildPriceSummary(),
-                      SizedBox(height: 18.h),
-                      _buildPurchaseButton(),
-                      SizedBox(height: 20.h),
-                    ],
+          behavior: HitTestBehavior.opaque,
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: GiftCardBackground(
+              child: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    physics: const BouncingScrollPhysics(),
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 10.h),
+                          _buildBrandCard(),
+                          SizedBox(height: 16.h),
+                          _buildAmountSelection(),
+                          SizedBox(height: 16.h),
+                          _buildPriceSummary(),
+                          SizedBox(height: 18.h),
+                          _buildPurchaseButton(),
+                          SizedBox(height: 20.h),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ))),
+          ))),
     );
   }
 
@@ -244,7 +274,8 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(19.r),
               ),
-              child: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16.sp),
+              child: Icon(Icons.arrow_back_ios_new,
+                  color: Colors.white, size: 16.sp),
             ),
           ),
           Expanded(
@@ -353,8 +384,9 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   }
 
   /// Get the sender currency label for display
-  String get _senderCurrency =>
-      widget.brand.senderCurrencyCode.isNotEmpty ? widget.brand.senderCurrencyCode : 'NGN';
+  String get _senderCurrency => widget.brand.senderCurrencyCode.isNotEmpty
+      ? widget.brand.senderCurrencyCode
+      : 'NGN';
 
   /// Get the recipient currency label for display
   String get _recipientCurrency =>
@@ -501,7 +533,8 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                         color: Colors.white,
                       ),
                     ),
-                    if (senderPrice != null && _senderCurrency != _recipientCurrency) ...[
+                    if (senderPrice != null &&
+                        _senderCurrency != _recipientCurrency) ...[
                       SizedBox(height: 2.h),
                       Text(
                         '$_senderCurrency ${_formatAmount(senderPrice)}',
@@ -554,13 +587,12 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                   });
                 },
                 child: Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 10.w, vertical: 6.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(
-                        color: const Color(0xFF3D3D3D)),
+                    border: Border.all(color: const Color(0xFF3D3D3D)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -569,8 +601,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                       // secondary affordance — it's an option,
                       // not a primary CTA.
                       Icon(Icons.swap_horiz_rounded,
-                          size: 14.sp,
-                          color: const Color(0xFF9CA3AF)),
+                          size: 14.sp, color: const Color(0xFF9CA3AF)),
                       SizedBox(width: 4.w),
                       Text(
                         'Switch to $_otherEntryCurrency',
@@ -609,9 +640,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
               LengthLimitingTextInputFormatter(8),
             ],
             style: GoogleFonts.inter(
-              color: _hasCustomAmount
-                  ? Colors.white
-                  : const Color(0xFF6B7280),
+              color: _hasCustomAmount ? Colors.white : const Color(0xFF6B7280),
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
             ),
@@ -655,8 +684,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                   ),
                 ),
               ),
-              prefixIconConstraints:
-                  BoxConstraints(minWidth: 0, minHeight: 0),
+              prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
               border: InputBorder.none,
               contentPadding:
                   EdgeInsets.symmetric(horizontal: 4.w, vertical: 12.h),
@@ -693,7 +721,9 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         if (widget.brand.minAmount > 0 && widget.brand.maxAmount > 0) ...[
           SizedBox(height: 6.h),
           Text(
-            _hasCustomAmount ? _allowedRangeText() : 'Listed amounts only — custom entry disabled by Reloadly',
+            _hasCustomAmount
+                ? _allowedRangeText()
+                : 'Listed amounts only — custom entry disabled by Reloadly',
             style: GoogleFonts.inter(
               fontSize: 11.sp,
               color: const Color(0xFF6B7280),
@@ -707,9 +737,9 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   String _formatAmount(double amount) {
     if (amount >= 1000) {
       return amount.toStringAsFixed(0).replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-        (match) => '${match[1]},',
-      );
+            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+            (match) => '${match[1]},',
+          );
     }
     return amount.toStringAsFixed(2);
   }
@@ -717,7 +747,8 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   Widget _buildPriceSummary() {
     final amount = _selectedAmount ?? 0;
     final senderAmountNullable = _currentSenderAmount;
-    final hasSenderPrice = senderAmountNullable != null && _senderCurrency != _recipientCurrency;
+    final hasSenderPrice =
+        senderAmountNullable != null && _senderCurrency != _recipientCurrency;
     final total = senderAmountNullable ?? amount;
 
     // Fee breakdown: flat service fee only (no percentage markup)
@@ -848,9 +879,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           style: GoogleFonts.inter(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-            color: isDiscount
-                ? const Color(0xFF10B981)
-                : Colors.white,
+            color: isDiscount ? const Color(0xFF10B981) : Colors.white,
           ),
         ),
       ],
@@ -894,7 +923,10 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           decoration: BoxDecoration(
             gradient: isValid
                 ? const LinearGradient(
-                    colors: [InvoiceThemeColors.primaryPurple, Color(0xFF6366F1)],
+                    colors: [
+                      InvoiceThemeColors.primaryPurple,
+                      Color(0xFF6366F1)
+                    ],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   )
@@ -913,7 +945,8 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                         style: GoogleFonts.inter(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
-                          color: isValid ? Colors.white : const Color(0xFF6B7280),
+                          color:
+                              isValid ? Colors.white : const Color(0xFF6B7280),
                         ),
                       ),
                       if (isValid && displayAmount > 0) ...[
@@ -923,7 +956,9 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                           style: GoogleFonts.inter(
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w500,
-                            color: isValid ? Colors.white.withValues(alpha: 0.8) : const Color(0xFF6B7280),
+                            color: isValid
+                                ? Colors.white.withValues(alpha: 0.8)
+                                : const Color(0xFF6B7280),
                           ),
                         ),
                       ],
@@ -939,9 +974,11 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
 
   void _purchaseGiftCard() async {
     if (_selectedAmount == null || _selectedAmount! <= 0) return;
-    if (_formKey.currentState!.validate() || widget.brand.fixedDenominations.isNotEmpty) {
+    if (_formKey.currentState!.validate() ||
+        widget.brand.fixedDenominations.isNotEmpty) {
       final amount = _selectedAmount!;
-      final transactionId = 'giftcard_${DateTime.now().millisecondsSinceEpoch}_${widget.brand.id}';
+      final transactionId =
+          'giftcard_${DateTime.now().millisecondsSinceEpoch}_${widget.brand.id}';
       // For PIN confirmation, show the payment amount in sender currency
       final senderAmt = _currentSenderAmount;
       final isMultiCur = widget.brand.isMultiCurrency && senderAmt != null;
@@ -1003,8 +1040,12 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           transactionId: transactionId,
           verificationToken: verificationToken!,
           productId: widget.brand.productId > 0 ? widget.brand.productId : null,
-          countryCode: widget.brand.countryCode.isNotEmpty ? widget.brand.countryCode : null,
-          providerName: widget.brand.providerName.isNotEmpty ? widget.brand.providerName : null,
+          countryCode: widget.brand.countryCode.isNotEmpty
+              ? widget.brand.countryCode
+              : null,
+          providerName: widget.brand.providerName.isNotEmpty
+              ? widget.brand.providerName
+              : null,
           senderAmount: senderAmt,
           senderCurrency: _senderCurrency,
         ),
