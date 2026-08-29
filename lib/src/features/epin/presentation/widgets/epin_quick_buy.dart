@@ -1,3 +1,4 @@
+import 'package:lazervault/core/utils/ng_network_prefixes.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -48,6 +49,13 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
   EPinDenomination? _denomination;
   int _quantity = 1;
   bool _submitting = false;
+
+  /// True once the user has tapped a network themselves.
+  ///
+  /// Auto-detection then stops touching the selection. Someone printing MTN
+  /// pins from their Airtel line is doing that deliberately, and having the
+  /// tiles jump back every time they correct a digit would be maddening.
+  bool _networkChosenByUser = false;
   StreamSubscription<EPinState>? _sub;
 
   double get _total => (_denomination?.amount ?? 0) * _quantity;
@@ -58,6 +66,10 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
     _sub = context.read<EPinCubit>().stream.listen((s) {
       if (s is EPinNetworksLoaded && mounted) {
         setState(() => _networks = s.networks);
+        // The catalogue can land AFTER the async phone prefill, in which case
+        // the first detection ran against an empty list and gave up. Retry now
+        // that there is something to match against.
+        _autoSelectNetworkFromPhone();
       }
     });
     // The home screen already loads the catalogue and only mounts this widget
@@ -68,12 +80,17 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
     if (current is EPinNetworksLoaded) {
       _networks = current.networks;
     }
+    // Re-detect as the number changes, so correcting a digit or pasting a
+    // different line moves the selection with it instead of leaving the
+    // previous network silently attached to a number it does not belong to.
+    _phoneController.addListener(_autoSelectNetworkFromPhone);
     _prefillPhone();
   }
 
   @override
   void dispose() {
     _sub?.cancel();
+    _phoneController.removeListener(_autoSelectNetworkFromPhone);
     _phoneController.dispose();
     super.dispose();
   }
@@ -87,12 +104,64 @@ class _EPinQuickBuyState extends State<EPinQuickBuy> with TransactionPinMixin {
       if (d.startsWith('0')) d = d.substring(1);
       if (d.isNotEmpty && mounted && _phoneController.text.isEmpty) {
         _phoneController.text = '0$d';
+        _autoSelectNetworkFromPhone();
       }
     } catch (_) {/* best-effort */}
   }
 
+  /// Pick the network the prefilled number belongs to, and with it the
+  /// denominations that network actually sells.
+  ///
+  /// The catalogue ships denominations ON each network, so selecting one is
+  /// what surfaces its amounts — there is no separate fetch to wait for. A
+  /// logged-in user printing pins for their own line should not have to tell
+  /// us which network they are on when the number already says so.
+  ///
+  /// Reads the shared NCC prefix table rather than a local copy: airtime once
+  /// kept its own and drifted, so 0703/0706/0707 and 0701/0708 silently
+  /// stopped resolving. One table, every flow.
+  void _autoSelectNetworkFromPhone() {
+    if (_networkChosenByUser || _networks.isEmpty) return;
+    final ticker = NgNetworkPrefixes.detect(_phoneController.text.trim());
+    if (ticker == null) return;
+    final match = _networkForTicker(ticker);
+    if (match == null || match.code == _network?.code) return;
+    setState(() {
+      _network = match;
+      // The previous denomination belonged to the previous network — clearing
+      // it stops a stale amount riding into the order.
+      _denomination = null;
+      _quantity = 1;
+    });
+  }
+
+  /// Bridges the detector's backend ticker to this catalogue's network code.
+  ///
+  /// The two vocabularies genuinely differ: the detector returns "etisalat"
+  /// (the backend's ticker) while the ePIN catalogue calls the same network
+  /// "9MOBILE". Matching on equality alone would leave 9mobile numbers
+  /// undetected while every other network worked — the kind of gap that only
+  /// shows up for a fraction of users.
+  EPinNetwork? _networkForTicker(String ticker) {
+    const aliases = <String, List<String>>{
+      'mtn': ['mtn'],
+      'glo': ['glo', 'globacom'],
+      'airtel': ['airtel'],
+      'etisalat': ['9mobile', 'etisalat', '9 mobile'],
+    };
+    final wanted = aliases[ticker.toLowerCase()] ?? [ticker.toLowerCase()];
+    for (final n in _networks) {
+      if (!n.isActive) continue;
+      final code = n.code.trim().toLowerCase();
+      final name = n.name.trim().toLowerCase();
+      if (wanted.contains(code) || wanted.contains(name)) return n;
+    }
+    return null;
+  }
+
   void _selectNetwork(EPinNetwork n) {
     setState(() {
+      _networkChosenByUser = true;
       _network = n;
       _denomination = null;
       _quantity = 1;

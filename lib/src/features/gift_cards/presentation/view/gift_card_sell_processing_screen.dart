@@ -13,6 +13,7 @@ import '../../../account_cards_summary/services/balance_websocket_service.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
+import 'gift_card_sale_receipt_screen.dart';
 
 /// Sell-side analog of [GiftCardPurchaseProcessingScreen]. Stays
 /// mounted while the sale row sits at `pending` (async-sell waiting
@@ -122,17 +123,38 @@ class _GiftCardSellProcessingScreenState
         backgroundColor: kGiftCardBgTop,
         body: GiftCardBackground(child: BlocListener<GiftCardCubit, GiftCardState>(
           listener: (context, state) {
+            // Every SALE OUTCOME lands on the receipt — paid, rejected or
+            // sent for review. This used to drop the user on the My Sales
+            // LIST with no artefact for the transaction they had just made,
+            // and a rejection showed only as an error view. A rejected seller
+            // needs the reason, the reference and the provider's id far more
+            // than a paid one needs a confirmation.
             if (state is GiftCardSellPaid) {
-              // Route to My Sales (or a sale detail screen if you
-              // build one). Using the existing My Sales screen keeps
-              // this aligned with the present sell-side UX.
-              Get.offAllNamed(AppRoutes.mySales);
+              Get.offNamed(
+                AppRoutes.giftCardSaleReceipt,
+                arguments: GiftCardSaleReceiptArgs(sale: state.sale),
+              );
+            } else if (state is SellRejected) {
+              Get.offNamed(
+                AppRoutes.giftCardSaleReceipt,
+                arguments: GiftCardSaleReceiptArgs(
+                  sale: state.sale,
+                  // The row may not carry the reason yet at this instant.
+                  reasonOverride: state.reason,
+                ),
+              );
+            } else if (state is SellEscalatedToManualReview) {
+              Get.offNamed(
+                AppRoutes.giftCardSaleReceipt,
+                arguments: GiftCardSaleReceiptArgs(sale: state.sale),
+              );
             } else if (state is GiftCardSellAwaitingProvider) {
               _awaitingReference = state.reference;
               _awaitingSaleId = state.sale.id;
-            } else if (state is SellRejected ||
-                state is SellEscalatedToManualReview ||
-                state is SellError) {
+            } else if (state is SellError) {
+              // NOT a sale outcome: the submission itself failed, so there may
+              // be no sale row to render a receipt for. Keep the error view,
+              // which offers retry.
               _setErrorState(state);
             }
           },

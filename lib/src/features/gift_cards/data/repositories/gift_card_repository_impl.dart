@@ -5,6 +5,7 @@ import 'package:lazervault/core/network/retry_policy.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../../domain/repositories/i_gift_card_repository.dart';
 import '../datasources/gift_card_remote_data_source.dart';
+import '../../domain/entities/gift_card_live_brand.dart';
 
 class GiftCardRepositoryImpl implements IGiftCardRepository {
   final IGiftCardRemoteDataSource _remoteDataSource;
@@ -55,6 +56,32 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
   }
 
   @override
+  Future<Either<Failure, LiveBrand>> getGiftCardBrandLive({
+    required String productRef,
+    String? countryCode,
+    String? providerName,
+  }) async {
+    try {
+      final result = await RetryPolicy.standard.execute(
+        () => _remoteDataSource.getGiftCardBrandLive(
+          productRef: productRef,
+          countryCode: countryCode,
+          providerName: providerName,
+        ),
+      );
+
+      return Right(LiveBrand(
+        brand: result.brand,
+        providerName: result.providerName,
+        available: result.available,
+        reason: result.unavailableReason,
+      ));
+    } catch (e) {
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<GiftCardCountry>>> getSupportedCountries() async {
     try {
       final countries = await RetryPolicy.standard.execute(
@@ -84,6 +111,7 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
     String? providerName,
     double? senderAmount,
     String? senderCurrency,
+    bool pinProvider = false,
   }) async {
     try {
       final giftCard = await RetryPolicy.critical.execute(
@@ -104,6 +132,7 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
           providerName: providerName,
           senderAmount: senderAmount,
           senderCurrency: senderCurrency,
+          pinProvider: pinProvider,
         ),
       );
 

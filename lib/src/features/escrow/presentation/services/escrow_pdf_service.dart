@@ -8,6 +8,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:lazervault/core/utils/receipt_fonts.dart';
+import 'package:lazervault/core/utils/receipt_download.dart';
 
 import '../../domain/entities/escrow_deal_entity.dart';
 
@@ -98,20 +100,9 @@ class EscrowPdfService {
   }
 
   static Future<void> _loadFonts() async {
-    if (_regularFont != null && _boldFont != null) return;
-    try {
-      final regularResponse = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.ttf'));
-      final boldResponse = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYAZ9hiA.ttf'));
-      if (regularResponse.statusCode == 200 && boldResponse.statusCode == 200) {
-        _regularFont = pw.Font.ttf(regularResponse.bodyBytes.buffer.asByteData());
-        _boldFont = pw.Font.ttf(boldResponse.bodyBytes.buffer.asByteData());
-      }
-    } catch (e) {
-      _regularFont = null;
-      _boldFont = null;
-    }
+    await ReceiptFonts.load();
+    _regularFont = ReceiptFonts.regular;
+    _boldFont = ReceiptFonts.bold;
   }
 
   static pw.TextStyle _ts({
@@ -585,25 +576,18 @@ class EscrowPdfService {
     }
   }
 
+  /// Saves a generated PDF where the user can get at it.
+  ///
+  /// One helper behind BOTH the receipt and the agreement downloads, so the
+  /// hardcoded /storage/emulated/0/Download here broke both: Android scoped
+  /// storage (API 30+) reports that path as existing — so the exists() guard
+  /// passed and the fallback never ran — and then refuses the write.
   static Future<String> _copyToDownloads(
       String tempPath, String fileName) async {
-    Directory? directory;
-    if (Platform.isAndroid) {
-      directory = Directory('/storage/emulated/0/Download');
-      if (!await directory.exists()) {
-        directory = await getExternalStorageDirectory();
-      }
-    } else if (Platform.isIOS) {
-      directory = await getApplicationDocumentsDirectory();
-    } else {
-      directory = await getDownloadsDirectory();
-    }
-    if (directory == null) {
-      throw Exception('Could not access downloads directory');
-    }
-    final savedFile = File('${directory.path}/$fileName');
-    await File(tempPath).copy(savedFile.path);
-    return savedFile.path;
+    return ReceiptDownload.saveAndOpen(
+      source: File(tempPath),
+      fileName: fileName,
+    );
   }
 
   // share_plus on iOS requires a non-zero sharePositionOrigin.

@@ -21,6 +21,13 @@ class GiftCard extends Equatable {
   final String? redemptionInstructions;
   final String? countryCode;
   final int providerProductId;
+
+  /// Provider that ISSUED this card ("reloadly" | "prestmit").
+  ///
+  /// Repeats, redeem-code reads and refunds all scope to it: the product ref
+  /// above is only meaningful on this provider, and the order id only exists
+  /// there.
+  final String providerName;
   final double discountPercentage;
   /// Amount charged in sender/payment currency (what the user actually paid)
   final double senderAmount;
@@ -56,6 +63,7 @@ class GiftCard extends Equatable {
     this.redemptionInstructions,
     this.countryCode,
     this.providerProductId = 0,
+    this.providerName = '',
     this.discountPercentage = 0.0,
     this.senderAmount = 0.0,
     this.senderCurrency = '',
@@ -296,6 +304,16 @@ class SellableCard extends Equatable {
   /// sale time. For non-Prestmit catalogues this mirrors `cardType`.
   final String subcategoryId;
 
+  /// Payout currency (naira) per ONE unit of the card's face currency, as the
+  /// provider published it on this catalogue read.
+  ///
+  /// Lets the sell list show what a card is worth to the seller before they
+  /// open it — the buy list has always shown "From NGN x", while the sell list
+  /// showed only a foreign face value, which is the number a Nigerian seller
+  /// cares least about. 0 means the provider gave no rate: show nothing rather
+  /// than compute a payout from a missing figure.
+  final double payoutRatePerUnit;
+
   /// ISO/Prestmit country tag (e.g. "USA", "UK") for region-specific
   /// variants. Surfaced on the card chooser so the user picks the
   /// right regional rate.
@@ -314,6 +332,7 @@ class SellableCard extends Equatable {
     this.form = '',
     this.subcategoryId = '',
     this.country = '',
+    this.payoutRatePerUnit = 0,
   });
 
   /// True when the card is an Ecode and the sell flow should ask for a
@@ -328,7 +347,7 @@ class SellableCard extends Equatable {
   List<Object?> get props => [
     cardType, displayName, logoUrl, category,
     denominations, currencies, minDenomination, maxDenomination,
-    providerName, form, subcategoryId, country,
+    providerName, form, subcategoryId, country, payoutRatePerUnit,
   ];
 }
 
@@ -375,6 +394,12 @@ class SellRate extends Equatable {
   final double payoutLowerBound;
   final double payoutUpperBound;
   final bool isManualMode;
+  /// How to READ [ratePercentage]. "per_unit" means it is payout currency per
+  /// ONE face unit (Prestmit quotes 1165 NGN per USD 1); anything else — including
+  /// the empty string from a server that predates the field — means a true
+  /// percentage of face value. Rendering a per-unit rate with a "%" suffix
+  /// produced "1165%" on screen.
+  final String rateModel;
 
   const SellRate({
     required this.cardType,
@@ -386,6 +411,7 @@ class SellRate extends Equatable {
     this.payoutLowerBound = 0,
     this.payoutUpperBound = 0,
     this.isManualMode = false,
+    this.rateModel = '',
   });
 
   /// True only when we have a real, meaningful range to render.
@@ -393,6 +419,21 @@ class SellRate extends Equatable {
   ///   - the row isn't manual mode
   ///   - the server returned 0/0 (pre-redeploy, before range was added)
   ///   - upper <= lower (degenerate band — should never happen)
+  /// True when [ratePercentage] is a naira-per-face-unit rate, not a percentage.
+  ///
+  /// The empty-string case covers a server that predates [rateModel]: the app
+  /// ships independently of the backend, so a store build can meet an older
+  /// server for a while. There it falls back to an invariant rather than a
+  /// guess — a sell payout above 100% of face value would mean paying more for
+  /// a card than the card is worth, which no rate ever does. So >100 with no
+  /// declared model can only be a per-unit rate.
+  bool get isPerUnitRate {
+    final declared = rateModel.trim().toLowerCase();
+    if (declared == 'per_unit') return true;
+    if (declared.isNotEmpty) return false;
+    return ratePercentage > 100;
+  }
+
   bool get hasRange =>
       isManualMode &&
       payoutLowerBound > 0 &&
@@ -402,7 +443,7 @@ class SellRate extends Equatable {
   @override
   List<Object?> get props => [
     cardType, denomination, ratePercentage, payoutAmount, currency, expiresAt,
-    payoutLowerBound, payoutUpperBound, isManualMode,
+    payoutLowerBound, payoutUpperBound, isManualMode, rateModel,
   ];
 }
 
@@ -660,6 +701,10 @@ class GiftCardPurchaseArgs {
   final String? senderCurrency;  // Sender currency code (e.g., "NGN")
   final double userBalance;      // User's available balance at time of purchase
 
+  /// Execute on [providerName] rather than the active buy provider. Set only
+  /// for a repeat, whose product ref belongs to the issuing provider.
+  final bool pinProvider;
+
   const GiftCardPurchaseArgs({
     required this.brand,
     required this.amount,
@@ -671,5 +716,6 @@ class GiftCardPurchaseArgs {
     this.senderAmount,
     this.senderCurrency,
     this.userBalance = 0.0,
+    this.pinProvider = false,
   });
 }

@@ -3,6 +3,17 @@ import '../../domain/entities/gift_card_entity.dart';
 import '../models/gift_card_model.dart';
 
 abstract class IGiftCardRemoteDataSource {
+  /// Re-reads ONE brand live from the ACTIVE buy provider.
+  ///
+  /// The catalogue is a cached, shared page; this is not. It returns only the
+  /// denominations that provider will sell right now, which is what the
+  /// amounts screen must offer.
+  Future<GiftCardBrandLiveResult> getGiftCardBrandLive({
+    required String productRef,
+    String? countryCode,
+    String? providerName,
+  });
+
   Future<GiftCardBrandsResult> getGiftCardBrands({
     String? category,
     String? countryCode,
@@ -30,6 +41,7 @@ abstract class IGiftCardRemoteDataSource {
     String? providerName,
     double? senderAmount,
     String? senderCurrency,
+    bool pinProvider = false,
   });
 
   Future<List<GiftCardModel>> getUserGiftCards({

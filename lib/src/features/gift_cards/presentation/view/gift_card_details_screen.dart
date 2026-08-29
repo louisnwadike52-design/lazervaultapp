@@ -37,6 +37,8 @@ import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../../services/gift_card_pdf_service.dart';
+import 'package:lazervault/core/utils/receipt_download.dart';
+import '../../services/receipt_text.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class GiftCardDetailsScreen extends StatefulWidget {
@@ -155,26 +157,47 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           icon: const Icon(Icons.arrow_back_ios_new,
               color: Colors.white, size: 18),
         ),
-        title: Text(
-          'Payment Receipt',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        // No title. The card art below already names what this is, and the
+        // vertical space it cost pushed the QR block under the fold.
         centerTitle: true,
         actions: [
-          // LazerVault wordmark in the top-right — co-brands the
-          // receipt so a screenshot or downloaded PDF carries the
-          // platform identity alongside the merchant brand.
+          // Mark + wordmark in the top-right, matching the transfer receipt so
+          // a screenshot or downloaded PDF carries the same platform identity
+          // wherever it came from.
           Padding(
             padding: EdgeInsets.only(right: 16.w),
-            child: Image.asset(
-              'assets/images/logos/lazervault-full-logo-no-background.png',
-              height: 22.h,
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 30.w,
+                  height: 30.w,
+                  padding: EdgeInsets.all(4.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFF2D2D2D)),
+                  ),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    errorBuilder: (_, __, ___) => Icon(
+                      Icons.shield_outlined,
+                      color: const Color(0xFF3B82F6),
+                      size: 16.sp,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 7.w),
+                Text(
+                  'Lazervault',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -271,7 +294,8 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
               timestamp: _resolveTimestamp(),
               showDivider: false,
               extraPayload: {
-                if (giftCard.brandName.isNotEmpty) 'brand': giftCard.brandName,
+                if (giftCard.brandName.isNotEmpty)
+                  'brand': receiptLine(giftCard.brandName),
                 if ((giftCard.redemptionCode ?? '').isNotEmpty)
                   'code': giftCard.redemptionCode!,
               },
@@ -421,10 +445,13 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
     // bottom-right. Falls back to the original tinted-circle icon
     // when no logo URL came through (legacy rows / Reloadly outage).
     final hasLogo = giftCard.logoUrl.trim().isNotEmpty;
+    // Sized to keep the QR block above the fold on a common phone viewport:
+    // the receipt is meant to be read at a glance, and the code below matters
+    // more than the brand mark above it.
     final base = hasLogo
         ? Container(
-            width: 80.w,
-            height: 80.w,
+            width: 62.w,
+            height: 62.w,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20.r),
@@ -448,8 +475,8 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             ),
           )
         : Container(
-            width: 64.w,
-            height: 64.w,
+            width: 54.w,
+            height: 54.w,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
@@ -505,7 +532,9 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
     final hasPin = (giftCard.redemptionPin ?? '').isNotEmpty;
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(16.w),
+      // Tightened from 16 so the credentials block costs less vertical space
+      // and the QR below it lands on the first screen.
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF4C1D95), Color(0xFF7C3AED)],
@@ -540,14 +569,14 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
               ),
             ],
           ),
-          SizedBox(height: 10.h),
+          SizedBox(height: 8.h),
           _buildCopyRow(
             label: 'CODE',
             value: giftCard.redemptionCode ?? '',
             valueLabel: 'redemption code',
           ),
           if (hasPin) ...[
-            SizedBox(height: 10.h),
+            SizedBox(height: 8.h),
             _buildCopyRow(
               label: 'PIN',
               value: giftCard.redemptionPin ?? '',
@@ -587,7 +616,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
       onTap: onCopy,
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.25),
           borderRadius: BorderRadius.circular(10.r),
@@ -691,7 +720,9 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
 
           _divider(),
 
-          _row('Brand', giftCard.brandName),
+          // Same normaliser as the PDF, so the screen and the downloaded
+          // copy can never disagree about what the brand is called.
+          _row('Brand', receiptLine(giftCard.brandName)),
           if ((giftCard.recipientName ?? '').isNotEmpty) ...[
             SizedBox(height: 6.h),
             _row('Recipient', giftCard.recipientName!),
@@ -891,10 +922,12 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
       // Save the PDF to the device's Downloads (NOT share) — the Share button
       // already covers sharing. This used to call shareReceipt, so "Download"
       // opened the share sheet instead of saving a file.
-      final path = await GiftCardPdfService.downloadReceipt(giftCard: giftCard);
+      await GiftCardPdfService.downloadReceipt(giftCard: giftCard);
       if (!mounted) return;
+      // Deliberately does not name a folder: on Android the file lands in the
+      // app's external files dir, which is not where a user would go looking.
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Saved to $path')),
+        const SnackBar(content: Text(ReceiptDownload.successBody)),
       );
     } catch (e) {
       if (!mounted) return;

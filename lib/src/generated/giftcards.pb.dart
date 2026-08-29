@@ -53,6 +53,7 @@ class GiftCard extends $pb.GeneratedMessage {
     $core.String? transferType,
     $core.String? redemptionInstructions,
     $core.String? reference,
+    $core.String? providerName,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -88,6 +89,7 @@ class GiftCard extends $pb.GeneratedMessage {
     if (redemptionInstructions != null)
       result.redemptionInstructions = redemptionInstructions;
     if (reference != null) result.reference = reference;
+    if (providerName != null) result.providerName = providerName;
     return result;
   }
 
@@ -137,6 +139,7 @@ class GiftCard extends $pb.GeneratedMessage {
     ..aOS(32, _omitFieldNames ? '' : 'transferType')
     ..aOS(33, _omitFieldNames ? '' : 'redemptionInstructions')
     ..aOS(34, _omitFieldNames ? '' : 'reference')
+    ..aOS(35, _omitFieldNames ? '' : 'providerName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -435,6 +438,20 @@ class GiftCard extends $pb.GeneratedMessage {
   $core.bool hasReference() => $_has(29);
   @$pb.TagNumber(34)
   void clearReference() => $_clearField(34);
+
+  /// Provider that ISSUED this card ("reloadly" | "prestmit").
+  ///
+  /// Persisted since the Prestmit rail was added but never sent to clients,
+  /// which left the app unable to tell which rail a card came from. Repeats
+  /// need it: provider_product_id above is only meaningful on this provider.
+  @$pb.TagNumber(35)
+  $core.String get providerName => $_getSZ(30);
+  @$pb.TagNumber(35)
+  set providerName($core.String value) => $_setString(30, value);
+  @$pb.TagNumber(35)
+  $core.bool hasProviderName() => $_has(30);
+  @$pb.TagNumber(35)
+  void clearProviderName() => $_clearField(35);
 }
 
 class GiftCardBrand extends $pb.GeneratedMessage {
@@ -789,9 +806,12 @@ class GiftCardBrand extends $pb.GeneratedMessage {
   void clearDenominationType() => $_clearField(25);
 
   /// pre_order marks a card the provider does NOT fulfil instantly: the order
-  /// is accepted and the code is delivered later, asynchronously. Prestmit
-  /// flags most of its catalogue this way; Reloadly always sends false.
-  /// The app MUST surface this before payment.
+  /// is accepted and the code is delivered later, asynchronously.
+  ///
+  /// Prestmit flags most of its catalogue this way (6,815 of 7,515 live cards,
+  /// including every Amazon SKU). Reloadly fulfils instantly and always sends
+  /// false. Clients MUST surface this before payment, because "buy a gift card"
+  /// otherwise implies a code on the next screen.
   @$pb.TagNumber(26)
   $core.bool get preOrder => $_getBF(25);
   @$pb.TagNumber(26)
@@ -1072,6 +1092,7 @@ class BuyGiftCardRequest extends $pb.GeneratedMessage {
     $core.String? providerName,
     $core.double? senderAmount,
     $core.String? senderCurrency,
+    $core.bool? pinProvider,
   }) {
     final result = create();
     if (accountId != null) result.accountId = accountId;
@@ -1091,6 +1112,7 @@ class BuyGiftCardRequest extends $pb.GeneratedMessage {
     if (providerName != null) result.providerName = providerName;
     if (senderAmount != null) result.senderAmount = senderAmount;
     if (senderCurrency != null) result.senderCurrency = senderCurrency;
+    if (pinProvider != null) result.pinProvider = pinProvider;
     return result;
   }
 
@@ -1125,6 +1147,7 @@ class BuyGiftCardRequest extends $pb.GeneratedMessage {
     ..a<$core.double>(
         16, _omitFieldNames ? '' : 'senderAmount', $pb.PbFieldType.OD)
     ..aOS(17, _omitFieldNames ? '' : 'senderCurrency')
+    ..aOB(18, _omitFieldNames ? '' : 'pinProvider')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1304,6 +1327,26 @@ class BuyGiftCardRequest extends $pb.GeneratedMessage {
   $core.bool hasSenderCurrency() => $_has(16);
   @$pb.TagNumber(17)
   void clearSenderCurrency() => $_clearField(17);
+
+  /// Pin the purchase to provider_name instead of the active buy provider.
+  ///
+  /// Set ONLY for a repeat of an existing card. Product refs are provider
+  /// scoped — a Prestmit SKU and a Reloadly product id are different products
+  /// under the same number — so a repeat carrying the original card's ref must
+  /// go back to the provider that issued it. Without this the ref is sent to
+  /// whichever rail is active now, which buys the wrong product or fails.
+  ///
+  /// Never set it for a fresh purchase: that is what the active-provider
+  /// consistency check protects, and pinning would let a stale client buy on a
+  /// rail the operator has moved off.
+  @$pb.TagNumber(18)
+  $core.bool get pinProvider => $_getBF(17);
+  @$pb.TagNumber(18)
+  set pinProvider($core.bool value) => $_setBool(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasPinProvider() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearPinProvider() => $_clearField(18);
 }
 
 class BuyGiftCardResponse extends $pb.GeneratedMessage {
@@ -2248,6 +2291,196 @@ class GetGiftCardBrandsResponse extends $pb.GeneratedMessage {
   void clearPageSize() => $_clearField(6);
 }
 
+/// ===== GET ONE BRAND, LIVE FROM THE ACTIVE PROVIDER =====
+class GetGiftCardBrandLiveRequest extends $pb.GeneratedMessage {
+  factory GetGiftCardBrandLiveRequest({
+    $core.String? productRef,
+    $core.String? countryCode,
+    $core.String? providerName,
+  }) {
+    final result = create();
+    if (productRef != null) result.productRef = productRef;
+    if (countryCode != null) result.countryCode = countryCode;
+    if (providerName != null) result.providerName = providerName;
+    return result;
+  }
+
+  GetGiftCardBrandLiveRequest._();
+
+  factory GetGiftCardBrandLiveRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetGiftCardBrandLiveRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetGiftCardBrandLiveRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'productRef')
+    ..aOS(2, _omitFieldNames ? '' : 'countryCode')
+    ..aOS(3, _omitFieldNames ? '' : 'providerName')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGiftCardBrandLiveRequest clone() =>
+      GetGiftCardBrandLiveRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGiftCardBrandLiveRequest copyWith(
+          void Function(GetGiftCardBrandLiveRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetGiftCardBrandLiveRequest))
+          as GetGiftCardBrandLiveRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetGiftCardBrandLiveRequest create() =>
+      GetGiftCardBrandLiveRequest._();
+  @$core.override
+  GetGiftCardBrandLiveRequest createEmptyInstance() => create();
+  static $pb.PbList<GetGiftCardBrandLiveRequest> createRepeated() =>
+      $pb.PbList<GetGiftCardBrandLiveRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetGiftCardBrandLiveRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetGiftCardBrandLiveRequest>(create);
+  static GetGiftCardBrandLiveRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get productRef => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set productRef($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasProductRef() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearProductRef() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get countryCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set countryCode($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCountryCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCountryCode() => $_clearField(2);
+
+  /// Read from THIS provider instead of the active one. Set when repeating a
+  /// card so the amounts screen shows the issuing provider's denominations for
+  /// its own product ref. Empty = the active buy provider.
+  @$pb.TagNumber(3)
+  $core.String get providerName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set providerName($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasProviderName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearProviderName() => $_clearField(3);
+}
+
+class GetGiftCardBrandLiveResponse extends $pb.GeneratedMessage {
+  factory GetGiftCardBrandLiveResponse({
+    GiftCardBrand? brand,
+    $core.String? providerName,
+    $core.bool? available,
+    $core.String? unavailableReason,
+  }) {
+    final result = create();
+    if (brand != null) result.brand = brand;
+    if (providerName != null) result.providerName = providerName;
+    if (available != null) result.available = available;
+    if (unavailableReason != null) result.unavailableReason = unavailableReason;
+    return result;
+  }
+
+  GetGiftCardBrandLiveResponse._();
+
+  factory GetGiftCardBrandLiveResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetGiftCardBrandLiveResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetGiftCardBrandLiveResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'),
+      createEmptyInstance: create)
+    ..aOM<GiftCardBrand>(1, _omitFieldNames ? '' : 'brand',
+        subBuilder: GiftCardBrand.create)
+    ..aOS(2, _omitFieldNames ? '' : 'providerName')
+    ..aOB(3, _omitFieldNames ? '' : 'available')
+    ..aOS(4, _omitFieldNames ? '' : 'unavailableReason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGiftCardBrandLiveResponse clone() =>
+      GetGiftCardBrandLiveResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGiftCardBrandLiveResponse copyWith(
+          void Function(GetGiftCardBrandLiveResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetGiftCardBrandLiveResponse))
+          as GetGiftCardBrandLiveResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetGiftCardBrandLiveResponse create() =>
+      GetGiftCardBrandLiveResponse._();
+  @$core.override
+  GetGiftCardBrandLiveResponse createEmptyInstance() => create();
+  static $pb.PbList<GetGiftCardBrandLiveResponse> createRepeated() =>
+      $pb.PbList<GetGiftCardBrandLiveResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetGiftCardBrandLiveResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetGiftCardBrandLiveResponse>(create);
+  static GetGiftCardBrandLiveResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  GiftCardBrand get brand => $_getN(0);
+  @$pb.TagNumber(1)
+  set brand(GiftCardBrand value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasBrand() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBrand() => $_clearField(1);
+  @$pb.TagNumber(1)
+  GiftCardBrand ensureBrand() => $_ensure(0);
+
+  /// Provider these denominations belong to. The catalogue the client
+  /// navigated in with and this response can disagree when the active buy
+  /// provider changed mid-browse, so the client must trust THIS value.
+  @$pb.TagNumber(2)
+  $core.String get providerName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set providerName($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasProviderName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearProviderName() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get available => $_getBF(2);
+  @$pb.TagNumber(3)
+  set available($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasAvailable() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAvailable() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get unavailableReason => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set unavailableReason($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasUnavailableReason() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearUnavailableReason() => $_clearField(4);
+}
+
 /// ===== GET GIFT CARD HISTORY =====
 /// NOTE: user_id extracted from JWT token, not from request
 class GetGiftCardHistoryRequest extends $pb.GeneratedMessage {
@@ -2450,6 +2683,7 @@ class SellableCard extends $pb.GeneratedMessage {
     $core.String? subcategoryId,
     $core.String? country,
     $core.bool? requiresReceipt,
+    $core.double? payoutRatePerUnit,
   }) {
     final result = create();
     if (cardType != null) result.cardType = cardType;
@@ -2465,6 +2699,7 @@ class SellableCard extends $pb.GeneratedMessage {
     if (subcategoryId != null) result.subcategoryId = subcategoryId;
     if (country != null) result.country = country;
     if (requiresReceipt != null) result.requiresReceipt = requiresReceipt;
+    if (payoutRatePerUnit != null) result.payoutRatePerUnit = payoutRatePerUnit;
     return result;
   }
 
@@ -2497,6 +2732,8 @@ class SellableCard extends $pb.GeneratedMessage {
     ..aOS(11, _omitFieldNames ? '' : 'subcategoryId')
     ..aOS(12, _omitFieldNames ? '' : 'country')
     ..aOB(13, _omitFieldNames ? '' : 'requiresReceipt')
+    ..a<$core.double>(
+        14, _omitFieldNames ? '' : 'payoutRatePerUnit', $pb.PbFieldType.OD)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2623,6 +2860,9 @@ class SellableCard extends $pb.GeneratedMessage {
   @$pb.TagNumber(12)
   void clearCountry() => $_clearField(12);
 
+  /// When true, this (usually physical) tier needs a proof-of-purchase / receipt
+  /// image in ADDITION to the card photo. Parsed from Prestmit's terms; the app
+  /// uses it to prompt for the extra upload up front.
   @$pb.TagNumber(13)
   $core.bool get requiresReceipt => $_getBF(12);
   @$pb.TagNumber(13)
@@ -2631,6 +2871,19 @@ class SellableCard extends $pb.GeneratedMessage {
   $core.bool hasRequiresReceipt() => $_has(12);
   @$pb.TagNumber(13)
   void clearRequiresReceipt() => $_clearField(13);
+
+  /// Payout currency (naira) per ONE unit of the card's face currency —
+  /// Prestmit's `rate`. Lets the sell list show what a card is worth to the
+  /// seller before they open it, the same way the buy list shows "From NGN x".
+  /// 0 = the provider published no rate; show nothing rather than compute one.
+  @$pb.TagNumber(14)
+  $core.double get payoutRatePerUnit => $_getN(13);
+  @$pb.TagNumber(14)
+  set payoutRatePerUnit($core.double value) => $_setDouble(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasPayoutRatePerUnit() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearPayoutRatePerUnit() => $_clearField(14);
 }
 
 class SellRate extends $pb.GeneratedMessage {
@@ -2644,6 +2897,7 @@ class SellRate extends $pb.GeneratedMessage {
     $core.double? payoutLowerBound,
     $core.double? payoutUpperBound,
     $core.bool? isManualMode,
+    $core.String? rateModel,
   }) {
     final result = create();
     if (cardType != null) result.cardType = cardType;
@@ -2655,6 +2909,7 @@ class SellRate extends $pb.GeneratedMessage {
     if (payoutLowerBound != null) result.payoutLowerBound = payoutLowerBound;
     if (payoutUpperBound != null) result.payoutUpperBound = payoutUpperBound;
     if (isManualMode != null) result.isManualMode = isManualMode;
+    if (rateModel != null) result.rateModel = rateModel;
     return result;
   }
 
@@ -2685,6 +2940,7 @@ class SellRate extends $pb.GeneratedMessage {
     ..a<$core.double>(
         8, _omitFieldNames ? '' : 'payoutUpperBound', $pb.PbFieldType.OD)
     ..aOB(9, _omitFieldNames ? '' : 'isManualMode')
+    ..aOS(10, _omitFieldNames ? '' : 'rateModel')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2789,6 +3045,22 @@ class SellRate extends $pb.GeneratedMessage {
   $core.bool hasIsManualMode() => $_has(8);
   @$pb.TagNumber(9)
   void clearIsManualMode() => $_clearField(9);
+
+  /// How to READ rate_percentage. The two rate models are not
+  /// interchangeable and the field name is historical:
+  ///   "percentage" -> rate_percentage is a % of face value (85 = 85%)
+  ///   "per_unit"   -> rate_percentage is payout currency PER ONE face unit
+  ///                   (Prestmit quotes 1165 NGN per USD 1)
+  /// Without this the client rendered Prestmit's 1165 as "1165%".
+  /// Empty string means "percentage" for backward compatibility.
+  @$pb.TagNumber(10)
+  $core.String get rateModel => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set rateModel($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasRateModel() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearRateModel() => $_clearField(10);
 }
 
 class GiftCardSale extends $pb.GeneratedMessage {
@@ -4785,9 +5057,12 @@ class SellGiftCardRequest extends $pb.GeneratedMessage {
   void clearBalanceAttested() => $_clearField(26);
 
   /// Multi-card batching (#81). When set (length ≥ 1), the sale is a SINGLE
-  /// Prestmit trade covering N cards of the SAME sellable card + form: amount =
-  /// SUM of the per-item denominations, N ecodes joined into comments, N physical
-  /// images flattened into attachments[]. Empty ⇒ legacy single-card path.
+  /// Prestmit trade covering N cards of the SAME sellable card (subcategory_id)
+  /// and form: `amount` = SUM of the per-item denominations, N ecodes are joined
+  /// into `comments`, and N physical images are flattened into `attachments[]`
+  /// (Prestmit's ≤20 cap still applies). Prestmit settles the batch as ONE
+  /// outcome, so the hold/settlement/refund money-path is identical to a single
+  /// card. Empty ⇒ legacy single-card path (fields above) is used unchanged.
   @$pb.TagNumber(27)
   $pb.PbList<SellCardItem> get cards => $_getList(26);
 }
@@ -8885,6 +9160,10 @@ class SellRateConfig extends $pb.GeneratedMessage {
     $core.bool? isActive,
     $core.String? createdAt,
     $core.String? updatedAt,
+    $core.double? payoutRatePerUnit,
+    $core.String? rateModel,
+    $core.String? syncedAt,
+    $core.bool? adminOverridden,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -8907,6 +9186,10 @@ class SellRateConfig extends $pb.GeneratedMessage {
     if (isActive != null) result.isActive = isActive;
     if (createdAt != null) result.createdAt = createdAt;
     if (updatedAt != null) result.updatedAt = updatedAt;
+    if (payoutRatePerUnit != null) result.payoutRatePerUnit = payoutRatePerUnit;
+    if (rateModel != null) result.rateModel = rateModel;
+    if (syncedAt != null) result.syncedAt = syncedAt;
+    if (adminOverridden != null) result.adminOverridden = adminOverridden;
     return result;
   }
 
@@ -8947,6 +9230,11 @@ class SellRateConfig extends $pb.GeneratedMessage {
     ..aOB(16, _omitFieldNames ? '' : 'isActive')
     ..aOS(17, _omitFieldNames ? '' : 'createdAt')
     ..aOS(18, _omitFieldNames ? '' : 'updatedAt')
+    ..a<$core.double>(
+        19, _omitFieldNames ? '' : 'payoutRatePerUnit', $pb.PbFieldType.OD)
+    ..aOS(20, _omitFieldNames ? '' : 'rateModel')
+    ..aOS(21, _omitFieldNames ? '' : 'syncedAt')
+    ..aOB(22, _omitFieldNames ? '' : 'adminOverridden')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -9113,6 +9401,51 @@ class SellRateConfig extends $pb.GeneratedMessage {
   $core.bool hasUpdatedAt() => $_has(17);
   @$pb.TagNumber(18)
   void clearUpdatedAt() => $_clearField(18);
+
+  /// Payout currency per ONE unit of face value, written by the catalog sync
+  /// from the provider's live rate. Distinct from payout_rate_percentage,
+  /// which is a % of face value and is decimal(5,2) in storage — it cannot
+  /// even hold Prestmit's 1165 NGN-per-USD Razer Gold rate.
+  @$pb.TagNumber(19)
+  $core.double get payoutRatePerUnit => $_getN(18);
+  @$pb.TagNumber(19)
+  set payoutRatePerUnit($core.double value) => $_setDouble(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasPayoutRatePerUnit() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearPayoutRatePerUnit() => $_clearField(19);
+
+  /// Which of the two rate fields is authoritative: "percentage" | "per_unit".
+  /// Without it the dashboard renders every row with a "%" suffix, so a row
+  /// priced at 1165 per unit displayed as the stale seeded "73%".
+  @$pb.TagNumber(20)
+  $core.String get rateModel => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set rateModel($core.String value) => $_setString(19, value);
+  @$pb.TagNumber(20)
+  $core.bool hasRateModel() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearRateModel() => $_clearField(20);
+
+  /// Last successful catalogue sync. Empty for admin-authored rows. Surfaced
+  /// so operators can see staleness rather than infer it.
+  @$pb.TagNumber(21)
+  $core.String get syncedAt => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set syncedAt($core.String value) => $_setString(20, value);
+  @$pb.TagNumber(21)
+  $core.bool hasSyncedAt() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearSyncedAt() => $_clearField(21);
+
+  @$pb.TagNumber(22)
+  $core.bool get adminOverridden => $_getBF(21);
+  @$pb.TagNumber(22)
+  set adminOverridden($core.bool value) => $_setBool(21, value);
+  @$pb.TagNumber(22)
+  $core.bool hasAdminOverridden() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearAdminOverridden() => $_clearField(22);
 }
 
 class AdminListSellRatesRequest extends $pb.GeneratedMessage {
@@ -9291,6 +9624,8 @@ class AdminCreateSellRateRequest extends $pb.GeneratedMessage {
     $core.double? payoutRatePercentage,
     $core.String? payoutCurrency,
     $core.String? cardType,
+    $core.double? payoutRatePerUnit,
+    $core.String? rateModel,
   }) {
     final result = create();
     if (cardBrand != null) result.cardBrand = cardBrand;
@@ -9309,6 +9644,8 @@ class AdminCreateSellRateRequest extends $pb.GeneratedMessage {
       result.payoutRatePercentage = payoutRatePercentage;
     if (payoutCurrency != null) result.payoutCurrency = payoutCurrency;
     if (cardType != null) result.cardType = cardType;
+    if (payoutRatePerUnit != null) result.payoutRatePerUnit = payoutRatePerUnit;
+    if (rateModel != null) result.rateModel = rateModel;
     return result;
   }
 
@@ -9345,6 +9682,9 @@ class AdminCreateSellRateRequest extends $pb.GeneratedMessage {
         12, _omitFieldNames ? '' : 'payoutRatePercentage', $pb.PbFieldType.OD)
     ..aOS(13, _omitFieldNames ? '' : 'payoutCurrency')
     ..aOS(14, _omitFieldNames ? '' : 'cardType')
+    ..a<$core.double>(
+        15, _omitFieldNames ? '' : 'payoutRatePerUnit', $pb.PbFieldType.OD)
+    ..aOS(16, _omitFieldNames ? '' : 'rateModel')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -9478,6 +9818,30 @@ class AdminCreateSellRateRequest extends $pb.GeneratedMessage {
   $core.bool hasCardType() => $_has(13);
   @$pb.TagNumber(14)
   void clearCardType() => $_clearField(14);
+
+  /// Payout currency per ONE face unit. Carried on the request so an admin
+  /// edit ROUND-TRIPS: without it the field arrives as 0, and the update path
+  /// would wipe the rate the catalog sync wrote and silently drop the row back
+  /// onto the stale percentage model.
+  @$pb.TagNumber(15)
+  $core.double get payoutRatePerUnit => $_getN(14);
+  @$pb.TagNumber(15)
+  set payoutRatePerUnit($core.double value) => $_setDouble(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasPayoutRatePerUnit() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearPayoutRatePerUnit() => $_clearField(15);
+
+  /// "percentage" | "per_unit". Empty lets the server derive it from whichever
+  /// rate value was populated.
+  @$pb.TagNumber(16)
+  $core.String get rateModel => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set rateModel($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasRateModel() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearRateModel() => $_clearField(16);
 }
 
 class AdminCreateSellRateResponse extends $pb.GeneratedMessage {
@@ -9573,6 +9937,8 @@ class AdminUpdateSellRateRequest extends $pb.GeneratedMessage {
     $core.String? payoutCurrency,
     $core.String? cardType,
     $core.bool? isActive,
+    $core.double? payoutRatePerUnit,
+    $core.String? rateModel,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -9593,6 +9959,8 @@ class AdminUpdateSellRateRequest extends $pb.GeneratedMessage {
     if (payoutCurrency != null) result.payoutCurrency = payoutCurrency;
     if (cardType != null) result.cardType = cardType;
     if (isActive != null) result.isActive = isActive;
+    if (payoutRatePerUnit != null) result.payoutRatePerUnit = payoutRatePerUnit;
+    if (rateModel != null) result.rateModel = rateModel;
     return result;
   }
 
@@ -9631,6 +9999,9 @@ class AdminUpdateSellRateRequest extends $pb.GeneratedMessage {
     ..aOS(14, _omitFieldNames ? '' : 'payoutCurrency')
     ..aOS(15, _omitFieldNames ? '' : 'cardType')
     ..aOB(16, _omitFieldNames ? '' : 'isActive')
+    ..a<$core.double>(
+        17, _omitFieldNames ? '' : 'payoutRatePerUnit', $pb.PbFieldType.OD)
+    ..aOS(18, _omitFieldNames ? '' : 'rateModel')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -9782,6 +10153,30 @@ class AdminUpdateSellRateRequest extends $pb.GeneratedMessage {
   $core.bool hasIsActive() => $_has(15);
   @$pb.TagNumber(16)
   void clearIsActive() => $_clearField(16);
+
+  /// Payout currency per ONE face unit. Carried on the request so an admin
+  /// edit ROUND-TRIPS: without it the field arrives as 0, and the update path
+  /// would wipe the rate the catalog sync wrote and silently drop the row back
+  /// onto the stale percentage model.
+  @$pb.TagNumber(17)
+  $core.double get payoutRatePerUnit => $_getN(16);
+  @$pb.TagNumber(17)
+  set payoutRatePerUnit($core.double value) => $_setDouble(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasPayoutRatePerUnit() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearPayoutRatePerUnit() => $_clearField(17);
+
+  /// "percentage" | "per_unit". Empty lets the server derive it from whichever
+  /// rate value was populated.
+  @$pb.TagNumber(18)
+  $core.String get rateModel => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set rateModel($core.String value) => $_setString(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasRateModel() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearRateModel() => $_clearField(18);
 }
 
 class AdminUpdateSellRateResponse extends $pb.GeneratedMessage {
@@ -11805,6 +12200,8 @@ class PendingVerification extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   void clearStatus() => $_clearField(8);
 
+  /// User-credit generation counter (migration 038). Surfaced for admin triage so
+  /// reviewers can see which payout attempt a pending sale is on.
   @$pb.TagNumber(9)
   $core.int get payoutAttempt => $_getIZ(8);
   @$pb.TagNumber(9)

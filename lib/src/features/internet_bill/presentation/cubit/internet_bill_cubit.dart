@@ -7,6 +7,27 @@ class InternetBillCubit extends Cubit<InternetBillState> {
 
   InternetBillCubit({required this.repository}) : super(InternetBillInitial());
 
+  /// ISPs hidden from the picker because they currently have no plans a
+  /// customer could actually buy.
+  ///
+  ///   * spectranet — the backend refuses to list it at all: Flutterwave
+  ///     advertises the biller but answers "Unknown biller" on validate, so a
+  ///     purchase could never be verified, let alone fulfilled.
+  ///   * smile-direct — the catalogue yields a single N100 item, which is not a
+  ///     real Smile bundle (Smile sells in thousands). Showing one nonsense
+  ///     price is worse than showing nothing.
+  ///
+  /// DISPLAY ONLY. Their mappings, datasources, validation and purchase paths
+  /// are all left intact, so the day the provider lists real plans they come
+  /// back by deleting a line here — not by rebuilding an integration. Hiding
+  /// them anywhere else (a screen, a picker widget) would mean the next screen
+  /// that lists ISPs quietly shows them again; this is the one funnel every
+  /// list flows through.
+  static const Set<String> _hiddenServiceIds = {
+    'spectranet',
+    'smile-direct',
+  };
+
   Future<void> getProviders() async {
     if (isClosed) return;
     emit(InternetBillLoading());
@@ -16,7 +37,11 @@ class InternetBillCubit extends Cubit<InternetBillState> {
     if (isClosed) return;
     result.fold(
       (failure) => emit(InternetBillError(message: failure.message)),
-      (providers) => emit(InternetBillProvidersLoaded(providers: providers)),
+      (providers) => emit(InternetBillProvidersLoaded(
+        providers: providers
+            .where((p) => !_hiddenServiceIds.contains(p.serviceId.trim().toLowerCase()))
+            .toList(),
+      )),
     );
   }
 

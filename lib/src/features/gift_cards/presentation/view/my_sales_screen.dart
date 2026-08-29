@@ -12,6 +12,7 @@ import '../../domain/entities/gift_card_entity.dart';
 import 'widgets/gift_card_error_widget.dart';
 import 'widgets/sell_rejection_reasons_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'gift_card_sale_receipt_screen.dart';
 
 class MySalesScreen extends StatefulWidget {
   const MySalesScreen({super.key});
@@ -31,15 +32,66 @@ class _MySalesScreenState extends State<MySalesScreen>
   // while the sheet is open keeps the list stable underneath.
   bool _sheetOpen = false;
 
-  static const _tabs = ['All', 'In Review', 'Approved', 'Paid', 'Rejected'];
-  static const _statusFilters = [null, 'pending_review', 'approved', 'paid', 'rejected'];
+  // Tabs are keyed to the USER-FACING statuses that userDisplayStatus can
+  // actually produce: pending / paid / refunded / rejected.
+  //
+  // "Approved" was previously a tab and could never match anything —
+  // userDisplayStatus deliberately collapses approved/settling/
+  // pending_settlement into "pending", because the seller only cares whether
+  // they have the money yet. Tapping it showed a full list anyway (nothing
+  // filtered at all), which hid the emptiness. "Refunded" replaces it: that
+  // state IS reachable and had no tab.
+  static const _tabs = ['All', 'In Review', 'Paid', 'Refunded', 'Rejected'];
+
+  /// Maps a tab label to the userDisplayStatus it selects. 'All' filters
+  /// nothing.
+  static const _tabStatus = <String, String>{
+    'In Review': 'pending',
+    'Paid': 'paid',
+    'Refunded': 'refunded',
+    'Rejected': 'rejected',
+  };
+
+  /// Sales for the selected tab. The tabs used to be decorative: every one of
+  /// them rendered the unfiltered list, so a seller could not narrow to
+  /// rejected or paid sales at all.
+  List<GiftCardSale> _salesForSelectedTab(List<GiftCardSale> sales) {
+    final label = _tabs[_tabController.index];
+    final want = _tabStatus[label];
+    if (want == null) return sales;
+    return sales.where((s) => s.userDisplayStatus == want).toList();
+  }
+  // The list is always fetched UNFILTERED and narrowed client-side by
+  // _salesForSelectedTab.
+  //
+  // The server filter this replaces passed raw lifecycle strings
+  // ('pending_review', 'approved') that the backend does not actually use —
+  // real rows carry 'reviewing', 'settled', 'pending_settlement' and so on —
+  // so those tabs queried for statuses no row ever had. It also could not
+  // express "In Review", which spans several internal states that
+  // userDisplayStatus deliberately collapses into one user-facing label.
+  // Filtering on the same derived status the badge shows keeps the tab, the
+  // badge and the row in agreement by construction.
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
     _tabController.addListener(_onTabChanged);
-    context.read<GiftCardCubit>().loadMySales();
+    final cubit = context.read<GiftCardCubit>();
+    cubit.loadMySales();
+    // A sale stores the PROVIDER's subcategory id ("220") as its card type, so
+    // without the catalogue this screen can only title rows with that number.
+    // The catalogue is cached and cheap; load it when it is not already there
+    // so rows read "Turkey iTunes" instead.
+    if (cubit.cachedSellableCards.isEmpty) {
+      // buildWhen deliberately ignores catalogue states (they would flash the
+      // empty view over a populated list), so the arrival has to rebuild this
+      // screen explicitly or the titles stay as raw ids until the next refresh.
+      cubit.loadSellableCards().then((_) {
+        if (mounted) setState(() {});
+      });
+    }
   }
 
   @override
@@ -50,17 +102,14 @@ class _MySalesScreenState extends State<MySalesScreen>
   }
 
   void _onTabChanged() {
-    if (!_tabController.indexIsChanging) {
-      context.read<GiftCardCubit>().loadMySales(
-        status: _statusFilters[_tabController.index],
-      );
-    }
+    // Re-render for the new filter. No refetch: the list is already loaded
+    // unfiltered, and re-querying per tab is what made the tabs feel broken
+    // (each one replaced the list with an identically unfiltered result).
+    if (!_tabController.indexIsChanging && mounted) setState(() {});
   }
 
   Future<void> _onRefresh() async {
-    await context.read<GiftCardCubit>().loadMySales(
-      status: _statusFilters[_tabController.index],
-    );
+    await context.read<GiftCardCubit>().loadMySales();
   }
 
   @override
@@ -126,7 +175,9 @@ class _MySalesScreenState extends State<MySalesScreen>
           }
 
           if (state is MySalesLoaded) {
-            return _buildSalesList(state.sales);
+            final visible = _salesForSelectedTab(state.sales);
+            if (visible.isEmpty) return _buildEmptyState();
+            return _buildSalesList(visible);
           }
 
           if (state is MySalesEmpty) {
@@ -157,117 +208,155 @@ class _MySalesScreenState extends State<MySalesScreen>
     );
   }
 
+  /// Resolves a human brand name for a sale.
+  ///
+  /// `sale.cardType` is the PROVIDER's subcategory id ("220"), which is what
+  /// the row rendered as its title — a bare number that means nothing to the
+  /// person who sold the card. The sellable catalogue maps that id to a display
+  /// name, so it is used when loaded; otherwise the id is shown rather than a
+  /// fabricated name.
+  String _saleBrandName(GiftCardSale sale) {
+    final cards = context.read<GiftCardCubit>().cachedSellableCards;
+    for (final c in cards) {
+      if (c.cardType == sale.cardType) {
+        if (c.displayName.trim().isNotEmpty) return c.displayName.trim();
+        break;
+      }
+    }
+    final raw = sale.cardType.replaceAll('_', ' ').trim();
+    return raw.isEmpty ? 'Gift card' : raw;
+  }
+
+  /// Face value with its currency, or bare when the currency is unknown.
+  /// Never prints a leading space or an invented code.
+  String _saleFaceLabel(GiftCardSale sale) {
+    final amount = sale.denomination.toStringAsFixed(0);
+    final ccy = sale.currency.trim().toUpperCase();
+    return ccy.isEmpty ? amount : '$ccy $amount';
+  }
+
   Widget _buildSaleCard(GiftCardSale sale) {
-    return GestureDetector(
-      key: Key('mysales_item_${sale.id}'),
-      onTap: () => _showSaleDetails(sale),
-      child: Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
+    // Show what the seller actually gets: the settled amount once it exists,
+    // the estimate until then. Quoting the estimate after payout would
+    // contradict the wallet.
+    final payout =
+        sale.actualPayout > 0 ? sale.actualPayout : sale.expectedPayout;
+    final isSettled = sale.actualPayout > 0;
+    final brand = _saleBrandName(sale);
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Material(
         color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                sale.cardType.replaceAll('_', ' ').toUpperCase(),
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w600,
+        borderRadius: BorderRadius.circular(14.r),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: Key('mysales_item_${sale.id}'),
+          // Opens the RECEIPT. The old details sheet had no share and no
+          // download, so a seller could never produce anything for a sale —
+          // the exact artefact they need when querying a rejection or proving
+          // a payout. The sheet stays on long-press for its in-place refresh.
+          onTap: () => Get.toNamed(
+            AppRoutes.giftCardSaleReceipt,
+            arguments: GiftCardSaleReceiptArgs(sale: sale),
+          ),
+          onLongPress: () => _showSaleDetails(sale),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 40.w,
+                  decoration: BoxDecoration(
+                    color: InvoiceThemeColors.primaryPurpleLight
+                        .withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Icon(Icons.sell_rounded,
+                      size: 19.sp,
+                      color: InvoiceThemeColors.primaryPurpleLight),
                 ),
-              ),
-              _buildStatusBadge(sale.userDisplayStatus),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Denomination',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 12.sp,
-                    ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              brand,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 14.5.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          _buildStatusBadge(sale.userDisplayStatus),
+                        ],
+                      ),
+                      SizedBox(height: 3.h),
+                      Text(
+                        _saleFaceLabel(sale),
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF9CA3AF),
+                          fontSize: 12.5.sp,
+                        ),
+                      ),
+                      SizedBox(height: 10.h),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isSettled ? 'Paid out' : 'Estimated payout',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF6B7280),
+                                    fontSize: 11.sp,
+                                  ),
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  'NGN ${payout.toStringAsFixed(2)}',
+                                  key: Key('mysales_payout_${sale.id}'),
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF10B981),
+                                    fontSize: 15.sp,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            _formatDate(sale.createdAt),
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF6B7280),
+                              fontSize: 11.sp,
+                            ),
+                          ),
+                          SizedBox(width: 4.w),
+                          Icon(Icons.chevron_right_rounded,
+                              size: 18.sp, color: const Color(0xFF6B7280)),
+                        ],
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    '${sale.currency} ${sale.denomination.toStringAsFixed(0)}',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Rate',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 12.sp,
-                    ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    '${sale.ratePercentage.toStringAsFixed(0)}%',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'Payout',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 12.sp,
-                    ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    _formatCurrency(sale.expectedPayout),
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF10B981),
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          if (sale.submittedAt.isNotEmpty) ...[
-            SizedBox(height: 8.h),
-            Text(
-              _formatDate(sale.submittedAt),
-              style: GoogleFonts.inter(
-                color: const Color(0xFF6B7280),
-                fontSize: 11.sp,
-              ),
+                ),
+              ],
             ),
-          ],
-        ],
+          ),
+        ),
       ),
-    ),
     );
   }
 
@@ -479,9 +568,7 @@ class _MySalesScreenState extends State<MySalesScreen>
       // is reflected in the row when the user returns.
       if (!mounted) return;
       setState(() => _sheetOpen = false);
-      context.read<GiftCardCubit>().loadMySales(
-            status: _statusFilters[_tabController.index],
-          );
+      context.read<GiftCardCubit>().loadMySales();
     });
   }
 
@@ -577,10 +664,35 @@ class _MySalesScreenState extends State<MySalesScreen>
         textColor = const Color(0xFFFB923C);
         label = 'Manual review';
         break;
+      // Reversal states. Without these three the badge fell through to
+      // `label = status` and showed the raw enum — a customer read
+      // "refund_pending" on a screen that names every other state in plain
+      // English, and could not tell whether money was coming back or gone.
+      case 'refund_pending':
+        bgColor = const Color(0xFFFB923C).withValues(alpha: 0.15);
+        textColor = const Color(0xFFFB923C);
+        label = 'Refund in progress';
+        break;
+      case 'refunded':
+        bgColor = const Color(0xFF6B7280).withValues(alpha: 0.15);
+        textColor = const Color(0xFF9CA3AF);
+        label = 'Refunded';
+        break;
+      case 'refund_failed':
+        bgColor = const Color(0xFFEF4444).withValues(alpha: 0.15);
+        textColor = const Color(0xFFEF4444);
+        label = 'Refund failed';
+        break;
       default:
         bgColor = const Color(0xFF6B7280).withValues(alpha: 0.15);
         textColor = const Color(0xFF6B7280);
-        label = status;
+        // Last resort only. Every status the service can emit should have a
+        // case above; reaching here means a new one shipped without UI, so
+        // make it readable rather than showing a raw enum.
+        label = status.replaceAll('_', ' ');
+        if (label.isNotEmpty) {
+          label = label[0].toUpperCase() + label.substring(1);
+        }
     }
 
     return Container(
@@ -621,14 +733,14 @@ class _MySalesScreenState extends State<MySalesScreen>
           Icons.hourglass_empty_rounded,
         ),
       2 => (
-          'No approved sales',
-          'Sales that admin has approved (awaiting payout) appear here.',
-          Icons.check_circle_outline,
-        ),
-      3 => (
           'No paid sales yet',
           'Sales that have been paid into your wallet appear here.',
           Icons.payments_outlined,
+        ),
+      3 => (
+          'No refunded sales',
+          'Sales reversed after payout appear here.',
+          Icons.undo_rounded,
         ),
       4 => (
           'No rejected sales',

@@ -63,6 +63,29 @@ class RecipientModel {
     return RegExp(r'^[A-Za-z0-9]+$').hasMatch(a);
   }
 
+  /// Whether this recipient may be sent to as an INTERNAL (LazerVault-to-
+  /// LazerVault) transfer.
+  ///
+  /// Internal must be PROVEN, never inferred. `type` alone is not proof: it is
+  /// defaulted to 'internal' in several construction paths simply because no
+  /// bank/sort code was captured (see batch_transfer_form.dart), so the absence
+  /// of a bank was being read as evidence of a LazerVault account.
+  ///
+  /// When that guess is wrong the transfer does not quietly reroute — the
+  /// backend refuses it outright ("recipient not found on LazerVault"), because
+  /// silently sending externally after the user asked for an internal transfer
+  /// would be worse. The user just sees "check the account number" for a
+  /// recipient whose details were entirely correct.
+  ///
+  /// Proof is either:
+  ///   * a resolved LazerVault user id, or
+  ///   * a bank explicitly identified as LazerVault (the LazerVault tab / a
+  ///     recipient returned by a LazerVault user lookup).
+  bool get canSendAsInternal {
+    if (internalUserId != null && internalUserId!.trim().isNotEmpty) return true;
+    return bankName.trim().toLowerCase() == 'lazervault';
+  }
+
   /// A Lazervault internal recipient identified only by user id — there is no
   /// account number to display; show the name + "Lazervault" instead.
   bool get isInternalUserRecipient =>

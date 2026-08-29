@@ -1260,6 +1260,10 @@ class _CryptoScreenState extends State<CryptoScreen> {
 
   Widget _buildRecentTransactionItem(CryptoTransactionHistory transaction) {
     return GestureDetector(
+      // opaque so the WHOLE row opens the receipt, not just the painted text.
+      // Matches the history screen's rows — both lists render the same
+      // transactions and must behave identically.
+      behavior: HitTestBehavior.opaque,
       onTap: () => _showTransactionDetails(transaction),
       child: Container(
         padding: EdgeInsets.all(16.w),

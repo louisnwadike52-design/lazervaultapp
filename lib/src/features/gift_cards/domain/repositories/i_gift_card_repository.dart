@@ -2,8 +2,19 @@ import '../entities/sell_card_entry.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:lazervault/core/errors/failure.dart';
 import '../entities/gift_card_entity.dart';
+import '../entities/gift_card_live_brand.dart';
 
 abstract class IGiftCardRepository {
+  /// Re-reads one brand live from the active buy provider, returning only the
+  /// denominations that provider will sell right now.
+  Future<Either<Failure, LiveBrand>> getGiftCardBrandLive({
+    required String productRef,
+    String? countryCode,
+    /// Read from THIS provider instead of the active one. Set when repeating a
+    /// card, whose product ref belongs to the issuing provider.
+    String? providerName,
+  });
+
   Future<Either<Failure, PaginatedBrands>> getGiftCardBrands({
     String? category,
     String? countryCode,
@@ -31,6 +42,7 @@ abstract class IGiftCardRepository {
     String? providerName,
     double? senderAmount,
     String? senderCurrency,
+    bool pinProvider = false,
   });
 
   Future<Either<Failure, List<GiftCard>>> getUserGiftCards({

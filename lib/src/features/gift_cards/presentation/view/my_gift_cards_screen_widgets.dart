@@ -13,5 +13,18 @@ class _Tone {
 class PurchaseGiftCardArgs {
   final GiftCardBrand brand;
   final double? lockedAmount;
-  const PurchaseGiftCardArgs({required this.brand, this.lockedAmount});
+
+  /// Provider that issued the card being repeated.
+  ///
+  /// When set, the purchase screen reads its amounts from THIS provider and
+  /// the buy executes on it, whichever rail is active. Product refs are
+  /// provider scoped, so a repeat carrying the issuer's ref has to go back to
+  /// the issuer. Empty for a normal purchase.
+  final String? pinnedProvider;
+
+  const PurchaseGiftCardArgs({
+    required this.brand,
+    this.lockedAmount,
+    this.pinnedProvider,
+  });
 }

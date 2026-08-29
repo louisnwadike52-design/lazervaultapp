@@ -15,6 +15,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:lazervault/core/utils/transfer_bank_display.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/receipt_metadata_humanizer.dart';
 part 'unified_transaction_receipt_widgets.dart';
@@ -429,13 +430,18 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   }
 
   Widget _buildDetailsCard() {
-    // Extract bank name from metadata for display alongside counterparty info
-    final bankName = tx.metadata?['bank_name'] as String?
-        ?? tx.metadata?['destination_bank_name'] as String?
-        ?? tx.metadata?['recipient_bank_name'] as String?;
-    final bankCode = tx.metadata?['bank_code'] as String?
-        ?? tx.metadata?['destination_bank_code'] as String?
-        ?? tx.metadata?['recipient_bank_code'] as String?;
+    // Destination institution. Resolved through the shared helper so this
+    // receipt, the dashboard history, the recipient history and the
+    // select-recipients sheet all name the same institution for the same
+    // transaction — and so an INTERNAL transfer shows "LazerVault" instead of
+    // omitting the row entirely, which used to leave the one field that says
+    // where the money went blank.
+    final bankDisplay = TransferBankDisplay.resolve(
+      tx.metadata,
+      isTransfer: tx.serviceType == TransactionServiceType.transfer,
+    );
+    final bankName = bankDisplay?.name;
+    final bankCode = bankDisplay?.code;
 
     // Crypto swap/send rows carry their legs in metadata (`op` stamped by
     // crypto-service). Render them as first-class From/To rows and swap-aware

@@ -17,20 +17,25 @@ class TransferHistoryItem extends StatelessWidget {
   ///
   /// Sized to sit proportionally next to the 14sp title + 12sp date row —
   /// 30×30 keeps the avatar visually present without dominating the row.
+  /// Destination institution for this row, via the shared resolver so the
+  /// history sheet, the dashboard history and the receipt agree.
+  TransferBankDisplay? get _bankDisplay => TransferBankDisplay.resolve(
+        transaction.metadata,
+        isTransfer:
+            transaction.serviceType == TransactionServiceType.transfer,
+      );
+
   Widget _buildLeadingAvatar({required bool isIncoming}) {
-    // External-bank transfers lead with the destination bank's logo so the
-    // user can scan their history by bank at a glance. Internal / LazerVault
-    // transfers keep the counterparty-initials avatar.
-    final meta = transaction.metadata;
-    final bankName = (meta?['bank_name'] as String?)?.trim() ?? '';
-    final bankCode = (meta?['bank_code'] as String?)?.trim() ??
-        (meta?['destination_bank_code'] as String?)?.trim();
-    final isExternalBank =
-        bankName.isNotEmpty && bankName.toLowerCase() != 'lazervault';
-    if (isExternalBank) {
+    // Every transfer leads with its destination institution's mark — an
+    // external bank's logo, or the LazerVault logo for money that stayed on
+    // the platform. Internal transfers used to fall back to counterparty
+    // initials, which made them indistinguishable from a bank transfer whose
+    // logo simply had not been bundled.
+    final bank = _bankDisplay;
+    if (bank != null) {
       return BankLogo(
-        bankName: bankName,
-        bankCode: bankCode,
+        bankName: bank.name,
+        bankCode: bank.code,
         size: 30,
         borderRadius: 8,
       );
@@ -140,6 +145,23 @@ class TransferHistoryItem extends StatelessWidget {
                           color: Colors.grey[600],
                         ),
                       ),
+                      if (_bankDisplay != null) ...[
+                        SizedBox(width: 6.w),
+                        Flexible(
+                          child: Text(
+                            // "LV" for LazerVault: the full name would crowd
+                            // out the date and status on a narrow row.
+                            _bankDisplay!.shortLabel,
+                            key: const Key('history_row_institution'),
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: Colors.grey[600],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                       SizedBox(width: 8.w),
                       Container(
                         padding: EdgeInsets.symmetric(

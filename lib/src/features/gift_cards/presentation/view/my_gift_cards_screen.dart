@@ -668,36 +668,34 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
     );
   }
 
-  // Repeat = navigate directly to the purchase screen with the
-  // amount LOCKED to the original order. Build a stub
-  // GiftCardBrand from the GiftCard fields we already have: id,
-  // name, logo, productId, currency. The purchase screen handles
-  // _isLockedAmount by hiding pills + custom input + activating
-  // the buy CTA on mount. Live-rate validation still happens at
-  // saga time so a stale stub can't ship a bad amount.
+  // Repeat = reopen the purchase screen for the SAME product on the SAME
+  // provider that issued the original card.
+  //
+  // The screen used to be handed a locally-assembled GiftCardBrand built from
+  // the stored card fields. That object was not a brand: it carried no
+  // denominations, no live price and no provider, so the purchase inherited
+  // the ACTIVE provider while still sending the ISSUER's product ref. Refs are
+  // provider scoped, so that either bought a different product or failed.
+  //
+  // Now only identity is passed — product ref, provider, amount — and the
+  // purchase screen fetches the real brand from that provider before anything
+  // can be bought.
   void _onRepeat(GiftCard card) {
-    final stub = GiftCardBrand(
-      id: card.brandId,
-      name: card.brandName,
-      logoUrl: card.logoUrl,
-      currencyCode: card.currency,
-      productId: card.providerProductId,
-      countryCode: card.countryCode ?? '',
-      // Anchor the FX/min-bounds on the previous purchase so the
-      // price summary's sender-amount estimate works even though
-      // we haven't fetched the live brand. The lockedAmount path
-      // only ever shows this single denomination so anything
-      // tighter is unnecessary.
-      minAmount: card.originalAmount,
-      maxAmount: card.originalAmount,
-      senderCurrencyCode: card.senderCurrency,
-      minSenderAmount: card.senderAmount,
-      maxSenderAmount: card.senderAmount,
-    );
+    final issuer = card.providerName.trim();
     Get.toNamed(
       AppRoutes.purchaseGiftCard,
-      arguments:
-          PurchaseGiftCardArgs(brand: stub, lockedAmount: card.originalAmount),
+      arguments: PurchaseGiftCardArgs(
+        brand: GiftCardBrand(
+          id: card.brandId,
+          name: card.brandName,
+          logoUrl: card.logoUrl,
+          currencyCode: card.currency,
+          productId: card.providerProductId,
+          countryCode: card.countryCode ?? '',
+        ),
+        lockedAmount: card.originalAmount,
+        pinnedProvider: issuer.isEmpty ? null : issuer,
+      ),
     );
   }
 

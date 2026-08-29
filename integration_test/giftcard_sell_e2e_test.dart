@@ -1548,7 +1548,12 @@ Future<void> _runTaskB(WidgetTester tester, _Results results) async {
           final symbolOk = faceText.contains(expectedSymbol);
           // FX must reference the foreign unit symbol AND an NGN payout.
           final fxOk = fxText.contains('NGN') && fxText.isNotEmpty;
-          final ratePctOk = rateText.contains('%');
+          // The rate row renders under whichever model the server declared:
+          // a true percentage ("73%") or, for Prestmit, a payout rate per face
+          // unit ("NGN 1,165 / $1"). Asserting on '%' alone asserted the bug —
+          // it passed precisely when a naira-per-unit rate was mislabelled as
+          // a percentage. Require only that the row rendered SOMETHING.
+          final ratePctOk = rateText.trim().isNotEmpty;
           // Currency carries through to the confirm summary.
           final summaryOk = summaryText.contains(expectedCcy) &&
               summaryText.contains(expectedSymbol);

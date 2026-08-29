@@ -488,6 +488,11 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
         
       ),
       child: GestureDetector(
+        // opaque = the WHOLE card is the hit target. A bare GestureDetector
+        // only receives taps that land on painted pixels, so the padding and
+        // the gaps between rows swallowed them — only text actually under the
+        // finger (typically the reference line) opened the receipt.
+        behavior: HitTestBehavior.opaque,
         onTap: () => _showTransactionDetails(transaction),
         child: Column(
           children: [

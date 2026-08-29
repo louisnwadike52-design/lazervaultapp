@@ -32,11 +32,46 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
   String? _selectedCategory;
   int _currentTab = 0; // 0 = Buy, 1 = Sell
   String _selectedCountryCode = ''; // Empty = All Countries (default) — BUY tab
-  // The SELL catalogue is Prestmit-only and restricted to USA gift cards: the
-  // sellable list is always requested for the US so the Sell tab never shows
-  // other regions (UK/CA/…). Buy stays multi-country via _selectedCountryCode.
-  static const String _kSellCountryCode = 'US';
+
+  // SELL country, empty = every region Prestmit supports.
+  //
+  // This used to be a const pinned to 'US', which meant the Sell tab requested
+  // only US cards and every other region Prestmit publishes — UK, EURO,
+  // CANADA and OTHERS — was unreachable. 177 subcategories were seeded and
+  // sellers could see roughly a third of them; a Turkey iTunes card, for
+  // instance, could never be listed for sale at all.
+  //
+  // Defaulting to empty shows the whole catalogue, and the picker below now
+  // narrows it for real (the backend matcher was also fixed — it compared
+  // Prestmit's own region labels against ISO aliases, so selecting Canada had
+  // returned only untagged cards).
+  String _sellCountryCode = '';
+
+  /// Regions Prestmit actually publishes, learned from an UNFILTERED load.
+  ///
+  /// The picker used to offer Reloadly's country list, which is the BUY
+  /// catalogue's. Choosing a country Prestmit has no cards for returned only
+  /// the untagged global set, so the filter looked like it worked while
+  /// showing the same rows for every such country. Offering only regions that
+  /// exist means every option changes the result.
+  List<String> _sellRegions = [];
+  /// Sell-side category, kept separate from the buy tab's _selectedCategory.
+  /// The two catalogues use different taxonomies and must not share state.
+  String? _sellCategory;
+  /// How many sellable cards are currently rendered. The sell catalogue is a
+  /// single live provider read (~177 cards, more before any filter), so it is
+  /// paged CLIENT-side: that keeps one page-size rule across all three filter
+  /// states (unfiltered, country, category) instead of paging the unfiltered
+  /// list server-side and then filtering the page, which would hand back
+  /// short or empty pages that still claimed more were coming.
+  int _sellVisibleCount = _kSellPageSize;
+  static const int _kSellPageSize = 20;
+  List<String> _sellCategories = [];
   final ScrollController _scrollController = ScrollController();
+  /// The sell grid needs its OWN controller: a ScrollController drives exactly
+  /// one attached scroll view, and the buy grid already claims the one above.
+  /// Sharing it would leave the sell tab's paging silently dead.
+  final ScrollController _sellScrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   List<GiftCardCountry> _supportedCountries = [];
 
@@ -56,14 +91,17 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     final cubit = context.read<GiftCardCubit>();
     // Load data for both tabs so switching is instant
     cubit.loadGiftCardBrands();
-    cubit.loadSellableCards(countryCode: _kSellCountryCode);
+    cubit.loadSellableCards(
+            countryCode: _sellCountryCode.isEmpty ? null : _sellCountryCode);
     cubit.loadSupportedCountries();
     _scrollController.addListener(_onScroll);
+    _sellScrollController.addListener(_onSellScroll);
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _sellScrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -78,6 +116,32 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     }
   }
 
+  /// Size of the current filtered sell result set, published by the grid so
+  /// the scroll handler can page without recomputing the filters.
+  int _sellTotal = 0;
+
+  /// Grows the sell window as the user nears the end. Paging is local, so this
+  /// only widens what is rendered — it never refetches, and it can never
+  /// promise more rows than the active filters actually yield.
+  void _onSellScroll() {
+    if (!_sellScrollController.hasClients) return;
+    if (_sellScrollController.position.pixels <
+        _sellScrollController.position.maxScrollExtent - 200) {
+      return;
+    }
+    if (_sellVisibleCount >= _sellTotal) return;
+    setState(() {
+      _sellVisibleCount =
+          (_sellVisibleCount + _kSellPageSize).clamp(0, _sellTotal);
+    });
+  }
+
+  /// Any change to the sell filters restarts paging — otherwise switching from
+  /// a 100-card region to a 3-card one leaves the window scrolled past the end.
+  void _resetSellPaging() {
+    _sellVisibleCount = _kSellPageSize;
+  }
+
   Future<void> _onRefresh() async {
     if (_currentTab == 0) {
       _searchController.clear();
@@ -89,7 +153,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     } else {
       await context
           .read<GiftCardCubit>()
-          .loadSellableCards(countryCode: _kSellCountryCode);
+          .loadSellableCards(
+            countryCode: _sellCountryCode.isEmpty ? null : _sellCountryCode);
     }
   }
 
@@ -308,15 +373,22 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
   }
 
   Widget _buildSearchAndFilters() {
-    final flag = _selectedCountryCode.isEmpty
+    // Each tab keeps its own country: a seller narrowing to Canada should not
+    // silently re-filter the buy catalogue behind them.
+    final activeCountry =
+        _currentTab == 0 ? _selectedCountryCode : _sellCountryCode;
+    final flag = activeCountry.isEmpty
         ? '\u{1F30D}'
-        : _getFlagForCountry(_selectedCountryCode);
-    final countryLabel = _selectedCountryCode.isEmpty
+        : _getFlagForCountry(activeCountry);
+    final countryLabel = activeCountry.isEmpty
         ? 'All'
-        : _selectedCountryCode.toUpperCase();
-    final categoryLabel = _selectedCategory == null
-        ? 'All'
-        : _getCategoryName(_selectedCategory!);
+        : (_currentTab == 1
+            ? (_sellRegionNames[activeCountry.toUpperCase()] ??
+                activeCountry.toUpperCase())
+            : activeCountry.toUpperCase());
+    final activeCategory = _currentTab == 0 ? _selectedCategory : _sellCategory;
+    final categoryLabel =
+        activeCategory == null ? 'All' : _getCategoryName(activeCategory);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
@@ -372,24 +444,26 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
             ),
           ),
           SizedBox(width: 8.w),
-          // Country filter — BUY tab only. The Sell flow is US-only (Prestmit
-          // sells US cards), so a country picker there is misleading; the sell
-          // list is already pinned to US (_kSellCountryCode).
-          if (_currentTab == 0) ...[
-            _buildFilterButton(
-              key: const Key('country_selector_button'),
-              label: 'Country',
-              value: countryLabel,
-              emoji: flag,
-              onTap: () => _showCountrySelection(),
-            ),
-            SizedBox(width: 8.w),
-          ],
+          // Country filter on BOTH tabs. Sell is no longer pinned to one
+          // region, so hiding the picker there would leave the rest of
+          // Prestmit's catalogue browsable only by scrolling.
+          _buildFilterButton(
+            key: const Key('country_selector_button'),
+            label: 'Country',
+            value: countryLabel,
+            emoji: flag,
+            onTap: () => _currentTab == 1
+                ? _showSellRegionSelection()
+                : _showCountrySelection(),
+          ),
+          SizedBox(width: 8.w),
           _buildFilterButton(
             label: 'Category',
             value: categoryLabel,
             icon: Icons.category_rounded,
-            onTap: () => _showCategorySelection(),
+            onTap: () => _currentTab == 1
+                ? _showSellCategorySelection()
+                : _showCategorySelection(),
           ),
         ],
       ),
@@ -404,19 +478,264 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
               _selectedCountryCode.isEmpty ? null : _selectedCountryCode);
     } else {
       // Sell tab: client-side filter
-      setState(() => _sellSearchQuery = query.trim().toLowerCase());
+      setState(() {
+        _sellSearchQuery = query.trim().toLowerCase();
+        _resetSellPaging();
+      });
     }
   }
 
+  /// Learns the available regions from a full (unfiltered) catalogue load.
+  /// A filtered load is ignored — it only contains one region by definition
+  /// and would shrink the picker to the current selection.
+  void _captureSellRegions(List<SellableCard> cards) {
+    if (_sellCountryCode.isNotEmpty) return;
+    final regions = cards
+        .map((c) => c.country.trim().toUpperCase())
+        .where((c) => c.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
+    if (regions.isEmpty || regions.toString() == _sellRegions.toString()) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _sellRegions = regions);
+    });
+  }
+
+  /// Prestmit's region labels are not ISO codes, so they are given readable
+  /// names here rather than run through a flag/ISO lookup that would not
+  /// resolve them.
+  static const Map<String, String> _sellRegionNames = {
+    'USA': 'United States',
+    'UK': 'United Kingdom',
+    'EURO': 'Europe (Euro)',
+    'CANADA': 'Canada',
+    'OTHERS': 'Other regions',
+  };
+
+  /// Learns the sell taxonomy from the loaded catalogue. Unlike the buy tab
+  /// there is no categories RPC for sellable cards, and the categories are
+  /// Prestmit's own labels — so they are derived from what actually came back
+  /// rather than assumed.
+  void _captureSellCategories(List<SellableCard> cards) {
+    final cats = cards
+        .map((c) => c.category.trim())
+        .where((c) => c.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    // A category chosen under one region may not exist in the next. Left in
+    // place it silently empties the grid with no indication why, so it is
+    // dropped as soon as it is no longer offered.
+    final selectionGone = _sellCategory != null &&
+        !cats.any((c) => c.toLowerCase() == _sellCategory!.toLowerCase());
+    if (!selectionGone &&
+        (cats.isEmpty || cats.toString() == _sellCategories.toString())) {
+      return;
+    }
+    // Deferred: this is reached from build(), where setState throws.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        _sellCategories = cats;
+        if (selectionGone) {
+          _sellCategory = null;
+          _resetSellPaging();
+        }
+      });
+    });
+  }
+
+  /// Resets both sell filters. Country is server-side so it needs a refetch;
+  /// category is client-side and clears with setState alone.
+  void _clearSellFilters() {
+    final hadCountry = _sellCountryCode.isNotEmpty;
+    setState(() {
+      _sellCountryCode = '';
+      _sellCategory = null;
+      _resetSellPaging();
+    });
+    if (hadCountry) {
+      context.read<GiftCardCubit>().loadSellableCards();
+    }
+  }
+
+  void _showSellCategorySelection() {
+    if (_sellCategories.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Categories load with the sellable cards.',
+              style: GoogleFonts.inter(fontSize: 13.sp)),
+          backgroundColor: const Color(0xFF1F1F1F),
+        ),
+      );
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(ctx).size.height * 0.7),
+          child: Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    margin: EdgeInsets.only(bottom: 16.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D2D2D),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                ),
+                Text('Select Category',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600)),
+                SizedBox(height: 12.h),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      _sellCategoryTile(ctx, null, 'All Categories'),
+                      ..._sellCategories.map((c) =>
+                          _sellCategoryTile(ctx, c, _getCategoryName(c))),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sellCategoryTile(BuildContext ctx, String? value, String label) {
+    final isSelected = _sellCategory == value;
+    return ListTile(
+      dense: true,
+      contentPadding: EdgeInsets.symmetric(horizontal: 8.w),
+      leading: Icon(
+        isSelected ? Icons.check_circle : Icons.circle_outlined,
+        color: isSelected
+            ? InvoiceThemeColors.primaryPurple
+            : const Color(0xFF6B7280),
+        size: 20.sp,
+      ),
+      title: Text(label,
+          style: GoogleFonts.inter(
+            color: isSelected ? InvoiceThemeColors.primaryPurple : Colors.white,
+            fontSize: 14.sp,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+          )),
+      onTap: () {
+        Navigator.pop(ctx);
+        // Purely client-side: the sellable catalogue is already loaded, so
+        // this must NOT call loadGiftCardBrands (a BUY-catalogue RPC, which
+        // is what the shared picker used to do from the sell tab).
+        setState(() {
+      _sellCategory = value;
+      _resetSellPaging();
+    });
+      },
+    );
+  }
+
+  void _showSellRegionSelection() {
+    final regions = _sellRegions;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 14.h),
+              child: Text('Filter by region',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600)),
+            ),
+            ListTile(
+              title: Text('All regions',
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp)),
+              trailing: _sellCountryCode.isEmpty
+                  ? const Icon(Icons.check, color: Color(0xFF10B981))
+                  : null,
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _applySellRegion('');
+              },
+            ),
+            ...regions.map((r) => ListTile(
+                  title: Text(_sellRegionNames[r] ?? r,
+                      style: GoogleFonts.inter(
+                          color: Colors.white, fontSize: 14.sp)),
+                  trailing: _sellCountryCode == r
+                      ? const Icon(Icons.check, color: Color(0xFF10B981))
+                      : null,
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    _applySellRegion(r);
+                  },
+                )),
+            SizedBox(height: 8.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _applySellRegion(String region) {
+    setState(() {
+      _sellCountryCode = region;
+      _resetSellPaging();
+    });
+    // Re-fetch: the selected region's cards may not be in the loaded set.
+    context.read<GiftCardCubit>().loadSellableCards(
+          countryCode: region.isEmpty ? null : region,
+        );
+  }
+
   void _showCountrySelection() {
+    // Applies to whichever tab is open. Each keeps its own selection, so
+    // narrowing the sell catalogue does not silently re-filter the buy one.
+    final isSell = _currentTab == 1;
     CountrySelectionBottomsheet.show(
       context: context,
-      selectedCountryCode: _selectedCountryCode,
+      selectedCountryCode: isSell ? _sellCountryCode : _selectedCountryCode,
       dynamicCountries: _supportedCountries,
       onCountrySelected: (countryCode, countryName) {
-        setState(() {
-          _selectedCountryCode = countryCode;
-        });
+        if (isSell) {
+          setState(() => _sellCountryCode = countryCode);
+          // Re-fetch rather than filter what is already on screen: the
+          // catalogue is resolved server-side against Prestmit's region
+          // labels, so the selected country's cards may not be in the set
+          // currently loaded.
+          context.read<GiftCardCubit>().loadSellableCards(
+                countryCode: countryCode.isEmpty ? null : countryCode,
+              );
+          return;
+        }
+        setState(() => _selectedCountryCode = countryCode);
         context.read<GiftCardCubit>().loadGiftCardBrands(
               category: _selectedCategory,
               countryCode: countryCode.isEmpty ? null : countryCode,
@@ -695,6 +1014,36 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     );
   }
 
+  /// Starting price with the pre-order marker beside it.
+  ///
+  /// The two facts that decide whether to open a card are what it costs and
+  /// when it arrives, so they share a line. Placing the marker here rather
+  /// than over the logo keeps the brand mark legible, and using the row's
+  /// spare horizontal width leaves the tile height (a fixed childAspectRatio
+  /// of 1.28 with a Spacer absorbing the slack) completely unchanged.
+  Widget _priceWithPreOrder(GiftCardBrand brand, String priceLabel) {
+    final price = Text(
+      priceLabel,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: GoogleFonts.inter(
+        fontSize: 11.sp,
+        fontWeight: FontWeight.w600,
+        // Readable green (matches the sell-tile price + discount badge);
+        // the old primaryPurple #4E03D0 was near-invisible on the card.
+        color: const Color(0xFF10B981),
+      ),
+    );
+    if (!brand.preOrder) return price;
+    return Row(
+      children: [
+        Flexible(child: price),
+        SizedBox(width: 4.w),
+        const PreOrderBadge(),
+      ],
+    );
+  }
+
   Widget _buildBrandCard(GiftCardBrand brand) {
     return GestureDetector(
       key: Key('giftcard_brand_card_${brand.id}'),
@@ -723,10 +1072,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Pre-order marker overlays the logo plate rather than adding a
-              // row: the tile is a fixed 1.28 aspect ratio with a Spacer, so an
-              // extra line of content risks a RenderFlex overflow on shorter
-              // screens. Solid fill because the plate underneath is white.
+              // Logo plate. The pre-order marker deliberately does NOT overlay
+              // this: covering the brand mark costs more than it communicates.
               Stack(
                 children: [
                   Container(
@@ -754,12 +1101,6 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                       ),
                     ),
                   ),
-                  if (brand.preOrder)
-                    Positioned(
-                      top: 3.h,
-                      right: 3.w,
-                      child: const PreOrderBadge(solid: true),
-                    ),
                 ],
               ),
               SizedBox(height: 8.h),
@@ -789,26 +1130,14 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
               if (brand.minSenderAmount > 0 &&
                   brand.senderCurrencyCode.isNotEmpty &&
                   brand.senderCurrencyCode != brand.currencyCode) ...[
-                Text(
+                _priceWithPreOrder(
+                  brand,
                   'From ${brand.senderCurrencyCode} ${brand.minSenderAmount >= 1000 ? brand.minSenderAmount.toStringAsFixed(0).replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (m) => "${m[1]},") : brand.minSenderAmount.toStringAsFixed(2)}',
-                  style: GoogleFonts.inter(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w600,
-                    // Readable green (matches the sell-tile price + discount badge)
-                    // — the old primaryPurple #4E03D0 was near-invisible on the card.
-                    color: const Color(0xFF10B981),
-                  ),
                 ),
               ] else if (brand.denominations.isNotEmpty) ...[
-                Text(
+                _priceWithPreOrder(
+                  brand,
                   'From ${brand.currencyCode} ${brand.denominations.first.toStringAsFixed(0)}',
-                  style: GoogleFonts.inter(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w600,
-                    // Readable green (matches the sell-tile price + discount badge)
-                    // — the old primaryPurple #4E03D0 was near-invisible on the card.
-                    color: const Color(0xFF10B981),
-                  ),
                 ),
               ],
               if (brand.discountPercentage > 0)
@@ -953,15 +1282,6 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     return category[0].toUpperCase() + category.substring(1);
   }
 
-  // True when a sellable card's Prestmit country tag denotes the USA.
-  // Prestmit tags US cards as "USA" (backfilled server-side from the
-  // "USA <Brand> …" name prefix); the ISO-2 "US" alias is accepted
-  // defensively. Empty/other tags are treated as non-USA and dropped —
-  // SELL is USA-only per the 2026-08 product directive.
-  bool _isUsaSellCard(String country) {
-    final c = country.trim().toUpperCase();
-    return c == 'USA' || c == 'US';
-  }
 
   // Real brand logo for a sellable card — see sellCardLogoUrl() in
   // utils/sell_card_logo.dart. Shared with the sell detail header so both
@@ -1025,7 +1345,8 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                     setState(() => _currentTab = 1);
                     context
                         .read<GiftCardCubit>()
-                        .loadSellableCards(countryCode: _kSellCountryCode);
+                        .loadSellableCards(
+            countryCode: _sellCountryCode.isEmpty ? null : _sellCountryCode);
                   }
                 },
                 child: Container(
@@ -1066,9 +1387,18 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     final cached = cubit.cachedSellableCards;
 
     if (state is SellableCardsEmpty) {
-      return _buildSellEmptyState();
+      // The backend returns an EMPTY catalogue (never a fallback) when
+      // Prestmit — the only rail that can redeem a card — is unconfigured,
+      // erroring, or answers with zero cards. With a region selected the same
+      // empty result may simply mean that region carries nothing, so the two
+      // are told apart rather than blaming the provider for a filter.
+      return _sellCountryCode.isEmpty
+          ? _buildSellUnavailableState()
+          : _buildSellEmptyState(filtered: true);
     }
     if (state is SellableCardsLoaded) {
+      _captureSellRegions(state.cards);
+      _captureSellCategories(state.cards);
       return _buildSellableCardsGrid(state.cards);
     }
     if (cached.isNotEmpty) {
@@ -1082,17 +1412,23 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
   }
 
   Widget _buildSellableCardsGrid(List<SellableCard> cards) {
-    // SELL is USA-only (product directive 2026-08). Prestmit — the sole
-    // sell provider — lists multi-country variants (USA/UK/CA/EU/…), but
-    // Lazervault only trades USA-issued cards. The GetSellableCards RPC is
-    // fetched without a countryCode (so switching tabs stays instant), so
-    // the server-side filterCardsByCountry never runs — restrict to USA
-    // here so the user never picks a non-USA card the sell flow can't price.
-    var filteredCards = cards.where((c) => _isUsaSellCard(c.country)).toList();
-    // Apply category and search filters client-side for sell cards
-    if (_selectedCategory != null) {
-      filteredCards =
-          filteredCards.where((c) => c.category == _selectedCategory).toList();
+    // Region filtering happens SERVER-side: every sell load passes
+    // _sellCountryCode as the RPC's countryCode, so `cards` already contains
+    // only the chosen region. There used to be a hard USA-only gate here,
+    // which silently discarded every UK, EURO, CANADA and OTHERS card the
+    // server returned — so widening the backend filter changed nothing that
+    // the user could actually see.
+    var filteredCards = cards;
+    // Category is filtered client-side, against the SELL taxonomy. It must not
+    // reuse _selectedCategory: that holds a buy-catalogue slug ("gaming"),
+    // while a sellable card's category is Prestmit's own label. Comparing the
+    // two is never equal, so picking any category emptied the grid.
+    if (_sellCategory != null) {
+      filteredCards = filteredCards
+          .where((c) =>
+              c.category.trim().toLowerCase() ==
+              _sellCategory!.trim().toLowerCase())
+          .toList();
     }
     if (_sellSearchQuery.isNotEmpty) {
       filteredCards = filteredCards
@@ -1102,9 +1438,18 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
           .toList();
     }
 
-    if (filteredCards.isEmpty) return _buildSellEmptyState();
+    if (filteredCards.isEmpty) return _buildSellEmptyState(filtered: true);
+
+    // Publish the filtered size so _onScroll can page without re-filtering,
+    // and clamp the window in case a filter shrank the result set since the
+    // last frame.
+    _sellTotal = filteredCards.length;
+    final visible = _sellVisibleCount.clamp(0, filteredCards.length);
+    final pageCards = filteredCards.take(visible).toList();
+    final hasMore = visible < filteredCards.length;
 
     return GridView.builder(
+      controller: _sellScrollController,
       padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 16.h),
       physics: const AlwaysScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -1114,10 +1459,240 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
         // Shorter tiles for parity with the buy grid (was 0.95 = taller-than-wide).
         childAspectRatio: 1.2,
       ),
-      itemCount: filteredCards.length,
-      itemBuilder: (context, index) =>
-          _buildSellableCardTile(filteredCards[index]),
+      // One trailing cell carries the paging footer when a page is still held
+      // back, matching how the buy grid appends its load-more indicator.
+      itemCount: pageCards.length + (hasMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index >= pageCards.length) {
+          return _buildSellPagingFooter(visible, filteredCards.length);
+        }
+        return _buildSellableCardTile(pageCards[index]);
+      },
     );
+  }
+
+  /// Shown when the sell catalogue comes back empty with no region selected.
+  ///
+  /// The backend serves this surface from ONE provider and deliberately has no
+  /// fallback: a sell quote is a promise to pay for a card, and only the rail
+  /// that can actually redeem the card can make it. Rather than quote from a
+  /// stale local table and commit to a payout nobody can honour, the sell
+  /// surface closes and says so. Buying is unaffected, so the copy points
+  /// there instead of leaving the user at a dead end.
+  Widget _buildSellUnavailableState() {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(height: 72.h),
+        Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 76.w,
+                  height: 76.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.10),
+                    border: Border.all(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.28),
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.pause_circle_outline_rounded,
+                    size: 34.sp,
+                    color: const Color(0xFFF59E0B),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                Text(
+                  'Selling is paused',
+                  key: const Key('sell_unavailable_title'),
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                Text(
+                  'We can\'t reach our gift card partner right now, so live '
+                  'rates are unavailable. We\'ve paused selling rather than '
+                  'quote a rate we might not be able to honour.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 14.sp,
+                    height: 1.55,
+                  ),
+                ),
+                SizedBox(height: 18.h),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 14.w, vertical: 12.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: const Color(0xFF2D2D2D)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.shield_outlined,
+                          size: 17.sp, color: const Color(0xFF10B981)),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Text(
+                          'Your cards and balance are safe. Nothing has been '
+                          'submitted or charged.',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFD1D5DB),
+                            fontSize: 12.5.sp,
+                            height: 1.45,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 24.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    key: const Key('sell_unavailable_retry'),
+                    onPressed: () =>
+                        context.read<GiftCardCubit>().loadSellableCards(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: InvoiceThemeColors.primaryPurple,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Try again',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                TextButton(
+                  // Mirrors the Buy toggle exactly — switching tabs without
+                  // clearing the sell search and loading the buy catalogue
+                  // lands the user on an empty buy grid still filtered by a
+                  // query they typed on the other tab.
+                  onPressed: () {
+                    _searchController.clear();
+                    _sellSearchQuery = '';
+                    setState(() => _currentTab = 0);
+                    context.read<GiftCardCubit>().loadGiftCardBrands(
+                          category: _selectedCategory,
+                          countryCode: _selectedCountryCode,
+                        );
+                  },
+                  child: Text(
+                    'Buy gift cards instead',
+                    style: GoogleFonts.inter(
+                      color: InvoiceThemeColors.primaryPurple,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Trailing cell shown while more filtered results are held back. It states
+  /// the counts rather than only spinning, so a seller can tell "still
+  /// loading" apart from "that is everything" without scrolling to find out.
+  Widget _buildSellPagingFooter(int shown, int total) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 20.w,
+            height: 20.w,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                  InvoiceThemeColors.primaryPurple),
+            ),
+          ),
+          SizedBox(height: 10.h),
+          Text(
+            '$shown of $total',
+            key: const Key('sell_paging_footer'),
+            style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// What this card pays the seller, in the payout currency.
+  ///
+  /// Uses the provider's own rate (naira per unit of face currency) taken on
+  /// the same catalogue read as the rest of the tile, so the figure can never
+  /// be a stale stored rate. Returns null when the provider published no rate
+  /// or no minimum — showing nothing is correct there, because a payout
+  /// computed from a missing rate would be invented.
+  String? _sellablePayoutLabel(SellableCard card) {
+    final rate = card.payoutRatePerUnit;
+    final min = card.minDenomination;
+    if (rate <= 0 || min <= 0) return null;
+    final payout = min * rate;
+    // Same grouping expression the buy tile uses. RegExp is compiled at
+    // runtime, so an unbalanced one throws where the analyzer cannot see it.
+    final formatted = payout.toStringAsFixed(0).replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+    return 'From NGN $formatted';
+  }
+
+  /// Renders a sellable card's accepted range.
+  ///
+  /// Prestmit publishes a MINIMUM for every subcategory but a maximum for only
+  /// some, so the missing ones arrive as 0. Interpolating both blindly printed
+  /// "USD 10 - 0" on the catalogue — a range that ends below where it starts,
+  /// which reads as broken and tells the seller nothing about what is actually
+  /// accepted. An open-ended range is now shown as open-ended.
+  String _sellableRangeLabel(SellableCard card) {
+    // No currency is NOT USD. Prestmit publishes no currency field, and its
+    // OTHERS region spans TRY, CHF, AUD, NZD, SGD and more, so the backend
+    // sends none for those. Defaulting to "USD" here printed a lira card as
+    // dollars — the seller reads that as the currency they are paid against,
+    // so an absent code is shown as absent.
+    final ccy = card.currencies.isNotEmpty ? card.currencies.first : '';
+    final prefix = ccy.isEmpty ? '' : '$ccy ';
+    final min = card.minDenomination;
+    final max = card.maxDenomination;
+    final minText = min.toStringAsFixed(0);
+
+    // A missing maximum means Prestmit published no band ceiling for this
+    // card, not a ceiling of zero. It used to render "USD 10 - 0" — a range
+    // ending below where it starts.
+    if (max <= 0 || max <= min) {
+      return ccy.isEmpty ? 'Min $minText' : '$prefix$minText+';
+    }
+    return '$prefix$minText - ${max.toStringAsFixed(0)}';
   }
 
   Widget _buildSellableCardTile(SellableCard card) {
@@ -1192,12 +1767,25 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                 ),
               ),
               const Spacer(),
+              // What the seller actually gets, in their own money. The buy
+              // list has always led with "From NGN x"; the sell list showed
+              // only a foreign face value, which is the figure a Nigerian
+              // seller cares least about.
+              if (_sellablePayoutLabel(card) != null)
+                Text(
+                  _sellablePayoutLabel(card)!,
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF10B981),
+                  ),
+                ),
               Text(
-                '${card.currencies.isNotEmpty ? card.currencies.first : "USD"} ${card.minDenomination.toStringAsFixed(0)} - ${card.maxDenomination.toStringAsFixed(0)}',
+                _sellableRangeLabel(card),
                 style: GoogleFonts.inter(
-                  fontSize: 12.sp,
+                  fontSize: 11.sp,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xFF10B981),
+                  color: const Color(0xFF9CA3AF),
                 ),
               ),
             ],
@@ -1207,7 +1795,17 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     );
   }
 
-  Widget _buildSellEmptyState() {
+  /// [filtered] is true when the catalogue DID return cards but the user's own
+  /// country/category selection excluded all of them. The generic "none
+  /// available, try Refresh" copy is wrong there — Refresh re-runs the same
+  /// query and the category filter is client-side, so nothing would change.
+  Widget _buildSellEmptyState({bool filtered = false}) {
+    final activeFilters = <String>[
+      if (_sellCountryCode.isNotEmpty)
+        _sellRegionNames[_sellCountryCode.toUpperCase()] ??
+            _sellCountryCode.toUpperCase(),
+      if (_sellCategory != null) _getCategoryName(_sellCategory!),
+    ];
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
@@ -1231,7 +1829,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
               ),
               SizedBox(height: 16.h),
               Text(
-                'No Cards to Sell',
+                filtered ? 'No Matches' : 'No Cards to Sell',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 16.sp,
@@ -1240,7 +1838,9 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
               ),
               SizedBox(height: 8.h),
               Text(
-                'Sellable card types will appear here when available',
+                filtered
+                    ? 'No sellable cards match ${activeFilters.join(' + ')}.'
+                    : 'Sellable card types will appear here when available',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   color: const Color(0xFF9CA3AF),
@@ -1250,9 +1850,12 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
               ),
               SizedBox(height: 24.h),
               ElevatedButton(
-                onPressed: () => context
-                    .read<GiftCardCubit>()
-                    .loadSellableCards(countryCode: _kSellCountryCode),
+                onPressed: () => filtered
+                    ? _clearSellFilters()
+                    : context.read<GiftCardCubit>().loadSellableCards(
+                        countryCode: _sellCountryCode.isEmpty
+                            ? null
+                            : _sellCountryCode),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: InvoiceThemeColors.primaryPurple,
                   shape: RoundedRectangleBorder(
@@ -1263,7 +1866,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                   elevation: 0,
                 ),
                 child: Text(
-                  'Refresh',
+                  filtered ? 'Clear filters' : 'Refresh',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 14.sp,

@@ -113,6 +113,12 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
           );
         } on GrpcError catch (e) {
           print('gRPC Error during sendFunds: ${e.code} - ${e.message}');
+          // Keep the gRPC CODE. The retry decision below is made on the code,
+          // never on the message: the message is human-facing copy and the
+          // moment it was reworded ("We couldn't find that recipient…") it
+          // stopped matching the substring list that was supposed to suppress
+          // retries, so a plain business failure got retried.
+          _lastSendFundsCode = e.code;
           throw ServerException(
             message: 'Failed to send funds: ${e.message ?? "Unknown error"}',
           );
@@ -462,25 +468,34 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
     }
   }
 
-  /// Custom retry logic for transfers - don't retry business logic failures
-  /// or any error from operations that consume single-use verification tokens.
+  /// gRPC status of the most recent sendFunds failure, captured so the retry
+  /// decision can be made on the code rather than on user-facing prose.
+  static int? _lastSendFundsCode;
+
+  /// Whether a failed transfer may be retried automatically.
+  ///
+  /// A transfer consumes a SINGLE-USE PIN verification token before it does
+  /// anything else, so once the server has processed the request at all, a
+  /// retry can never succeed — it can only turn a clear business error into
+  /// "invalid verification token: token already used", which is what the user
+  /// actually sees. Retrying is therefore pure downside for every outcome
+  /// except one: the request never reached the server.
+  ///
+  /// UNAVAILABLE is that one case — the channel could not be established, so
+  /// the token is still unspent and a retry is both safe and useful.
+  /// Everything else, including DEADLINE_EXCEEDED, is refused: a timeout is
+  /// AMBIGUOUS (the server may have completed the transfer) and re-sending
+  /// money on ambiguity is the one thing never worth doing.
+  ///
+  /// This deliberately replaces a substring match over the error message.
+  /// That list had to be kept in sync with human-facing copy, and it silently
+  /// stopped working when the recipient error was reworded to "We couldn't
+  /// find that recipient…" — which contains none of "not found", "invalid",
+  /// "token" or "verification".
   bool _shouldRetryTransfer(dynamic error) {
-    if (error is ServerException) {
-      final message = error.message?.toLowerCase() ?? '';
-      if (message.contains('insufficient') ||
-          message.contains('invalid') ||
-          message.contains('not found') ||
-          message.contains('denied') ||
-          message.contains('duplicate') ||
-          message.contains('limit') ||
-          message.contains('frozen') ||
-          message.contains('could not be completed') ||
-          message.contains('already used') ||
-          message.contains('token') ||
-          message.contains('verification')) {
-        return false;
-      }
-    }
-    return true;
+    final code = _lastSendFundsCode;
+    _lastSendFundsCode = null;
+    if (error is! ServerException) return false;
+    return code == StatusCode.unavailable;
   }
 }

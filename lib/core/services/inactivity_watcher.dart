@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -142,15 +143,23 @@ class _InactivityWatcherState extends State<InactivityWatcher>
     if (_keyboardUp) _onUserInteraction();
   }
 
-  // TESTING TOGGLE: when true, the inactivity auto-logout is fully disabled so
-  // the app never locks to the passcode screen mid-test. SET BACK TO false
-  // before shipping. (Production behaviour is admin-driven via
-  // session_inactivity_logout_seconds.)
+  // TESTING TOGGLE: when true, the inactivity auto-logout is disabled so the
+  // app never locks to the passcode screen mid-test.
+  //
+  // Paired with a kDebugMode check at the use site, so it CANNOT ship: a
+  // release build ignores this flag entirely even if it is left true. That
+  // matters because auto-logout is a security control and the pre-deploy guard
+  // (scripts/ensure_auto_logout_enabled.sh) only repairs the SERVER setting —
+  // it cannot see a client-side flag, so a forgotten `true` would otherwise
+  // ship silently. Production behaviour remains admin-driven via
+  // session_inactivity_logout_seconds.
   static const bool _kDisableInactivityForTesting = false;
 
   void _armTimer() {
     _timer?.cancel();
-    if (_kDisableInactivityForTesting) return;
+    // kDebugMode is load-bearing, not decoration — it is what makes the testing
+    // toggle unshippable. Do not remove it to "simplify" this line.
+    if (_kDisableInactivityForTesting && kDebugMode) return;
     if (!_isAuthenticated || _inOnboardingFlow) return;
     // A timeout of 0 (or less) means the admin disabled auto-logout
     // (`session_inactivity_logout_seconds = 0`) — don't arm the timer at all.

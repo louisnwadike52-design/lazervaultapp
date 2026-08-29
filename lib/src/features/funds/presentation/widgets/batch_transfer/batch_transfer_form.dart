@@ -197,7 +197,21 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
             bankName: recipientData['bankName'] ?? 'Bank',
             sortCode: recipientData['sortCode'] ?? '',
             isFavorite: recipientData['isFavorite'] ?? false,
-            type: recipientData['type'] ?? (((recipientData['sortCode'] ?? '') as String).isNotEmpty ? 'external' : 'internal'),
+            // A MISSING bank code means the bank was not captured — it is not
+            // evidence of a LazerVault account. Defaulting to 'internal' here
+            // routed ordinary external recipients as LazerVault transfers,
+            // which the backend rejects outright with "recipient not found on
+            // LazerVault". Absent positive proof, external is the safe read:
+            // it is the branch that still resolves for a real bank account.
+            // A MISSING bank code means the bank was not captured — it is not
+            // evidence of a LazerVault account. Defaulting to 'internal' here
+            // routed ordinary external recipients as LazerVault transfers,
+            // which the backend rejects outright with "recipient not found on
+            // LazerVault". Only a resolved LazerVault user id proves internal.
+            type: (recipientData['type'] as String?) ??
+                (((recipientData['internalUserId'] ?? '') as String).isNotEmpty
+                    ? 'internal'
+                    : 'external'),
           );
 
           // Carry the bank code/name through for external recipients, otherwise

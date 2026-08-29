@@ -164,6 +164,19 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     }
     _selectedCard = widget.preselectedCard;
     _currentStep = 1;
+    // Prestmit lists a subcategory as EXACTLY ONE form — "Physical" or
+    // "Ecode", never both — so the format is a property of the card, not a
+    // user preference. The picker defaulted to 'ecode' and let the user pick
+    // either, so they could be asked for a card number and two photos for a
+    // card the provider only accepts as a code (or the reverse), while the
+    // submitted payload still carried the CARD's form: the inputs collected
+    // and the payload sent disagreed.
+    //
+    // Prestmit does not always populate `form`; the backend infers it from the
+    // card name and falls back to "all" when neither vocabulary matches (44 of
+    // the 177 live subcategories). "all" genuinely means unknown, so the user
+    // still chooses there.
+    _selectedFormat = _formatForCard(_selectedCard);
     // Refresh the admin-configured gift-card T&C URL (cached; never throws) so
     // the "Read the full terms" links in steps 2/3 open the latest page even
     // when the user deep-links straight into the sell flow.
@@ -606,52 +619,16 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             SizedBox(height: 16.h),
           ],
 
-          // Card format selection
-          Text('Card Format', style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600)),
+          // Card format. Fixed by the provider when it declares one — a
+          // Prestmit subcategory is either Physical or Ecode, never both.
+          Text('Card Format',
+              key: const Key('sell_format_heading'),
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600)),
           SizedBox(height: 8.h),
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  key: const Key('sell_format_ecode'),
-                  onTap: () => setState(() => _selectedFormat = 'ecode'),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                    decoration: BoxDecoration(
-                      color: _selectedFormat == 'ecode' ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2) : const Color(0xFF1F1F1F),
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: _selectedFormat == 'ecode' ? InvoiceThemeColors.primaryPurple : const Color(0xFF2D2D2D)),
-                    ),
-                    child: Column(children: [
-                      Icon(Icons.qr_code_rounded, color: _selectedFormat == 'ecode' ? InvoiceThemeColors.primaryPurple : const Color(0xFF9CA3AF), size: 22.sp),
-                      SizedBox(height: 4.h),
-                      Text('E-Code', style: GoogleFonts.inter(color: _selectedFormat == 'ecode' ? InvoiceThemeColors.primaryPurple : Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
-                    ]),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: GestureDetector(
-                  key: const Key('sell_format_physical'),
-                  onTap: () => setState(() => _selectedFormat = 'physical'),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                    decoration: BoxDecoration(
-                      color: _selectedFormat == 'physical' ? const Color(0xFF10B981).withValues(alpha: 0.2) : const Color(0xFF1F1F1F),
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: _selectedFormat == 'physical' ? const Color(0xFF10B981) : const Color(0xFF2D2D2D)),
-                    ),
-                    child: Column(children: [
-                      Icon(Icons.credit_card_rounded, color: _selectedFormat == 'physical' ? const Color(0xFF10B981) : const Color(0xFF9CA3AF), size: 22.sp),
-                      SizedBox(height: 4.h),
-                      Text('Physical Card', style: GoogleFonts.inter(color: _selectedFormat == 'physical' ? const Color(0xFF10B981) : Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
-                    ]),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          _buildFormatSelector(),
           SizedBox(height: 20.h),
 
           // Denomination selection
@@ -752,7 +729,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             SizedBox(height: 8.h),
             Row(
               children: [
-                Icon(Icons.auto_awesome, size: 14.sp, color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.7)),
+                Icon(Icons.auto_awesome, size: 14.sp, color: InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.7)),
                 SizedBox(width: 6.w),
                 Expanded(
                   child: Text(
@@ -769,7 +746,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             // Photos" heading because nothing is required.
             Row(
               children: [
-                Icon(Icons.auto_awesome, size: 14.sp, color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.7)),
+                Icon(Icons.auto_awesome, size: 14.sp, color: InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.7)),
                 SizedBox(width: 6.w),
                 Expanded(
                   child: Text(
@@ -810,8 +787,8 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                       fontSize: 14.sp, fontWeight: FontWeight.w600),
                 ),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: InvoiceThemeColors.primaryPurple,
-                  side: const BorderSide(color: InvoiceThemeColors.primaryPurple),
+                  foregroundColor: InvoiceThemeColors.primaryPurpleLight,
+                  side: const BorderSide(color: InvoiceThemeColors.primaryPurpleLight),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r)),
                 ),
@@ -990,7 +967,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             children: [
               ListTile(
                 key: const Key('sell_pick_camera'),
-                leading: const Icon(Icons.camera_alt, color: InvoiceThemeColors.primaryPurple),
+                leading: const Icon(Icons.camera_alt, color: InvoiceThemeColors.primaryPurpleLight),
                 title: Text('Take Photo',
                     style: GoogleFonts.inter(color: Colors.white)),
                 onTap: () {
@@ -1000,7 +977,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               ),
               ListTile(
                 key: const Key('sell_pick_gallery'),
-                leading: const Icon(Icons.photo_library, color: InvoiceThemeColors.primaryPurple),
+                leading: const Icon(Icons.photo_library, color: InvoiceThemeColors.primaryPurpleLight),
                 title: Text('Choose from Gallery',
                     style: GoogleFonts.inter(color: Colors.white)),
                 onTap: () {
@@ -1152,7 +1129,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Row(
           children: [
-            Icon(Icons.auto_awesome, color: InvoiceThemeColors.primaryPurple, size: 22.sp),
+            Icon(Icons.auto_awesome, color: InvoiceThemeColors.primaryPurpleLight, size: 22.sp),
             SizedBox(width: 10.w),
             Expanded(
               child: Text('AI Auto-fill',
@@ -1209,13 +1186,13 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           Container(
             padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
             decoration: BoxDecoration(
-              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15),
+              color: InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(4.r),
             ),
             child: Text(
               'AI',
               style: GoogleFonts.inter(
-                color: InvoiceThemeColors.primaryPurple,
+                color: InvoiceThemeColors.primaryPurpleLight,
                 fontSize: 10.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -1224,6 +1201,133 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         ],
       ],
     );
+  }
+
+  /// Card-format section.
+  ///
+  /// Prestmit lists a subcategory as exactly ONE form, so when it declares one
+  /// there is no choice to offer: rendering the unsupported option — even
+  /// greyed out — invites a tap that cannot do anything and implies we accept
+  /// a format the provider will reject. The supported format is shown alone,
+  /// full width, as a statement rather than a toggle.
+  ///
+  /// Only when the provider genuinely does not say (its "all" bucket, 44 of
+  /// the 177 live subcategories) are both offered as a real choice.
+  Widget _buildFormatSelector() {
+    if (_formatIsFixed) {
+      return _formatTile(
+        format: _selectedFormat,
+        selected: true,
+        // Full width: a lone half-width tile beside dead space reads as a
+        // broken row rather than a deliberate single option.
+        expanded: false,
+      );
+    }
+    return Row(
+      children: [
+        Expanded(
+          child: _formatTile(
+            format: 'ecode',
+            selected: _selectedFormat == 'ecode',
+            onTap: () => setState(() => _selectedFormat = 'ecode'),
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: _formatTile(
+            format: 'physical',
+            selected: _selectedFormat == 'physical',
+            onTap: () => setState(() => _selectedFormat = 'physical'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// One format tile. Both variants share this so the fixed (single, full
+  /// width) and selectable (paired) layouts cannot drift apart.
+  Widget _formatTile({
+    required String format,
+    required bool selected,
+    VoidCallback? onTap,
+    bool expanded = true,
+  }) {
+    final isEcode = format == 'ecode';
+    final accent = InvoiceThemeColors.primaryPurpleLight;
+    final label = isEcode ? 'E-Code' : 'Physical Card';
+    final icon = isEcode ? Icons.qr_code_rounded : Icons.credit_card_rounded;
+    return GestureDetector(
+      key: Key('sell_format_$format'),
+      onTap: onTap,
+      child: Container(
+        width: expanded ? null : double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
+        decoration: BoxDecoration(
+          color: selected
+              ? accent.withValues(alpha: 0.14)
+              : const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+              color: selected ? accent : const Color(0xFF2D2D2D)),
+        ),
+        // The fixed variant reads as a row (icon + label + note) because it is
+        // stating a fact; the selectable variant stacks, because two stacked
+        // tiles compare more cleanly side by side.
+        child: onTap == null
+            ? Row(
+                children: [
+                  Icon(icon, color: accent, size: 20.sp),
+                  SizedBox(width: 10.w),
+                  Text(label,
+                      style: GoogleFonts.inter(
+                          color: accent,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600)),
+                  const Spacer(),
+                  Text(
+                    'Only format accepted',
+                    key: const Key('sell_format_only_supported'),
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF), fontSize: 11.5.sp),
+                  ),
+                ],
+              )
+            : Column(
+                children: [
+                  Icon(icon,
+                      color: selected ? accent : const Color(0xFF9CA3AF),
+                      size: 22.sp),
+                  SizedBox(height: 4.h),
+                  Text(label,
+                      style: GoogleFonts.inter(
+                          color: selected ? accent : Colors.white,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600)),
+                ],
+              ),
+      ),
+    );
+  }
+
+  /// Maps the catalogue's `form` onto the two input modes. Returns the current
+  /// default when the provider did not declare one.
+  String _formatForCard(SellableCard? card) {
+    switch ((card?.form ?? '').trim().toLowerCase()) {
+      case 'physical':
+        return 'physical';
+      case 'ecode':
+      case 'e-code':
+        return 'ecode';
+      default:
+        return _selectedFormat;
+    }
+  }
+
+  /// True when the provider told us the card's form, so it is not the user's
+  /// to change. "all"/empty genuinely means unknown and stays selectable.
+  bool get _formatIsFixed {
+    final f = (_selectedCard?.form ?? '').trim().toLowerCase();
+    return f == 'physical' || f == 'ecode' || f == 'e-code';
   }
 
   bool _canGetRate() {
@@ -1258,13 +1362,20 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   //   Card PIN :
   //     - required (every brand we handle either uses one or accepts
   //       a placeholder; the backend requires the field non-empty)
-  //     - 3..12 chars
+  //     - 3..32 chars
   //     - digits or letters only (most PINs are numeric; we allow
   //       letters for brands that use alphanumeric scratch-off codes)
   static const _kCardNumberMinLen = 4;
   static const _kCardNumberMaxLen = 50;
   static const _kCardPinMinLen = 3;
-  static const _kCardPinMaxLen = 12;
+  // 32, not 12. A 12-char cap silently TRUNCATED real PINs: the formatter
+  // dropped the overflow with no error, so the user saw a PIN that looked
+  // complete, and the sale failed at the provider with a wrong PIN and no
+  // explanation. Reloadly's own App Store & iTunes TRY PIN is 14 characters
+  // (verified on a live purchase), and PIN length varies by brand and issuer,
+  // so the bound exists only to stop abuse — it must not encode an assumption
+  // about any one provider's format.
+  static const _kCardPinMaxLen = 32;
   static final _kAlnumPattern = RegExp(r'^[A-Za-z0-9]+$');
 
   String? _validateCardNumberValue(String raw) {
@@ -1398,8 +1509,6 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   /// AFTER submission (provider redemption / admin review). This step is
   /// the flow's pre-sale "balance check" and its attestation gate.
   Widget _buildStep2VerifyBalance() {
-    final ccy = _faceCurrencyCode();
-    final sym = _currencySymbolFor(ccy);
     final declared = _selectedDenomination?.toStringAsFixed(0) ?? '-';
     return SingleChildScrollView(
       padding: EdgeInsets.all(16.w),
@@ -1430,7 +1539,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 ),
                 SizedBox(height: 6.h),
                 Text(
-                  '$sym $ccy $declared',
+                  _faceAmountLabel(declared),
                   key: const Key('sell_declared_balance'),
                   style: GoogleFonts.inter(
                     color: const Color(0xFF10B981),
@@ -1607,8 +1716,10 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               children: [
                 _buildSummaryRow('Card Number', _cardNumberController.text.trim()),
                 SizedBox(height: 10.h),
-                _buildSummaryRow('Denomination',
-                    '${_currencySymbolFor(_faceCurrencyCode())} ${_faceCurrencyCode()} ${_selectedDenomination?.toStringAsFixed(0) ?? "-"}',
+                _buildSummaryRow(
+                    'Denomination',
+                    _faceAmountLabel(
+                        _selectedDenomination?.toStringAsFixed(0) ?? '-'),
                     valueKey: const Key('sell_summary_denomination')),
                 if (_uploadedImageUrls.isNotEmpty) ...[
                   SizedBox(height: 10.h),
@@ -2005,7 +2116,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                   child: Text(
                     'Ref: ${sale.reference}',
                     style: GoogleFonts.inter(
-                      color: InvoiceThemeColors.primaryPurple,
+                      color: InvoiceThemeColors.primaryPurpleLight,
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                     ),
@@ -2078,7 +2189,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3)),
+        border: Border.all(color: InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -2119,13 +2230,14 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15),
+              color:
+                  InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(6.r),
             ),
             child: Text(
               'Step ${_currentStep + 1}/4',
               style: GoogleFonts.inter(
-                color: InvoiceThemeColors.primaryPurple,
+                color: InvoiceThemeColors.primaryPurpleLight,
                 fontSize: 11.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -2212,12 +2324,12 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
             decoration: BoxDecoration(
               color: isSelected
-                  ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
+                  ? InvoiceThemeColors.primaryPurpleLight.withValues(alpha: 0.2)
                   : const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
                 color: isSelected
-                    ? InvoiceThemeColors.primaryPurple
+                    ? InvoiceThemeColors.primaryPurpleLight
                     : isOcrMatch
                         ? const Color(0xFF10B981).withValues(alpha: 0.5)
                         : const Color(0xFF2D2D2D),
@@ -2229,7 +2341,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 Text(
                   '${_selectedCard!.currencies.isNotEmpty ? _selectedCard!.currencies.first : "USD"} ${denom.toStringAsFixed(0)}',
                   style: GoogleFonts.inter(
-                    color: isSelected ? InvoiceThemeColors.primaryPurple : Colors.white,
+                    color: isSelected ? InvoiceThemeColors.primaryPurpleLight : Colors.white,
                     fontSize: 14.sp,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
@@ -2265,7 +2377,9 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           // GetSellRate payout (payout / denomination = NGN per unit).
           Builder(builder: (_) {
             final code = _faceCurrencyCode();
-            final symbol = _currencySymbolFor(code);
+            // Empty when the card's currency is genuinely unknown; the rows
+            // below omit the pair rather than print a bare symbol.
+            final symbol = code.isEmpty ? '' : _currencySymbolFor(code);
             final denom = _selectedDenomination ?? _currentRate!.denomination;
             final fxPerUnit = (denom > 0)
                 ? _currentRate!.payoutAmount / denom
@@ -2283,7 +2397,13 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                       ),
                     ),
                     Text(
-                      '$symbol $code',
+                      // Unknown currency shows a dash, not a bare symbol or
+                      // an empty cell that looks like a rendering fault.
+                      code.isEmpty
+                          ? '—'
+                          : (symbol.isEmpty || symbol.toUpperCase() == code
+                              ? code
+                              : '$symbol $code'),
                       key: const Key('sell_face_currency'),
                       style: GoogleFonts.inter(
                         color: Colors.white,
@@ -2305,7 +2425,10 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                       ),
                     ),
                     Text(
-                      '$symbol 1 = ${_formatCurrency(fxPerUnit, _payoutCurrencyCode)}',
+                      // "₺ 1 = NGN 4.00" when known; "1 unit = NGN 4.00"
+                      // when not — never a dangling "1 = ...".
+                      '${symbol.isEmpty ? (code.isEmpty ? "1 unit" : "$code 1") : "$symbol 1"}'
+                      ' = ${_formatCurrency(fxPerUnit, _payoutCurrencyCode)}',
                       key: const Key('sell_fx_rate'),
                       style: GoogleFonts.inter(
                         color: Colors.white,
@@ -2323,14 +2446,19 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Rate',
+                _currentRate!.isPerUnitRate ? 'Payout rate' : 'Rate',
                 style: GoogleFonts.inter(
                   color: const Color(0xFF9CA3AF),
                   fontSize: 14.sp,
                 ),
               ),
               Text(
-                '${_currentRate!.ratePercentage.toStringAsFixed(0)}%',
+                // ratePercentage is only a PERCENTAGE under the percentage
+                // model. Prestmit quotes naira per one face unit (1165), which
+                // this row used to render unconditionally as "1165%".
+                _currentRate!.isPerUnitRate
+                    ? '${_formatCurrency(_currentRate!.ratePercentage, _payoutCurrencyCode)} / ${_currencySymbolFor(_faceCurrencyCode())}1'
+                    : '${_currentRate!.ratePercentage.toStringAsFixed(0)}%',
                 key: const Key('sell_rate_percentage'),
                 style: GoogleFonts.inter(
                   color: const Color(0xFF10B981),
@@ -2462,7 +2590,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
-                color: hasError ? const Color(0xFFEF4444) : InvoiceThemeColors.primaryPurple,
+                color: hasError ? const Color(0xFFEF4444) : InvoiceThemeColors.primaryPurpleLight,
               ),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
@@ -2690,24 +2818,80 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   // signal the Prestmit sandbox actually surfaces ("USA Amazon",
   // "UK Amazon", "Germany/EURO ...", "Canada ...", "Australia ...").
   // Defaults to USD, matching the denomination-chip fallback above.
+  /// "TRY 100" when the currency is known, plain "100" when it is not.
+  ///
+  /// Never emits a bare symbol or a stray space for an unknown currency, and
+  /// never substitutes a default — an amount with no code is honest; an amount
+  /// with the WRONG code misstates what the seller is declaring.
+  String _faceAmountLabel(String amount) {
+    final code = _faceCurrencyCode();
+    if (code.isEmpty) return amount;
+    final sym = _currencySymbolFor(code);
+    // The symbol map falls back to the code itself, which would render the
+    // code twice ("TRY TRY 100").
+    if (sym.isEmpty || sym.toUpperCase() == code) return '$code $amount';
+    return '$sym $code $amount';
+  }
+
+  /// The card's FACE currency, or '' when it genuinely cannot be determined.
+  ///
+  /// This used to end in `return 'USD'`. That default is why a Turkish iTunes
+  /// card was shown as "$ USD 100" — including on the balance-attestation step,
+  /// where it overstated what the seller was declaring by roughly fifty times
+  /// (USD 100 vs TRY 100). The catalogue now publishes the currency for these
+  /// cards, but the client must not re-assert a wrong one when the server is
+  /// older or the card is genuinely ambiguous ("Dubai/Qatar/Saudi" spans AED,
+  /// QAR and SAR). Callers render the amount without a code instead.
   String _faceCurrencyCode() {
     final card = _selectedCard;
-    if (card == null) return 'USD';
+    if (card == null) return '';
     if (card.currencies.isNotEmpty && card.currencies.first.trim().isNotEmpty) {
       return card.currencies.first.trim().toUpperCase();
     }
-    final hay = '${card.displayName} ${card.country} ${card.category}'.toLowerCase();
-    if (hay.contains('uk ') || hay.contains('united kingdom') || hay.contains('britain')) {
-      return 'GBP';
+    // Name/region inference, mirroring the server's. Longest match first so
+    // "new zealand" is not shadowed by a broader rule.
+    final hay =
+        '${card.displayName} ${card.country} ${card.category}'.toLowerCase();
+    const byName = <String, String>{
+      'new zealand': 'NZD',
+      'south africa': 'ZAR',
+      'hong kong': 'HKD',
+      'united kingdom': 'GBP',
+      'switzerland': 'CHF',
+      'netherlands': 'EUR',
+      'singapore': 'SGD',
+      'australia': 'AUD',
+      'malaysia': 'MYR',
+      'denmark': 'DKK',
+      'germany': 'EUR',
+      'britain': 'GBP',
+      'belgium': 'EUR',
+      'ireland': 'EUR',
+      'norway': 'NOK',
+      'sweden': 'SEK',
+      'poland': 'PLN',
+      'canada': 'CAD',
+      'mexico': 'MXN',
+      'taiwan': 'TWD',
+      'turkey': 'TRY',
+      'brazil': 'BRL',
+      'france': 'EUR',
+      'ghana': 'GHS',
+      'india': 'INR',
+      'italy': 'EUR',
+      'japan': 'JPY',
+      'spain': 'EUR',
+      'euro': 'EUR',
+      'usa': 'USD',
+    };
+    final keys = byName.keys.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
+    for (final k in keys) {
+      if (hay.contains(k)) return byName[k]!;
     }
-    if (hay.contains('euro') || hay.contains('germany') || hay.contains('france') ||
-        hay.contains('spain') || hay.contains('italy') || hay.contains('netherlands')) {
-      return 'EUR';
-    }
-    if (hay.contains('canada')) return 'CAD';
-    if (hay.contains('australia')) return 'AUD';
-    if (hay.contains('ghana')) return 'GHS';
-    return 'USD';
+    if (hay.contains('uk ')) return 'GBP';
+    // Unknown. Say nothing rather than assert a currency the card may not be in.
+    return '';
   }
 
   // ── Multi-card (additional e-code cards) ─────────────────────────────────

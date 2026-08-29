@@ -309,17 +309,32 @@ class SWRCacheManager {
 
   /// Stores entry in both memory and persistent storage.
   Future<void> _storeEntry(String cacheKey, CacheEntry<dynamic> entry) async {
-    // Acquire write lock
-    final lock = _writeLocks[cacheKey] ??= Completer<void>();
-    if (!lock.isCompleted) {
-      await lock.future.timeout(
+    // Wait only for a write that is GENUINELY IN FLIGHT.
+    //
+    // This used to read `_writeLocks[cacheKey] ??= Completer<void>()`, which
+    // CREATES an uncompleted completer when no write is in progress — and then
+    // awaited it. Nothing ever completes a completer made that way, so the
+    // FIRST store for a key always blocked for the full 5s timeout
+    // ("Write lock timeout for swr_cache_my_sales") and the caller's load
+    // never settled, leaving the page spinning forever.
+    //
+    // The completer must represent "someone else is writing", so it is only
+    // awaited when one already exists.
+    final inFlight = _writeLocks[cacheKey];
+    if (inFlight != null && !inFlight.isCompleted) {
+      await inFlight.future.timeout(
         const Duration(seconds: 5),
         onTimeout: () {
           _emit('[SWRCache] Write lock timeout for $cacheKey');
         },
       );
     }
-    _writeLocks[cacheKey] = Completer<void>();
+
+    // Publish OUR lock and hold the reference. The old code re-read the map in
+    // `finally`, so with concurrent writers it could complete — and remove —
+    // a completer belonging to a later writer, stranding everyone awaiting it.
+    final myLock = Completer<void>();
+    _writeLocks[cacheKey] = myLock;
 
     try {
       // Update memory cache
@@ -328,8 +343,12 @@ class SWRCacheManager {
       // Persist to storage with retry on failure
       await _persistWithRetry(cacheKey, entry);
     } finally {
-      _writeLocks[cacheKey]?.complete();
-      _writeLocks.remove(cacheKey);
+      if (!myLock.isCompleted) myLock.complete();
+      // Only clear the slot if it is still ours; a newer writer may have
+      // replaced it while we were persisting.
+      if (identical(_writeLocks[cacheKey], myLock)) {
+        _writeLocks.remove(cacheKey);
+      }
     }
   }
 

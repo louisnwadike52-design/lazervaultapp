@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/onboarding/dashboard_walkthrough.dart';
 import 'package:lazervault/src/features/widgets/all_services_bottom_sheet.dart';
 import 'package:lazervault/src/features/account_cards_summary/presentation/view/dashboard_card_summary.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/core/services/account_number_change_watcher.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -91,7 +92,33 @@ class _DashboardState extends State<Dashboard> {
       if (!mounted) return;
       AccountUpdateAnnouncementService.instance
           .maybeShow(context, userId: walkthroughUserId);
+      // Per-user, automatic counterpart to the broadcast above: fires only for
+      // the user whose deposit account number actually changed (a virtual
+      // account provider switch re-points or re-mints it), and shows their real
+      // old and new numbers rather than generic admin-authored copy.
+      _announceAccountNumberChanges(walkthroughUserId);
     });
+  }
+
+  /// Reads the current account summaries and reports any number that changed
+  /// since this device last saw it. Silent when nothing moved.
+  void _announceAccountNumberChanges(String userId) {
+    if (userId.isEmpty) return;
+    try {
+      final state = context.read<AccountCardsSummaryCubit>().state;
+      final List<AccountSummaryEntity> accounts;
+      if (state is AccountCardsSummaryLoaded) {
+        accounts = state.accountSummaries;
+      } else if (state is AccountBalanceUpdated) {
+        accounts = state.accountSummaries;
+      } else {
+        // Summaries not in yet. The check is cheap and idempotent, so it runs
+        // again on the next dashboard build rather than being forced here.
+        return;
+      }
+      AccountNumberChangeWatcher.instance
+          .check(context, userId: userId, accounts: accounts);
+    } catch (_) {/* never break the dashboard over an announcement */}
   }
 
   @override

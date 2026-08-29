@@ -6,6 +6,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:lazervault/core/utils/receipt_fonts.dart';
+import 'package:lazervault/core/utils/receipt_download.dart';
 import '../domain/entities/pay_slip_entity.dart';
 import 'dart:ui' show Rect;
 
@@ -20,22 +22,9 @@ class PayrollPdfService {
 
   /// Load fonts that support unicode characters
   static Future<void> _loadFonts() async {
-    if (_regularFont != null && _boldFont != null) return;
-
-    try {
-      final regularResponse = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.ttf'));
-      final boldResponse = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYAZ9hiA.ttf'));
-
-      if (regularResponse.statusCode == 200 && boldResponse.statusCode == 200) {
-        _regularFont = pw.Font.ttf(regularResponse.bodyBytes.buffer.asByteData());
-        _boldFont = pw.Font.ttf(boldResponse.bodyBytes.buffer.asByteData());
-      }
-    } catch (e) {
-      _regularFont = null;
-      _boldFont = null;
-    }
+    await ReceiptFonts.load();
+    _regularFont = ReceiptFonts.regular;
+    _boldFont = ReceiptFonts.bold;
   }
 
   static Future<pw.MemoryImage?> _loadLogo() async {
@@ -156,28 +145,10 @@ class PayrollPdfService {
   static Future<String> downloadPaySlip(PaySlipEntity slip) async {
     try {
       final file = await generatePaySlipPdf(slip);
-
-      Directory? directory;
-      if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          directory = await getExternalStorageDirectory();
-        }
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-      } else {
-        directory = await getDownloadsDirectory();
-      }
-
-      if (directory == null) {
-        throw Exception('Could not access downloads directory');
-      }
-
-      final fileName = 'payslip_${slip.id.substring(0, 8)}.pdf';
-      final savedFile = File('${directory.path}/$fileName');
-      await file.copy(savedFile.path);
-
-      return savedFile.path;
+      return await ReceiptDownload.saveAndOpen(
+        source: file,
+        fileName: 'payslip_${slip.id.substring(0, 8)}.pdf',
+      );
     } catch (e) {
       throw Exception('Failed to download pay slip: $e');
     }
@@ -278,24 +249,10 @@ class PayrollPdfService {
       periodEnd: periodEnd,
       breakdown: breakdown,
     );
-    Directory? directory;
-    if (Platform.isAndroid) {
-      directory = Directory('/storage/emulated/0/Download');
-      if (!await directory.exists()) {
-        directory = await getExternalStorageDirectory();
-      }
-    } else if (Platform.isIOS) {
-      directory = await getApplicationDocumentsDirectory();
-    } else {
-      directory = await getDownloadsDirectory();
-    }
-    if (directory == null) {
-      throw Exception('Could not access downloads directory');
-    }
-    final saved =
-        File('${directory.path}/payroll_report_$periodStart-$periodEnd.pdf');
-    await file.copy(saved.path);
-    return saved.path;
+    return ReceiptDownload.saveAndOpen(
+      source: file,
+      fileName: 'payroll_report_$periodStart-$periodEnd.pdf',
+    );
   }
 
   /// Share the payroll report via the system share sheet.

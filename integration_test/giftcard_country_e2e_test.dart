@@ -1210,7 +1210,12 @@ Future<void> _runSellCountryFlow(WidgetTester tester, _Results results) async {
       final codeOk = faceText.contains(expectedCcy);
       final symbolOk = faceText.contains(expectedSymbol);
       final fxOk = fxText.isNotEmpty; // "<symbol> 1 = <NGN amount>"
-      final ratePctOk = rateText.contains('%');
+      // The rate row renders under whichever model the server declared:
+      // a true percentage ("73%") or, for Prestmit, a payout rate per face
+      // unit ("NGN 1,165 / $1"). Asserting on '%' alone asserted the bug —
+      // it passed precisely when a naira-per-unit rate was mislabelled as
+      // a percentage. Require only that the row rendered SOMETHING.
+      final ratePctOk = rateText.trim().isNotEmpty;
       final summaryOk = summaryText.contains(expectedCcy) &&
           summaryText.contains(expectedSymbol);
 

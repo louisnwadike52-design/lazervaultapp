@@ -105,7 +105,22 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
           if (state is GiftCardBrandsLoaded) {
             setState(() {
               _allBrands = state.brands;
-              _filteredBrands = state.brands;
+              // Now that the chips are derived from the catalogue, a country
+              // change can retire the selected one. Holding on to it would
+              // filter the new country's brands by a category it does not
+              // have — an empty grid under a chip that is no longer on screen,
+              // with nothing to tap to escape it.
+              if (_selectedCategory != null &&
+                  !state.brands.any((b) =>
+                      b.category.trim().toLowerCase() ==
+                      _selectedCategory!.trim().toLowerCase())) {
+                _selectedCategory = null;
+              }
+              _filteredBrands = _selectedCategory == null
+                  ? state.brands
+                  : state.brands
+                      .where((b) => b.category == _selectedCategory)
+                      .toList();
             });
           } else if (state is GiftCardBrandsSearched) {
             setState(() {
@@ -245,15 +260,48 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
     );
   }
 
-  Widget _buildCategoryFilters() {
-    final categories = [
+  /// The category chips, DERIVED from the brands actually on offer.
+  ///
+  /// This was a fixed list of six — Shopping, Dining, Entertainment, Travel,
+  /// Gaming — which is a claim about the catalogue rather than a reading of it.
+  /// Category and country compose (the backend ANDs them), so a fixed list
+  /// offers the customer filters that cannot match: pick Canada, tap Travel,
+  /// get an empty grid, with no way to tell whether Canada has no travel cards
+  /// or the search is broken. It also hides whatever categories the provider
+  /// does return under names nobody listed here.
+  ///
+  /// Reading them off the loaded brands makes the chips true by construction
+  /// for whichever country and provider is active — the same rule the main
+  /// gift-cards screen already follows.
+  List<Map<String, String?>> _availableCategories() {
+    final present = _allBrands
+        .map((b) => b.category.trim())
+        .where((c) => c.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
+    return [
       {'label': 'All', 'value': null},
-      {'label': 'Shopping', 'value': 'shopping'},
-      {'label': 'Dining', 'value': 'dining'},
-      {'label': 'Entertainment', 'value': 'entertainment'},
-      {'label': 'Travel', 'value': 'travel'},
-      {'label': 'Gaming', 'value': 'gaming'},
+      for (final c in present) {'label': _categoryLabel(c), 'value': c},
     ];
+  }
+
+  /// Title-cases a provider's category key for display ("gift_cards" → "Gift
+  /// Cards"), because the labels are no longer hand-written.
+  String _categoryLabel(String raw) => raw
+      .replaceAll('_', ' ')
+      .replaceAll('-', ' ')
+      .split(' ')
+      .where((w) => w.isNotEmpty)
+      .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase())
+      .join(' ');
+
+  Widget _buildCategoryFilters() {
+    final categories = _availableCategories();
+
+    // Nothing to filter by — one "All" chip is noise, so show no rail at all
+    // rather than a control that cannot change anything.
+    if (categories.length < 2) return const SizedBox.shrink();
 
     return Container(
       height: 48.h,

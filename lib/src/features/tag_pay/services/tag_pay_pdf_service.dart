@@ -9,8 +9,9 @@ import 'package:printing/printing.dart';
 import 'package:image/image.dart' as img;
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/core/utils/receipt_download.dart';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import '../domain/entities/tag_pay_entity.dart';
 import '../domain/entities/user_tag_entity.dart';
 import 'package:lazervault/src/features/widgets/receipt_metadata_humanizer.dart';
@@ -119,40 +120,12 @@ class TagPayPdfService {
   /// The old CDN-only fetch was version-pinned and started 404ing when Google
   /// rotated the URL, silently degrading every receipt to Helvetica (no ₦
   /// glyph) after an unbounded network wait that made Share look frozen.
+  /// This file's loader was the one that got it right, so it became the shared
+  /// [ReceiptFonts] — bundled asset first, bounded CDN fetch as a last resort.
   static Future<void> _loadFonts() async {
-    if (_regularFont != null && _boldFont != null) return;
-
-    // 1) Bundled assets — instant, offline, can't rot.
-    try {
-      final regular = await rootBundle.load('assets/fonts/Inter-Regular.ttf');
-      final bold = await rootBundle.load('assets/fonts/Inter-Bold.ttf');
-      _regularFont = pw.Font.ttf(regular);
-      _boldFont = pw.Font.ttf(bold);
-      return;
-    } catch (_) {
-      // Asset missing (shouldn't happen) — fall through to network.
-    }
-
-    // 2) Last-resort CDN fetch, bounded so Share can never hang on bad network.
-    try {
-      final regularResponse = await http
-          .get(Uri.parse(
-              'https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf'))
-          .timeout(const Duration(seconds: 5));
-      final boldResponse = await http
-          .get(Uri.parse(
-              'https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZg.ttf'))
-          .timeout(const Duration(seconds: 5));
-
-      if (regularResponse.statusCode == 200 && boldResponse.statusCode == 200) {
-        _regularFont = pw.Font.ttf(regularResponse.bodyBytes.buffer.asByteData());
-        _boldFont = pw.Font.ttf(boldResponse.bodyBytes.buffer.asByteData());
-      }
-    } catch (e) {
-      // Fallback to default fonts if loading fails
-      _regularFont = null;
-      _boldFont = null;
-    }
+    await ReceiptFonts.load();
+    _regularFont = ReceiptFonts.regular;
+    _boldFont = ReceiptFonts.bold;
   }
 
   /// Get text style with proper font
@@ -755,35 +728,23 @@ class TagPayPdfService {
     );
   }
 
-  /// Download the invoice to device storage
+  /// Download the invoice to device storage.
+  ///
+  /// Goes through [ReceiptDownload], the app's single answer to where a saved
+  /// document lands. The previous direct write to /storage/emulated/0/Download
+  /// fails on Android 11+: scoped storage reports that path as existing and
+  /// then refuses the write, so `exists()` passed, the fallback never ran, and
+  /// the copy threw — "Failed to download invoice" on every current device.
   static Future<String> downloadInvoice({
     required UserTagEntity tag,
     required bool isOutgoing,
   }) async {
     try {
       final file = await generateTagInvoice(tag: tag, isOutgoing: isOutgoing);
-
-      Directory? directory;
-      if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          directory = await getExternalStorageDirectory();
-        }
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-      } else {
-        directory = await getDownloadsDirectory();
-      }
-
-      if (directory == null) {
-        throw Exception('Could not access downloads directory');
-      }
-
-      final fileName = 'tagpay_invoice_${tag.id.substring(0, 8)}.pdf';
-      final savedFile = File('${directory.path}/$fileName');
-      await file.copy(savedFile.path);
-
-      return savedFile.path;
+      return await ReceiptDownload.saveAndOpen(
+        source: file,
+        fileName: 'tagpay_invoice_${tag.id.substring(0, 8)}.pdf',
+      );
     } catch (e) {
       throw Exception('Failed to download invoice: $e');
     }
@@ -851,29 +812,11 @@ class TagPayPdfService {
         tag: tag,
         senderAccountNumber: senderAccountNumber,
       );
-
-      Directory? directory;
-      if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          directory = await getExternalStorageDirectory();
-        }
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-      } else {
-        directory = await getDownloadsDirectory();
-      }
-
-      if (directory == null) {
-        throw Exception('Could not access downloads directory');
-      }
-
-      final fileName =
-          'tagpay_receipt_${transaction.referenceNumber.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}.pdf';
-      final savedFile = File('${directory.path}/$fileName');
-      await file.copy(savedFile.path);
-
-      return savedFile.path;
+      return await ReceiptDownload.saveAndOpen(
+        source: file,
+        fileName:
+            'tagpay_receipt_${transaction.referenceNumber.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}.pdf',
+      );
     } catch (e) {
       throw Exception('Failed to download receipt: $e');
     }
@@ -1025,29 +968,11 @@ class TagPayPdfService {
   }) async {
     try {
       final file = await generatePaidTagReceipt(tag: tag, isOutgoing: isOutgoing);
-
-      Directory? directory;
-      if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          directory = await getExternalStorageDirectory();
-        }
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-      } else {
-        directory = await getDownloadsDirectory();
-      }
-
-      if (directory == null) {
-        throw Exception('Could not access downloads directory');
-      }
-
       final reference = 'TPTAG-${tag.id.length > 8 ? tag.id.substring(0, 8) : tag.id}';
-      final fileName = 'tagpay_receipt_$reference.pdf';
-      final savedFile = File('${directory.path}/$fileName');
-      await file.copy(savedFile.path);
-
-      return savedFile.path;
+      return await ReceiptDownload.saveAndOpen(
+        source: file,
+        fileName: 'tagpay_receipt_$reference.pdf',
+      );
     } catch (e) {
       throw Exception('Failed to download receipt: $e');
     }
@@ -1304,20 +1229,41 @@ class TagPayPdfService {
     final pdfBytes = await pdfFile.readAsBytes();
     // 200 dpi = crisp on-screen + printable without a huge file.
     final raster = await Printing.raster(pdfBytes, pages: [0], dpi: 200).first;
-    final Uint8List bytes;
-    if (format == ReceiptFileFormat.jpg) {
-      final image = img.Image.fromBytes(
-        width: raster.width,
-        height: raster.height,
-        bytes: raster.pixels.buffer,
-        numChannels: 4,
-        order: img.ChannelOrder.rgba,
-      );
-      // JPG has no alpha — encode flattens onto the (already white) background.
-      bytes = img.encodeJpg(image, quality: 92);
-    } else {
-      bytes = await raster.toPng();
-    }
+
+    // Decode the raster ONCE, correctly, for both image formats.
+    //
+    // Two things were wrong here and both produced visibly broken files:
+    //
+    // 1. `raster.pixels.buffer` throws away the view's offset. A Uint8List is a
+    //    WINDOW onto a ByteBuffer, and .buffer hands back the whole underlying
+    //    buffer ignoring offsetInBytes/lengthInBytes. Whenever that window did
+    //    not start at byte 0 the image decoded from the wrong origin, which is
+    //    why the exported picture came out skewed/garbled.
+    //
+    // 2. The old comment claimed the background was "already white". It is not:
+    //    a rasterised PDF page carries an ALPHA channel, and the receipt card
+    //    sits on transparent pixels. JPG has no alpha, so encoding dropped it
+    //    and those pixels rendered BLACK; PNG kept them transparent, which
+    //    viewers show as black or a checkerboard. Both formats are now
+    //    composited onto opaque white first, so what is saved is what is seen.
+    // Copy into a fresh list so the ByteBuffer handed to the decoder starts at
+    // byte 0. Taking .buffer off a view would re-introduce the very offset this
+    // is correcting, since .buffer always returns the whole underlying buffer.
+    final rgba = Uint8List.fromList(raster.pixels);
+    final decoded = img.Image.fromBytes(
+      width: raster.width,
+      height: raster.height,
+      bytes: rgba.buffer,
+      numChannels: 4,
+      order: img.ChannelOrder.rgba,
+    );
+    final flattened = img.Image(width: raster.width, height: raster.height)
+      ..clear(img.ColorRgb8(255, 255, 255));
+    img.compositeImage(flattened, decoded);
+
+    final Uint8List bytes = format == ReceiptFileFormat.jpg
+        ? img.encodeJpg(flattened, quality: 92)
+        : img.encodePng(flattened);
     final out = await getTemporaryDirectory();
     final file = File('${out.path}/$baseName.${format.ext}');
     await file.writeAsBytes(bytes);
@@ -1364,22 +1310,6 @@ class TagPayPdfService {
           copyType: copyType,
           format: format);
 
-      Directory? directory;
-      if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          directory = await getExternalStorageDirectory();
-        }
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-      } else {
-        directory = await getDownloadsDirectory();
-      }
-
-      if (directory == null) {
-        throw Exception('Could not access downloads directory');
-      }
-
       final reference = transferDetails['reference'] as String? ?? '';
       final transferId = transferDetails['transferId']?.toString() ??
           transferDetails['transactionId']?.toString() ?? '';
@@ -1389,11 +1319,10 @@ class TagPayPdfService {
               ? transferId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')
               : 'transfer';
       final copySuffix = copyType.isRecipient ? '_recipient' : '_sender';
-      final fileName = 'transfer_receipt_$safeRef$copySuffix.${format.ext}';
-      final savedFile = File('${directory.path}/$fileName');
-      await file.copy(savedFile.path);
-
-      return savedFile.path;
+      return await ReceiptDownload.saveAndOpen(
+        source: file,
+        fileName: 'transfer_receipt_$safeRef$copySuffix.${format.ext}',
+      );
     } catch (e) {
       throw Exception('Failed to download transfer receipt: $e');
     }
@@ -1439,30 +1368,12 @@ class TagPayPdfService {
     try {
       final file = await generateUnifiedTransferReceipt(
           transaction: transaction, copyType: copyType, format: format);
-
-      Directory? directory;
-      if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          directory = await getExternalStorageDirectory();
-        }
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-      } else {
-        directory = await getDownloadsDirectory();
-      }
-
-      if (directory == null) {
-        throw Exception('Could not access downloads directory');
-      }
-
       final safeRef = (transaction.transactionReference ?? transaction.id)
           .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
-      final fileName = 'transfer_receipt_$safeRef.${format.ext}';
-      final savedFile = File('${directory.path}/$fileName');
-      await file.copy(savedFile.path);
-
-      return savedFile.path;
+      return await ReceiptDownload.saveAndOpen(
+        source: file,
+        fileName: 'transfer_receipt_$safeRef.${format.ext}',
+      );
     } catch (e) {
       throw Exception('Failed to download transfer receipt: $e');
     }
@@ -1650,25 +1561,12 @@ class TagPayPdfService {
   }) async {
     final file = await generateCryptoReceiptFile(
         transaction: transaction, format: format);
-    Directory? directory;
-    if (Platform.isAndroid) {
-      directory = Directory('/storage/emulated/0/Download');
-      if (!await directory.exists()) {
-        directory = await getExternalStorageDirectory();
-      }
-    } else if (Platform.isIOS) {
-      directory = await getApplicationDocumentsDirectory();
-    } else {
-      directory = await getDownloadsDirectory();
-    }
-    if (directory == null) {
-      throw Exception('Could not access downloads directory');
-    }
     final safeRef = (transaction.transactionReference ?? transaction.id)
         .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
-    final savedFile = File('${directory.path}/crypto_receipt_$safeRef.pdf');
-    await file.copy(savedFile.path);
-    return savedFile.path;
+    return ReceiptDownload.saveAndOpen(
+      source: file,
+      fileName: 'crypto_receipt_$safeRef.pdf',
+    );
   }
 
   /// Share the crypto PDF receipt via the system share sheet.

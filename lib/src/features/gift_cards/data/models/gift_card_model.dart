@@ -18,6 +18,30 @@ class GiftCardBrandsResult {
   });
 }
 
+/// Result of a live single-brand read from the active buy provider.
+///
+/// [providerName] is authoritative. A client can list the catalogue while one
+/// provider is active and open the amounts screen after an admin switches to
+/// the other, so the denominations in [brand] belong to THIS provider, not the
+/// one the tile was built from.
+///
+/// [available] false is a normal, renderable answer (supplier out of stock, no
+/// sellable denomination, provider circuit open) and carries a customer-safe
+/// [unavailableReason]; it is not an error.
+class GiftCardBrandLiveResult {
+  final GiftCardBrandModel? brand;
+  final String providerName;
+  final bool available;
+  final String unavailableReason;
+
+  const GiftCardBrandLiveResult({
+    required this.brand,
+    required this.providerName,
+    required this.available,
+    required this.unavailableReason,
+  });
+}
+
 class GiftCardModel extends GiftCard {
   const GiftCardModel({
     required super.id,
@@ -40,6 +64,7 @@ class GiftCardModel extends GiftCard {
     super.redemptionInstructions,
     super.countryCode,
     super.providerProductId,
+    super.providerName,
     super.discountPercentage,
     super.senderAmount,
     super.senderCurrency,
@@ -76,6 +101,7 @@ class GiftCardModel extends GiftCard {
           : proto.redemptionInstructions,
       countryCode: proto.countryCode.isEmpty ? null : proto.countryCode,
       providerProductId: proto.providerProductId.toInt(),
+      providerName: proto.providerName,
       discountPercentage: proto.discountPercentage,
       senderAmount: proto.senderAmount,
       senderCurrency: proto.senderCurrency,
@@ -252,6 +278,7 @@ class SellableCardModel extends SellableCard {
     super.form,
     super.subcategoryId,
     super.country,
+    super.payoutRatePerUnit,
   });
 
   factory SellableCardModel.fromProto(pb.SellableCard proto) {
@@ -269,6 +296,7 @@ class SellableCardModel extends SellableCard {
       form: proto.form,
       subcategoryId: proto.subcategoryId,
       country: proto.country,
+      payoutRatePerUnit: proto.payoutRatePerUnit,
     );
   }
 }
@@ -284,6 +312,7 @@ class SellRateModel extends SellRate {
     super.payoutLowerBound,
     super.payoutUpperBound,
     super.isManualMode,
+    super.rateModel,
   });
 
   factory SellRateModel.fromProto(pb.SellRate proto) {
@@ -297,6 +326,7 @@ class SellRateModel extends SellRate {
       payoutLowerBound: proto.payoutLowerBound,
       payoutUpperBound: proto.payoutUpperBound,
       isManualMode: proto.isManualMode,
+      rateModel: proto.rateModel,
     );
   }
 }

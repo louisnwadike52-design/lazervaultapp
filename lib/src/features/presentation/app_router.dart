@@ -630,6 +630,7 @@ import 'package:lazervault/src/features/transaction_history/presentation/screens
 import 'package:lazervault/src/features/transaction_history/presentation/screens/statement_export_screen.dart';
 import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../gift_cards/presentation/view/gift_card_sale_receipt_screen.dart';
 
 class AppRouter {
   // Phone+passcode SIGNUP is a multi-screen journey whose working state
@@ -1710,6 +1711,7 @@ class AppRouter {
           return PurchaseGiftCardScreen(
             brand: args.brand,
             lockedAmount: args.lockedAmount,
+            pinnedProvider: args.pinnedProvider,
           );
         }
         return PurchaseGiftCardScreen(brand: args as GiftCardBrand);
@@ -1723,6 +1725,30 @@ class AppRouter {
         return BlocProvider(
           create: (_) => serviceLocator<GiftCardCubit>(),
           child: GiftCardDetailsScreen(giftCard: giftCard),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.giftCardSaleReceipt,
+      page: () {
+        // Two arg shapes, like the purchase route: a bare sale, or a bundle
+        // carrying a reason that has not been persisted on the row yet.
+        final args = Get.arguments;
+        final screen = args is GiftCardSaleReceiptArgs
+            ? GiftCardSaleReceiptScreen(
+                sale: args.sale,
+                reasonOverride: args.reasonOverride,
+              )
+            : GiftCardSaleReceiptScreen(sale: args as GiftCardSale);
+        // The receipt subscribes to GiftCardCubit for its live status updates,
+        // so it needs the cubit in scope. This was the ONLY gift-card route
+        // that did not provide one — opening the receipt threw
+        // ProviderNotFoundError and showed the red error screen instead. Every
+        // sibling route wraps the same way.
+        return BlocProvider(
+          create: (_) => serviceLocator<GiftCardCubit>(),
+          child: screen,
         );
       },
       transition: Transition.rightToLeft,

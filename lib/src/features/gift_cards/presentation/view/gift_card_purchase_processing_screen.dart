@@ -49,6 +49,28 @@ class _GiftCardPurchaseProcessingScreenState
   // (with its awaiting banner) so they're never stranded on the spinner.
   Timer? _pollTimer;
   Timer? _timeoutTimer;
+
+  // WHOLE-PURCHASE WATCHDOG.
+  //
+  // _timeoutTimer only covers the async POLLING phase, which starts after the
+  // backend has already answered. It could not save a purchase whose RPC never
+  // returned at all: the screen sat on "Generating" indefinitely while the
+  // purchase had in fact completed server-side, provider charged and code
+  // issued. Nothing else on this screen bounds that.
+  //
+  // This timer starts the moment the purchase is dispatched and is cancelled
+  // by any terminal outcome, so no single failure — a lost response, a dropped
+  // connection, a state that never arrives — can strand the user.
+  Timer? _purchaseWatchdog;
+
+  // Deliberately LONGER than the gRPC deadline in GrpcCallOptionsHelper
+  // (120s). Ordering matters: if this fired first it would navigate away while
+  // the call was still in flight, and the request's own timeout — which
+  // produces a proper error state with a retry — would land on a screen that
+  // no longer exists. So the normal failure path gets to run first, and this
+  // only catches the case it alone can catch: a purchase that produced no
+  // state at all, not even an error.
+  static const Duration _purchaseWatchdogTimeout = Duration(seconds: 150);
   bool _polling = false;
   String? _awaitingGiftCardId;
   GiftCard? _awaitingCard;
@@ -65,6 +87,7 @@ class _GiftCardPurchaseProcessingScreenState
   void dispose() {
     _pollTimer?.cancel();
     _timeoutTimer?.cancel();
+    _purchaseWatchdog?.cancel();
     super.dispose();
   }
 
@@ -121,9 +144,42 @@ class _GiftCardPurchaseProcessingScreenState
     }
   }
 
+  /// Fires when a purchase produced no outcome at all within the window.
+  ///
+  /// It must NOT claim the purchase failed. The case that motivated it had the
+  /// money taken and the card issued — only the answer was lost — so telling
+  /// the user it failed would be wrong and would invite a duplicate purchase.
+  /// Send them to their gift cards, where a completed purchase is already
+  /// visible and the reconciler finishes anything still in flight.
+  void _handlePurchaseWatchdog() {
+    if (!mounted) return;
+    _stopPolling();
+
+    final card = _awaitingCard;
+    if (card != null) {
+      Get.offNamed(AppRoutes.giftCardDetails, arguments: card);
+      return;
+    }
+
+    Get.offNamed(AppRoutes.myGiftCards);
+    Get.snackbar(
+      'Still confirming your purchase',
+      'This is taking longer than usual. Your card will appear here once it '
+          'is confirmed, and we will notify you. Please do not buy again.',
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 6),
+      margin: EdgeInsets.all(16.w),
+      backgroundColor: const Color(0xFF1F1F1F),
+      colorText: Colors.white,
+    );
+  }
+
   void _startPurchase(BuildContext context) {
     if (_purchaseStarted) return;
     _purchaseStarted = true;
+
+    _purchaseWatchdog?.cancel();
+    _purchaseWatchdog = Timer(_purchaseWatchdogTimeout, _handlePurchaseWatchdog);
 
     final args = widget.purchaseArgs;
     context.read<GiftCardCubit>().purchaseGiftCardWithToken(
@@ -136,6 +192,8 @@ class _GiftCardPurchaseProcessingScreenState
           productId: args.productId,
           countryCode: args.countryCode,
           providerName: args.providerName,
+          // Repeat: execute on the issuing provider rather than the active one.
+          pinProvider: args.pinProvider,
           senderAmount: args.senderAmount,
           senderCurrency: args.senderCurrency,
         );
@@ -174,6 +232,7 @@ class _GiftCardPurchaseProcessingScreenState
               child: BlocListener<GiftCardCubit, GiftCardState>(
             listener: (context, state) {
               if (state is GiftCardPurchaseCompleted) {
+                _purchaseWatchdog?.cancel();
                 _stopPolling();
                 Get.offNamed(
                   AppRoutes.giftCardDetails,
@@ -192,6 +251,7 @@ class _GiftCardPurchaseProcessingScreenState
                   state is GiftCardServerUnavailable ||
                   state is GiftCardValidationError ||
                   state is GiftCardNotFound) {
+                _purchaseWatchdog?.cancel();
                 _stopPolling();
                 _setErrorState(state);
               }
@@ -249,7 +309,9 @@ class _GiftCardPurchaseProcessingScreenState
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 40.h),
+                        SizedBox(height: 20.h),
+                        _buildStayOnScreenNotice(isPreOrder),
+                        SizedBox(height: 28.h),
                         _buildProgressBar(progress),
                         SizedBox(height: 40.h),
                         _buildStepIndicators(progress),
@@ -402,6 +464,61 @@ class _GiftCardPurchaseProcessingScreenState
           ),
         );
       }).toList(),
+    );
+  }
+
+  /// Asks the user to stay put while the provider call completes.
+  ///
+  /// The purchase is a saga: funds are held, the provider is called, and the
+  /// card is activated. Leaving mid-flight does not cancel any of that, but a
+  /// user who backs out sees no outcome and assumes it failed. Saying plainly
+  /// that it finishes shortly is what stops the retry that follows.
+  Widget _buildStayOnScreenNotice(bool isPreOrder) {
+    return Container(
+      key: const Key('giftcard_stay_on_screen_notice'),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF59E0B).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14.r),
+        border:
+            Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.28)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.hourglass_top_rounded,
+                  size: 17.sp, color: const Color(0xFFF59E0B)),
+              SizedBox(width: 8.w),
+              Text(
+                'Please do not close this screen',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 13.5.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFFF59E0B),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            isPreOrder
+                ? 'We are placing your pre-order with the supplier. This takes '
+                    'a moment. Your card is delivered as soon as it is released.'
+                : 'This usually finishes in a few seconds. Keep the app open '
+                    'while we confirm your purchase with the supplier.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 12.sp,
+              height: 1.55,
+              color: const Color(0xFFB6B9C6),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

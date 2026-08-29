@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart' show Left;
 import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 import 'widgets/pre_order_notice.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/widgets/rich_card_text.dart';
@@ -14,6 +17,15 @@ import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
+import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
+import '../../../../../core/services/account_manager.dart';
+import '../../../../../core/services/injection_container.dart';
+import '../../domain/repositories/i_gift_card_repository.dart';
+import 'widgets/buy_funding_check.dart';
+import 'package:lazervault/core/errors/failure.dart';
 
 class PurchaseGiftCardScreen extends StatefulWidget {
   final GiftCardBrand brand;
@@ -25,10 +37,18 @@ class PurchaseGiftCardScreen extends StatefulWidget {
   /// "Repeat" action.
   final double? lockedAmount;
 
+  /// Provider that issued the card being repeated.
+  ///
+  /// When set the screen reads its amounts from THIS provider and the purchase
+  /// executes on it, whatever rail is active. [brand]'s product ref belongs to
+  /// this provider and means something different on the other one.
+  final String? pinnedProvider;
+
   const PurchaseGiftCardScreen({
     super.key,
     required this.brand,
     this.lockedAmount,
+    this.pinnedProvider,
   });
 
   @override
@@ -54,9 +74,44 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   // mount so the buy CTA is immediately active.
   bool get _isLockedAmount => widget.lockedAmount != null;
 
+  // ---- Live provider refresh -------------------------------------------
+  //
+  // The catalogue tile this screen was opened from is a cached, shared page.
+  // Denominations and prices belong to whichever buy provider was active when
+  // it was built, and both the provider and its availability can change before
+  // the user picks an amount. So the screen re-reads THIS product from the
+  // ACTIVE provider on mount and renders that answer instead.
+  //
+  // While the refresh is in flight the tile's own data is shown (so the screen
+  // never flashes empty) but the buy CTA stays disabled — an amount is only
+  // offered for purchase once a provider has confirmed it will sell it.
+  GiftCardBrand? _liveBrand;
+  String _liveProvider = '';
+  bool _liveLoading = true;
+  String _liveUnavailable = '';
+  bool _liveRefreshFailed = false;
+
+  /// The brand the screen renders and prices from: the provider's live answer
+  /// once it arrives, otherwise the tile that was tapped.
+  GiftCardBrand get _brand => _liveBrand ?? widget.brand;
+
+  StreamSubscription<AccountCardsSummaryState>? _balanceSub;
+
   @override
   void initState() {
     super.initState();
+    _refreshFromProvider();
+    // The funding gate reads the account summaries. context.read does not
+    // subscribe, so without this the gate would keep comparing against the
+    // balance as it was when the screen opened — and a purchase made
+    // elsewhere in the app (or a push-driven balance update) would leave it
+    // showing an affordable card the wallet can no longer fund.
+    try {
+      final cubit = context.read<AccountCardsSummaryCubit>();
+      _balanceSub = cubit.stream.listen((_) {
+        if (mounted) setState(() {});
+      });
+    } catch (_) {/* gate simply stays non-reactive; it still fails open */}
     if (_isLockedAmount) {
       _selectedAmount = widget.lockedAmount;
       _amountController.text = widget.lockedAmount!.toStringAsFixed(0);
@@ -64,15 +119,158 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   }
 
   List<double> get _denominations {
-    if (widget.brand.fixedDenominations.isNotEmpty) {
-      return widget.brand.fixedDenominations.map((d) => d.price).toList();
+    if (_brand.fixedDenominations.isNotEmpty) {
+      return _brand.fixedDenominations.map((d) => d.price).toList();
     }
-    // Range-based: generate smart suggestions within min/max
-    if (widget.brand.minAmount > 0 && widget.brand.maxAmount > 0) {
-      return _generateRangeDenominations(
-          widget.brand.minAmount, widget.brand.maxAmount);
+    // Range brands: the provider sells ANY amount between min and max, so
+    // these are genuine suggestions inside a range it published, not invented
+    // amounts. The custom field remains the authority.
+    if (_brand.minAmount > 0 && _brand.maxAmount > 0) {
+      return _generateRangeDenominations(_brand.minAmount, _brand.maxAmount);
     }
-    return [25, 50, 100, 250, 500];
+    // Nothing the provider gave us. There used to be a [25, 50, 100, 250, 500]
+    // fallback here; those amounts belonged to no product. A purchase of one
+    // reached the provider and came back "amount 100.00 is not a valid
+    // denomination for this product" after the user had already entered their
+    // PIN. If the provider publishes no denominations there is nothing to
+    // offer, and the screen says so instead of guessing.
+    return const [];
+  }
+
+  /// Re-reads this product from the ACTIVE buy provider.
+  ///
+  /// Fails OPEN on a transport/lookup error: an unreachable provider means the
+  /// answer is unknown, not that the card is withdrawn, and the buy saga
+  /// revalidates against the provider anyway. It fails CLOSED only on an
+  /// explicit "not available", which is a definite answer worth blocking on.
+  Future<void> _refreshFromProvider() async {
+    final ref = widget.brand.productId > 0
+        ? widget.brand.productId.toString()
+        : widget.brand.id;
+    if (ref.isEmpty) {
+      if (mounted) setState(() => _liveLoading = false);
+      return;
+    }
+
+    // Bounded. The CTA stays disabled while this is in flight, so a provider
+    // that never answers would otherwise leave the user on a screen they can
+    // never buy from. On timeout we fall through to the "could not refresh"
+    // path, which allows the purchase and lets the saga revalidate.
+    final result = await GetIt.I<IGiftCardRepository>()
+        .getGiftCardBrandLive(
+          productRef: ref,
+          countryCode: widget.brand.countryCode.isNotEmpty
+              ? widget.brand.countryCode
+              : null,
+          // Repeat: read from the ISSUING provider. Reading from the active
+          // one would price this ref against a rail where it means another
+          // product.
+          providerName: widget.pinnedProvider,
+        )
+        .timeout(
+          const Duration(seconds: 20),
+          onTimeout: () => Left(
+            APIFailure(message: 'Refresh timed out', statusCode: 504),
+          ),
+        );
+    if (!mounted) return;
+
+    result.fold(
+      (failure) => setState(() {
+        _liveLoading = false;
+        _liveRefreshFailed = true;
+      }),
+      (live) => setState(() {
+        _liveLoading = false;
+        _liveProvider = live.providerName;
+        if (!live.available || live.brand == null) {
+          _liveUnavailable = live.reason.isNotEmpty
+              ? live.reason
+              : 'This gift card is not available right now.';
+          return;
+        }
+        _liveBrand = live.brand;
+        // A repeat locks the original amount. If the issuing provider no
+        // longer sells that denomination, saying so here is the whole point of
+        // the live read — otherwise the locked CTA sends it straight to a
+        // provider that will refuse it.
+        final relisted = live.brand!;
+        if (_isLockedAmount &&
+            _selectedAmount != null &&
+            relisted.fixedDenominations.isNotEmpty &&
+            !relisted.fixedDenominations
+                .any((d) => (d.price - _selectedAmount!).abs() < 0.0001)) {
+          _liveUnavailable =
+              'This card is no longer sold at that amount. Pick a different '
+              'amount from the catalogue.';
+          return;
+        }
+        // A denomination selected from the stale tile may not exist on the
+        // provider's live list. Drop it rather than carry it into the PIN
+        // sheet; the user reselects from amounts that are real.
+        final live_ = live.brand!;
+        if (_selectedAmount != null && live_.fixedDenominations.isNotEmpty) {
+          final stillOffered = live_.fixedDenominations
+              .any((d) => (d.price - _selectedAmount!).abs() < 0.0001);
+          if (!stillOffered && !_isLockedAmount) {
+            _selectedAmount = null;
+            _amountController.clear();
+          }
+        }
+      }),
+    );
+  }
+
+  /// Whether the wallet can fund the amount currently selected.
+  ///
+  /// The buy saga holds EXACTLY the retail price shown here, so this is an
+  /// exact comparison rather than an estimate, and it runs before the PIN
+  /// sheet instead of after it.
+  GiftCardFundingCheck get _funding {
+    final senderAmt = _currentSenderAmount;
+    final isMultiCur = _brand.isMultiCurrency && senderAmt != null;
+    final chargeCurrency = isMultiCur ? _senderCurrency : _recipientCurrency;
+    final chargeAmount = isMultiCur ? senderAmt : _selectedAmount;
+
+    return GiftCardFundingCheck.evaluate(
+      chargeAmount: chargeAmount,
+      chargeCurrency: chargeCurrency,
+      account: _activeAccount,
+    );
+  }
+
+  /// The dashboard's active account, matched the same way the other service
+  /// flows match it (id or spending id). Null when the summaries have not
+  /// loaded, which the funding check treats as "cannot tell" and lets pass.
+  AccountSummaryEntity? get _activeAccount {
+    final activeId = serviceLocator<AccountManager>().activeAccountId;
+    if (activeId == null || activeId.isEmpty) return null;
+    // The cubit is provided app-wide, but a lookup failure must not take down
+    // a purchase screen. No account means "cannot tell", and the check fails
+    // open, so the worst case is the backend refusing later as it does today.
+    final AccountCardsSummaryState state;
+    try {
+      state = context.read<AccountCardsSummaryCubit>().state;
+    } catch (_) {
+      return null;
+    }
+    // Balances arrive on two states: the loaded list, and the push-driven
+    // balance update the dashboard emits after a debit. Read both so the gate
+    // is never comparing against a figure the dashboard has already replaced.
+    final List<AccountSummaryEntity> summaries;
+    if (state is AccountCardsSummaryLoaded) {
+      summaries = state.accountSummaries;
+    } else if (state is AccountBalanceUpdated) {
+      summaries = state.accountSummaries;
+    } else {
+      return null;
+    }
+    for (final a in summaries) {
+      if (a.id.toString() == activeId || a.spendingAccountId == activeId) {
+        return a;
+      }
+    }
+    return null;
   }
 
   List<double> _generateRangeDenominations(double min, double max) {
@@ -93,25 +291,25 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   }
 
   bool get _isRangeBased =>
-      widget.brand.fixedDenominations.isEmpty &&
-      widget.brand.minAmount > 0 &&
-      widget.brand.maxAmount > 0;
+      _brand.fixedDenominations.isEmpty &&
+      _brand.minAmount > 0 &&
+      _brand.maxAmount > 0;
 
   // Custom amount is allowed only when Reloadly classifies the brand
   // as RANGE. acceptsCustomAmount prefers the explicit
   // denominationType field and falls back to the legacy heuristic for
   // brands seeded before the field was wired through.
-  bool get _hasCustomAmount => widget.brand.acceptsCustomAmount;
+  bool get _hasCustomAmount => _brand.acceptsCustomAmount;
 
   // FX ratio for converting between sender (locale) and recipient
   // (card) currency on this brand. Derived from the live minSender/
   // minRecipient pair Reloadly returns; null when the brand is
   // single-currency or doesn't expose sender pricing.
   double? get _fxRecipientPerSender {
-    if (widget.brand.minSenderAmount <= 0 || widget.brand.minAmount <= 0) {
+    if (_brand.minSenderAmount <= 0 || _brand.minAmount <= 0) {
       return null;
     }
-    return widget.brand.minAmount / widget.brand.minSenderAmount;
+    return _brand.minAmount / _brand.minSenderAmount;
   }
 
   // The currency the prefix icon + hint should reflect. Toggled by the
@@ -124,7 +322,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   // have FX data to translate between them. Without that, switching is
   // meaningless.
   bool get _canSwitchCurrency =>
-      widget.brand.isMultiCurrency && _fxRecipientPerSender != null;
+      _brand.isMultiCurrency && _fxRecipientPerSender != null;
 
   // Translate the typed value into the recipient (card-face) amount
   // that the saga + validator expect. When entry is already in
@@ -146,23 +344,23 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   String _allowedRangeText() {
     if (!_entryInSenderCurrency) {
       return 'Allowed: $_recipientCurrency '
-          '${widget.brand.minAmount.toStringAsFixed(0)} – '
-          '${widget.brand.maxAmount.toStringAsFixed(0)}';
+          '${_brand.minAmount.toStringAsFixed(0)} – '
+          '${_brand.maxAmount.toStringAsFixed(0)}';
     }
-    double minS = widget.brand.minSenderAmount;
-    double maxS = widget.brand.maxSenderAmount;
+    double minS = _brand.minSenderAmount;
+    double maxS = _brand.maxSenderAmount;
     if (minS <= 0 || maxS <= 0) {
       // Derive from FX: sender = recipient / (recipient/sender).
       final fx = _fxRecipientPerSender;
       if (fx != null && fx > 0) {
-        if (minS <= 0) minS = widget.brand.minAmount / fx;
-        if (maxS <= 0) maxS = widget.brand.maxAmount / fx;
+        if (minS <= 0) minS = _brand.minAmount / fx;
+        if (maxS <= 0) maxS = _brand.maxAmount / fx;
       }
     }
     if (minS <= 0 || maxS <= 0) {
       return 'Allowed: $_recipientCurrency '
-          '${widget.brand.minAmount.toStringAsFixed(0)} – '
-          '${widget.brand.maxAmount.toStringAsFixed(0)}';
+          '${_brand.minAmount.toStringAsFixed(0)} – '
+          '${_brand.maxAmount.toStringAsFixed(0)}';
     }
     return 'Allowed: $_senderCurrency '
         '${_formatAmount(minS)} – ${_formatAmount(maxS)}';
@@ -186,14 +384,14 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   /// time and the confirmation screen shows the authoritative figure.
   double? _estimateSenderAmount(double recipientAmount) {
     if (!_isRangeBased) return null;
-    if (widget.brand.minAmount <= 0 || widget.brand.minSenderAmount <= 0) {
+    if (_brand.minAmount <= 0 || _brand.minSenderAmount <= 0) {
       return null;
     }
 
-    final minAmt = widget.brand.minAmount;
-    final maxAmt = widget.brand.maxAmount;
-    final minSender = widget.brand.minSenderAmount;
-    final maxSender = widget.brand.maxSenderAmount;
+    final minAmt = _brand.minAmount;
+    final maxAmt = _brand.maxAmount;
+    final minSender = _brand.minSenderAmount;
+    final maxSender = _brand.maxSenderAmount;
 
     if (maxAmt > minAmt && maxSender > 0) {
       final slope = (maxSender - minSender) / (maxAmt - minAmt);
@@ -209,6 +407,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
 
   @override
   void dispose() {
+    _balanceSub?.cancel();
     _amountController.dispose();
     super.dispose();
   }
@@ -243,7 +442,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                         children: [
                           SizedBox(height: 10.h),
                           _buildBrandCard(),
-                          if (widget.brand.preOrder) ...[
+                          if (_brand.preOrder) ...[
                             SizedBox(height: 12.h),
                             const PreOrderNotice(),
                           ],
@@ -251,6 +450,8 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                           _buildAmountSelection(),
                           SizedBox(height: 16.h),
                           _buildPriceSummary(),
+                          _buildAvailabilityNotice(),
+                          GiftCardFundingNotice(check: _funding),
                           SizedBox(height: 18.h),
                           _buildPurchaseButton(),
                           SizedBox(height: 20.h),
@@ -320,7 +521,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12.r),
               child: CachedNetworkImage(
-                imageUrl: widget.brand.logoUrl,
+                imageUrl: _brand.logoUrl,
                 fit: BoxFit.contain,
                 placeholder: (context, url) => Icon(
                   Icons.image_rounded,
@@ -342,7 +543,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  widget.brand.name,
+                  _brand.name,
                   style: GoogleFonts.inter(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w700,
@@ -353,7 +554,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  plainFromRichText(widget.brand.description),
+                  plainFromRichText(_brand.description),
                   style: GoogleFonts.inter(
                     fontSize: 11.sp,
                     color: const Color(0xFF9CA3AF),
@@ -365,7 +566,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
               ],
             ),
           ),
-          if (widget.brand.discountPercentage > 0) ...[
+          if (_brand.discountPercentage > 0) ...[
             SizedBox(width: 8.w),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
@@ -374,7 +575,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                 borderRadius: BorderRadius.circular(6.r),
               ),
               child: Text(
-                '${widget.brand.discountPercentage.toStringAsFixed(0)}% OFF',
+                '${_brand.discountPercentage.toStringAsFixed(0)}% OFF',
                 style: GoogleFonts.inter(
                   fontSize: 10.sp,
                   fontWeight: FontWeight.w600,
@@ -389,19 +590,19 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   }
 
   /// Get the sender currency label for display
-  String get _senderCurrency => widget.brand.senderCurrencyCode.isNotEmpty
-      ? widget.brand.senderCurrencyCode
+  String get _senderCurrency => _brand.senderCurrencyCode.isNotEmpty
+      ? _brand.senderCurrencyCode
       : 'NGN';
 
   /// Get the recipient currency label for display
   String get _recipientCurrency =>
-      widget.brand.currencyCode.isNotEmpty ? widget.brand.currencyCode : 'NGN';
+      _brand.currencyCode.isNotEmpty ? _brand.currencyCode : 'NGN';
 
   /// Get the sender (payment) amount for the currently selected denomination
   double? get _currentSenderAmount {
     if (_selectedAmount == null) return null;
     // Try fixed denomination lookup first
-    final fixed = widget.brand.getSenderAmountForDenomination(_selectedAmount!);
+    final fixed = _brand.getSenderAmountForDenomination(_selectedAmount!);
     if (fixed != null) return fixed;
     // For range-based products, estimate using min ratio
     return _estimateSenderAmount(_selectedAmount!);
@@ -499,9 +700,9 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
             // For fixed denominations: use the matching senderDenominations entry
             // For range-based: estimate using min sender/recipient ratio
             double? senderPrice;
-            if (widget.brand.senderDenominations.isNotEmpty &&
-                idx < widget.brand.senderDenominations.length) {
-              senderPrice = widget.brand.senderDenominations[idx];
+            if (_brand.senderDenominations.isNotEmpty &&
+                idx < _brand.senderDenominations.length) {
+              senderPrice = _brand.senderDenominations[idx];
             } else if (_isRangeBased) {
               senderPrice = _estimateSenderAmount(amount);
             }
@@ -705,13 +906,13 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
               if (recipient == null || recipient <= 0) {
                 return 'Please enter a valid amount';
               }
-              if (widget.brand.minAmount > 0 &&
-                  recipient < widget.brand.minAmount) {
-                return 'Minimum is $_recipientCurrency ${widget.brand.minAmount.toStringAsFixed(0)}';
+              if (_brand.minAmount > 0 &&
+                  recipient < _brand.minAmount) {
+                return 'Minimum is $_recipientCurrency ${_brand.minAmount.toStringAsFixed(0)}';
               }
-              if (widget.brand.maxAmount > 0 &&
-                  recipient > widget.brand.maxAmount) {
-                return 'Maximum is $_recipientCurrency ${widget.brand.maxAmount.toStringAsFixed(0)}';
+              if (_brand.maxAmount > 0 &&
+                  recipient > _brand.maxAmount) {
+                return 'Maximum is $_recipientCurrency ${_brand.maxAmount.toStringAsFixed(0)}';
               }
               return null;
             },
@@ -723,7 +924,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         // toggled to sender, we show min/max in sender units derived
         // from Reloadly's minSenderAmount/maxSenderAmount (the same
         // numbers that drive the price summary's FX rate row).
-        if (widget.brand.minAmount > 0 && widget.brand.maxAmount > 0) ...[
+        if (_brand.minAmount > 0 && _brand.maxAmount > 0) ...[
           SizedBox(height: 6.h),
           Text(
             _hasCustomAmount
@@ -757,7 +958,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
     final total = senderAmountNullable ?? amount;
 
     // Fee breakdown: flat service fee only (no percentage markup)
-    final flatFee = widget.brand.senderFee;
+    final flatFee = _brand.senderFee;
     double subtotal = 0;
     if (hasSenderPrice && total > 0 && flatFee > 0) {
       subtotal = total - flatFee;
@@ -820,11 +1021,11 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
               valueKey: const Key('buy_fx_rate'),
             ),
           ],
-          if (widget.brand.discountPercentage > 0) ...[
+          if (_brand.discountPercentage > 0) ...[
             SizedBox(height: 6.h),
             _buildPriceRow(
               'Discount',
-              '-${widget.brand.discountPercentage.toStringAsFixed(widget.brand.discountPercentage % 1 == 0 ? 0 : 2)}%',
+              '-${_brand.discountPercentage.toStringAsFixed(_brand.discountPercentage % 1 == 0 ? 0 : 2)}%',
               isDiscount: true,
             ),
           ],
@@ -910,10 +1111,27 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   String _buyCurrencySymbolFor(String code) =>
       _kBuyCurrencySymbols[code.toUpperCase()] ?? code.toUpperCase();
 
+  /// Why the buy CTA is disabled, or null when it is enabled.
+  ///
+  /// Every reason is resolved BEFORE the transaction-PIN sheet. The old flow
+  /// went straight from this button to the PIN, so a card the provider had
+  /// withdrawn, or a purchase the wallet could not fund, was only refused
+  /// after the user had authenticated it.
+  String? get _blockReason {
+    if (_liveUnavailable.isNotEmpty) return 'Unavailable';
+    if (_liveLoading) return 'Checking availability';
+    if (_selectedAmount == null || _selectedAmount! <= 0) return 'Buy Gift Card';
+    final funding = _funding;
+    if (funding.isInsufficient) return 'Insufficient balance';
+    if (funding.isUnusable) return 'Account unavailable';
+    return null;
+  }
+
   Widget _buildPurchaseButton() {
-    final isValid = _selectedAmount != null && _selectedAmount! > 0;
+    final blocked = _blockReason;
+    final isValid = blocked == null;
     final senderAmt = _currentSenderAmount;
-    final isMultiCur = widget.brand.isMultiCurrency && senderAmt != null;
+    final isMultiCur = _brand.isMultiCurrency && senderAmt != null;
     final displayCurrency = isMultiCur ? _senderCurrency : _recipientCurrency;
     final displayAmount = isMultiCur ? senderAmt : (_selectedAmount ?? 0.0);
 
@@ -946,7 +1164,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Purchase Gift Card',
+                        blocked ?? 'Purchase Gift Card',
                         style: GoogleFonts.inter(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -975,18 +1193,138 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
     );
   }
 
+  /// Renders the provider's own verdict on this product: a refusal, or the
+  /// brief moment while the live read is still in flight.
+  Widget _buildAvailabilityNotice() {
+    if (_liveUnavailable.isNotEmpty) {
+      return Container(
+        key: const Key('giftcard_unavailable_notice'),
+        margin: EdgeInsets.only(top: 12.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(14.r),
+          border:
+              Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.32)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.info_outline,
+                color: const Color(0xFFEF4444), size: 18.sp),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Not available right now',
+                    style: GoogleFonts.inter(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFEF4444),
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    _liveUnavailable,
+                    style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      height: 1.5,
+                      color: const Color(0xFFB6B9C6),
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+                  GestureDetector(
+                    onTap: () => Get.back(),
+                    child: Text(
+                      'Browse other cards',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFEF4444),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // The provider published no denominations at all. Previously the screen
+    // invented [25, 50, 100, 250, 500] here, which is how an amount that
+    // belonged to no product reached the buy saga.
+    if (!_liveLoading && _denominations.isEmpty && !_hasCustomAmount) {
+      return Container(
+        key: const Key('giftcard_no_denominations_notice'),
+        margin: EdgeInsets.only(top: 12.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF59E0B).withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(14.r),
+          border:
+              Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.32)),
+        ),
+        child: Text(
+          'Our supplier has not published any amounts for this card right now. '
+          'Please try another card.',
+          style: GoogleFonts.inter(
+            fontSize: 12.sp,
+            height: 1.5,
+            color: const Color(0xFFB6B9C6),
+          ),
+        ),
+      );
+    }
+
+    // The live read did not complete. Not a refusal — the answer is simply
+    // unknown, so the purchase is still allowed (the buy saga revalidates
+    // against the provider) but the user is told the amounts on screen are the
+    // catalogue's rather than a fresh quote.
+    if (_liveRefreshFailed) {
+      return Container(
+        key: const Key('giftcard_stale_notice'),
+        margin: EdgeInsets.only(top: 12.h),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+        ),
+        child: Text(
+          'We could not refresh prices just now, so these are the last known '
+          'amounts. The final price is confirmed at purchase.',
+          style: GoogleFonts.inter(
+            fontSize: 11.5.sp,
+            height: 1.5,
+            color: const Color(0xFF9CA3AF),
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
   bool _isPurchasing = false;
 
   void _purchaseGiftCard() async {
     if (_selectedAmount == null || _selectedAmount! <= 0) return;
+    // Defence in depth. The CTA is already disabled for each of these, but the
+    // sheet must be unreachable by any path — this is the last point before a
+    // PIN prompt implies to the user that the purchase is going ahead.
+    if (_blockReason != null) return;
     if (_formKey.currentState!.validate() ||
-        widget.brand.fixedDenominations.isNotEmpty) {
+        _brand.fixedDenominations.isNotEmpty) {
       final amount = _selectedAmount!;
       final transactionId =
-          'giftcard_${DateTime.now().millisecondsSinceEpoch}_${widget.brand.id}';
+          'giftcard_${DateTime.now().millisecondsSinceEpoch}_${_brand.id}';
       // For PIN confirmation, show the payment amount in sender currency
       final senderAmt = _currentSenderAmount;
-      final isMultiCur = widget.brand.isMultiCurrency && senderAmt != null;
+      final isMultiCur = _brand.isMultiCurrency && senderAmt != null;
       final displayCurrency = isMultiCur ? _senderCurrency : _recipientCurrency;
       final displayAmount = isMultiCur ? senderAmt : amount;
       // Final price is recomputed at execution time using the
@@ -1000,13 +1338,13 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
       // Pre-order cards are not fulfilled instantly. The PIN sheet is the last
       // moment before money moves, so the caveat is repeated here even though
       // the purchase screen already showed it: this is the point of consent.
-      final deliveryNotice = widget.brand.preOrder
+      final deliveryNotice = _brand.preOrder
           ? '\n\nDelivery is not instant. This card is a pre-order, so you pay '
               'now and the code is delivered once the supplier releases it.'
           : '';
       final confirmMessage = isMultiCur
-          ? 'Purchase ${widget.brand.name} $_recipientCurrency ${_formatAmount(amount)} gift card for about $_senderCurrency ${_formatAmount(senderAmt)}.\n\n$priceNotice$deliveryNotice'
-          : 'Confirm purchase of $displayCurrency ${_formatAmount(displayAmount)} ${widget.brand.name} gift card.\n\n$priceNotice$deliveryNotice';
+          ? 'Purchase ${_brand.name} $_recipientCurrency ${_formatAmount(amount)} gift card for about $_senderCurrency ${_formatAmount(senderAmt)}.\n\n$priceNotice$deliveryNotice'
+          : 'Confirm purchase of $displayCurrency ${_formatAmount(displayAmount)} ${_brand.name} gift card.\n\n$priceNotice$deliveryNotice';
 
       String? verificationToken;
 
@@ -1047,17 +1385,29 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
       Get.offNamed(
         AppRoutes.giftCardPurchaseProcessing,
         arguments: GiftCardPurchaseArgs(
-          brand: widget.brand,
+          // The LIVE brand, not the catalogue tile. Denominations and prices
+          // belong to the provider that answered a moment ago; the tile may
+          // have been built under the other provider entirely.
+          brand: _brand,
           amount: amount,
           transactionId: transactionId,
           verificationToken: verificationToken!,
-          productId: widget.brand.productId > 0 ? widget.brand.productId : null,
-          countryCode: widget.brand.countryCode.isNotEmpty
-              ? widget.brand.countryCode
-              : null,
-          providerName: widget.brand.providerName.isNotEmpty
-              ? widget.brand.providerName
-              : null,
+          productId: _brand.productId > 0 ? _brand.productId : null,
+          countryCode:
+              _brand.countryCode.isNotEmpty ? _brand.countryCode : null,
+          // Provider the amount was quoted by, preferring the live answer.
+          // Sending the tile's provider here would ask one rail to honour a
+          // denomination list the other rail published.
+          providerName: widget.pinnedProvider?.isNotEmpty == true
+              ? widget.pinnedProvider
+              : (_liveProvider.isNotEmpty
+                  ? _liveProvider
+                  : (_brand.providerName.isNotEmpty
+                      ? _brand.providerName
+                      : null)),
+          // Only a repeat pins. A fresh buy must stay subject to the
+          // active-provider consistency check.
+          pinProvider: widget.pinnedProvider?.isNotEmpty == true,
           senderAmount: senderAmt,
           senderCurrency: _senderCurrency,
         ),

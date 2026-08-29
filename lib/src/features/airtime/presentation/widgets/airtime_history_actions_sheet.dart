@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_history_actions_sheet.dart';
+import '../../../../../core/widgets/bill_auto_recharge_create_sheet.dart';
 import '../../../../../core/widgets/bill_reminder_create_sheet.dart';
 import '../../data/datasources/intl_airtime_remote_datasource.dart';
 import '../../domain/entities/airtime_transaction.dart';
@@ -152,6 +153,68 @@ class AirtimeHistoryActionsSheet {
                     currency: 'NGN',
                     isRecurring: isRecurring,
                     recurrenceType: recurrenceType,
+                  );
+                },
+              );
+            },
+          ),
+        // Set Auto-Recharge — airtime was the only bill service whose history
+        // sheet did not offer this, though the backend, the cubit and the
+        // create path have always existed (quick-buy schedules one after a
+        // purchase). The shortcut was simply missing.
+        //
+        // Prefill source follows the main pages: when this number is already a
+        // saved contact we schedule against it directly with the amount
+        // prefilled from this purchase; when it is not, we hand the user to the
+        // auto-recharge screen where they choose the contact themselves, rather
+        // than silently inventing a beneficiary or dead-ending the action.
+        if (canSaveContact && isCompleted)
+          BillHistoryAction(
+            icon: Icons.autorenew,
+            color: const Color(0xFF10B981),
+            label: 'Set Auto-Recharge',
+            subtitle: isSaved
+                ? 'Top up ${t.recipientPhoneNumber} on a schedule'
+                : 'Choose a saved contact to schedule',
+            onTap: () async {
+              // Navigator's context — Get.back() disposes this sheet's own,
+              // and a disposed context cannot host the create sheet.
+              final ctx = Get.context;
+              Get.back();
+              if (ctx == null) return;
+
+              // No saved contact for this number: the auto-recharge screen is
+              // where contacts are picked, which is the same prefill-source
+              // choice the main pages offer.
+              if (!isSaved || existingId == null) {
+                Get.toNamed(AppRoutes.airtimeAutoRecharge);
+                return;
+              }
+
+              final repo = GetIt.I<AirtimeRepository>();
+              final beneficiaryId = existingId;
+              await BillAutoRechargeCreateSheet.show(
+                ctx,
+                subtitle:
+                    '${t.networkProvider.displayName} \u00B7 ${t.recipientPhoneNumber}',
+                initialAmount: t.amount,
+                onSubmit: ({
+                  required double amount,
+                  required String frequency,
+                  required int dayOfWeek,
+                  required int dayOfMonth,
+                  required int executionHour,
+                  required int executionMinute,
+                }) async {
+                  await repo.createAirtimeAutoRecharge(
+                    beneficiaryId: beneficiaryId,
+                    amount: amount,
+                    currency: 'NGN',
+                    frequency: frequency,
+                    dayOfWeek: dayOfWeek,
+                    dayOfMonth: dayOfMonth,
+                    executionHour: executionHour,
+                    executionMinute: executionMinute,
                   );
                 },
               );

@@ -159,8 +159,35 @@ class GrpcCallOptionsHelper {
       metadata.addAll(options.metadata);
     }
 
-    return CallOptions(metadata: metadata);
+    // DEADLINE. Two bugs lived here.
+    //
+    // 1. A caller-supplied timeout was DISCARDED: only options.metadata was
+    //    copied, so `withAuth(CallOptions(timeout: ...))` silently produced a
+    //    deadline-less call. Callers believed they had a bound and did not.
+    // 2. There was no default either, so an RPC whose response was lost (dead
+    //    connection, gateway dropping the stream mid-call) never completed and
+    //    never threw. The Future simply hung.
+    //
+    // That is not theoretical: a gift card purchase completed server-side —
+    // provider charged, code issued — while the app sat on "Generating"
+    // forever, because buyGiftCard was issued through this method with no
+    // deadline and the response never arrived. Nothing downstream can recover
+    // from a Future that neither resolves nor throws.
+    //
+    // The fallback default is deliberately GENEROUS. It is not a latency
+    // budget — individual calls that want a tight bound pass their own, and
+    // the slowest legitimate unary call here (a buy saga driving a provider)
+    // runs into the tens of seconds. It exists so that "forever" is never a
+    // possible outcome.
+    return CallOptions(
+      metadata: metadata,
+      timeout: options?.timeout ?? _defaultCallDeadline,
+    );
   }
+
+  /// Backstop deadline for any RPC that does not specify one. Long enough that
+  /// it can only be hit by a call that is genuinely never coming back.
+  static const Duration _defaultCallDeadline = Duration(seconds: 120);
 
   /// Backward compatibility: withAuthAndLocale is now the same as withAuth
   @Deprecated('Use withAuth() instead - it now includes locale automatically')

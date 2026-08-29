@@ -309,6 +309,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     String? idempotencyKey,
     int quantity = 1,
     String? providerName,
+    bool pinProvider = false,
     double? senderAmount,
     String? senderCurrency,
   }) async {
@@ -374,6 +375,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         providerName: providerName,
         senderAmount: senderAmount,
         senderCurrency: senderCurrency,
+        pinProvider: pinProvider,
       );
       if (isClosed) return;
 

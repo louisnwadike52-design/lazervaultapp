@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.d
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
+import 'package:lazervault/core/utils/transfer_bank_display.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_transaction_history_modal.dart'
     show InlineSendHandler;

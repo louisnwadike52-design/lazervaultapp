@@ -52,6 +52,20 @@ service GiftCardsService {
     };
   }
 
+  // Get ONE brand live from the ACTIVE buy provider.
+  //
+  // The catalogue listing is cached and shared across users; this is not.
+  // It re-reads the product and prices every denomination against the
+  // provider at request time, so the amounts screen offers only what the
+  // active provider will actually sell right now. Denominations the provider
+  // refuses (Prestmit answers isAvailable per SKU+amount) are omitted rather
+  // than quoted and then rejected at order time.
+  rpc GetGiftCardBrandLive(GetGiftCardBrandLiveRequest) returns (GetGiftCardBrandLiveResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/giftcardbrand/live"
+    };
+  }
+
   // Get gift card transaction history
   rpc GetGiftCardHistory(GetGiftCardHistoryRequest) returns (GetGiftCardHistoryResponse) {
     option (google.api.http) = {
@@ -519,6 +533,12 @@ message GiftCard {
   string transfer_type = 32;            // "platform" or "email"
   // Redemption instructions from Reloadly (how to use the code on the merchant's website)
   string redemption_instructions = 33;
+  // Provider that ISSUED this card ("reloadly" | "prestmit").
+  //
+  // Persisted since the Prestmit rail was added but never sent to clients,
+  // which left the app unable to tell which rail a card came from. Repeats
+  // need it: provider_product_id above is only meaningful on this provider.
+  string provider_name = 35;
   // Internal reference (e.g. "GC-{uuid}") — same value the backend
   // stamps on balance-WebSocket terminal events and refund_ledger
   // rows. The processing screen uses this to match WS events back
@@ -562,9 +582,12 @@ message GiftCardBrand {
   // fixedDenominations.empty heuristic.
   string denomination_type = 25;
   // pre_order marks a card the provider does NOT fulfil instantly: the order
-  // is accepted and the code is delivered later, asynchronously. Prestmit
-  // flags most of its catalogue this way; Reloadly always sends false.
-  // The app MUST surface this before payment.
+  // is accepted and the code is delivered later, asynchronously.
+  //
+  // Prestmit flags most of its catalogue this way (6,815 of 7,515 live cards,
+  // including every Amazon SKU). Reloadly fulfils instantly and always sends
+  // false. Clients MUST surface this before payment, because "buy a gift card"
+  // otherwise implies a code on the next screen.
   bool pre_order = 26;
 }
 
@@ -616,6 +639,18 @@ message BuyGiftCardRequest {
   // Multi-currency payment fields
   double sender_amount = 16;           // Amount in sender/payment currency (what user pays)
   string sender_currency = 17;         // Sender currency code (e.g., "NGN") — from brand.sender_currency_code
+  // Pin the purchase to provider_name instead of the active buy provider.
+  //
+  // Set ONLY for a repeat of an existing card. Product refs are provider
+  // scoped — a Prestmit SKU and a Reloadly product id are different products
+  // under the same number — so a repeat carrying the original card's ref must
+  // go back to the provider that issued it. Without this the ref is sent to
+  // whichever rail is active now, which buys the wrong product or fails.
+  //
+  // Never set it for a fresh purchase: that is what the active-provider
+  // consistency check protects, and pinning would let a stale client buy on a
+  // rail the operator has moved off.
+  bool pin_provider = 18;
 }
 
 message BuyGiftCardResponse {
@@ -731,6 +766,27 @@ message GetGiftCardBrandsResponse {
   int32 page_size = 6;               // Page size used
 }
 
+
+// ===== GET ONE BRAND, LIVE FROM THE ACTIVE PROVIDER =====
+message GetGiftCardBrandLiveRequest {
+  string product_ref = 1;   // Provider's own product id (Reloadly product id, Prestmit SKU)
+  string country_code = 2;  // Optional provider hint
+  // Read from THIS provider instead of the active one. Set when repeating a
+  // card so the amounts screen shows the issuing provider's denominations for
+  // its own product ref. Empty = the active buy provider.
+  string provider_name = 3;
+}
+
+message GetGiftCardBrandLiveResponse {
+  GiftCardBrand brand = 1;
+  // Provider these denominations belong to. The catalogue the client
+  // navigated in with and this response can disagree when the active buy
+  // provider changed mid-browse, so the client must trust THIS value.
+  string provider_name = 2;
+  bool available = 3;             // false = nothing on this product is sellable now
+  string unavailable_reason = 4;  // user-safe explanation when available is false
+}
+
 // ===== GET GIFT CARD HISTORY =====
 // NOTE: user_id extracted from JWT token, not from request
 message GetGiftCardHistoryRequest {
@@ -769,6 +825,14 @@ message SellableCard {
   string subcategory_id = 11;
   // ISO/Prestmit country tag (e.g. "USA", "UK") for region variants.
   string country = 12;
+  // Payout currency (naira) per ONE unit of the card's face currency —
+  // Prestmit's `rate`. Lets the sell list show what a card is worth to the
+  // seller before they open it, the same way the buy list shows "From NGN x".
+  // 0 = the provider published no rate; show nothing rather than compute one.
+  double payout_rate_per_unit = 14;
+  // When true, this (usually physical) tier needs a proof-of-purchase / receipt
+  // image in ADDITION to the card photo. Parsed from Prestmit's terms; the app
+  // uses it to prompt for the extra upload up front.
   bool requires_receipt = 13;
 }
 
@@ -1026,9 +1090,12 @@ message SellGiftCardRequest {
   bool balance_attested = 26;
 
   // Multi-card batching (#81). When set (length ≥ 1), the sale is a SINGLE
-  // Prestmit trade covering N cards of the SAME sellable card + form: amount =
-  // SUM of the per-item denominations, N ecodes joined into comments, N physical
-  // images flattened into attachments[]. Empty ⇒ legacy single-card path.
+  // Prestmit trade covering N cards of the SAME sellable card (subcategory_id)
+  // and form: `amount` = SUM of the per-item denominations, N ecodes are joined
+  // into `comments`, and N physical images are flattened into `attachments[]`
+  // (Prestmit's ≤20 cap still applies). Prestmit settles the batch as ONE
+  // outcome, so the hold/settlement/refund money-path is identical to a single
+  // card. Empty ⇒ legacy single-card path (fields above) is used unchanged.
   repeated SellCardItem cards = 27;
 }
 
@@ -1037,10 +1104,10 @@ message SellGiftCardRequest {
 // → image_urls. denomination is this card's own face value (summed server-side).
 message SellCardItem {
   double denomination = 1;
-  string card_code = 2;
-  string card_number = 3;
-  string card_pin = 4;
-  repeated string image_urls = 5;
+  string card_code = 2;                 // Ecode value
+  string card_number = 3;               // Ecode alt / physical printed number
+  string card_pin = 4;                  // Ecode PIN when the code needs both
+  repeated string image_urls = 5;       // Physical card image URLs (from UploadSellImage)
 }
 
 message SellGiftCardResponse {
@@ -1647,6 +1714,8 @@ message PendingVerification {
   int32  verification_attempts = 6;
   string last_checked          = 7;
   string status                = 8;
+  // User-credit generation counter (migration 038). Surfaced for admin triage so
+  // reviewers can see which payout attempt a pending sale is on.
   int32  payout_attempt        = 9;
 }
 

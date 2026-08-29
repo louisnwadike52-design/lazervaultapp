@@ -56,6 +56,38 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
   }
 
   @override
+  Future<GiftCardBrandLiveResult> getGiftCardBrandLive({
+    required String productRef,
+    String? countryCode,
+    String? providerName,
+  }) async {
+    try {
+      final options = await grpcClient.callOptions;
+      final response = await grpcClient.giftCardClient.getGiftCardBrandLive(
+        pb.GetGiftCardBrandLiveRequest(
+          productRef: productRef,
+          countryCode: countryCode ?? '',
+          providerName: providerName ?? '',
+        ),
+        options: options,
+      );
+
+      return GiftCardBrandLiveResult(
+        brand: response.hasBrand()
+            ? GiftCardBrandModel.fromProto(response.brand)
+            : null,
+        providerName: response.providerName,
+        available: response.available,
+        unavailableReason: response.unavailableReason,
+      );
+    } on GrpcError catch (e) {
+      throw Exception('Failed to refresh card: ${e.message}');
+    } catch (e) {
+      throw Exception('Unexpected error refreshing card: $e');
+    }
+  }
+
+  @override
   Future<List<GiftCardCountry>> getSupportedCountries() async {
     try {
       final request = pb.GetSupportedCountriesRequest();
@@ -94,6 +126,7 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
     String? providerName,
     double? senderAmount,
     String? senderCurrency,
+    bool pinProvider = false,
   }) async {
     try {
       final request = pb.BuyGiftCardRequest(
@@ -110,6 +143,8 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         idempotencyKey: idempotencyKey ?? '',
         quantity: quantity,
         providerName: providerName ?? '',
+        // Repeat: execute on the issuing provider, not the active one.
+        pinProvider: pinProvider,
       );
 
       request.senderAmount = senderAmount ?? 0;

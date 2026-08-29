@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -21,22 +22,16 @@ class ChatReceiptPdfService {
   static pw.Font? _regularFont;
   static pw.Font? _boldFont;
 
+  /// Loads the unicode-capable face this receipt needs.
+  ///
+  /// The comment above was aspirational: the CDN URL this used had 404'd, so
+  /// the "fall back to the bundled defaults" path was the ONLY path, and the
+  /// built-in default cannot draw ₦ at all — it raises. Every chat and voice
+  /// receipt quoting a naira amount was one PDF render away from failing.
   static Future<void> _loadFonts() async {
-    if (_regularFont != null && _boldFont != null) return;
-    try {
-      final regular = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.ttf'));
-      final bold = await http.get(Uri.parse(
-          'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYAZ9hiA.ttf'));
-      if (regular.statusCode == 200 && bold.statusCode == 200) {
-        _regularFont = pw.Font.ttf(regular.bodyBytes.buffer.asByteData());
-        _boldFont = pw.Font.ttf(bold.bodyBytes.buffer.asByteData());
-      }
-    } catch (_) {
-      // Fall back to the bundled defaults if the CDN is unreachable.
-      _regularFont = null;
-      _boldFont = null;
-    }
+    await ReceiptFonts.load();
+    _regularFont = ReceiptFonts.regular;
+    _boldFont = ReceiptFonts.bold;
   }
 
   static pw.TextStyle _style({

@@ -144,8 +144,11 @@ class _SelectRecipientsState extends State<SelectRecipients>
   // the bank/Lazervault tab): favourites-only.
   bool _savedFavoritesOnly = false;
 
-  bool _isInternalRecipient(RecipientModel r) =>
-      r.type == 'internal' || r.bankName.toLowerCase() == 'lazervault';
+  // Routing decision — see RecipientModel.canSendAsInternal. `type` alone was
+  // trusted here, and it is defaulted to 'internal' whenever no bank was
+  // captured, so an ordinary external recipient could be routed as a LazerVault
+  // transfer and rejected with "check the account number".
+  bool _isInternalRecipient(RecipientModel r) => r.canSendAsInternal;
 
   // Contact bank verification state
   List<Map<String, String>> _banksList = [];
@@ -1102,8 +1105,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
-    final isInternal =
-        r.type == 'internal' || r.bankName.toLowerCase() == 'lazervault';
+    final isInternal = r.canSendAsInternal;
     if (isInternal && r.internalUserId != null && r.internalUserId == _shortUserId) {
       Get.snackbar('Not allowed', 'You can’t send funds to yourself.',
           snackPosition: SnackPosition.BOTTOM);
@@ -1341,8 +1343,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
     final recipientCubit = context.read<RecipientCubit>();
     final token =
         context.read<AuthenticationCubit>().currentProfile?.session.accessToken;
-    final isInternal =
-        r.type == 'internal' || r.bankName.toLowerCase() == 'lazervault';
+    final isInternal = r.canSendAsInternal;
     final senderProfile = context.read<AuthenticationCubit>().currentProfile;
     final senderName = senderProfile != null
         ? '${senderProfile.user.firstName} ${senderProfile.user.lastName}'.trim()
@@ -1582,8 +1583,7 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
   Map<String, dynamic> _buildShortReceipt(
       TransferEntity res, RecipientModel r, AccountSummaryEntity active) {
-    final isInternal =
-        r.type == 'internal' || r.bankName.toLowerCase() == 'lazervault';
+    final isInternal = r.canSendAsInternal;
     // Internal (Lazervault→Lazervault) send: hand the completed transfer to the
     // P2P chat with this user so the money bubble renders the moment they open
     // the chat (the receipt wipes the stack, so the chat can't reload on return).

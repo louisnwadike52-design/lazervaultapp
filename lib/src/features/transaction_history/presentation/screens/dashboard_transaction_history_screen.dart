@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
+import 'package:lazervault/core/utils/transfer_bank_display.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' hide Transition;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -256,6 +258,47 @@ class _DashboardTransactionHistoryScreenState
               ),
             ],
 
+            // Destination institution, with its logo. Shown for every transfer:
+            // an external bank by name, or LazerVault for money that stayed on
+            // the platform. Previously the sheet named the counterparty but
+            // never the institution, so a user could not tell from history
+            // whether a payment left the platform at all.
+            Builder(builder: (_) {
+              final bank = TransferBankDisplay.resolve(
+                tx.metadata,
+                isTransfer:
+                    tx.serviceType == TransactionServiceType.transfer,
+              );
+              if (bank == null) return const SizedBox.shrink();
+              return Padding(
+                padding: EdgeInsets.only(top: 8.h),
+                child: Row(
+                  children: [
+                    BankLogo(
+                      bankName: bank.name,
+                      bankCode: bank.code,
+                      size: 18,
+                      borderRadius: 5,
+                    ),
+                    SizedBox(width: 8.w),
+                    Flexible(
+                      child: Text(
+                        bank.name,
+                        key: const Key('history_detail_bank'),
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: const Color(0xFF8E8E93),
+                          fontFamily: 'Inter',
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+
             SizedBox(height: 20.h),
 
             // Action buttons
@@ -303,8 +346,15 @@ class _DashboardTransactionHistoryScreenState
                         ]);
                         final hasInternalUid = counterpartyUid != null &&
                             counterpartyUid.isNotEmpty;
+                        // Internal requires PROOF — a resolved LazerVault
+                        // user id, or a bank explicitly named LazerVault.
+                        // Requiring `bankName.isNotEmpty` for external meant a
+                        // row whose metadata simply never captured the bank
+                        // fell through to INTERNAL, and repeating it routed an
+                        // ordinary bank transfer as LazerVault-to-LazerVault —
+                        // which the backend rejects outright. Absent proof,
+                        // external is the read that can still complete.
                         final isExternal = !hasInternalUid &&
-                            bankName.isNotEmpty &&
                             !bankName.toLowerCase().contains('lazervault');
                         final recipient = RecipientModel(
                           id: '',

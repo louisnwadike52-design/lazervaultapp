@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/utils/receipt_download.dart';
 import '../domain/entities/invoice_entity.dart';
 
 class InvoicePdfService {
@@ -1102,29 +1103,13 @@ class InvoicePdfService {
   static Future<String> downloadInvoice(Invoice invoice) async {
     try {
       final file = await generateInvoicePdf(invoice);
-
-      // Get appropriate directory based on platform
-      Directory? directory;
-      if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          directory = await getExternalStorageDirectory();
-        }
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-      } else {
-        directory = await getDownloadsDirectory();
-      }
-
-      if (directory == null) {
-        throw Exception('Could not access downloads directory');
-      }
-
-      final fileName = 'invoice_${invoice.id.substring(0, 8)}.pdf';
-      final savedFile = File('${directory.path}/$fileName');
-      await file.copy(savedFile.path);
-
-      return savedFile.path;
+      // Via ReceiptDownload: a direct write to /storage/emulated/0/Download is
+      // refused by Android scoped storage (API 30+), and the exists() guard
+      // does not catch it because the path DOES exist — it is just not writable.
+      return await ReceiptDownload.saveAndOpen(
+        source: file,
+        fileName: 'invoice_${invoice.id.substring(0, 8)}.pdf',
+      );
     } catch (e) {
       throw Exception('Failed to download invoice: $e');
     }
@@ -1148,28 +1133,10 @@ class InvoicePdfService {
   static Future<String> downloadReceipt(Invoice invoice) async {
     try {
       final file = await generateInvoiceReceipt(invoice);
-
-      Directory? directory;
-      if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          directory = await getExternalStorageDirectory();
-        }
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-      } else {
-        directory = await getDownloadsDirectory();
-      }
-
-      if (directory == null) {
-        throw Exception('Could not access downloads directory');
-      }
-
-      final fileName = 'receipt_${invoice.id.substring(0, 8)}.pdf';
-      final savedFile = File('${directory.path}/$fileName');
-      await file.copy(savedFile.path);
-
-      return savedFile.path;
+      return await ReceiptDownload.saveAndOpen(
+        source: file,
+        fileName: 'receipt_${invoice.id.substring(0, 8)}.pdf',
+      );
     } catch (e) {
       throw Exception('Failed to download receipt: $e');
     }

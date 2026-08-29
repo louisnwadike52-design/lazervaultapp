@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:get_it/get_it.dart';
 import 'package:grpc/grpc.dart';
 import 'package:http/http.dart' as http;
@@ -311,7 +310,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 // Gift Cards Imports
 import 'package:lazervault/src/features/gift_cards/data/datasources/gift_card_remote_data_source.dart';
 import 'package:lazervault/src/features/gift_cards/data/datasources/gift_card_remote_data_source_grpc.dart';
-import 'package:lazervault/src/features/gift_cards/data/datasources/gift_card_remote_data_source_mock.dart';
 import 'package:lazervault/src/features/gift_cards/data/repositories/gift_card_repository_impl.dart';
 import 'package:lazervault/src/features/gift_cards/domain/repositories/i_gift_card_repository.dart';
 import 'package:lazervault/src/features/gift_cards/cubit/gift_card_cubit.dart';
@@ -1890,24 +1888,20 @@ Future<void> init() async {
   // ================== Feature: Gift Cards ==================
 
   // Data Sources
-  // Try gRPC first, fallback to enhanced mock — but NEVER in release builds.
-  // The mock serves fabricated catalog/sale data; silently substituting it in
-  // production would show users fake gift cards. In release mode we rethrow so
-  // a misconfigured gRPC client fails loudly instead of faking the money flow.
+  // gRPC only. There is no mock fallback in any build mode.
+  //
+  // The debug-only fallback that used to sit here served a 585-line fabricated
+  // catalogue with a built-in 10% failure rate. Release builds already
+  // rethrew, but gift-card money flows are exercised against prod on DEBUG
+  // prod-flavor builds — so the one configuration where the fallback stayed
+  // live was the one used to validate real purchases and sales. A gRPC client
+  // that fails to construct must fail loudly everywhere, not quietly hand back
+  // invented brands, denominations and rates.
   serviceLocator.registerLazySingleton<IGiftCardRemoteDataSource>(
-    () {
-      try {
-        return GiftCardRemoteDataSourceGrpc(
-          grpcClient: serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient'),
-        );
-      } catch (e) {
-        if (kReleaseMode) {
-          rethrow;
-        }
-        print('⚠️ GrpcClient not available for gift cards, using enhanced mock (debug only)');
-        return GiftCardRemoteDataSourceMock();
-      }
-    },
+    () => GiftCardRemoteDataSourceGrpc(
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient'),
+    ),
   );
 
   // Repositories
