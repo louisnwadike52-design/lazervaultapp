@@ -17,6 +17,7 @@ import '../cubit/exchange_state.dart';
 import '../cubit/exchange_prediction_cubit.dart';
 import '../theme/exchange_theme.dart';
 import '../utils/exchange_validators.dart';
+import '../../data/services/transfer_requirements_service.dart';
 import '../utils/exchange_error_classifier.dart';
 import '../widgets/exchange_prediction_alert.dart';
 import '../widgets/source_currency_picker.dart';
@@ -196,8 +197,13 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     // per-corridor spec for — the backend would reject the payment anyway,
     // so short-circuit here with a clear message instead of letting the
     // user fill a generic form that will 400 at submit.
+    // Provisional answer from the bundled map so the first frame renders
+    // something sensible; the backend's answer replaces it below. The bundled
+    // map describes FLUTTERWAVE's corridors, which is why it can only ever be
+    // a starting point once other rails exist.
     _corridorSupported =
         FlutterwaveCountryRules.forCurrency(_toCurrency) != null;
+    _loadServerRequirements();
 
     // Pre-fill generic country code from derived config
     if (_countryConfig.fieldType == _FieldType.generic) {
@@ -525,7 +531,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
             recipientAddress: _addressController.text.trim().isNotEmpty
                 ? _addressController.text.trim()
                 : null,
-            beneficiaryType: (FlutterwaveCountryRules.forCurrency(_toCurrency)
+            beneficiaryType: (_effectiveRule()
                         ?.supportsBeneficiaryType ??
                     false)
                 ? _beneficiaryKind.wireValue
@@ -1605,12 +1611,72 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
   String? Function(String?) get _accountNumberValidator =>
       _ruleDrivenAccountValidator;
 
+  // ----- Backend-driven field requirements -----
+
+  /// The field set the corridor's ACTIVE rail requires, as resolved by the
+  /// backend. Null until it answers (or if it cannot).
+  ExchangeRequirements? _serverRequirements;
+
+  /// Asks the backend which fields the rail that will CARRY this transfer
+  /// needs, and adopts its answer.
+  ///
+  /// This is the point of the whole exercise: the required inputs are a
+  /// property of the RAIL, not the corridor. The bundled map describes
+  /// Flutterwave, so once another provider carries a corridor its fields are
+  /// the ones that matter — Nomba's Canadian payouts need a transit number
+  /// and an Interac security question Flutterwave never asks for.
+  Future<void> _loadServerRequirements() async {
+    final bundled = FlutterwaveCountryRules.forCurrency(_toCurrency);
+    final fallback = bundled == null
+        ? null
+        : ExchangeRequirements(
+            provider: 'flutterwave',
+            currency: _toCurrency.toUpperCase(),
+            fields: bundled.fields,
+            requiresBankCode: bundled.requiresBankCode,
+            requiresBranch: bundled.requiresBranchCode,
+          );
+
+    ExchangeRequirements? resolved;
+    try {
+      resolved = await serviceLocator<TransferRequirementsService>().fetch(
+        destCurrency: _toCurrency,
+        sourceCurrency: _fromCurrency,
+        localFallback: fallback,
+      );
+    } catch (_) {
+      resolved = fallback;
+    }
+    if (!mounted) return;
+    setState(() {
+      _serverRequirements = resolved;
+      // A null answer is a definitive "no wired rail serves this corridor".
+      // Block rather than render a form for a transfer that will be refused.
+      _corridorSupported = resolved != null;
+    });
+  }
+
+  /// The rule the form should obey: the bundled presentation rule, with its
+  /// FIELD SPECS replaced by whatever the active rail requires.
+  ///
+  /// Only the fields are swapped. Dial code, name-resolve support and the
+  /// amount bounds are client presentation concerns the backend does not
+  /// serve, so they stay local — which keeps every existing builder and
+  /// validator working unchanged.
+  ExchangeCountryRule? _effectiveRule() {
+    final bundled = FlutterwaveCountryRules.forCurrency(_toCurrency);
+    final server = _serverRequirements;
+    if (server == null || server.fields.isEmpty) return bundled;
+    if (bundled == null) return null;
+    return bundled.copyWithFields(server.fields);
+  }
+
   /// Rule-driven account-number validator used by every bank-field builder
   /// (african / UK / US / EU / generic). Falls back to a lenient "non-empty"
   /// check for currencies that don't yet have a `FlutterwaveCountryRules`
   /// entry so we never block users on a currency we forgot to register.
   String? _ruleDrivenAccountValidator(String? v) {
-    final rule = FlutterwaveCountryRules.forCurrency(_toCurrency);
+    final rule = _effectiveRule();
     if (rule != null) {
       return ExchangeValidators.accountNumber(v, rule);
     }
@@ -1692,7 +1758,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                     // GBP / EUR per FlutterwaveCountryRules). African
                     // corridors don't CoP-check the name, so forcing
                     // users to pick a type there is pure form friction.
-                    if (FlutterwaveCountryRules.forCurrency(_toCurrency)
+                    if (_effectiveRule()
                             ?.supportsBeneficiaryType ??
                         false) ...[
                       _buildBeneficiaryKindPicker(),
@@ -1707,7 +1773,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                     // the canonical source — render the verified card only.
                     if (_verifiedAccountName != null && !_isManualNameEntry)
                       _buildVerifiedCard()
-                    else if (!(FlutterwaveCountryRules.forCurrency(_toCurrency)
+                    else if (!(_effectiveRule()
                             ?.omitBeneficiaryName ??
                         false))
                       _buildField(
@@ -1719,8 +1785,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                             ? 'e.g. Acme Ltd'
                             : 'Enter recipient\'s full name',
                         validator: (v) {
-                          final rule = FlutterwaveCountryRules.forCurrency(
-                              _toCurrency);
+                          final rule = _effectiveRule();
                           if (rule != null) {
                             return ExchangeValidators.beneficiaryName(
                               v,

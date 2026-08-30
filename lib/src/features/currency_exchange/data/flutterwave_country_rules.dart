@@ -66,6 +66,31 @@ class ExchangeCountryRule {
     required this.fields,
     this.purposeOfPaymentOptions = const [],
   });
+
+  /// Returns this rule with its field specs replaced by [newFields].
+  ///
+  /// Used to graft the BACKEND's field requirements onto the bundled rule.
+  /// The rest of the rule carries presentation concerns the backend does not
+  /// serve — dial code, whether the corridor supports name resolution, the
+  /// amount bounds — so only the fields are swapped, and everything that
+  /// reads a rule keeps working unchanged.
+  ExchangeCountryRule copyWithFields(List<ExchangeFieldSpec> newFields) {
+    return ExchangeCountryRule(
+      currency: currency,
+      countryCode: countryCode,
+      countryName: countryName,
+      dialCode: dialCode,
+      requiresBankCode: requiresBankCode,
+      requiresBranchCode: requiresBranchCode,
+      supportsPaystackNameResolve: supportsPaystackNameResolve,
+      omitBeneficiaryName: omitBeneficiaryName,
+      supportsBeneficiaryType: supportsBeneficiaryType,
+      minAmount: minAmount,
+      maxAmount: maxAmount,
+      fields: newFields,
+      purposeOfPaymentOptions: purposeOfPaymentOptions,
+    );
+  }
 }
 
 /// Canonical purpose-of-payment values accepted by Flutterwave for USD/GBP/EUR

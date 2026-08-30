@@ -170,6 +170,7 @@ import 'package:lazervault/src/features/account_actions/presentation/cubit/accou
 import 'package:lazervault/src/features/currency_exchange/data/repositories/exchange_repository_impl.dart';
 import 'package:lazervault/src/features/currency_exchange/data/services/exchange_websocket_service.dart';
 import 'package:lazervault/src/features/currency_exchange/data/services/report_issue_service.dart';
+import 'package:lazervault/src/features/currency_exchange/data/services/transfer_requirements_service.dart';
 import 'package:lazervault/core/services/reminder_status_service.dart';
 import 'package:lazervault/src/features/currency_exchange/domain/exchange_feature_config.dart';
 import 'package:lazervault/src/features/currency_exchange/domain/repositories/i_exchange_repository.dart';
@@ -1378,6 +1379,18 @@ Future<void> init() async {
   // simple user-text CRUD.
   serviceLocator.registerLazySingleton<ReportIssueService>(
     () => ReportIssueService(
+      dio: serviceLocator<Dio>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Recipient-field requirements for the corridor's ACTIVE rail. Same
+  // raw-HTTP route pattern as ReportIssueService. The fields differ per
+  // provider — Nomba's Canadian payouts want a transit number Flutterwave
+  // never asks for — so the form asks the backend rather than carrying a
+  // bundled copy that silently drifts.
+  serviceLocator.registerLazySingleton<TransferRequirementsService>(
+    () => TransferRequirementsService(
       dio: serviceLocator<Dio>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
