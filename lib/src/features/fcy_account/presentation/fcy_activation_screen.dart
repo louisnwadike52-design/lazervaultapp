@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -76,6 +78,13 @@ class _FCYActivationScreenState extends State<FCYActivationScreen> {
   final _docIssuedDate = TextEditingController();
   final _docExpiryDate = TextEditingController();
 
+  // Issuance is a human-timescale compliance process at Fincra — the backend
+  // polls every 10 minutes. Without a client poll the "being set up" screen is
+  // a dead end: the account can go live and the user only finds out by leaving
+  // and re-entering. Runs ONLY while status is 'creating' and stops the moment
+  // it is terminal, so an idle screen costs nothing.
+  Timer? _statusPoll;
+
   String? _idDocUrl;
   String? _addressProofUrl;
   bool _uploadingId = false;
@@ -118,6 +127,7 @@ class _FCYActivationScreenState extends State<FCYActivationScreen> {
     ]) {
       c.dispose();
     }
+    _statusPoll?.cancel();
     super.dispose();
   }
 
@@ -133,6 +143,7 @@ class _FCYActivationScreenState extends State<FCYActivationScreen> {
         _status = st;
         _loading = false;
       });
+      _syncStatusPoll();
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -140,6 +151,36 @@ class _FCYActivationScreenState extends State<FCYActivationScreen> {
         _loading = false;
       });
     }
+  }
+
+  /// Starts polling while the request is pending, stops otherwise.
+  /// Idempotent — safe to call after every status read.
+  void _syncStatusPoll() {
+    final pending = _status?.status == 'creating';
+    if (!pending) {
+      _statusPoll?.cancel();
+      _statusPoll = null;
+      return;
+    }
+    if (_statusPoll != null) return; // already polling
+    _statusPoll = Timer.periodic(const Duration(seconds: 20), (_) {
+      if (!mounted) return;
+      _refreshStatusSilently();
+    });
+  }
+
+  /// Re-reads status WITHOUT the full-screen spinner, so a poll never flashes
+  /// the pending view. A transient failure is ignored: the next tick retries,
+  /// and replacing "being set up" with an error would be a worse lie than
+  /// simply waiting.
+  Future<void> _refreshStatusSilently() async {
+    try {
+      final st = await _service.status(_currency);
+      if (!mounted) return;
+      final becameTerminal = st.status != 'creating';
+      setState(() => _status = st);
+      if (becameTerminal) _syncStatusPoll();
+    } catch (_) {/* keep waiting; next tick retries */}
   }
 
   Future<void> _uploadId() async {
