@@ -6,7 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/endpoint_registry.dart';
 
-/// Client for the foreign-currency (USD/GBP/EUR) virtual-account flow:
+/// Client for the foreign-currency (USD/GBP/EUR/CAD) virtual-account flow:
 ///
 ///   GET  /api/v1/accounts/fcy/status?currency=USD
 ///   POST /api/v1/accounts/fcy/request        (the full KYC package)

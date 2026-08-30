@@ -87,7 +87,14 @@ class _FCYActivationScreenState extends State<FCYActivationScreen> {
   static const _incomeSources = [
     'Salary', 'Business', 'Investments', 'Savings', 'Pension', 'Family support',
   ];
-  static const _docTypes = ['passport', 'national_id', 'drivers_license'];
+  // Fincra's accepted ID types are PER CURRENCY (docs/fcy-required-information,
+  // confirmed on the FCY request page): an International Passport works for
+  // every currency, but Driver Licence and National ID are accepted for EUR
+  // accounts only. Offering them for USD/GBP/CAD would let a user complete the
+  // whole form and then fail Fincra compliance days later.
+  List<String> get _docTypes => _currency == 'EUR'
+      ? const ['passport', 'national_id', 'drivers_license']
+      : const ['passport'];
 
   @override
   void initState() {
@@ -446,6 +453,17 @@ class _FCYActivationScreenState extends State<FCYActivationScreen> {
           _field(_monthlyTxVolume,
               'Expected monthly volume ($_currency)',
               keyboard: TextInputType.number),
+          // Product constraints Fincra applies to personal FCY accounts —
+          // shown up front so nobody discovers them after a deposit bounces.
+          Padding(
+            padding: EdgeInsets.only(bottom: 12.h),
+            child: Text(
+              _currency == 'CAD'
+                  ? 'Personal account. Deposits arrive via Interac e-Transfer.'
+                  : 'Personal account, capped at 10,000 $_currency per month.',
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+            ),
+          ),
           if (_currency == 'USD') ...[
             _field(_taxCountry, 'Tax country (2-letter code)', hint: 'NG',
                 validator: _countryValidator),

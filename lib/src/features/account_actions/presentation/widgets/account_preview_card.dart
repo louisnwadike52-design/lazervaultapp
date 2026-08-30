@@ -154,7 +154,10 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
   /// accounts: USD ACH/Swift, GBP FPS/CHAPS, EUR SEPA) — offered as an
   /// "activate" flow from the card face; once issued, the account row
   /// carries a real number and the normal deposit face takes over.
-  static const Set<String> _fcyCapableCurrencies = {'USD', 'GBP', 'EUR'};
+  // CAD confirmed against the live Fincra sandbox 2026-08-30:
+  // /profile/virtual-accounts/requests lists it (opening fee 0), deposits via
+  // Interac e-Transfer.
+  static const Set<String> _fcyCapableCurrencies = {'USD', 'GBP', 'EUR', 'CAD'};
 
   String get _currency =>
       ((widget.accountArgs['currency'] as String?) ?? '').trim().toUpperCase();
