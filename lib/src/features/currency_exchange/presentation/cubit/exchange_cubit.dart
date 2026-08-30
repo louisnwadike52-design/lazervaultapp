@@ -342,6 +342,12 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     // "individual" or "business" — carried end-to-end to Flutterwave
     // meta.beneficiary_type. Null falls back to individual semantics.
     String? beneficiaryType,
+    /// Recipient inputs that only SOME payout rails require, keyed by the
+    /// field name the active rail publishes (dots included, e.g.
+    /// "beneficiary.transitNumber"). Collected from
+    /// GET /v1/exchange/transfer-requirements — never hardcoded, because the
+    /// set changes per provider and per corridor without an app release.
+    Map<String, String>? providerFields,
   }) async {
     // Always fetch a fresh rate before finalizing to protect the user
     // from stale rates that drifted during recipient entry / PIN flow.
@@ -386,6 +392,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
       recipientRoutingNumber: recipientRoutingNumber,
       recipientAddress: recipientAddress,
       beneficiaryType: beneficiaryType,
+          providerFields: providerFields,
     );
     if (isClosed) return;
 

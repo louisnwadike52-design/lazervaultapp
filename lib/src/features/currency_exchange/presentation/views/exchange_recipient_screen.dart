@@ -258,6 +258,12 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     _addressController.dispose();
     _genericBankNameController.dispose();
     _genericCountryController.dispose();
+    // Dynamically created per rail-specific field, so the set is not known
+    // at compile time.
+    for (final c in _providerFieldControllers.values) {
+      c.dispose();
+    }
+    _providerFieldControllers.clear();
     super.dispose();
   }
 
@@ -536,6 +542,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                     false)
                 ? _beneficiaryKind.wireValue
                 : null,
+            providerFields: _collectProviderFields(),
           );
           final state = cubit.state;
           if (state is ExchangeError) {
@@ -1164,6 +1171,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                             _FieldType.eu => _buildEUBankFields(),
                             _FieldType.generic => _buildGenericBankFields(),
                           },
+                          _buildProviderExtraFields(),
                         ],
                       ),
                     ),
@@ -1612,6 +1620,106 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       _ruleDrivenAccountValidator;
 
   // ----- Backend-driven field requirements -----
+
+  /// Controllers for rail-specific inputs that no hardcoded builder draws,
+  /// keyed by the field name the rail published (dots included).
+  final Map<String, TextEditingController> _providerFieldControllers = {};
+
+  /// Field leaves the fixed form already collects. Anything a rail asks for
+  /// outside this set has no widget of its own and is rendered dynamically.
+  ///
+  /// Mirrors providerFieldValue() in payout_provider_fields.go — the backend
+  /// resolves these same leaves from the standard params, so asking the user
+  /// again would be asking twice for one value.
+  static const Set<String> _standardFieldLeaves = {
+    'accountnumber', 'account_number', 'iban',
+    'institutioncode', 'bank_code', 'bankcode', 'sortcode', 'sort_code',
+    'routing_number', 'routingnumber',
+    'institutionname', 'bank_name', 'bankname',
+    'beneficiaryname', 'beneficiary_name', 'receivername',
+    'beneficiaryemail', 'email',
+    'phone', 'beneficiaryphone',
+    'beneficiaryaddress', 'beneficiary_address', 'address',
+    'purposeofpayment', 'purpose_of_payment',
+    'swift_code', 'swiftcode', 'bic',
+    'branch_code', 'branchcode',
+  };
+
+  static String _fieldLeaf(String name) {
+    final i = name.lastIndexOf('.');
+    return (i >= 0 && i + 1 < name.length ? name.substring(i + 1) : name)
+        .toLowerCase();
+  }
+
+  /// The rail-specific fields with no hardcoded widget — e.g. Nomba's
+  /// beneficiary.transitNumber and Interac security question, which no other
+  /// rail asks for and which the bundled map has no way to express.
+  List<ExchangeFieldSpec> _extraProviderFields() {
+    final server = _serverRequirements;
+    if (server == null) return const [];
+    return server.fields
+        .where((f) => !_standardFieldLeaves.contains(_fieldLeaf(f.name)))
+        .toList();
+  }
+
+  /// Renders whatever the active rail asks for beyond the standard form.
+  ///
+  /// This is what lets a provider add a corridor, or start requiring a new
+  /// input, without an app release — the whole reason the requirements are
+  /// served from the backend rather than bundled.
+  Widget _buildProviderExtraFields() {
+    final extras = _extraProviderFields();
+    if (extras.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final f in extras) ...[
+          const SizedBox(height: 16),
+          _buildField(
+            controller: _providerFieldControllers.putIfAbsent(
+                f.name, () => TextEditingController()),
+            label: f.required ? f.label : '${f.label} (optional)',
+            hint: f.hint ?? f.label,
+            keyboardType: switch (f.type) {
+              'email' => TextInputType.emailAddress,
+              'phone' => TextInputType.phone,
+              _ => TextInputType.text,
+            },
+            validator: (v) {
+              final val = (v ?? '').trim();
+              if (val.isEmpty) {
+                // Only block on fields the RAIL marked mandatory. Inventing a
+                // requirement it did not state would block a valid payout.
+                return f.required ? '${f.label} is required' : null;
+              }
+              if (f.minLength != null && val.length < f.minLength!) {
+                return '${f.label} must be at least ${f.minLength} characters';
+              }
+              if (f.maxLength != null && val.length > f.maxLength!) {
+                return '${f.label} must be at most ${f.maxLength} characters';
+              }
+              if (f.pattern != null && !f.pattern!.hasMatch(val)) {
+                return 'Enter a valid ${f.label.toLowerCase()}';
+              }
+              return null;
+            },
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// The collected rail-specific values, ready for provider_fields.
+  Map<String, String> _collectProviderFields() {
+    final out = <String, String>{};
+    _providerFieldControllers.forEach((name, c) {
+      final v = c.text.trim();
+      if (v.isNotEmpty) out[name] = v;
+    });
+    return out;
+  }
+
 
   /// The field set the corridor's ACTIVE rail requires, as resolved by the
   /// backend. Null until it answers (or if it cannot).

@@ -35,6 +35,12 @@ abstract class IExchangeRepository {
     // "individual" or "business" — routed to Flutterwave's
     // meta.beneficiary_type for UK Confirmation-of-Payee alignment.
     String? beneficiaryType,
+    /// Recipient inputs that only SOME payout rails require, keyed by the
+    /// field name the active rail publishes (dots included, e.g.
+    /// "beneficiary.transitNumber"). Collected from
+    /// GET /v1/exchange/transfer-requirements — never hardcoded, because the
+    /// set changes per provider and per corridor without an app release.
+    Map<String, String>? providerFields,
   });
 
   /// Convert currency between user's own wallets

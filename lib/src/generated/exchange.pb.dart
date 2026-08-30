@@ -458,6 +458,7 @@ class InitiateInternationalTransferRequest extends $pb.GeneratedMessage {
     $core.String? idempotencyKey,
     $core.String? rateId,
     $core.String? purposeOfPayment,
+    $core.Iterable<$core.MapEntry<$core.String, $core.String>>? providerFields,
   }) {
     final result = create();
     if (fromCurrency != null) result.fromCurrency = fromCurrency;
@@ -468,6 +469,8 @@ class InitiateInternationalTransferRequest extends $pb.GeneratedMessage {
     if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
     if (rateId != null) result.rateId = rateId;
     if (purposeOfPayment != null) result.purposeOfPayment = purposeOfPayment;
+    if (providerFields != null)
+      result.providerFields.addEntries(providerFields);
     return result;
   }
 
@@ -495,6 +498,12 @@ class InitiateInternationalTransferRequest extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'idempotencyKey')
     ..aOS(7, _omitFieldNames ? '' : 'rateId')
     ..aOS(8, _omitFieldNames ? '' : 'purposeOfPayment')
+    ..m<$core.String, $core.String>(9, _omitFieldNames ? '' : 'providerFields',
+        entryClassName:
+            'InitiateInternationalTransferRequest.ProviderFieldsEntry',
+        keyFieldType: $pb.PbFieldType.OS,
+        valueFieldType: $pb.PbFieldType.OS,
+        packageName: const $pb.PackageName('exchange'))
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -596,6 +605,23 @@ class InitiateInternationalTransferRequest extends $pb.GeneratedMessage {
   $core.bool hasPurposeOfPayment() => $_has(7);
   @$pb.TagNumber(8)
   void clearPurposeOfPayment() => $_clearField(8);
+
+  /// Recipient inputs that only SOME payout rails require, keyed by the field
+  /// name the rail publishes. Nomba's Canadian payouts need
+  /// "beneficiary.transitNumber" and an Interac security question that
+  /// Flutterwave never asks for; its US ACH needs "bankAccountType".
+  ///
+  /// A map rather than named fields on purpose: the set is provider- and
+  /// corridor-specific and changes without an app release, which is why the
+  /// app fetches it from GET /v1/exchange/transfer-requirements rather than
+  /// hardcoding it. Adding a named proto field per rail would put us back to
+  /// shipping a release every time a provider changes a requirement.
+  ///
+  /// Keys are the rail's own field names, dots included, so the dispatch layer
+  /// can address nested payloads. Values are always strings — the app renders
+  /// text inputs and the rail parses.
+  @$pb.TagNumber(9)
+  $pb.PbMap<$core.String, $core.String> get providerFields => $_getMap(8);
 }
 
 /// Represents a recorded exchange transaction
@@ -2050,6 +2076,166 @@ class AdminBridgePreviewResponse extends $pb.GeneratedMessage {
   $core.bool hasRateId() => $_has(3);
   @$pb.TagNumber(4)
   void clearRateId() => $_clearField(4);
+}
+
+class IsCorridorSupportedRequest extends $pb.GeneratedMessage {
+  factory IsCorridorSupportedRequest({
+    $core.String? sourceCurrency,
+    $core.String? destinationCurrency,
+    $core.String? flowType,
+  }) {
+    final result = create();
+    if (sourceCurrency != null) result.sourceCurrency = sourceCurrency;
+    if (destinationCurrency != null)
+      result.destinationCurrency = destinationCurrency;
+    if (flowType != null) result.flowType = flowType;
+    return result;
+  }
+
+  IsCorridorSupportedRequest._();
+
+  factory IsCorridorSupportedRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory IsCorridorSupportedRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'IsCorridorSupportedRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'sourceCurrency')
+    ..aOS(2, _omitFieldNames ? '' : 'destinationCurrency')
+    ..aOS(3, _omitFieldNames ? '' : 'flowType')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  IsCorridorSupportedRequest clone() =>
+      IsCorridorSupportedRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  IsCorridorSupportedRequest copyWith(
+          void Function(IsCorridorSupportedRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as IsCorridorSupportedRequest))
+          as IsCorridorSupportedRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static IsCorridorSupportedRequest create() => IsCorridorSupportedRequest._();
+  @$core.override
+  IsCorridorSupportedRequest createEmptyInstance() => create();
+  static $pb.PbList<IsCorridorSupportedRequest> createRepeated() =>
+      $pb.PbList<IsCorridorSupportedRequest>();
+  @$core.pragma('dart2js:noInline')
+  static IsCorridorSupportedRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<IsCorridorSupportedRequest>(create);
+  static IsCorridorSupportedRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get sourceCurrency => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set sourceCurrency($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSourceCurrency() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSourceCurrency() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get destinationCurrency => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set destinationCurrency($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasDestinationCurrency() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDestinationCurrency() => $_clearField(2);
+
+  /// "conversion" (same-user wallet) or "international" (outbound bank).
+  @$pb.TagNumber(3)
+  $core.String get flowType => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set flowType($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasFlowType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFlowType() => $_clearField(3);
+}
+
+class IsCorridorSupportedResponse extends $pb.GeneratedMessage {
+  factory IsCorridorSupportedResponse({
+    $core.bool? supported,
+    $core.String? reason,
+  }) {
+    final result = create();
+    if (supported != null) result.supported = supported;
+    if (reason != null) result.reason = reason;
+    return result;
+  }
+
+  IsCorridorSupportedResponse._();
+
+  factory IsCorridorSupportedResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory IsCorridorSupportedResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'IsCorridorSupportedResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'supported')
+    ..aOS(2, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  IsCorridorSupportedResponse clone() =>
+      IsCorridorSupportedResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  IsCorridorSupportedResponse copyWith(
+          void Function(IsCorridorSupportedResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as IsCorridorSupportedResponse))
+          as IsCorridorSupportedResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static IsCorridorSupportedResponse create() =>
+      IsCorridorSupportedResponse._();
+  @$core.override
+  IsCorridorSupportedResponse createEmptyInstance() => create();
+  static $pb.PbList<IsCorridorSupportedResponse> createRepeated() =>
+      $pb.PbList<IsCorridorSupportedResponse>();
+  @$core.pragma('dart2js:noInline')
+  static IsCorridorSupportedResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<IsCorridorSupportedResponse>(create);
+  static IsCorridorSupportedResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get supported => $_getBF(0);
+  @$pb.TagNumber(1)
+  set supported($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSupported() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSupported() => $_clearField(1);
+
+  /// Human-readable explanation when supported=false (e.g.
+  /// "corridor not configured", "corridor explicitly disabled").
+  /// Empty when supported=true.
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => $_clearField(2);
 }
 
 class GetExchangeLimitsRequest extends $pb.GeneratedMessage {

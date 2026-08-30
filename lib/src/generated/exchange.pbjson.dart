@@ -194,8 +194,28 @@ const InitiateInternationalTransferRequest$json = {
       '8': {},
       '10': 'purposeOfPayment'
     },
+    {
+      '1': 'provider_fields',
+      '3': 9,
+      '4': 3,
+      '5': 11,
+      '6': '.exchange.InitiateInternationalTransferRequest.ProviderFieldsEntry',
+      '8': {},
+      '10': 'providerFields'
+    },
   ],
+  '3': [InitiateInternationalTransferRequest_ProviderFieldsEntry$json],
   '7': {},
+};
+
+@$core.Deprecated('Use initiateInternationalTransferRequestDescriptor instead')
+const InitiateInternationalTransferRequest_ProviderFieldsEntry$json = {
+  '1': 'ProviderFieldsEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
 };
 
 /// Descriptor for `InitiateInternationalTransferRequest`. Decode as a `google.protobuf.DescriptorProto`.
@@ -214,10 +234,15 @@ final $typed_data.Uint8List initiateInternationalTransferRequestDescriptor = $co
     'EzMjFSYXRlIElEIGZyb20gR2V0RXhjaGFuZ2VSYXRlIGZvciBzdGFsZW5lc3MgY2hlY2suUgZy'
     'YXRlSWQSaAoScHVycG9zZV9vZl9wYXltZW50GAggASgJQjqSQTcyNVJlYXNvbiBmb3IgdHJhbn'
     'NmZXIgKGUuZy4sIGZhbWlseV9zdXBwb3J0LCBidXNpbmVzcykuUhBwdXJwb3NlT2ZQYXltZW50'
-    'OtkBkkHVAQrSASonSW5pdGlhdGUgSW50ZXJuYXRpb25hbCBUcmFuc2ZlciBSZXF1ZXN0MkFQYX'
-    'lsb2FkIHRvIHN0YXJ0IGFuIGludGVybmF0aW9uYWwgY3VycmVuY3kgZXhjaGFuZ2UgYW5kIHRy'
-    'YW5zZmVyLtIBDWZyb21fY3VycmVuY3nSAQt0b19jdXJyZW5jedIBC2Ftb3VudF9mcm9t0gEQcm'
-    'VjZWl2ZXJfZGV0YWlsc9IBEnZlcmlmaWNhdGlvbl90b2tlbtIBD2lkZW1wb3RlbmN5X2tleQ==');
+    'EsgBCg9wcm92aWRlcl9maWVsZHMYCSADKAsyQi5leGNoYW5nZS5Jbml0aWF0ZUludGVybmF0aW'
+    '9uYWxUcmFuc2ZlclJlcXVlc3QuUHJvdmlkZXJGaWVsZHNFbnRyeUJbkkFYMlZSYWlsLXNwZWNp'
+    'ZmljIHJlY2lwaWVudCBmaWVsZHMsIGtleWVkIGJ5IHRoZSBmaWVsZCBuYW1lIHRoZSBhY3Rpdm'
+    'UgcHJvdmlkZXIgcHVibGlzaGVzLlIOcHJvdmlkZXJGaWVsZHMaQQoTUHJvdmlkZXJGaWVsZHNF'
+    'bnRyeRIQCgNrZXkYASABKAlSA2tleRIUCgV2YWx1ZRgCIAEoCVIFdmFsdWU6AjgBOtkBkkHVAQ'
+    'rSASonSW5pdGlhdGUgSW50ZXJuYXRpb25hbCBUcmFuc2ZlciBSZXF1ZXN0MkFQYXlsb2FkIHRv'
+    'IHN0YXJ0IGFuIGludGVybmF0aW9uYWwgY3VycmVuY3kgZXhjaGFuZ2UgYW5kIHRyYW5zZmVyLt'
+    'IBDWZyb21fY3VycmVuY3nSAQt0b19jdXJyZW5jedIBC2Ftb3VudF9mcm9t0gEQcmVjZWl2ZXJf'
+    'ZGV0YWlsc9IBEnZlcmlmaWNhdGlvbl90b2tlbtIBD2lkZW1wb3RlbmN5X2tleQ==');
 
 @$core.Deprecated('Use exchangeTransactionDescriptor instead')
 const ExchangeTransaction$json = {
@@ -654,6 +679,44 @@ final $typed_data.Uint8List adminBridgePreviewResponseDescriptor =
         'ChpBZG1pbkJyaWRnZVByZXZpZXdSZXNwb25zZRIXCgdmeF9yYXRlGAEgASgBUgZmeFJhdGUSHw'
         'oLZnJvbV9hbW91bnQYAiABKAFSCmZyb21BbW91bnQSIwoNbWFyZ2luX2Ftb3VudBgDIAEoAVIM'
         'bWFyZ2luQW1vdW50EhcKB3JhdGVfaWQYBCABKAlSBnJhdGVJZA==');
+
+@$core.Deprecated('Use isCorridorSupportedRequestDescriptor instead')
+const IsCorridorSupportedRequest$json = {
+  '1': 'IsCorridorSupportedRequest',
+  '2': [
+    {'1': 'source_currency', '3': 1, '4': 1, '5': 9, '10': 'sourceCurrency'},
+    {
+      '1': 'destination_currency',
+      '3': 2,
+      '4': 1,
+      '5': 9,
+      '10': 'destinationCurrency'
+    },
+    {'1': 'flow_type', '3': 3, '4': 1, '5': 9, '10': 'flowType'},
+  ],
+};
+
+/// Descriptor for `IsCorridorSupportedRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List isCorridorSupportedRequestDescriptor =
+    $convert.base64Decode(
+        'ChpJc0NvcnJpZG9yU3VwcG9ydGVkUmVxdWVzdBInCg9zb3VyY2VfY3VycmVuY3kYASABKAlSDn'
+        'NvdXJjZUN1cnJlbmN5EjEKFGRlc3RpbmF0aW9uX2N1cnJlbmN5GAIgASgJUhNkZXN0aW5hdGlv'
+        'bkN1cnJlbmN5EhsKCWZsb3dfdHlwZRgDIAEoCVIIZmxvd1R5cGU=');
+
+@$core.Deprecated('Use isCorridorSupportedResponseDescriptor instead')
+const IsCorridorSupportedResponse$json = {
+  '1': 'IsCorridorSupportedResponse',
+  '2': [
+    {'1': 'supported', '3': 1, '4': 1, '5': 8, '10': 'supported'},
+    {'1': 'reason', '3': 2, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `IsCorridorSupportedResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List isCorridorSupportedResponseDescriptor =
+    $convert.base64Decode(
+        'ChtJc0NvcnJpZG9yU3VwcG9ydGVkUmVzcG9uc2USHAoJc3VwcG9ydGVkGAEgASgIUglzdXBwb3'
+        'J0ZWQSFgoGcmVhc29uGAIgASgJUgZyZWFzb24=');
 
 @$core.Deprecated('Use getExchangeLimitsRequestDescriptor instead')
 const GetExchangeLimitsRequest$json = {

@@ -111,6 +111,12 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
     // plumbed into ReceiverDetails.beneficiary_type on the wire, and
     // ultimately lands in Flutterwave meta.beneficiary_type.
     String? beneficiaryType,
+    /// Recipient inputs that only SOME payout rails require, keyed by the
+    /// field name the active rail publishes (dots included, e.g.
+    /// "beneficiary.transitNumber"). Collected from
+    /// GET /v1/exchange/transfer-requirements — never hardcoded, because the
+    /// set changes per provider and per corridor without an app release.
+    Map<String, String>? providerFields,
   }) async {
     try {
       final receiverDetails = ReceiverDetails()
@@ -138,6 +144,15 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
       }
       if (purposeOfPayment != null && purposeOfPayment.isNotEmpty) {
         request.purposeOfPayment = purposeOfPayment;
+      }
+      // Only send entries that actually carry a value. A blank string would
+      // satisfy the backend's presence check for a mandatory field and let an
+      // under-specified payout through.
+      if (providerFields != null && providerFields.isNotEmpty) {
+        providerFields.forEach((key, value) {
+          if (key.trim().isEmpty || value.trim().isEmpty) return;
+          request.providerFields[key] = value.trim();
+        });
       }
 
       final callOptions = await _callOptionsHelper.withAuth();

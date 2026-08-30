@@ -83,6 +83,18 @@ class ExchangeServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getExchangeLimits, request, options: options);
   }
 
+  /// Pre-flight: is this (source, dest, flow_type) corridor supported by
+  /// the active provider? Flutter calls this on the destination-picker
+  /// screen so users never see a "corridor not configured" 400 after
+  /// typing an amount. exchange-service answers from its admin-managed
+  /// exchange_corridor_support table (#114).
+  $grpc.ResponseFuture<$0.IsCorridorSupportedResponse> isCorridorSupported(
+    $0.IsCorridorSupportedRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$isCorridorSupported, request, options: options);
+  }
+
   /// Get list of supported currencies for exchange
   $grpc.ResponseFuture<$0.GetSupportedCurrenciesResponse>
       getSupportedCurrencies(
@@ -149,6 +161,11 @@ class ExchangeServiceClient extends $grpc.Client {
       '/exchange.ExchangeService/GetExchangeLimits',
       ($0.GetExchangeLimitsRequest value) => value.writeToBuffer(),
       $0.GetExchangeLimitsResponse.fromBuffer);
+  static final _$isCorridorSupported = $grpc.ClientMethod<
+          $0.IsCorridorSupportedRequest, $0.IsCorridorSupportedResponse>(
+      '/exchange.ExchangeService/IsCorridorSupported',
+      ($0.IsCorridorSupportedRequest value) => value.writeToBuffer(),
+      $0.IsCorridorSupportedResponse.fromBuffer);
   static final _$getSupportedCurrencies = $grpc.ClientMethod<
           $0.GetSupportedCurrenciesRequest, $0.GetSupportedCurrenciesResponse>(
       '/exchange.ExchangeService/GetSupportedCurrencies',
@@ -227,6 +244,15 @@ abstract class ExchangeServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetExchangeLimitsRequest.fromBuffer(value),
         ($0.GetExchangeLimitsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.IsCorridorSupportedRequest,
+            $0.IsCorridorSupportedResponse>(
+        'IsCorridorSupported',
+        isCorridorSupported_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.IsCorridorSupportedRequest.fromBuffer(value),
+        ($0.IsCorridorSupportedResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetSupportedCurrenciesRequest,
             $0.GetSupportedCurrenciesResponse>(
         'GetSupportedCurrencies',
@@ -313,6 +339,15 @@ abstract class ExchangeServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetExchangeLimitsResponse> getExchangeLimits(
       $grpc.ServiceCall call, $0.GetExchangeLimitsRequest request);
+
+  $async.Future<$0.IsCorridorSupportedResponse> isCorridorSupported_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.IsCorridorSupportedRequest> $request) async {
+    return isCorridorSupported($call, await $request);
+  }
+
+  $async.Future<$0.IsCorridorSupportedResponse> isCorridorSupported(
+      $grpc.ServiceCall call, $0.IsCorridorSupportedRequest request);
 
   $async.Future<$0.GetSupportedCurrenciesResponse> getSupportedCurrencies_Pre(
       $grpc.ServiceCall $call,
