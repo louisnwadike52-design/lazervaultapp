@@ -410,8 +410,11 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
       emit(const CreateInvoiceValidationError('Please enter a valid email address'));
       return false;
     }
-    if (_recipientPhone.trim().isNotEmpty && _invoiceCountry.isNotEmpty) {
-      final phoneError = PhoneValidator.validate(_recipientPhone.trim(), _invoiceCountry);
+    if (_recipientPhone.trim().isNotEmpty) {
+      // Country-agnostic: the recipient may be in any country, so we do NOT
+      // enforce the invoice country's digit count. A missing country code is
+      // fine — it's defaulted when the invoice is built.
+      final phoneError = PhoneValidator.validateInternational(_recipientPhone.trim());
       if (phoneError != null) {
         emit(CreateInvoiceValidationError(phoneError));
         return false;
@@ -453,8 +456,9 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
         return false;
       }
     }
-    if (_payerPhone.trim().isNotEmpty && _invoiceCountry.isNotEmpty) {
-      final phoneError = PhoneValidator.validate(_payerPhone.trim(), _invoiceCountry);
+    if (_payerPhone.trim().isNotEmpty) {
+      // Country-agnostic (see recipient) — the payer can be anywhere.
+      final phoneError = PhoneValidator.validateInternational(_payerPhone.trim());
       if (phoneError != null) {
         emit(CreateInvoiceValidationError(phoneError));
         return false;
@@ -512,7 +516,12 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
         companyName: _recipientCompany.isNotEmpty ? _recipientCompany : null,
         contactName: _recipientContact.isNotEmpty ? _recipientContact : null,
         email: _recipientEmail.isNotEmpty ? _recipientEmail : null,
-        phone: _recipientPhone.isNotEmpty ? _recipientPhone : null,
+        // Normalise to E.164 so the stored number always carries a country
+        // code — defaulting to the invoice country's dial code, then Nigeria.
+        phone: _recipientPhone.isNotEmpty
+            ? PhoneValidator.toE164(_recipientPhone,
+                defaultDialCode: PhoneValidator.defaultDialCodeFor(_invoiceCountry))
+            : null,
         addressLine1: _recipientAddress1.isNotEmpty ? _recipientAddress1 : null,
         addressLine2: _recipientAddress2.isNotEmpty ? _recipientAddress2 : null,
         city: _recipientCity.isNotEmpty ? _recipientCity : null,
@@ -524,7 +533,10 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
         companyName: _payerCompany.isNotEmpty ? _payerCompany : null,
         contactName: _payerContact.isNotEmpty ? _payerContact : null,
         email: _payerEmail.isNotEmpty ? _payerEmail : null,
-        phone: _payerPhone.isNotEmpty ? _payerPhone : null,
+        phone: _payerPhone.isNotEmpty
+            ? PhoneValidator.toE164(_payerPhone,
+                defaultDialCode: PhoneValidator.defaultDialCodeFor(_invoiceCountry))
+            : null,
         addressLine1: _payerAddress1.isNotEmpty ? _payerAddress1 : null,
         addressLine2: _payerAddress2.isNotEmpty ? _payerAddress2 : null,
         city: _payerCity.isNotEmpty ? _payerCity : null,
@@ -554,6 +566,8 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
       splitMode: _splitMode,
       splitCustom: _splitCustom,
       splitPayers: List.unmodifiable(_splitPayers),
+      invoiceCurrency: _invoiceCurrency,
+      invoiceCountry: _invoiceCountry,
     ));
   }
 

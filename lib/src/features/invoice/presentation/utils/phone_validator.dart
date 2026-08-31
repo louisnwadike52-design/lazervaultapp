@@ -185,4 +185,59 @@ class PhoneValidator {
     final rule = _rules[countryCode.toUpperCase()];
     return rule?.hintText ?? 'Enter phone number';
   }
+
+  /// Lenient, COUNTRY-AGNOSTIC validation for an optional invoice phone.
+  ///
+  /// An invoice recipient/payer can be in ANY country, so validating against
+  /// the invoice's own country (as [validate] does) is wrong — it rejected a
+  /// perfectly good foreign number with "Phone number must be 10 digits". This
+  /// only rejects strings that cannot be a real phone number at all. Country
+  /// code is optional here; [toE164] supplies a default when it's absent.
+  ///
+  /// Accepts, all valid:
+  ///   +44 7911 123456 · 07911123456 · 7911123456 · +2348012345678 ·
+  ///   08012345678 · 8012345678   (with or without a leading trunk 0)
+  static String? validateInternational(String phone) {
+    final trimmed = phone.trim();
+    if (trimmed.isEmpty) return null; // optional field
+
+    final international =
+        trimmed.startsWith('+') || trimmed.startsWith('00');
+    final digits = trimmed.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) return 'Enter a valid phone number';
+
+    // E.164 caps a full number at 15 digits. A national number is at least a
+    // few digits; require a country code + national body when '+' is present.
+    final min = international ? 8 : 5;
+    if (digits.length < min) return 'Phone number is too short';
+    if (digits.length > 15) return 'Phone number is too long';
+    return null;
+  }
+
+  /// Normalise any entry to E.164 (`+<cc><national>`) for storage/sending.
+  ///
+  /// - Already international ("+44…", "0044…") → kept as-is.
+  /// - National ("08012345678" or "8012345678") → the [defaultDialCode]
+  ///   country code is attached, dropping a single national trunk 0 so the
+  ///   number is correct whether or not the user typed the leading zero.
+  ///
+  /// [defaultDialCode] is digits only (e.g. "234"). Callers pass the invoice
+  /// country's dial code when known, falling back to Nigeria ("234").
+  static String toE164(String phone, {String defaultDialCode = '234'}) {
+    var s = phone.trim().replaceAll(RegExp(r'[\s\-()]'), '');
+    if (s.isEmpty) return '';
+    if (s.startsWith('+')) return s;
+    if (s.startsWith('00')) return '+${s.substring(2)}';
+    final national = s.startsWith('0') ? s.substring(1) : s;
+    final cc = defaultDialCode.replaceAll(RegExp(r'[^0-9]'), '');
+    return '+${cc.isEmpty ? '234' : cc}$national';
+  }
+
+  /// The dial code (digits only) to default to for a given invoice country,
+  /// falling back to Nigeria ("234") when the country is unknown.
+  static String defaultDialCodeFor(String countryCode) {
+    final rule = _rules[countryCode.toUpperCase()];
+    final dc = rule?.dialCode ?? '';
+    return dc.isEmpty ? '234' : dc;
+  }
 }

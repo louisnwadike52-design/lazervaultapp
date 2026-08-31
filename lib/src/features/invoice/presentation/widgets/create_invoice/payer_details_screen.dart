@@ -148,38 +148,46 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
   static const _accent = Color(0xFF6366F1);
 
   Widget _buildSplitToggle(CreateInvoiceCubit cubit) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.groups_rounded, color: _accent, size: 22.sp),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Split among multiple people',
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600)),
-                Text('Each person pays their share',
-                    style: GoogleFonts.inter(
-                        color: Colors.grey[500], fontSize: 12.sp)),
-              ],
+    // Whole row is the tap target. The bare Switch has a small hit box and,
+    // inside a scroll view, its taps sometimes lost the gesture arena to the
+    // scrollable — which is why it "needed multiple clicks". Tapping anywhere
+    // on the row now flips it, and the Switch still works directly.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => cubit.toggleSplitMode(!cubit.splitMode),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFF2D2D2D)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.groups_rounded, color: _accent, size: 22.sp),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Split among multiple people',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600)),
+                  Text('Each person pays their share',
+                      style: GoogleFonts.inter(
+                          color: Colors.grey[500], fontSize: 12.sp)),
+                ],
+              ),
             ),
-          ),
-          Switch(
-            value: cubit.splitMode,
-            activeColor: _accent,
-            onChanged: cubit.toggleSplitMode,
-          ),
-        ],
+            Switch(
+              value: cubit.splitMode,
+              activeColor: _accent,
+              onChanged: cubit.toggleSplitMode,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -428,43 +436,70 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
       CreateInvoiceCubit cubit, TaggedUserInfo p, String symbol) async {
     final controller =
         TextEditingController(text: p.shareAmount.toStringAsFixed(2));
+    // Own the focus explicitly. The previous version used `autofocus: true`,
+    // which in a dialog tears the EditableText's focus subtree down WHILE it
+    // still has dependents when the route pops — tripping
+    // InheritedElement.debugDeactivated's `_dependents.isEmpty` assert and
+    // red-screening the app the moment "Save" was tapped. Requesting focus
+    // after the first frame and RELEASING it before we pop avoids that race.
+    final focusNode = FocusNode();
+
+    // Pop helper that unfocuses first, so the focus/IME subtree is released
+    // cleanly before the dialog's elements deactivate.
+    void closeWith(BuildContext ctx, double? value) {
+      focusNode.unfocus();
+      Navigator.of(ctx).pop(value);
+    }
+
     final result = await showDialog<double>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1F1F1F),
-        title: Text("${p.displayName}'s share",
-            style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp)),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+      builder: (ctx) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (focusNode.canRequestFocus) focusNode.requestFocus();
+        });
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1F1F1F),
+          title: Text("${p.displayName}'s share",
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp)),
+          content: TextField(
+            controller: controller,
+            focusNode: focusNode,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ],
+            style: const TextStyle(color: Colors.white),
+            onSubmitted: (v) =>
+                closeWith(ctx, double.tryParse(v.trim()) ?? 0),
+            decoration: InputDecoration(
+              prefixText: symbol,
+              prefixStyle: const TextStyle(color: Colors.white),
+              enabledBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFF2D2D2D))),
+              focusedBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: _accent)),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => closeWith(ctx, null),
+              child: Text('Cancel', style: TextStyle(color: Colors.grey[400])),
+            ),
+            TextButton(
+              onPressed: () =>
+                  closeWith(ctx, double.tryParse(controller.text.trim()) ?? 0),
+              child: const Text('Save', style: TextStyle(color: _accent)),
+            ),
           ],
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            prefixText: symbol,
-            prefixStyle: const TextStyle(color: Colors.white),
-            enabledBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFF2D2D2D))),
-            focusedBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: _accent)),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Cancel', style: TextStyle(color: Colors.grey[400])),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx)
-                .pop(double.tryParse(controller.text.trim()) ?? 0),
-            child: const Text('Save', style: TextStyle(color: _accent)),
-          ),
-        ],
-      ),
+        );
+      },
     );
-    controller.dispose();
+    // Dispose AFTER the route is fully gone (await has returned), and after a
+    // frame so nothing mid-teardown still references them.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.dispose();
+      focusNode.dispose();
+    });
     if (result != null) cubit.setSplitPayerAmount(p.userId, result);
   }
 

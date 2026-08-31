@@ -38,6 +38,12 @@ class CreateInvoiceFormUpdated extends CreateInvoiceState {
   final bool splitMode;
   final bool splitCustom;
   final List<TaggedUserInfo> splitPayers;
+  // Invoice currency/country from page 1 — in props so picking a currency (or
+  // country) produces a DISTINCT state and every currency-dependent view (the
+  // split section's symbol, the per-payer share amounts) rebuilds with the
+  // chosen currency instead of a stale ₦.
+  final String invoiceCurrency;
+  final String invoiceCountry;
 
   const CreateInvoiceFormUpdated({
     required this.invoiceType,
@@ -54,6 +60,8 @@ class CreateInvoiceFormUpdated extends CreateInvoiceState {
     this.splitMode = false,
     this.splitCustom = false,
     this.splitPayers = const [],
+    this.invoiceCurrency = '',
+    this.invoiceCountry = '',
   });
 
   @override
@@ -72,6 +80,8 @@ class CreateInvoiceFormUpdated extends CreateInvoiceState {
         splitMode,
         splitCustom,
         splitPayers,
+        invoiceCurrency,
+        invoiceCountry,
       ];
 }
 
