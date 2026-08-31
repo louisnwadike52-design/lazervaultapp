@@ -311,6 +311,10 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                 ),
               ),
               SizedBox(width: 12.w),
+              // Title block gets the full remaining width now that the fee
+              // amount is no longer crammed into this row. Previously the
+              // amount sat here at 24.sp and got truncated to "₦…" whenever the
+              // real value ("₦150.00") was wider than the leftover space.
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,7 +323,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                       'Lazervault Invoice Service',
                       style: GoogleFonts.inter(
                         color: Colors.white,
-                        fontSize: 18.sp,
+                        fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -327,21 +331,48 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                       'Professional invoice generation & management',
                       style: GoogleFonts.inter(
                         color: const Color(0xFF9CA3AF),
-                        fontSize: 14.sp,
+                        fontSize: 12.sp,
                       ),
                     ),
                   ],
                 ),
               ),
-              Text(
-                _feeQuote == null ? '$_feeCurrencySymbol…' : '$_feeCurrencySymbol${_fee.toStringAsFixed(2)}',
-                style: GoogleFonts.inter(
-                  color: Color(0xFF3B82F6),
-                  fontSize: 24.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
             ],
+          ),
+          SizedBox(height: 16.h),
+          // Fee amount lives in its OWN section — a labelled row that can't be
+          // truncated and stays aligned regardless of how long the amount is.
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Service fee',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  _feeQuoteFailed
+                      ? 'Unavailable'
+                      : _feeQuote == null
+                          ? 'Loading…'
+                          : '$_feeCurrencySymbol${_fee.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF3B82F6),
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -656,8 +687,12 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                       ? _loadFeeQuote
                       : (_feeQuote == null ? null : _handlePaymentTap),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF3B82F6),
-                disabledBackgroundColor: Color(0xFF3B82F6).withValues(alpha: 0.6),
+                // Retry state uses a light purple so it reads as a distinct,
+                // actionable state (not the primary blue "pay" action); the
+                // foreground below switches to dark for contrast on it.
+                backgroundColor:
+                    _feeQuoteFailed ? const Color(0xFFC4B5FD) : const Color(0xFF3B82F6),
+                disabledBackgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16.r),
                 ),
@@ -683,19 +718,27 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.lock,
-                          color: Colors.white,
+                          _feeQuoteFailed ? Icons.refresh : Icons.lock,
+                          // Dark foreground on the light-purple retry state so
+                          // icon + label keep strong contrast; white otherwise.
+                          color: _feeQuoteFailed
+                              ? const Color(0xFF2E1065)
+                              : Colors.white,
                           size: 20.sp,
                         ),
                         SizedBox(width: 8.w),
                         Text(
+                          // No em dash in the retry copy (per design): a plain
+                          // sentence break reads cleaner and is easier to fit.
                           _feeQuoteFailed
-                              ? 'Fee unavailable — tap to retry'
+                              ? 'Fee unavailable. Tap to retry'
                               : _feeQuote == null
                                   ? 'Loading fee…'
                                   : 'Unlock for $_feeCurrencySymbol${_fee.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
-                            color: Colors.white,
+                            color: _feeQuoteFailed
+                                ? const Color(0xFF2E1065)
+                                : Colors.white,
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                           ),

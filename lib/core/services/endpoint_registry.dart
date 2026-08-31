@@ -87,6 +87,10 @@ class EndpointRegistry {
     // FeatureFlags at boot.
     'insurance_hosted_entrypoints_enabled',
     'insurance_hosted_link',
+    // Whether the Insurance service appears at all (tiles + All-Services
+    // search). Admin-toggled, hidden by default — see
+    // FeatureFlags.insuranceVisible.
+    'insurance_enabled',
     // Airtime landing tabs (admin-toggled). Show/hide Buy / International / Sell.
     // Buy + International default ON; Sell (airtime-to-cash) default OFF. Read via
     // FeatureFlags so the airtime screen renders only the enabled tabs.
@@ -548,6 +552,10 @@ class EndpointRegistry {
   /// an admin can raise/lower it (clamped to a sane [15, 600] range so a bad value
   /// can never lock users out instantly) or set exactly `0` to DISABLE auto-logout.
   int get inactivityTimeoutSeconds {
+    // Debug/emulator builds disable auto-logout so long manual test sessions
+    // aren't interrupted. Release builds are unaffected — they still honour the
+    // admin setting. (kDebugMode is compile-time stripped from release.)
+    if (kDebugMode) return 0;
     final n =
         int.tryParse(_get('session_inactivity_logout_seconds', '60').trim()) ??
             60;
