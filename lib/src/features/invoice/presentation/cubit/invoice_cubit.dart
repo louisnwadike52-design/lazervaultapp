@@ -343,7 +343,15 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   Future<InvoiceFeeQuote?> getServiceFeeQuote({String? accountId}) async {
     try {
       return await repository.getServiceFeeQuote(accountId: accountId);
-    } catch (_) {
+    } catch (e) {
+      // Was `catch (_) { return null; }` — swallowing the reason the fee could
+      // not load, which turned every fee failure into an unexplained hang on
+      // the unlock screen (e.g. a gateway that has not been redeployed returns
+      // "method GetInvoiceServiceFee not implemented"; the old catch hid it).
+      // Keep returning null so callers show the retry affordance, but log the
+      // cause so a stuck fee is diagnosable instead of silent.
+      // ignore: avoid_print
+      print('getServiceFeeQuote failed (fee will show as unavailable): $e');
       return null;
     }
   }
