@@ -480,6 +480,16 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
       emit(const CreateInvoiceValidationError('Total amount must be greater than zero'));
       return false;
     }
+    // Split balance is validated HERE — leaving the Items step, which is the
+    // first point the invoice total is known — rather than only at the final
+    // Create button. A custom split entered on the payer step against a total
+    // that only becomes real once items are added would otherwise sail through
+    // to the last slide before failing.
+    if (_splitMode && _splitPayers.isNotEmpty && !splitIsValid) {
+      emit(const CreateInvoiceValidationError(
+          'Split amounts must add up to the invoice total. Tap "Split equally" or adjust the shares.'));
+      return false;
+    }
     return true;
   }
 

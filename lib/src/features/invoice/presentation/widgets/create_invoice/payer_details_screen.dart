@@ -267,7 +267,7 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
                   SizedBox(width: 6.w),
                   Expanded(
                     child: Text(
-                      'Add items next — shares split equally and update automatically.',
+                      'Add items next. Shares split equally and update automatically.',
                       style: GoogleFonts.inter(
                           color: Colors.grey[500], fontSize: 12.sp),
                     ),

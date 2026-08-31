@@ -209,8 +209,9 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         message: transaction['message'] as String? ?? 'Payment successful!',
       ));
 
-      // Optimistically refresh incoming invoices after successful payment
-      await Future.delayed(const Duration(seconds: 1));
+      // Refresh incoming invoices after successful payment. (Removed a
+      // synthetic 1s delay here — the refresh should happen immediately;
+      // the pause only made the list feel laggy.)
       if (isClosed) return;
       await refreshIncoming();
     } catch (e) {

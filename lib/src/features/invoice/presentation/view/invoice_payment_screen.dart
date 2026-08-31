@@ -163,7 +163,19 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
           setState(() => _isProcessingPayment = false);
           // Notify the shared notifier so the home screen reloads on return
           GetIt.I<InvoiceRefreshNotifier>().notifyRefresh();
-          Get.offNamed(AppRoutes.invoiceProcessing, arguments: state.invoice ?? widget.invoice);
+          // Go STRAIGHT to the result. The PIN sheet already showed the
+          // processing + success beat, and the payment is already done by the
+          // time we get here — the old InvoiceProcessingScreen was a purely
+          // synthetic ~5s fake-progress animation (staged Timers) shown AFTER
+          // success, i.e. a second, redundant loading screen. Skip it.
+          Get.offNamed(
+            AppRoutes.invoicePreview,
+            arguments: {
+              'invoice': state.invoice ?? widget.invoice,
+              'isNewlyCreated': false,
+              'serviceFeePaid': true,
+            },
+          );
         } else if (state is InvoiceError) {
           setState(() => _isProcessingPayment = false);
           ScaffoldMessenger.of(context).showSnackBar(
