@@ -5,11 +5,26 @@ class PhoneValidationRule {
   final RegExp? pattern;
   final String hintText;
 
+  /// E.164 country calling code, digits only ("44" for GB).
+  ///
+  /// Needed because the invoice phone fields render numbers in INTERNATIONAL
+  /// form ("+44 7911123456") while every rule below describes the NATIONAL
+  /// form ("07911123456"). Without the dial code there is no way to convert
+  /// between them, and validation rejected the app's own display format.
+  final String dialCode;
+
+  /// National trunk prefix that the dial code replaces — "0" for GB/NG/DE/FR/
+  /// ZA/AU, empty for NANP (US/CA) and JP-style numbering where the national
+  /// form carries no leading zero.
+  final String trunkPrefix;
+
   const PhoneValidationRule({
     required this.minLength,
     required this.maxLength,
     this.pattern,
     required this.hintText,
+    required this.dialCode,
+    this.trunkPrefix = '',
   });
 }
 
@@ -20,60 +35,77 @@ class PhoneValidator {
       maxLength: 11,
       pattern: RegExp(r'^0[789]\d{9}$'),
       hintText: 'e.g., 08012345678',
+      dialCode: '234',
+      trunkPrefix: '0',
     ),
     'US': PhoneValidationRule(
       minLength: 10,
       maxLength: 10,
       pattern: RegExp(r'^\d{10}$'),
       hintText: 'e.g., 2025551234',
+      dialCode: '1',
     ),
     'CA': PhoneValidationRule(
       minLength: 10,
       maxLength: 10,
       pattern: RegExp(r'^\d{10}$'),
       hintText: 'e.g., 6135551234',
+      dialCode: '1',
     ),
     'GB': PhoneValidationRule(
       minLength: 10,
       maxLength: 11,
       pattern: RegExp(r'^0\d{9,10}$'),
       hintText: 'e.g., 07911123456',
+      dialCode: '44',
+      trunkPrefix: '0',
     ),
     'IN': PhoneValidationRule(
       minLength: 10,
       maxLength: 10,
       pattern: RegExp(r'^[6-9]\d{9}$'),
       hintText: 'e.g., 9876543210',
+      dialCode: '91',
     ),
     'DE': PhoneValidationRule(
       minLength: 10,
       maxLength: 12,
       pattern: RegExp(r'^0\d{9,11}$'),
       hintText: 'e.g., 015112345678',
+      dialCode: '49',
+      trunkPrefix: '0',
     ),
     'FR': PhoneValidationRule(
       minLength: 10,
       maxLength: 10,
       pattern: RegExp(r'^0\d{9}$'),
       hintText: 'e.g., 0612345678',
+      dialCode: '33',
+      trunkPrefix: '0',
     ),
     'ZA': PhoneValidationRule(
       minLength: 10,
       maxLength: 10,
       pattern: RegExp(r'^0\d{9}$'),
       hintText: 'e.g., 0821234567',
+      dialCode: '27',
+      trunkPrefix: '0',
     ),
     'AU': PhoneValidationRule(
       minLength: 9,
       maxLength: 10,
       pattern: RegExp(r'^0?\d{9}$'),
       hintText: 'e.g., 0412345678',
+      dialCode: '61',
+      trunkPrefix: '0',
     ),
     'JP': PhoneValidationRule(
       minLength: 10,
       maxLength: 11,
       pattern: RegExp(r'^0\d{9,10}$'),
       hintText: 'e.g., 09012345678',
+      dialCode: '81',
+      trunkPrefix: '0',
     ),
   };
 
@@ -88,8 +120,7 @@ class PhoneValidator {
     final rule = _rules[countryCode.toUpperCase()];
     if (rule == null) return null; // No rule = no validation
 
-    // Strip spaces and dashes for validation
-    final digits = phone.replaceAll(RegExp(r'[\s\-()]'), '');
+    final digits = toNationalDigits(phone, rule);
 
     if (digits.length < rule.minLength || digits.length > rule.maxLength) {
       if (rule.minLength == rule.maxLength) {
@@ -103,6 +134,44 @@ class PhoneValidator {
     }
 
     return null;
+  }
+
+  /// Normalises a phone number to the NATIONAL form the rules describe.
+  ///
+  /// The invoice fields display international format ("+44 7911123456") while
+  /// every rule describes national format ("07911123456"). This previously
+  /// stripped only spaces, dashes and parens — leaving the "+" and the country
+  /// code in the string, so a GB number arrived as 15 characters and was
+  /// rejected against a 10-11 digit rule. EVERY number entered in the app's
+  /// own display format failed, for all ten countries.
+  ///
+  /// Conversion is deliberately conservative: the dial code is only stripped
+  /// when the number is unambiguously international (a leading "+", or a
+  /// leading dial code on a string too long to be national). A number already
+  /// in national form is returned untouched, so nothing that used to pass
+  /// starts failing.
+  static String toNationalDigits(String phone, PhoneValidationRule rule) {
+    var s = phone.replaceAll(RegExp(r'[\s\-().]'), '');
+    if (s.isEmpty) return s;
+
+    final hadPlus = s.startsWith('+');
+    if (hadPlus) s = s.substring(1);
+    // "0044…" is the other common international spelling.
+    if (!hadPlus && s.startsWith('00')) s = s.substring(2);
+
+    if (s.startsWith(rule.dialCode)) {
+      final rest = s.substring(rule.dialCode.length);
+      // Only treat it as a country code if what remains could plausibly be a
+      // national number. Guards against stripping "1" from a US number that
+      // legitimately starts with it, or "44" from a local string.
+      final couldBeNational =
+          rest.length >= rule.minLength - rule.trunkPrefix.length &&
+          rest.length <= rule.maxLength;
+      if (hadPlus || couldBeNational) {
+        s = rule.trunkPrefix + rest;
+      }
+    }
+    return s;
   }
 
   /// Get the max digit length for input formatting.

@@ -402,7 +402,10 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
       emit(const CreateInvoiceValidationError('Please enter recipient email'));
       return false;
     }
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    // TLD is {2,} not {2,4}: the old bound rejected every modern TLD longer
+    // than four characters — .online, .digital, .travel, .company — as an
+    // "invalid email address", with no way for the user to proceed.
+    final emailRegex = RegExp(r'^[\w\-.]+@([\w\-]+\.)+[\w\-]{2,}$');
     if (!emailRegex.hasMatch(_recipientEmail)) {
       emit(const CreateInvoiceValidationError('Please enter a valid email address'));
       return false;
@@ -441,7 +444,10 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
     }
     // Email is optional, but validate format if provided
     if (_payerEmail.trim().isNotEmpty) {
-      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+      // TLD is {2,} not {2,4}: the old bound rejected every modern TLD longer
+    // than four characters — .online, .digital, .travel, .company — as an
+    // "invalid email address", with no way for the user to proceed.
+    final emailRegex = RegExp(r'^[\w\-.]+@([\w\-]+\.)+[\w\-]{2,}$');
       if (!emailRegex.hasMatch(_payerEmail)) {
         emit(const CreateInvoiceValidationError('Please enter a valid email address'));
         return false;

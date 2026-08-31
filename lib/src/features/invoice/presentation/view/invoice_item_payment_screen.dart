@@ -888,6 +888,9 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
       GetIt.I<AccountManager>().setActiveAccount(_selectedAccountId);
     }
 
+    // PIN consumed — the payment must fire even if this screen is gone, so
+    // the cubit must not be read from a possibly-deactivated context.
+    if (!mounted) return;
     setState(() => _isProcessingPayment = true);
 
     await context.read<TaggedInvoiceCubit>().payInvoice(

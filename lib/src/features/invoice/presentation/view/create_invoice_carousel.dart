@@ -351,6 +351,16 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
   }
 
   void _showErrorSnackBar(String message) {
+    // MUST guard: _goToNextPage is async, so by the time a validation error
+    // comes back this State can be deactivated — and ScaffoldMessenger.of on a
+    // deactivated context THROWS ("Looking up a deactivated widget's ancestor
+    // is unsafe").
+    //
+    // The failure mode was invisible and awful: validation would correctly
+    // reject the form, the app would try to say why, the snackbar would throw,
+    // the zone swallowed it, and the user was left tapping a Continue button
+    // that did nothing and explained nothing.
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

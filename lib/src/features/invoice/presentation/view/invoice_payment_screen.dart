@@ -107,11 +107,34 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
     _loadFeeQuote();
   }
 
+  /// True when the quote could not be fetched after retries. Drives the
+  /// "tap to retry" affordance — WITHOUT this, a null quote left the button
+  /// saying "Loading fee…" forever with no way out (observed live on prod:
+  /// a hung fee call stranded the unlock screen until auto-logout fired).
+  bool _feeQuoteFailed = false;
+
   Future<void> _loadFeeQuote() async {
-    final quote = await context.read<InvoiceCubit>().getServiceFeeQuote();
-    if (mounted && quote != null) {
-      setState(() => _feeQuote = quote);
+    if (mounted && _feeQuoteFailed) setState(() => _feeQuoteFailed = false);
+    // Retry with a hard timeout per attempt. The fee is the price the user is
+    // consenting to — a screen that can neither show it nor recover is a dead
+    // end on a money path.
+    for (var attempt = 0; attempt < 3; attempt++) {
+      try {
+        final quote = await context
+            .read<InvoiceCubit>()
+            .getServiceFeeQuote()
+            .timeout(const Duration(seconds: 10));
+        if (!mounted) return;
+        if (quote != null) {
+          setState(() => _feeQuote = quote);
+          return;
+        }
+      } catch (_) {/* timeout or transport — retry below */}
+      if (!mounted) return;
+      await Future.delayed(Duration(seconds: 1 + attempt));
+      if (!mounted) return;
     }
+    if (mounted) setState(() => _feeQuoteFailed = true);
   }
 
   void _fetchAccounts() {
@@ -622,7 +645,16 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
             width: double.infinity,
             height: 56.h,
             child: ElevatedButton(
-              onPressed: _isProcessingPayment ? null : _handlePaymentTap,
+              // Paying is gated on the QUOTE, not just on processing state.
+              // While the fee is unknown the tap must not reach the PIN sheet:
+              // the prompt would show the fallback amount (possibly 0.00)
+              // while the backend charges the real fee — consent to the wrong
+              // number. A failed quote turns the tap into a retry instead.
+              onPressed: _isProcessingPayment
+                  ? null
+                  : _feeQuoteFailed
+                      ? _loadFeeQuote
+                      : (_feeQuote == null ? null : _handlePaymentTap),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF3B82F6),
                 disabledBackgroundColor: Color(0xFF3B82F6).withValues(alpha: 0.6),
@@ -657,9 +689,11 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                         ),
                         SizedBox(width: 8.w),
                         Text(
-                          _feeQuote == null
-                              ? 'Loading fee…'
-                              : 'Unlock for $_feeCurrencySymbol${_fee.toStringAsFixed(2)}',
+                          _feeQuoteFailed
+                              ? 'Fee unavailable — tap to retry'
+                              : _feeQuote == null
+                                  ? 'Loading fee…'
+                                  : 'Unlock for $_feeCurrencySymbol${_fee.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 16.sp,
@@ -748,11 +782,21 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
       GetIt.I<AccountManager>().setActiveAccount(_selectedAccountId);
     }
 
-    setState(() {
-      _isProcessingPayment = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isProcessingPayment = true;
+      });
+    }
 
-    // BlocListener handles navigation on success and error display on failure
+    // BlocListener handles navigation on success and error display on failure.
+    //
+    // The PIN has been consumed by this point. If this State was disposed
+    // while the PIN sheet was up, context.read on the dead context would
+    // THROW mid-money-path — so we bail instead. That abandons the validated
+    // token, which is the acceptable cost: the unlock is idempotent by
+    // transactionId, nothing has been debited yet, and the user simply
+    // retries. A crash here would leave them unsure whether they paid.
+    if (!mounted) return;
     final cubit = context.read<InvoiceCubit>();
 
     // Always use unlockInvoice to pay service fee and activate the invoice

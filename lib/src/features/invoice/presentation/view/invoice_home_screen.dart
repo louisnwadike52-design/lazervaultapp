@@ -403,7 +403,11 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                   Expanded(
                     child: _buildStatCard(
                       label: 'Total',
-                      value: '$_currencySymbol${(totalAmount / 100).toStringAsFixed(0)}',
+                      // totalAmount SUMS inv.amount, which is already in
+                      // major units (naira) — dividing by 100 rendered a
+                      // 150.00 invoice as "2". The /100 assumed a kobo ledger
+                      // this feature never used.
+                      value: '$_currencySymbol${totalAmount.toStringAsFixed(0)}',
                       color: InvoiceThemeColors.primaryPurple,
                     ),
                   ),
@@ -845,7 +849,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                   ),
                 ),
                 Text(
-                  '$_currencySymbol${(invoice.amount / 100).toStringAsFixed(2)}',
+                  '$_currencySymbol${invoice.amount.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
                     color: InvoiceThemeColors.textWhite,
                     fontSize: 17.sp,
@@ -1089,7 +1093,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                   ),
                 ),
                 Text(
-                  '$_currencySymbol${(invoice.amount / 100).toStringAsFixed(2)}',
+                  '$_currencySymbol${invoice.amount.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
                     color: InvoiceThemeColors.textWhite,
                     fontSize: 17.sp,

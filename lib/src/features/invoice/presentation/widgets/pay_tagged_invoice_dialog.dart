@@ -609,6 +609,12 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
     final transactionId = 'INV-PAY-$idPrefix';
     final idempotencyKey = const Uuid().v4();
 
+    // Capture the cubit BEFORE the PIN sheet. Reading it from context after
+    // the await would throw if this dialog was dismissed while the sheet was
+    // open — and by that point the PIN has already been consumed, so the
+    // payment would be silently lost rather than merely cancelled.
+    final taggedInvoiceCubit = context.read<TaggedInvoiceCubit>();
+
     // Validate PIN via TransactionPinMixin
     String? verificationToken;
 
@@ -627,12 +633,18 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
 
     if (!success || verificationToken == null) return;
 
-    setState(() {
-      _isProcessing = true;
-    });
+    // The PIN is validated and the token is in hand — this payment MUST still
+    // go through even if the dialog itself is gone. Only the spinner needs a
+    // live widget; the money call does not, so it uses the cubit captured
+    // above rather than a context that may now be deactivated.
+    if (mounted) {
+      setState(() {
+        _isProcessing = true;
+      });
+    }
 
     // Call cubit with all security params
-    await context.read<TaggedInvoiceCubit>().payInvoice(
+    await taggedInvoiceCubit.payInvoice(
           widget.invoice.invoiceId,
           _selectedAccountId!,
           pin: '',
