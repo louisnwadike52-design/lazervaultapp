@@ -2395,8 +2395,17 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
             _buildSummaryRow('Exchange rate', _rate!.formatForDisplay()),
             if (_rate!.fees > 0) ...[
               const SizedBox(height: 10),
+              // ONE aggregated number, deliberately. rate.fees already
+              // combines the payout provider's share with LazerVault's — that
+              // total is what leaves the balance, and the split only matters
+              // internally at settlement (provider share -> <RAIL>_COST,
+              // platform share -> REVENUE).
+              //
+              // It was labelled "Service fee", which names only the platform
+              // half — so the figure looked like our margin when most of it is
+              // the provider's cost.
               _buildSummaryRow(
-                'Service fee',
+                'Transfer fee',
                 '${_rate!.fees.toStringAsFixed(2)} $_fromCurrency',
               ),
               const SizedBox(height: 10),
