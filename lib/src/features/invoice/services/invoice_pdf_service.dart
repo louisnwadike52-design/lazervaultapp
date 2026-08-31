@@ -7,12 +7,57 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/utils/receipt_download.dart';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import '../domain/entities/invoice_entity.dart';
 
 class InvoicePdfService {
-  /// ASCII-safe currency codes for PDF rendering
-  /// Using currency codes instead of symbols for better PDF compatibility
+  /// A [pw.Document] themed with the embedded Inter face when it loaded, so
+  /// the PDF can draw ₦/€/₹ and any accented user content. Falls back to a
+  /// plain document (built-in Helvetica) if the font is unavailable — paired
+  /// with the ASCII currency-code fallback in [_currencySymbolFor], so a
+  /// missing font degrades the receipt rather than raising mid-render.
+  static Future<pw.Document> _documentWithFonts() async {
+    await ReceiptFonts.load();
+    if (ReceiptFonts.embedded) {
+      return pw.Document(
+        theme: pw.ThemeData.withFont(
+          base: ReceiptFonts.regular!,
+          bold: ReceiptFonts.bold!,
+        ),
+      );
+    }
+    return pw.Document();
+  }
+
+  /// Currency symbol for the PDF. With Inter embedded we render the REAL
+  /// symbol (₦, £, €, ₹…); without an embedded TrueType font the built-in PDF
+  /// font cannot draw those glyphs and the pdf package RAISES rather than
+  /// substituting, so we fall back to the ASCII currency code.
   static String _currencySymbolFor(String code) {
+    if (ReceiptFonts.embedded) {
+      switch (code.toUpperCase()) {
+        case 'NGN':
+          return '₦';
+        case 'GBP':
+          return '£';
+        case 'EUR':
+          return '€';
+        case 'ZAR':
+          return 'R';
+        case 'CAD':
+          return r'CA$';
+        case 'AUD':
+          return r'A$';
+        case 'INR':
+          return '₹';
+        case 'JPY':
+          return '¥';
+        case 'USD':
+          return r'$';
+        default:
+          return '$code ';
+      }
+    }
     switch (code.toUpperCase()) {
       case 'NGN':
         return 'NGN ';
@@ -69,7 +114,7 @@ class InvoicePdfService {
   }
 
   static Future<File> generateInvoicePdf(Invoice invoice) async {
-    final pdf = pw.Document();
+    final pdf = await _documentWithFonts();
 
     // Pre-fetch the uploaded sender/receiver images BEFORE building (the pw
     // build callback is sync so images must be resolved to bytes first).
@@ -113,7 +158,7 @@ class InvoicePdfService {
 
   /// Generate a professional payment receipt PDF for a paid invoice
   static Future<File> generateInvoiceReceipt(Invoice invoice) async {
-    final pdf = pw.Document();
+    final pdf = await _documentWithFonts();
     final currency = _currencySymbolFor(invoice.currency);
 
     // Pre-fetch the uploaded images. On a receipt 'From' is the payer and 'To'
