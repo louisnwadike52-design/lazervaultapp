@@ -336,6 +336,10 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
   // Update methods - Items & Amounts
   void addItem(InvoiceItem item) {
     _items = [..._items, item];
+    // Shares follow the price. The split UI promises "shares split equally and
+    // update automatically", but the pricing mutators never resynced, so a
+    // payer added before the items kept a share computed against a ₦0 total.
+    _resyncEqualSplit();
     _emitFormUpdated();
   }
 
@@ -346,6 +350,7 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
         item,
         ..._items.sublist(index + 1),
       ];
+      _resyncEqualSplit();
       _emitFormUpdated();
     }
   }
@@ -356,17 +361,20 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
         ..._items.sublist(0, index),
         ..._items.sublist(index + 1),
       ];
+      _resyncEqualSplit();
       _emitFormUpdated();
     }
   }
 
   void updateTaxAmount(double tax) {
     _taxAmount = tax;
+    _resyncEqualSplit();
     _emitFormUpdated();
   }
 
   void updateDiscountAmount(double discount) {
     _discountAmount = discount;
+    _resyncEqualSplit();
     _emitFormUpdated();
   }
 

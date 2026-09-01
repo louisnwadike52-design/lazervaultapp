@@ -438,36 +438,47 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
               ),
             ),
             SizedBox(height: 16.h),
+            // Tax and Discount are INDEPENDENT optional fields. This row used
+            // to render both whenever either was requested, so adding "Tax"
+            // also produced a Discount input while "Discount" was still being
+            // offered as an un-added chip below — the same field twice.
             Row(
               children: [
-                Expanded(
-                  child: _buildAmountField(
-                    controller: _taxController,
-                    label: 'Tax',
-                    hint: '0.00',
-                    onChanged: (value) {
-                      cubit.updateTaxAmount(double.tryParse(value) ?? 0.0);
-                    },
+                if (widget.showTax)
+                  Expanded(
+                    child: _buildAmountField(
+                      controller: _taxController,
+                      label: 'Tax',
+                      hint: '0.00',
+                      onChanged: (value) {
+                        cubit.updateTaxAmount(double.tryParse(value) ?? 0.0);
+                      },
+                    ),
                   ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: _buildAmountField(
-                    controller: _discountController,
-                    label: 'Discount',
-                    hint: '0.00',
-                    onChanged: (value) {
-                      cubit.updateDiscountAmount(double.tryParse(value) ?? 0.0);
-                    },
+                if (widget.showTax && widget.showDiscount)
+                  SizedBox(width: 12.w),
+                if (widget.showDiscount)
+                  Expanded(
+                    child: _buildAmountField(
+                      controller: _discountController,
+                      label: 'Discount',
+                      hint: '0.00',
+                      onChanged: (value) {
+                        cubit.updateDiscountAmount(
+                            double.tryParse(value) ?? 0.0);
+                      },
+                    ),
                   ),
-                ),
               ],
             ),
             SizedBox(height: 24.h),
             _buildSummaryRow('Subtotal', subtotal),
             SizedBox(height: 8.h),
-            _buildSummaryRow('Tax', tax, color: Colors.grey[400]),
-            SizedBox(height: 8.h),
+            // Only summarise a line the user actually added.
+            if (widget.showTax || tax > 0) ...[
+              _buildSummaryRow('Tax', tax, color: Colors.grey[400]),
+              SizedBox(height: 8.h),
+            ],
             if (discount > 0)
               _buildSummaryRow('Discount', discount, color: Colors.red.shade400, prefix: '- '),
             SizedBox(height: 12.h),

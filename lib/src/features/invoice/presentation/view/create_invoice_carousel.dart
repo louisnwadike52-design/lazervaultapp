@@ -457,12 +457,18 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
             showPhone: _visibleOptionalFields.contains('payerPhone'),
             showAddress: _visibleOptionalFields.contains('payerAddress'),
           ),
+          // When the invoice is split among tagged people there is no single
+          // payer to hold a phone or address — those chips only repeated what
+          // was already captured on the previous slide.
           _buildAddMoreFieldsWidget(
             fields: [
-              if (!_visibleOptionalFields.contains('payerPhone'))
-                _ChipField('payerPhone', 'Phone', Icons.phone_outlined),
-              if (!_visibleOptionalFields.contains('payerAddress'))
-                _ChipField('payerAddress', 'Address', Icons.location_on_outlined),
+              if (!context.read<CreateInvoiceCubit>().splitMode) ...[
+                if (!_visibleOptionalFields.contains('payerPhone'))
+                  _ChipField('payerPhone', 'Phone', Icons.phone_outlined),
+                if (!_visibleOptionalFields.contains('payerAddress'))
+                  _ChipField(
+                      'payerAddress', 'Address', Icons.location_on_outlined),
+              ],
             ],
             showChips: _showFieldChipsPayer,
             onToggle: () => setState(() => _showFieldChipsPayer = !_showFieldChipsPayer),
