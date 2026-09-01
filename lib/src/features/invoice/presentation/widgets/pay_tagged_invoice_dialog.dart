@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:uuid/uuid.dart';
 import 'package:lazervault/src/features/invoice/domain/entities/tagged_invoice_entity.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/tagged_invoice_cubit.dart';
@@ -66,8 +67,9 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
     return widget.invoice.amount;
   }
 
-  double get _processingFee => _baseAmount * 0.005; // 0.5% fee
-  double get _totalAmount => _baseAmount + _processingFee;
+  // No payer-side processing fee exists on the backend — the old 0.5% row
+  // was display-only fiction that also contradicted the PIN-sheet amount.
+  double get _totalAmount => _baseAmount;
 
   @override
   Widget build(BuildContext context) {
@@ -94,6 +96,7 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
               // along for the dual-currency receipt.
               'amount': fx != null ? fx.convertedAmount : _baseAmount,
               'currency': fx != null ? fx.toCurrency : widget.invoice.currency,
+              'invoice_type': widget.invoice.invoice?.type.name ?? 'invoice',
               if (fx != null) 'invoice_currency': fx.fromCurrency,
               if (fx != null) 'invoice_amount': fx.fromAmount,
               if (fx != null) 'fx_rate': fx.rate,
@@ -172,7 +175,7 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Pay Invoice Items',
+                  'Pay ${widget.invoice.invoice?.typeDisplayName ?? 'Invoice'} Items',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 20.sp,
@@ -452,12 +455,6 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
             _isSplit ? 'Your Share' : 'Invoice Amount',
             '${widget.invoice.currency} ${_baseAmount.toStringAsFixed(2)}',
           ),
-          SizedBox(height: 8.h),
-          _buildSummaryRow(
-            'Processing Fee (0.5%)',
-            '${widget.invoice.currency} ${_processingFee.toStringAsFixed(2)}',
-            isSubtle: true,
-          ),
           SizedBox(height: 12.h),
           Divider(color: const Color(0xFF374151)),
           SizedBox(height: 12.h),
@@ -642,6 +639,12 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
         _isProcessing = true;
       });
     }
+
+    // CRITICAL: the backend debits the account in the x-account-id gRPC
+    // header (AccountManager.activeAccountId), NOT the request's account_id.
+    // Without this sync the user picks account B here but whatever account
+    // was globally active gets debited (possibly in another currency).
+    GetIt.I<AccountManager>().setActiveAccount(_selectedAccountId!);
 
     // Call cubit with all security params
     await taggedInvoiceCubit.payInvoice(

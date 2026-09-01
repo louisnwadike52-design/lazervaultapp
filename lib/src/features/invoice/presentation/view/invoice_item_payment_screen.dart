@@ -74,8 +74,9 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
   bool get _isSplit =>
       (widget.invoice.taggedUsers?.length ?? 0) > 1;
 
-  double get _processingFee => _baseAmount * 0.005;
-  double get _totalAmount => _baseAmount + _processingFee;
+  // No payer-side processing fee exists on the backend — the old 0.5% row
+  // was display-only fiction that inflated the affordability check too.
+  double get _totalAmount => _baseAmount;
 
   String get _currencySymbol => _getCurrencySymbol(widget.invoice.currency);
 
@@ -169,6 +170,7 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
               // value and the invoice's own currency/amount + rate ride along.
               'amount': fx != null ? fx.convertedAmount : _baseAmount,
               'currency': fx != null ? fx.toCurrency : widget.invoice.currency,
+              'invoice_type': widget.invoice.type.name,
               if (fx != null) 'invoice_currency': fx.fromCurrency,
               if (fx != null) 'invoice_amount': fx.fromAmount,
               if (fx != null) 'fx_rate': fx.rate,
@@ -260,7 +262,7 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Pay Invoice',
+                  'Pay ${widget.invoice.typeDisplayName}',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 24.sp,
@@ -671,12 +673,6 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
               isSubtle: true,
             ),
           ],
-          SizedBox(height: 8.h),
-          _buildBreakdownRow(
-            'Processing Fee (0.5%)',
-            '$_currencySymbol${_processingFee.toStringAsFixed(2)}',
-            isSubtle: true,
-          ),
           SizedBox(height: 12.h),
           Divider(color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 12.h),
@@ -828,6 +824,16 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
 
   Future<void> _processPayment() async {
     if (_selectedAccountId.isEmpty) return;
+
+    // Quotes are documents, not payables — bail before FX/PIN instead of
+    // failing at the backend guard after the user has done all the work.
+    if (widget.invoice.isQuote) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('This is a quote — it becomes payable once the sender converts it to an invoice.'),
+        backgroundColor: Colors.orange,
+      ));
+      return;
+    }
 
     HapticFeedback.mediumImpact();
 

@@ -262,6 +262,23 @@ const InvoiceStatistics$json = {
       '10': 'totalAmountOverdue'
     },
     {'1': 'collection_rate', '3': 11, '4': 1, '5': 1, '10': 'collectionRate'},
+    {'1': 'received_pending', '3': 12, '4': 1, '5': 5, '10': 'receivedPending'},
+    {'1': 'received_paid', '3': 13, '4': 1, '5': 5, '10': 'receivedPaid'},
+    {'1': 'received_overdue', '3': 14, '4': 1, '5': 5, '10': 'receivedOverdue'},
+    {
+      '1': 'received_amount_pending',
+      '3': 15,
+      '4': 1,
+      '5': 1,
+      '10': 'receivedAmountPending'
+    },
+    {
+      '1': 'received_amount_paid',
+      '3': 16,
+      '4': 1,
+      '5': 1,
+      '10': 'receivedAmountPaid'
+    },
   ],
 };
 
@@ -275,7 +292,11 @@ final $typed_data.Uint8List invoiceStatisticsDescriptor = $convert.base64Decode(
     '1vdW50UmVjZWl2ZWQSKgoRdG90YWxfYW1vdW50X3BhaWQYCCABKAFSD3RvdGFsQW1vdW50UGFp'
     'ZBIwChR0b3RhbF9hbW91bnRfcGVuZGluZxgJIAEoAVISdG90YWxBbW91bnRQZW5kaW5nEjAKFH'
     'RvdGFsX2Ftb3VudF9vdmVyZHVlGAogASgBUhJ0b3RhbEFtb3VudE92ZXJkdWUSJwoPY29sbGVj'
-    'dGlvbl9yYXRlGAsgASgBUg5jb2xsZWN0aW9uUmF0ZQ==');
+    'dGlvbl9yYXRlGAsgASgBUg5jb2xsZWN0aW9uUmF0ZRIpChByZWNlaXZlZF9wZW5kaW5nGAwgAS'
+    'gFUg9yZWNlaXZlZFBlbmRpbmcSIwoNcmVjZWl2ZWRfcGFpZBgNIAEoBVIMcmVjZWl2ZWRQYWlk'
+    'EikKEHJlY2VpdmVkX292ZXJkdWUYDiABKAVSD3JlY2VpdmVkT3ZlcmR1ZRI2ChdyZWNlaXZlZF'
+    '9hbW91bnRfcGVuZGluZxgPIAEoAVIVcmVjZWl2ZWRBbW91bnRQZW5kaW5nEjAKFHJlY2VpdmVk'
+    'X2Ftb3VudF9wYWlkGBAgASgBUhJyZWNlaXZlZEFtb3VudFBhaWQ=');
 
 @$core.Deprecated('Use createInvoiceRequestDescriptor instead')
 const CreateInvoiceRequest$json = {

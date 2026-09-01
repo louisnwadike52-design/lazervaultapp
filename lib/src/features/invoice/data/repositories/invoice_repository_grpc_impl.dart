@@ -17,6 +17,10 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   final GrpcClient grpcClient;
   final String currentUserId; // Current authenticated user ID
 
+  /// yyyy-MM-dd (the backend's primary due-date layout).
+  static String _dateOnly(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
   InvoiceRepositoryGrpcImpl({
     required this.grpcClient,
     required this.currentUserId,
@@ -93,7 +97,10 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
           ..recipientName = invoice.toName ?? invoice.payerDetails?.contactName ?? ''
           ..description = invoice.description
           ..amount = invoice.amount
-          ..dueDate = invoice.dueDate?.toUtc().toIso8601String() ?? DateTime.now().add(Duration(days: 30)).toUtc().toIso8601String()
+          // Date-only, matching the backend's primary layout (it also accepts
+          // RFC3339 now, but full ISO used to fail its parse and silently
+          // replace every user-chosen due date with +30d).
+          ..dueDate = _dateOnly(invoice.dueDate ?? DateTime.now().add(const Duration(days: 30)))
           ..tax = invoice.taxAmount ?? 0.0
           ..discount = invoice.discountAmount ?? 0.0
           ..notes = invoice.notes ?? ''
@@ -121,13 +128,19 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
                 ..amount = t.shareAmount));
         }
 
-        // Add invoice items
+        // Add invoice items. The proto has ONE description field: encode
+        // "name: description", or just the name when there's no description —
+        // never a dangling "name: ". _fromProto splits on the first colon.
         if (invoice.items.isNotEmpty) {
-          request.items.addAll(invoice.items.map((item) => pb.InvoiceItem()
-            ..description = '${item.name}: ${item.description ?? ''}'
-            ..quantity = item.quantity.toInt()
-            ..unitPrice = item.unitPrice
-            ..total = item.totalPrice));
+          request.items.addAll(invoice.items.map((item) {
+            final desc = item.description?.trim() ?? '';
+            return pb.InvoiceItem()
+              ..description =
+                  desc.isNotEmpty ? '${item.name}: $desc' : item.name
+              ..quantity = item.quantity.toInt()
+              ..unitPrice = item.unitPrice
+              ..total = item.totalPrice;
+          }));
         }
 
         final options = await grpcClient.callOptions;
@@ -630,15 +643,26 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     // Parse invoice items or create a default item
     List<InvoiceItem> items;
     if (proto.items.isNotEmpty) {
-      items = proto.items.map((item) => InvoiceItem(
-        id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-        name: _extractNameFromDescription(item.description),
-        description: item.description.isNotEmpty ? item.description : null,
-        quantity: item.quantity.toDouble(),
-        unitPrice: item.unitPrice,
-        totalPrice: item.total,
-        category: null,
-      )).toList();
+      // The proto carries ONE description string; creation encodes it as
+      // "name: description" (or just the name). Split it back so the UI never
+      // renders "Widget A" / "Widget A: a blue widget" twice.
+      items = proto.items.map((item) {
+        final raw = item.description;
+        final colon = raw.indexOf(':');
+        final name = colon > 0
+            ? raw.substring(0, colon).trim()
+            : _extractNameFromDescription(raw);
+        final desc = colon > 0 ? raw.substring(colon + 1).trim() : '';
+        return InvoiceItem(
+          id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+          name: name,
+          description: desc.isNotEmpty ? desc : null,
+          quantity: item.quantity.toDouble(),
+          unitPrice: item.unitPrice,
+          totalPrice: item.total,
+          category: null,
+        );
+      }).toList();
     } else {
       // Create a default invoice item from the invoice amount
       items = [InvoiceItem(
@@ -673,6 +697,8 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
     return Invoice(
       id: proto.id,
+      // The human-facing INV-xxxxx — matches emails/notifications/receipts.
+      invoiceNumber: proto.invoiceNumber,
       // Preserve the title chosen at creation; fall back to description, then a
       // generic label, so the details page no longer shows a defaulted title.
       title: proto.title.isNotEmpty
@@ -688,8 +714,9 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
       quoteAcceptedAt: proto.quoteAcceptedAt.isNotEmpty ? DateTime.tryParse(proto.quoteAcceptedAt) : null,
       quoteDeclinedAt: proto.quoteDeclinedAt.isNotEmpty ? DateTime.tryParse(proto.quoteDeclinedAt) : null,
       convertedAt: proto.convertedAt.isNotEmpty ? DateTime.tryParse(proto.convertedAt) : null,
-      createdAt: proto.createdAt.isNotEmpty ? DateTime.parse(proto.createdAt) : DateTime.now(),
-      dueDate: proto.dueDate.isNotEmpty ? DateTime.parse(proto.dueDate) : null,
+      createdAt: (proto.createdAt.isNotEmpty ? DateTime.tryParse(proto.createdAt) : null) ?? DateTime.now(),
+      dueDate: proto.dueDate.isNotEmpty ? DateTime.tryParse(proto.dueDate) : null,
+      paidAt: proto.paidAt.isNotEmpty ? DateTime.tryParse(proto.paidAt) : null,
       fromUserId: proto.userId,
       toUserId: proto.accountId.isNotEmpty ? proto.accountId : null,
       toEmail: proto.recipientEmail.isNotEmpty ? proto.recipientEmail : null,

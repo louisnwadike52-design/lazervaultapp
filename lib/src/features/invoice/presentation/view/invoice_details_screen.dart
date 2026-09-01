@@ -22,6 +22,7 @@ import '../../../authentication/cubit/authentication_state.dart';
 import '../../../authentication/domain/entities/profile_entity.dart';
 import '../widgets/invoice_shimmer.dart';
 import '../utils/share_origin.dart';
+import '../../services/invoice_pdf_service.dart';
 import 'package:get_it/get_it.dart';
 import '../notifiers/invoice_refresh_notifier.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -142,13 +143,20 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   SizedBox(height: 24.h),
                   _buildNotesSection(invoice),
                 ],
-                if (!widget.isFromReceivedTab && invoice.taggedUsers != null && invoice.taggedUsers!.isNotEmpty) ...[
+                // Both parties see the split: a payer on a multi-way split
+                // must be able to see who else owes / has paid, not just
+                // "Pay <share>". Single-tag invoices stay uncluttered on the
+                // received side.
+                if (invoice.taggedUsers != null &&
+                    invoice.taggedUsers!.isNotEmpty &&
+                    (!widget.isFromReceivedTab ||
+                        invoice.taggedUsers!.length > 1)) ...[
                   SizedBox(height: 24.h),
                   _buildTaggedUsersSection(invoice),
-                ],
-                if (!widget.isFromReceivedTab && invoice.isPartiallyPaid && invoice.taggedUsers != null && invoice.taggedUsers!.isNotEmpty) ...[
-                  SizedBox(height: 24.h),
-                  _buildPaymentProgressSection(invoice),
+                  if (invoice.isPartiallyPaid) ...[
+                    SizedBox(height: 24.h),
+                    _buildPaymentProgressSection(invoice),
+                  ],
                 ],
                 SizedBox(height: 32.h),
                 _buildActions(invoice),
@@ -187,7 +195,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Invoice Details',
+                  '${invoice.typeDisplayName} Details',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 24.sp,
@@ -204,13 +212,14 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               ],
             ),
           ),
-          _buildStatusBadge(invoice.status),
+          _buildStatusBadge(invoice),
         ],
       ),
     );
   }
 
-  Widget _buildStatusBadge(InvoiceStatus status) {
+  Widget _buildStatusBadge(Invoice invoice) {
+    final status = invoice.status;
     Color backgroundColor;
     Color textColor;
     
@@ -245,7 +254,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Text(
-        status.name.toUpperCase(),
+        // "PARTIALLY PAID", never enum-name "PARTIALLYPAID".
+        invoice.statusDisplayName.toUpperCase(),
         style: GoogleFonts.inter(
           color: textColor,
           fontSize: 10.sp,
@@ -269,7 +279,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Invoice #${invoice.id.substring(0, 8).toUpperCase()}',
+                '${invoice.typeDisplayName} #${invoice.displayNumber}',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 18.sp,
@@ -310,7 +320,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Invoice Details',
+            '${invoice.typeDisplayName} Details',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 16.sp,
@@ -318,9 +328,9 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          _buildDetailRow('Created', '${invoice.createdAt.day}/${invoice.createdAt.month}/${invoice.createdAt.year}'),
+          _buildDetailRow('Created', _formatFullDate(invoice.createdAt)),
           if (invoice.dueDate != null)
-            _buildDetailRow('Due Date', '${invoice.dueDate!.day}/${invoice.dueDate!.month}/${invoice.dueDate!.year}'),
+            _buildDetailRow('Due Date', _formatFullDate(invoice.dueDate!)),
           // Parties (issuer "Invoice From" + customer "Bill To") are shown in
           // the participant cards below — not duplicated here with a misleading
           // "Recipient" label (which previously showed the customer).
@@ -611,7 +621,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                     ),
                     if (invoice.paidAt != null)
                       Text(
-                        'Paid on ${invoice.paidAt!.day}/${invoice.paidAt!.month}/${invoice.paidAt!.year}',
+                        'Paid on ${_formatFullDate(invoice.paidAt!)}',
                         style: GoogleFonts.inter(
                           color: InvoiceThemeColors.successGreen.withValues(alpha: 0.7),
                           fontSize: 12.sp,
@@ -810,7 +820,111 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             ),
           ),
         ),
+        SizedBox(width: 12.w),
+        // Share Button — the only PDF-share entry point on details for BOTH
+        // parties (previously a shareable PDF was only reachable via preview).
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () => _showShareOptions(invoice, isPaidOrPartiallyPaid),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: BorderSide(
+                color: InvoiceThemeColors.primaryPurple,
+                width: 1.5,
+              ),
+              padding: EdgeInsets.symmetric(vertical: 14.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+            ),
+            icon: Icon(
+              Icons.ios_share,
+              size: 18.sp,
+              color: InvoiceThemeColors.primaryPurple,
+            ),
+            label: Text(
+              'Share',
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
       ],
+    );
+  }
+
+  /// Bottom sheet: share the full document PDF, and — once (partially) paid —
+  /// the payment-receipt PDF (line items, parties, invoice number included).
+  void _showShareOptions(Invoice invoice, bool hasReceipt) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: InvoiceThemeColors.secondaryBackground,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 8.h),
+            ListTile(
+              leading: Icon(Icons.description_outlined,
+                  color: const Color(0xFF60A5FA), size: 22.sp),
+              title: Text(
+                'Share ${invoice.typeDisplayName} PDF',
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600),
+              ),
+              onTap: () async {
+                final origin = shareOriginFromContext(sheetContext);
+                Navigator.of(sheetContext).pop();
+                try {
+                  await InvoicePdfService.shareInvoice(invoice,
+                      sharePositionOrigin: origin);
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text('Could not share PDF: $e'),
+                        backgroundColor: Colors.red));
+                  }
+                }
+              },
+            ),
+            if (hasReceipt)
+              ListTile(
+                leading: Icon(Icons.receipt_long_outlined,
+                    color: const Color(0xFF34D399), size: 22.sp),
+                title: Text(
+                  'Share Receipt PDF',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600),
+                ),
+                onTap: () async {
+                  final origin = shareOriginFromContext(sheetContext);
+                  Navigator.of(sheetContext).pop();
+                  try {
+                    await InvoicePdfService.shareReceipt(invoice,
+                        sharePositionOrigin: origin);
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Could not share receipt: $e'),
+                          backgroundColor: Colors.red));
+                    }
+                  }
+                },
+              ),
+            SizedBox(height: 12.h),
+          ],
+        ),
+      ),
     );
   }
 
@@ -820,6 +934,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
       AppRoutes.invoicePaymentReceipt,
       arguments: {
         'invoice_id': invoice.id,
+        'invoice_number': invoice.invoiceNumber,
+        'invoice_type': invoice.type.name,
         'amount': isPartial ? invoice.paidAmount : invoice.totalAmount,
         'total_amount': invoice.totalAmount,
         'currency': invoice.currency,
@@ -828,6 +944,16 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             ? 'Partial payment - ${invoice.paidUsersCount} of ${invoice.taggedUsers?.length ?? 0} users paid'
             : 'Invoice paid',
         'is_partial': isPartial,
+        // The creator RECEIVED this money — the receipt must read as an
+        // incoming payment, not as if the creator paid themselves.
+        'perspective': 'creator',
+        'settled_full': !isPartial && invoice.status == InvoiceStatus.paid,
+        if (invoice.paidAt != null)
+          'paid_at': invoice.paidAt!.toIso8601String(),
+        if (invoice.recipientDetails?.contactName?.isNotEmpty == true)
+          'to_name': invoice.recipientDetails!.contactName,
+        if (invoice.payerDetails?.contactName?.isNotEmpty == true)
+          'from_name': invoice.payerDetails!.contactName,
       },
     );
   }
@@ -1622,7 +1748,18 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
     if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
     if (diff.inHours < 24) return '${diff.inHours}h ago';
     if (diff.inDays < 7) return '${diff.inDays}d ago';
-    return '${date.day}/${date.month}/${date.year}';
+    return _formatFullDate(date);
+  }
+
+  /// "01 Sep 2026" — padded, unambiguous, matches the payment screens.
+  static const _monthNames = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+
+  String _formatFullDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    return '$day ${_monthNames[date.month - 1]} ${date.year}';
   }
 
   void _viewPreview(Invoice invoice) {
@@ -2016,7 +2153,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
 
       // Get temporary directory
       final Directory tempDir = await getTemporaryDirectory();
-      final String fileName = 'qr_code_${invoice.id.substring(0, 8)}.png';
+      final String fileName = 'qr_code_${invoice.displayNumber}.png';
       final File file = File('${tempDir.path}/$fileName');
       
       // Write image to file

@@ -752,7 +752,14 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
 
                           setSheetState(() {
                             nameError = name.isEmpty ? 'Enter an item name' : null;
-                            quantityError = quantity <= 0 ? 'Quantity must be greater than 0' : null;
+                            quantityError = quantity <= 0
+                                ? 'Quantity must be greater than 0'
+                                // The wire/backend quantity is an integer; a
+                                // fractional value would be silently truncated
+                                // and the line total corrupted.
+                                : (quantity % 1 != 0
+                                    ? 'Quantity must be a whole number'
+                                    : null);
                             priceError = price <= 0 ? 'Enter a unit price greater than 0' : null;
                           });
 
@@ -921,7 +928,14 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
 
                           setSheetState(() {
                             nameError = name.isEmpty ? 'Enter an item name' : null;
-                            quantityError = quantity <= 0 ? 'Quantity must be greater than 0' : null;
+                            quantityError = quantity <= 0
+                                ? 'Quantity must be greater than 0'
+                                // The wire/backend quantity is an integer; a
+                                // fractional value would be silently truncated
+                                // and the line total corrupted.
+                                : (quantity % 1 != 0
+                                    ? 'Quantity must be a whole number'
+                                    : null);
                             priceError = price <= 0 ? 'Enter a unit price greater than 0' : null;
                           });
 

@@ -26,7 +26,10 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
     final invoiceId = transaction['invoice_id']?.toString() ?? '';
     final amount = (transaction['amount'] as num?)?.toDouble() ?? 0.0;
     final txCurrency = transaction['currency'] as String?;
-    final currency = (txCurrency != null && txCurrency.isNotEmpty && txCurrency != 'USD')
+    // Trust the transaction's own currency. (The old `!= 'USD'` clause guarded
+    // against a since-fixed hardcoded USD default and relabelled genuine USD
+    // receipts with the local currency symbol.)
+    final currency = (txCurrency != null && txCurrency.isNotEmpty)
         ? txCurrency
         : localeManager.currentCurrency;
     final newBalance = (transaction['new_balance'] as num?)?.toDouble();
@@ -50,11 +53,17 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
     final invoiceNumber = transaction['invoice_number']?.toString();
     final fromName = transaction['from_name']?.toString();
     final toName = transaction['to_name']?.toString();
+    // 'creator' when opened from the creator's details screen: the money came
+    // IN, so flow/status/title must not claim the creator paid.
+    final isCreator = transaction['perspective'] == 'creator';
+    final invoiceType = transaction['invoice_type']?.toString() ?? '';
+    final docLabel = invoiceType == 'request' ? 'Payment Request' : 'Invoice';
 
     final metadata = <String, dynamic>{};
 
     if (isSplit && totalAmount != null) {
-      metadata['Your Share'] =
+      // Payer: their share of the split. Creator: what has come in so far.
+      metadata[isCreator ? 'Received So Far' : 'Your Share'] =
           '${_currencySymbol(currency)}${NumberFormat('#,##0.00').format(amount)}';
       // The invoice total is denominated in the invoice currency, which differs
       // from the payer's account currency on a cross-currency payment.
@@ -93,15 +102,18 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
     return UnifiedTransaction(
       id: transactionId,
       serviceType: TransactionServiceType.invoice,
-      // Always "Invoice Payment" — a split share that completes the invoice is
-      // not a "partial" payment; the Status metadata conveys settled vs awaiting.
-      title: 'Invoice Payment',
+      // Payer: "Invoice Payment" (a split share that completes the invoice is
+      // not "partial" — Status metadata conveys settled vs awaiting). Creator:
+      // the money came IN.
+      title: isCreator ? '$docLabel Payment Received' : '$docLabel Payment',
       amount: amount,
       currency: currency,
       // Use the real server-side paid_at when present, not the device clock.
       createdAt: _parsePaidAt(transaction['paid_at']) ?? DateTime.now(),
-      status: UnifiedTransactionStatus.completed,
-      flow: TransactionFlow.outgoing,
+      status: isCreator && isSplit && !settledFull
+          ? UnifiedTransactionStatus.pending
+          : UnifiedTransactionStatus.completed,
+      flow: isCreator ? TransactionFlow.incoming : TransactionFlow.outgoing,
       transactionReference: transactionId.isNotEmpty ? transactionId : null,
       metadata: metadata.isNotEmpty ? metadata : null,
     );
@@ -131,7 +143,10 @@ class InvoicePaymentReceiptScreen extends StatelessWidget {
       case 'USD': return '\$';
       case 'CAD': return 'C\$';
       case 'AUD': return 'A\$';
-      default: return '\u20a6';
+      case 'INR': return '\u20b9';
+      case 'JPY': return '\u00a5';
+      // Unknown codes show their code, never a wrong \u20a6.
+      default: return '${currency.toUpperCase()} ';
     }
   }
 }

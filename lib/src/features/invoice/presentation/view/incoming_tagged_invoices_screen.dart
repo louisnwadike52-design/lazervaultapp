@@ -5,12 +5,15 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/src/features/invoice/domain/entities/invoice_entity.dart';
 import 'package:lazervault/src/features/invoice/domain/entities/tagged_invoice_entity.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/tagged_invoice_cubit.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/tagged_invoice_state.dart';
 import 'package:lazervault/src/generated/common.pbenum.dart';
 import 'package:lazervault/src/features/invoice/presentation/widgets/pay_tagged_invoice_dialog.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:get_it/get_it.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 
 class IncomingTaggedInvoicesScreen extends StatefulWidget {
   const IncomingTaggedInvoicesScreen({super.key});
@@ -187,7 +190,10 @@ class _IncomingTaggedInvoicesScreenState
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                statistics.formattedPending('USD'),
+                // Cross-currency sum labelled with the user's own currency,
+                // not a hardcoded 'USD'.
+                statistics.formattedPending(
+                    GetIt.I<LocaleManager>().currentCurrency),
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 32.sp,
@@ -381,7 +387,36 @@ class _IncomingTaggedInvoicesScreenState
                       overflow: TextOverflow.ellipsis,
                     ),
                     SizedBox(height: 4.h),
-                    _buildStatusBadge(invoice),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildStatusBadge(invoice),
+                        // Quotes/requests must not masquerade as invoices —
+                        // a quote card otherwise just "has no Pay button"
+                        // with no explanation.
+                        if (invoice.invoice != null &&
+                            invoice.invoice!.type != InvoiceType.invoice) ...[
+                          SizedBox(width: 6.w),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8.w, vertical: 3.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF8B5CF6)
+                                  .withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6.r),
+                            ),
+                            child: Text(
+                              invoice.invoice!.typeDisplayName,
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF8B5CF6),
+                                fontSize: 10.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ],
                 ),
               ),

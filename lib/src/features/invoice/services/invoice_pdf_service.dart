@@ -151,7 +151,7 @@ class InvoicePdfService {
 
     final output = await getTemporaryDirectory();
     final file =
-        File('${output.path}/invoice_${invoice.id.substring(0, 8)}.pdf');
+        File('${output.path}/invoice_${invoice.displayNumber}.pdf');
     await file.writeAsBytes(await pdf.save());
     return file;
   }
@@ -227,7 +227,7 @@ class InvoicePdfService {
 
     final output = await getTemporaryDirectory();
     final file =
-        File('${output.path}/receipt_${invoice.id.substring(0, 8)}.pdf');
+        File('${output.path}/receipt_${invoice.displayNumber}.pdf');
     await file.writeAsBytes(await pdf.save());
     return file;
   }
@@ -283,7 +283,7 @@ class InvoicePdfService {
             ),
             pw.SizedBox(height: 8),
             pw.Text(
-              'Receipt #${invoice.id.substring(0, 8).toUpperCase()}',
+              'Receipt #${invoice.displayNumber}',
               style: pw.TextStyle(
                 fontSize: 12,
                 fontWeight: pw.FontWeight.bold,
@@ -462,10 +462,11 @@ class InvoicePdfService {
           if (info.isEmpty)
             pw.Text(
               'Not specified',
-              style: pw.TextStyle(
+              // No italic: only regular/bold Inter is embedded, and the pdf
+              // package RAISES on an undrawable glyph in a built-in-font run.
+              style: const pw.TextStyle(
                 fontSize: 11,
                 color: PdfColors.grey500,
-                fontStyle: pw.FontStyle.italic,
               ),
             ),
         ],
@@ -581,7 +582,7 @@ class InvoicePdfService {
           child: pw.Column(
             children: [
               _buildPaymentDetailRow(
-                  'Invoice ID', invoice.id.substring(0, 8).toUpperCase()),
+                  'Invoice No.', invoice.displayNumber),
               pw.Divider(color: PdfColors.grey300, height: 16),
               _buildPaymentDetailRow(
                   'Invoice Date', _formatDate(invoice.createdAt)),
@@ -704,7 +705,9 @@ class InvoicePdfService {
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             pw.Text(
-              'INVOICE',
+              // "QUOTE" / "PAYMENT REQUEST" — a quote PDF shared with a
+              // customer must never read as a payable INVOICE.
+              invoice.typeDisplayName.toUpperCase(),
               style: pw.TextStyle(
                 fontSize: 32,
                 fontWeight: pw.FontWeight.bold,
@@ -735,7 +738,7 @@ class InvoicePdfService {
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
             pw.Text(
-              'Invoice #${invoice.id.substring(0, 8).toUpperCase()}',
+              '${invoice.typeDisplayName} #${invoice.displayNumber}',
               style: pw.TextStyle(
                 fontSize: 16,
                 fontWeight: pw.FontWeight.bold,
@@ -871,10 +874,10 @@ class InvoicePdfService {
           if (info.isEmpty)
             pw.Text(
               'No information provided',
-              style: pw.TextStyle(
+              // No italic: see 'Not specified' note above.
+              style: const pw.TextStyle(
                 fontSize: 14,
                 color: PdfColors.grey600,
-                fontStyle: pw.FontStyle.italic,
               ),
             ),
         ],
@@ -1176,7 +1179,7 @@ class InvoicePdfService {
       // does not catch it because the path DOES exist — it is just not writable.
       return await ReceiptDownload.saveAndOpen(
         source: file,
-        fileName: 'invoice_${invoice.id.substring(0, 8)}.pdf',
+        fileName: 'invoice_${invoice.displayNumber}.pdf',
       );
     } catch (e) {
       throw Exception('Failed to download invoice: $e');
@@ -1189,7 +1192,7 @@ class InvoicePdfService {
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text: 'Invoice ${invoice.title}',
-        subject: 'Invoice #${invoice.id.substring(0, 8).toUpperCase()}',
+        subject: '${invoice.typeDisplayName} #${invoice.displayNumber}',
         // Required by iOS/iPadOS to anchor the share sheet popover.
         sharePositionOrigin: sharePositionOrigin,
       ));
@@ -1203,7 +1206,7 @@ class InvoicePdfService {
       final file = await generateInvoiceReceipt(invoice);
       return await ReceiptDownload.saveAndOpen(
         source: file,
-        fileName: 'receipt_${invoice.id.substring(0, 8)}.pdf',
+        fileName: 'receipt_${invoice.displayNumber}.pdf',
       );
     } catch (e) {
       throw Exception('Failed to download receipt: $e');
@@ -1216,7 +1219,7 @@ class InvoicePdfService {
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text: 'Payment Receipt for ${invoice.title}',
-        subject: 'Receipt #${invoice.id.substring(0, 8).toUpperCase()}',
+        subject: 'Receipt #${invoice.displayNumber}',
         // Required by iOS/iPadOS to anchor the share sheet popover.
         sharePositionOrigin: sharePositionOrigin,
       ));

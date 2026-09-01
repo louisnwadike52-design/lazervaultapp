@@ -130,15 +130,18 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
           );
 
           final stats = response.statistics;
+          // received_* fields are THIS user's tagged shares. The
+          // totalPending/Paid/Overdue trio is SENT-side — mapping it here
+          // used to show the user's own outgoing book on the Received tab.
           return TaggedInvoiceStatistics(
             totalInvoices: stats.totalReceived,
-            pendingInvoices: stats.totalPending,
-            overdueInvoices: stats.totalOverdue,
-            paidInvoices: stats.totalPaid,
+            pendingInvoices: stats.receivedPending,
+            overdueInvoices: stats.receivedOverdue,
+            paidInvoices: stats.receivedPaid,
             totalAmount: stats.totalAmountReceived,
-            pendingAmount: stats.totalAmountPending,
-            overdueAmount: stats.totalAmountOverdue,
-            paidAmount: stats.totalAmountPaid,
+            pendingAmount: stats.receivedAmountPending,
+            overdueAmount: 0,
+            paidAmount: stats.receivedAmountPaid,
           );
         } catch (_) {
           return TaggedInvoiceStatistics.empty;
@@ -212,7 +215,11 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
     required String idempotencyKey,
     String currency = 'USD',
   }) async {
+    // maxRetries: 0 — this is the MONEY call. Auto-retrying on a timeout can
+    // race a still-completing first attempt (the backend's Redis lock can be
+    // unavailable), and the payment path is user-retryable anyway.
     return retryWithBackoff(
+      maxRetries: 0,
       operation: () async {
         final request = pb.PayInvoiceRequest()
           ..invoiceId = invoiceId
@@ -311,7 +318,7 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
             .where((inv) {
               if (inv.dueDate.isEmpty) return false;
               try {
-                final dueDate = DateTime.parse(inv.dueDate);
+                final dueDate = DateTime.tryParse(inv.dueDate) ?? DateTime.now();
                 return dueDate.isAfter(now) && dueDate.isBefore(cutoff);
               } catch (_) {
                 return false;
@@ -405,6 +412,7 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
 
     final invoice = Invoice(
       id: proto.id,
+      invoiceNumber: proto.invoiceNumber,
       // Real title + document type: a QUOTE/REQUEST viewed from the tagged
       // lists must not masquerade as a generic "Invoice".
       title: proto.title.isNotEmpty
@@ -419,22 +427,31 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
       quoteAcceptedAt: proto.quoteAcceptedAt.isNotEmpty ? DateTime.tryParse(proto.quoteAcceptedAt) : null,
       quoteDeclinedAt: proto.quoteDeclinedAt.isNotEmpty ? DateTime.tryParse(proto.quoteDeclinedAt) : null,
       convertedAt: proto.convertedAt.isNotEmpty ? DateTime.tryParse(proto.convertedAt) : null,
-      createdAt: proto.createdAt.isNotEmpty ? DateTime.parse(proto.createdAt) : DateTime.now(),
-      dueDate: proto.dueDate.isNotEmpty ? DateTime.parse(proto.dueDate) : null,
+      // tryParse: one malformed row must not blank the whole Received tab.
+      createdAt: (proto.createdAt.isNotEmpty ? DateTime.tryParse(proto.createdAt) : null) ?? DateTime.now(),
+      dueDate: proto.dueDate.isNotEmpty ? DateTime.tryParse(proto.dueDate) : null,
+      paidAt: proto.paidAt.isNotEmpty ? DateTime.tryParse(proto.paidAt) : null,
       fromUserId: proto.userId,
       toUserId: proto.accountId.isNotEmpty ? proto.accountId : null,
       toEmail: proto.recipientEmail.isNotEmpty ? proto.recipientEmail : null,
       toName: proto.recipientName.isNotEmpty ? proto.recipientName : null,
       paymentReference: proto.paymentReference.isNotEmpty ? proto.paymentReference : null,
+      // One proto description string, encoded "name: description" at create —
+      // split it back so payer surfaces never render the name twice.
       items: proto.items.isNotEmpty
-          ? proto.items.map((item) => InvoiceItem(
-              id: 'item_${DateTime.now().millisecondsSinceEpoch}',
-              name: item.description.contains(':') ? item.description.split(':').first.trim() : item.description,
-              description: item.description.isNotEmpty ? item.description : null,
-              quantity: item.quantity.toDouble(),
-              unitPrice: item.unitPrice,
-              totalPrice: item.total,
-            )).toList()
+          ? proto.items.map((item) {
+              final raw = item.description;
+              final colon = raw.indexOf(':');
+              final desc = colon > 0 ? raw.substring(colon + 1).trim() : '';
+              return InvoiceItem(
+                id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+                name: colon > 0 ? raw.substring(0, colon).trim() : raw,
+                description: desc.isNotEmpty ? desc : null,
+                quantity: item.quantity.toDouble(),
+                unitPrice: item.unitPrice,
+                totalPrice: item.total,
+              );
+            }).toList()
           : [InvoiceItem(
               id: 'item_default',
               name: 'Invoice Item',
@@ -447,6 +464,34 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
       taxAmount: proto.tax > 0 ? proto.tax : null,
       discountAmount: proto.discount > 0 ? proto.discount : null,
       totalAmount: totalAmount,
+      // The list RPC now ships tagged users (share amounts + statuses): this is
+      // what makes _myShareAlreadyPaid, split visibility and correct share
+      // amounts work from the Received tab, not just from details.
+      taggedUsers: proto.taggedUsers.isNotEmpty
+          ? proto.taggedUsers
+              .map((tu) => TaggedUserInfo(
+                    userId: tu.userId,
+                    username: tu.username,
+                    firstName: tu.firstName,
+                    lastName: tu.lastName,
+                    profilePicture: tu.profilePicture.isNotEmpty
+                        ? tu.profilePicture
+                        : null,
+                    status: tu.status.isNotEmpty ? tu.status : 'pending',
+                    taggedAt: tu.taggedAt.isNotEmpty
+                        ? DateTime.tryParse(tu.taggedAt)
+                        : null,
+                    viewedAt: tu.viewedAt.isNotEmpty
+                        ? DateTime.tryParse(tu.viewedAt)
+                        : null,
+                    paidAt: tu.paidAt.isNotEmpty
+                        ? DateTime.tryParse(tu.paidAt)
+                        : null,
+                    shareAmount: tu.shareAmount,
+                    amountPaid: tu.amountPaid,
+                  ))
+              .toList()
+          : null,
     );
 
     // Determine payment status from invoice status
@@ -466,7 +511,7 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
         // Check if overdue based on due date
         if (proto.dueDate.isNotEmpty) {
           try {
-            final dueDate = DateTime.parse(proto.dueDate);
+            final dueDate = DateTime.tryParse(proto.dueDate) ?? DateTime.now();
             if (dueDate.isBefore(DateTime.now())) {
               paymentStatus = InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_OVERDUE;
               break;
@@ -495,7 +540,7 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
       paymentStatus: paymentStatus,
       priority: InvoicePriority.INVOICE_PRIORITY_MEDIUM,
       isViewed: true,
-      taggedAt: proto.createdAt.isNotEmpty ? DateTime.parse(proto.createdAt) : DateTime.now(),
+      taggedAt: (proto.createdAt.isNotEmpty ? DateTime.tryParse(proto.createdAt) : null) ?? DateTime.now(),
       invoice: invoice,
       taggerName: isIncoming ? creatorName : null,
       taggerUsername: isIncoming ? creatorUsername : null,

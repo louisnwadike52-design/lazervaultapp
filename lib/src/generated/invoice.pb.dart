@@ -982,6 +982,11 @@ class InvoiceStatistics extends $pb.GeneratedMessage {
     $core.double? totalAmountPending,
     $core.double? totalAmountOverdue,
     $core.double? collectionRate,
+    $core.int? receivedPending,
+    $core.int? receivedPaid,
+    $core.int? receivedOverdue,
+    $core.double? receivedAmountPending,
+    $core.double? receivedAmountPaid,
   }) {
     final result = create();
     if (totalSent != null) result.totalSent = totalSent;
@@ -998,6 +1003,13 @@ class InvoiceStatistics extends $pb.GeneratedMessage {
     if (totalAmountOverdue != null)
       result.totalAmountOverdue = totalAmountOverdue;
     if (collectionRate != null) result.collectionRate = collectionRate;
+    if (receivedPending != null) result.receivedPending = receivedPending;
+    if (receivedPaid != null) result.receivedPaid = receivedPaid;
+    if (receivedOverdue != null) result.receivedOverdue = receivedOverdue;
+    if (receivedAmountPending != null)
+      result.receivedAmountPending = receivedAmountPending;
+    if (receivedAmountPaid != null)
+      result.receivedAmountPaid = receivedAmountPaid;
     return result;
   }
 
@@ -1032,6 +1044,16 @@ class InvoiceStatistics extends $pb.GeneratedMessage {
         10, _omitFieldNames ? '' : 'totalAmountOverdue', $pb.PbFieldType.OD)
     ..a<$core.double>(
         11, _omitFieldNames ? '' : 'collectionRate', $pb.PbFieldType.OD)
+    ..a<$core.int>(
+        12, _omitFieldNames ? '' : 'receivedPending', $pb.PbFieldType.O3)
+    ..a<$core.int>(
+        13, _omitFieldNames ? '' : 'receivedPaid', $pb.PbFieldType.O3)
+    ..a<$core.int>(
+        14, _omitFieldNames ? '' : 'receivedOverdue', $pb.PbFieldType.O3)
+    ..a<$core.double>(
+        15, _omitFieldNames ? '' : 'receivedAmountPending', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        16, _omitFieldNames ? '' : 'receivedAmountPaid', $pb.PbFieldType.OD)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1153,6 +1175,54 @@ class InvoiceStatistics extends $pb.GeneratedMessage {
   $core.bool hasCollectionRate() => $_has(10);
   @$pb.TagNumber(11)
   void clearCollectionRate() => $_clearField(11);
+
+  /// Received-side breakdown (THIS user's tagged shares). The
+  /// total_paid/pending/overdue trio above is SENT-side only — the app's
+  /// Received tab previously displayed the user's own outgoing book.
+  @$pb.TagNumber(12)
+  $core.int get receivedPending => $_getIZ(11);
+  @$pb.TagNumber(12)
+  set receivedPending($core.int value) => $_setSignedInt32(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasReceivedPending() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearReceivedPending() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.int get receivedPaid => $_getIZ(12);
+  @$pb.TagNumber(13)
+  set receivedPaid($core.int value) => $_setSignedInt32(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasReceivedPaid() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearReceivedPaid() => $_clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.int get receivedOverdue => $_getIZ(13);
+  @$pb.TagNumber(14)
+  set receivedOverdue($core.int value) => $_setSignedInt32(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasReceivedOverdue() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearReceivedOverdue() => $_clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.double get receivedAmountPending => $_getN(14);
+  @$pb.TagNumber(15)
+  set receivedAmountPending($core.double value) => $_setDouble(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasReceivedAmountPending() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearReceivedAmountPending() => $_clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.double get receivedAmountPaid => $_getN(15);
+  @$pb.TagNumber(16)
+  set receivedAmountPaid($core.double value) => $_setDouble(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasReceivedAmountPaid() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearReceivedAmountPaid() => $_clearField(16);
 }
 
 /// ===== CREATE INVOICE =====

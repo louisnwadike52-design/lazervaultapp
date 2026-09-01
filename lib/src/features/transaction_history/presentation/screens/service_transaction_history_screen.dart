@@ -5,8 +5,8 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_state.dart';
-import 'package:lazervault/src/features/transaction_history/presentation/screens/transaction_detail_screen.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_card.dart';
+import 'package:lazervault/src/features/transaction_history/utils/transaction_receipt_router.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_filters.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_states.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -70,10 +70,7 @@ class _ServiceTransactionHistoryScreenState
   }
 
   void _onTransactionTap(UnifiedTransaction transaction) {
-    Get.to(
-      () => TransactionDetailScreen(transaction: transaction),
-      transition: Transition.rightToLeft,
-    );
+    TransactionReceiptRouter.navigateToReceipt(transaction);
   }
 
   Map<DateTime, List<UnifiedTransaction>> _groupByDate(

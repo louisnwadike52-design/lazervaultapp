@@ -445,7 +445,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  'Invoice #${invoice.id.substring(0, 8).toUpperCase()}',
+                  '${invoice.typeDisplayName} #${invoice.displayNumber}',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF111827),
                     fontSize: 16.sp,
@@ -1856,7 +1856,9 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
         subtitle = 'Scan to pay invoice';
         break;
       default:
-        qrData = InvoiceQrService.generateInvoiceUrl(invoice);
+        // No public web page serves /invoice/<id>, so a URL QR would resolve
+        // to nothing — encode the scannable JSON payload instead.
+        qrData = InvoiceQrService.generateInvoiceQR(invoice);
         title = 'Invoice QR Code';
         subtitle = 'Scan to view invoice';
     }
@@ -2123,7 +2125,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
 
       // Get temporary directory
       final Directory tempDir = await getTemporaryDirectory();
-      final String fileName = 'qr_code_${invoice.id.substring(0, 8)}.png';
+      final String fileName = 'qr_code_${invoice.displayNumber}.png';
       final File file = File('${tempDir.path}/$fileName');
       
       // Write image to file

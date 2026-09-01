@@ -220,4 +220,51 @@ void main() {
       expect(classifyDomain(hc, 'purchase', cap, 'giftcards-service'), 'giftcard');
     });
   });
+
+  group('invoice platform fee — never a transfer', () {
+    const unlockRef =
+        'IDEM-PW-unlock-123e4567-e89b-12d3-a456-426614174000-a1b2c3d4-FROM';
+
+    test('new rows: invoice_creation_fee category → invoice_fee domain', () {
+      expect(
+          classifyDomain('invoice_creation_fee', 'Invoice creation fee',
+              unlockRef, 'invoice-service'),
+          'invoice_fee');
+      expect(
+          classifyDomain(
+              'invoice_unlock_fee', 'Invoice creation fee', unlockRef, ''),
+          'invoice_fee');
+    });
+
+    test(
+        'legacy rows: service_fee + core-payments-service still resolve via the '
+        'unlock reference — the branch must beat core-payments⇒transfer', () {
+      expect(
+          classifyDomain('service_fee', 'Platform service fee payment',
+              unlockRef, 'core-payments-service'),
+          'invoice_fee');
+      // A non-invoice service_fee from core-payments must NOT be captured.
+      expect(
+          classifyDomain('service_fee', 'Platform service fee payment',
+              'IDEM-OTHER-abc', 'core-payments-service'),
+          isNot('invoice_fee'));
+    });
+
+    test('title: Invoice Creation Fee (debit) / Invoice Fee Refund (credit)',
+        () {
+      expect(titleForDomain('invoice_fee', 'debit'), 'Invoice Creation Fee');
+      expect(titleForDomain('invoice_fee', 'credit'), 'Invoice Fee Refund');
+    });
+
+    test('service type: fee icon, never transfer/invoice-payment', () {
+      expect(serviceTypeForDomain('invoice_fee'), TransactionServiceType.fee);
+    });
+
+    test('invoiceIdFromReference recovers the UUID from legacy references', () {
+      expect(invoiceIdFromReference(unlockRef),
+          '123e4567-e89b-12d3-a456-426614174000');
+      expect(invoiceIdFromReference('TRF-123456'), isNull);
+      expect(invoiceIdFromReference('IDEM-PW-unlock-not-a-uuid-FROM'), isNull);
+    });
+  });
 }

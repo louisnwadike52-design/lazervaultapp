@@ -1167,6 +1167,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           transaction: tx,
           copyType: _chosenCopy,
           format: _chosenFormat,
+          // Anchors the iPad share popover; omitted it anchored top-left.
+          sharePositionOrigin: _shareOrigin(),
         );
       }
     } catch (e) {

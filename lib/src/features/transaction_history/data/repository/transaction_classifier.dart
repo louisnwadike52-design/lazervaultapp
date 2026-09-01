@@ -21,6 +21,14 @@ import 'package:lazervault/core/types/unified_transaction.dart';
 ///
 /// Returns one of: 'crypto' | 'exchange' | 'transfer' | 'insurance' |
 /// 'refresh_fee' | 'invoice' | 'rmb' | 'withdrawal' | 'giftcard' | ''.
+/// Recovers the invoice UUID from a legacy fee ledger reference
+/// (`IDEM-PW-unlock-<invoiceUUID>-<8hex>-FROM`) — the pre-reclassification
+/// rows carry no metadata, but their idempotency key embeds the invoice id.
+String? invoiceIdFromReference(String ref) => RegExp(
+        r'^IDEM-PW-unlock-([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})-')
+    .firstMatch(ref)
+    ?.group(1);
+
 String classifyDomain(String category, String description, String reference,
     [String serviceName = '']) {
   final svc = serviceName.toLowerCase();
@@ -43,6 +51,18 @@ String classifyDomain(String category, String description, String reference,
   final cat = category.toLowerCase();
   if (cat.contains('crypto_convert')) return 'crypto_swap';
   if (cat.contains('crypto_send')) return 'crypto_send';
+
+  // Invoice creation/unlock fee — a PLATFORM fee into the revenue ledger,
+  // never a transfer. Must win before the core-payments⇒transfer branch:
+  // legacy rows were stamped service_name=core-payments-service and category
+  // service_fee, but their reference embeds the invoice UUID.
+  if (cat == 'invoice_creation_fee' || cat == 'invoice_unlock_fee') {
+    return 'invoice_fee';
+  }
+  if (cat == 'service_fee' &&
+      (s.contains('invoice') || invoiceIdFromReference(reference) != null)) {
+    return 'invoice_fee';
+  }
 
   // 1) service_name is authoritative for the shared hold_capture bucket.
   if (svc.contains('giftcard')) return 'giftcard';
@@ -108,6 +128,8 @@ String? titleForDomain(String domain, String typeLower) {
       return credit ? 'Insurance Refund' : 'Insurance Payment';
     case 'refresh_fee':
       return credit ? 'Balance Refresh Fee Refund' : 'Balance Refresh Fee';
+    case 'invoice_fee':
+      return credit ? 'Invoice Fee Refund' : 'Invoice Creation Fee';
     case 'invoice':
       return credit ? 'Invoice Received' : 'Invoice Payment';
     case 'rmb':
@@ -137,6 +159,10 @@ TransactionServiceType? serviceTypeForDomain(String domain) {
     case 'insurance':
       return TransactionServiceType.insurance;
     case 'refresh_fee':
+      return TransactionServiceType.fee;
+    case 'invoice_fee':
+      // Reuse the EXISTING fee enum value — the history cache persists enum
+      // indices, so inserting/reordering values corrupts cached rows.
       return TransactionServiceType.fee;
     case 'invoice':
       return TransactionServiceType.invoice;

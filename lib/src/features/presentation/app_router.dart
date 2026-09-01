@@ -145,8 +145,6 @@ import 'package:lazervault/src/features/invoice/presentation/view/invoice_paymen
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_processing_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_item_payment_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_payment_receipt_screen.dart';
-import 'package:lazervault/src/features/pay_invoice/presentation/view/pay_invoice_screen.dart';
-import 'package:lazervault/src/features/pay_invoice/presentation/cubit/pay_invoice_cubit.dart';
 // AI Scan to Pay imports
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_to_pay_screen.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/cubit/ai_scan_cubit.dart';
@@ -1949,18 +1947,10 @@ class AppRouter {
       },
       transition: Transition.rightToLeft,
     ),
-    GetPage(
-      name: AppRoutes.payInvoice,
-      page: () => MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (_) => serviceLocator<PayInvoiceCubit>(),
-          ),
-        ],
-        child: serviceLocator<PayInvoiceScreen>(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
+    // NOTE: the old /pay-invoice route was removed — nothing navigated to it,
+    // and its repository sent no PIN/verification-token/idempotency key against
+    // an RPC the backend never implemented. All invoice payments go through
+    // the invoice-details / quick-pay flows.
     // AI Scan to Pay routes
     GetPage(
       name: AppRoutes.aiScanToPay,

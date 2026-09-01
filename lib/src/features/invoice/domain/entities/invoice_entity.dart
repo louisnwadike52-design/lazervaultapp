@@ -4,6 +4,10 @@ part 'invoice_entity_widgets.dart';
 
 class Invoice extends Equatable {
   final String id;
+
+  /// Human-facing "INV-xxxxx" number — what emails/receipts/PDFs show. Empty
+  /// only for locally-built (not yet persisted) invoices.
+  final String invoiceNumber;
   final String title;
   final String description;
   final double amount;
@@ -45,6 +49,7 @@ class Invoice extends Equatable {
 
   const Invoice({
     required this.id,
+    this.invoiceNumber = '',
     required this.title,
     required this.description,
     required this.amount,
@@ -84,6 +89,7 @@ class Invoice extends Equatable {
   @override
   List<Object?> get props => [
         id,
+        invoiceNumber,
         title,
         description,
         amount,
@@ -122,6 +128,7 @@ class Invoice extends Equatable {
 
   Invoice copyWith({
     String? id,
+    String? invoiceNumber,
     String? title,
     String? description,
     double? amount,
@@ -159,6 +166,7 @@ class Invoice extends Equatable {
   }) {
     return Invoice(
       id: id ?? this.id,
+      invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       title: title ?? this.title,
       description: description ?? this.description,
       amount: amount ?? this.amount,
@@ -200,6 +208,14 @@ class Invoice extends Equatable {
   /// converts them to an invoice (the backend enforces this too).
   bool get isQuote => type == InvoiceType.quote;
 
+  /// The number to show next to "#": the real INV-xxxxx when known (matches
+  /// emails/notifications/receipts), else a clamped id fragment — never a
+  /// RangeError on short/empty local ids.
+  String get displayNumber {
+    if (invoiceNumber.isNotEmpty) return invoiceNumber;
+    return id.length > 8 ? id.substring(0, 8).toUpperCase() : id.toUpperCase();
+  }
+
   bool get isOverdue {
     if (dueDate == null || status == InvoiceStatus.paid || status == InvoiceStatus.partiallyPaid) return false;
     return DateTime.now().isAfter(dueDate!);
@@ -213,11 +229,21 @@ class Invoice extends Equatable {
   int get unpaidUsersCount =>
       (taggedUsers?.length ?? 0) - paidUsersCount;
 
-  double get paidAmount =>
-      taggedUsers
-          ?.where((u) => u.status == 'paid')
-          .fold<double>(0.0, (sum, _) => sum + (totalAmount / (taggedUsers?.length ?? 1))) ??
-      0.0;
+  /// What has actually been paid so far. Uses each paid tag's real
+  /// `amountPaid` (correct for custom splits); a paid tag whose amountPaid is
+  /// unset (legacy rows) falls back to its shareAmount, then to an equal
+  /// share.
+  double get paidAmount {
+    final users = taggedUsers;
+    if (users == null || users.isEmpty) {
+      return status == InvoiceStatus.paid ? totalAmount : 0.0;
+    }
+    return users.where((u) => u.status == 'paid').fold<double>(0.0, (sum, u) {
+      if (u.amountPaid > 0) return sum + u.amountPaid;
+      if (u.shareAmount > 0) return sum + u.shareAmount;
+      return sum + totalAmount / users.length;
+    });
+  }
 
   double get unpaidAmount => totalAmount - paidAmount;
 

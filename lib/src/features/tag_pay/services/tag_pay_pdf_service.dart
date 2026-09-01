@@ -1392,13 +1392,31 @@ class TagPayPdfService {
 
       final currencySymbol = _currencySymbolFor(transaction.currency);
       final amount = transaction.amount.toStringAsFixed(2);
-      final recipient = transaction.metadata?['Recipient']?.toString() ??
-          transaction.title;
+
+      // An invoice payment is not a transfer: name it correctly and reference
+      // the invoice number instead of "to <title>" (which produced the absurd
+      // "to Invoice Payment").
+      final String text;
+      final String subject;
+      if (transaction.serviceType == TransactionServiceType.invoice) {
+        final invoiceNo = transaction.metadata?['Invoice No.']?.toString() ??
+            transaction.metadata?['Invoice ID']?.toString();
+        subject = 'Lazervault Invoice Receipt';
+        text = invoiceNo != null && invoiceNo.isNotEmpty
+            ? 'Lazervault Invoice Receipt - $currencySymbol$amount for Invoice #$invoiceNo'
+            : 'Lazervault Invoice Receipt - $currencySymbol$amount';
+      } else {
+        final recipient = transaction.metadata?['Recipient']?.toString() ??
+            transaction.title;
+        subject = 'Lazervault Transfer Receipt';
+        text =
+            'Lazervault Transfer Receipt - $currencySymbol$amount to $recipient';
+      }
 
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
-        text: 'Lazervault Transfer Receipt - $currencySymbol$amount to $recipient',
-        subject: 'Lazervault Transfer Receipt',
+        text: text,
+        subject: subject,
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
     } catch (e) {

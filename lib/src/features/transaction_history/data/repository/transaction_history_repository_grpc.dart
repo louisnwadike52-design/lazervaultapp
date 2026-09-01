@@ -367,6 +367,15 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
 
       final transactions = response.transactions.map(_convertFromProto).toList();
 
+      // Legacy invoice platform-fee rows were stamped core-payments-service,
+      // so the backend returns them for the Transfers view. They are fees into
+      // the revenue ledger, not transfers — never show them there. (New rows
+      // are stamped invoice-service and don't hit this filter.)
+      if (serviceType == TransactionServiceType.transfer) {
+        transactions
+            .removeWhere((tx) => tx.serviceType == TransactionServiceType.fee);
+      }
+
       // Cache if first page (scoped per account — see scopedKey above)
       if (page == 1 && transactions.isNotEmpty && scopedKey != null) {
         try {
@@ -630,6 +639,15 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       }
     }
 
+    // Invoice PLATFORM fees are never transfers (nor generic invoice
+    // payments): force the fee type so the icon/title/receipt-routing all
+    // agree, including for legacy rows still stamped core-payments-service.
+    final feeDomain = _domainFromText(protoTx.category, protoTx.description,
+        protoTx.reference, protoTx.serviceName);
+    if (feeDomain == 'invoice_fee') {
+      serviceType = TransactionServiceType.fee;
+    }
+
     // The utility-payments service serves airtime/data/electricity/water/tv/
     // internet/education/epin/betting under ONE backend service name, so the
     // service-name map returns the FIRST match (electricity) for all of them —
@@ -654,6 +672,17 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     if (protoTx.balanceBefore != 0 || protoTx.balanceAfter != 0) {
       metadata['balance_before'] = protoTx.balanceBefore;
       metadata['balance_after'] = protoTx.balanceAfter;
+    }
+
+    // Legacy invoice-fee rows predate the metadata stamp — recover the
+    // invoice id from the idempotency reference so tapping the row can still
+    // open the invoice receipt.
+    if (feeDomain == 'invoice_fee' && metadata['invoice_id'] == null) {
+      final recoveredInvoiceId =
+          classifier.invoiceIdFromReference(protoTx.reference);
+      if (recoveredInvoiceId != null) {
+        metadata['invoice_id'] = recoveredInvoiceId;
+      }
     }
 
     // Zero-amount crypto rows (crypto_convert swap / crypto_send) carry their
@@ -739,9 +768,13 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     // fractional part of a full-precision crypto amount
     // ("1.7000000000000000000 USDT") is 10+ digits and was being rendered as
     // an "Account 7000000000000000000" row.
+    // Also never for invoice platform fees: there is no counterparty, and the
+    // epoch-second in "…unlock-<uuid>-1756704000-FROM" descriptions was being
+    // rendered as "Account 1756704000".
     if (counterpartyAccount == null &&
         !isCryptoSwap &&
         !isCryptoSend &&
+        feeDomain != 'invoice_fee' &&
         protoTx.description.isNotEmpty) {
       final accountMatch =
           RegExp(r'(?<![.\d])(\d{10,})\b').firstMatch(protoTx.description);

@@ -830,26 +830,51 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                         overflow: TextOverflow.ellipsis,
                       ),
                       SizedBox(height: 4.h),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                        decoration: BoxDecoration(
-                          color: statusColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6.r),
-                        ),
-                        child: Text(
-                          invoice.statusText,
-                          style: GoogleFonts.inter(
-                            color: statusColor,
-                            fontSize: 10.sp,
-                            fontWeight: FontWeight.w600,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                            decoration: BoxDecoration(
+                              color: statusColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6.r),
+                            ),
+                            child: Text(
+                              invoice.statusText,
+                              style: GoogleFonts.inter(
+                                color: statusColor,
+                                fontSize: 10.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
-                        ),
+                          // Quotes/requests must not masquerade as invoices.
+                          if (invoice.invoice != null &&
+                              invoice.invoice!.type != InvoiceType.invoice) ...[
+                            SizedBox(width: 6.w),
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                              decoration: BoxDecoration(
+                                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(6.r),
+                              ),
+                              child: Text(
+                                invoice.invoice!.typeDisplayName,
+                                style: GoogleFonts.inter(
+                                  color: InvoiceThemeColors.primaryPurple,
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
                 ),
                 Text(
-                  '$_currencySymbol${invoice.amount.toStringAsFixed(2)}',
+                  '${_getCurrencySymbol(invoice.currency)}${invoice.amount.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
                     color: InvoiceThemeColors.textWhite,
                     fontSize: 17.sp,
@@ -919,8 +944,9 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                 ],
               ),
             ],
-            // Quick Pay button for pending invoices
-            if (!isPaid) ...[
+            // Quick Pay button for pending invoices. Quotes are documents,
+            // not payables — no pay affordance until the creator converts.
+            if (!isPaid && invoice.invoice?.isQuote != true) ...[
               SizedBox(height: 10.h),
               SizedBox(
                 width: double.infinity,
@@ -1072,28 +1098,50 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                           ),
                         )
                       else
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                          decoration: BoxDecoration(
-                            color: isLocked
-                                ? const Color(0xFFFB923C).withValues(alpha: 0.1)
-                                : statusColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6.r),
-                          ),
-                          child: Text(
-                            isLocked ? 'Locked' : invoice.statusDisplayName,
-                            style: GoogleFonts.inter(
-                              color: isLocked ? const Color(0xFFFB923C) : statusColor,
-                              fontSize: 10.sp,
-                              fontWeight: FontWeight.w600,
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                              decoration: BoxDecoration(
+                                color: statusColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6.r),
+                              ),
+                              child: Text(
+                                invoice.statusDisplayName,
+                                style: GoogleFonts.inter(
+                                  color: statusColor,
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
-                          ),
+                            // Quotes/requests must not masquerade as invoices.
+                            if (invoice.type != InvoiceType.invoice) ...[
+                              SizedBox(width: 6.w),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                                decoration: BoxDecoration(
+                                  color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(6.r),
+                                ),
+                                child: Text(
+                                  invoice.typeDisplayName,
+                                  style: GoogleFonts.inter(
+                                    color: InvoiceThemeColors.primaryPurple,
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                     ],
                   ),
                 ),
                 Text(
-                  '$_currencySymbol${invoice.amount.toStringAsFixed(2)}',
+                  '${_getCurrencySymbol(invoice.currency)}${invoice.amount.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
                     color: InvoiceThemeColors.textWhite,
                     fontSize: 17.sp,
