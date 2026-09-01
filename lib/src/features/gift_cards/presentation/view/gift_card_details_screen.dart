@@ -22,6 +22,7 @@ import 'dart:async';
 import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/widgets/prepaid_badge.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -268,6 +269,10 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
                 fontWeight: FontWeight.w400,
               ),
             ),
+            if (_isPrepaid) ...[
+              SizedBox(height: 8.h),
+              const PrepaidBadge(),
+            ],
             SizedBox(height: 12.h),
             // Redemption code + PIN — equivalent of the electricity
             // token card, styled the same way (purple gradient instead
@@ -286,6 +291,12 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             if (_isAsyncAwaitingPin())
               _buildAwaitingPinCard(),
             if (_isAsyncAwaitingPin()) SizedBox(height: 10.h),
+            // How a prepaid card differs from a store voucher — shown on the
+            // receipt too, since that's what the buyer keeps and re-opens.
+            if (_isPrepaid) ...[
+              const PrepaidExplainer(),
+              SizedBox(height: 10.h),
+            ],
             _buildTransactionDetails(),
             SizedBox(height: 14.h),
             BillReceiptQrBlock(
@@ -538,6 +549,9 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
   // rows. Each row has its own copy icon + tap-to-copy behaviour;
   // the user-flagged need: PIN was previously a static read-only
   // chip with no copy affordance, now matches the code's UX.
+  /// Open-loop prepaid card rather than a merchant voucher.
+  bool get _isPrepaid => isPrepaidGiftCard(giftCard.brandName);
+
   /// A credential that is actually a URL (link-redeemed brands such as Google
   /// Play ship one) must read as a link, not as a code to type out.
   static bool _isLink(String? v) {

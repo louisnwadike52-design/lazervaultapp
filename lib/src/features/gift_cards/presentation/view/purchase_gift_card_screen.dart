@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/widgets/prepaid_badge.dart';
+
 import 'package:fpdart/fpdart.dart' show Left;
 import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 import 'widgets/pre_order_notice.dart';
@@ -94,6 +96,11 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   /// The brand the screen renders and prices from: the provider's live answer
   /// once it arrives, otherwise the tile that was tapped.
   GiftCardBrand get _brand => _liveBrand ?? widget.brand;
+
+  /// Open-loop prepaid card (Visa/Mastercard/Amex) rather than a merchant
+  /// voucher — drives the badge and the short explainer on this screen.
+  bool get _isPrepaid =>
+      isPrepaidGiftCard(_brand.name, category: _brand.category);
 
   StreamSubscription<AccountCardsSummaryState>? _balanceSub;
 
@@ -542,15 +549,25 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  _brand.name,
-                  style: GoogleFonts.inter(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        _brand.name,
+                        style: GoogleFonts.inter(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (_isPrepaid) ...[
+                      SizedBox(width: 6.w),
+                      const PrepaidBadge(compact: true),
+                    ],
+                  ],
                 ),
                 SizedBox(height: 2.h),
                 Text(
@@ -609,6 +626,16 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   }
 
   Widget _buildAmountSelection() {
+    // Prepaid explainer sits at the top of the amount step — the moment the
+    // user is committing money is when "this spends like a debit card and
+    // needs activating" actually changes a decision.
+    final prepaidNote = _isPrepaid
+        ? Padding(
+            padding: EdgeInsets.only(bottom: 14.h),
+            child: const PrepaidExplainer(),
+          )
+        : const SizedBox.shrink();
+
     // Repeat-purchase mode: render a single locked summary instead
     // of pills + custom input. Mirrors the "you're buying X" pattern
     // — user can't change the amount, just confirm and tap Buy.
@@ -617,6 +644,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          prepaidNote,
           Text(
             'Amount',
             style: GoogleFonts.inter(
@@ -680,6 +708,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        prepaidNote,
         Text(
           'Select Amount',
           style: GoogleFonts.inter(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/widgets/prepaid_badge.dart';
+
 import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 import 'widgets/pre_order_notice.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/widgets/rich_card_text.dart';
@@ -1104,15 +1106,27 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                 ],
               ),
               SizedBox(height: 8.h),
-              Text(
-                brand.name,
-                style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      brand.name,
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  // Open-loop prepaid cards behave like a debit card, not a
+                  // store voucher — flag them before the user commits.
+                  if (isPrepaidGiftCard(brand.name, category: brand.category)) ...[
+                    SizedBox(width: 6.w),
+                    const PrepaidBadge(compact: true),
+                  ],
+                ],
               ),
               SizedBox(height: 2.h),
               Text(

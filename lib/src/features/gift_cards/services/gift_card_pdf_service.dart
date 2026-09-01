@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/widgets/prepaid_badge.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -122,6 +123,22 @@ class GiftCardPdfService {
           // the code/PIN panel high on page one instead of straddling the page
           // break, which split it from its own heading.
           ..._buildRedemptionSection(giftCard: giftCard),
+          if (isPrepaidGiftCard(giftCard.brandName)) ...[
+            pw.Container(
+              width: double.infinity,
+              padding: const pw.EdgeInsets.all(10),
+              decoration: pw.BoxDecoration(
+                color: PdfColors.lightBlue50,
+                borderRadius: pw.BorderRadius.circular(6),
+                border: pw.Border.all(color: PdfColors.lightBlue200),
+              ),
+              child: pw.Text(
+                _text(PrepaidExplainer.text),
+                style: _getTextStyle(fontSize: 9, color: PdfColors.grey800),
+              ),
+            ),
+            pw.SizedBox(height: 14),
+          ],
           _buildPurchaseDetails(
             giftCard: giftCard,
             currencySymbol: currencySymbol,
@@ -203,6 +220,23 @@ class GiftCardPdfService {
             _text(giftCard.brandName),
             style: _getTextStyle(fontSize: 14, isBold: true),
           ),
+          // Open-loop prepaid cards spend like a debit card and need
+          // activating — say so on the document the buyer keeps.
+          if (isPrepaidGiftCard(giftCard.brandName)) ...[
+            pw.SizedBox(height: 6),
+            pw.Container(
+              padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 8, vertical: 3),
+              decoration: pw.BoxDecoration(
+                color: PdfColors.lightBlue50,
+                borderRadius: pw.BorderRadius.circular(4),
+                border: pw.Border.all(color: PdfColors.lightBlue200),
+              ),
+              child: pw.Text('PREPAID',
+                  style: _getTextStyle(
+                      fontSize: 8, isBold: true, color: PdfColors.blue800)),
+            ),
+          ],
           pw.SizedBox(height: 8),
           pw.Text(
             '$currencySymbol$amount',
