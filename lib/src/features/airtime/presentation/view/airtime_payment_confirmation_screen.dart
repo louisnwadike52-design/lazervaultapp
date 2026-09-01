@@ -372,29 +372,55 @@ class _AirtimePaymentConfirmationScreenState
   // Build
   // ---------------------------------------------------------------------------
 
+  /// Back arrow + LazerVault wordmark, matching the send-funds receipt
+  /// (`unified_transaction_receipt.dart`). A receipt is branded paperwork —
+  /// a centred "Payment Receipt" app-bar title says less than the logo does
+  /// and made this screen the odd one out among the receipts.
+  Widget _brandHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          onPressed: _handleBack,
+          icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/logo.png',
+              width: 28.w,
+              height: 28.w,
+              errorBuilder: (_, __, ___) => Icon(
+                Icons.shield_outlined,
+                color: const Color(0xFF3B82F6),
+                size: 24.sp,
+              ),
+            ),
+            SizedBox(width: 7.w),
+            Text(
+              'Lazervault',
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: _handleBack,
-          icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
-        ),
-        title: Text(
-          'Payment Receipt',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
       body: SafeArea(
-        top: false,
+        top: true,
         // Pull-to-refresh reruns the history fetch so any reconciler
         // updates land on this view. The receipt is otherwise static.
         child: RefreshIndicator(
@@ -407,6 +433,8 @@ class _AirtimePaymentConfirmationScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              _brandHeader(),
+              SizedBox(height: 4.h),
               _buildStatusIcon(),
               SizedBox(height: 12.h),
               Text(

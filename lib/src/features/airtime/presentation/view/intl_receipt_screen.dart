@@ -116,31 +116,8 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            onPressed: () {
-              if (fromHistory) {
-                Get.back();
-              } else {
-                Get.offAllNamed(AppRoutes.airtime);
-              }
-            },
-            icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
-          ),
-          title: Text(
-            'Payment Receipt',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          centerTitle: true,
-        ),
         body: SafeArea(
-          top: false,
+          top: true,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding:
@@ -148,6 +125,52 @@ class _IntlReceiptScreenState extends State<IntlReceiptScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                // Back arrow + LazerVault wordmark, matching the send-funds
+                // receipt instead of a centred "Payment Receipt" title.
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        if (fromHistory) {
+                          Get.back();
+                        } else {
+                          Get.offAllNamed(AppRoutes.airtime);
+                        }
+                      },
+                      icon: Icon(Icons.arrow_back,
+                          color: Colors.white, size: 22.sp),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          'assets/images/logo.png',
+                          width: 28.w,
+                          height: 28.w,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.shield_outlined,
+                            color: const Color(0xFF3B82F6),
+                            size: 24.sp,
+                          ),
+                        ),
+                        SizedBox(width: 7.w),
+                        Text(
+                          'Lazervault',
+                          style: GoogleFonts.inter(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                SizedBox(height: 4.h),
                 _buildStatusIcon(isSuccess),
                 SizedBox(height: 12.h),
                 Text(
