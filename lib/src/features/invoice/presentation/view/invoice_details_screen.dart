@@ -277,15 +277,23 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '${invoice.typeDisplayName} #${invoice.displayNumber}',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
+              // The real INV-xxxxx number can be long — ellipsize instead of
+              // overflowing into the amount.
+              Expanded(
+                child: Text(
+                  '${invoice.typeDisplayName} #${invoice.displayNumber}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
+              SizedBox(width: 8.w),
               Text(
                 '$_currencySymbol${invoice.totalAmount.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
