@@ -22,6 +22,7 @@ import 'dart:async';
 import 'package:lazervault/src/features/gift_cards/presentation/widgets/giftcard_background.dart';
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -537,9 +538,18 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
   // rows. Each row has its own copy icon + tap-to-copy behaviour;
   // the user-flagged need: PIN was previously a static read-only
   // chip with no copy affordance, now matches the code's UX.
+  /// A credential that is actually a URL (link-redeemed brands such as Google
+  /// Play ship one) must read as a link, not as a code to type out.
+  static bool _isLink(String? v) {
+    final s = (v ?? '').trim().toLowerCase();
+    return s.startsWith('http://') || s.startsWith('https://');
+  }
+
   Widget _buildCodeCard() {
-    final hasCode = (giftCard.redemptionCode ?? '').trim().isNotEmpty;
-    final hasPin = (giftCard.redemptionPin ?? '').trim().isNotEmpty;
+    final code = (giftCard.redemptionCode ?? '').trim();
+    final pin = (giftCard.redemptionPin ?? '').trim();
+    final hasCode = code.isNotEmpty;
+    final hasPin = pin.isNotEmpty;
     return Container(
       width: double.infinity,
       // Tightened from 16 so the credentials block costs less vertical space
@@ -582,16 +592,18 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           SizedBox(height: 8.h),
           if (hasCode)
             _buildCopyRow(
-              label: 'CODE',
-              value: giftCard.redemptionCode ?? '',
-              valueLabel: 'redemption code',
+              label: _isLink(code) ? 'LINK' : 'CODE',
+              value: code,
+              valueLabel: _isLink(code) ? 'redemption link' : 'redemption code',
+              isLink: _isLink(code),
             ),
           if (hasPin) ...[
-            SizedBox(height: 8.h),
+            if (hasCode) SizedBox(height: 8.h),
             _buildCopyRow(
-              label: 'PIN',
-              value: giftCard.redemptionPin ?? '',
-              valueLabel: 'PIN',
+              label: _isLink(pin) ? 'LINK' : 'PIN',
+              value: pin,
+              valueLabel: _isLink(pin) ? 'redemption link' : 'PIN',
+              isLink: _isLink(pin),
             ),
           ],
         ],
@@ -607,6 +619,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
     required String label,
     required String value,
     required String valueLabel,
+    bool isLink = false,
   }) {
     void onCopy() {
       if (value.isEmpty) return;
@@ -624,7 +637,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
     }
 
     return GestureDetector(
-      onTap: onCopy,
+      onTap: isLink ? () => _openRedemptionLink(value) : onCopy,
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -656,18 +669,46 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             ),
             SizedBox(width: 12.w),
             Expanded(
-              child: SelectableText(
-                value,
-                style: GoogleFonts.robotoMono(
-                  color: const Color(0xFFF5F3FF),
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 2,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              // A code is read and typed — wide letter-spacing, centred. A
+              // link is read as a sentence: left-aligned, no letter-spacing,
+              // smaller and clipped, so a 90-character URL stops swallowing
+              // the card and burying the other credentials.
+              child: isLink
+                  ? Text(
+                      value,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFF5F3FF),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                        decoration: TextDecoration.underline,
+                        decorationColor:
+                            const Color(0xFFE9D5FF).withValues(alpha: 0.5),
+                      ),
+                    )
+                  : SelectableText(
+                      value,
+                      style: GoogleFonts.robotoMono(
+                        color: const Color(0xFFF5F3FF),
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 2,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
             ),
             SizedBox(width: 8.w),
+            if (isLink)
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(minWidth: 32.w, minHeight: 32.w),
+                onPressed: () => _openRedemptionLink(value),
+                icon: Icon(Icons.open_in_new_rounded,
+                    color: const Color(0xFFE9D5FF), size: 18.sp),
+                tooltip: 'Open redemption link',
+              ),
             // Explicit copy IconButton so the affordance is visible
             // even when the user doesn't realise the row is tappable.
             IconButton(
@@ -685,6 +726,25 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _openRedemptionLink(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (ok) return;
+    } catch (_) {/* fall through to copy */}
+    // Couldn't open a browser — leave the user with the link in hand.
+    await Clipboard.setData(ClipboardData(text: url));
+    Get.snackbar(
+      'Link copied',
+      "We couldn't open your browser, so the redemption link was copied instead.",
+      backgroundColor: const Color(0xFF10B981),
+      colorText: Colors.white,
+      duration: const Duration(seconds: 3),
+      snackPosition: SnackPosition.BOTTOM,
+      margin: EdgeInsets.all(16.w),
     );
   }
 

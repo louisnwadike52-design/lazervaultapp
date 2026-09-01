@@ -309,6 +309,13 @@ class GiftCardPdfService {
   /// a long set of instructions. Returns empty when there is nothing to
   /// redeem yet — a card still being delivered has no code, and an empty green
   /// panel reads as though something went missing.
+  /// Link-redeemed brands (Google Play and friends) deliver a URL where other
+  /// products deliver a code/PIN — label it for what it is.
+  static bool _looksLikeLink(String v) {
+    final s = v.trim().toLowerCase();
+    return s.startsWith('http://') || s.startsWith('https://');
+  }
+
   static List<pw.Widget> _buildRedemptionSection({
     required GiftCard giftCard,
   }) {
@@ -336,24 +343,31 @@ class GiftCardPdfService {
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               if (code.isNotEmpty) ...[
-                pw.Text('Redemption Code',
+                pw.Text(
+                    _looksLikeLink(code)
+                        ? 'Redemption Link'
+                        : 'Redemption Code',
                     style:
                         _getTextStyle(fontSize: 10, color: PdfColors.grey600)),
                 pw.SizedBox(height: 4),
                 pw.Text(
                   _text(code),
-                  style: _getTextStyle(fontSize: 14, isBold: true),
+                  // A URL needs to wrap at a readable size; a code stays big.
+                  style: _getTextStyle(
+                      fontSize: _looksLikeLink(code) ? 10 : 14, isBold: true),
                 ),
               ],
               if (pin.isNotEmpty) ...[
                 pw.SizedBox(height: 12),
-                pw.Text('Redemption PIN',
+                pw.Text(
+                    _looksLikeLink(pin) ? 'Redemption Link' : 'Redemption PIN',
                     style:
                         _getTextStyle(fontSize: 10, color: PdfColors.grey600)),
                 pw.SizedBox(height: 4),
                 pw.Text(
                   _text(pin),
-                  style: _getTextStyle(fontSize: 14, isBold: true),
+                  style: _getTextStyle(
+                      fontSize: _looksLikeLink(pin) ? 10 : 14, isBold: true),
                 ),
               ],
             ],
