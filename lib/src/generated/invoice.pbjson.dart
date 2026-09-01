@@ -685,14 +685,16 @@ const TagUsersToInvoiceRequest$json = {
   '2': [
     {'1': 'invoice_id', '3': 1, '4': 1, '5': 9, '10': 'invoiceId'},
     {'1': 'user_ids', '3': 2, '4': 3, '5': 9, '10': 'userIds'},
+    {'1': 'emails', '3': 3, '4': 3, '5': 9, '10': 'emails'},
+    {'1': 'phones', '3': 4, '4': 3, '5': 9, '10': 'phones'},
   ],
 };
 
 /// Descriptor for `TagUsersToInvoiceRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List tagUsersToInvoiceRequestDescriptor =
-    $convert.base64Decode(
-        'ChhUYWdVc2Vyc1RvSW52b2ljZVJlcXVlc3QSHQoKaW52b2ljZV9pZBgBIAEoCVIJaW52b2ljZU'
-        'lkEhkKCHVzZXJfaWRzGAIgAygJUgd1c2VySWRz');
+final $typed_data.Uint8List tagUsersToInvoiceRequestDescriptor = $convert.base64Decode(
+    'ChhUYWdVc2Vyc1RvSW52b2ljZVJlcXVlc3QSHQoKaW52b2ljZV9pZBgBIAEoCVIJaW52b2ljZU'
+    'lkEhkKCHVzZXJfaWRzGAIgAygJUgd1c2VySWRzEhYKBmVtYWlscxgDIAMoCVIGZW1haWxzEhYK'
+    'BnBob25lcxgEIAMoCVIGcGhvbmVz');
 
 @$core.Deprecated('Use tagUsersToInvoiceResponseDescriptor instead')
 const TagUsersToInvoiceResponse$json = {
@@ -708,6 +710,9 @@ const TagUsersToInvoiceResponse$json = {
     },
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
     {'1': 'users_tagged', '3': 3, '4': 1, '5': 5, '10': 'usersTagged'},
+    {'1': 'invites_sent', '3': 4, '4': 1, '5': 5, '10': 'invitesSent'},
+    {'1': 'invited_emails', '3': 5, '4': 3, '5': 9, '10': 'invitedEmails'},
+    {'1': 'invited_phones', '3': 6, '4': 3, '5': 9, '10': 'invitedPhones'},
   ],
 };
 
@@ -715,7 +720,9 @@ const TagUsersToInvoiceResponse$json = {
 final $typed_data.Uint8List tagUsersToInvoiceResponseDescriptor = $convert.base64Decode(
     'ChlUYWdVc2Vyc1RvSW52b2ljZVJlc3BvbnNlEioKB2ludm9pY2UYASABKAsyEC5pbnZvaWNlLk'
     'ludm9pY2VSB2ludm9pY2USGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIhCgx1c2Vyc190YWdn'
-    'ZWQYAyABKAVSC3VzZXJzVGFnZ2Vk');
+    'ZWQYAyABKAVSC3VzZXJzVGFnZ2VkEiEKDGludml0ZXNfc2VudBgEIAEoBVILaW52aXRlc1Nlbn'
+    'QSJQoOaW52aXRlZF9lbWFpbHMYBSADKAlSDWludml0ZWRFbWFpbHMSJQoOaW52aXRlZF9waG9u'
+    'ZXMYBiADKAlSDWludml0ZWRQaG9uZXM=');
 
 @$core.Deprecated('Use getInvoicesTaggedToUserRequestDescriptor instead')
 const GetInvoicesTaggedToUserRequest$json = {

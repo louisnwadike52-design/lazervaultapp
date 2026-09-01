@@ -108,6 +108,13 @@ class ServiceFeeResult {
 class TagUsersResponse {
   final bool success;
   final List<String> taggedUserIds;
+
+  /// Users actually tagged by the backend this call (includes manual
+  /// emails/phones that resolved to existing app users).
+  final int usersTagged;
+
+  /// Contacts the backend actually invited this call (deduped server-side;
+  /// re-inviting the same contact reports nothing here).
   final List<String> invitedEmails;
   final List<String> invitedPhones;
   final String message;
@@ -115,6 +122,7 @@ class TagUsersResponse {
   TagUsersResponse({
     required this.success,
     required this.taggedUserIds,
+    this.usersTagged = 0,
     required this.invitedEmails,
     required this.invitedPhones,
     required this.message,

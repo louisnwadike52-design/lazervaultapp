@@ -494,6 +494,8 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
         final request = pb.TagUsersToInvoiceRequest()
           ..invoiceId = invoiceId;
         request.userIds.addAll(userIds);
+        request.emails.addAll(emails);
+        request.phones.addAll(phoneNumbers);
 
         final options = await grpcClient.callOptions;
         final response = await grpcClient.invoiceClient.tagUsersToInvoice(
@@ -501,11 +503,14 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
           options: options,
         );
 
+        // Report what the backend actually did — never echo the request back
+        // as if it succeeded.
         return TagUsersResponse(
-          success: response.usersTagged > 0,
+          success: response.usersTagged > 0 || response.invitesSent > 0,
           taggedUserIds: userIds,
-          invitedEmails: emails,
-          invitedPhones: phoneNumbers,
+          usersTagged: response.usersTagged,
+          invitedEmails: response.invitedEmails.toList(),
+          invitedPhones: response.invitedPhones.toList(),
           message: response.message,
         );
       },

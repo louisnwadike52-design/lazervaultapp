@@ -24,6 +24,13 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
   final Set<String> _selectedPhones = {};
   Set<String> _alreadyTaggedUserIds = {};
 
+  /// Submit is valid with ANY selection — platform users, manual emails, or
+  /// phones (manual invites are real: the backend resolves or invites them).
+  bool get _hasTagSelection =>
+      _selectedUserIds.isNotEmpty ||
+      _selectedEmails.isNotEmpty ||
+      _selectedPhones.isNotEmpty;
+
   Invoice get invoice => widget.invoice;
 
   List<InvoiceUser> _searchResults = [];
@@ -1221,12 +1228,12 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: _selectedUserIds.isNotEmpty
+                    colors: _hasTagSelection
                         ? [InvoiceThemeColors.infoBlue, const Color(0xFF1D4ED8)]
                         : [Colors.grey.shade700, Colors.grey.shade800],
                   ),
                   borderRadius: BorderRadius.circular(12.r),
-                  boxShadow: _selectedUserIds.isNotEmpty ? [
+                  boxShadow: _hasTagSelection ? [
                     BoxShadow(
                       color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.3),
                       offset: const Offset(0, 4),
@@ -1235,7 +1242,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                   ] : null,
                 ),
                 child: ElevatedButton.icon(
-                  onPressed: _selectedUserIds.isNotEmpty ? _tagSelectedUsers : null,
+                  onPressed: _hasTagSelection ? _tagSelectedUsers : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
@@ -1443,8 +1450,8 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
         if (!mounted) return;
         Navigator.pop(context);
 
-        // Show detailed success message
-        final totalTagged = response.taggedUserIds.length;
+        // Show detailed success message from what the backend actually did.
+        final totalTagged = response.usersTagged;
         final totalInvited = response.invitedEmails.length + response.invitedPhones.length;
 
         String message = '';

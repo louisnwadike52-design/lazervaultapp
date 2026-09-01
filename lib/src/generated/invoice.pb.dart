@@ -2835,10 +2835,14 @@ class TagUsersToInvoiceRequest extends $pb.GeneratedMessage {
   factory TagUsersToInvoiceRequest({
     $core.String? invoiceId,
     $core.Iterable<$core.String>? userIds,
+    $core.Iterable<$core.String>? emails,
+    $core.Iterable<$core.String>? phones,
   }) {
     final result = create();
     if (invoiceId != null) result.invoiceId = invoiceId;
     if (userIds != null) result.userIds.addAll(userIds);
+    if (emails != null) result.emails.addAll(emails);
+    if (phones != null) result.phones.addAll(phones);
     return result;
   }
 
@@ -2857,6 +2861,8 @@ class TagUsersToInvoiceRequest extends $pb.GeneratedMessage {
       createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
     ..pPS(2, _omitFieldNames ? '' : 'userIds')
+    ..pPS(3, _omitFieldNames ? '' : 'emails')
+    ..pPS(4, _omitFieldNames ? '' : 'phones')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2893,6 +2899,12 @@ class TagUsersToInvoiceRequest extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(2)
   $pb.PbList<$core.String> get userIds => $_getList(1);
+
+  @$pb.TagNumber(3)
+  $pb.PbList<$core.String> get emails => $_getList(2);
+
+  @$pb.TagNumber(4)
+  $pb.PbList<$core.String> get phones => $_getList(3);
 }
 
 class TagUsersToInvoiceResponse extends $pb.GeneratedMessage {
@@ -2900,11 +2912,17 @@ class TagUsersToInvoiceResponse extends $pb.GeneratedMessage {
     Invoice? invoice,
     $core.String? message,
     $core.int? usersTagged,
+    $core.int? invitesSent,
+    $core.Iterable<$core.String>? invitedEmails,
+    $core.Iterable<$core.String>? invitedPhones,
   }) {
     final result = create();
     if (invoice != null) result.invoice = invoice;
     if (message != null) result.message = message;
     if (usersTagged != null) result.usersTagged = usersTagged;
+    if (invitesSent != null) result.invitesSent = invitesSent;
+    if (invitedEmails != null) result.invitedEmails.addAll(invitedEmails);
+    if (invitedPhones != null) result.invitedPhones.addAll(invitedPhones);
     return result;
   }
 
@@ -2925,6 +2943,9 @@ class TagUsersToInvoiceResponse extends $pb.GeneratedMessage {
         subBuilder: Invoice.create)
     ..aOS(2, _omitFieldNames ? '' : 'message')
     ..a<$core.int>(3, _omitFieldNames ? '' : 'usersTagged', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'invitesSent', $pb.PbFieldType.O3)
+    ..pPS(5, _omitFieldNames ? '' : 'invitedEmails')
+    ..pPS(6, _omitFieldNames ? '' : 'invitedPhones')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2978,6 +2999,21 @@ class TagUsersToInvoiceResponse extends $pb.GeneratedMessage {
   $core.bool hasUsersTagged() => $_has(2);
   @$pb.TagNumber(3)
   void clearUsersTagged() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get invitesSent => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set invitesSent($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasInvitesSent() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearInvitesSent() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $pb.PbList<$core.String> get invitedEmails => $_getList(4);
+
+  @$pb.TagNumber(6)
+  $pb.PbList<$core.String> get invitedPhones => $_getList(5);
 }
 
 /// ===== GET INVOICES TAGGED TO USER =====
