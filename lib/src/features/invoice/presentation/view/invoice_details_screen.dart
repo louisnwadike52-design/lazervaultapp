@@ -19,6 +19,7 @@ import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../widgets/quote_action_buttons.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
+import '../../../authentication/domain/entities/profile_entity.dart';
 import '../widgets/invoice_shimmer.dart';
 import '../utils/share_origin.dart';
 import 'package:get_it/get_it.dart';
@@ -498,10 +499,20 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
     );
   }
 
+  // AuthenticationSuccess and AuthenticationAuthenticated are duplicate
+  // "logged in" states (the latter is a declared alias). Passcode login lands
+  // in AuthenticationSuccess, so accepting only the alias hid every creator
+  // action (Send Reminder / Cancel / Edit / Convert) on this screen.
+  ProfileEntity? get _authProfile {
+    final s = context.read<AuthenticationCubit>().state;
+    if (s is AuthenticationSuccess) return s.profile;
+    if (s is AuthenticationAuthenticated) return s.profile;
+    return null;
+  }
+
   Widget _buildActions(Invoice invoice) {
     // Determine if current user is the sender
-    final authState = context.read<AuthenticationCubit>().state;
-    final currentUserId = authState is AuthenticationAuthenticated ? authState.profile.userId : null;
+    final currentUserId = _authProfile?.userId;
     final isSender = currentUserId != null && invoice.fromUserId == currentUserId;
 
     return Column(
@@ -1710,12 +1721,9 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
 
   Widget _buildParticipantDetails(Invoice invoice) {
     // Determine if current user is the sender (invoice creator)
-    final authState = context.read<AuthenticationCubit>().state;
-    final currentUserId = authState is AuthenticationAuthenticated ? authState.profile.userId : null;
+    final currentUserProfile = _authProfile;
+    final currentUserId = currentUserProfile?.userId;
     final isSender = currentUserId != null && invoice.fromUserId == currentUserId;
-
-    // Get the current user's profile for fallback
-    final currentUserProfile = authState is AuthenticationAuthenticated ? authState.profile : null;
 
     return Column(
       children: [
