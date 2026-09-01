@@ -22,7 +22,6 @@ import '../../../authentication/cubit/authentication_state.dart';
 import '../../../authentication/domain/entities/profile_entity.dart';
 import '../widgets/invoice_shimmer.dart';
 import '../utils/share_origin.dart';
-import '../../services/invoice_pdf_service.dart';
 import 'package:get_it/get_it.dart';
 import '../notifiers/invoice_refresh_notifier.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -828,111 +827,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             ),
           ),
         ),
-        SizedBox(width: 12.w),
-        // Share Button — the only PDF-share entry point on details for BOTH
-        // parties (previously a shareable PDF was only reachable via preview).
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () => _showShareOptions(invoice, isPaidOrPartiallyPaid),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.white,
-              side: BorderSide(
-                color: InvoiceThemeColors.primaryPurple,
-                width: 1.5,
-              ),
-              padding: EdgeInsets.symmetric(vertical: 14.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            icon: Icon(
-              Icons.ios_share,
-              size: 18.sp,
-              color: InvoiceThemeColors.primaryPurple,
-            ),
-            label: Text(
-              'Share',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
       ],
-    );
-  }
-
-  /// Bottom sheet: share the full document PDF, and — once (partially) paid —
-  /// the payment-receipt PDF (line items, parties, invoice number included).
-  void _showShareOptions(Invoice invoice, bool hasReceipt) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: InvoiceThemeColors.secondaryBackground,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(height: 8.h),
-            ListTile(
-              leading: Icon(Icons.description_outlined,
-                  color: const Color(0xFF60A5FA), size: 22.sp),
-              title: Text(
-                'Share ${invoice.typeDisplayName} PDF',
-                style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600),
-              ),
-              onTap: () async {
-                final origin = shareOriginFromContext(sheetContext);
-                Navigator.of(sheetContext).pop();
-                try {
-                  await InvoicePdfService.shareInvoice(invoice,
-                      sharePositionOrigin: origin);
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('Could not share PDF: $e'),
-                        backgroundColor: Colors.red));
-                  }
-                }
-              },
-            ),
-            if (hasReceipt)
-              ListTile(
-                leading: Icon(Icons.receipt_long_outlined,
-                    color: const Color(0xFF34D399), size: 22.sp),
-                title: Text(
-                  'Share Receipt PDF',
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600),
-                ),
-                onTap: () async {
-                  final origin = shareOriginFromContext(sheetContext);
-                  Navigator.of(sheetContext).pop();
-                  try {
-                    await InvoicePdfService.shareReceipt(invoice,
-                        sharePositionOrigin: origin);
-                  } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Could not share receipt: $e'),
-                          backgroundColor: Colors.red));
-                    }
-                  }
-                },
-              ),
-            SizedBox(height: 12.h),
-          ],
-        ),
-      ),
     );
   }
 
