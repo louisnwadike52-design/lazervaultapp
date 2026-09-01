@@ -616,6 +616,11 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
     _discountAmount = 0.0;
     _notes = '';
     _isAutoFilled = false;
+    // Split state must reset too, or the payers from the last invoice leak
+    // into the next one created in the same session.
+    _splitMode = false;
+    _splitCustom = false;
+    _splitPayers.clear();
 
     if (!isClosed) {
       emit(const CreateInvoiceInitial());

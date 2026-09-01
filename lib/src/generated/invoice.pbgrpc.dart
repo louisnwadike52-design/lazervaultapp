@@ -171,8 +171,8 @@ class InvoiceServiceClient extends $grpc.Client {
     return $createUnaryCall(_$payInvoiceServiceFee, request, options: options);
   }
 
-  /// Get the invoice service fee for an account (FX-converted into the account's
-  /// currency) for display before payment. Read-only, no PIN.
+  /// Get the invoice service fee for an account (priced per region in the
+  /// account's currency) for display before payment. Read-only, no PIN.
   $grpc.ResponseFuture<$0.GetInvoiceServiceFeeResponse> getInvoiceServiceFee(
     $0.GetInvoiceServiceFeeRequest request, {
     $grpc.CallOptions? options,

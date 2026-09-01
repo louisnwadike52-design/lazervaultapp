@@ -4549,7 +4549,7 @@ class PayInvoiceServiceFeeResponse extends $pb.GeneratedMessage {
 }
 
 /// ===== GET INVOICE SERVICE FEE (quote) =====
-/// Returns the service fee in the account's currency (FX-converted from the
+/// Returns the service fee in the account's currency (priced per region, from the
 /// admin-configured base fee) for display before payment.
 class GetInvoiceServiceFeeRequest extends $pb.GeneratedMessage {
   factory GetInvoiceServiceFeeRequest({
