@@ -271,10 +271,12 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             // Redemption code + PIN — equivalent of the electricity
             // token card, styled the same way (purple gradient instead
             // of orange so it doesn't impersonate an electricity token).
-            if ((giftCard.redemptionCode ?? '').isNotEmpty)
-              _buildCodeCard(),
-            if ((giftCard.redemptionCode ?? '').isNotEmpty)
-              SizedBox(height: 10.h),
+            // EITHER credential is enough: PIN-only products (Reloadly PIN
+            // gift cards) leave redemption_code empty, and gating the whole
+            // card on the code hid the credentials entirely — the receipt
+            // opened from history showed transaction details and no PIN.
+            if (_hasCredentials) _buildCodeCard(),
+            if (_hasCredentials) SizedBox(height: 10.h),
             // Async-buy in-flight banner — only when the row is in
             // processing/pending and the redemption code hasn't landed
             // yet. Tells the user we'll notify them so they don't have
@@ -298,6 +300,8 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
                   'brand': receiptLine(giftCard.brandName),
                 if ((giftCard.redemptionCode ?? '').isNotEmpty)
                   'code': giftCard.redemptionCode!,
+                if ((giftCard.redemptionPin ?? '').isNotEmpty)
+                  'pin': giftCard.redemptionPin!,
               },
             ),
               ],
@@ -320,9 +324,14 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
   bool _isAsyncAwaitingPin() {
     final s = giftCard.status.toLowerCase();
     final isInFlight = s == 'pending' || s == 'processing';
-    final hasNoCode = (giftCard.redemptionCode ?? '').isEmpty;
-    return isInFlight && hasNoCode;
+    return isInFlight && !_hasCredentials;
   }
+
+  /// True when the provider has delivered ANY credential. Products differ:
+  /// some fill redemption_code, PIN products fill redemption_pin only.
+  bool get _hasCredentials =>
+      (giftCard.redemptionCode ?? '').trim().isNotEmpty ||
+      (giftCard.redemptionPin ?? '').trim().isNotEmpty;
 
   // Awaiting-pin card. Mirrors the electricity bill awaiting-token
   // card: explains the user can leave this screen and get notified,
@@ -529,7 +538,8 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
   // the user-flagged need: PIN was previously a static read-only
   // chip with no copy affordance, now matches the code's UX.
   Widget _buildCodeCard() {
-    final hasPin = (giftCard.redemptionPin ?? '').isNotEmpty;
+    final hasCode = (giftCard.redemptionCode ?? '').trim().isNotEmpty;
+    final hasPin = (giftCard.redemptionPin ?? '').trim().isNotEmpty;
     return Container(
       width: double.infinity,
       // Tightened from 16 so the credentials block costs less vertical space
@@ -570,11 +580,12 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             ],
           ),
           SizedBox(height: 8.h),
-          _buildCopyRow(
-            label: 'CODE',
-            value: giftCard.redemptionCode ?? '',
-            valueLabel: 'redemption code',
-          ),
+          if (hasCode)
+            _buildCopyRow(
+              label: 'CODE',
+              value: giftCard.redemptionCode ?? '',
+              valueLabel: 'redemption code',
+            ),
           if (hasPin) ...[
             SizedBox(height: 8.h),
             _buildCopyRow(
