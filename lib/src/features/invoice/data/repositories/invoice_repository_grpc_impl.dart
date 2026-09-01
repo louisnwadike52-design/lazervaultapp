@@ -488,6 +488,38 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   }
 
   @override
+  Future<Invoice> respondToQuote(String invoiceId, String action) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.RespondToQuoteRequest()
+          ..invoiceId = invoiceId
+          ..action = action;
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.invoiceClient.respondToQuote(
+          request,
+          options: options,
+        );
+        return _fromProto(response.invoice);
+      },
+    );
+  }
+
+  @override
+  Future<Invoice> convertQuoteToInvoice(String invoiceId) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.ConvertQuoteToInvoiceRequest()..invoiceId = invoiceId;
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.invoiceClient.convertQuoteToInvoice(
+          request,
+          options: options,
+        );
+        return _fromProto(response.invoice);
+      },
+    );
+  }
+
+  @override
   Future<TagUsersResponse> tagUsersToInvoice(String invoiceId, List<String> userIds, List<String> emails, List<String> phoneNumbers) async {
     return retryWithBackoff(
       operation: () async {
@@ -638,6 +670,10 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
       status: _deriveStatusWithPartiallyPaid(status, proto.taggedUsers),
       // Preserve the chosen document type (invoice/request/quote) on reload.
       type: _invoiceTypeFromString(proto.invoiceType),
+      quoteStatus: proto.quoteStatus,
+      quoteAcceptedAt: proto.quoteAcceptedAt.isNotEmpty ? DateTime.tryParse(proto.quoteAcceptedAt) : null,
+      quoteDeclinedAt: proto.quoteDeclinedAt.isNotEmpty ? DateTime.tryParse(proto.quoteDeclinedAt) : null,
+      convertedAt: proto.convertedAt.isNotEmpty ? DateTime.tryParse(proto.convertedAt) : null,
       createdAt: proto.createdAt.isNotEmpty ? DateTime.parse(proto.createdAt) : DateTime.now(),
       dueDate: proto.dueDate.isNotEmpty ? DateTime.parse(proto.dueDate) : null,
       fromUserId: proto.userId,

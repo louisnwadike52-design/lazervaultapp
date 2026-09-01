@@ -405,12 +405,20 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
 
     final invoice = Invoice(
       id: proto.id,
-      title: proto.description.isNotEmpty ? proto.description : 'Invoice',
+      // Real title + document type: a QUOTE/REQUEST viewed from the tagged
+      // lists must not masquerade as a generic "Invoice".
+      title: proto.title.isNotEmpty
+          ? proto.title
+          : (proto.description.isNotEmpty ? proto.description : 'Invoice'),
       description: proto.description.isNotEmpty ? proto.description : '',
       amount: proto.amount,
       currency: proto.currency.isNotEmpty ? proto.currency : 'NGN',
       status: invoiceStatus,
-      type: InvoiceType.invoice,
+      type: _invoiceTypeFromString(proto.invoiceType),
+      quoteStatus: proto.quoteStatus,
+      quoteAcceptedAt: proto.quoteAcceptedAt.isNotEmpty ? DateTime.tryParse(proto.quoteAcceptedAt) : null,
+      quoteDeclinedAt: proto.quoteDeclinedAt.isNotEmpty ? DateTime.tryParse(proto.quoteDeclinedAt) : null,
+      convertedAt: proto.convertedAt.isNotEmpty ? DateTime.tryParse(proto.convertedAt) : null,
       createdAt: proto.createdAt.isNotEmpty ? DateTime.parse(proto.createdAt) : DateTime.now(),
       dueDate: proto.dueDate.isNotEmpty ? DateTime.parse(proto.dueDate) : null,
       fromUserId: proto.userId,
@@ -508,6 +516,19 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
         return 'cancelled';
       default:
         return '';
+    }
+  }
+
+  // Mirrors invoice_repository_grpc_impl's mapping so tagged surfaces show the
+  // real document type instead of assuming "invoice".
+  InvoiceType _invoiceTypeFromString(String t) {
+    switch (t.toLowerCase()) {
+      case 'request':
+        return InvoiceType.request;
+      case 'quote':
+        return InvoiceType.quote;
+      default:
+        return InvoiceType.invoice;
     }
   }
 }

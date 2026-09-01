@@ -52,6 +52,10 @@ class Invoice extends $pb.GeneratedMessage {
     InvoiceParty? receiver,
     $core.String? invoiceType,
     $core.String? title,
+    $core.String? quoteStatus,
+    $core.String? quoteAcceptedAt,
+    $core.String? quoteDeclinedAt,
+    $core.String? convertedAt,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -88,6 +92,10 @@ class Invoice extends $pb.GeneratedMessage {
     if (receiver != null) result.receiver = receiver;
     if (invoiceType != null) result.invoiceType = invoiceType;
     if (title != null) result.title = title;
+    if (quoteStatus != null) result.quoteStatus = quoteStatus;
+    if (quoteAcceptedAt != null) result.quoteAcceptedAt = quoteAcceptedAt;
+    if (quoteDeclinedAt != null) result.quoteDeclinedAt = quoteDeclinedAt;
+    if (convertedAt != null) result.convertedAt = convertedAt;
     return result;
   }
 
@@ -144,6 +152,10 @@ class Invoice extends $pb.GeneratedMessage {
         subBuilder: InvoiceParty.create)
     ..aOS(33, _omitFieldNames ? '' : 'invoiceType')
     ..aOS(34, _omitFieldNames ? '' : 'title')
+    ..aOS(35, _omitFieldNames ? '' : 'quoteStatus')
+    ..aOS(36, _omitFieldNames ? '' : 'quoteAcceptedAt')
+    ..aOS(37, _omitFieldNames ? '' : 'quoteDeclinedAt')
+    ..aOS(38, _omitFieldNames ? '' : 'convertedAt')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -470,6 +482,44 @@ class Invoice extends $pb.GeneratedMessage {
   $core.bool hasTitle() => $_has(33);
   @$pb.TagNumber(34)
   void clearTitle() => $_clearField(34);
+
+  /// Quote lifecycle (invoice_type == "quote"): recipient response + conversion
+  /// audit trail. Empty strings for non-quotes / unset timestamps (RFC3339).
+  @$pb.TagNumber(35)
+  $core.String get quoteStatus => $_getSZ(34);
+  @$pb.TagNumber(35)
+  set quoteStatus($core.String value) => $_setString(34, value);
+  @$pb.TagNumber(35)
+  $core.bool hasQuoteStatus() => $_has(34);
+  @$pb.TagNumber(35)
+  void clearQuoteStatus() => $_clearField(35);
+
+  @$pb.TagNumber(36)
+  $core.String get quoteAcceptedAt => $_getSZ(35);
+  @$pb.TagNumber(36)
+  set quoteAcceptedAt($core.String value) => $_setString(35, value);
+  @$pb.TagNumber(36)
+  $core.bool hasQuoteAcceptedAt() => $_has(35);
+  @$pb.TagNumber(36)
+  void clearQuoteAcceptedAt() => $_clearField(36);
+
+  @$pb.TagNumber(37)
+  $core.String get quoteDeclinedAt => $_getSZ(36);
+  @$pb.TagNumber(37)
+  set quoteDeclinedAt($core.String value) => $_setString(36, value);
+  @$pb.TagNumber(37)
+  $core.bool hasQuoteDeclinedAt() => $_has(36);
+  @$pb.TagNumber(37)
+  void clearQuoteDeclinedAt() => $_clearField(37);
+
+  @$pb.TagNumber(38)
+  $core.String get convertedAt => $_getSZ(37);
+  @$pb.TagNumber(38)
+  set convertedAt($core.String value) => $_setString(37, value);
+  @$pb.TagNumber(38)
+  $core.bool hasConvertedAt() => $_has(37);
+  @$pb.TagNumber(38)
+  void clearConvertedAt() => $_clearField(38);
 }
 
 /// InvoiceParty is one side of an invoice — the issuer (sender) or the customer
@@ -4643,6 +4693,285 @@ class GetInvoiceServiceFeeResponse extends $pb.GeneratedMessage {
   $core.bool hasEnabled() => $_has(2);
   @$pb.TagNumber(3)
   void clearEnabled() => $_clearField(3);
+}
+
+/// ===== QUOTE LIFECYCLE =====
+class RespondToQuoteRequest extends $pb.GeneratedMessage {
+  factory RespondToQuoteRequest({
+    $core.String? invoiceId,
+    $core.String? action,
+  }) {
+    final result = create();
+    if (invoiceId != null) result.invoiceId = invoiceId;
+    if (action != null) result.action = action;
+    return result;
+  }
+
+  RespondToQuoteRequest._();
+
+  factory RespondToQuoteRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RespondToQuoteRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RespondToQuoteRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
+    ..aOS(2, _omitFieldNames ? '' : 'action')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RespondToQuoteRequest clone() =>
+      RespondToQuoteRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RespondToQuoteRequest copyWith(
+          void Function(RespondToQuoteRequest) updates) =>
+      super.copyWith((message) => updates(message as RespondToQuoteRequest))
+          as RespondToQuoteRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RespondToQuoteRequest create() => RespondToQuoteRequest._();
+  @$core.override
+  RespondToQuoteRequest createEmptyInstance() => create();
+  static $pb.PbList<RespondToQuoteRequest> createRepeated() =>
+      $pb.PbList<RespondToQuoteRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RespondToQuoteRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RespondToQuoteRequest>(create);
+  static RespondToQuoteRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get invoiceId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set invoiceId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasInvoiceId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearInvoiceId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get action => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set action($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAction() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAction() => $_clearField(2);
+}
+
+class RespondToQuoteResponse extends $pb.GeneratedMessage {
+  factory RespondToQuoteResponse({
+    Invoice? invoice,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (invoice != null) result.invoice = invoice;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  RespondToQuoteResponse._();
+
+  factory RespondToQuoteResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RespondToQuoteResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RespondToQuoteResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'),
+      createEmptyInstance: create)
+    ..aOM<Invoice>(1, _omitFieldNames ? '' : 'invoice',
+        subBuilder: Invoice.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RespondToQuoteResponse clone() =>
+      RespondToQuoteResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RespondToQuoteResponse copyWith(
+          void Function(RespondToQuoteResponse) updates) =>
+      super.copyWith((message) => updates(message as RespondToQuoteResponse))
+          as RespondToQuoteResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RespondToQuoteResponse create() => RespondToQuoteResponse._();
+  @$core.override
+  RespondToQuoteResponse createEmptyInstance() => create();
+  static $pb.PbList<RespondToQuoteResponse> createRepeated() =>
+      $pb.PbList<RespondToQuoteResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RespondToQuoteResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RespondToQuoteResponse>(create);
+  static RespondToQuoteResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Invoice get invoice => $_getN(0);
+  @$pb.TagNumber(1)
+  set invoice(Invoice value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasInvoice() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearInvoice() => $_clearField(1);
+  @$pb.TagNumber(1)
+  Invoice ensureInvoice() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+}
+
+class ConvertQuoteToInvoiceRequest extends $pb.GeneratedMessage {
+  factory ConvertQuoteToInvoiceRequest({
+    $core.String? invoiceId,
+  }) {
+    final result = create();
+    if (invoiceId != null) result.invoiceId = invoiceId;
+    return result;
+  }
+
+  ConvertQuoteToInvoiceRequest._();
+
+  factory ConvertQuoteToInvoiceRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ConvertQuoteToInvoiceRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ConvertQuoteToInvoiceRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ConvertQuoteToInvoiceRequest clone() =>
+      ConvertQuoteToInvoiceRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ConvertQuoteToInvoiceRequest copyWith(
+          void Function(ConvertQuoteToInvoiceRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as ConvertQuoteToInvoiceRequest))
+          as ConvertQuoteToInvoiceRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ConvertQuoteToInvoiceRequest create() =>
+      ConvertQuoteToInvoiceRequest._();
+  @$core.override
+  ConvertQuoteToInvoiceRequest createEmptyInstance() => create();
+  static $pb.PbList<ConvertQuoteToInvoiceRequest> createRepeated() =>
+      $pb.PbList<ConvertQuoteToInvoiceRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ConvertQuoteToInvoiceRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ConvertQuoteToInvoiceRequest>(create);
+  static ConvertQuoteToInvoiceRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get invoiceId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set invoiceId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasInvoiceId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearInvoiceId() => $_clearField(1);
+}
+
+class ConvertQuoteToInvoiceResponse extends $pb.GeneratedMessage {
+  factory ConvertQuoteToInvoiceResponse({
+    Invoice? invoice,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (invoice != null) result.invoice = invoice;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  ConvertQuoteToInvoiceResponse._();
+
+  factory ConvertQuoteToInvoiceResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ConvertQuoteToInvoiceResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ConvertQuoteToInvoiceResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'invoice'),
+      createEmptyInstance: create)
+    ..aOM<Invoice>(1, _omitFieldNames ? '' : 'invoice',
+        subBuilder: Invoice.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ConvertQuoteToInvoiceResponse clone() =>
+      ConvertQuoteToInvoiceResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ConvertQuoteToInvoiceResponse copyWith(
+          void Function(ConvertQuoteToInvoiceResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as ConvertQuoteToInvoiceResponse))
+          as ConvertQuoteToInvoiceResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ConvertQuoteToInvoiceResponse create() =>
+      ConvertQuoteToInvoiceResponse._();
+  @$core.override
+  ConvertQuoteToInvoiceResponse createEmptyInstance() => create();
+  static $pb.PbList<ConvertQuoteToInvoiceResponse> createRepeated() =>
+      $pb.PbList<ConvertQuoteToInvoiceResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ConvertQuoteToInvoiceResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ConvertQuoteToInvoiceResponse>(create);
+  static ConvertQuoteToInvoiceResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Invoice get invoice => $_getN(0);
+  @$pb.TagNumber(1)
+  set invoice(Invoice value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasInvoice() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearInvoice() => $_clearField(1);
+  @$pb.TagNumber(1)
+  Invoice ensureInvoice() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
 }
 
 const $core.bool _omitFieldNames =

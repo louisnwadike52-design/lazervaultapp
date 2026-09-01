@@ -110,6 +110,22 @@ const Invoice$json = {
     },
     {'1': 'invoice_type', '3': 33, '4': 1, '5': 9, '10': 'invoiceType'},
     {'1': 'title', '3': 34, '4': 1, '5': 9, '10': 'title'},
+    {'1': 'quote_status', '3': 35, '4': 1, '5': 9, '10': 'quoteStatus'},
+    {
+      '1': 'quote_accepted_at',
+      '3': 36,
+      '4': 1,
+      '5': 9,
+      '10': 'quoteAcceptedAt'
+    },
+    {
+      '1': 'quote_declined_at',
+      '3': 37,
+      '4': 1,
+      '5': 9,
+      '10': 'quoteDeclinedAt'
+    },
+    {'1': 'converted_at', '3': 38, '4': 1, '5': 9, '10': 'convertedAt'},
   ],
 };
 
@@ -136,7 +152,10 @@ final $typed_data.Uint8List invoiceDescriptor = $convert.base64Decode(
     'c2VybmFtZRgeIAEoCVIPY3JlYXRvclVzZXJuYW1lEi0KBnNlbmRlchgfIAEoCzIVLmludm9pY2'
     'UuSW52b2ljZVBhcnR5UgZzZW5kZXISMQoIcmVjZWl2ZXIYICABKAsyFS5pbnZvaWNlLkludm9p'
     'Y2VQYXJ0eVIIcmVjZWl2ZXISIQoMaW52b2ljZV90eXBlGCEgASgJUgtpbnZvaWNlVHlwZRIUCg'
-    'V0aXRsZRgiIAEoCVIFdGl0bGU=');
+    'V0aXRsZRgiIAEoCVIFdGl0bGUSIQoMcXVvdGVfc3RhdHVzGCMgASgJUgtxdW90ZVN0YXR1cxIq'
+    'ChFxdW90ZV9hY2NlcHRlZF9hdBgkIAEoCVIPcXVvdGVBY2NlcHRlZEF0EioKEXF1b3RlX2RlY2'
+    'xpbmVkX2F0GCUgASgJUg9xdW90ZURlY2xpbmVkQXQSIQoMY29udmVydGVkX2F0GCYgASgJUgtj'
+    'b252ZXJ0ZWRBdA==');
 
 @$core.Deprecated('Use invoicePartyDescriptor instead')
 const InvoiceParty$json = {
@@ -1114,3 +1133,75 @@ final $typed_data.Uint8List getInvoiceServiceFeeResponseDescriptor =
         'ChxHZXRJbnZvaWNlU2VydmljZUZlZVJlc3BvbnNlEh0KCmZlZV9hbW91bnQYASABKAFSCWZlZU'
         'Ftb3VudBIaCghjdXJyZW5jeRgCIAEoCVIIY3VycmVuY3kSGAoHZW5hYmxlZBgDIAEoCFIHZW5h'
         'YmxlZA==');
+
+@$core.Deprecated('Use respondToQuoteRequestDescriptor instead')
+const RespondToQuoteRequest$json = {
+  '1': 'RespondToQuoteRequest',
+  '2': [
+    {'1': 'invoice_id', '3': 1, '4': 1, '5': 9, '10': 'invoiceId'},
+    {'1': 'action', '3': 2, '4': 1, '5': 9, '10': 'action'},
+  ],
+};
+
+/// Descriptor for `RespondToQuoteRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List respondToQuoteRequestDescriptor = $convert.base64Decode(
+    'ChVSZXNwb25kVG9RdW90ZVJlcXVlc3QSHQoKaW52b2ljZV9pZBgBIAEoCVIJaW52b2ljZUlkEh'
+    'YKBmFjdGlvbhgCIAEoCVIGYWN0aW9u');
+
+@$core.Deprecated('Use respondToQuoteResponseDescriptor instead')
+const RespondToQuoteResponse$json = {
+  '1': 'RespondToQuoteResponse',
+  '2': [
+    {
+      '1': 'invoice',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.invoice.Invoice',
+      '10': 'invoice'
+    },
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `RespondToQuoteResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List respondToQuoteResponseDescriptor =
+    $convert.base64Decode(
+        'ChZSZXNwb25kVG9RdW90ZVJlc3BvbnNlEioKB2ludm9pY2UYASABKAsyEC5pbnZvaWNlLkludm'
+        '9pY2VSB2ludm9pY2USGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+
+@$core.Deprecated('Use convertQuoteToInvoiceRequestDescriptor instead')
+const ConvertQuoteToInvoiceRequest$json = {
+  '1': 'ConvertQuoteToInvoiceRequest',
+  '2': [
+    {'1': 'invoice_id', '3': 1, '4': 1, '5': 9, '10': 'invoiceId'},
+  ],
+};
+
+/// Descriptor for `ConvertQuoteToInvoiceRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List convertQuoteToInvoiceRequestDescriptor =
+    $convert.base64Decode(
+        'ChxDb252ZXJ0UXVvdGVUb0ludm9pY2VSZXF1ZXN0Eh0KCmludm9pY2VfaWQYASABKAlSCWludm'
+        '9pY2VJZA==');
+
+@$core.Deprecated('Use convertQuoteToInvoiceResponseDescriptor instead')
+const ConvertQuoteToInvoiceResponse$json = {
+  '1': 'ConvertQuoteToInvoiceResponse',
+  '2': [
+    {
+      '1': 'invoice',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.invoice.Invoice',
+      '10': 'invoice'
+    },
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `ConvertQuoteToInvoiceResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List convertQuoteToInvoiceResponseDescriptor =
+    $convert.base64Decode(
+        'Ch1Db252ZXJ0UXVvdGVUb0ludm9pY2VSZXNwb25zZRIqCgdpbnZvaWNlGAEgASgLMhAuaW52b2'
+        'ljZS5JbnZvaWNlUgdpbnZvaWNlEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');

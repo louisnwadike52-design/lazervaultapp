@@ -35,6 +35,14 @@ class Invoice extends Equatable {
   final String? payerLogoUrl;
   final String? recipientLogoUrl;
 
+  /// Quote lifecycle (type == quote): quotes are documents, not payables.
+  /// '' | 'pending' | 'accepted' | 'declined'; timestamps are the audit trail
+  /// that survives conversion.
+  final String quoteStatus;
+  final DateTime? quoteAcceptedAt;
+  final DateTime? quoteDeclinedAt;
+  final DateTime? convertedAt;
+
   const Invoice({
     required this.id,
     required this.title,
@@ -67,6 +75,10 @@ class Invoice extends Equatable {
     this.taggedUsers,
     this.payerLogoUrl,
     this.recipientLogoUrl,
+    this.quoteStatus = '',
+    this.quoteAcceptedAt,
+    this.quoteDeclinedAt,
+    this.convertedAt,
   });
 
   @override
@@ -102,6 +114,10 @@ class Invoice extends Equatable {
         taggedUsers,
         payerLogoUrl,
         recipientLogoUrl,
+        quoteStatus,
+        quoteAcceptedAt,
+        quoteDeclinedAt,
+        convertedAt,
       ];
 
   Invoice copyWith({
@@ -136,6 +152,10 @@ class Invoice extends Equatable {
     List<TaggedUserInfo>? taggedUsers,
     String? payerLogoUrl,
     String? recipientLogoUrl,
+    String? quoteStatus,
+    DateTime? quoteAcceptedAt,
+    DateTime? quoteDeclinedAt,
+    DateTime? convertedAt,
   }) {
     return Invoice(
       id: id ?? this.id,
@@ -169,8 +189,16 @@ class Invoice extends Equatable {
       taggedUsers: taggedUsers ?? this.taggedUsers,
       payerLogoUrl: payerLogoUrl ?? this.payerLogoUrl,
       recipientLogoUrl: recipientLogoUrl ?? this.recipientLogoUrl,
+      quoteStatus: quoteStatus ?? this.quoteStatus,
+      quoteAcceptedAt: quoteAcceptedAt ?? this.quoteAcceptedAt,
+      quoteDeclinedAt: quoteDeclinedAt ?? this.quoteDeclinedAt,
+      convertedAt: convertedAt ?? this.convertedAt,
     );
   }
+
+  /// Quotes are documents, not payables — no Pay/Quick Pay until the creator
+  /// converts them to an invoice (the backend enforces this too).
+  bool get isQuote => type == InvoiceType.quote;
 
   bool get isOverdue {
     if (dueDate == null || status == InvoiceStatus.paid || status == InvoiceStatus.partiallyPaid) return false;

@@ -180,6 +180,22 @@ class InvoiceServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getInvoiceServiceFee, request, options: options);
   }
 
+  /// Quote lifecycle: a tagged payer accepts/declines a quote; the creator
+  /// converts a quote into a payable invoice (same record, audited).
+  $grpc.ResponseFuture<$0.RespondToQuoteResponse> respondToQuote(
+    $0.RespondToQuoteRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$respondToQuote, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ConvertQuoteToInvoiceResponse> convertQuoteToInvoice(
+    $0.ConvertQuoteToInvoiceRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$convertQuoteToInvoice, request, options: options);
+  }
+
   // method descriptors
 
   static final _$createInvoice =
@@ -273,6 +289,16 @@ class InvoiceServiceClient extends $grpc.Client {
       '/invoice.InvoiceService/GetInvoiceServiceFee',
       ($0.GetInvoiceServiceFeeRequest value) => value.writeToBuffer(),
       $0.GetInvoiceServiceFeeResponse.fromBuffer);
+  static final _$respondToQuote =
+      $grpc.ClientMethod<$0.RespondToQuoteRequest, $0.RespondToQuoteResponse>(
+          '/invoice.InvoiceService/RespondToQuote',
+          ($0.RespondToQuoteRequest value) => value.writeToBuffer(),
+          $0.RespondToQuoteResponse.fromBuffer);
+  static final _$convertQuoteToInvoice = $grpc.ClientMethod<
+          $0.ConvertQuoteToInvoiceRequest, $0.ConvertQuoteToInvoiceResponse>(
+      '/invoice.InvoiceService/ConvertQuoteToInvoice',
+      ($0.ConvertQuoteToInvoiceRequest value) => value.writeToBuffer(),
+      $0.ConvertQuoteToInvoiceResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('invoice.InvoiceService')
@@ -438,6 +464,24 @@ abstract class InvoiceServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetInvoiceServiceFeeRequest.fromBuffer(value),
         ($0.GetInvoiceServiceFeeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RespondToQuoteRequest,
+            $0.RespondToQuoteResponse>(
+        'RespondToQuote',
+        respondToQuote_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.RespondToQuoteRequest.fromBuffer(value),
+        ($0.RespondToQuoteResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ConvertQuoteToInvoiceRequest,
+            $0.ConvertQuoteToInvoiceResponse>(
+        'ConvertQuoteToInvoice',
+        convertQuoteToInvoice_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ConvertQuoteToInvoiceRequest.fromBuffer(value),
+        ($0.ConvertQuoteToInvoiceResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateInvoiceResponse> createInvoice_Pre(
@@ -598,4 +642,22 @@ abstract class InvoiceServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetInvoiceServiceFeeResponse> getInvoiceServiceFee(
       $grpc.ServiceCall call, $0.GetInvoiceServiceFeeRequest request);
+
+  $async.Future<$0.RespondToQuoteResponse> respondToQuote_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.RespondToQuoteRequest> $request) async {
+    return respondToQuote($call, await $request);
+  }
+
+  $async.Future<$0.RespondToQuoteResponse> respondToQuote(
+      $grpc.ServiceCall call, $0.RespondToQuoteRequest request);
+
+  $async.Future<$0.ConvertQuoteToInvoiceResponse> convertQuoteToInvoice_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ConvertQuoteToInvoiceRequest> $request) async {
+    return convertQuoteToInvoice($call, await $request);
+  }
+
+  $async.Future<$0.ConvertQuoteToInvoiceResponse> convertQuoteToInvoice(
+      $grpc.ServiceCall call, $0.ConvertQuoteToInvoiceRequest request);
 }

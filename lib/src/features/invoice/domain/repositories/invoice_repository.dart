@@ -10,6 +10,14 @@ abstract class InvoiceRepository {
   Future<Invoice?> getInvoiceById(String id);
   Future<Invoice> createInvoice(Invoice invoice, {String? serviceFeeRef});
   Future<Invoice> updateInvoice(Invoice invoice);
+
+  // Quote lifecycle: quotes are documents, not payables (backend-enforced).
+  /// A tagged payer accepts ('accept') or declines ('decline') a quote.
+  Future<Invoice> respondToQuote(String invoiceId, String action);
+
+  /// Creator-only: convert a quote into a payable invoice (same record; the
+  /// quote's accept/decline history survives as the audit trail).
+  Future<Invoice> convertQuoteToInvoice(String invoiceId);
   Future<void> deleteInvoice(String id);
 
   // Specific Operations

@@ -16,6 +16,7 @@ import '../cubit/invoice_cubit.dart';
 import '../cubit/invoice_state.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
+import '../widgets/quote_action_buttons.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../widgets/invoice_shimmer.dart';
@@ -505,6 +506,15 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
 
     return Column(
       children: [
+        // Quote lifecycle: status chip + Accept/Decline (receiver) or Convert
+        // to Invoice (creator). Renders nothing for non-quotes.
+        QuoteActionButtons(
+          invoice: invoice,
+          isSender: isSender,
+          isReceiver: !isSender && widget.isFromReceivedTab,
+          onChanged: () =>
+              context.read<InvoiceCubit>().loadInvoiceDetails(widget.invoiceId),
+        ),
         // SENT & PENDING: Show Send Reminder, Cancel, Edit
         if (isSender && invoice.status == InvoiceStatus.pending) ...[
           SizedBox(
@@ -693,7 +703,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
         // Pay button for a receiver who can still pay — pending OR partially_paid
         // (a split invoice the others have started paying) while THIS user's
         // share is unpaid.
-        if (!isSender && widget.isFromReceivedTab && _receiverCanPay(invoice, currentUserId)) ...[
+        if (!isSender && widget.isFromReceivedTab && !invoice.isQuote && _receiverCanPay(invoice, currentUserId)) ...[
           Container(
             width: double.infinity,
             decoration: BoxDecoration(

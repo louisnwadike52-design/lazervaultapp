@@ -479,8 +479,10 @@ class _IncomingTaggedInvoicesScreenState
             ),
           ],
           // Quick Pay button — hidden once THIS user has paid their share of a
-          // split invoice (the invoice may still be partially_paid for others).
-          if (isPending && !_myShareAlreadyPaid(invoice)) ...[
+          // split invoice (the invoice may still be partially_paid for others),
+          // and for quotes (not payable until the creator converts them; open
+          // the details page to Accept/Decline instead).
+          if (isPending && !_myShareAlreadyPaid(invoice) && invoice.invoice?.isQuote != true) ...[
             SizedBox(height: 14.h),
             SizedBox(
               width: double.infinity,
