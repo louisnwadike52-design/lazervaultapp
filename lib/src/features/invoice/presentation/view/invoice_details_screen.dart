@@ -82,6 +82,14 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                 ),
               );
             }
+            if (state is InvoiceOperationSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: InvoiceThemeColors.successGreen,
+                ),
+              );
+            }
           },
           builder: (context, state) {
             if (state is InvoiceLoading) {
@@ -95,6 +103,13 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
 
             if (state is QRCodeGenerated && _currentInvoice != null) {
               return _buildQRCodeView(state.qrData, _currentInvoice!);
+            }
+
+            // Transient operation states (reminder sent, errors mid-action)
+            // must not blank an already-rendered invoice - keep showing it
+            // while the cubit re-hydrates the details.
+            if (_currentInvoice != null) {
+              return _buildContent(_currentInvoice!);
             }
 
             return _buildErrorState();
@@ -1679,10 +1694,14 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
   }
 
   void _sendReminder(Invoice invoice) {
-    context.read<InvoiceCubit>().sendInvoice(invoice.id);
+    // Calls the real SendInvoiceReminder RPC; success/error feedback comes
+    // from the cubit states (the old code fired sendInvoice - an
+    // UpdateInvoiceStatus - and showed a hardcoded 'Reminder sent' toast
+    // whether or not anything was ever dispatched).
+    context.read<InvoiceCubit>().sendReminder(invoice.id);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Reminder sent'),
+        content: const Text('Sending reminder…'),
         backgroundColor: InvoiceThemeColors.successGreen,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),

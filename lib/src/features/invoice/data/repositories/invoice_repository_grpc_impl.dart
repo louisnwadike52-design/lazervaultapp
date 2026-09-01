@@ -488,6 +488,20 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   }
 
   @override
+  Future<void> sendInvoiceReminder(String invoiceId) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.SendInvoiceReminderRequest()..invoiceId = invoiceId;
+        final options = await grpcClient.callOptions;
+        await grpcClient.invoiceClient.sendInvoiceReminder(
+          request,
+          options: options,
+        );
+      },
+    );
+  }
+
+  @override
   Future<Invoice> respondToQuote(String invoiceId, String action) async {
     return retryWithBackoff(
       operation: () async {

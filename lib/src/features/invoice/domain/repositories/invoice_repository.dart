@@ -11,6 +11,11 @@ abstract class InvoiceRepository {
   Future<Invoice> createInvoice(Invoice invoice, {String? serviceFeeRef});
   Future<Invoice> updateInvoice(Invoice invoice);
 
+  /// Sends a payment reminder for this invoice (creator only). The backend
+  /// notifies each UNPAID tagged payer for their share; untagged invoices
+  /// email the external payer.
+  Future<void> sendInvoiceReminder(String invoiceId);
+
   // Quote lifecycle: quotes are documents, not payables (backend-enforced).
   /// A tagged payer accepts ('accept') or declines ('decline') a quote.
   Future<Invoice> respondToQuote(String invoiceId, String action);

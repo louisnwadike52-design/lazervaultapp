@@ -536,6 +536,22 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   }
 
   // Send invoice (change status to pending)
+  /// Sends a payment reminder (creator only). Unlike sendInvoice, this calls
+  /// the real SendInvoiceReminder RPC and re-hydrates the DETAILS state -
+  /// emitting list states here blanked the details screen ("Failed to load
+  /// invoice") because its builder only renders detail states.
+  Future<void> sendReminder(String invoiceId) async {
+    try {
+      await repository.sendInvoiceReminder(invoiceId);
+      if (isClosed) return;
+      emit(const InvoiceOperationSuccess(message: 'Reminder sent to unpaid payers'));
+    } catch (e) {
+      if (isClosed) return;
+      emit(InvoiceError(message: 'Failed to send reminder: ${e.toString()}'));
+    }
+    if (!isClosed) await loadInvoiceDetails(invoiceId);
+  }
+
   Future<void> sendInvoice(String invoiceId) async {
     try {
       final updatedInvoice = await repository.sendInvoice(invoiceId);
