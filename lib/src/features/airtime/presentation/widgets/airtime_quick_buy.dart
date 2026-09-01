@@ -234,7 +234,7 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
   }
 
   Future<void> _detectNetwork() async {
-    final phone = _phoneController.text.trim();
+    final phone = _normalizedPhone;
     // A valid NG mobile is 11 digits starting 0 (0803…). Detect only once the
     // number is long enough to carry a prefix; clear the badge otherwise.
     if (phone.length < 4) {
@@ -272,10 +272,27 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
     });
   }
 
-  bool get _phoneValid {
-    final p = _phoneController.text.trim();
-    return RegExp(r'^0\d{10}$').hasMatch(p);
+  /// Canonical NG mobile ("0803…", 11 digits) for validation, detection and
+  /// submission.
+  ///
+  /// The field renders a "+234" prefix chip, so people naturally type the
+  /// 10-digit subscriber number ("8136070705") — which the old validator
+  /// rejected outright. The button then sat disabled while the network badge
+  /// happily showed the auto-detected carrier, and the auto-recharge card
+  /// (gated on the same `_ready`) never appeared, with nothing on screen
+  /// explaining why. Accept every form a person might reasonably type.
+  String get _normalizedPhone {
+    var p = _phoneController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
+    if (p.startsWith('234') && p.length == 13) {
+      p = '0${p.substring(3)}';
+    } else if (p.length == 10 && RegExp(r'^[789]').hasMatch(p)) {
+      // Subscriber number typed under the visible +234 prefix.
+      p = '0$p';
+    }
+    return p;
   }
+
+  bool get _phoneValid => RegExp(r'^0\d{10}$').hasMatch(_normalizedPhone);
 
   bool get _amountValid {
     final a = _amount ?? 0;
@@ -308,7 +325,8 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
     FocusScope.of(context).unfocus();
     final cubit = context.read<AirtimeCubit>();
     final network = _network!;
-    final phone = _phoneController.text.trim();
+    // Always send the canonical 0-prefixed form, whatever was typed.
+    final phone = _normalizedPhone;
     final amount = _amount!;
     final accountId = serviceLocator<AccountManager>().activeAccountId;
     final txnId =
@@ -633,13 +651,16 @@ class _AirtimeQuickBuyState extends State<AirtimeQuickBuy>
       ]);
     }
     final n = _network;
+    // Say WHY the number is short even when a network resolved — otherwise a
+    // detected carrier hides the only hint while the pay button stays dead.
+    if (!_phoneValid && _phoneController.text.trim().isNotEmpty) {
+      return Text('Enter a valid 11-digit number',
+          style: GoogleFonts.inter(
+              color: const Color(0xFFFB923C), fontSize: 12.sp));
+    }
     if (n == null) {
       if (!_phoneValid) {
-        return _phoneController.text.isNotEmpty
-            ? Text('Enter a valid 11-digit number',
-                style: GoogleFonts.inter(
-                    color: const Color(0xFFFB923C), fontSize: 12.sp))
-            : const SizedBox.shrink();
+        return const SizedBox.shrink();
       }
       // Valid number, but the prefix couldn't be auto-detected — let the user
       // pick a network instead of being stuck with the pay button disabled.
