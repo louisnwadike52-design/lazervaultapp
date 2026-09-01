@@ -92,7 +92,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
   String get _feeCurrencySymbol => _getCurrencySymbolFromCode(_feeCurrencyCode);
   String get _feeLabel => _feeQuote == null
       ? 'Pay Service Fee'
-      : 'Pay Service Fee ($_feeCurrencySymbol${_feeAmount.toStringAsFixed(2)})';
+      : 'Pay Service Fee ($_feeCurrencySymbol${formatFeeAmount(_feeAmount, _feeCurrencyCode)})';
 
   // Get the invoice from arguments (handles both direct invoice and wrapped in map)
   Invoice get _invoice {
@@ -2182,7 +2182,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       amount: _feeAmount,
       currency: _feeCurrencyCode,
       title: 'Confirm Service Fee',
-      message: 'Confirm invoice unlock fee of $_feeCurrencyCode ${_feeAmount.toStringAsFixed(2)}',
+      message: 'Confirm invoice unlock fee of $_feeCurrencyCode ${formatFeeAmount(_feeAmount, _feeCurrencyCode)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },

@@ -376,7 +376,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                       ? 'Unavailable'
                       : _feeQuote == null
                           ? 'Loading…'
-                          : '$_feeCurrencySymbol${_fee.toStringAsFixed(2)}',
+                          : '$_feeCurrencySymbol${formatFeeAmount(_fee, _feeCurrencyCode)}',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF3B82F6),
                     fontSize: 16.sp,
@@ -746,7 +746,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                               ? 'Fee unavailable. Tap to retry'
                               : _feeQuote == null
                                   ? 'Loading fee…'
-                                  : 'Unlock for $_feeCurrencySymbol${_fee.toStringAsFixed(2)}',
+                                  : 'Unlock for $_feeCurrencySymbol${formatFeeAmount(_fee, _feeCurrencyCode)}',
                           style: GoogleFonts.inter(
                             color: _feeQuoteFailed
                                 ? const Color(0xFF2E1065)
@@ -823,8 +823,8 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
       currency: _feeCurrencyCode,
       title: widget.isPrePayment ? 'Confirm Service Fee' : 'Confirm Payment',
       message: widget.isPrePayment
-          ? 'Confirm service fee payment of $_feeCurrencyCode ${_fee.toStringAsFixed(2)}'
-          : 'Confirm invoice unlock fee of $_feeCurrencyCode ${_fee.toStringAsFixed(2)}',
+          ? 'Confirm service fee payment of $_feeCurrencyCode ${formatFeeAmount(_fee, _feeCurrencyCode)}'
+          : 'Confirm invoice unlock fee of $_feeCurrencyCode ${formatFeeAmount(_fee, _feeCurrencyCode)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },

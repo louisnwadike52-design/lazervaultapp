@@ -361,7 +361,7 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
           ),
           SizedBox(height: 8.h),
           Text(
-            '$_feeCurrencySymbol${_feeAmount.toStringAsFixed(2)}',
+            '$_feeCurrencySymbol${formatFeeAmount(_feeAmount, _feeQuote?.currency ?? widget.invoice.currency)}',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 32.sp,
