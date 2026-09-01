@@ -567,29 +567,46 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.inter(
-              color: const Color(0xFF6B7280),
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1,
-            ),
+          // Title + logo share one header row so the info text below starts at
+          // the SAME height on both cards whether or not a logo was uploaded.
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF6B7280),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+              if (logoUrl != null && logoUrl.isNotEmpty)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.r),
+                  child: Image.network(
+                    logoUrl,
+                    width: 40.w,
+                    height: 40.w,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, progress) =>
+                        progress == null
+                            ? child
+                            : Container(
+                                width: 40.w,
+                                height: 40.w,
+                                color: const Color(0xFFE5E7EB),
+                              ),
+                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  ),
+                )
+              else
+                SizedBox(height: 40.w),
+            ],
           ),
           SizedBox(height: 12.h),
-          if (logoUrl != null && logoUrl.isNotEmpty) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8.r),
-              child: Image.network(
-                logoUrl,
-                width: 40.w,
-                height: 40.w,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-              ),
-            ),
-            SizedBox(height: 8.h),
-          ],
           ...info.map((line) => Padding(
             padding: EdgeInsets.only(bottom: 4.h),
             child: Text(

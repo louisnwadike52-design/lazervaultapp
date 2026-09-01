@@ -541,34 +541,20 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           onChanged: () =>
               context.read<InvoiceCubit>().loadInvoiceDetails(widget.invoiceId),
         ),
-        // SENT & PENDING: Show Send Reminder, Cancel, Edit
+        // SENT & PENDING: one aligned row - Send Reminder (primary) + Cancel.
+        // (Edit removed: the edit flow was broken and is not part of the
+        // supported lifecycle for an unlocked pending invoice.)
         if (isSender && invoice.status == InvoiceStatus.pending) ...[
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _sendReminder(invoice),
-              icon: const Icon(Icons.notifications_active),
-              label: const Text('Send Reminder'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: InvoiceThemeColors.warningOrange,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 12.h),
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _cancelInvoice(invoice),
-                  icon: Icon(Icons.cancel_outlined, color: InvoiceThemeColors.errorRed),
-                  label: Text('Cancel', style: TextStyle(color: InvoiceThemeColors.errorRed)),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: InvoiceThemeColors.errorRed),
+                child: ElevatedButton.icon(
+                  onPressed: () => _sendReminder(invoice),
+                  icon: const Icon(Icons.notifications_active, size: 20),
+                  label: const Text('Send Reminder'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: InvoiceThemeColors.warningOrange,
+                    foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -578,13 +564,14 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               ),
               SizedBox(width: 12.w),
               Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => _editInvoice(invoice),
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Edit'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
+                child: OutlinedButton.icon(
+                  onPressed: () => _cancelInvoice(invoice),
+                  icon: Icon(Icons.cancel_outlined,
+                      color: InvoiceThemeColors.errorRed, size: 20),
+                  label: Text('Cancel',
+                      style: TextStyle(color: InvoiceThemeColors.errorRed)),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: InvoiceThemeColors.errorRed),
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -1645,11 +1632,6 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
     });
   }
 
-  void _editInvoice(Invoice invoice) {
-    // Navigate to edit screen
-    // Get.to(() => CreateInvoiceScreen(editingInvoice: invoice));
-  }
-
   /// THIS user's tagged entry on the invoice (or null if not tagged).
   TaggedUserInfo? _myTag(Invoice invoice, String? uid) {
     if (uid == null) return null;
@@ -1725,11 +1707,14 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             child: Text('No', style: GoogleFonts.inter(color: Colors.grey)),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              context.read<InvoiceCubit>().cancelInvoice(invoice.id);
+              // Await the RPC before leaving so a failure surfaces here (the
+              // cubit's error snackbar) instead of silently popping to a list
+              // that still shows the invoice as pending.
+              await context.read<InvoiceCubit>().cancelInvoice(invoice.id);
               GetIt.I<InvoiceRefreshNotifier>().notifyRefresh();
-              Get.back();
+              if (mounted) Get.back();
             },
             child: Text('Cancel Invoice', style: GoogleFonts.inter(color: InvoiceThemeColors.errorRed)),
           ),

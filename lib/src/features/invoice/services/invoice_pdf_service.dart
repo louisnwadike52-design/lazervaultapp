@@ -411,30 +411,44 @@ class InvoicePdfService {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Container(
-            padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: pw.BoxDecoration(
-              color: title == 'From' ? PdfColors.green100 : PdfColors.blue100,
-              borderRadius: pw.BorderRadius.circular(4),
-            ),
-            child: pw.Text(
-              title,
-              style: pw.TextStyle(
-                fontSize: 10,
-                fontWeight: pw.FontWeight.bold,
-                color: title == 'From' ? PdfColors.green700 : PdfColors.blue700,
-              ),
+          // Badge + logo on one header row of a FIXED height, so the info text
+          // below starts at the same y on both cards with or without a logo.
+          pw.SizedBox(
+            height: 48,
+            child: pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Container(
+                  padding:
+                      const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: pw.BoxDecoration(
+                    color:
+                        title == 'From' ? PdfColors.green100 : PdfColors.blue100,
+                    borderRadius: pw.BorderRadius.circular(4),
+                  ),
+                  child: pw.Text(
+                    title,
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      fontWeight: pw.FontWeight.bold,
+                      color: title == 'From'
+                          ? PdfColors.green700
+                          : PdfColors.blue700,
+                    ),
+                  ),
+                ),
+                pw.Spacer(),
+                if (logo != null)
+                  pw.ClipRRect(
+                    horizontalRadius: 6,
+                    verticalRadius: 6,
+                    child: pw.Image(logo,
+                        width: 44, height: 44, fit: pw.BoxFit.cover),
+                  ),
+              ],
             ),
           ),
-          pw.SizedBox(height: 12),
-          if (logo != null) ...[
-            pw.ClipRRect(
-              horizontalRadius: 6,
-              verticalRadius: 6,
-              child: pw.Image(logo, width: 48, height: 48, fit: pw.BoxFit.cover),
-            ),
-            pw.SizedBox(height: 10),
-          ],
+          pw.SizedBox(height: 10),
           ...info.map((line) => pw.Padding(
                 padding: const pw.EdgeInsets.only(bottom: 4),
                 child: pw.Text(
@@ -816,25 +830,34 @@ class InvoicePdfService {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text(
-            title,
-            style: pw.TextStyle(
-              fontSize: 12,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColors.grey700,
+          // Title + uploaded logo on one fixed-height header row so both the
+          // From and Bill To cards start their info text at the same y,
+          // logo or not. Logo is best-effort (null when absent/unreachable).
+          pw.SizedBox(
+            height: 52,
+            child: pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Text(
+                  title,
+                  style: pw.TextStyle(
+                    fontSize: 12,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.grey700,
+                  ),
+                ),
+                pw.Spacer(),
+                if (logo != null)
+                  pw.ClipRRect(
+                    horizontalRadius: 6,
+                    verticalRadius: 6,
+                    child: pw.Image(logo,
+                        width: 48, height: 48, fit: pw.BoxFit.cover),
+                  ),
+              ],
             ),
           ),
-          pw.SizedBox(height: 12),
-          // Uploaded sender/receiver image (best-effort — null when not
-          // provided or unreachable, in which case the card is text-only).
-          if (logo != null) ...[
-            pw.ClipRRect(
-              horizontalRadius: 6,
-              verticalRadius: 6,
-              child: pw.Image(logo, width: 56, height: 56, fit: pw.BoxFit.cover),
-            ),
-            pw.SizedBox(height: 10),
-          ],
+          pw.SizedBox(height: 8),
           ...info.map((line) => pw.Padding(
                 padding: const pw.EdgeInsets.only(bottom: 4),
                 child: pw.Text(
