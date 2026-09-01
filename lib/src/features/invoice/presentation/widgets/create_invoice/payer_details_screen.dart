@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -125,9 +126,14 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
               children: [
                 _buildHeader(),
                 SizedBox(height: 20.h),
-                _buildSplitToggle(cubit),
-                SizedBox(height: 20.h),
-                if (cubit.splitMode)
+                // Splitting is an admin-gated capability and OFF by default:
+                // the ordinary invoice has one payer, so the toggle (and its
+                // whole share model) stays out of the flow unless enabled.
+                if (FeatureFlags.invoiceSplitIsEnabled) ...[
+                  _buildSplitToggle(cubit),
+                  SizedBox(height: 20.h),
+                ],
+                if (FeatureFlags.invoiceSplitIsEnabled && cubit.splitMode)
                   _buildSplitSection(cubit)
                 else ...[
                   _buildLogoSection(),

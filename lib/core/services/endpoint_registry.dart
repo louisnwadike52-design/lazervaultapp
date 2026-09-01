@@ -97,6 +97,9 @@ class EndpointRegistry {
     'airtime_tab_buy_enabled',
     'airtime_tab_international_enabled',
     'airtime_tab_sell_enabled',
+    // Invoice split-among-multiple-payers (admin-toggled, default OFF). Read via
+    // FeatureFlags so the create-invoice flow hides the split step entirely.
+    'invoice_split_enabled',
     // Platform authentication mode (email_password | phone_passcode). Cached
     // from the same internal settings poll and read via FeatureFlags at boot to
     // pick the signup/login flow.

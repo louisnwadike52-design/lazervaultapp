@@ -142,6 +142,15 @@ class FeatureFlags {
   // toggle is on (the sheet renders an "unavailable" state).
   static const String insuranceHostedLink = 'insurance_hosted_link';
 
+  /// Whether the Insurance service is shown at all (tiles + All-Services
+  /// search). Admin-toggled; the code stays in place either way.
+  ///
+  /// Defaults to FALSE — hidden. The app must not flash Insurance during the
+  /// window before the remote snapshot arrives (first launch, offline start, a
+  /// slow or failed settings call), so "unknown" has to mean hidden. A default
+  /// of true would show it every cold start until the network answered.
+  static const String insuranceEnabled = 'insurance_enabled';
+
   // ── Airtime landing tabs (admin-toggled) ─────────────────────────────────
   // Show/hide each of the three Airtime tabs (Buy / International / Sell) from
   // the admin dashboard. Buy + International default ON; Sell (airtime-to-cash)
@@ -151,6 +160,11 @@ class FeatureFlags {
   static const String airtimeTabInternationalEnabled =
       'airtime_tab_international_enabled';
   static const String airtimeTabSellEnabled = 'airtime_tab_sell_enabled';
+
+  /// Split an invoice among several tagged payers. OFF by default — most
+  /// invoices have one payer, and the split UI adds a step (and a whole share
+  /// model) to every invoice. Admins turn it on per platform.
+  static const String invoiceSplitEnabled = 'invoice_split_enabled';
 
   // ── App auto-update (store version check) ─────────────────────────────────
   // Per-platform "latest" + "minimum supported" build numbers + store URLs,
@@ -232,9 +246,11 @@ class FeatureFlags {
       scanResolveUsersEnabled,
       bvnSignupScreenEnabled,
       insuranceHostedEntrypointsEnabled,
+      insuranceEnabled,
       airtimeTabBuyEnabled,
       airtimeTabInternationalEnabled,
       airtimeTabSellEnabled,
+      invoiceSplitEnabled,
       voiceAfricanLanguagesEnabled,
       emailVerificationRequired,
       phoneVerificationRequired,
@@ -295,6 +311,16 @@ class FeatureFlags {
   /// called after [init].
   static bool get dashboardCardsVisible {
     return _prefs?.getBool(dashboardCardsSectionVisible) ?? false;
+  }
+
+  /// Whether the Insurance service is visible anywhere in the app.
+  ///
+  /// Defaults to FALSE so it is hidden BEFORE the admin snapshot resolves —
+  /// on a cold start, offline, or if the settings call fails. The screens and
+  /// routes remain compiled in; only the entry points are withheld, so flipping
+  /// the admin switch restores it without a release.
+  static bool get insuranceVisible {
+    return _prefs?.getBool(insuranceEnabled) ?? false;
   }
 
   // ── Voice & Chat Assistant section visibility ────────────────────────────
@@ -599,6 +625,12 @@ class FeatureFlags {
   /// Sell (airtime-to-cash) tab — OFF by default. Synchronous — call after [init].
   static bool get airtimeSellTabIsEnabled {
     return _prefs?.getBool(airtimeTabSellEnabled) ?? false;
+  }
+
+  /// Invoice "split among multiple people" — OFF by default, so the standard
+  /// invoice flow has a single payer. Synchronous — call after [init].
+  static bool get invoiceSplitIsEnabled {
+    return _prefs?.getBool(invoiceSplitEnabled) ?? false;
   }
 
   /// African voice languages (yo/ig/ha/pcm) — OFF by default. When off the voice

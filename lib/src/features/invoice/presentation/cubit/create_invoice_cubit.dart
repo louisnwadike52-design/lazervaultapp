@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'dart:io';
 import '../../domain/entities/invoice_entity.dart';
 import '../../../authentication/domain/entities/user.dart';
@@ -110,7 +111,11 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
   }
 
   // ── Split payment ──────────────────────────────────────────────────────────
-  bool get splitMode => _splitMode;
+  /// Split is admin-gated and OFF by default. Reading through the flag here —
+  /// the one choke point every consumer uses — guarantees a stale `true` can
+  /// never leak a split payload into a created invoice after an admin turns
+  /// the capability off.
+  bool get splitMode => _splitMode && FeatureFlags.invoiceSplitIsEnabled;
   bool get splitCustom => _splitCustom;
   List<TaggedUserInfo> get splitPayers => List.unmodifiable(_splitPayers);
   double get splitAssigned =>
