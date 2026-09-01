@@ -713,9 +713,15 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           // Treat "failed/refunded/manual_review" as terminal sad.
           // Otherwise stay awaiting so the screen keeps its loading affordance.
           final s = giftCard.status.toLowerCase();
-          final hasCode =
-              (giftCard.redemptionCode ?? '').trim().isNotEmpty;
-          if (s == 'available' && hasCode) {
+          // A card is delivered when EITHER credential arrives — providers
+          // fill whichever of redemption_code / redemption_pin their product
+          // uses. The old gate required redemptionCode specifically, so a card
+          // whose credential landed in redemption_pin (Reloadly PIN products)
+          // polled forever and the screen sat on "Generating" while the
+          // purchase had long completed, provider charged and PIN issued.
+          final hasCode = (giftCard.redemptionCode ?? '').trim().isNotEmpty ||
+              (giftCard.redemptionPin ?? '').trim().isNotEmpty;
+          if ((s == 'available' || s == 'active') && hasCode) {
             emit(GiftCardPurchaseCompleted(
               giftCard: giftCard,
               transactionId: giftCard.providerTransactionId,

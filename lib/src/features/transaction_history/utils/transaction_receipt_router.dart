@@ -22,6 +22,16 @@ class TransactionReceiptRouter {
         return;
       }
     }
+    // Gift cards: the generic receipt cannot show the redemption code/PIN and
+    // shares a transfer-shaped PDF. Open the card itself, where the code, PIN
+    // and the gift-card receipt (download + share) already live.
+    if (transaction.serviceType == TransactionServiceType.giftCard) {
+      final ref = transaction.metadata?['giftcard_ref']?.toString();
+      if (ref != null && ref.isNotEmpty) {
+        Get.toNamed(AppRoutes.giftCardFromReference, arguments: ref);
+        return;
+      }
+    }
     Get.to(
       () => TransactionDetailScreen(transaction: transaction),
       transition: Transition.rightToLeft,

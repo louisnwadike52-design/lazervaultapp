@@ -674,6 +674,16 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       metadata['balance_after'] = protoTx.balanceAfter;
     }
 
+    // Gift-card captures carry no metadata either — recover the card
+    // reference from the description so the row can open the real card
+    // (code/PIN + shareable receipt) rather than a generic receipt.
+    if (serviceType == TransactionServiceType.giftCard &&
+        metadata['giftcard_ref'] == null) {
+      final ref = classifier.giftCardRefFromText(
+          protoTx.description, protoTx.reference);
+      if (ref != null) metadata['giftcard_ref'] = ref;
+    }
+
     // Legacy invoice-fee rows predate the metadata stamp — recover the
     // invoice id from the idempotency reference so tapping the row can still
     // open the invoice receipt.

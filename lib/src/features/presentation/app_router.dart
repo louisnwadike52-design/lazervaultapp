@@ -24,6 +24,7 @@ import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.d
 import 'package:lazervault/src/features/crypto/presentation/view/buy_crypto_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/send_funds/transfer_receipt_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_cards_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_from_reference_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/purchase_gift_card_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_details_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_purchase_processing_screen.dart';
@@ -1714,6 +1715,18 @@ class AppRouter {
         }
         return PurchaseGiftCardScreen(brand: args as GiftCardBrand);
       },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.giftCardFromReference,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<GiftCardCubit>(),
+        child: GiftCardFromReferenceScreen(
+          reference: (Get.arguments is String)
+              ? Get.arguments as String
+              : ((Get.arguments as Map?)?['reference']?.toString() ?? ''),
+        ),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(

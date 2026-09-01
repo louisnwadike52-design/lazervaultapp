@@ -305,6 +305,10 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String giftCardSellProcessing = '/gift-cards/sell-processing';
   static const String giftCardDetails = '/gift-card-details';
   static const String myGiftCards = '/gift-cards/my-cards';
+  /// Opens a gift card from a TRANSACTION row's "GC-…" reference (history
+  /// rows carry no card id). Resolves, then replaces itself with the card's
+  /// own details screen — where the code/PIN and receipt PDF live.
+  static const String giftCardFromReference = '/gift-card-from-reference';
   static const String giftCardSaleReceipt = '/gift-cards/sale-receipt';
   static const String sellGiftCard = '/gift-cards/sell';
   static const String mySales = '/gift-cards/my-sales';

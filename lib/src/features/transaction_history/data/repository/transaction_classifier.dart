@@ -29,6 +29,17 @@ String? invoiceIdFromReference(String ref) => RegExp(
     .firstMatch(ref)
     ?.group(1);
 
+/// Recovers the gift-card reference (`GC-<uuid>`) from a ledger row. Gift-card
+/// captures carry no metadata, but their description is
+/// `Gift card purchase - GC-<uuid>` — enough to open the actual card (with its
+/// code/PIN and shareable receipt) instead of a generic transfer receipt.
+String? giftCardRefFromText(String description, String reference) {
+  final re = RegExp(
+      r'\b(GC-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\b');
+  return re.firstMatch(description)?.group(1) ??
+      re.firstMatch(reference)?.group(1);
+}
+
 String classifyDomain(String category, String description, String reference,
     [String serviceName = '']) {
   final svc = serviceName.toLowerCase();
