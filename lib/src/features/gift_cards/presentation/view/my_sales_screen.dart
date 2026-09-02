@@ -298,7 +298,7 @@ class _MySalesScreenState extends State<MySalesScreen>
                             ),
                           ),
                           SizedBox(width: 8.w),
-                          _buildStatusBadge(sale.userDisplayStatus),
+                          _buildStatusBadge(sale),
                         ],
                       ),
                       SizedBox(height: 3.h),
@@ -422,7 +422,7 @@ class _MySalesScreenState extends State<MySalesScreen>
                           color: Colors.white,
                         ),
                       ),
-                      _buildStatusBadge(displaySale.userDisplayStatus),
+                      _buildStatusBadge(displaySale),
                     ],
                   ),
                   SizedBox(height: 20.h),
@@ -600,111 +600,27 @@ class _MySalesScreenState extends State<MySalesScreen>
     );
   }
 
-  Widget _buildStatusBadge(String status) {
-    Color bgColor;
-    Color textColor;
-    String label;
-
-    switch (status) {
-      case 'pending':
-        bgColor = const Color(0xFFFB923C).withValues(alpha: 0.15);
-        textColor = const Color(0xFFFB923C);
-        label = 'Pending';
-        break;
-      case 'pending_review':
-        bgColor = const Color(0xFF8B5CF6).withValues(alpha: 0.15);
-        textColor = const Color(0xFF8B5CF6);
-        label = 'In Review';
-        break;
-      case 'reviewing':
-        bgColor = InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15);
-        textColor = InvoiceThemeColors.primaryPurple;
-        label = 'Reviewing';
-        break;
-      case 'approved':
-        bgColor = const Color(0xFF10B981).withValues(alpha: 0.15);
-        textColor = const Color(0xFF10B981);
-        label = 'Approved';
-        break;
-      case 'rejected':
-        bgColor = const Color(0xFFEF4444).withValues(alpha: 0.15);
-        textColor = const Color(0xFFEF4444);
-        label = 'Rejected';
-        break;
-      case 'paid':
-        bgColor = const Color(0xFF10B981).withValues(alpha: 0.15);
-        textColor = const Color(0xFF10B981);
-        label = 'Paid';
-        break;
-      case 'settled':
-        bgColor = const Color(0xFF10B981).withValues(alpha: 0.15);
-        textColor = const Color(0xFF10B981);
-        label = 'Settled';
-        break;
-      case 'pending_settlement':
-        // Provider confirmed but the wallet credit hasn't landed yet.
-        // Yellow (not green) so the user understands this is NOT
-        // terminal-paid — the settlement-retry worker is still trying
-        // to credit them. Distinct from the green "Paid" badge to
-        // prevent the trust hazard of showing 'paid' before the user
-        // can spend the money.
-        bgColor = const Color(0xFFFBBF24).withValues(alpha: 0.15);
-        textColor = const Color(0xFFFBBF24);
-        label = 'Pending wallet credit';
-        break;
-      case 'failed':
-      case 'cancelled': // legacy alias pre giftcards-service migration 013
-        bgColor = const Color(0xFFEF4444).withValues(alpha: 0.15);
-        textColor = const Color(0xFFEF4444);
-        label = 'Failed';
-        break;
-      case 'manual_review':
-      case 'escalated': // legacy alias pre giftcards-service migration 013
-        bgColor = const Color(0xFFFB923C).withValues(alpha: 0.15);
-        textColor = const Color(0xFFFB923C);
-        label = 'Manual review';
-        break;
-      // Reversal states. Without these three the badge fell through to
-      // `label = status` and showed the raw enum — a customer read
-      // "refund_pending" on a screen that names every other state in plain
-      // English, and could not tell whether money was coming back or gone.
-      case 'refund_pending':
-        bgColor = const Color(0xFFFB923C).withValues(alpha: 0.15);
-        textColor = const Color(0xFFFB923C);
-        label = 'Refund in progress';
-        break;
-      case 'refunded':
-        bgColor = const Color(0xFF6B7280).withValues(alpha: 0.15);
-        textColor = const Color(0xFF9CA3AF);
-        label = 'Refunded';
-        break;
-      case 'refund_failed':
-        bgColor = const Color(0xFFEF4444).withValues(alpha: 0.15);
-        textColor = const Color(0xFFEF4444);
-        label = 'Refund failed';
-        break;
-      default:
-        bgColor = const Color(0xFF6B7280).withValues(alpha: 0.15);
-        textColor = const Color(0xFF6B7280);
-        // Last resort only. Every status the service can emit should have a
-        // case above; reaching here means a new one shipped without UI, so
-        // make it readable rather than showing a raw enum.
-        label = status.replaceAll('_', ' ');
-        if (label.isNotEmpty) {
-          label = label[0].toUpperCase() + label.substring(1);
-        }
-    }
-
+  /// Colour is per-outcome; the TEXT comes from GiftCardSale.userStatusLabel so
+  /// the badge and the receipt can never disagree about the same sale.
+  Widget _buildStatusBadge(GiftCardSale sale) {
+    final label = sale.userStatusLabel;
+    final Color color = switch (sale.userDisplayStatus) {
+      'paid' => const Color(0xFF10B981),
+      'rejected' => const Color(0xFFEF4444),
+      'refunded' => const Color(0xFFF59E0B),
+      _ => const Color(0xFFF59E0B),
+    };
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: Text(
         label,
+        key: Key('mysales_status_${sale.id}'),
         style: GoogleFonts.inter(
-          color: textColor,
+          color: color,
           fontSize: 11.sp,
           fontWeight: FontWeight.w600,
         ),

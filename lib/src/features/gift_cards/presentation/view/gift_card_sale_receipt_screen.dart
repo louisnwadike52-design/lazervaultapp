@@ -159,35 +159,11 @@ class _GiftCardSaleReceiptScreenState extends State<GiftCardSaleReceiptScreen> {
     return Icons.hourglass_top_rounded;
   }
 
-  String get _statusLabel {
-    switch (sale.status.toLowerCase()) {
-      case 'paid':
-      case 'settled':
-        return 'Paid';
-      case 'approved':
-        return 'Approved';
-      case 'rejected':
-        return 'Rejected';
-      case 'failed':
-        return 'Failed';
-      case 'refunded':
-        return 'Refunded';
-      case 'refund_pending':
-        return 'Refund in progress';
-      case 'refund_failed':
-        return 'Refund failed';
-      case 'pending_settlement':
-        return 'Pending wallet credit';
-      case 'pending':
-        return 'Submitted';
-      case 'pending_review':
-      case 'reviewing':
-        return 'Under review';
-      default:
-        final s = sale.status.replaceAll('_', ' ');
-        return s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
-    }
-  }
+  /// Single source of truth, shared with the My Sales badge — see
+  /// GiftCardSale.userStatusLabel. This used to switch on the RAW status, so an
+  /// unlisted state (manual_review) fell through to a default that title-cased
+  /// it, and the receipt said "Manual review" while the list said "Pending".
+  String get _statusLabel => sale.userStatusLabel;
 
   /// What the headline number MEANS changes with outcome. Labelling a quote as
   /// "Amount paid" on a rejected sale would be a lie in the largest text on

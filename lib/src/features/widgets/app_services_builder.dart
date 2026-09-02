@@ -299,10 +299,22 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   /// visibly on the Investment-account swipe grid — while staying available in
   /// dev/staging for testing. The route/handler stays registered so deep links
   /// and analytics keep resolving.
-  static Set<AppServiceName> get _effectiveHiddenServices =>
-      currentAppEnvironment.isProduction
-          ? {..._hiddenServices, AppServiceName.stocks}
-          : _hiddenServices;
+  static Set<AppServiceName> get _effectiveHiddenServices {
+    final hidden = <AppServiceName>{..._hiddenServices};
+    if (currentAppEnvironment.isProduction) {
+      hidden.add(AppServiceName.stocks);
+    }
+    // Insurance is admin-gated and hidden by DEFAULT — see
+    // FeatureFlags.insuranceVisible. The screens and routes stay compiled in;
+    // only the entry points are withheld, so an admin can restore it from the
+    // dashboard without a release. Reading the flag here (rather than editing
+    // the service lists) keeps every account type and the All-Services search
+    // consistent by construction.
+    if (!FeatureFlags.insuranceVisible) {
+      hidden.add(AppServiceName.insurance);
+    }
+    return hidden;
+  }
 
   /// Every service across all account types, deduped by name — the corpus the
   /// dashboard swipe-down search filters over so the user can find ANY platform
@@ -318,8 +330,12 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
       ..._multiCurrencyServices,
       ..._familyServices,
     ]) {
-      // Keep the search corpus consistent with the grid: don't surface stocks
-      // in the All-Services search on prod.
+      // Keep the search corpus consistent with the grid: a service hidden from
+      // the tiles must not be reachable by searching for it either, or the
+      // toggle only half-works.
+      if (_effectiveHiddenServices.contains(s.serviceName)) {
+        continue;
+      }
       if (currentAppEnvironment.isProduction &&
           s.serviceName == AppServiceName.stocks) {
         continue;

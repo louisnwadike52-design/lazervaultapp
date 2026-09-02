@@ -541,6 +541,35 @@ class GiftCardSale extends Equatable {
     }
   }
 
+  /// The ONE user-facing status label. Every surface — the My Sales badge, the
+  /// receipt headline, any future one — must render this, so they cannot
+  /// disagree about the same sale.
+  ///
+  /// They did disagree: the list showed "Pending" (from userDisplayStatus,
+  /// which collapses internal states) while the receipt switched on the RAW
+  /// status, and an unlisted state like `manual_review` fell through to a
+  /// default that title-cased it into "Manual review". The same sale read as
+  /// two different things depending on where you looked, and one of them
+  /// leaked an internal operator state at the user.
+  String get userStatusLabel {
+    switch (userDisplayStatus) {
+      case 'paid':
+        return 'Paid';
+      case 'rejected':
+        return 'Rejected';
+      case 'refunded':
+        return 'Refunded';
+      case 'pending':
+        // Everything still in flight reads as one thing. The distinctions
+        // beneath it (reviewing / manual_review / approved / settling) are
+        // operational, not user-facing: until the money lands, the only fact
+        // that matters to a seller is that it has not landed yet.
+        return 'Under review';
+      default:
+        return 'Under review';
+    }
+  }
+
   bool get isPending => status == 'pending';
   bool get isReviewing => status == 'reviewing';
   bool get isApproved => status == 'approved';
