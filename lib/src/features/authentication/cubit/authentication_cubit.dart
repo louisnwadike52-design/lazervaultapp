@@ -300,6 +300,21 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         await _purgeStaleUserCache();
       }
 
+      // IDENTITY FIRST — before any I/O that can throw.
+      //
+      // Everything below this line is PERSISTENCE, and it is legitimately
+      // best-effort: the catch at the bottom swallows failures so a bad write
+      // can't block a sign-in. But `_currentProfile` used to be assigned at the
+      // very END of that same try, ~90 awaited storage writes later, and
+      // `_purgeStaleUserCache` nulls it on the way in. So on a USER SWITCH, one
+      // throwing write left the app authenticated with NO profile: callers
+      // still emitted AuthenticationSuccess and routed to the dashboard, where
+      // `currentProfile == null` renders "Guest User" and every screen gated on
+      // it (wallet, transaction history) waits forever on an identity that will
+      // never arrive. Assigning here cannot fail — the profile is already in
+      // hand — so the in-memory session survives any storage problem.
+      _currentProfile = profile;
+
       // Tag subsequent Loki logs with this user (covers every passcode/email/
       // phone login path that funnels through here).
       RemoteLogSink.instance.setUserId(profile.user.id);
@@ -396,8 +411,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         localeManager.resetToCountry(country.toUpperCase());
       }
 
-      _currentProfile = profile;
-
       // Resolve + pin the Send Funds flow (short vs long) ONCE per session, right
       // beside the login-flow resolution above. Every send ENTRY point then reads
       // this in-memory value, so a mid-session background config refresh can't
@@ -405,7 +418,19 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       // transaction-PIN sheet on a slow network). Re-resolved on the next login.
       FeatureFlags.pinSendFlowForSession();
     } catch (e) {
+      // The in-memory profile is already set above, so the session survives
+      // this. What did NOT survive is persistence — the access/refresh tokens,
+      // the remembered email, the passcode-screen name/avatar — so the user is
+      // fine now but will be bounced to a full login on next launch, with no
+      // clue why. Ship it to Loki so that turns into a report instead of a
+      // mystery.
       print('Error saving session: $e');
+      RemoteLogSink.instance.log(
+        level: 'error',
+        flow: 'auth',
+        message: 'save_session failed: $e',
+        fields: {'user_id': profile.user.id},
+      );
     }
   }
 

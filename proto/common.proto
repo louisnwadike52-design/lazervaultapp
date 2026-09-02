@@ -23,6 +23,11 @@ message User {
     string country = 14;
     string profile_picture = 15;
     repeated string roles = 16;
+    // The REAL user id. `id` above is a uint64 from an era of numeric user ids;
+    // this platform uses UUIDs, so the gateway's ParseUint always failed and
+    // `id` is 0 for every user. Field 1 keeps its type for wire compatibility
+    // with installed clients.
+    string user_id = 17;
   }
   
   

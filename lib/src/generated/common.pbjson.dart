@@ -136,6 +136,7 @@ const User$json = {
     {'1': 'country', '3': 14, '4': 1, '5': 9, '10': 'country'},
     {'1': 'profile_picture', '3': 15, '4': 1, '5': 9, '10': 'profilePicture'},
     {'1': 'roles', '3': 16, '4': 3, '5': 9, '10': 'roles'},
+    {'1': 'user_id', '3': 17, '4': 1, '5': 9, '10': 'userId'},
   ],
 };
 
@@ -150,7 +151,7 @@ final $typed_data.Uint8List userDescriptor = $convert.base64Decode(
     'CyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQSGgoIbGFuZ3VhZ2'
     'UYDCABKAlSCGxhbmd1YWdlEhoKCGN1cnJlbmN5GA0gASgJUghjdXJyZW5jeRIYCgdjb3VudHJ5'
     'GA4gASgJUgdjb3VudHJ5EicKD3Byb2ZpbGVfcGljdHVyZRgPIAEoCVIOcHJvZmlsZVBpY3R1cm'
-    'USFAoFcm9sZXMYECADKAlSBXJvbGVz');
+    'USFAoFcm9sZXMYECADKAlSBXJvbGVzEhcKB3VzZXJfaWQYESABKAlSBnVzZXJJZA==');
 
 @$core.Deprecated('Use dataDescriptor instead')
 const Data$json = {

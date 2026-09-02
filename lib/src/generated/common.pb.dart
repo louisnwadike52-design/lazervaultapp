@@ -40,6 +40,7 @@ class User extends $pb.GeneratedMessage {
     $core.String? country,
     $core.String? profilePicture,
     $core.Iterable<$core.String>? roles,
+    $core.String? userId,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -58,6 +59,7 @@ class User extends $pb.GeneratedMessage {
     if (country != null) result.country = country;
     if (profilePicture != null) result.profilePicture = profilePicture;
     if (roles != null) result.roles.addAll(roles);
+    if (userId != null) result.userId = userId;
     return result;
   }
 
@@ -93,6 +95,7 @@ class User extends $pb.GeneratedMessage {
     ..aOS(14, _omitFieldNames ? '' : 'country')
     ..aOS(15, _omitFieldNames ? '' : 'profilePicture')
     ..pPS(16, _omitFieldNames ? '' : 'roles')
+    ..aOS(17, _omitFieldNames ? '' : 'userId')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -255,6 +258,19 @@ class User extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(16)
   $pb.PbList<$core.String> get roles => $_getList(15);
+
+  /// The REAL user id. `id` above is a uint64 from an era of numeric user ids;
+  /// this platform uses UUIDs, so the gateway's ParseUint always failed and
+  /// `id` is 0 for every user. Field 1 keeps its type for wire compatibility
+  /// with installed clients.
+  @$pb.TagNumber(17)
+  $core.String get userId => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set userId($core.String value) => $_setString(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasUserId() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearUserId() => $_clearField(17);
 }
 
 class Data extends $pb.GeneratedMessage {

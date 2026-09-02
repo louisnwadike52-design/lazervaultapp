@@ -65,7 +65,14 @@ class UserModel extends User {
 
   factory UserModel.fromProto(common_pb.User protoUser) {
     return UserModel(
-      id: protoUser.id.toString(), // Convert Int64 id
+      // `id` is a uint64 left over from numeric user ids. This platform uses
+      // UUIDs, so the gateway's ParseUint always failed and this was literally
+      // "0" for every user. The real id now arrives in `user_id`; fall back to
+      // the old field only so an app running against an older gateway keeps its
+      // existing (wrong, but unchanged) behaviour rather than going blank.
+      id: protoUser.userId.isNotEmpty
+          ? protoUser.userId
+          : protoUser.id.toString(),
       firstName: protoUser.firstName,
       lastName: protoUser.lastName,
       email: protoUser.email,
