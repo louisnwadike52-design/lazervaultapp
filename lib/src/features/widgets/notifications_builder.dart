@@ -147,6 +147,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color(0xFF10B981);
       case AppServiceName.batchTransfer:
         return const Color.fromARGB(255, 78, 3, 208);
+      case AppServiceName.splitBills:
+        return const Color(0xFF0EA5E9);
       case AppServiceName.invoice:
         return const Color(0xFF6366F1);
       case AppServiceName.payInvoice:

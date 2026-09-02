@@ -2,6 +2,7 @@ enum AppServiceName {
   sendFunds,
   batchTransfer,
   tagPay,
+  splitBills,
   escrow,
   invoice,
   payInvoice,
@@ -75,6 +76,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Batch Transfer';
       case AppServiceName.tagPay:
         return 'Tag Pay';
+      case AppServiceName.splitBills:
+        return 'Split Bills';
       case AppServiceName.escrow:
         return 'Escrow Pay';
       case AppServiceName.invoice:
@@ -156,6 +159,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'core-payments-service';
       case AppServiceName.tagPay:
         return 'tag-pay-service';
+      case AppServiceName.splitBills:
+        return 'split-bill-service';
       case AppServiceName.escrow:
         return 'escrow-service';
       case AppServiceName.invoice:
@@ -239,6 +244,7 @@ enum AppServiceImg {
   sendFunds,
   batchTransfer,
   tagPay,
+  splitBills,
   escrow,
   invoice,
   payInvoice,
@@ -282,6 +288,10 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/money-send.png';
       case AppServiceImg.batchTransfer:
         return 'assets/images/batch-transfer.png';
+      case AppServiceImg.splitBills:
+        // No dedicated asset — the tile renders a Material icon via
+        // app_service_builder's icon switch (Icons.call_split_rounded).
+        return 'assets/images/group-account.png';
       case AppServiceImg.tagPay:
         return 'assets/images/tag-pay.png';
       case AppServiceImg.escrow:

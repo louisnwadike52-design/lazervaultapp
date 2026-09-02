@@ -23,6 +23,11 @@ extension AppServiceNameMapper on AppServiceName {
         return TransactionServiceType.insurance;
       case AppServiceName.tagPay:
         return TransactionServiceType.tagPay;
+      case AppServiceName.splitBills:
+        // Split-bill payments settle as ordinary transfers in the ledger —
+        // there is no split-bill TransactionServiceType, and inventing one
+        // would filter the history down to nothing.
+        return TransactionServiceType.transfer;
       case AppServiceName.autoSave:
         return TransactionServiceType.autosave;
       case AppServiceName.crowdfund:

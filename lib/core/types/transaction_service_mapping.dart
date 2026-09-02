@@ -75,6 +75,9 @@ extension AppServiceNameTransactionMapping on AppServiceName {
         return TransactionServiceType.transfer;
       case AppServiceName.tagPay:
         return TransactionServiceType.tagPay;
+      case AppServiceName.splitBills:
+        // Settles as a transfer in the ledger — see service_type_mapper.
+        return TransactionServiceType.transfer;
       case AppServiceName.escrow:
         return TransactionServiceType.unknown; // Escrow has its own history surface
       case AppServiceName.invoice:

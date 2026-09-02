@@ -70,6 +70,12 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     AppService(
         serviceName: AppServiceName.tagPay,
         serviceImg: AppServiceImg.tagPay),
+    // Split Bills used to be reachable only from inside the Move Money hub,
+    // which buried a service people use constantly. It sits beside Tag Pay
+    // because they're the same idea — asking other people for money.
+    AppService(
+        serviceName: AppServiceName.splitBills,
+        serviceImg: AppServiceImg.splitBills),
     AppService(
         serviceName: AppServiceName.escrow,
         serviceImg: AppServiceImg.escrow),
