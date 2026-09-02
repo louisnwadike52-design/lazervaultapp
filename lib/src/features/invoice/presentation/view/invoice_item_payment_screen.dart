@@ -521,8 +521,47 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
               );
             }
 
+            // ONE wallet — the ACTIVE one. This used to render every account as
+            // a chooser, which invited paying an invoice from a wallet the user
+            // wasn't otherwise operating in and made the pay screen a second
+            // place to switch accounts. The dashboard is where the active
+            // account is chosen; this screen states which one will be used.
+            //
+            // Cross-currency is deliberately NOT removed: if the active wallet
+            // is denominated differently from the invoice, the existing FX
+            // quote path still runs for THAT wallet. Restricting the list must
+            // not become "you can no longer pay this invoice at all".
+            final activeId = GetIt.I<AccountManager>().activeAccountId;
+            final activeMatch = accounts.where((a) => a.id == activeId);
+            final shown =
+                activeMatch.isNotEmpty ? [activeMatch.first] : <AccountSummaryEntity>[];
+            if (shown.isEmpty) {
+              return Container(
+                padding: EdgeInsets.all(20.w),
+                decoration: BoxDecoration(
+                  color: InvoiceThemeColors.secondaryBackground,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Center(
+                  child: Text(
+                    'Select an active account on your dashboard to pay from.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ),
+              );
+            }
+            // Preselect it — there is nothing else to choose.
+            if (_selectedAccountId != shown.first.id) {
+              _selectedAccountId = shown.first.id;
+              _selectedAccountCurrency = shown.first.currency;
+            }
+
             return Column(
-              children: accounts.map((account) {
+              children: shown.map((account) {
                 final isSelected = _selectedAccountId == account.id;
                 final sameCurrency = account.currency.toUpperCase() ==
                     widget.invoice.currency.toUpperCase();
@@ -831,6 +870,30 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('This is a quote — it becomes payable once the sender converts it to an invoice.'),
         backgroundColor: Colors.orange,
+      ));
+      return;
+    }
+
+    // Re-check affordability AT TAP, not just at render. The card is disabled
+    // when the balance is short, but that was decided when the list was last
+    // built — a debit elsewhere (another tab, a scheduled transfer, a hold)
+    // between then and now would otherwise walk the user through the PIN only
+    // to fail at the backend. Same-currency only: for a cross-currency payment
+    // the payable amount isn't known until the FX quote below, and the
+    // conversion sheet does its own check against the balance.
+    final source = _selectedAccount();
+    final sameCurrency = source != null &&
+        source.currency.toUpperCase() ==
+            widget.invoice.currency.toUpperCase();
+    if (sameCurrency && source.availableBalance < _totalAmount) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          'Insufficient balance. You have '
+          '${_getCurrencySymbol(source.currency)}'
+          '${source.availableBalance.toStringAsFixed(2)} available and this '
+          'payment is $_currencySymbol${_totalAmount.toStringAsFixed(2)}.',
+        ),
+        backgroundColor: Colors.red[700],
       ));
       return;
     }

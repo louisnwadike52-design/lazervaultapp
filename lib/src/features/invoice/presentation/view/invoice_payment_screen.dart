@@ -490,11 +490,40 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
 
         // Always pay from the ACTIVE dashboard wallet — auto-filled and
         // non-changeable (no account picker / no "Change" action).
+        //
+        // The wallet must also match the FEE's currency. This used to fall back
+        // to `accounts.first` whenever the active id wasn't in the list, which
+        // silently proposed an arbitrary wallet — quite possibly denominated in
+        // another currency — as the source for a payment the user never chose.
         final activeId =
             GetIt.I<AccountManager>().activeAccountId ?? _selectedAccountId;
-        AccountSummaryEntity displayAccount = accounts.first;
-        final match = accounts.where((a) => a.id == activeId);
-        if (match.isNotEmpty) displayAccount = match.first;
+        final feeCurrency = _feeCurrencyCode.toUpperCase();
+        final eligible = accounts
+            .where((a) =>
+                feeCurrency.isEmpty ||
+                a.currency.toUpperCase() == feeCurrency)
+            .toList();
+
+        final match = eligible.where((a) => a.id == activeId);
+        // No eligible wallet, or the active one is not among them: say so
+        // instead of proposing a wallet that cannot legitimately pay this.
+        if (match.isEmpty) {
+          _selectedAccountId = '';
+          _selectedPaymentMethod = '';
+          return _buildPaymentCategoryCard(
+            isSelected: false,
+            icon: Icons.account_balance_wallet,
+            iconColor: Colors.orange,
+            title: 'No $feeCurrency wallet available',
+            subtitle: eligible.isEmpty
+                ? 'This payment is in $feeCurrency. Switch to a $feeCurrency '
+                    'account on your dashboard to continue.'
+                : 'Switch your active account to a $feeCurrency wallet to continue.',
+            onTap: null,
+            onChangeTap: null,
+          );
+        }
+        final AccountSummaryEntity displayAccount = match.first;
 
         // Auto-select this wallet as the payment method. Safe to assign during
         // build — no rebuild is needed; these feed the same build pass and the
@@ -608,7 +637,11 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                   SizedBox(width: 4.w),
                   Flexible(
                     child: Text(
-                      'Insufficient balance. Tap "Change" to select another wallet.',
+                      // The "Change" action no longer exists — payment always
+                      // comes from the active wallet — so telling the user to
+                      // tap it sent them looking for a control that isn't there.
+                      'Insufficient balance. Top up this wallet, or switch your '
+                      'active account on the dashboard.',
                       style: GoogleFonts.inter(color: Colors.red[400], fontSize: 11.sp),
                     ),
                   ),
@@ -781,9 +814,40 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         accounts = accountState.accountSummaries;
       }
       final match = accounts.where((a) => a.id == _selectedAccountId);
-      if (match.isNotEmpty && match.first.availableBalance < _fee) {
+      // FAIL CLOSED. This used to read `match.isNotEmpty && balance < fee`, so
+      // an account that wasn't in the loaded list skipped the balance check
+      // altogether and went straight to the PIN — the one case where we know
+      // least about the wallet was the one case we validated least.
+      if (match.isEmpty) {
         _showErrorSnackbar(
-          'Insufficient balance in this wallet. Please select a different wallet or payment method.',
+          "We couldn't confirm your wallet balance. Pull to refresh and try again.",
+        );
+        return;
+      }
+      final source = match.first;
+
+      // Currency must match the fee. The backend would reject a mismatch, but
+      // only after the user has entered their PIN — refusing here costs them
+      // nothing and explains itself.
+      final feeCurrency = _feeCurrencyCode.toUpperCase();
+      if (feeCurrency.isNotEmpty &&
+          source.currency.toUpperCase() != feeCurrency) {
+        _showErrorSnackbar(
+          'This payment is in $feeCurrency. Switch your active account to a '
+          '$feeCurrency wallet to continue.',
+        );
+        return;
+      }
+
+      if (source.availableBalance < _fee) {
+        // AVAILABLE balance, not ledger balance: funds already held for another
+        // pending operation cannot pay this one.
+        _showErrorSnackbar(
+          'Insufficient balance. You have '
+          '${_getCurrencySymbol(source.currency)}'
+          '${source.availableBalance.toStringAsFixed(2)} available and this '
+          'payment is ${_getCurrencySymbol(source.currency)}'
+          '${_fee.toStringAsFixed(2)}.',
         );
         return;
       }
