@@ -37,6 +37,10 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
   // Stores the latest WebSocket balance per account (for animation "to" value)
   final Map<String, double> _latestWebSocketBalances = {};
 
+  // Debounces the server-authoritative refetch triggered by balance events that
+  // arrive without a usable balance snapshot. See _handleBalanceUpdate.
+  Timer? _refetchDebounce;
+
   AccountCardsSummaryCubit(
     this._getAccountSummariesUseCase, {
     required AccountManager accountManager,
@@ -57,6 +61,11 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
 
   /// Reset the cubit state (call on logout)
   void reset() {
+    // Drop any pending refetch FIRST: it captured the outgoing user's id, so
+    // letting it fire after a logout/user-switch would pull the previous
+    // account's balances into the new session.
+    _refetchDebounce?.cancel();
+    _refetchDebounce = null;
     _currentSummaries = [];
     _currentUserId = null;
     _preAnimationBalances.clear();
@@ -77,18 +86,28 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
       (summary) => summary.id == event.accountId,
     );
 
-    if (accountIndex == -1) {
-      print('AccountCardsSummaryCubit: Account ${event.accountId} not found, skipping update');
-      return;
-    }
-
     // Lifecycle / non-balance events (insurance renewals, TagPay & similar
     // notifications) carry NO real balance snapshot — BalanceUpdateEvent defaults
     // new_balance/available_balance to 0 for those. Applying one would overwrite
     // the entity + snapshot maps with 0, corrupting the real balance (and the
-    // panic shake-reveal would then show ₦0 after e.g. TagPay). Skip anything
-    // without a real snapshot — the carousel widget guards the same case.
-    if (event.newBalance <= 0 && event.availableBalance <= 0) {
+    // panic shake-reveal would then show ₦0 after e.g. TagPay). The same is true
+    // of an event whose account_id doesn't match any loaded card — TagPay's
+    // receiver-side push omits account_id entirely, so it fails the lookup above.
+    //
+    // Neither case may be applied, but neither is meaningless either: the socket
+    // is per-user, so an event arriving at all means money moved for THIS user.
+    // Silently dropping both (which is what this did) is why no TagPay operation
+    // ever refreshed a balance card. Instead of guessing a balance we don't have,
+    // ask the server — it is authoritative — and let the normal loaded-state path
+    // update the cards. Debounced and silent, so a burst (both legs of a
+    // transfer) costs one request and never flashes a spinner over live cards.
+    final hasBalanceSnapshot =
+        event.newBalance > 0 || event.availableBalance > 0;
+    if (accountIndex == -1 || !hasBalanceSnapshot) {
+      print('AccountCardsSummaryCubit: ${event.eventType} event for account '
+          '"${event.accountId}" has no usable balance snapshot '
+          '(matched=${accountIndex != -1}); refetching from server');
+      _scheduleBalanceRefetch();
       return;
     }
 
@@ -132,6 +151,34 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     ));
 
     print('AccountCardsSummaryCubit: Balance update tracked for account ${event.accountId} - ${event.eventType}: $previousBalance -> ${event.newBalance}');
+  }
+
+  /// Coalesces balance-event-driven refetches into a single silent fetch.
+  ///
+  /// Called when a WebSocket balance event tells us something happened but not
+  /// what the new balance is (see _handleBalanceUpdate). A transfer pushes one
+  /// event per leg and lifecycle events can arrive in bursts, so firing a
+  /// request per event would hammer the gateway for no extra information.
+  ///
+  /// `silent: true` keeps the current cards on screen and, per
+  /// fetchAccountSummaries' own failure handling, leaves the stale-but-real
+  /// balance in place if the request fails rather than replacing live cards
+  /// with an error screen. No loop risk: fetching balances moves no money and
+  /// therefore emits no further balance events.
+  void _scheduleBalanceRefetch() {
+    final userId = _currentUserId;
+    // Nothing has been loaded yet (no user context) — the first real fetch will
+    // bring the fresh balance along with it, so there is nothing to refresh.
+    if (userId == null || userId.isEmpty) return;
+
+    _refetchDebounce?.cancel();
+    _refetchDebounce = Timer(const Duration(milliseconds: 900), () {
+      if (isClosed) return;
+      // Re-check the user: a logout/user-switch between scheduling and firing
+      // must not refetch the previous user's accounts.
+      if (_currentUserId != userId) return;
+      fetchAccountSummaries(userId: userId, silent: true);
+    });
   }
 
   /// Calculate trend percentage
@@ -414,6 +461,7 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
 
   @override
   Future<void> close() {
+    _refetchDebounce?.cancel();
     _wsSubscription?.cancel();
     return super.close();
   }

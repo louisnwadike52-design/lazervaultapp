@@ -124,8 +124,35 @@ class GrpcCallOptionsHelper {
 
     print('Final metadata keys: ${metadata.keys.toList()}');
 
-    return CallOptions(metadata: metadata);
+    // DEADLINE. Every authenticated RPC in the app is issued through here, and
+    // until now none of them had one. Two consequences, both of which have bit:
+    //
+    // 1. A caller-supplied timeout was DISCARDED — only options.metadata was
+    //    copied — so `withAuth(CallOptions(timeout: 8s))` silently produced an
+    //    UNBOUNDED call while the caller believed it was bounded. Honour it.
+    // 2. With no default either, a call whose response was lost (dead
+    //    connection, gateway dropping the stream mid-call) never completed and
+    //    never threw. The Future simply hung — and a money call that neither
+    //    resolves nor throws is the worst outcome there is: the user is stuck
+    //    on a spinner over a payment that may already have settled, with no
+    //    error path, no receipt, and nothing downstream able to recover.
+    //
+    // The fallback is deliberately LONGER than any server-side worst case, so
+    // hitting it means the response is genuinely never coming rather than
+    // merely slow — a PayTag round trip can legitimately outlive
+    // core-payments' own 10s accounts-client cap, and the longest bound any
+    // caller sets today is 70s (an AI turn). It is a backstop, not a latency
+    // budget: callers wanting a tight bound pass their own (honoured above) or
+    // merge one at the call site (`mergedWith` wins over this default). All it
+    // guarantees is that "forever" is never a possible outcome.
+    return CallOptions(
+      metadata: metadata,
+      timeout: options?.timeout ?? _defaultAuthedCallDeadline,
+    );
   }
+
+  /// Backstop deadline for an authenticated RPC that does not specify one.
+  static const Duration _defaultAuthedCallDeadline = Duration(seconds: 90);
 
   /// Call options for UNAUTHENTICATED endpoints (login / signup / phone-OTP):
   /// attaches the Firebase App Check device-attestation token + locale/country/

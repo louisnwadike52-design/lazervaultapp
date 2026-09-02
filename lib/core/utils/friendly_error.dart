@@ -100,13 +100,18 @@ bool isNetworkError(Object? error) {
 /// transport/server-class failure that should be surfaced as a network error.
 ///
 /// gRPC: unknown(2), deadlineExceeded(4), aborted(10), internal(13),
-/// unavailable(14). HTTP: 500/502/503/504.
+/// unavailable(14). HTTP: any 5xx — including the Cloudflare edge codes
+/// (520-527 origin errors, 530 origin unreachable) our tunnel returns when a
+/// service is down.
 bool isNetworkStatusCode(dynamic statusCode) {
   if (statusCode is int) {
     const grpcNetworkCodes = {2, 4, 10, 13, 14};
-    const httpNetworkCodes = {500, 502, 503, 504};
-    return grpcNetworkCodes.contains(statusCode) ||
-        httpNetworkCodes.contains(statusCode);
+    // Whole 5xx range, not a hand-listed subset: a Cloudflare 530 (origin
+    // unreachable) is exactly as much a "service is down" as a 502, and
+    // listing only 500/502/503/504 let it fall through as a raw code.
+    // gRPC codes are 0-16, so they can never collide with this range.
+    if (statusCode >= 500 && statusCode <= 599) return true;
+    return grpcNetworkCodes.contains(statusCode);
   }
   return false;
 }
@@ -136,6 +141,10 @@ bool looksTechnical(String? msg) {
   return _messageLooksLikeNetwork(m);
 }
 
+/// Matches raw "HTTP 5xx" transport text (any 5xx, so Cloudflare's 520-527 and
+/// 530 are covered alongside 500/502/503/504).
+final RegExp _httpServerStatusPattern = RegExp(r'http[^0-9a-z]{0,3}5\d\d');
+
 /// Shared substring detector for raw transport text.
 bool _messageLooksLikeNetwork(String raw) {
   if (raw.isEmpty) return false;
@@ -147,6 +156,10 @@ bool _messageLooksLikeNetwork(String raw) {
       m.contains('502') ||
       m.contains('503') ||
       m.contains('504') ||
+      // Raw edge/transport text like "HTTP 530" or "http 522". Anchored on the
+      // "http" prefix on purpose: a bare '530' also appears in ordinary money
+      // copy (e.g. "NGN 530"), which must NOT read as a network failure.
+      _httpServerStatusPattern.hasMatch(m) ||
       m.contains('connection') ||
       m.contains('socket') ||
       m.contains('failed host lookup') ||

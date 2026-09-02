@@ -48,6 +48,12 @@ void main() {
         expect(isNetworkStatusCode(c), isFalse, reason: 'code $c');
       }
     });
+
+    test('true for Cloudflare edge codes (tunnel origin down)', () {
+      for (final c in [520, 521, 522, 523, 524, 525, 526, 527, 530]) {
+        expect(isNetworkStatusCode(c), isTrue, reason: 'code $c');
+      }
+    });
   });
 
   group('looksTechnical', () {
@@ -61,6 +67,16 @@ void main() {
     test('false for a normal human sentence', () {
       expect(looksTechnical('Account already exists.'), isFalse);
       expect(looksTechnical('Insufficient funds for this transfer.'), isFalse);
+    });
+
+    test('true for a raw Cloudflare status line, e.g. "HTTP 530"', () {
+      expect(looksTechnical('Scan error: HTTP 530'), isTrue);
+      expect(looksTechnical('http 522'), isTrue);
+    });
+
+    test('false when 5xx-looking digits are just money copy', () {
+      expect(looksTechnical('You sent NGN 530 to Ada.'), isFalse);
+      expect(looksTechnical('Your balance is 522.40.'), isFalse);
     });
   });
 
