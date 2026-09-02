@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/signup_state_service.dart';
+import 'package:lazervault/core/services/user_switch_purge.dart';
 import '../domain/entities/profile_entity.dart';
 import '../domain/repositories/i_auth_repository.dart';
 import 'phone_passcode_state.dart';
@@ -444,6 +445,28 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
   // ── Session persistence (replicates AuthenticationCubit._saveSession) ─────
   Future<void> _persistSession(ProfileEntity profile) async {
     try {
+      // CROSS-USER GUARD — this path had none.
+      //
+      // AuthenticationCubit._saveSession has purged stale per-user state on a
+      // switch for a while, but this cubit is a SECOND session-persisting path
+      // (phone signup + phone login) and it never did. On a phone_passcode
+      // deployment that is the PRIMARY way people sign in, so switching users
+      // here left the previous person's passcode credential, cached BVN/NIN,
+      // biometric refresh token, SWR-cached balances and active account in
+      // place for the new one — and left `stored_phone` pointing at the old
+      // user, which is what made a correct passcode fail and locked the old
+      // account out. Same detection, same purge, before anything is written.
+      final prevUserId = await _storage.read(key: _userIdKey);
+      final prevEmail = await _storage.read(key: 'stored_email');
+      if (isUserSwitch(
+        previousUserId: prevUserId,
+        previousEmail: prevEmail,
+        newUserId: profile.user.id,
+        newEmail: profile.user.email,
+      )) {
+        await purgeStaleUserCache(_storage);
+      }
+
       await _storage.write(
           key: _accessTokenKey, value: profile.session.accessToken);
       await _storage.write(

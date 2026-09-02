@@ -18,10 +18,10 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/push_notifications_service.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/services/user_switch_purge.dart';
 import 'package:lazervault/core/services/login_flow_resolver.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/remote_log_sink.dart';
-import 'package:lazervault/core/cache/swr_cache_manager.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/features/authentication/utils/login_identifier.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
@@ -290,13 +290,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       // UX) is a no-op here — the ids/emails match.
       final prevUserId = await _storage.read(key: _userIdKey);
       final prevEmail = await _storage.read(key: 'stored_email');
-      final isUserSwitch = (prevUserId != null &&
-              prevUserId.isNotEmpty &&
-              prevUserId != profile.user.id) ||
-          (prevEmail != null &&
-              prevEmail.isNotEmpty &&
-              prevEmail.toLowerCase() != profile.user.email.toLowerCase());
-      if (isUserSwitch) {
+      if (isUserSwitch(
+        previousUserId: prevUserId,
+        previousEmail: prevEmail,
+        newUserId: profile.user.id,
+        newEmail: profile.user.email,
+      )) {
         await _purgeStaleUserCache();
       }
 
@@ -448,68 +447,21 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   /// Best-effort: any individual failure is swallowed so a partial purge can
   /// never block (or crash) the new user's sign-in.
   Future<void> _purgeStaleUserCache() async {
-    // 1. Per-user secure-storage keys. `_clearSession` deliberately KEEPS some
-    // of these for the same-user "remember last email" UX; on a confirmed user
-    // SWITCH they are stale and must go before the new user's keys are written.
-    for (final key in const [
-      'user_passcode',
-      'user_avatar_url',
-      'user_first_name',
-      'user_last_name',
-      'login_method',
-      'has_passcode',
-      'kyc_onboarding_pending',
-      'has_skipped_kyc',
-      'chat_current_session_id',
-      // The CACHED LOGIN IDENTIFIERS. These are not cosmetic: the returning-user
-      // lock screen submits `stored_phone` verbatim (see _attemptPasscodeLogin),
-      // and it used to survive a user switch while the display name beside it
-      // was rewritten. The screen then greeted the NEW user by name and sent the
-      // PREVIOUS user's phone number with the new user's passcode — so a correct
-      // passcode was rejected as wrong, and three attempts locked the previous
-      // user out of their own account from someone else's sign-in.
-      'stored_phone',
-      'stored_email',
-      'user_email',
-      'preferred_login_method',
-    ]) {
-      try {
-        await _storage.delete(key: key);
-      } catch (_) {/* best-effort */}
-    }
-    // Cached identity numbers (BVN/NIN) are PII keyed to the prior user.
-    try {
-      if (serviceLocator.isRegistered<SecureStorageService>()) {
-        await serviceLocator<SecureStorageService>().deleteIdentityNumbers();
-      }
-    } catch (_) {/* best-effort */}
-    // The durable biometric session belongs to the PRIOR user — never let the
-    // new user inherit it (biometric_user_id would also mismatch, but drop the
-    // token itself so a stale refresh token can't linger on a shared device).
-    try {
-      if (serviceLocator.isRegistered<SecureStorageService>()) {
-        await serviceLocator<SecureStorageService>().clearBiometricSession();
-      }
-    } catch (_) {/* best-effort */}
+    // The purge itself lives in core/services/user_switch_purge.dart because
+    // PhonePasscodeCubit persists sessions too and needs the identical
+    // behaviour — it used to have none, so a switch over the phone path left
+    // the previous user's passcode credential, BVN/NIN, biometric token and
+    // cached balances behind.
+    await purgeStaleUserCache(_storage);
 
-    // 2. SWR API cache (per-user profile/accounts/tier/limits/balances).
-    try {
-      if (serviceLocator.isRegistered<SWRCacheManager>()) {
-        await serviceLocator<SWRCacheManager>().invalidateAll();
-      }
-    } catch (_) {/* best-effort */}
-
-    // 3. In-memory singleton state.
+    // The INJECTED instances this cubit holds. The shared purge resolves these
+    // from the serviceLocator, which is the same singleton in production — but
+    // a test that injects its own must still see them cleared.
     try {
       _accountManager.clearActiveAccount();
     } catch (_) {/* best-effort */}
     try {
       _currencySyncService.clear();
-    } catch (_) {/* best-effort */}
-    try {
-      if (serviceLocator.isRegistered<GroupAccountCubit>()) {
-        serviceLocator<GroupAccountCubit>().clearOnLogout();
-      }
     } catch (_) {/* best-effort */}
 
     // Drop the previous user's profile so no getter returns stale identity
