@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/src/features/pending_actions/presentation/cubit/pending_actions_cubit.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import '../../domain/entities/split_bill_entity.dart';
@@ -53,6 +54,10 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
     final bill = args['bill'];
     final payerUserId = args['payerUserId'] as String?;
     _viewOnly = args['viewOnly'] == true;
+    // A freshly-paid share is no longer outstanding. Guarded on _viewOnly:
+    // this same screen doubles as a read-only receipt viewer, where nothing
+    // changed and a refetch would be pure noise.
+    if (!_viewOnly) refreshPendingActions();
 
     // Preferred path: derive every field from the authoritative bill + the
     // target payer's participant record (real paidAt / reference / status /

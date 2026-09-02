@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/src/features/pending_actions/presentation/cubit/pending_actions_cubit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/tag_pay_entity.dart';
@@ -33,6 +34,10 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
     final args = Get.arguments as Map<String, dynamic>;
     transaction = args['transaction'];
     tag = args['tag'];
+    // This screen only exists after a tag was paid, so the tag is no longer
+    // outstanding — clear it from the dashboard badge/prompt now rather than
+    // leaving a stale count until the app is next backgrounded.
+    refreshPendingActions();
   }
 
   Future<void> _downloadReceipt() async {

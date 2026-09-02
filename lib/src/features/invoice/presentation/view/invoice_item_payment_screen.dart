@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/src/features/pending_actions/presentation/cubit/pending_actions_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -158,6 +159,9 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
           setState(() => _isProcessingPayment = false);
           // Refresh dashboard balance
           _fetchAccounts();
+          // The invoice (or this user's share of it) is settled — drop it from
+          // the dashboard badge and launch prompt straight away.
+          refreshPendingActions();
           final fx = _fxQuote;
           Get.offNamed(
             AppRoutes.invoicePaymentReceipt,

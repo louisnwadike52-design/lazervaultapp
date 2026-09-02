@@ -113,6 +113,24 @@ class UserTagEntity extends Equatable {
   /// that no longer exists.
   bool get isPayable => status == TagStatus.pending;
 
+  /// True once a tag's 7-day lifetime has elapsed, whatever the status column
+  /// still says. The expiry sweeper closes these in batches, so a tag can sit
+  /// at `pending` for minutes after it stopped being payable — the server
+  /// rejects the claim, but only after the user has committed to paying.
+  ///
+  /// Tags created before lifetimes shipped have no [expiresAt] and never
+  /// elapse, matching the sweeper, which skips them too.
+  bool get hasElapsed {
+    final expiry = expiresAt;
+    return expiry != null && expiry.isBefore(DateTime.now());
+  }
+
+  /// Payable RIGHT NOW: the status allows it and the deadline hasn't passed.
+  /// Use this anywhere a tag is being offered up for payment ahead of time
+  /// (reminders, prompts, badges); [isPayable] alone is the gate for a Pay
+  /// button the user is already looking at.
+  bool get isActionable => isPayable && !hasElapsed;
+
   /// One source of truth for the status word every TagPay surface prints, so a
   /// newly added state can never be labelled "PENDING" by an older branch.
   String get statusLabel {

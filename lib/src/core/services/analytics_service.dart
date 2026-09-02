@@ -189,6 +189,28 @@ class AnalyticsService {
     ));
   }
 
+  /// Launch-time pending-payments prompt. [outcome] ∈ shown|pay|later.
+  ///
+  /// The whole point of this prompt is that outstanding tags/invoices/split
+  /// bills were being missed in the general notification feed. Without these
+  /// events there is no way to tell whether it actually recovers payments or
+  /// just gets dismissed — which is the difference between keeping it and
+  /// pulling it.
+  void trackPendingPaymentsPrompt({
+    required String outcome,
+    int? pendingCount,
+    String? source,
+  }) {
+    unawaited(trackEvent(
+      eventName: 'pending_payments.prompt',
+      properties: {
+        'outcome': outcome,
+        if (pendingCount != null) 'pending_count': pendingCount,
+        if (source != null) 'source': source,
+      },
+    ));
+  }
+
   /// HTTP request observed by the Dio interceptor.
   void trackHttpRequest({
     required String endpointGroup,

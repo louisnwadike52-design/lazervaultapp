@@ -31,7 +31,12 @@ import 'package:lazervault/src/features/app_update/cubit/app_update_cubit.dart';
 import 'package:lazervault/src/features/app_update/widgets/update_banner.dart';
 import 'package:lazervault/src/features/app_update/widgets/update_modal.dart';
 import 'package:lazervault/src/features/app_update/widgets/forced_update_screen.dart';
+import 'package:lazervault/src/core/services/analytics_service.dart';
 import 'package:lazervault/src/features/onboarding/dashboard_walkthrough.dart';
+import 'package:lazervault/src/features/pending_actions/data/pending_payments_prompt_gate.dart';
+import 'package:lazervault/src/features/pending_actions/domain/pending_action.dart';
+import 'package:lazervault/src/features/pending_actions/presentation/cubit/pending_actions_cubit.dart';
+import 'package:lazervault/src/features/pending_actions/presentation/widgets/pending_payments_prompt_sheet.dart';
 
 /// Set to `true` to show the voice banking setup bottom sheet when the dashboard loads.
 const bool _kShowVoiceSetupDashboardPrompt = false;
@@ -204,7 +209,79 @@ class _DashboardScreenState extends State<DashboardScreen>
       _checkAutoOpenVoiceSheet();
       // Background app-update check (store version). Never blocks launch.
       _updateCubit.checkNow();
+      // Pending payables (tags / invoices / split bills): refresh the tile
+      // badges, then offer the launch prompt. Last in the sequence so it can
+      // never land on top of the fraud freeze or the voice setup sheet.
+      _refreshPendingActions(thenPrompt: true);
     });
+  }
+
+  /// True while the pending-payments sheet is on screen, so a resume can't
+  /// stack a second copy behind the first.
+  bool _pendingPromptActive = false;
+
+  /// Reload the cross-service pending-payment counts. When [thenPrompt] is set
+  /// and anything is outstanding, offer the launch sheet once the counts are
+  /// in. Fire-and-forget: a failure here must never affect the dashboard.
+  Future<void> _refreshPendingActions({bool thenPrompt = false}) async {
+    final cubit = serviceLocator<PendingActionsCubit>();
+    await cubit.refresh();
+    if (!thenPrompt || !mounted) return;
+    await _maybeShowPendingPaymentsPrompt(cubit.state);
+  }
+
+  Future<void> _maybeShowPendingPaymentsPrompt(
+    PendingActionsSnapshot snapshot,
+  ) async {
+    if (_pendingPromptActive || _fraudModalActive || !mounted) return;
+    final actions = snapshot.all;
+    if (actions.isEmpty) return;
+
+    final gate = PendingPaymentsPromptGate();
+    final ids = actions.map((a) => a.id).toSet();
+    if (!await gate.shouldShow(ids)) return;
+    if (!mounted) return;
+
+    gate.markShown();
+    _pendingPromptActive = true;
+    AnalyticsService.instance.trackPendingPaymentsPrompt(
+      outcome: 'shown',
+      pendingCount: actions.length,
+    );
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (sheetContext) => PendingPaymentsPromptSheet(
+          actions: actions,
+          onPay: (action) {
+            AnalyticsService.instance.trackPendingPaymentsPrompt(
+              outcome: 'pay',
+              pendingCount: actions.length,
+              source: action.source.name,
+            );
+            // Close the sheet BEFORE routing: pushing a payment screen under a
+            // modal leaves the user paying behind a scrim they then have to
+            // dismiss to get back.
+            Navigator.pop(sheetContext);
+            Get.toNamed(action.route, arguments: action.routeArguments)
+                // Whatever happened in there, the counts may have changed.
+                ?.then((_) => _refreshPendingActions());
+          },
+          onLater: () {
+            Navigator.pop(sheetContext);
+            gate.snooze(ids);
+            AnalyticsService.instance.trackPendingPaymentsPrompt(
+              outcome: 'later',
+              pendingCount: actions.length,
+            );
+          },
+        ),
+      );
+    } finally {
+      _pendingPromptActive = false;
+    }
   }
 
   /// True while the fraud freeze modal is on screen — other land-time modals
@@ -259,6 +336,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       // mid-session (e.g. a transfer bounced while backgrounded), and the modal
       // must re-surface without a cold start. Guarded so it never stacks.
       _maybeCheckFraudFreeze();
+      // Refresh the pending-payment badges — a tag raised while the app was
+      // backgrounded should be visible on return. Counts only: the prompt
+      // itself stays a once-per-launch event so resuming never nags.
+      _refreshPendingActions();
     }
   }
 

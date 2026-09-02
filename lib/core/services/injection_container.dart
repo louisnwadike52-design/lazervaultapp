@@ -424,6 +424,7 @@ import 'package:lazervault/src/features/split_bills/data/repositories/split_bill
 import 'package:lazervault/src/features/split_bills/domain/repositories/split_bill_repository.dart';
 import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bill_cubit.dart';
 import 'package:lazervault/src/features/split_bills/presentation/cubit/split_bill_count_cubit.dart';
+import 'package:lazervault/src/features/pending_actions/presentation/cubit/pending_actions_cubit.dart';
 // End Split Bills Imports
 
 // QR Payment Imports
@@ -2324,6 +2325,18 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<SplitBillCountCubit>(
     () => SplitBillCountCubit(
       repository: serviceLocator<SplitBillRepository>(),
+    ),
+  );
+
+  // Cross-service pending-payables aggregator: drives the service-tile count
+  // badges AND the launch-time "payments waiting" prompt. Registered after the
+  // three repositories it fans out to. Lazy, so nothing is fetched until a
+  // dashboard actually asks.
+  serviceLocator.registerLazySingleton<PendingActionsCubit>(
+    () => PendingActionsCubit(
+      tagPayRepository: serviceLocator<TagPayRepository>(),
+      invoiceRepository: serviceLocator<TaggedInvoiceRepository>(),
+      splitBillRepository: serviceLocator<SplitBillRepository>(),
     ),
   );
 

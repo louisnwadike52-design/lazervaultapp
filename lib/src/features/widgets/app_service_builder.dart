@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/src/features/pending_actions/domain/pending_action.dart';
+import 'package:lazervault/src/features/pending_actions/presentation/cubit/pending_actions_cubit.dart';
+import 'package:lazervault/src/features/pending_actions/presentation/widgets/service_pending_badge.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/service_usage_service.dart';
@@ -68,6 +72,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
     // turned it on). Fire-and-forget — never blocks navigation.
     serviceLocator<ServiceUsageService>().record(widget.appService.serviceName);
     switch (widget.appService.serviceName) {
+      case AppServiceName.splitBills:
+        Get.toNamed(AppRoutes.splitBills);
+        break;
       case AppServiceName.invoice:
         Get.toNamed(AppRoutes.invoice);
         break;
@@ -268,23 +275,52 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
     );
   }
 
-  /// The 32×32 soft-purple disc holding the themed material icon.
+  /// The 32×32 soft-purple disc holding the themed material icon, with the
+  /// pending-payment count badged on it when this service is owed money.
+  ///
+  /// The badge is what makes an unpaid tag or invoice findable. Routing every
+  /// reminder through the home notification feed means it competes with
+  /// marketing and transaction noise, and the ones that actually cost the user
+  /// something get lost in it.
   Widget _iconDisc() {
-    return Container(
-      width: 32.w,
-      height: 32.w,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-            Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
+    return BlocBuilder<PendingActionsCubit, PendingActionsSnapshot>(
+      bloc: serviceLocator<PendingActionsCubit>(),
+      buildWhen: (a, b) =>
+          a.countForTile(widget.appService.serviceName) !=
+          b.countForTile(widget.appService.serviceName),
+      builder: (context, snapshot) {
+        final count = snapshot.countForTile(widget.appService.serviceName);
+        final disc = Container(
+          width: 32.w,
+          height: 32.w,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
+              ],
+            ),
+            shape: BoxShape.circle,
+          ),
+          child: Center(child: _buildServiceIcon()),
+        );
+        if (count <= 0) return disc;
+        // Unclipped so the badge can sit proud of the disc without the tile
+        // having to reserve space for it (which would shift every other icon).
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            disc,
+            Positioned(
+              top: -4.h,
+              right: -4.w,
+              child: ServicePendingBadge(count: count),
+            ),
           ],
-        ),
-        shape: BoxShape.circle,
-      ),
-      child: Center(child: _buildServiceIcon()),
+        );
+      },
     );
   }
 
@@ -299,6 +335,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.tagPay:
         iconData = Icons.tag;
+        break;
+      case AppServiceName.splitBills:
+        iconData = Icons.call_split_rounded;
         break;
       case AppServiceName.escrow:
         iconData = Icons.verified_user;

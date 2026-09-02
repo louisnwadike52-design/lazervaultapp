@@ -15,6 +15,8 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/pending_actions/data/pending_payments_prompt_gate.dart';
+import 'package:lazervault/src/features/pending_actions/presentation/cubit/pending_actions_cubit.dart';
 import 'package:lazervault/core/services/push_notifications_service.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
@@ -1001,6 +1003,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (serviceLocator.isRegistered<GroupAccountCubit>()) {
       serviceLocator<GroupAccountCubit>().clearOnLogout();
     }
+    // Same reason for the pending-payments aggregator: it is a lazy singleton
+    // holding "you owe ₦X" counts. Left alone, the next person to sign in on
+    // this device would see the previous user's debts badged on their tiles.
+    if (serviceLocator.isRegistered<PendingActionsCubit>()) {
+      serviceLocator<PendingActionsCubit>().clear();
+    }
+    // Re-arm the once-per-run launch prompt so the next user gets their own.
+    PendingPaymentsPromptGate.resetForNewSession();
     // Clear the cached FCM-registration flag so the NEXT user to log in on this
     // device re-registers their token (the backend may have dropped this
     // device's tokens on logout, and a stale marker must not skip them).
