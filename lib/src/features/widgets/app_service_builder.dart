@@ -282,30 +282,28 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
   /// reminder through the home notification feed means it competes with
   /// marketing and transaction noise, and the ones that actually cost the user
   /// something get lost in it.
+  /// Resolved once rather than per build. Null when the locator has no
+  /// registration yet — the badge is decorative, and a missing cubit must show
+  /// a plain tile, never throw inside build() and blank the whole grid.
+  PendingActionsCubit? get _pendingCubit {
+    try {
+      return serviceLocator<PendingActionsCubit>();
+    } catch (_) {
+      return null;
+    }
+  }
+
   Widget _iconDisc() {
+    final cubit = _pendingCubit;
+    if (cubit == null) return _plainDisc();
     return BlocBuilder<PendingActionsCubit, PendingActionsSnapshot>(
-      bloc: serviceLocator<PendingActionsCubit>(),
+      bloc: cubit,
       buildWhen: (a, b) =>
           a.countForTile(widget.appService.serviceName) !=
           b.countForTile(widget.appService.serviceName),
       builder: (context, snapshot) {
         final count = snapshot.countForTile(widget.appService.serviceName);
-        final disc = Container(
-          width: 32.w,
-          height: 32.w,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
-              ],
-            ),
-            shape: BoxShape.circle,
-          ),
-          child: Center(child: _buildServiceIcon()),
-        );
+        final disc = _plainDisc();
         if (count <= 0) return disc;
         // Unclipped so the badge can sit proud of the disc without the tile
         // having to reserve space for it (which would shift every other icon).
@@ -321,6 +319,28 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
           ],
         );
       },
+    );
+  }
+
+  /// The 32×32 soft-purple disc holding the themed material icon, with no
+  /// badge. Rendered on its own when nothing is pending (the common case) and
+  /// as the Stack's base when something is.
+  Widget _plainDisc() {
+    return Container(
+      width: 32.w,
+      height: 32.w,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+            Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
+          ],
+        ),
+        shape: BoxShape.circle,
+      ),
+      child: Center(child: _buildServiceIcon()),
     );
   }
 

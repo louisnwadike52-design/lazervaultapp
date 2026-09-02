@@ -21,6 +21,7 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
     int limit = 20,
     InvoicePaymentStatus? statusFilter,
     String? currency,
+    String? rawStatusFilter,
   }) async {
     return retryWithBackoff(
       operation: () async {
@@ -28,7 +29,9 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
           ..page = page
           ..pageSize = limit;
 
-        if (statusFilter != null) {
+        if (rawStatusFilter != null && rawStatusFilter.isNotEmpty) {
+          request.status = rawStatusFilter;
+        } else if (statusFilter != null) {
           request.status = _paymentStatusToString(statusFilter);
         }
 

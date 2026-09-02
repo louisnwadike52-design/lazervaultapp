@@ -9,6 +9,14 @@ abstract class TaggedInvoiceRepository {
     int limit = 20,
     InvoicePaymentStatus? statusFilter,
     String? currency,
+    /// Server-side status filter that has no [InvoicePaymentStatus] equivalent.
+    /// Takes precedence over [statusFilter].
+    ///
+    /// The only value in use is `unpaid` — "everything this user still owes on"
+    /// — which cannot be expressed as a payment status because the server
+    /// matches the PER-USER tagged status exactly: asking for `pending` drops
+    /// an invoice the moment it becomes `viewed`.
+    String? rawStatusFilter,
   });
 
   /// Get invoices that the current user created and tagged others to (outgoing)

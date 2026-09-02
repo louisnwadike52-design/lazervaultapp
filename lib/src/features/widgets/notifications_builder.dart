@@ -134,6 +134,10 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Icons.confirmation_number_rounded;
       case AppServiceName.betting:
         return Icons.sports_soccer_rounded;
+      // Matches the service tile's icon. Without this the default below would
+      // badge every split-bill notification with a question mark.
+      case AppServiceName.splitBills:
+        return Icons.call_split_rounded;
       default:
         return Icons.help_outline;
     }

@@ -124,6 +124,12 @@ class PendingActionsCubit extends Cubit<PendingActionsSnapshot> {
 
   /// Tags OTHERS raised against this user. Incoming = I owe them.
   ///
+  /// TagPay money requests are deliberately NOT a fourth source. They exist in
+  /// the repository and the cubit, but nothing in the app renders or accepts
+  /// one — "Request Funds" on the TagPay home screen creates a TAG. Listing
+  /// them here would put rows in the launch prompt whose Pay button has
+  /// nowhere to go. Add them here when a screen exists to send them to.
+  ///
   /// The server filter is `status = 'pending'`, which still includes tags whose
   /// 7-day lifetime has elapsed but that the expiry sweeper hasn't closed yet.
   /// Those are not payable, so [UserTagEntity.isActionable] re-checks the
@@ -155,16 +161,21 @@ class PendingActionsCubit extends Cubit<PendingActionsSnapshot> {
 
   /// Invoices this user was tagged to pay.
   ///
-  /// Two exclusions mirror the incoming-invoices screen exactly, and both are
+  /// Filtered `unpaid`, NOT `pending`. The server matches the per-user tagged
+  /// status exactly, so `pending` stops returning an invoice the moment that
+  /// row becomes `viewed` — silently dropping exactly the invoices someone has
+  /// looked at and not paid, which are the ones a reminder is for.
+  ///
+  /// Two further exclusions mirror the incoming-invoices screen, and both are
   /// money-correctness rules rather than cosmetics: a QUOTE is a document, not
   /// a payable, until its creator converts it; and on a split invoice this
   /// user's own share may already be settled while the invoice as a whole is
-  /// still pending for everyone else.
+  /// still open for everyone else.
   Future<List<PendingAction>> _loadInvoices(String userId) async {
     final invoices = await _invoices.getIncomingTaggedInvoices(
       page: 1,
       limit: _perSourceLimit,
-      statusFilter: InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING,
+      rawStatusFilter: 'unpaid',
     );
     final actions = <PendingAction>[];
     for (final tagged in invoices) {
