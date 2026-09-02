@@ -1,4 +1,11 @@
 import 'package:equatable/equatable.dart';
+import 'package:intl/intl.dart';
+
+/// Money is grouped for READING. Every TagPay surface renders amounts through
+/// [UserTagEntity.formattedAmount], and plain `toStringAsFixed(2)` produced
+/// "₦1500000.00" — a figure the customer has to count digits on. Display only:
+/// the underlying `amount` double is untouched and is what arithmetic uses.
+final _tagAmountFormat = NumberFormat('#,##0.00');
 
 class TagsPageResult {
   final List<UserTagEntity> tags;
@@ -51,7 +58,8 @@ class UserTagEntity extends Equatable {
     this.paidAt,
   });
 
-  String get formattedAmount => '${currencySymbol(currency)}${amount.toStringAsFixed(2)}';
+  String get formattedAmount =>
+      '${currencySymbol(currency)}${_tagAmountFormat.format(amount)}';
 
   static String currencySymbol(String code) {
     switch (code) {

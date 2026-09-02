@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../../domain/entities/user_tag_entity.dart';
 import '../../services/tag_pay_pdf_service.dart';
 import '../../../../../core/types/app_routes.dart';
@@ -15,17 +16,31 @@ class TagCreationReceiptScreen extends StatefulWidget {
 }
 
 class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
+  /// Grouped for READING — a batch total is the amount most likely to run into
+  /// six digits, and "₦1500000.00" makes the user count them.
+  static final _amountFormat = NumberFormat('#,##0.00');
+
   bool _isSharing = false;
 
-  Future<void> _shareInvoice(UserTagEntity tag) async {
+  /// Share the invoice for EVERY tag just created.
+  ///
+  /// Batch creation makes one invoice per tagged user, each naming that user.
+  /// This used to share `tags.first` for the whole batch, so a screen reading
+  /// "5 users x ₦2,000" handed out recipient #1's invoice and the other four
+  /// recipients never got theirs.
+  Future<void> _shareInvoices(List<UserTagEntity> tags) async {
     if (_isSharing) return;
 
     setState(() => _isSharing = true);
 
     try {
-      await TagPayPdfService.shareInvoice(
-        tag: tag,
+      await TagPayPdfService.shareInvoices(
+        tags: tags,
         isOutgoing: true, // Tags we created are outgoing
+        // share_plus on iPad REQUIRES a non-zero anchor rect or the native
+        // sheet throws; anchor it to this screen like the sibling calls in
+        // tag_details_bottom_sheet.dart do.
+        sharePositionOrigin: TagPayPdfService.shareOriginFromContext(context),
       );
     } catch (e) {
       Get.snackbar(
@@ -37,6 +52,20 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
       );
     } finally {
       if (mounted) setState(() => _isSharing = false);
+    }
+  }
+
+  /// The tag's REAL status. This row used to print a hardcoded
+  /// "Pending Payment", so a tag that had already been paid or cancelled by
+  /// the time the receipt was reopened still claimed it was awaiting payment.
+  String _statusLabel(UserTagEntity tag) {
+    switch (tag.status) {
+      case TagStatus.pending:
+        return 'Pending Payment';
+      case TagStatus.paid:
+        return 'Paid';
+      case TagStatus.cancelled:
+        return 'Cancelled';
     }
   }
 
@@ -169,7 +198,7 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
           ),
           SizedBox(height: 8.h),
           Text(
-            '${UserTagEntity.currencySymbol(currency)}${total.toStringAsFixed(2)}',
+            '${UserTagEntity.currencySymbol(currency)}${_amountFormat.format(total)}',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 40.sp,
@@ -179,7 +208,7 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
           if (count > 1) ...[
             SizedBox(height: 4.h),
             Text(
-              '$count users x ${UserTagEntity.currencySymbol(currency)}${amount.toStringAsFixed(2)} each',
+              '$count users x ${UserTagEntity.currencySymbol(currency)}${_amountFormat.format(amount)} each',
               style: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF),
                 fontSize: 13.sp,
@@ -311,7 +340,7 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
           SizedBox(height: 12.h),
           _buildDetailRow('Tag', recipientTag.isNotEmpty ? '@$recipientTag' : '-'),
           SizedBox(height: 12.h),
-          _buildDetailRow('Status', 'Pending Payment'),
+          _buildDetailRow('Status', _statusLabel(tag)),
           if (description.isNotEmpty) ...[
             SizedBox(height: 12.h),
             _buildDetailRow('Description', description),
@@ -388,12 +417,14 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
               // Share Invoice Button
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _isSharing ? null : () => _shareInvoice(isBatch ? tags.first : tag),
+                  onPressed: _isSharing
+                      ? null
+                      : () => _shareInvoices(isBatch ? tags : [tag]),
                   icon: _isSharing
                       ? LazerVaultLoader(size: 18)
                       : Icon(Icons.share, size: 18.sp),
                   label: Text(
-                    'Share Invoice',
+                    isBatch ? 'Share Invoices' : 'Share Invoice',
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,

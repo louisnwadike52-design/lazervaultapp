@@ -58,15 +58,50 @@ class TagPayPdfService {
   static final _displayDateFormat = DateFormat('MMM dd, yyyy');
   static final _fullDateTimeFormat = DateFormat('MMM dd, yyyy HH:mm');
 
+  /// Money is grouped for READING. `toStringAsFixed(2)` alone rendered
+  /// "₦1500000.00" — a figure a customer has to count digits on to trust.
+  /// Display only: every amount used for arithmetic stays a double.
+  static final _amountFormat = NumberFormat('#,##0.00');
+
   // Cache for loaded fonts
   static pw.Font? _regularFont;
   static pw.Font? _boldFont;
 
-  /// Get currency symbol - using ASCII-safe alternatives for PDF compatibility
+  /// Currency symbol for the PDF. With Inter embedded we render the REAL
+  /// symbol (₦, £, €, ₹…) so the document matches the on-screen receipt, which
+  /// has always shown ₦; the blanket ASCII codes here were a leftover from the
+  /// CDN-only font era and printed "NGN 1500.00" against an on-screen
+  /// "₦1,500.00" for the same transaction. Without an embedded TrueType font
+  /// the built-in PDF font cannot draw those glyphs and the pdf package RAISES
+  /// rather than substituting, so the ASCII code remains the fallback.
   static String _currencySymbolFor(String code) {
+    if (ReceiptFonts.embedded) {
+      switch (code.toUpperCase()) {
+        case 'NGN':
+          return '₦';
+        case 'GBP':
+          return '£';
+        case 'EUR':
+          return '€';
+        case 'ZAR':
+          return 'R';
+        case 'CAD':
+          return r'CA$';
+        case 'AUD':
+          return r'A$';
+        case 'INR':
+          return '₹';
+        case 'JPY':
+          return '¥';
+        case 'USD':
+          return r'$';
+        default:
+          return '$code ';
+      }
+    }
     switch (code.toUpperCase()) {
       case 'NGN':
-        return 'NGN '; // Use code instead of symbol for PDF compatibility
+        return 'NGN ';
       case 'GBP':
         return 'GBP ';
       case 'EUR':
@@ -148,7 +183,40 @@ class TagPayPdfService {
   /// PDF falls back to when the remote Inter subset can't be fetched — it renders
   /// as a tofu box (▨). Swap it for the Latin-1 middle dot `·` (U+00B7), which is
   /// covered by every font path and keeps the "•••• 1234" masked look.
-  static String? _pdfSafe(String? s) => s?.replaceAll('•', '·');
+  static String? _pdfSafe(String? s) => s == null ? null : _pdfSafeText(s);
+
+  /// Non-nullable form of [_pdfSafe]. The tag entities expose plain (never
+  /// null) Strings for names/tags/descriptions, and those went into the tag
+  /// generators completely unsanitised while the transfer/crypto generators
+  /// sanitised everything — same font, same failure mode, only tag receipts
+  /// were exposed to it.
+  static String _pdfSafeText(String s) => s.replaceAll('•', '·');
+
+  /// First non-empty value in [candidates], trimmed, or null.
+  ///
+  /// Receipt metadata has three producers with three key spellings: the
+  /// realtime send-funds flow writes `Beneficiary Name`/`From`, the
+  /// transaction-history mapper writes snake_case (`recipient_name`,
+  /// `sender_name`, `bank_name`), and older map-based callers write camelCase.
+  /// A lookup that knows only one spelling silently finds nothing.
+  static String? _firstNonEmpty(List<Object?> candidates) {
+    for (final candidate in candidates) {
+      final value = candidate?.toString().trim();
+      if (value != null && value.isNotEmpty) return value;
+    }
+    return null;
+  }
+
+  /// True when the value is a TagPay HANDLE rather than an account number.
+  ///
+  /// [_buildRecipientDetails] takes one "tag" slot that carries a handle for
+  /// tag flows and a (possibly masked) BANK ACCOUNT NUMBER for fund transfers.
+  /// Prefixing it unconditionally printed "Tag: @0123456789" on every bank
+  /// transfer receipt, so the shape of the value decides: masked accounts
+  /// arrive as "···· 1234" / "****1234", i.e. digits and masking punctuation
+  /// only — anything containing a letter is a real handle.
+  static bool _isTagHandle(String value) =>
+      !RegExp(r'^[\d\s·•*.\-]+$').hasMatch(value.trim());
 
   /// Generate a professional invoice PDF for a tag (before payment)
   static Future<File> generateTagInvoice({
@@ -161,14 +229,17 @@ class TagPayPdfService {
     final generatedDate = _displayDateFormat.format(DateTime.now());
     final createdDate = _dateFormat.format(tag.createdAt);
     final currencySymbol = _currencySymbolFor(tag.currency);
-    final amount = tag.amount.toStringAsFixed(2);
+    final amount = _amountFormat.format(tag.amount);
 
     // For outgoing tags: you are the tagger (sender), recipient is taggedUser
     // For incoming tags: tagger sent it to you (taggedUser)
-    final senderName = isOutgoing ? tag.taggerName : tag.taggerName;
-    final senderTag = isOutgoing ? tag.taggerTagPay : tag.taggerTagPay;
-    final recipientName = isOutgoing ? tag.taggedUserName : tag.taggedUserName;
-    final recipientTag = isOutgoing ? tag.taggedUserTagPay : tag.taggedUserTagPay;
+    // Names/tags/description are USER-SUPPLIED, so they go through _pdfSafe
+    // before they reach the document.
+    final senderName = _pdfSafeText(tag.taggerName);
+    final senderTag = _pdfSafeText(tag.taggerTagPay);
+    final recipientName = _pdfSafeText(tag.taggedUserName);
+    final recipientTag = _pdfSafeText(tag.taggedUserTagPay);
+    final description = _pdfSafeText(tag.description);
 
     pdf.addPage(
       pw.Page(
@@ -223,6 +294,7 @@ class TagPayPdfService {
                 tag: tag,
                 currencySymbol: currencySymbol,
                 amount: amount,
+                description: description,
               ),
               pw.SizedBox(height: 32),
 
@@ -265,7 +337,18 @@ class TagPayPdfService {
         ? _dateFormat.format(transaction.completedAt!)
         : transactionDate;
     final currencySymbol = _currencySymbolFor(transaction.currency);
-    final amount = transaction.amount.toStringAsFixed(2);
+    final amount = _amountFormat.format(transaction.amount);
+
+    // USER-SUPPLIED text (names, tags, narration) is sanitised before it
+    // reaches the document — same rule the transfer/crypto generators follow.
+    final beneficiaryName = _pdfSafeText(transaction.receiverName.isNotEmpty
+        ? transaction.receiverName
+        : tag.taggerName);
+    final beneficiaryTag = _pdfSafeText(transaction.receiverTagPay.isNotEmpty
+        ? transaction.receiverTagPay
+        : tag.taggerTagPay);
+    final reference =
+        _pdfSafeText(transaction.description ?? tag.description);
 
     pdf.addPage(
       pw.Page(
@@ -309,7 +392,7 @@ class TagPayPdfService {
               _buildTransferDetails(
                 currencySymbol: currencySymbol,
                 amount: amount,
-                reference: transaction.description ?? tag.description,
+                reference: reference,
                 tagPayReference: transaction.referenceNumber,
                 transactionId: transaction.id,
               ),
@@ -317,12 +400,8 @@ class TagPayPdfService {
 
               // Beneficiary Details
               _buildRecipientDetails(
-                recipientName: transaction.receiverName.isNotEmpty
-                    ? transaction.receiverName
-                    : tag.taggerName,
-                recipientTag: transaction.receiverTagPay.isNotEmpty
-                    ? transaction.receiverTagPay
-                    : tag.taggerTagPay,
+                recipientName: beneficiaryName,
+                recipientTag: beneficiaryTag,
                 title: 'Beneficiary Details',
               ),
 
@@ -387,12 +466,14 @@ class TagPayPdfService {
     required UserTagEntity tag,
     String? accountNumber,
   }) {
-    final senderName = transaction.senderName.isNotEmpty
+    // User-supplied names/handles are sanitised for the PDF font here rather
+    // than at the call site, so every caller of this block gets it.
+    final senderName = _pdfSafeText(transaction.senderName.isNotEmpty
         ? transaction.senderName
-        : tag.taggedUserName;
-    final senderTag = transaction.senderTagPay.isNotEmpty
+        : tag.taggedUserName);
+    final senderTag = _pdfSafeText(transaction.senderTagPay.isNotEmpty
         ? transaction.senderTagPay
-        : tag.taggedUserTagPay;
+        : tag.taggedUserTagPay);
 
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -472,6 +553,7 @@ class TagPayPdfService {
     required UserTagEntity tag,
     required String currencySymbol,
     required String amount,
+    required String description,
   }) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -493,8 +575,8 @@ class TagPayPdfService {
               _buildDetailRow('Amount', '$currencySymbol$amount', isBold: true),
               _buildDetailRow('Currency', _currencyNameFor(tag.currency)),
               _buildDetailRow('Fee', '${currencySymbol}0.00'),
-              if (tag.description.isNotEmpty)
-                _buildDetailRow('Description', tag.description),
+              if (description.isNotEmpty)
+                _buildDetailRow('Description', description),
               _buildDetailRow('Tag ID', tag.id),
               _buildDetailRow('Created', _fullDateTimeFormat.format(tag.createdAt)),
               if (tag.paidAt != null)
@@ -662,7 +744,11 @@ class TagPayPdfService {
                 recipientName,
               ),
               if (recipientTag.isNotEmpty)
-                _buildDetailRow('Tag', '@$recipientTag'),
+                // Handles get the "@" and the "Tag" label; bank account numbers
+                // are printed bare under "Account". See [_isTagHandle].
+                _isTagHandle(recipientTag)
+                    ? _buildDetailRow('Tag', '@$recipientTag')
+                    : _buildDetailRow('Account', recipientTag),
             ],
           ),
         ),
@@ -785,7 +871,7 @@ class TagPayPdfService {
     try {
       final file = await generateTagInvoice(tag: tag, isOutgoing: isOutgoing);
       final currencySymbol = _currencySymbolFor(tag.currency);
-      final amount = tag.amount.toStringAsFixed(2);
+      final amount = _amountFormat.format(tag.amount);
       final recipientName = isOutgoing ? tag.taggedUserName : tag.taggerName;
       final recipientTag = isOutgoing ? tag.taggedUserTagPay : tag.taggerTagPay;
 
@@ -797,6 +883,48 @@ class TagPayPdfService {
       ));
     } catch (e) {
       throw Exception('Failed to share invoice: $e');
+    }
+  }
+
+  /// Share the invoices for a BATCH of tags — one PDF per recipient, all
+  /// attached to a single share sheet.
+  ///
+  /// Batch creation produces N DISTINCT invoices (one per tagged user, each
+  /// naming that user). The receipt screen used to share `tags.first` for the
+  /// whole batch, so a screen reading "5 users x ₦2,000" handed out recipient
+  /// #1's invoice five times and the other four never got theirs.
+  static Future<void> shareInvoices({
+    required List<UserTagEntity> tags,
+    required bool isOutgoing,
+    Rect? sharePositionOrigin,
+  }) async {
+    if (tags.isEmpty) return;
+    if (tags.length == 1) {
+      return shareInvoice(
+        tag: tags.first,
+        isOutgoing: isOutgoing,
+        sharePositionOrigin: sharePositionOrigin,
+      );
+    }
+    try {
+      final files = <XFile>[];
+      var total = 0.0;
+      for (final tag in tags) {
+        final file = await generateTagInvoice(tag: tag, isOutgoing: isOutgoing);
+        files.add(XFile(file.path));
+        total += tag.amount;
+      }
+      final currencySymbol = _currencySymbolFor(tags.first.currency);
+
+      await SharePlus.instance.share(ShareParams(
+        files: files,
+        text:
+            'Tagpay Invoices - ${tags.length} recipients, $currencySymbol${_amountFormat.format(total)} total',
+        subject: 'Lazervault Tagpay Invoices',
+        sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
+      ));
+    } catch (e) {
+      throw Exception('Failed to share invoices: $e');
     }
   }
 
@@ -837,7 +965,7 @@ class TagPayPdfService {
       );
 
       final currencySymbol = _currencySymbolFor(transaction.currency);
-      final amount = transaction.amount.toStringAsFixed(2);
+      final amount = _amountFormat.format(transaction.amount);
 
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
@@ -867,7 +995,7 @@ class TagPayPdfService {
     final generatedDate = _displayDateFormat.format(DateTime.now());
     final paidDate = tag.paidAt != null ? _dateFormat.format(tag.paidAt!) : _dateFormat.format(tag.createdAt);
     final currencySymbol = _currencySymbolFor(tag.currency);
-    final amount = tag.amount.toStringAsFixed(2);
+    final amount = _amountFormat.format(tag.amount);
 
     // Direction of money is a property of the TRANSACTION, not of who is
     // looking at it. On a paid tag the tagged user always pays and the tagger
@@ -875,10 +1003,12 @@ class TagPayPdfService {
     // means "I created this tag", i.e. I am the PAYEE) — so the person who
     // received the money got a receipt naming themselves as the sender, and
     // the two parties held contradictory documents under one reference.
-    final senderName = tag.taggedUserName;
-    final senderTag = tag.taggedUserTagPay;
-    final recipientName = tag.taggerName;
-    final recipientTag = tag.taggerTagPay;
+    // All four are USER-SUPPLIED and are sanitised for the PDF font.
+    final senderName = _pdfSafeText(tag.taggedUserName);
+    final senderTag = _pdfSafeText(tag.taggedUserTagPay);
+    final recipientName = _pdfSafeText(tag.taggerName);
+    final recipientTag = _pdfSafeText(tag.taggerTagPay);
+    final description = _pdfSafeText(tag.description);
 
     // Generate reference from tag ID
     final reference = 'TPTAG-${tag.id.length > 8 ? tag.id.substring(0, 8) : tag.id}';
@@ -935,7 +1065,8 @@ class TagPayPdfService {
               _buildTransferDetails(
                 currencySymbol: currencySymbol,
                 amount: amount,
-                reference: tag.description.isNotEmpty ? tag.description : 'Tagpay payment',
+                reference:
+                    description.isNotEmpty ? description : 'Tagpay payment',
                 tagPayReference: reference,
                 transactionId: tag.id,
               ),
@@ -992,7 +1123,7 @@ class TagPayPdfService {
       final file = await generatePaidTagReceipt(tag: tag, isOutgoing: isOutgoing);
 
       final currencySymbol = _currencySymbolFor(tag.currency);
-      final amount = tag.amount.toStringAsFixed(2);
+      final amount = _amountFormat.format(tag.amount);
       // The tagger (isOutgoing) was PAID by the tagged user; the tagged user
       // paid the tagger. Preposition and handle have to move together.
       final counterpartyTag =
@@ -1125,10 +1256,10 @@ class TagPayPdfService {
               // RECIPIENT copy: amount received only (no fee).
               _buildFundTransferDetails(
                 currencySymbol: currencySymbol,
-                amount: amount.toStringAsFixed(2),
-                fee: fee.toStringAsFixed(2),
+                amount: _amountFormat.format(amount),
+                fee: _amountFormat.format(fee),
                 showFee: showFee,
-                totalPaid: showFee ? (amount + fee).toStringAsFixed(2) : null,
+                totalPaid: showFee ? _amountFormat.format(amount + fee) : null,
                 description: narration ?? '',
                 transferReference: _cleanTransferRef(
                     reference.isNotEmpty ? reference : transferId),
@@ -1200,20 +1331,59 @@ class TagPayPdfService {
     ReceiptFileFormat format = ReceiptFileFormat.pdf,
   }) async {
     final metadata = transaction.metadata ?? {};
+
+    // A receipt opened from TRANSACTION HISTORY carries none of the keys this
+    // used to read: the history mapper writes snake_case (`recipient_name`,
+    // `sender_name`, `bank_name`) and puts the direction-resolved counterparty
+    // on the ENTITY, while the realtime send-funds flow writes
+    // 'Beneficiary Name'/'From'. Every lookup therefore ran off the end of its
+    // chain — FROM printed blank and the beneficiary fell through to
+    // `transaction.title`, i.e. the SCREEN HEADING ("Tag Payment Received")
+    // was printed as the person paid. The entity's counterparty is the last
+    // real source; the title is only a placeholder of last resort.
+    final recipientName = _firstNonEmpty([
+          metadata['Recipient'],
+          metadata['Beneficiary Name'],
+          metadata['recipientName'],
+          metadata['recipient_name'],
+          transaction.counterpartyName,
+        ]) ??
+        transaction.title;
+    final sourceAccountName = _firstNonEmpty([
+      metadata['Source Account'],
+      metadata['From'],
+      metadata['sender_name'],
+      metadata['senderAccount'],
+    ]);
+    final sourceAccountInfo = _firstNonEmpty([
+      metadata['senderAccount'],
+      metadata['sender_account'],
+    ]);
+
     return generateTransferReceiptFile(
       copyType: copyType,
       format: format,
       transferDetails: {
         'amount': transaction.amount,
         'currency': transaction.currency,
-        'recipientName': metadata['Recipient']?.toString() ??
-            metadata['recipientName']?.toString() ??
-            transaction.title,
-        'recipientAccountMasked': metadata['Recipient Account']?.toString() ??
-            metadata['recipientAccount']?.toString(),
-        'recipientBankName': metadata['recipientBank']?.toString(),
-        'sourceAccountName': metadata['Source Account']?.toString(),
-        'sourceAccountInfo': metadata['senderAccount']?.toString(),
+        'recipientName': recipientName,
+        'recipientAccountMasked': _firstNonEmpty([
+          metadata['Recipient Account'],
+          metadata['Beneficiary Account'],
+          metadata['recipientAccount'],
+          metadata['recipient_account'],
+          transaction.counterpartyAccount,
+        ]),
+        'recipientBankName': _firstNonEmpty([
+          metadata['recipientBank'],
+          metadata['Beneficiary Bank'],
+          metadata['bank_name'],
+        ]),
+        'sourceAccountName': sourceAccountName,
+        // Don't print the same string twice when both slots resolved from the
+        // one key that was available.
+        'sourceAccountInfo':
+            sourceAccountInfo == sourceAccountName ? null : sourceAccountInfo,
         'reference': transaction.transactionReference ?? transaction.id,
         'narration': transaction.description,
         'status': transaction.status.displayName,
@@ -1222,7 +1392,9 @@ class TagPayPdfService {
             'Fund Transfer',
         'transactionId': transaction.id,
         'fee': double.tryParse(
-            metadata['Fee']?.toString().replaceAll(RegExp(r'[^0-9.]'), '') ?? '0'),
+            _firstNonEmpty([metadata['Fee'], metadata['fee']])
+                    ?.replaceAll(RegExp(r'[^0-9.]'), '') ??
+                '0'),
         'timestamp': transaction.createdAt,
       },
     );
@@ -1359,7 +1531,7 @@ class TagPayPdfService {
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
         text:
-            'Lazervault Transfer Receipt (${copyType.label}) - $currencySymbol${amount.toStringAsFixed(2)} to $recipientName',
+            'Lazervault Transfer Receipt (${copyType.label}) - $currencySymbol${_amountFormat.format(amount)} to $recipientName',
         subject: 'Lazervault Transfer Receipt',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
@@ -1400,7 +1572,7 @@ class TagPayPdfService {
           transaction: transaction, copyType: copyType, format: format);
 
       final currencySymbol = _currencySymbolFor(transaction.currency);
-      final amount = transaction.amount.toStringAsFixed(2);
+      final amount = _amountFormat.format(transaction.amount);
 
       // An invoice payment is not a transfer: name it correctly and reference
       // the invoice number instead of "to <title>" (which produced the absurd
@@ -1415,11 +1587,22 @@ class TagPayPdfService {
             ? 'Lazervault Invoice Receipt - $currencySymbol$amount for Invoice #$invoiceNo'
             : 'Lazervault Invoice Receipt - $currencySymbol$amount';
       } else {
-        final recipient = transaction.metadata?['Recipient']?.toString() ??
-            transaction.title;
+        // Same metadata-spelling problem as the PDF body: a history-opened
+        // receipt has no 'Recipient' key, so this fell back to the screen
+        // TITLE and shared "…to Tag Payment Received". Try every spelling and
+        // the entity's counterparty; with no counterparty at all, name no one
+        // rather than naming the heading.
+        final recipient = _firstNonEmpty([
+          transaction.metadata?['Recipient'],
+          transaction.metadata?['Beneficiary Name'],
+          transaction.metadata?['recipientName'],
+          transaction.metadata?['recipient_name'],
+          transaction.counterpartyName,
+        ]);
         subject = 'Lazervault Transfer Receipt';
-        text =
-            'Lazervault Transfer Receipt - $currencySymbol$amount to $recipient';
+        text = recipient != null
+            ? 'Lazervault Transfer Receipt - $currencySymbol$amount to $recipient'
+            : 'Lazervault Transfer Receipt - $currencySymbol$amount';
       }
 
       await SharePlus.instance.share(ShareParams(
@@ -1460,7 +1643,7 @@ class TagPayPdfService {
     final heroAmount = (transaction.amountDisplayOverride != null &&
             transaction.amountDisplayOverride!.trim().isNotEmpty)
         ? transaction.amountDisplayOverride!.trim()
-        : '${_currencySymbolFor(transaction.currency)}${transaction.amount.toStringAsFixed(2)}';
+        : '${_currencySymbolFor(transaction.currency)}${_amountFormat.format(transaction.amount)}';
 
     // Sender: an explicit 'From address' (send flow) or the LazerVault identity.
     final fromLabel = _pdfSafe(metadata['From address']?.toString() ??

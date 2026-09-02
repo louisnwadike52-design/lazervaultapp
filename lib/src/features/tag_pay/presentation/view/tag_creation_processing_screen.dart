@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
@@ -18,6 +19,10 @@ class TagCreationProcessingScreen extends StatefulWidget {
 
 class _TagCreationProcessingScreenState extends State<TagCreationProcessingScreen>
     with SingleTickerProviderStateMixin {
+  /// Grouped for READING — the batch total shown here is the same figure the
+  /// receipt screen prints, and both must group their digits the same way.
+  static final _amountFormat = NumberFormat('#,##0.00');
+
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
@@ -128,6 +133,20 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
               'description': _description,
             },
           );
+        } else if (state is TagCreationQueued) {
+          // OFFLINE PATH. On a network error the cubit does NOT fail — it
+          // enqueues the mutation and emits this state instead. With no
+          // listener for it, and no AppBar / back button / PopScope on this
+          // screen, the user was left on the pulse animation with no way out
+          // and no idea their tag had been saved for later.
+          Get.offAllNamed(AppRoutes.tagPay);
+          Get.snackbar(
+            'Saved for later',
+            state.message,
+            backgroundColor: const Color(0xFFF59E0B),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.TOP,
+          );
         } else if (state is TagPayError) {
           Get.back();
           Get.snackbar(
@@ -226,16 +245,16 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
       child: Column(
         children: [
           if (_isBatch)
-            _buildDetailRow('Total', '${UserTagEntity.currencySymbol(_currency)}${(_amount * _recipientNames.length).toStringAsFixed(2)}')
+            _buildDetailRow('Total', '${UserTagEntity.currencySymbol(_currency)}${_amountFormat.format(_amount * _recipientNames.length)}')
           else
-            _buildDetailRow('Amount', '${UserTagEntity.currencySymbol(_currency)}${_amount.toStringAsFixed(2)}'),
+            _buildDetailRow('Amount', '${UserTagEntity.currencySymbol(_currency)}${_amountFormat.format(_amount)}'),
           SizedBox(height: 12.h),
           Divider(color: const Color(0xFF2D2D2D)),
           SizedBox(height: 12.h),
           if (_isBatch) ...[
             _buildDetailRow('Users', '${_recipientNames.length} recipients'),
             SizedBox(height: 12.h),
-            _buildDetailRow('Each', '${UserTagEntity.currencySymbol(_currency)}${_amount.toStringAsFixed(2)}'),
+            _buildDetailRow('Each', '${UserTagEntity.currencySymbol(_currency)}${_amountFormat.format(_amount)}'),
           ] else ...[
             _buildDetailRow('For', _recipientNames.first),
             SizedBox(height: 12.h),

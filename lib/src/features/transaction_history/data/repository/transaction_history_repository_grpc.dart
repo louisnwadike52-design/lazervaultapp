@@ -861,6 +861,26 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       }
     }
 
+    // Currency belongs to the TRANSACTION, not to whichever account happens to
+    // be selected while browsing history: a GBP row read while an NGN account
+    // was active rendered "₦" in front of a £ amount, on screen AND on the
+    // generated receipt. The ledger proto carries no currency field, so the
+    // row's own metadata is the only per-transaction source — accepted only
+    // when it names a currency we actually operate in, and never for crypto
+    // rows, whose `currency` metadata is the ASSET (USDT/BTC) and is already
+    // rendered through amountDisplayOverride/assetSymbol. Anything else falls
+    // back to the active account, exactly as before.
+    const supportedFiat = {
+      'NGN', 'GBP', 'USD', 'EUR', 'GHS', 'KES', 'ZAR', 'CAD', 'AUD',
+    };
+    final metaCurrency =
+        (metadata['currency']?.toString() ?? '').trim().toUpperCase();
+    final currency = (!isCryptoSwap &&
+            !isCryptoSend &&
+            supportedFiat.contains(metaCurrency))
+        ? metaCurrency
+        : (accountManager.activeAccountDetails?.currency ?? 'NGN');
+
     // Prefer the ORIGINATING reference stashed in metadata (TRF-…, C2C-…,
     // DEP-…) over the ledger row's internal bookkeeping reference
     // (HOLD-CAP-{holdID}, IDEM-…) — the internal one means nothing to the
@@ -877,7 +897,7 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       description: descriptionOverride ??
           (protoTx.description.isNotEmpty ? protoTx.description : null),
       amount: protoTx.amount,
-      currency: accountManager.activeAccountDetails?.currency ?? 'NGN',
+      currency: currency,
       createdAt: createdAt,
       status: status,
       flow: flow,

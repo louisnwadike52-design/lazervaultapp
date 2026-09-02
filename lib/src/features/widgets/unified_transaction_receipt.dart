@@ -981,7 +981,14 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       if (copy == null || !mounted) return;
       _chosenCopy = copy;
     } else {
-      _chosenCopy = ReceiptCopyType.sender;
+      // With no copy to choose from, DIRECTION decides which copy this is.
+      // Hardcoding `sender` stamped every incoming tagpay/transfer receipt
+      // "SENDER'S COPY" and itemised a Fee/Total Paid that the RECEIVER never
+      // paid — the fee is the sender's cost and must never appear on the
+      // beneficiary's document.
+      _chosenCopy = tx.flow == TransactionFlow.incoming
+          ? ReceiptCopyType.recipient
+          : ReceiptCopyType.sender;
     }
     final format = await _showReceiptFormatSheet(actionLabel);
     if (format == null || !mounted) return;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../../domain/entities/tag_pay_entity.dart';
 import '../../domain/entities/user_tag_entity.dart' show UserTagEntity;
 import '../../../../../core/types/app_routes.dart';
@@ -17,6 +18,10 @@ class TagPaymentReceiptScreen extends StatefulWidget {
 }
 
 class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
+  /// Money is grouped for READING — "₦1500000.00" makes the customer count
+  /// digits to know what they paid.
+  static final _amountFormat = NumberFormat('#,##0.00');
+
   late final TagPayTransactionEntity transaction;
   late final UserTagEntity tag;
   bool _isDownloading = false;
@@ -69,6 +74,10 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
       await TagPayPdfService.shareReceipt(
         transaction: transaction,
         tag: tag,
+        // share_plus on iPad REQUIRES a non-zero anchor rect or the native
+        // sheet throws; anchor it to this screen like the sibling calls in
+        // tag_details_bottom_sheet.dart do.
+        sharePositionOrigin: TagPayPdfService.shareOriginFromContext(context),
       );
     } catch (e) {
       Get.snackbar(
@@ -120,10 +129,10 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SizedBox(height: 8.h),
-                    _buildSuccessIcon(),
+                    _buildOutcomeIcon(),
                     SizedBox(height: 24.h),
                     Text(
-                      'Payment Successful!',
+                      _outcomeTitle,
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 24.sp,
@@ -132,7 +141,8 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      'Your payment has been processed',
+                      _outcomeSubtitle,
+                      textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         color: const Color(0xFF9CA3AF),
                         fontSize: 14.sp,
@@ -154,17 +164,90 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
     );
   }
 
-  Widget _buildSuccessIcon() {
+  // ── Outcome header ────────────────────────────────────────────────────
+  //
+  // Whether a payment succeeded is a property of the TRANSACTION, not of
+  // having reached this screen. The header used to hardcode a green check and
+  // "Payment Successful!" while the details section below printed
+  // "Status: Pending/Processing/Failed" off the SAME object — so a failed or
+  // still-processing payment was presented to the payer as money delivered.
+  // Everything in the header now derives from `transaction.status`.
+
+  Color get _outcomeColor {
+    switch (transaction.status) {
+      case TagPayTransactionStatus.completed:
+        return const Color(0xFF10B981);
+      case TagPayTransactionStatus.pending:
+      case TagPayTransactionStatus.processing:
+        return const Color(0xFFF59E0B);
+      case TagPayTransactionStatus.failed:
+      case TagPayTransactionStatus.cancelled:
+        return const Color(0xFFEF4444);
+      case TagPayTransactionStatus.refunded:
+        return const Color(0xFF3B82F6);
+    }
+  }
+
+  IconData get _outcomeIcon {
+    switch (transaction.status) {
+      case TagPayTransactionStatus.completed:
+        return Icons.check_circle;
+      case TagPayTransactionStatus.pending:
+      case TagPayTransactionStatus.processing:
+        return Icons.schedule;
+      case TagPayTransactionStatus.failed:
+        return Icons.error;
+      case TagPayTransactionStatus.cancelled:
+        return Icons.cancel;
+      case TagPayTransactionStatus.refunded:
+        return Icons.replay_circle_filled;
+    }
+  }
+
+  String get _outcomeTitle {
+    switch (transaction.status) {
+      case TagPayTransactionStatus.completed:
+        return 'Payment Successful!';
+      case TagPayTransactionStatus.pending:
+        return 'Payment Pending';
+      case TagPayTransactionStatus.processing:
+        return 'Payment Processing';
+      case TagPayTransactionStatus.failed:
+        return 'Payment Failed';
+      case TagPayTransactionStatus.cancelled:
+        return 'Payment Cancelled';
+      case TagPayTransactionStatus.refunded:
+        return 'Payment Refunded';
+    }
+  }
+
+  String get _outcomeSubtitle {
+    switch (transaction.status) {
+      case TagPayTransactionStatus.completed:
+        return 'Your payment has been processed';
+      case TagPayTransactionStatus.pending:
+      case TagPayTransactionStatus.processing:
+        return 'We\'re still settling this payment. This receipt updates once it completes.';
+      case TagPayTransactionStatus.failed:
+        return 'This payment did not go through';
+      case TagPayTransactionStatus.cancelled:
+        return 'This payment was cancelled';
+      case TagPayTransactionStatus.refunded:
+        return 'This payment was returned to your account';
+    }
+  }
+
+  Widget _buildOutcomeIcon() {
     return Container(
       width: 100.w,
       height: 100.w,
       decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withValues(alpha: 0.1),
+        color: _outcomeColor.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
       child: Icon(
-        Icons.check_circle,
-        color: const Color(0xFF10B981),
+        _outcomeIcon,
+        color: _outcomeColor,
         size: 60.sp,
       ),
     );
@@ -188,7 +271,11 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
       child: Column(
         children: [
           Text(
-            'Amount Paid',
+            // "Amount Paid" is itself a success claim — only say it once the
+            // money has actually moved.
+            transaction.status == TagPayTransactionStatus.completed
+                ? 'Amount Paid'
+                : 'Amount',
             style: GoogleFonts.inter(
               color: const Color(0xFF9CA3AF),
               fontSize: 14.sp,
@@ -197,7 +284,7 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
           ),
           SizedBox(height: 8.h),
           Text(
-            '${UserTagEntity.currencySymbol(transaction.currency)}${transaction.amount.toStringAsFixed(2)}',
+            '${UserTagEntity.currencySymbol(transaction.currency)}${_amountFormat.format(transaction.amount)}',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 40.sp,
