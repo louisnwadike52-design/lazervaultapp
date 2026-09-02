@@ -869,12 +869,16 @@ class TagPayPdfService {
     final currencySymbol = _currencySymbolFor(tag.currency);
     final amount = tag.amount.toStringAsFixed(2);
 
-    // For a paid tag viewed by the tagged user (incoming), they paid the tagger
-    // Sender = tagged user, Receiver = tagger
-    final senderName = isOutgoing ? tag.taggerName : tag.taggedUserName;
-    final senderTag = isOutgoing ? tag.taggerTagPay : tag.taggedUserTagPay;
-    final recipientName = isOutgoing ? tag.taggedUserName : tag.taggerName;
-    final recipientTag = isOutgoing ? tag.taggedUserTagPay : tag.taggerTagPay;
+    // Direction of money is a property of the TRANSACTION, not of who is
+    // looking at it. On a paid tag the tagged user always pays and the tagger
+    // is always paid. These four lines used to swap on `isOutgoing` (which
+    // means "I created this tag", i.e. I am the PAYEE) — so the person who
+    // received the money got a receipt naming themselves as the sender, and
+    // the two parties held contradictory documents under one reference.
+    final senderName = tag.taggedUserName;
+    final senderTag = tag.taggedUserTagPay;
+    final recipientName = tag.taggerName;
+    final recipientTag = tag.taggerTagPay;
 
     // Generate reference from tag ID
     final reference = 'TPTAG-${tag.id.length > 8 ? tag.id.substring(0, 8) : tag.id}';
@@ -989,11 +993,16 @@ class TagPayPdfService {
 
       final currencySymbol = _currencySymbolFor(tag.currency);
       final amount = tag.amount.toStringAsFixed(2);
-      final recipientTag = isOutgoing ? tag.taggedUserTagPay : tag.taggerTagPay;
+      // The tagger (isOutgoing) was PAID by the tagged user; the tagged user
+      // paid the tagger. Preposition and handle have to move together.
+      final counterpartyTag =
+          isOutgoing ? tag.taggedUserTagPay : tag.taggerTagPay;
+      final direction = isOutgoing ? 'from' : 'to';
 
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
-        text: 'Tagpay Receipt - $currencySymbol$amount ${isOutgoing ? "to" : "from"} @$recipientTag',
+        text:
+            'Tagpay Receipt - $currencySymbol$amount $direction @$counterpartyTag',
         subject: 'Lazervault Tagpay Receipt',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
