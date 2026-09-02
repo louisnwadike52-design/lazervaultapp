@@ -102,11 +102,27 @@ abstract class TagPayRepository {
     String transactionPin = '',
   });
 
+  /// Withdraw a tag you raised. Tagger-only and pending-only — the server
+  /// refuses once the tag is paying, paid, expired or already closed.
+  /// [reason] is optional free text, max 280 characters.
+  Future<UserTagEntity> cancelTag({
+    required String tagId,
+    String? reason,
+  });
+
+  /// Refuse a tag raised against you. Tagged-user-only and pending-only, with
+  /// the same server-side refusals as [cancelTag].
+  Future<UserTagEntity> declineTag({
+    required String tagId,
+    String? reason,
+  });
+
   /// Search users by username, email, phone, or name for tagging (unified search when searchType is empty)
   Future<List<UserSearchResultEntity>> searchUsers({
     required String query,
     int limit = 10,
-    String searchType = '', // "username", "name", "phone", "email", or "" for unified search
+    String searchType =
+        '', // "username", "name", "phone", "email", or "" for unified search
   });
 
   /// Batch create tags for multiple users

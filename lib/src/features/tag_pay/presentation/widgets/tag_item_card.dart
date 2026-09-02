@@ -23,8 +23,10 @@ class TagItemCard extends StatelessWidget {
     final rawName = isIncoming ? tag.taggerName : tag.taggedUserName;
     final otherUserName = rawName.isNotEmpty ? rawName : 'Unknown User';
     final otherUserTag = isIncoming ? tag.taggerTagPay : tag.taggedUserTagPay;
-    final isPending = tag.status == TagStatus.pending;
-    final showQuickPay = isIncoming && isPending;
+    // isPayable, not "not paid": a tag in PAYING already has a transfer in
+    // flight, and declined/expired/cancelled are closed. Offering Quick Pay on
+    // any of them is a double debit or a payment against a dead demand.
+    final showQuickPay = isIncoming && tag.isPayable;
 
     return GestureDetector(
       onTap: onTap,
@@ -104,7 +106,7 @@ class TagItemCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(8.r),
                               ),
                               child: Text(
-                                tag.status.name.toUpperCase(),
+                                tag.statusLabel,
                                 style: GoogleFonts.inter(
                                   color: statusColor,
                                   fontSize: 10.sp,
@@ -159,7 +161,8 @@ class TagItemCard extends StatelessWidget {
                 ),
                 child: InkWell(
                   onTap: () => _navigateToQuickPay(context),
-                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(15.r)),
+                  borderRadius:
+                      BorderRadius.vertical(bottom: Radius.circular(15.r)),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -191,7 +194,7 @@ class TagItemCard extends StatelessWidget {
   void _navigateToQuickPay(BuildContext context) {
     Get.toNamed(
       AppRoutes.tagPaymentConfirmation,
-      arguments: tag,  // Pass tag directly, not wrapped in a map
+      arguments: tag, // Pass tag directly, not wrapped in a map
     );
   }
 
@@ -199,10 +202,17 @@ class TagItemCard extends StatelessWidget {
     switch (status) {
       case TagStatus.pending:
         return const Color(0xFFFBBF24);
+      case TagStatus.paying:
+        // In-progress, not awaiting the user — the app's blue "working" tone.
+        return const Color(0xFF60A5FA);
       case TagStatus.paid:
         return const Color(0xFF10B981);
       case TagStatus.cancelled:
+      case TagStatus.declined:
         return const Color(0xFFEF4444);
+      case TagStatus.expired:
+      case TagStatus.unknown:
+        return const Color(0xFF9CA3AF);
     }
   }
 

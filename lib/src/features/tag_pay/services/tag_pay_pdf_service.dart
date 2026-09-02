@@ -266,8 +266,7 @@ class TagPayPdfService {
                             style: _getTextStyle(
                                 fontSize: 10, color: PdfColors.grey600)),
                         pw.SizedBox(height: 4),
-                        pw.Text(
-                            senderName.toUpperCase(),
+                        pw.Text(senderName.toUpperCase(),
                             style: _getTextStyle(fontSize: 14, isBold: true)),
                         if (senderTag.isNotEmpty)
                           pw.Text('@$senderTag',
@@ -281,7 +280,7 @@ class TagPayPdfService {
                     flex: 1,
                     child: _buildSummaryTable(
                       createdDate: createdDate,
-                      status: tag.isPaid ? 'Paid' : (tag.isCancelled ? 'Cancelled' : 'Pending'),
+                      status: _tagStatusLabel(tag),
                       type: 'Tagpay Invoice',
                     ),
                   ),
@@ -316,7 +315,8 @@ class TagPayPdfService {
     );
 
     final output = await getTemporaryDirectory();
-    final fileName = 'tagpay_invoice_${tag.id.substring(0, 8)}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+    final fileName =
+        'tagpay_invoice_${tag.id.substring(0, 8)}_${DateTime.now().millisecondsSinceEpoch}.pdf';
     final file = File('${output.path}/$fileName');
     await file.writeAsBytes(await pdf.save());
     return file;
@@ -347,8 +347,7 @@ class TagPayPdfService {
     final beneficiaryTag = _pdfSafeText(transaction.receiverTagPay.isNotEmpty
         ? transaction.receiverTagPay
         : tag.taggerTagPay);
-    final reference =
-        _pdfSafeText(transaction.description ?? tag.description);
+    final reference = _pdfSafeText(transaction.description ?? tag.description);
 
     pdf.addPage(
       pw.Page(
@@ -423,7 +422,8 @@ class TagPayPdfService {
     return file;
   }
 
-  static pw.Widget _buildInvoiceHeader(pw.MemoryImage? logo, String generatedDate,
+  static pw.Widget _buildInvoiceHeader(
+      pw.MemoryImage? logo, String generatedDate,
       {required bool isInvoice}) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -578,9 +578,11 @@ class TagPayPdfService {
               if (description.isNotEmpty)
                 _buildDetailRow('Description', description),
               _buildDetailRow('Tag ID', tag.id),
-              _buildDetailRow('Created', _fullDateTimeFormat.format(tag.createdAt)),
+              _buildDetailRow(
+                  'Created', _fullDateTimeFormat.format(tag.createdAt)),
               if (tag.paidAt != null)
-                _buildDetailRow('Paid', _fullDateTimeFormat.format(tag.paidAt!)),
+                _buildDetailRow(
+                    'Paid', _fullDateTimeFormat.format(tag.paidAt!)),
             ],
           ),
         ),
@@ -620,8 +622,7 @@ class TagPayPdfService {
           ),
           child: pw.Column(
             children: [
-              _buildDetailRow(
-                  showFee ? 'Amount' : 'Amount Received',
+              _buildDetailRow(showFee ? 'Amount' : 'Amount Received',
                   '$currencySymbol$amount',
                   isBold: true),
               if (showFee) ...[
@@ -877,7 +878,8 @@ class TagPayPdfService {
 
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
-        text: 'Tagpay Invoice - $currencySymbol$amount ${isOutgoing ? "to" : "from"} ${recipientName.isNotEmpty ? recipientName : "@$recipientTag"}',
+        text:
+            'Tagpay Invoice - $currencySymbol$amount ${isOutgoing ? "to" : "from"} ${recipientName.isNotEmpty ? recipientName : "@$recipientTag"}',
         subject: 'Lazervault Tagpay Invoice',
         sharePositionOrigin: _resolveShareOrigin(sharePositionOrigin),
       ));
@@ -979,6 +981,17 @@ class TagPayPdfService {
     }
   }
 
+  /// Title-cased form of the entity's single status source.
+  ///
+  /// Was `tag.isPaid ? 'Paid' : (tag.isCancelled ? 'Cancelled' : 'Pending')`,
+  /// which printed "Pending" on the invoice of a tag that had in fact been
+  /// declined, expired, or was mid-transfer — a PDF the customer could keep as
+  /// evidence of a debt that no longer existed.
+  static String _tagStatusLabel(UserTagEntity tag) {
+    final label = tag.statusLabel;
+    return label[0] + label.substring(1).toLowerCase();
+  }
+
   /// Generate a receipt PDF from tag data only (for paid tags without transaction entity)
   /// This creates a simplified receipt using available tag information
   static Future<File> generatePaidTagReceipt({
@@ -993,7 +1006,9 @@ class TagPayPdfService {
     final pdf = pw.Document();
     final logo = await _loadLogo();
     final generatedDate = _displayDateFormat.format(DateTime.now());
-    final paidDate = tag.paidAt != null ? _dateFormat.format(tag.paidAt!) : _dateFormat.format(tag.createdAt);
+    final paidDate = tag.paidAt != null
+        ? _dateFormat.format(tag.paidAt!)
+        : _dateFormat.format(tag.createdAt);
     final currencySymbol = _currencySymbolFor(tag.currency);
     final amount = _amountFormat.format(tag.amount);
 
@@ -1011,7 +1026,8 @@ class TagPayPdfService {
     final description = _pdfSafeText(tag.description);
 
     // Generate reference from tag ID
-    final reference = 'TPTAG-${tag.id.length > 8 ? tag.id.substring(0, 8) : tag.id}';
+    final reference =
+        'TPTAG-${tag.id.length > 8 ? tag.id.substring(0, 8) : tag.id}';
 
     pdf.addPage(
       pw.Page(
@@ -1042,7 +1058,8 @@ class TagPayPdfService {
                         if (senderTag.isNotEmpty)
                           pw.Text(
                             '@$senderTag',
-                            style: _getTextStyle(fontSize: 12, color: PdfColors.grey700),
+                            style: _getTextStyle(
+                                fontSize: 12, color: PdfColors.grey700),
                           ),
                       ],
                     ),
@@ -1102,8 +1119,10 @@ class TagPayPdfService {
     required bool isOutgoing,
   }) async {
     try {
-      final file = await generatePaidTagReceipt(tag: tag, isOutgoing: isOutgoing);
-      final reference = 'TPTAG-${tag.id.length > 8 ? tag.id.substring(0, 8) : tag.id}';
+      final file =
+          await generatePaidTagReceipt(tag: tag, isOutgoing: isOutgoing);
+      final reference =
+          'TPTAG-${tag.id.length > 8 ? tag.id.substring(0, 8) : tag.id}';
       return await ReceiptDownload.saveAndOpen(
         source: file,
         fileName: 'tagpay_receipt_$reference.pdf',
@@ -1120,7 +1139,8 @@ class TagPayPdfService {
     Rect? sharePositionOrigin,
   }) async {
     try {
-      final file = await generatePaidTagReceipt(tag: tag, isOutgoing: isOutgoing);
+      final file =
+          await generatePaidTagReceipt(tag: tag, isOutgoing: isOutgoing);
 
       final currencySymbol = _currencySymbolFor(tag.currency);
       final amount = _amountFormat.format(tag.amount);
@@ -1175,9 +1195,11 @@ class TagPayPdfService {
     final reference = transferDetails['reference'] as String? ?? '';
     final narration = _pdfSafe(transferDetails['narration'] as String?);
     final status = transferDetails['status'] as String? ?? 'completed';
-    final transferType = transferDetails['transferType'] as String? ?? 'Fund Transfer';
+    final transferType =
+        transferDetails['transferType'] as String? ?? 'Fund Transfer';
     final transferId = transferDetails['transferId']?.toString() ??
-        transferDetails['transactionId']?.toString() ?? '';
+        transferDetails['transactionId']?.toString() ??
+        '';
 
     DateTime? timestamp;
     if (transferDetails['timestamp'] != null) {
@@ -1228,10 +1250,10 @@ class TagPayPdfService {
                             style: _getTextStyle(
                                 fontSize: 10, color: PdfColors.grey600)),
                         pw.SizedBox(height: 4),
-                        pw.Text(
-                            (sourceAccountName ?? '').toUpperCase(),
+                        pw.Text((sourceAccountName ?? '').toUpperCase(),
                             style: _getTextStyle(fontSize: 14, isBold: true)),
-                        if (sourceAccountInfo != null && sourceAccountInfo.isNotEmpty)
+                        if (sourceAccountInfo != null &&
+                            sourceAccountInfo.isNotEmpty)
                           pw.Text(sourceAccountInfo,
                               style: _getTextStyle(
                                   fontSize: 11, color: PdfColors.grey700)),
@@ -1487,13 +1509,12 @@ class TagPayPdfService {
   }) async {
     try {
       final file = await generateTransferReceiptFile(
-          transferDetails: transferDetails,
-          copyType: copyType,
-          format: format);
+          transferDetails: transferDetails, copyType: copyType, format: format);
 
       final reference = transferDetails['reference'] as String? ?? '';
       final transferId = transferDetails['transferId']?.toString() ??
-          transferDetails['transactionId']?.toString() ?? '';
+          transferDetails['transactionId']?.toString() ??
+          '';
       final safeRef = reference.isNotEmpty
           ? reference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')
           : transferId.isNotEmpty
@@ -1518,15 +1539,12 @@ class TagPayPdfService {
   }) async {
     try {
       final file = await generateTransferReceiptFile(
-          transferDetails: transferDetails,
-          copyType: copyType,
-          format: format);
+          transferDetails: transferDetails, copyType: copyType, format: format);
 
       final currency = transferDetails['currency'] as String? ?? 'NGN';
       final amount = (transferDetails['amount'] as num?)?.toDouble() ?? 0.0;
       final currencySymbol = _currencySymbolFor(currency);
-      final recipientName =
-          transferDetails['recipientName'] as String? ?? '';
+      final recipientName = transferDetails['recipientName'] as String? ?? '';
 
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
@@ -1661,8 +1679,8 @@ class TagPayPdfService {
       if (human == null) return;
       detailRows.add(pw.Padding(
         padding: const pw.EdgeInsets.symmetric(vertical: 3),
-        child: _buildDetailRow(
-            _pdfSafe(human.label) ?? human.label, _pdfSafe(human.value) ?? human.value),
+        child: _buildDetailRow(_pdfSafe(human.label) ?? human.label,
+            _pdfSafe(human.value) ?? human.value),
       ));
     });
 
@@ -1744,8 +1762,8 @@ class TagPayPdfService {
                     ),
                     pw.SizedBox(height: 6),
                     pw.Text(reference,
-                        style:
-                            _getTextStyle(fontSize: 9, color: PdfColors.grey600)),
+                        style: _getTextStyle(
+                            fontSize: 9, color: PdfColors.grey600)),
                   ],
                 ),
               ),

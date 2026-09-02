@@ -22,13 +22,22 @@ import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'tag_pay_home_screen_widgets.dart';
 
-
 class _TagPayHomeViewState extends State<_TagPayHomeView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _selectedFilter = 'All';
 
-  static const _filters = ['All', 'Pending', 'Paid', 'Cancelled'];
+  // Declined and Expired are distinct terminal states from Cancelled — a tag
+  // the payee refused, and one that lapsed — so without their own chips those
+  // tags are reachable only under "All".
+  static const _filters = [
+    'All',
+    'Pending',
+    'Paid',
+    'Declined',
+    'Expired',
+    'Cancelled',
+  ];
 
   @override
   void initState() {
@@ -60,6 +69,10 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
         return 'paid';
       case 'Cancelled':
         return 'cancelled';
+      case 'Declined':
+        return 'declined';
+      case 'Expired':
+        return 'expired';
       case 'Pending':
         return 'pending';
       default:
@@ -70,17 +83,25 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
   void _onFilterSelected(String filter) {
     setState(() => _selectedFilter = filter);
     if (_tabController.index == 0) {
-      context.read<TagPayCubit>().loadIncomingTagsPage(page: 1, status: _statusParam);
+      context
+          .read<TagPayCubit>()
+          .loadIncomingTagsPage(page: 1, status: _statusParam);
     } else {
-      context.read<TagPayCubit>().loadOutgoingTagsPage(page: 1, status: _statusParam);
+      context
+          .read<TagPayCubit>()
+          .loadOutgoingTagsPage(page: 1, status: _statusParam);
     }
   }
 
   Future<void> _onRefresh() async {
     if (_tabController.index == 0) {
-      await context.read<TagPayCubit>().loadIncomingTagsPage(page: 1, status: _statusParam);
+      await context
+          .read<TagPayCubit>()
+          .loadIncomingTagsPage(page: 1, status: _statusParam);
     } else {
-      await context.read<TagPayCubit>().loadOutgoingTagsPage(page: 1, status: _statusParam);
+      await context
+          .read<TagPayCubit>()
+          .loadOutgoingTagsPage(page: 1, status: _statusParam);
     }
   }
 
@@ -234,10 +255,12 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
                     CircleAvatar(
                       radius: 22.r,
                       backgroundColor: Colors.white.withValues(alpha: 0.2),
-                      backgroundImage: user.profilePicture != null && user.profilePicture!.isNotEmpty
+                      backgroundImage: user.profilePicture != null &&
+                              user.profilePicture!.isNotEmpty
                           ? NetworkImage(user.profilePicture!)
                           : null,
-                      child: user.profilePicture == null || user.profilePicture!.isEmpty
+                      child: user.profilePicture == null ||
+                              user.profilePicture!.isEmpty
                           ? Text(
                               initial,
                               style: GoogleFonts.inter(
@@ -254,7 +277,9 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            displayName.isNotEmpty ? displayName : user.username!,
+                            displayName.isNotEmpty
+                                ? displayName
+                                : user.username!,
                             style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 16.sp,
@@ -274,7 +299,8 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12.r),
@@ -399,8 +425,10 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
         if (state is TagPayHomeLoaded) {
           final isReceivedTab = _tabController.index == 0;
           final tags = isReceivedTab ? state.incomingTags : state.outgoingTags;
-          final total = isReceivedTab ? state.incomingTotal : state.outgoingTotal;
-          final pending = tags.where((t) => t.status == TagStatus.pending).length;
+          final total =
+              isReceivedTab ? state.incomingTotal : state.outgoingTotal;
+          final pending =
+              tags.where((t) => t.status == TagStatus.pending).length;
           final paid = tags.where((t) => t.status == TagStatus.paid).length;
 
           return TagPayStatsRow(
@@ -620,9 +648,8 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
       builder: (context, state) {
         if (state is TagPayHomeLoaded) {
           final isReceivedTab = _tabController.index == 0;
-          final currentPage = isReceivedTab
-              ? state.incomingPage
-              : state.outgoingPage;
+          final currentPage =
+              isReceivedTab ? state.incomingPage : state.outgoingPage;
           final totalPages = isReceivedTab
               ? state.incomingTotalPages
               : state.outgoingTotalPages;
@@ -632,9 +659,13 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
             totalPages: totalPages,
             onPageChanged: (page) {
               if (isReceivedTab) {
-                context.read<TagPayCubit>().loadIncomingTagsPage(page: page, status: _statusParam);
+                context
+                    .read<TagPayCubit>()
+                    .loadIncomingTagsPage(page: page, status: _statusParam);
               } else {
-                context.read<TagPayCubit>().loadOutgoingTagsPage(page: page, status: _statusParam);
+                context
+                    .read<TagPayCubit>()
+                    .loadOutgoingTagsPage(page: page, status: _statusParam);
               }
             },
           );
@@ -645,18 +676,27 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
   }
 
   void _showTagDetails(UserTagEntity tag, {required bool isIncoming}) {
-    if (isIncoming && tag.status == TagStatus.pending) {
+    // isPayable, not `== pending`: a tag mid-transfer or already closed must
+    // never be shoved straight onto the payment screen.
+    if (isIncoming && tag.isPayable) {
       Get.toNamed(
         AppRoutes.tagPaymentConfirmation,
         arguments: tag,
       );
     } else {
-      showModalBottomSheet(
+      // Own cubit instance so a cancel/decline inside the sheet does not blank
+      // the list behind it; the sheet pops with `true` when the tag changed.
+      showModalBottomSheet<bool>(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (_) => TagDetailsBottomSheet(tag: tag, isOutgoing: !isIncoming),
-      );
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocator<TagPayCubit>(),
+          child: TagDetailsBottomSheet(tag: tag, isOutgoing: !isIncoming),
+        ),
+      ).then((changed) {
+        if (changed == true && mounted) _onRefresh();
+      });
     }
   }
 
@@ -668,6 +708,10 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
         return isReceived ? 'No Paid Tags' : 'No Paid Tags';
       case 'Cancelled':
         return isReceived ? 'No Cancelled Tags' : 'No Cancelled Tags';
+      case 'Declined':
+        return 'No Declined Tags';
+      case 'Expired':
+        return 'No Expired Tags';
       default:
         return isReceived ? 'No Received Tags' : 'No Created Tags';
     }
@@ -687,6 +731,14 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
         return isReceived
             ? 'No tags have been cancelled'
             : 'No tags have been cancelled';
+      case 'Declined':
+        return isReceived
+            ? 'You have not declined any tags'
+            : 'Nobody has declined a tag you raised';
+      case 'Expired':
+        return isReceived
+            ? 'No tags have lapsed unpaid'
+            : 'None of your tags have lapsed unpaid';
       default:
         return isReceived
             ? 'Tags from other users will appear here'
@@ -812,7 +864,8 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 24.w),
+                  padding:
+                      EdgeInsets.symmetric(vertical: 14.h, horizontal: 24.w),
                 ),
               ),
             ],

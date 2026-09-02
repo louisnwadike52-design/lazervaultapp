@@ -648,6 +648,8 @@ class UserTag extends $pb.GeneratedMessage {
     TagStatus? status,
     $1.Timestamp? createdAt,
     $1.Timestamp? paidAt,
+    $1.Timestamp? expiresAt,
+    $1.Timestamp? respondedAt,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -663,6 +665,8 @@ class UserTag extends $pb.GeneratedMessage {
     if (status != null) result.status = status;
     if (createdAt != null) result.createdAt = createdAt;
     if (paidAt != null) result.paidAt = paidAt;
+    if (expiresAt != null) result.expiresAt = expiresAt;
+    if (respondedAt != null) result.respondedAt = respondedAt;
     return result;
   }
 
@@ -696,6 +700,10 @@ class UserTag extends $pb.GeneratedMessage {
     ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'createdAt',
         subBuilder: $1.Timestamp.create)
     ..aOM<$1.Timestamp>(13, _omitFieldNames ? '' : 'paidAt',
+        subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(14, _omitFieldNames ? '' : 'expiresAt',
+        subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(15, _omitFieldNames ? '' : 'respondedAt',
         subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false;
 
@@ -838,6 +846,30 @@ class UserTag extends $pb.GeneratedMessage {
   void clearPaidAt() => $_clearField(13);
   @$pb.TagNumber(13)
   $1.Timestamp ensurePaidAt() => $_ensure(12);
+
+  /// When the demand lapses. Null on tags created before tags had a lifetime.
+  @$pb.TagNumber(14)
+  $1.Timestamp get expiresAt => $_getN(13);
+  @$pb.TagNumber(14)
+  set expiresAt($1.Timestamp value) => $_setField(14, value);
+  @$pb.TagNumber(14)
+  $core.bool hasExpiresAt() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearExpiresAt() => $_clearField(14);
+  @$pb.TagNumber(14)
+  $1.Timestamp ensureExpiresAt() => $_ensure(13);
+
+  /// When it was cancelled, declined or expired.
+  @$pb.TagNumber(15)
+  $1.Timestamp get respondedAt => $_getN(14);
+  @$pb.TagNumber(15)
+  set respondedAt($1.Timestamp value) => $_setField(15, value);
+  @$pb.TagNumber(15)
+  $core.bool hasRespondedAt() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearRespondedAt() => $_clearField(15);
+  @$pb.TagNumber(15)
+  $1.Timestamp ensureRespondedAt() => $_ensure(14);
 }
 
 /// Request/Response messages
@@ -2885,6 +2917,229 @@ class PayTagRequest extends $pb.GeneratedMessage {
   $core.bool hasTransactionPin() => $_has(2);
   @$pb.TagNumber(3)
   void clearTransactionPin() => $_clearField(3);
+}
+
+class CancelTagRequest extends $pb.GeneratedMessage {
+  factory CancelTagRequest({
+    $core.String? tagId,
+    $core.String? reason,
+  }) {
+    final result = create();
+    if (tagId != null) result.tagId = tagId;
+    if (reason != null) result.reason = reason;
+    return result;
+  }
+
+  CancelTagRequest._();
+
+  factory CancelTagRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CancelTagRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CancelTagRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'tagId')
+    ..aOS(2, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CancelTagRequest clone() => CancelTagRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CancelTagRequest copyWith(void Function(CancelTagRequest) updates) =>
+      super.copyWith((message) => updates(message as CancelTagRequest))
+          as CancelTagRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CancelTagRequest create() => CancelTagRequest._();
+  @$core.override
+  CancelTagRequest createEmptyInstance() => create();
+  static $pb.PbList<CancelTagRequest> createRepeated() =>
+      $pb.PbList<CancelTagRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CancelTagRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CancelTagRequest>(create);
+  static CancelTagRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get tagId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set tagId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasTagId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTagId() => $_clearField(1);
+
+  /// Optional free-text reason, surfaced to the tagged user.
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => $_clearField(2);
+}
+
+class DeclineTagRequest extends $pb.GeneratedMessage {
+  factory DeclineTagRequest({
+    $core.String? tagId,
+    $core.String? reason,
+  }) {
+    final result = create();
+    if (tagId != null) result.tagId = tagId;
+    if (reason != null) result.reason = reason;
+    return result;
+  }
+
+  DeclineTagRequest._();
+
+  factory DeclineTagRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DeclineTagRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DeclineTagRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'tagId')
+    ..aOS(2, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeclineTagRequest clone() => DeclineTagRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeclineTagRequest copyWith(void Function(DeclineTagRequest) updates) =>
+      super.copyWith((message) => updates(message as DeclineTagRequest))
+          as DeclineTagRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DeclineTagRequest create() => DeclineTagRequest._();
+  @$core.override
+  DeclineTagRequest createEmptyInstance() => create();
+  static $pb.PbList<DeclineTagRequest> createRepeated() =>
+      $pb.PbList<DeclineTagRequest>();
+  @$core.pragma('dart2js:noInline')
+  static DeclineTagRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DeclineTagRequest>(create);
+  static DeclineTagRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get tagId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set tagId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasTagId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTagId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => $_clearField(2);
+}
+
+/// TagLifecycleResponse is the shared shape for the non-payment terminal
+/// transitions (cancel / decline), carrying the resulting tag so the client can
+/// re-render without a refetch.
+class TagLifecycleResponse extends $pb.GeneratedMessage {
+  factory TagLifecycleResponse({
+    $core.bool? success,
+    $core.String? message,
+    UserTag? tag,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (message != null) result.message = message;
+    if (tag != null) result.tag = tag;
+    return result;
+  }
+
+  TagLifecycleResponse._();
+
+  factory TagLifecycleResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory TagLifecycleResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'TagLifecycleResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOM<UserTag>(3, _omitFieldNames ? '' : 'tag', subBuilder: UserTag.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TagLifecycleResponse clone() =>
+      TagLifecycleResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TagLifecycleResponse copyWith(void Function(TagLifecycleResponse) updates) =>
+      super.copyWith((message) => updates(message as TagLifecycleResponse))
+          as TagLifecycleResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static TagLifecycleResponse create() => TagLifecycleResponse._();
+  @$core.override
+  TagLifecycleResponse createEmptyInstance() => create();
+  static $pb.PbList<TagLifecycleResponse> createRepeated() =>
+      $pb.PbList<TagLifecycleResponse>();
+  @$core.pragma('dart2js:noInline')
+  static TagLifecycleResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<TagLifecycleResponse>(create);
+  static TagLifecycleResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  UserTag get tag => $_getN(2);
+  @$pb.TagNumber(3)
+  set tag(UserTag value) => $_setField(3, value);
+  @$pb.TagNumber(3)
+  $core.bool hasTag() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTag() => $_clearField(3);
+  @$pb.TagNumber(3)
+  UserTag ensureTag() => $_ensure(2);
 }
 
 class PayTagResponse extends $pb.GeneratedMessage {

@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grpc/grpc.dart';
 import '../../../../../core/offline/mutation_queue.dart';
 import '../../../../../core/offline/mutation.dart';
 import 'package:lazervault/core/utils/grpc_error_handler.dart';
 import 'package:lazervault/core/utils/user_search_query.dart';
+import 'package:lazervault/src/core/errors/grpc_exceptions.dart';
 import '../../domain/entities/user_tag_entity.dart';
 import '../../domain/repositories/tag_pay_repository.dart';
 import '../../domain/entities/user_search_result_entity.dart';
@@ -18,6 +21,14 @@ class TagPayCubit extends Cubit<TagPayState> {
     this.mutationQueue,
   }) : super(TagPayInitial());
 
+  /// The one line shown when a money call's outcome is UNKNOWN rather than
+  /// failed. Deliberately not a "try again": with no client idempotency key on
+  /// the TagPay money RPCs, a second attempt is a second debit request, so the
+  /// user must be able to see whether the first one landed before deciding.
+  static const String _indeterminatePaymentMessage =
+      'This is taking longer than expected. Your payment may still have gone '
+      'through — check your transaction history before trying again.';
+
   /// Check if an error is a network-related error that should trigger offline queuing
   bool _isNetworkError(dynamic error) {
     if (error is GrpcError) {
@@ -25,15 +36,56 @@ class TagPayCubit extends Cubit<TagPayState> {
           error.code == StatusCode.deadlineExceeded ||
           error.code == StatusCode.unknown;
     }
-    // Also handle string errors that indicate network issues
+    // Also handle string errors that indicate network issues. The repository
+    // maps a gRPC error through mapGrpcError before it reaches us, so what
+    // actually arrives here for a deadline is the NetworkException text
+    // "Request timed out" — which matched none of these substrings ('timeout'
+    // is not 'timed out'), silently demoting a timeout to the generic
+    // "Something went wrong" line. Match the string the mapper really emits.
     final errorStr = error.toString().toLowerCase();
     return errorStr.contains('network') ||
         errorStr.contains('connection') ||
         errorStr.contains('timeout') ||
+        errorStr.contains('timed out') ||
+        errorStr.contains('deadline') ||
         errorStr.contains('unavailable') ||
         errorStr.contains('failed to connect') ||
         errorStr.contains('socket') ||
         errorStr.contains('unreachable');
+  }
+
+  /// True when the call reached the server and we gave up waiting, as opposed
+  /// to never having got out of the device. The distinction is the whole point
+  /// on a money call: "no connection" means nothing was charged and retrying is
+  /// safe, while a deadline means the outcome is genuinely unknown.
+  bool _isTimeoutError(dynamic error) {
+    if (error is GrpcError) return error.code == StatusCode.deadlineExceeded;
+    if (error is TimeoutException) return true;
+    final errorStr = error.toString().toLowerCase();
+    return errorStr.contains('timed out') ||
+        errorStr.contains('timeout') ||
+        errorStr.contains('deadline');
+  }
+
+  /// Error state for a transport-level failure on a MONEY-MOVING call, or null
+  /// if the failure was not transport-level (caller falls back to its own
+  /// mapping). Money calls may not reuse the ordinary "try again" copy: an
+  /// unknown outcome has to be resolved by looking, not by paying twice.
+  TagPayError? _moneyTransportError(dynamic error) {
+    if (_isTimeoutError(error)) {
+      return const TagPayError(
+        _indeterminatePaymentMessage,
+        isRetryable: false,
+        isIndeterminate: true,
+      );
+    }
+    if (_isNetworkError(error)) {
+      return const TagPayError(
+        'No internet connection. Please check your network and try again.',
+        isRetryable: true,
+      );
+    }
+    return null;
   }
 
   Future<void> createTagPay({
@@ -137,14 +189,17 @@ class TagPayCubit extends Cubit<TagPayState> {
       if (pinFailure != null) {
         emit(TagPayPinFailure(pinInfo: pinFailure));
       } else {
-        emit(TagPayError(
-          GrpcErrorHandler.userFriendlyMessage(e),
-          isRetryable: GrpcErrorHandler.isRetryable(e),
-        ));
+        // Transport failure first: GrpcErrorHandler marks a deadline retryable,
+        // which is right for a read and wrong for a debit.
+        emit(_moneyTransportError(e) ??
+            TagPayError(
+              GrpcErrorHandler.userFriendlyMessage(e),
+              isRetryable: GrpcErrorHandler.isRetryable(e),
+            ));
       }
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(_friendlyMessage(e)));
+      emit(_moneyTransportError(e) ?? TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -235,14 +290,17 @@ class TagPayCubit extends Cubit<TagPayState> {
       if (pinFailure != null) {
         emit(TagPayPinFailure(pinInfo: pinFailure));
       } else {
-        emit(TagPayError(
-          GrpcErrorHandler.userFriendlyMessage(e),
-          isRetryable: GrpcErrorHandler.isRetryable(e),
-        ));
+        // Accepting a request debits this user — same indeterminate-outcome
+        // rule as sendMoney/payTag.
+        emit(_moneyTransportError(e) ??
+            TagPayError(
+              GrpcErrorHandler.userFriendlyMessage(e),
+              isRetryable: GrpcErrorHandler.isRetryable(e),
+            ));
       }
     } catch (e) {
       if (isClosed) return;
-      emit(TagPayError(_friendlyMessage(e)));
+      emit(_moneyTransportError(e) ?? TagPayError(_friendlyMessage(e)));
     }
   }
 
@@ -278,11 +336,13 @@ class TagPayCubit extends Cubit<TagPayState> {
           emit(TagPayLoaded(tagPay));
         } else {
           if (isClosed) return;
-          emit(const TagPayError('No username set. Please set a username in your profile.'));
+          emit(const TagPayError(
+              'No username set. Please set a username in your profile.'));
         }
       } else {
         if (isClosed) return;
-        emit(const TagPayError('No username set. Please set a username in your profile.'));
+        emit(const TagPayError(
+            'No username set. Please set a username in your profile.'));
       }
     } catch (e) {
       if (isClosed) return;
@@ -308,14 +368,19 @@ class TagPayCubit extends Cubit<TagPayState> {
       if (isClosed) return;
       emit(TagCreatedSuccess(
         tag: tag,
-        message: 'Tagged ${tag.taggedUserName} with $currency ${amount.toStringAsFixed(2)}',
+        message:
+            'Tagged ${tag.taggedUserName} with $currency ${amount.toStringAsFixed(2)}',
       ));
     } catch (e) {
       if (isClosed) return;
 
-      // Check if this is a network error and we can queue for offline retry
-      if (_isNetworkError(e) && mutationQueue != null) {
-        print('📴 [TagPayCubit] Network error detected, queuing tag creation for offline retry');
+      // Check if this is a network error and we can queue for offline retry.
+      // A timeout is excluded: the create may already have landed server-side,
+      // and replaying it would produce a duplicate tag. Only a request that
+      // never left the device is safe to queue.
+      if (_isNetworkError(e) && !_isTimeoutError(e) && mutationQueue != null) {
+        print(
+            '📴 [TagPayCubit] Network error detected, queuing tag creation for offline retry');
         try {
           final mutation = await mutationQueue!.enqueue(QueuedMutation.create(
             type: MutationType.tagCreation,
@@ -330,7 +395,8 @@ class TagPayCubit extends Cubit<TagPayState> {
             taggedUserTagPay: taggedUserTagPay,
             amount: amount,
             currency: currency,
-            message: 'Tag creation queued. Will retry when you\'re back online.',
+            message:
+                'Tag creation queued. Will retry when you\'re back online.',
             mutationId: mutation?.id,
           ));
           return;
@@ -348,7 +414,8 @@ class TagPayCubit extends Cubit<TagPayState> {
     try {
       if (isClosed) return;
       emit(TagPayLoading());
-      final result = await repository.getMyTags(page: page, limit: limit, status: status);
+      final result =
+          await repository.getMyTags(page: page, limit: limit, status: status);
       if (isClosed) return;
       emit(MyTagsLoaded(result.tags));
     } catch (e) {
@@ -357,26 +424,36 @@ class TagPayCubit extends Cubit<TagPayState> {
     }
   }
 
-  Future<void> getMyOutgoingTags({int page = 1, int limit = 20, String? status}) async {
+  Future<void> getMyOutgoingTags(
+      {int page = 1, int limit = 20, String? status}) async {
     try {
       if (isClosed) return;
       emit(TagPayLoading());
-      final result = await repository.getMyOutgoingTags(page: page, limit: limit, status: status);
+      final result = await repository.getMyOutgoingTags(
+          page: page, limit: limit, status: status);
       if (isClosed) return;
-      emit(MyOutgoingTagsLoaded(result.tags, total: result.total, page: result.page, totalPages: result.totalPages));
+      emit(MyOutgoingTagsLoaded(result.tags,
+          total: result.total,
+          page: result.page,
+          totalPages: result.totalPages));
     } catch (e) {
       if (isClosed) return;
       emit(TagPayError(_friendlyMessage(e)));
     }
   }
 
-  Future<void> getMyIncomingTags({int page = 1, int limit = 20, String? status}) async {
+  Future<void> getMyIncomingTags(
+      {int page = 1, int limit = 20, String? status}) async {
     try {
       if (isClosed) return;
       emit(TagPayLoading());
-      final result = await repository.getMyIncomingTags(page: page, limit: limit, status: status);
+      final result = await repository.getMyIncomingTags(
+          page: page, limit: limit, status: status);
       if (isClosed) return;
-      emit(MyIncomingTagsLoaded(result.tags, total: result.total, page: result.page, totalPages: result.totalPages));
+      emit(MyIncomingTagsLoaded(result.tags,
+          total: result.total,
+          page: result.page,
+          totalPages: result.totalPages));
     } catch (e) {
       if (isClosed) return;
       emit(TagPayError(_friendlyMessage(e)));
@@ -389,7 +466,8 @@ class TagPayCubit extends Cubit<TagPayState> {
     String? transactionPin,
   }) async {
     try {
-      print('🏷️ [TagPayCubit] Starting payTag - tagId: $tagId, accountId: $sourceAccountId');
+      print(
+          '🏷️ [TagPayCubit] Starting payTag - tagId: $tagId, accountId: $sourceAccountId');
       if (isClosed) return;
       emit(TagPayLoading());
       final transaction = await repository.payTag(
@@ -397,7 +475,8 @@ class TagPayCubit extends Cubit<TagPayState> {
         sourceAccountId: sourceAccountId,
         transactionPin: transactionPin ?? '',
       );
-      print('✅ [TagPayCubit] Tag payment successful - transaction ID: ${transaction.id}');
+      print(
+          '✅ [TagPayCubit] Tag payment successful - transaction ID: ${transaction.id}');
       if (isClosed) return;
       emit(TagPaidSuccess(
         transaction: transaction,
@@ -412,25 +491,66 @@ class TagPayCubit extends Cubit<TagPayState> {
       if (pinFailure != null) {
         emit(TagPayPinFailure(pinInfo: pinFailure));
       } else {
-        emit(TagPayError(
-          GrpcErrorHandler.userFriendlyMessage(e),
-          isRetryable: GrpcErrorHandler.isRetryable(e),
-        ));
+        // Transport failure first: GrpcErrorHandler marks a deadline retryable,
+        // which is right for a read and wrong for a debit.
+        emit(_moneyTransportError(e) ??
+            TagPayError(
+              GrpcErrorHandler.userFriendlyMessage(e),
+              isRetryable: GrpcErrorHandler.isRetryable(e),
+            ));
       }
     } catch (e) {
       print('❌ [TagPayCubit] Tag payment failed: $e');
       if (isClosed) return;
 
       // For financial operations, show clear error and let user retry manually
-      // NEVER queue payments offline - security tokens expire, balances change
-      if (_isNetworkError(e)) {
-        emit(const TagPayError(
-          'No internet connection. Please check your network and try again.',
-          isRetryable: true,
-        ));
-      } else {
-        emit(TagPayError(_friendlyMessage(e)));
-      }
+      // NEVER queue payments offline - security tokens expire, balances change.
+      // A deadline is separated out from "no connection" inside
+      // _moneyTransportError: a payment we stopped waiting on may have settled,
+      // so it must not be presented as a failure the user can just repeat.
+      emit(_moneyTransportError(e) ?? TagPayError(_friendlyMessage(e)));
+    }
+  }
+
+  /// Withdraw a tag this user raised. Tagger-only, pending-only server-side.
+  Future<void> cancelTag({
+    required String tagId,
+    String? reason,
+  }) async {
+    try {
+      if (isClosed) return;
+      emit(TagPayLoading());
+      final tag = await repository.cancelTag(tagId: tagId, reason: reason);
+      if (isClosed) return;
+      emit(TagLifecycleSuccess(
+        tag: tag,
+        message: 'Tag cancelled',
+        wasCancelled: true,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(TagPayError(_lifecycleMessage(e)));
+    }
+  }
+
+  /// Refuse a tag raised against this user. Tagged-user-only, pending-only.
+  Future<void> declineTag({
+    required String tagId,
+    String? reason,
+  }) async {
+    try {
+      if (isClosed) return;
+      emit(TagPayLoading());
+      final tag = await repository.declineTag(tagId: tagId, reason: reason);
+      if (isClosed) return;
+      emit(TagLifecycleSuccess(
+        tag: tag,
+        message: 'Tag declined',
+        wasCancelled: false,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(TagPayError(_lifecycleMessage(e)));
     }
   }
 
@@ -460,7 +580,8 @@ class TagPayCubit extends Cubit<TagPayState> {
     }
   }
 
-  Future<List<UserSearchResultEntity>> searchUsers(String query, {int limit = 10}) async {
+  Future<List<UserSearchResultEntity>> searchUsers(String query,
+      {int limit = 10}) async {
     final q = normalizeLazerVaultUserSearchQuery(query);
     if (q.length < 2) {
       return [];
@@ -470,7 +591,8 @@ class TagPayCubit extends Cubit<TagPayState> {
 
   /// Load home screen data: both incoming and outgoing tags for both tabs.
   /// Profile badge is read directly from ProfileCubit in the UI.
-  Future<void> loadHomeData({int page = 1, int limit = 20, String? status}) async {
+  Future<void> loadHomeData(
+      {int page = 1, int limit = 20, String? status}) async {
     try {
       if (isClosed) return;
       emit(TagPayLoading());
@@ -495,11 +617,15 @@ class TagPayCubit extends Cubit<TagPayState> {
       final outgoingResult = results[1];
 
       final incomingTags = isPendingFilter
-          ? incomingResult.tags.where((t) => t.status == TagStatus.pending).toList()
+          ? incomingResult.tags
+              .where((t) => t.status == TagStatus.pending)
+              .toList()
           : incomingResult.tags;
 
       final outgoingTags = isPendingFilter
-          ? outgoingResult.tags.where((t) => t.status == TagStatus.pending).toList()
+          ? outgoingResult.tags
+              .where((t) => t.status == TagStatus.pending)
+              .toList()
           : outgoingResult.tags;
 
       if (isClosed) return;
@@ -520,7 +646,8 @@ class TagPayCubit extends Cubit<TagPayState> {
   }
 
   /// Load incoming tags page (Received tab)
-  Future<void> loadIncomingTagsPage({int page = 1, int limit = 20, String? status}) async {
+  Future<void> loadIncomingTagsPage(
+      {int page = 1, int limit = 20, String? status}) async {
     try {
       if (isClosed) return;
       final currentState = state;
@@ -562,7 +689,8 @@ class TagPayCubit extends Cubit<TagPayState> {
   }
 
   /// Load outgoing tags page (Created tab)
-  Future<void> loadOutgoingTagsPage({int page = 1, int limit = 20, String? status}) async {
+  Future<void> loadOutgoingTagsPage(
+      {int page = 1, int limit = 20, String? status}) async {
     try {
       if (isClosed) return;
       final currentState = state;
@@ -601,6 +729,33 @@ class TagPayCubit extends Cubit<TagPayState> {
       if (isClosed) return;
       emit(TagPayError(_friendlyMessage(e)));
     }
+  }
+
+  /// Status codes whose server message is the ANSWER, not noise: "tag is
+  /// already paid", "only the tagger can cancel this tag", "reason is too
+  /// long". On cancel/decline that sentence is the entire point of the
+  /// response, so it must not be flattened into "Something went wrong".
+  static const Set<int> _lifecycleServerMessageCodes = {
+    3, // invalidArgument
+    5, // notFound
+    7, // permissionDenied
+    9, // failedPrecondition
+  };
+
+  /// Like [_friendlyMessage], but keeps the server's wording for the refusals
+  /// cancel/decline are expected to hit. [retryWithBackoff] has already turned
+  /// most GrpcErrors into a [GrpcException] by the time we see them, which is
+  /// why the plain mapper never reaches the message.
+  String _lifecycleMessage(dynamic error) {
+    if (error is GrpcError) {
+      return GrpcErrorHandler.userFriendlyMessage(error);
+    }
+    if (error is GrpcException &&
+        _lifecycleServerMessageCodes.contains(error.code) &&
+        error.message.isNotEmpty) {
+      return error.message;
+    }
+    return _friendlyMessage(error);
   }
 
   /// Convert any error to a user-friendly message.

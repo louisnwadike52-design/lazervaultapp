@@ -234,8 +234,7 @@ class _TagAmountScreenState extends State<TagAmountScreen> {
             children: [
               CircleAvatar(
                 radius: 12.r,
-                backgroundColor:
-                    const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                 child: Text(
                   user.initials,
                   style: GoogleFonts.inter(
@@ -277,55 +276,81 @@ class _TagAmountScreenState extends State<TagAmountScreen> {
           ),
         ),
         SizedBox(height: 12.h),
-        Wrap(
-          spacing: 12.w,
-          runSpacing: 12.h,
-          children: quickAmounts.map((amount) {
-            final amountStr = amount.toStringAsFixed(0);
-            final isSelected = _amountController.text == amountStr;
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _amountController.text = amountStr;
-                });
-              },
-              child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
-                      : const Color(0xFF1F1F1F),
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFF4E03D0)
-                        : const Color(0xFF2D2D2D),
-                    width: 1.5,
+        // A plain Wrap sized every chip to its own label, so "₦500 ₦1000
+        // ₦2000" and "₦5000 ₦10000" ended up as two rows of different widths
+        // with nothing lining up between them. Laying them on a fixed
+        // three-column grid puts the second row's chips directly under the
+        // first row's, whatever the currency's amounts happen to be.
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const columns = 3;
+            final gutter = 12.w;
+            final cellWidth =
+                (constraints.maxWidth - gutter * (columns - 1)) / columns;
+            return Wrap(
+              spacing: gutter,
+              runSpacing: gutter,
+              children: quickAmounts.map((amount) {
+                final amountStr = amount.toStringAsFixed(0);
+                final isSelected = _amountController.text == amountStr;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _amountController.text = amountStr;
+                    });
+                  },
+                  child: Container(
+                    width: cellWidth,
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
+                          : const Color(0xFF1F1F1F),
+                      border: Border.all(
+                        color: isSelected
+                            ? const Color(0xFF4E03D0)
+                            : const Color(0xFF2D2D2D),
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        '$symbol$amountStr',
+                        style: GoogleFonts.inter(
+                          color: isSelected
+                              ? const Color(0xFF4E03D0)
+                              : Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Text(
-                  '$symbol$amountStr',
-                  style: GoogleFonts.inter(
-                    color: isSelected
-                        ? const Color(0xFF4E03D0)
-                        : Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+                );
+              }).toList(),
             );
-          }).toList(),
+          },
         ),
         SizedBox(height: 12.h),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           decoration: BoxDecoration(
             color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(12.r),
+            // Matches the description box and the summary card, so the three
+            // stacked cards read as one family instead of one borderless odd
+            // one out.
+            border: Border.all(color: const Color(0xFF2D2D2D)),
           ),
           child: Row(
+            // The currency code and the amount are different sizes; centring
+            // them left "NGN" visibly low against the digits. Sitting them on
+            // a shared baseline is what makes them read as one figure.
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
                 _currency,
@@ -340,7 +365,7 @@ class _TagAmountScreenState extends State<TagAmountScreen> {
                 child: TextField(
                   controller: _amountController,
                   keyboardType:
-                      TextInputType.numberWithOptions(decimal: true),
+                      const TextInputType.numberWithOptions(decimal: true),
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 24.sp,
@@ -354,6 +379,11 @@ class _TagAmountScreenState extends State<TagAmountScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                     border: InputBorder.none,
+                    // Without this the field carries Material's default
+                    // content padding, which added invisible height on top of
+                    // the container's own and pushed the digits off-centre.
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
                   ),
                   onChanged: (_) => setState(() {}),
                 ),
@@ -383,10 +413,14 @@ class _TagAmountScreenState extends State<TagAmountScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: const Color(0xFF2D2D2D)),
           ),
           child: TextField(
             controller: _descriptionController,
             maxLines: 3,
+            // The server rejects anything longer, so stop it at the source
+            // rather than letting the user type a note that gets refused.
+            maxLength: 280,
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 16.sp,
@@ -398,6 +432,12 @@ class _TagAmountScreenState extends State<TagAmountScreen> {
                 fontSize: 16.sp,
               ),
               border: InputBorder.none,
+              counterText: '',
+              // Material's default content padding sat inside the container's
+              // own 16, so the hint started further in than every other field
+              // on the screen.
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
             ),
           ),
         ),

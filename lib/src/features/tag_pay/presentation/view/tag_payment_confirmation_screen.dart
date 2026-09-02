@@ -12,6 +12,7 @@ import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
+import '../widgets/tag_lifecycle_actions.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
@@ -38,6 +39,7 @@ class _TagPaymentConfirmationScreenState
 
   String? _selectedAccountId;
   bool _isProcessing = false;
+  bool _isDeclining = false;
 
   @override
   void initState() {
@@ -47,9 +49,30 @@ class _TagPaymentConfirmationScreenState
     if (accountState is! AccountCardsSummaryLoaded) {
       final userId = context.read<AuthenticationCubit>().userId ?? '';
       context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-        userId: userId,
-      );
+            userId: userId,
+          );
     }
+  }
+
+  /// Refuse a tag raised against this user. Tagged-user-only and pending-only,
+  /// both enforced server-side; no money moves, so there is no PIN gate.
+  Future<void> _declineTag() async {
+    if (_isDeclining || _isProcessing) return;
+
+    final reason = await showTagLifecycleConfirmDialog(
+      context: context,
+      action: TagLifecycleAction.decline,
+      tag: widget.tag,
+    );
+    // null means the user backed out; '' means they confirmed without a reason.
+    if (reason == null || !mounted) return;
+
+    setState(() => _isDeclining = true);
+
+    await context.read<TagPayCubit>().declineTag(
+          tagId: widget.tag.id,
+          reason: reason.isNotEmpty ? reason : null,
+        );
   }
 
   void _processPayment() async {
@@ -72,7 +95,8 @@ class _TagPaymentConfirmationScreenState
         orElse: () => throw Exception('Account not found'),
       );
 
-      if (selectedAccount.currency.toUpperCase() != widget.tag.currency.toUpperCase()) {
+      if (selectedAccount.currency.toUpperCase() !=
+          widget.tag.currency.toUpperCase()) {
         Get.snackbar(
           'Currency Mismatch',
           'Please select a ${widget.tag.currency} account',
@@ -112,7 +136,8 @@ class _TagPaymentConfirmationScreenState
       amount: widget.tag.amount,
       currency: widget.tag.currency,
       title: 'Confirm Payment',
-      message: 'Confirm tag payment of ${widget.tag.currency} ${widget.tag.amount.toStringAsFixed(2)}',
+      message:
+          'Confirm tag payment of ${widget.tag.currency} ${widget.tag.amount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -149,17 +174,48 @@ class _TagPaymentConfirmationScreenState
                 'tag': widget.tag,
               },
             );
-          } else if (state is TagPayError) {
+          } else if (state is TagLifecycleSuccess) {
             setState(() {
-              _isProcessing = false;
+              _isDeclining = false;
             });
+            // Back to the list, rebuilt from the server — the tag this screen
+            // was showing is now closed.
+            Get.offAllNamed(AppRoutes.tagPay);
             Get.snackbar(
-              'Payment Failed',
+              'Tag Declined',
               state.message,
-              backgroundColor: const Color(0xFFEF4444),
+              backgroundColor: const Color(0xFF10B981),
               colorText: Colors.white,
               snackPosition: SnackPosition.TOP,
-              duration: const Duration(seconds: 4),
+            );
+          } else if (state is TagPayError) {
+            // A failed DECLINE is not a failed payment: nothing was charged and
+            // the server's own wording ("tag is already paid") is the answer,
+            // so it must not be titled "Payment Failed".
+            final wasDeclining = _isDeclining;
+            setState(() {
+              _isProcessing = false;
+              _isDeclining = false;
+            });
+            // An indeterminate outcome is NOT a failure: the debit may already
+            // have settled. Saying "Payment Failed" over a message that tells
+            // the user it might have gone through is what makes them pay twice,
+            // so the title and the colour have to agree with the message. Amber
+            // + longer dwell, because the instruction here (check history) takes
+            // longer to read than "that didn't work".
+            Get.snackbar(
+              wasDeclining
+                  ? 'Could Not Decline'
+                  : (state.isIndeterminate
+                      ? 'Payment Status Unknown'
+                      : 'Payment Failed'),
+              state.message,
+              backgroundColor: state.isIndeterminate
+                  ? const Color(0xFFF59E0B)
+                  : const Color(0xFFEF4444),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+              duration: Duration(seconds: state.isIndeterminate ? 8 : 4),
             );
           }
         },
@@ -175,7 +231,7 @@ class _TagPaymentConfirmationScreenState
                 SizedBox(height: 24.h),
                 _buildAccountSelector(),
                 SizedBox(height: 32.h),
-                _buildPayButton(),
+                _buildActionButtons(),
               ],
             ),
           ),
@@ -282,7 +338,11 @@ class _TagPaymentConfirmationScreenState
           SizedBox(height: 24.h),
           Divider(color: const Color(0xFF2D2D2D), thickness: 1),
           SizedBox(height: 24.h),
-          _buildDetailRow('To', widget.tag.taggerName.isNotEmpty ? widget.tag.taggerName : 'Unknown'),
+          _buildDetailRow(
+              'To',
+              widget.tag.taggerName.isNotEmpty
+                  ? widget.tag.taggerName
+                  : 'Unknown'),
           SizedBox(height: 16.h),
           if (widget.tag.taggerTagPay.isNotEmpty)
             _buildDetailRow('Tag', '@${widget.tag.taggerTagPay}'),
@@ -343,7 +403,8 @@ class _TagPaymentConfirmationScreenState
   }
 
   /// Get eligible accounts sorted: sufficient balance first, then by balance descending
-  List<AccountSummaryEntity> _getEligibleAccounts(List<AccountSummaryEntity> all) {
+  List<AccountSummaryEntity> _getEligibleAccounts(
+      List<AccountSummaryEntity> all) {
     final eligible = all.where(_canPerformTagPay).toList();
     eligible.sort((a, b) {
       final aHas = a.availableBalance >= widget.tag.amount ? 1 : 0;
@@ -361,7 +422,10 @@ class _TagPaymentConfirmationScreenState
       VirtualAccountType.investment => Icons.trending_up,
       VirtualAccountType.family => Icons.family_restroom,
       VirtualAccountType.business => Icons.business,
-      VirtualAccountType.usd || VirtualAccountType.gbp || VirtualAccountType.eur => Icons.currency_exchange,
+      VirtualAccountType.usd ||
+      VirtualAccountType.gbp ||
+      VirtualAccountType.eur =>
+        Icons.currency_exchange,
       VirtualAccountType.main => Icons.account_balance_wallet,
     };
   }
@@ -404,7 +468,8 @@ class _TagPaymentConfirmationScreenState
               ),
               child: Column(
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: const Color(0xFFFB923C), size: 32.sp),
+                  Icon(Icons.warning_amber_rounded,
+                      color: const Color(0xFFFB923C), size: 32.sp),
                   SizedBox(height: 12.h),
                   Text(
                     'No eligible ${widget.tag.currency} account found',
@@ -432,14 +497,16 @@ class _TagPaymentConfirmationScreenState
             (a) => a.id.toString() == _selectedAccountId,
             orElse: () => eligibleAccounts.first,
           );
-          final hasEnough = displayAccount.availableBalance >= widget.tag.amount;
+          final hasEnough =
+              displayAccount.availableBalance >= widget.tag.amount;
           final accentColor = _getAccountColor(displayAccount.accountTypeEnum);
 
           return _buildPaymentCategoryCard(
             icon: _getAccountIcon(displayAccount.accountTypeEnum),
             iconColor: accentColor,
             title: 'Pay with ${displayAccount.accountType}',
-            subtitle: '${displayAccount.currency} ${displayAccount.availableBalance.toStringAsFixed(2)}',
+            subtitle:
+                '${displayAccount.currency} ${displayAccount.availableBalance.toStringAsFixed(2)}',
             insufficientFunds: !hasEnough,
             isSelected: true,
             onTap: () {},
@@ -533,12 +600,14 @@ class _TagPaymentConfirmationScreenState
                 decoration: BoxDecoration(
                   color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                   border: Border(
-                    top: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.2)),
+                    top: BorderSide(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.2)),
                   ),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.warning_amber_rounded, color: const Color(0xFFEF4444), size: 16.sp),
+                    Icon(Icons.warning_amber_rounded,
+                        color: const Color(0xFFEF4444), size: 16.sp),
                     SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
@@ -569,7 +638,8 @@ class _TagPaymentConfirmationScreenState
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.swap_horiz, color: const Color(0xFF4E03D0), size: 18.sp),
+                      Icon(Icons.swap_horiz,
+                          color: const Color(0xFF4E03D0), size: 18.sp),
                       SizedBox(width: 6.w),
                       Text(
                         'Change',
@@ -606,7 +676,8 @@ class _TagPaymentConfirmationScreenState
               icon: _getAccountIcon(account.accountTypeEnum),
               iconColor: accentColor,
               title: account.accountType,
-              subtitle: '${account.currency} ${account.availableBalance.toStringAsFixed(2)}',
+              subtitle:
+                  '${account.currency} ${account.availableBalance.toStringAsFixed(2)}',
               insufficientFunds: !hasEnough,
               isSelected: isSelected,
               onTap: () {
@@ -760,14 +831,40 @@ class _TagPaymentConfirmationScreenState
     );
   }
 
+  /// Decline + Pay, or a plain notice when the tag is no longer payable.
+  ///
+  /// A tag can close between the list being drawn and this screen opening (the
+  /// tagger cancels it, it lapses, or a transfer is already in flight), and
+  /// this screen used to offer Pay unconditionally.
+  Widget _buildActionButtons() {
+    if (!widget.tag.isPayable) {
+      return TagUnpayableNotice(tag: widget.tag);
+    }
+
+    return Row(
+      children: [
+        Expanded(
+          child: TagLifecycleButton(
+            action: TagLifecycleAction.decline,
+            isBusy: _isDeclining || _isProcessing,
+            onPressed: _declineTag,
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(flex: 2, child: _buildPayButton()),
+      ],
+    );
+  }
+
   Widget _buildPayButton() {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _isProcessing ? null : _processPayment,
+        onPressed: _isProcessing || _isDeclining ? null : _processPayment,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF10B981),
-          disabledBackgroundColor: const Color(0xFF10B981).withValues(alpha: 0.5),
+          disabledBackgroundColor:
+              const Color(0xFF10B981).withValues(alpha: 0.5),
           padding: EdgeInsets.symmetric(vertical: 16.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),

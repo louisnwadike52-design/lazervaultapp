@@ -124,14 +124,30 @@ class TagStatus extends $pb.ProtobufEnum {
   static const TagStatus TAG_STATUS_CANCELLED =
       TagStatus._(2, _omitEnumNames ? '' : 'TAG_STATUS_CANCELLED');
 
+  /// The states below existed in the database but had no wire representation,
+  /// so the handler's switch fell through to PENDING for all of them: a tag
+  /// refused by the payee, or one already lapsed, or one with a transfer in
+  /// flight, all rendered as payable in the app.
+  static const TagStatus TAG_STATUS_DECLINED =
+      TagStatus._(3, _omitEnumNames ? '' : 'TAG_STATUS_DECLINED');
+  static const TagStatus TAG_STATUS_EXPIRED =
+      TagStatus._(4, _omitEnumNames ? '' : 'TAG_STATUS_EXPIRED');
+
+  /// PAYING is transient: the tag is claimed and the transfer is in flight.
+  static const TagStatus TAG_STATUS_PAYING =
+      TagStatus._(5, _omitEnumNames ? '' : 'TAG_STATUS_PAYING');
+
   static const $core.List<TagStatus> values = <TagStatus>[
     TAG_STATUS_PENDING,
     TAG_STATUS_PAID,
     TAG_STATUS_CANCELLED,
+    TAG_STATUS_DECLINED,
+    TAG_STATUS_EXPIRED,
+    TAG_STATUS_PAYING,
   ];
 
   static final $core.List<TagStatus?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 2);
+      $pb.ProtobufEnum.$_initByValueList(values, 5);
   static TagStatus? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 

@@ -121,6 +121,24 @@ service TagPayService {
     };
   }
 
+  // Withdraw a tag you raised. Tagger-only, pending-only — a tag being paid
+  // (or already paid) must never be pulled from under the payer.
+  rpc CancelTag(CancelTagRequest) returns (TagLifecycleResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/tagpay/tag/cancel"
+      body: "*"
+    };
+  }
+
+  // Refuse a tag raised against you. Tagged-user-only, pending-only. Without
+  // this a tag was a permanent obligation the payee could not answer.
+  rpc DeclineTag(DeclineTagRequest) returns (TagLifecycleResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/tagpay/tag/decline"
+      body: "*"
+    };
+  }
+
   // Search users by username or name for tagging
   rpc SearchUsers(SearchUsersForTagRequest) returns (SearchUsersForTagResponse) {
     option (google.api.http) = {
@@ -202,6 +220,10 @@ message UserTag {
   TagStatus status = 11;
   google.protobuf.Timestamp created_at = 12;
   google.protobuf.Timestamp paid_at = 13;
+  // When the demand lapses. Null on tags created before tags had a lifetime.
+  google.protobuf.Timestamp expires_at = 14;
+  // When it was cancelled, declined or expired.
+  google.protobuf.Timestamp responded_at = 15;
 }
 
 // Enums
@@ -233,6 +255,14 @@ enum TagStatus {
   TAG_STATUS_PENDING = 0;
   TAG_STATUS_PAID = 1;
   TAG_STATUS_CANCELLED = 2;
+  // The states below existed in the database but had no wire representation,
+  // so the handler's switch fell through to PENDING for all of them: a tag
+  // refused by the payee, or one already lapsed, or one with a transfer in
+  // flight, all rendered as payable in the app.
+  TAG_STATUS_DECLINED = 3;
+  TAG_STATUS_EXPIRED = 4;
+  // PAYING is transient: the tag is claimed and the transfer is in flight.
+  TAG_STATUS_PAYING = 5;
 }
 
 
@@ -385,6 +415,26 @@ message PayTagRequest {
   string tag_id = 1;
   string source_account_id = 2;
   string transaction_pin = 3;
+}
+
+message CancelTagRequest {
+  string tag_id = 1;
+  // Optional free-text reason, surfaced to the tagged user.
+  string reason = 2;
+}
+
+message DeclineTagRequest {
+  string tag_id = 1;
+  string reason = 2;
+}
+
+// TagLifecycleResponse is the shared shape for the non-payment terminal
+// transitions (cancel / decline), carrying the resulting tag so the client can
+// re-render without a refetch.
+message TagLifecycleResponse {
+  bool success = 1;
+  string message = 2;
+  UserTag tag = 3;
 }
 
 message PayTagResponse {

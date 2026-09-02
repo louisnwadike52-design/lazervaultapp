@@ -12,7 +12,8 @@ class TagCreationReceiptScreen extends StatefulWidget {
   const TagCreationReceiptScreen({super.key});
 
   @override
-  State<TagCreationReceiptScreen> createState() => _TagCreationReceiptScreenState();
+  State<TagCreationReceiptScreen> createState() =>
+      _TagCreationReceiptScreenState();
 }
 
 class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
@@ -62,10 +63,18 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
     switch (tag.status) {
       case TagStatus.pending:
         return 'Pending Payment';
+      case TagStatus.paying:
+        return 'Payment Processing';
       case TagStatus.paid:
         return 'Paid';
       case TagStatus.cancelled:
         return 'Cancelled';
+      case TagStatus.declined:
+        return 'Declined';
+      case TagStatus.expired:
+        return 'Expired';
+      case TagStatus.unknown:
+        return 'Unknown';
     }
   }
 
@@ -73,7 +82,8 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
   Widget build(BuildContext context) {
     final args = Get.arguments as Map<String, dynamic>;
     final UserTagEntity tag = args['tag'];
-    final List<UserTagEntity> tags = args['tags'] as List<UserTagEntity>? ?? [tag];
+    final List<UserTagEntity> tags =
+        args['tags'] as List<UserTagEntity>? ?? [tag];
     final String recipientName = args['recipientName'];
     final String recipientTag = args['recipientTag'];
     final double amount = args['amount'];
@@ -117,7 +127,9 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
                     _buildSuccessIcon(),
                     SizedBox(height: 24.h),
                     Text(
-                      isBatch ? 'Tags Sent Successfully!' : 'Tag Sent Successfully!',
+                      isBatch
+                          ? 'Tags Sent Successfully!'
+                          : 'Tag Sent Successfully!',
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 24.sp,
@@ -137,12 +149,14 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 32.h),
-                    _buildAmountCard(currency, amount, isBatch ? tags.length : 1),
+                    _buildAmountCard(
+                        currency, amount, isBatch ? tags.length : 1),
                     SizedBox(height: 24.h),
                     if (isBatch)
                       _buildBatchTagDetails(tags, currency)
                     else
-                      _buildTagDetails(tag, recipientName, recipientTag, description),
+                      _buildTagDetails(
+                          tag, recipientName, recipientTag, description),
                   ],
                 ),
               ),
@@ -260,7 +274,9 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
                       ),
                       child: Center(
                         child: Text(
-                          t.taggedUserName.isNotEmpty ? t.taggedUserName[0].toUpperCase() : '?',
+                          t.taggedUserName.isNotEmpty
+                              ? t.taggedUserName[0].toUpperCase()
+                              : '?',
                           style: GoogleFonts.inter(
                             color: const Color(0xFF4E03D0),
                             fontSize: 14.sp,
@@ -275,7 +291,9 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            t.taggedUserName.isNotEmpty ? t.taggedUserName : 'Lazervault User',
+                            t.taggedUserName.isNotEmpty
+                                ? t.taggedUserName
+                                : 'Lazervault User',
                             style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 14.sp,
@@ -310,7 +328,8 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
     );
   }
 
-  Widget _buildTagDetails(UserTagEntity tag, String recipientName, String recipientTag, String description) {
+  Widget _buildTagDetails(UserTagEntity tag, String recipientName,
+      String recipientTag, String description) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -336,9 +355,11 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          _buildDetailRow('Tagged User', recipientName.isNotEmpty ? recipientName : 'Lazervault User'),
+          _buildDetailRow('Tagged User',
+              recipientName.isNotEmpty ? recipientName : 'Lazervault User'),
           SizedBox(height: 12.h),
-          _buildDetailRow('Tag', recipientTag.isNotEmpty ? '@$recipientTag' : '-'),
+          _buildDetailRow(
+              'Tag', recipientTag.isNotEmpty ? '@$recipientTag' : '-'),
           SizedBox(height: 12.h),
           _buildDetailRow('Status', _statusLabel(tag)),
           if (description.isNotEmpty) ...[
@@ -399,7 +420,8 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
     return '$hour:$minute';
   }
 
-  Widget _buildActions(BuildContext context, UserTagEntity tag, List<UserTagEntity> tags, bool isBatch) {
+  Widget _buildActions(BuildContext context, UserTagEntity tag,
+      List<UserTagEntity> tags, bool isBatch) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -432,7 +454,8 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF4E03D0),
-                    side: const BorderSide(color: Color(0xFF4E03D0), width: 1.5),
+                    side:
+                        const BorderSide(color: Color(0xFF4E03D0), width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),

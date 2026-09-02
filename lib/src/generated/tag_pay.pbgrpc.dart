@@ -157,6 +157,24 @@ class TagPayServiceClient extends $grpc.Client {
     return $createUnaryCall(_$payTag, request, options: options);
   }
 
+  /// Withdraw a tag you raised. Tagger-only, pending-only — a tag being paid
+  /// (or already paid) must never be pulled from under the payer.
+  $grpc.ResponseFuture<$0.TagLifecycleResponse> cancelTag(
+    $0.CancelTagRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$cancelTag, request, options: options);
+  }
+
+  /// Refuse a tag raised against you. Tagged-user-only, pending-only. Without
+  /// this a tag was a permanent obligation the payee could not answer.
+  $grpc.ResponseFuture<$0.TagLifecycleResponse> declineTag(
+    $0.DeclineTagRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$declineTag, request, options: options);
+  }
+
   /// Search users by username or name for tagging
   $grpc.ResponseFuture<$0.SearchUsersForTagResponse> searchUsers(
     $0.SearchUsersForTagRequest request, {
@@ -252,6 +270,16 @@ class TagPayServiceClient extends $grpc.Client {
           '/tag_pay.TagPayService/PayTag',
           ($0.PayTagRequest value) => value.writeToBuffer(),
           $0.PayTagResponse.fromBuffer);
+  static final _$cancelTag =
+      $grpc.ClientMethod<$0.CancelTagRequest, $0.TagLifecycleResponse>(
+          '/tag_pay.TagPayService/CancelTag',
+          ($0.CancelTagRequest value) => value.writeToBuffer(),
+          $0.TagLifecycleResponse.fromBuffer);
+  static final _$declineTag =
+      $grpc.ClientMethod<$0.DeclineTagRequest, $0.TagLifecycleResponse>(
+          '/tag_pay.TagPayService/DeclineTag',
+          ($0.DeclineTagRequest value) => value.writeToBuffer(),
+          $0.TagLifecycleResponse.fromBuffer);
   static final _$searchUsers = $grpc.ClientMethod<$0.SearchUsersForTagRequest,
           $0.SearchUsersForTagResponse>(
       '/tag_pay.TagPayService/SearchUsers',
@@ -392,6 +420,24 @@ abstract class TagPayServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.PayTagRequest.fromBuffer(value),
         ($0.PayTagResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.CancelTagRequest, $0.TagLifecycleResponse>(
+            'CancelTag',
+            cancelTag_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.CancelTagRequest.fromBuffer(value),
+            ($0.TagLifecycleResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.DeclineTagRequest, $0.TagLifecycleResponse>(
+            'DeclineTag',
+            declineTag_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.DeclineTagRequest.fromBuffer(value),
+            ($0.TagLifecycleResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.SearchUsersForTagRequest,
             $0.SearchUsersForTagResponse>(
         'SearchUsers',
@@ -542,6 +588,22 @@ abstract class TagPayServiceBase extends $grpc.Service {
 
   $async.Future<$0.PayTagResponse> payTag(
       $grpc.ServiceCall call, $0.PayTagRequest request);
+
+  $async.Future<$0.TagLifecycleResponse> cancelTag_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.CancelTagRequest> $request) async {
+    return cancelTag($call, await $request);
+  }
+
+  $async.Future<$0.TagLifecycleResponse> cancelTag(
+      $grpc.ServiceCall call, $0.CancelTagRequest request);
+
+  $async.Future<$0.TagLifecycleResponse> declineTag_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.DeclineTagRequest> $request) async {
+    return declineTag($call, await $request);
+  }
+
+  $async.Future<$0.TagLifecycleResponse> declineTag(
+      $grpc.ServiceCall call, $0.DeclineTagRequest request);
 
   $async.Future<$0.SearchUsersForTagResponse> searchUsers_Pre(
       $grpc.ServiceCall $call,

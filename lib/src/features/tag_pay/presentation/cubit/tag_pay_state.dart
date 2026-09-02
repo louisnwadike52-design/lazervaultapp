@@ -27,10 +27,20 @@ class TagPayError extends TagPayState {
   final String message;
   final bool isRetryable;
 
-  const TagPayError(this.message, {this.isRetryable = false});
+  /// The outcome is UNKNOWN, not failed — a money call we stopped waiting on
+  /// may still have settled server-side. UI must not label this a failure or
+  /// offer a bare retry: on RPCs with no client idempotency key, retrying an
+  /// unknown outcome is how a single payment becomes two.
+  final bool isIndeterminate;
+
+  const TagPayError(
+    this.message, {
+    this.isRetryable = false,
+    this.isIndeterminate = false,
+  });
 
   @override
-  List<Object?> get props => [message, isRetryable];
+  List<Object?> get props => [message, isRetryable, isIndeterminate];
 }
 
 /// Emitted when a TagPay operation fails specifically due to an incorrect PIN.
@@ -40,7 +50,8 @@ class TagPayPinFailure extends TagPayState {
   const TagPayPinFailure({required this.pinInfo});
 
   @override
-  List<Object?> get props => [pinInfo.isLocked, pinInfo.attemptsRemaining, pinInfo.message];
+  List<Object?> get props =>
+      [pinInfo.isLocked, pinInfo.attemptsRemaining, pinInfo.message];
 }
 
 class TagPayAvailabilityChecked extends TagPayState {
@@ -265,6 +276,24 @@ class TagPaidSuccess extends TagPayState {
   List<Object?> get props => [transaction, message];
 }
 
+/// A tag reached a terminal state WITHOUT money moving — the tagger cancelled
+/// it, or the tagged user declined it. Carries the server's resulting tag so
+/// the caller can re-render, and the action so the copy can differ.
+class TagLifecycleSuccess extends TagPayState {
+  final UserTagEntity tag;
+  final String message;
+  final bool wasCancelled;
+
+  const TagLifecycleSuccess({
+    required this.tag,
+    required this.message,
+    required this.wasCancelled,
+  });
+
+  @override
+  List<Object?> get props => [tag, message, wasCancelled];
+}
+
 /// State emitted when a tag creation is queued for offline retry.
 class TagCreationQueued extends TagPayState {
   final String taggedUserTagPay;
@@ -282,5 +311,6 @@ class TagCreationQueued extends TagPayState {
   });
 
   @override
-  List<Object?> get props => [taggedUserTagPay, amount, currency, message, mutationId];
+  List<Object?> get props =>
+      [taggedUserTagPay, amount, currency, message, mutationId];
 }

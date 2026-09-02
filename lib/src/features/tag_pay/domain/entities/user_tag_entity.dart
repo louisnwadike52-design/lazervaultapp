@@ -21,10 +21,24 @@ class TagsPageResult {
   });
 }
 
+/// The tag lifecycle as the backend actually stores it.
+///
+/// [declined], [expired] and [paying] existed in the database long before they
+/// had a wire representation, so the app used to render all three as [pending]
+/// — i.e. as payable. Only [pending] may ever offer a Pay button: [paying]
+/// means a transfer is already in flight, and the rest are terminal.
+///
+/// [unknown] is the landing pad for a status this build has not been taught
+/// yet. It is deliberately NOT payable: a tag whose state we cannot read is the
+/// last thing that should show a Pay button.
 enum TagStatus {
   pending,
+  paying,
   paid,
   cancelled,
+  declined,
+  expired,
+  unknown,
 }
 
 class UserTagEntity extends Equatable {
@@ -42,6 +56,12 @@ class UserTagEntity extends Equatable {
   final DateTime createdAt;
   final DateTime? paidAt;
 
+  /// When the demand lapses. Null on tags created before tags had a lifetime.
+  final DateTime? expiresAt;
+
+  /// When it was cancelled, declined or expired.
+  final DateTime? respondedAt;
+
   const UserTagEntity({
     required this.id,
     required this.taggerId,
@@ -56,6 +76,8 @@ class UserTagEntity extends Equatable {
     required this.status,
     required this.createdAt,
     this.paidAt,
+    this.expiresAt,
+    this.respondedAt,
   });
 
   String get formattedAmount =>
@@ -79,8 +101,38 @@ class UserTagEntity extends Equatable {
   }
 
   bool get isPending => status == TagStatus.pending;
+  bool get isPaying => status == TagStatus.paying;
   bool get isPaid => status == TagStatus.paid;
   bool get isCancelled => status == TagStatus.cancelled;
+  bool get isDeclined => status == TagStatus.declined;
+  bool get isExpired => status == TagStatus.expired;
+
+  /// The ONLY gate a Pay button may use. A [TagStatus.paying] tag already has a
+  /// transfer in flight and every other non-pending state is closed, so paying
+  /// from any of them is either a double debit or a payment against a demand
+  /// that no longer exists.
+  bool get isPayable => status == TagStatus.pending;
+
+  /// One source of truth for the status word every TagPay surface prints, so a
+  /// newly added state can never be labelled "PENDING" by an older branch.
+  String get statusLabel {
+    switch (status) {
+      case TagStatus.pending:
+        return 'PENDING';
+      case TagStatus.paying:
+        return 'PROCESSING';
+      case TagStatus.paid:
+        return 'PAID';
+      case TagStatus.cancelled:
+        return 'CANCELLED';
+      case TagStatus.declined:
+        return 'DECLINED';
+      case TagStatus.expired:
+        return 'EXPIRED';
+      case TagStatus.unknown:
+        return 'UNKNOWN';
+    }
+  }
 
   @override
   List<Object?> get props => [
@@ -97,5 +149,7 @@ class UserTagEntity extends Equatable {
         status,
         createdAt,
         paidAt,
+        expiresAt,
+        respondedAt,
       ];
 }

@@ -79,13 +79,17 @@ const TagStatus$json = {
     {'1': 'TAG_STATUS_PENDING', '2': 0},
     {'1': 'TAG_STATUS_PAID', '2': 1},
     {'1': 'TAG_STATUS_CANCELLED', '2': 2},
+    {'1': 'TAG_STATUS_DECLINED', '2': 3},
+    {'1': 'TAG_STATUS_EXPIRED', '2': 4},
+    {'1': 'TAG_STATUS_PAYING', '2': 5},
   ],
 };
 
 /// Descriptor for `TagStatus`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List tagStatusDescriptor = $convert.base64Decode(
     'CglUYWdTdGF0dXMSFgoSVEFHX1NUQVRVU19QRU5ESU5HEAASEwoPVEFHX1NUQVRVU19QQUlEEA'
-    'ESGAoUVEFHX1NUQVRVU19DQU5DRUxMRUQQAg==');
+    'ESGAoUVEFHX1NUQVRVU19DQU5DRUxMRUQQAhIXChNUQUdfU1RBVFVTX0RFQ0xJTkVEEAMSFgoS'
+    'VEFHX1NUQVRVU19FWFBJUkVEEAQSFQoRVEFHX1NUQVRVU19QQVlJTkcQBQ==');
 
 @$core.Deprecated('Use tagPayDescriptor instead')
 const TagPay$json = {
@@ -296,6 +300,22 @@ const UserTag$json = {
       '6': '.google.protobuf.Timestamp',
       '10': 'paidAt'
     },
+    {
+      '1': 'expires_at',
+      '3': 14,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'expiresAt'
+    },
+    {
+      '1': 'responded_at',
+      '3': 15,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'respondedAt'
+    },
   ],
 };
 
@@ -309,7 +329,10 @@ final $typed_data.Uint8List userTagDescriptor = $convert.base64Decode(
     'oKCGN1cnJlbmN5GAkgASgJUghjdXJyZW5jeRIgCgtkZXNjcmlwdGlvbhgKIAEoCVILZGVzY3Jp'
     'cHRpb24SKgoGc3RhdHVzGAsgASgOMhIudGFnX3BheS5UYWdTdGF0dXNSBnN0YXR1cxI5Cgpjcm'
     'VhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJY3JlYXRlZEF0EjMK'
-    'B3BhaWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgZwYWlkQXQ=');
+    'B3BhaWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgZwYWlkQXQSOQoKZX'
+    'hwaXJlc19hdBgOIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCWV4cGlyZXNBdBI9'
+    'CgxyZXNwb25kZWRfYXQYDyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgtyZXNwb2'
+    '5kZWRBdA==');
 
 @$core.Deprecated('Use createTagPayRequestDescriptor instead')
 const CreateTagPayRequest$json = {
@@ -795,6 +818,49 @@ final $typed_data.Uint8List payTagRequestDescriptor = $convert.base64Decode(
     'Cg1QYXlUYWdSZXF1ZXN0EhUKBnRhZ19pZBgBIAEoCVIFdGFnSWQSKgoRc291cmNlX2FjY291bn'
     'RfaWQYAiABKAlSD3NvdXJjZUFjY291bnRJZBInCg90cmFuc2FjdGlvbl9waW4YAyABKAlSDnRy'
     'YW5zYWN0aW9uUGlu');
+
+@$core.Deprecated('Use cancelTagRequestDescriptor instead')
+const CancelTagRequest$json = {
+  '1': 'CancelTagRequest',
+  '2': [
+    {'1': 'tag_id', '3': 1, '4': 1, '5': 9, '10': 'tagId'},
+    {'1': 'reason', '3': 2, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `CancelTagRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cancelTagRequestDescriptor = $convert.base64Decode(
+    'ChBDYW5jZWxUYWdSZXF1ZXN0EhUKBnRhZ19pZBgBIAEoCVIFdGFnSWQSFgoGcmVhc29uGAIgAS'
+    'gJUgZyZWFzb24=');
+
+@$core.Deprecated('Use declineTagRequestDescriptor instead')
+const DeclineTagRequest$json = {
+  '1': 'DeclineTagRequest',
+  '2': [
+    {'1': 'tag_id', '3': 1, '4': 1, '5': 9, '10': 'tagId'},
+    {'1': 'reason', '3': 2, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `DeclineTagRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List declineTagRequestDescriptor = $convert.base64Decode(
+    'ChFEZWNsaW5lVGFnUmVxdWVzdBIVCgZ0YWdfaWQYASABKAlSBXRhZ0lkEhYKBnJlYXNvbhgCIA'
+    'EoCVIGcmVhc29u');
+
+@$core.Deprecated('Use tagLifecycleResponseDescriptor instead')
+const TagLifecycleResponse$json = {
+  '1': 'TagLifecycleResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'tag', '3': 3, '4': 1, '5': 11, '6': '.tag_pay.UserTag', '10': 'tag'},
+  ],
+};
+
+/// Descriptor for `TagLifecycleResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List tagLifecycleResponseDescriptor = $convert.base64Decode(
+    'ChRUYWdMaWZlY3ljbGVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB21lc3'
+    'NhZ2UYAiABKAlSB21lc3NhZ2USIgoDdGFnGAMgASgLMhAudGFnX3BheS5Vc2VyVGFnUgN0YWc=');
 
 @$core.Deprecated('Use payTagResponseDescriptor instead')
 const PayTagResponse$json = {

@@ -80,8 +80,7 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
         final request = pb.CheckTagPayAvailabilityRequest()..tagPay = tagPay;
         final options = await grpcClient.callOptions;
 
-        final response =
-            await grpcClient.tagPayClient.checkTagPayAvailability(
+        final response = await grpcClient.tagPayClient.checkTagPayAvailability(
           request,
           options: options,
         );
@@ -124,7 +123,14 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
     required String sourceAccountId,
     required String transactionPin,
   }) async {
+    // maxRetries: 0 — this MOVES MONEY. SendMoneyTagPayRequest carries no
+    // client idempotency key, so a retry after a timeout is a second, distinct
+    // debit request racing a first attempt that may already be settling. The
+    // retry cannot even succeed: the transaction PIN is single-use, so every
+    // attempt after the first dies at the PIN gate and only replaces the real
+    // outcome with a confusing error. Let the user decide, from history.
     return retryWithBackoff(
+      maxRetries: 0,
       operation: () async {
         final request = pb.SendMoneyTagPayRequest()
           ..receiverTagPay = receiverTagPay
@@ -215,7 +221,12 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
     required String sourceAccountId,
     required String transactionPin,
   }) async {
+    // maxRetries: 0 — accepting a money request debits the accepter, so the
+    // same invariant as sendMoney/payTag applies: no idempotency key on the
+    // wire and a single-use PIN mean an automatic retry can only duplicate or
+    // mislead, never recover.
     return retryWithBackoff(
+      maxRetries: 0,
       operation: () async {
         final request = pb.AcceptMoneyRequestRequest()
           ..requestId = requestId
@@ -275,8 +286,7 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
           ..incoming = incoming;
 
         final options = await grpcClient.callOptions;
-        final response =
-            await grpcClient.tagPayClient.getPendingMoneyRequests(
+        final response = await grpcClient.tagPayClient.getPendingMoneyRequests(
           request,
           options: options,
         );
@@ -321,13 +331,14 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
       receiverName: proto.receiverName,
       amount: proto.amount,
       currency: proto.currency,
-      description:
-          proto.description.isNotEmpty ? proto.description : null,
+      description: proto.description.isNotEmpty ? proto.description : null,
       status: _transactionStatusFromProto(proto.status),
       type: _transactionTypeFromProto(proto.type),
       referenceNumber: proto.referenceNumber,
       createdAt: proto.createdAt.toDateTime().toLocal(),
-      completedAt: proto.hasCompletedAt() ? proto.completedAt.toDateTime().toLocal() : null,
+      completedAt: proto.hasCompletedAt()
+          ? proto.completedAt.toDateTime().toLocal()
+          : null,
     );
   }
 
@@ -380,15 +391,15 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
         return TagPayTransactionType.receive;
       case pb.TagPayTransactionType.TAG_PAY_TRANSACTION_TYPE_REQUEST:
         return TagPayTransactionType.request;
-      case pb.TagPayTransactionType
-            .TAG_PAY_TRANSACTION_TYPE_REQUEST_FULFILLED:
+      case pb.TagPayTransactionType.TAG_PAY_TRANSACTION_TYPE_REQUEST_FULFILLED:
         return TagPayTransactionType.requestFulfilled;
       default:
         return TagPayTransactionType.send;
     }
   }
 
-  MoneyRequestStatus _moneyRequestStatusFromProto(pb.MoneyRequestStatus status) {
+  MoneyRequestStatus _moneyRequestStatusFromProto(
+      pb.MoneyRequestStatus status) {
     switch (status) {
       case pb.MoneyRequestStatus.MONEY_REQUEST_STATUS_PENDING:
         return MoneyRequestStatus.pending;
@@ -444,6 +455,12 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
         return pb.TagStatus.TAG_STATUS_PAID;
       case 'cancelled':
         return pb.TagStatus.TAG_STATUS_CANCELLED;
+      case 'declined':
+        return pb.TagStatus.TAG_STATUS_DECLINED;
+      case 'expired':
+        return pb.TagStatus.TAG_STATUS_EXPIRED;
+      case 'paying':
+        return pb.TagStatus.TAG_STATUS_PAYING;
       default:
         // null, 'all', 'pending' → don't set (default = all from backend)
         return null;
@@ -484,7 +501,8 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
             options: options,
           );
 
-          print('[TagPayRepository] Retrieved ${response.tags.length} outgoing tags');
+          print(
+              '[TagPayRepository] Retrieved ${response.tags.length} outgoing tags');
           return TagsPageResult(
             tags: response.tags.map((tag) => _userTagFromProto(tag)).toList(),
             total: response.total,
@@ -493,13 +511,15 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
           );
         } on GrpcError catch (e) {
           if (e.code == StatusCode.unauthenticated) {
-            print('[TagPayRepository] Token expired in getMyOutgoingTags - triggering refresh');
+            print(
+                '[TagPayRepository] Token expired in getMyOutgoingTags - triggering refresh');
             rethrow;
           } else if (e.code == StatusCode.notFound) {
             print('[TagPayRepository] User not found: ${e.message}');
             rethrow;
           } else {
-            print('[TagPayRepository] Error in getMyOutgoingTags: ${e.code} - ${e.message}');
+            print(
+                '[TagPayRepository] Error in getMyOutgoingTags: ${e.code} - ${e.message}');
             rethrow;
           }
         }
@@ -531,7 +551,8 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
             options: options,
           );
 
-          print('[TagPayRepository] Retrieved ${response.tags.length} incoming tags');
+          print(
+              '[TagPayRepository] Retrieved ${response.tags.length} incoming tags');
           return TagsPageResult(
             tags: response.tags.map((tag) => _userTagFromProto(tag)).toList(),
             total: response.total,
@@ -540,13 +561,15 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
           );
         } on GrpcError catch (e) {
           if (e.code == StatusCode.unauthenticated) {
-            print('[TagPayRepository] Token expired in getMyIncomingTags - triggering refresh');
+            print(
+                '[TagPayRepository] Token expired in getMyIncomingTags - triggering refresh');
             rethrow;
           } else if (e.code == StatusCode.notFound) {
             print('[TagPayRepository] User not found: ${e.message}');
             rethrow;
           } else {
-            print('[TagPayRepository] Error in getMyIncomingTags: ${e.code} - ${e.message}');
+            print(
+                '[TagPayRepository] Error in getMyIncomingTags: ${e.code} - ${e.message}');
             rethrow;
           }
         }
@@ -560,9 +583,19 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
     required String sourceAccountId,
     String transactionPin = '',
   }) async {
+    // maxRetries: 0 — this MOVES MONEY. PayTagRequest carries no client
+    // idempotency key, so a retry after a timeout is a fresh debit request
+    // racing a first attempt that may already have settled server-side; the
+    // user would be told the payment failed and be invited to pay again. The
+    // retry is useless anyway — the transaction PIN is single-use, so attempt
+    // two dies at the PIN gate and replaces the true outcome with noise.
+    // A payment is user-retryable by design, from history, once they can see
+    // whether the first one landed.
     return retryWithBackoff(
+      maxRetries: 0,
       operation: () async {
-        print('🌐 [TagPayRepository] Calling backend payTag - tagId: $tagId, accountId: $sourceAccountId');
+        print(
+            '🌐 [TagPayRepository] Calling backend payTag - tagId: $tagId, accountId: $sourceAccountId');
         final request = pb.PayTagRequest()
           ..tagId = tagId
           ..sourceAccountId = sourceAccountId
@@ -574,16 +607,81 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
           options: options,
         );
 
-        print('📡 [TagPayRepository] Backend response - success: ${response.success}, message: ${response.message}');
+        print(
+            '📡 [TagPayRepository] Backend response - success: ${response.success}, message: ${response.message}');
 
         if (!response.success) {
-          print('❌ [TagPayRepository] Backend returned error: ${response.message}');
+          print(
+              '❌ [TagPayRepository] Backend returned error: ${response.message}');
           throw Exception(response.message);
         }
 
         final transaction = _transactionFromProto(response.transaction);
-        print('✅ [TagPayRepository] Transaction created - ID: ${transaction.id}');
+        print(
+            '✅ [TagPayRepository] Transaction created - ID: ${transaction.id}');
         return transaction;
+      },
+    );
+  }
+
+  @override
+  Future<UserTagEntity> cancelTag({
+    required String tagId,
+    String? reason,
+  }) async {
+    // Ordinary retry policy, unlike the money RPCs above: cancel moves no
+    // money and is idempotent in effect — a replayed call after a timeout just
+    // comes back FailedPrecondition ("tag is already cancelled"), never a
+    // second debit.
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.CancelTagRequest()..tagId = tagId;
+
+        if (reason != null) {
+          request.reason = reason;
+        }
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.tagPayClient.cancelTag(
+          request,
+          options: options,
+        );
+
+        if (!response.success) {
+          throw Exception(response.message);
+        }
+
+        return _userTagFromProto(response.tag);
+      },
+    );
+  }
+
+  @override
+  Future<UserTagEntity> declineTag({
+    required String tagId,
+    String? reason,
+  }) async {
+    // Same reasoning as cancelTag: no money moves, so the normal retry policy
+    // applies.
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.DeclineTagRequest()..tagId = tagId;
+
+        if (reason != null) {
+          request.reason = reason;
+        }
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.tagPayClient.declineTag(
+          request,
+          options: options,
+        );
+
+        if (!response.success) {
+          throw Exception(response.message);
+        }
+
+        return _userTagFromProto(response.tag);
       },
     );
   }
@@ -592,7 +690,8 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
   Future<List<UserSearchResultEntity>> searchUsers({
     required String query,
     int limit = 10,
-    String searchType = '', // Empty for unified search across username, name, phone, email
+    String searchType =
+        '', // Empty for unified search across username, name, phone, email
   }) async {
     // User search is decoupled from TagPay - use AuthService instead
     // This follows proper architecture where user search is handled by UserService/AuthService
@@ -603,14 +702,16 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
           ..limit = limit
           ..searchType = searchType;
 
-        print('[TagPayRepository] searchUsers: query="$query", limit=$limit, searchType="$searchType"');
+        print(
+            '[TagPayRepository] searchUsers: query="$query", limit=$limit, searchType="$searchType"');
         final options = await callOptionsHelper.withAuth();
         final response = await authServiceClient.searchUsers(
           request,
           options: options,
         );
 
-        print('[TagPayRepository] searchUsers response: success=${response.success}, msg="${response.msg}", users=${response.users.length}');
+        print(
+            '[TagPayRepository] searchUsers response: success=${response.success}, msg="${response.msg}", users=${response.users.length}');
         if (!response.success) {
           print('[TagPayRepository] User search failed: ${response.msg}');
           return [];
@@ -625,7 +726,8 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
                   email: user.email,
                   phoneNumber: user.phoneNumber,
                   profilePicture: user.profilePicture,
-                  primaryAccountId: user.hasPrimaryAccountId() ? user.primaryAccountId : null,
+                  primaryAccountId:
+                      user.hasPrimaryAccountId() ? user.primaryAccountId : null,
                 ))
             .toList();
       },
@@ -680,6 +782,10 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
       status: _tagStatusFromProto(tag.status),
       createdAt: tag.createdAt.toDateTime().toLocal(),
       paidAt: tag.hasPaidAt() ? tag.paidAt.toDateTime().toLocal() : null,
+      expiresAt:
+          tag.hasExpiresAt() ? tag.expiresAt.toDateTime().toLocal() : null,
+      respondedAt:
+          tag.hasRespondedAt() ? tag.respondedAt.toDateTime().toLocal() : null,
     );
   }
 
@@ -687,12 +793,21 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
     switch (status) {
       case pb.TagStatus.TAG_STATUS_PENDING:
         return TagStatus.pending;
+      case pb.TagStatus.TAG_STATUS_PAYING:
+        return TagStatus.paying;
       case pb.TagStatus.TAG_STATUS_PAID:
         return TagStatus.paid;
       case pb.TagStatus.TAG_STATUS_CANCELLED:
         return TagStatus.cancelled;
+      case pb.TagStatus.TAG_STATUS_DECLINED:
+        return TagStatus.declined;
+      case pb.TagStatus.TAG_STATUS_EXPIRED:
+        return TagStatus.expired;
       default:
-        return TagStatus.pending;
+        // NOT pending. This default used to swallow declined/expired/paying and
+        // hand them all back as payable; a status this build cannot read must
+        // fail closed, never into the one state that offers a Pay button.
+        return TagStatus.unknown;
     }
   }
 }

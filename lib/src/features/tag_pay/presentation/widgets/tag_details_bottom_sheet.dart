@@ -8,6 +8,7 @@ import '../../domain/entities/user_search_result_entity.dart';
 import '../../services/tag_pay_pdf_service.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'tag_lifecycle_actions.dart';
 
 class TagDetailsBottomSheet extends StatefulWidget {
   final UserTagEntity tag;
@@ -27,11 +28,20 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
   bool _isDownloadingInvoice = false;
   bool _isDownloadingReceipt = false;
 
+  /// Leave the sheet, telling the list behind it that this tag changed.
+  void _closeAfterLifecycleChange() => Navigator.pop(context, true);
+
+  void _goToPayment() {
+    Navigator.pop(context);
+    Get.toNamed(AppRoutes.tagPaymentConfirmation, arguments: widget.tag);
+  }
+
   /// Repeat/recreate this tag with the same recipient and amount
   void _repeatTag() {
     // Parse the name into first/last name
     final nameParts = widget.tag.taggedUserName.split(' ');
-    final firstName = nameParts.isNotEmpty ? nameParts.first : widget.tag.taggedUserTagPay;
+    final firstName =
+        nameParts.isNotEmpty ? nameParts.first : widget.tag.taggedUserTagPay;
     final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
 
     // Create a UserSearchResultEntity from the tag's target user info
@@ -140,32 +150,23 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final isPending = widget.tag.status == TagStatus.pending;
     final isPaid = widget.tag.status == TagStatus.paid;
-    final isCancelled = widget.tag.status == TagStatus.cancelled;
 
     // Get display names with fallbacks
-    final otherName = widget.isOutgoing ? widget.tag.taggedUserName : widget.tag.taggerName;
-    final otherTag = widget.isOutgoing ? widget.tag.taggedUserTagPay : widget.tag.taggerTagPay;
+    final otherName =
+        widget.isOutgoing ? widget.tag.taggedUserName : widget.tag.taggerName;
+    final otherTag = widget.isOutgoing
+        ? widget.tag.taggedUserTagPay
+        : widget.tag.taggerTagPay;
     final displayName = otherName.isNotEmpty ? otherName : 'Lazervault User';
     final displayTag = otherTag.isNotEmpty ? '@$otherTag' : '';
 
-    Color statusColor;
-    IconData statusIcon;
-    String statusText;
-    if (isPaid) {
-      statusColor = const Color(0xFF10B981);
-      statusIcon = Icons.check_circle;
-      statusText = 'PAID';
-    } else if (isCancelled) {
-      statusColor = const Color(0xFFEF4444);
-      statusIcon = Icons.cancel;
-      statusText = 'CANCELLED';
-    } else {
-      statusColor = const Color(0xFFFB923C);
-      statusIcon = Icons.access_time;
-      statusText = 'PENDING';
-    }
+    // Chip driven by the entity's single status source, so a state this branch
+    // has not been taught can never be dressed up as PENDING. The old
+    // if/else-if/else did exactly that: declined, expired and paying all landed
+    // in the final `else` and were shown to the payer as an open demand.
+    final (statusColor, statusIcon) = tagStatusChipStyle(widget.tag.status);
+    final statusText = widget.tag.statusLabel;
 
     return Container(
       decoration: BoxDecoration(
@@ -249,7 +250,8 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
           _buildDetailRow(
             'Amount',
             widget.tag.formattedAmount,
-            valueColor: isPaid ? const Color(0xFF10B981) : const Color(0xFFFB923C),
+            valueColor:
+                isPaid ? const Color(0xFF10B981) : const Color(0xFFFB923C),
             isBold: true,
           ),
           if (widget.tag.description.isNotEmpty) ...[
@@ -268,38 +270,41 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
               DateFormat('MMM dd, yyyy - hh:mm a').format(widget.tag.paidAt!),
             ),
           ],
+          // Tags now lapse; say when, so a closed tag reads as closed and a
+          // live one shows its remaining life instead of looking open forever.
+          if (!isPaid && widget.tag.respondedAt != null) ...[
+            SizedBox(height: 16.h),
+            _buildDetailRow(
+              widget.tag.isExpired ? 'Expired At' : 'Closed At',
+              DateFormat('MMM dd, yyyy - hh:mm a')
+                  .format(widget.tag.respondedAt!),
+            ),
+          ] else if (widget.tag.isPayable && widget.tag.expiresAt != null) ...[
+            SizedBox(height: 16.h),
+            _buildDetailRow(
+              'Expires',
+              DateFormat('MMM dd, yyyy - hh:mm a')
+                  .format(widget.tag.expiresAt!),
+            ),
+          ],
           SizedBox(height: 24.h),
 
-          // Pay Now Button (for incoming pending tags)
-          if (!widget.isOutgoing && isPending) ...[
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Get.toNamed(
-                    AppRoutes.tagPaymentConfirmation,
-                    arguments: widget.tag,
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
-                  padding: EdgeInsets.symmetric(vertical: 16.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  elevation: 0,
-                ),
-                icon: Icon(Icons.payment, size: 20.sp, color: Colors.white),
-                label: Text(
-                  'Pay Now',
-                  style: GoogleFonts.inter(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+          // A transfer is already in flight — no Pay button, no Decline, just
+          // say so. This tag used to render as PENDING with a live Pay button.
+          if (widget.tag.isPaying) ...[
+            TagUnpayableNotice(tag: widget.tag),
+            SizedBox(height: 12.h),
+          ],
+
+          // Decline + Pay Now (incoming) or Cancel Tag (outgoing). Renders
+          // nothing once the tag stops being pending, so paying / declined /
+          // expired / cancelled offer no Pay button and nothing to withdraw.
+          if (widget.tag.isPending) ...[
+            TagLifecycleActionRow(
+              tag: widget.tag,
+              isOutgoing: widget.isOutgoing,
+              onPay: widget.isOutgoing ? null : _goToPayment,
+              onClosed: (_) => _closeAfterLifecycleChange(),
             ),
             SizedBox(height: 12.h),
           ],
@@ -313,7 +318,8 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
                   onPressed: _isDownloadingInvoice ? null : _downloadInvoice,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side: const BorderSide(color: Color(0xFF60A5FA), width: 1.5),
+                    side:
+                        const BorderSide(color: Color(0xFF60A5FA), width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -321,7 +327,8 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
                   ),
                   icon: _isDownloadingInvoice
                       ? LazerVaultLoader(size: 18)
-                      : Icon(Icons.description_outlined, size: 18.sp, color: const Color(0xFF60A5FA)),
+                      : Icon(Icons.description_outlined,
+                          size: 18.sp, color: const Color(0xFF60A5FA)),
                   label: Text(
                     'Invoice',
                     style: GoogleFonts.inter(
@@ -336,11 +343,15 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
               // Download Receipt Button (only enabled for paid tags)
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: isPaid && !_isDownloadingReceipt ? _downloadReceipt : null,
+                  onPressed: isPaid && !_isDownloadingReceipt
+                      ? _downloadReceipt
+                      : null,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
                     side: BorderSide(
-                      color: isPaid ? const Color(0xFF34D399) : const Color(0xFF6B7280),
+                      color: isPaid
+                          ? const Color(0xFF34D399)
+                          : const Color(0xFF6B7280),
                       width: 1.5,
                     ),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -353,7 +364,9 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
                       : Icon(
                           Icons.receipt_long_outlined,
                           size: 18.sp,
-                          color: isPaid ? const Color(0xFF34D399) : const Color(0xFF6B7280),
+                          color: isPaid
+                              ? const Color(0xFF34D399)
+                              : const Color(0xFF6B7280),
                         ),
                   label: Text(
                     'Receipt',
@@ -396,7 +409,8 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
-                icon: Icon(Icons.repeat, size: 18.sp, color: const Color(0xFFA78BFA)),
+                icon: Icon(Icons.repeat,
+                    size: 18.sp, color: const Color(0xFFA78BFA)),
                 label: Text(
                   'Repeat Tag',
                   style: GoogleFonts.inter(
