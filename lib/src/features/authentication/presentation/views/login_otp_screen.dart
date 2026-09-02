@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/server_status_service.dart';
@@ -12,6 +13,7 @@ import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/src/features/authentication/presentation/widgets/phone_flow_scaffold.dart';
 
 /// Adaptive step-up login OTP screen. Shown when ANY login flow (email/password,
 /// email/passcode, or phone+passcode incl. switch-user) reports that the risk
@@ -67,14 +69,17 @@ class _LoginOtpView extends StatefulWidget {
 }
 
 class _LoginOtpViewState extends State<_LoginOtpView> {
-  // Dark surface + brand accent. #4E03D0 fails contrast on #0A0A0A, so we use the
-  // codebase's dark-mode brand substitute #A78BFA (see invoice_theme_colors).
-  static const _background = Color(0xFF0A0A0A);
-  static const _card = Color(0xFF1F1F1F);
-  static const _divider = Color(0xFF2D2D2D);
-  static const _textSecondary = Color(0xFF9CA3AF);
-  static const _accent = Color(0xFFA78BFA); // brand #4E03D0 → dark-safe tint
-  static const _errorColor = Color(0xFFEF4444);
+  // This screen sits INSIDE the phone-login flow — it is the step immediately
+  // after "Log in" — so it wears that flow's chrome (PhoneFlowScaffold: curved
+  // background, back button, title/subtitle, pill CTA) rather than the dark
+  // one-off palette it used to carry. Colours below mirror PhoneFlowScaffold's
+  // light body so the two screens read as one journey.
+  static const _brandPurple = Color(0xFF4834D4);
+  static const _ink = Color(0xFF262626);
+  static const _textSecondary = Color(0xFF6B7280);
+  static const _field = Color(0xFFF3F4F6); // filled input on the light body
+  static const _divider = Color(0xFFE5E7EB);
+  static const _errorColor = Color(0xFFDC2626); // AA on a light background
 
   // Server-side OTP TTL is 10 minutes (auth-service loginOTPTTL). Mirror it so the
   // user sees an accurate countdown and we can flip to an "expired" state that
@@ -207,7 +212,7 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
       'Get a new code',
       'Sign in again to have a fresh code sent to your ${widget.method == 'sms' ? 'phone' : 'email'}.',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: _card,
+      backgroundColor: _ink,
       colorText: Colors.white,
       margin: const EdgeInsets.all(12),
       duration: const Duration(seconds: 3),
@@ -242,94 +247,119 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   @override
   Widget build(BuildContext context) {
     final channel = widget.method == 'sms' ? 'SMS' : 'email';
-    return Scaffold(
-      backgroundColor: _background,
-      appBar: AppBar(
-        backgroundColor: _background,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('Verify it\'s you',
-            style: TextStyle(color: Colors.white)),
-      ),
-      body: BlocListener<AuthenticationCubit, AuthenticationState>(
-        listener: (context, state) {
-          if (state is AuthenticationSuccess) {
-            _ticker?.cancel();
-            try {
-              context.read<ProfileCubit>().getUserProfile();
-            } catch (_) {/* dashboard loads it */}
-            Get.offAllNamed(AppRoutes.dashboard);
-          } else if (state is AuthenticationError) {
-            _handleFailure(state.message);
-          } else if (state is AuthenticationFailure) {
-            _handleFailure(state.message);
-          }
-        },
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 12),
-                const Icon(Icons.shield_outlined, color: _accent, size: 40),
-                const SizedBox(height: 16),
-                const Text(
-                  'New sign-in detected',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'For your security, we sent a 6-digit code to your $channel '
-                  '(${widget.destination}). Enter it to continue.',
-                  style: const TextStyle(
-                      color: _textSecondary, fontSize: 14, height: 1.4),
-                ),
-                const SizedBox(height: 28),
-                _buildBoxes(),
-                const SizedBox(height: 12),
-                _buildStatusRow(),
-                const SizedBox(height: 20),
-                _buildVerifyButton(),
-                const SizedBox(height: 8),
-                Center(
-                  child: TextButton(
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    child: const Text('Use a different account',
-                        style: TextStyle(color: _textSecondary)),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Row(
-                  children: [
-                    Icon(Icons.error_outline, color: _errorColor, size: 16),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        "Didn't request this? Don't share the code — close the app and change your password.",
-                        style: TextStyle(color: _textSecondary, fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+    return BlocListener<AuthenticationCubit, AuthenticationState>(
+      listener: (context, state) {
+        if (state is AuthenticationSuccess) {
+          _ticker?.cancel();
+          try {
+            context.read<ProfileCubit>().getUserProfile();
+          } catch (_) {/* dashboard loads it */}
+          Get.offAllNamed(AppRoutes.dashboard);
+        } else if (state is AuthenticationError) {
+          _handleFailure(state.message);
+        } else if (state is AuthenticationFailure) {
+          _handleFailure(state.message);
+        }
+      },
+      child: PhoneFlowScaffold(
+        title: 'Verify it\'s you',
+        subtitle: 'We sent a 6-digit code to your $channel '
+            '(${widget.destination}). Enter it to continue.',
+        showHeadingLogo: false,
+        primaryLabel: _expired ? 'Code expired' : 'Verify & continue',
+        onPrimary: (_submitting || _expired) ? null : _submit,
+        isLoading: _submitting,
+        secondaryAction: Center(
+          child: TextButton(
+            onPressed: () => Navigator.of(context).maybePop(),
+            child: Text(
+              'Use a different account',
+              style: TextStyle(
+                  color: _textSecondary,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600),
             ),
           ),
         ),
+        children: [
+          _buildWhyBanner(),
+          SizedBox(height: 24.h),
+          _buildBoxes(),
+          SizedBox(height: 14.h),
+          _buildStatusRow(),
+          SizedBox(height: 28.h),
+          _buildSecurityNote(),
+        ],
       ),
     );
   }
 
-  Widget _buildBoxes() {
+  /// Why the user is seeing this at all. It used to be a bare shield glyph over
+  /// a heading; saying "new device" is what actually reassures someone who did
+  /// just sign in somewhere new — and warns someone who didn't.
+  Widget _buildWhyBanner() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: _brandPurple.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: _brandPurple.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.shield_outlined, color: _brandPurple, size: 18.sp),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              'New sign-in detected on this device.',
+              style: TextStyle(
+                color: _ink,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSecurityNote() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: List.generate(_boxes, (i) {
-        return SizedBox(
-          width: 48,
-          child: KeyboardListener(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(Icons.info_outline, color: _textSecondary, size: 15.sp),
+        SizedBox(width: 8.w),
+        Expanded(
+          child: Text(
+            "Didn't request this? Don't share the code — close the app and "
+            'change your password.',
+            style: TextStyle(
+                color: _textSecondary, fontSize: 12.sp, height: 1.4),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBoxes() {
+    // The boxes were a fixed 48px each inside a spaceBetween Row, so on a narrow
+    // screen the sixth one ran off the edge — the code was literally not fully
+    // enterable. Sizing them from the ACTUAL available width makes the row fit
+    // any device and stay evenly spaced.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final gutter = 8.w;
+        final boxWidth =
+            (constraints.maxWidth - gutter * (_boxes - 1)) / _boxes;
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(_boxes, (i) {
+            return SizedBox(
+              width: boxWidth,
+              child: KeyboardListener(
             focusNode: FocusNode(skipTraversal: true),
             onKeyEvent: (event) {
               if (event is KeyDownEvent &&
@@ -337,57 +367,66 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
                 _onBackspace(i);
               }
             },
-            child: TextField(
-              controller: _controllers[i],
-              focusNode: _focusNodes[i],
-              enabled: !_expired && !_submitting,
-              autofocus: i == 0,
-              keyboardType: TextInputType.number,
-              textAlign: TextAlign.center,
-              maxLength: i == 0 ? _boxes : 1, // box 0 accepts a full paste
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700),
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              onChanged: (v) => _onDigitChanged(i, v),
-              decoration: InputDecoration(
-                counterText: '',
-                filled: true,
-                fillColor: _card,
-                contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                      color: _errorText != null ? _errorColor : _divider),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                      color: _errorText != null ? _errorColor : _accent,
-                      width: 1.5),
-                ),
-                disabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: _divider),
+                child: TextField(
+                  controller: _controllers[i],
+                  focusNode: _focusNodes[i],
+                  enabled: !_expired && !_submitting,
+                  autofocus: i == 0,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  maxLength: i == 0 ? _boxes : 1, // box 0 accepts a full paste
+                  style: TextStyle(
+                      color: _ink,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w700),
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  onChanged: (v) => _onDigitChanged(i, v),
+                  decoration: InputDecoration(
+                    counterText: '',
+                    filled: true,
+                    fillColor: _field,
+                    // Symmetric padding only — the width now comes from the
+                    // LayoutBuilder, so horizontal padding here would fight it.
+                    contentPadding: EdgeInsets.symmetric(vertical: 16.h),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                      borderSide: BorderSide(
+                          color: _errorText != null ? _errorColor : _divider),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                      borderSide: BorderSide(
+                          color:
+                              _errorText != null ? _errorColor : _brandPurple,
+                          width: 1.6),
+                    ),
+                    disabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                      borderSide: const BorderSide(color: _divider),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          }),
         );
-      }),
+      },
     );
   }
 
+  /// One line under the boxes carrying whichever of the three states applies:
+  /// an inline error, the expired state, or the countdown + resend. Kept to a
+  /// single row so the boxes and the CTA never shift position between states.
   Widget _buildStatusRow() {
     if (_errorText != null) {
       return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline, color: _errorColor, size: 16),
-          const SizedBox(width: 6),
+          Icon(Icons.error_outline, color: _errorColor, size: 15.sp),
+          SizedBox(width: 6.w),
           Expanded(
             child: Text(_errorText!,
-                style: const TextStyle(color: _errorColor, fontSize: 13)),
+                style: TextStyle(color: _errorColor, fontSize: 12.5.sp)),
           ),
         ],
       );
@@ -395,62 +434,43 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
     if (_expired) {
       return Row(
         children: [
-          const Text('Code expired.',
-              style: TextStyle(color: _errorColor, fontSize: 13)),
-          const SizedBox(width: 6),
-          GestureDetector(
-            onTap: _requestNewCode,
-            child: const Text('Get a new code',
-                style: TextStyle(
-                    color: _accent,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600)),
-          ),
+          Icon(Icons.timer_off_outlined, color: _errorColor, size: 15.sp),
+          SizedBox(width: 6.w),
+          Text('Code expired.',
+              style: TextStyle(color: _errorColor, fontSize: 12.5.sp)),
+          const Spacer(),
+          _linkButton('Get a new code', _requestNewCode),
         ],
       );
     }
     return Row(
       children: [
-        const Icon(Icons.timer_outlined, color: _textSecondary, size: 15),
-        const SizedBox(width: 6),
-        Text('Code expires in $_countdownLabel',
-            style: const TextStyle(color: _textSecondary, fontSize: 13)),
+        Icon(Icons.timer_outlined, color: _textSecondary, size: 15.sp),
+        SizedBox(width: 6.w),
+        Text('Expires in $_countdownLabel',
+            style: TextStyle(color: _textSecondary, fontSize: 12.5.sp)),
         const Spacer(),
-        GestureDetector(
-          onTap: _requestNewCode,
-          child: const Text('Resend',
-              style: TextStyle(
-                  color: _accent, fontSize: 13, fontWeight: FontWeight.w600)),
-        ),
+        _linkButton('Resend', _requestNewCode),
       ],
     );
   }
 
-  Widget _buildVerifyButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: (_submitting || _expired) ? null : _submit,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _accent,
-          disabledBackgroundColor: _accent.withValues(alpha: 0.4),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+  /// A tap target that reads as a link. The old bare GestureDetector on a 13px
+  /// label gave a target well under the 44px minimum and sat right against the
+  /// screen edge, which is how "Resend" ended up clipped.
+  Widget _linkButton(String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 6.h),
+        child: Text(
+          label,
+          style: TextStyle(
+              color: _brandPurple,
+              fontSize: 12.5.sp,
+              fontWeight: FontWeight.w700),
         ),
-        child: _submitting
-            ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: Colors.white),
-              )
-            : Text(_expired ? 'Code expired' : 'Verify & continue',
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600)),
       ),
     );
   }
