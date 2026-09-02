@@ -2582,6 +2582,42 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
+  /// The lock screen submits a CACHED identifier the user cannot see or edit.
+  /// If the server answers "invalid credentials" it means nobody matches that
+  /// identifier — so the cache is wrong, and no passcode the user types can
+  /// ever succeed. Left alone this is an unescapable screen: it just keeps
+  /// saying "Login Failed" at someone whose passcode is perfectly correct.
+  ///
+  /// Drop the stale identifiers so the next launch routes to the full login
+  /// screen where the user can type a real one, and say plainly what happened.
+  /// Session TOKENS are deliberately untouched — this is about a bad cached
+  /// identifier, not a bad session.
+  ///
+  /// Returns true when it handled the failure.
+  bool _handleUnknownCachedIdentifier(String message) {
+    if (!isUnknownIdentifierFailure(message)) return false;
+    unawaited(() async {
+      for (final key in const [
+        'stored_phone',
+        'stored_email',
+        'user_email',
+        'preferred_login_method',
+        'login_method',
+      ]) {
+        try {
+          await _storage.delete(key: key);
+        } catch (_) {/* best-effort */}
+      }
+    }());
+    _showErrorSnackbar(
+      'Sign in again',
+      "We couldn't find the account saved on this device. Please sign in with "
+          'your email, phone or username.',
+    );
+    emit(AuthenticationInitial());
+    return true;
+  }
+
   Future<void> _attemptPasscodeLogin(String passcode) async {
     if (state is! PasscodeLoginInProgress) return;
 
@@ -2643,6 +2679,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             ));
             return;
           }
+          if (_handleUnknownCachedIdentifier(failure.message)) return;
           _showErrorSnackbar('Login Failed', failure.message);
           emit(PasscodeLoginInProgress(
             enteredPasscode: '',
@@ -2700,6 +2737,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           ));
           return;
         }
+        if (_handleUnknownCachedIdentifier(failure.message)) return;
         _showErrorSnackbar('Login Failed', failure.message);
         emit(PasscodeLoginInProgress(
           enteredPasscode: '',

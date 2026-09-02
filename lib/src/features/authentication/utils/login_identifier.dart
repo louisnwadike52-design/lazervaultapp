@@ -108,3 +108,23 @@ String normalizePhoneIdentifier(String raw, {String countryIso = 'NG'}) {
   }
   return (email: value, phone: '');
 }
+
+/// True when a login failure means NO ACCOUNT MATCHED THE IDENTIFIER, as
+/// opposed to the passcode being wrong.
+///
+/// auth-service separates these deliberately: a user lookup that finds nothing
+/// returns exactly "invalid credentials", while a genuinely wrong passcode
+/// returns "Incorrect passcode. N attempt(s) remaining before your account is
+/// temporarily locked". Treating the two the same is what made a typo'd email
+/// surface as "your correct passcode was rejected", with the real mistake two
+/// screens back and never named.
+///
+/// Shared by the login screen (which sends the user back to the identifier
+/// field) and the returning-user lock screen (where a stale CACHED identifier
+/// means no passcode can ever work). One predicate so the two cannot drift.
+///
+/// This distinction is already visible in the API's responses, so acting on it
+/// in the UI reveals nothing to an attacker that probing did not already.
+bool isUnknownIdentifierFailure(String message) {
+  return message.toLowerCase().contains('invalid credentials');
+}

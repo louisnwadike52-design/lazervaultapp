@@ -67,6 +67,27 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
 
   bool get _isPhoneIdentifier => _identifierType == LoginIdentifierType.phone;
 
+  /// Copy for "no account matches what you typed", naming the kind of
+  /// identifier it was and echoing the value back.
+  ///
+  /// The echo is the point. "We don't recognise that email" leaves the user
+  /// staring at a field they believe is correct; "We don't recognise
+  /// onhapraiz@gmail.com" puts the transposed letters in front of them. It also
+  /// stays deliberately vague about WHY there is no match — it never implies
+  /// whether some other spelling would have existed.
+  String _unknownIdentifierMessage() {
+    final value = _identifier.trim();
+    switch (_identifierType) {
+      case LoginIdentifierType.email:
+        return "We don't recognise $value. Check the spelling and try again.";
+      case LoginIdentifierType.username:
+        final handle = value.startsWith('@') ? value : '@$value';
+        return "We don't recognise $handle. Check the spelling and try again.";
+      case LoginIdentifierType.phone:
+        return "We don't recognise $value. Check the number and try again.";
+    }
+  }
+
   void _onIdentifierChanged(String identifier, LoginIdentifierType type) {
     final needsRepaint =
         type != _identifierType || _identifierError != null;
@@ -248,6 +269,22 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
                 m.contains('not found') ||
                 m.contains('no account') ||
                 m.contains('does not exist');
+            // NOBODY matched the identifier — a typo'd email/number, not a bad
+            // passcode. auth-service returns exactly "invalid credentials" when
+            // the user lookup finds nothing, and a genuinely wrong passcode
+            // returns "Incorrect passcode. N attempt(s) remaining" instead, so
+            // this string identifies the case precisely.
+            //
+            // It used to fall through to the generic branch, which showed
+            // "Login failed" ON THE PASSCODE SCREEN — so a transposed letter in
+            // an email read as "my correct passcode was rejected", with the
+            // real mistake two screens back and never mentioned. Observed on
+            // prod: "onhapraiz@" for "onahpraiz@", reported as a passcode bug.
+            //
+            // This reveals nothing new: the server already answers these two
+            // cases differently, so an attacker probing the API learns exactly
+            // what they did before. Only the UI routing changes.
+            final unknownIdentifier = isUnknownIdentifierFailure(state.message);
             // A connectivity/edge failure is NOT a bad passcode — don't say
             // "Login failed" (which reads as wrong PIN). If it's a server-side
             // outage the maintenance modal owns the messaging, so poke the gate
@@ -264,6 +301,14 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
                 "We couldn't reach our servers. Please try again in a moment.",
                 type: AppSnackbarType.error,
               );
+            } else if (unknownIdentifier) {
+              // Back to the identifier step with the error UNDER THE FIELD that
+              // was actually wrong, echoing what was typed — a transposition is
+              // invisible in prose but obvious next to the box you typed it in.
+              setState(() {
+                _passcodePhase = false;
+                _identifierError = _unknownIdentifierMessage();
+              });
             } else if (noPasscodeAccount) {
               setState(() => _passcodePhase = false); // back to the phone step
               showAppSnackbar(
