@@ -5,6 +5,11 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/user_tag_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 
+/// Quick Pay's foreground purple — the LIGHTER brand tint, matching the payment
+/// confirmation screen. The deep #4E03D0 is kept for the button's own tinted
+/// background, so the label still reads against it.
+const _kQuickPayAccent = Color(0xFF9B6DFF);
+
 class TagItemCard extends StatelessWidget {
   final UserTagEntity tag;
   final bool isIncoming;
@@ -169,13 +174,13 @@ class TagItemCard extends StatelessWidget {
                       Icon(
                         Icons.flash_on_rounded,
                         size: 18.sp,
-                        color: const Color(0xFF4E03D0),
+                        color: _kQuickPayAccent,
                       ),
                       SizedBox(width: 8.w),
                       Text(
                         'Quick Pay',
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF4E03D0),
+                          color: _kQuickPayAccent,
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
                         ),
