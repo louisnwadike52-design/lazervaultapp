@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/voice_session/widgets/voice_command_shee
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/pending_chat_navigation.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/panic_balance_service.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
@@ -236,6 +237,19 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (_pendingPromptActive || _fraudModalActive || !mounted) return;
     final actions = snapshot.all;
     if (actions.isEmpty) return;
+
+    // Never invite a payment that cannot succeed. On a frozen account every
+    // debit is rejected server-side, and the split-bill / invoice / tag pay
+    // screens only surface that AFTER the user has entered their tx-PIN — so a
+    // prompt offering four "Pay" buttons would walk them into four dead ends.
+    // The tile badges still show what is owed; this only withholds the
+    // invitation to act on it.
+    try {
+      if (serviceLocator<AccountManager>().isActiveAccountFrozen) return;
+    } catch (_) {
+      // Locator not ready — fall through and show the prompt rather than
+      // silently swallowing a real reminder.
+    }
 
     final gate = PendingPaymentsPromptGate();
     final ids = actions.map((a) => a.id).toSet();

@@ -11,7 +11,6 @@ import 'package:lazervault/src/features/split_bills/domain/entities/split_bill_e
 import 'package:lazervault/src/features/split_bills/domain/repositories/split_bill_repository.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_tag_entity.dart';
 import 'package:lazervault/src/features/tag_pay/domain/repositories/tag_pay_repository.dart';
-import 'package:lazervault/src/generated/common.pbenum.dart';
 
 /// Aggregates everything the user still owes money on — tags raised against
 /// them, invoices they were tagged to pay, split-bill shares — into one
