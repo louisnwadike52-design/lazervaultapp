@@ -42,8 +42,26 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    // Open on the tab the CALLER meant. Arriving straight from "View My Tags"
+    // after raising a tag, the one thing the user wants to see is the tag they
+    // just created — landing on Received showed them an unrelated list (usually
+    // empty) and made a successful action look like it did nothing.
+    // Routes that don't pass anything keep the Received default.
+    final args = Get.arguments;
+    final initialIndex =
+        (args is Map && args['tab'] == 'created') ? 1 : 0;
+    _tabController =
+        TabController(length: 2, initialIndex: initialIndex, vsync: this);
     _tabController.addListener(_onTabChanged);
+    if (initialIndex == 1) {
+      // TabController's initialIndex does NOT fire the listener, so the list
+      // for that tab would never be requested — the tab would open empty.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.read<TagPayCubit>().loadOutgoingTagsPage(page: 1, status: null);
+        }
+      });
+    }
   }
 
   @override

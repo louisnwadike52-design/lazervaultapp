@@ -397,11 +397,17 @@ class TagPayPdfService {
               ),
               pw.SizedBox(height: 32),
 
-              // Beneficiary Details
+              // Both parties — a paid receipt records who paid whom.
               _buildRecipientDetails(
                 recipientName: beneficiaryName,
                 recipientTag: beneficiaryTag,
-                title: 'Beneficiary Details',
+                title: 'Transaction Parties',
+                senderName: _pdfSafeText(transaction.senderName.isNotEmpty
+                    ? transaction.senderName
+                    : tag.taggedUserName),
+                senderTag: _pdfSafeText(transaction.senderTagPay.isNotEmpty
+                    ? transaction.senderTagPay
+                    : tag.taggedUserTagPay),
               ),
 
               pw.Spacer(),
@@ -722,6 +728,13 @@ class TagPayPdfService {
     required String recipientName,
     required String recipientTag,
     required String title,
+    // Both parties, when the caller knows them. A receipt that names only one
+    // side does not record who paid whom — and for a TagPay, where the TAGGED
+    // user pays the TAGGER, a reader holding the document cannot tell which
+    // side they were on. Optional so callers that genuinely have one party
+    // (a tag not yet paid) still render.
+    String senderName = '',
+    String senderTag = '',
   }) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -740,16 +753,27 @@ class TagPayPdfService {
           ),
           child: pw.Column(
             children: [
+              if (senderName.isNotEmpty) ...[
+                _buildDetailRow('From', senderName),
+                if (senderTag.isNotEmpty)
+                  _isTagHandle(senderTag)
+                      ? _buildDetailRow('From tag', '@$senderTag')
+                      : _buildDetailRow('From account', senderTag),
+              ],
               _buildDetailRow(
-                'Name',
+                senderName.isNotEmpty ? 'Recipient' : 'Name',
                 recipientName,
               ),
               if (recipientTag.isNotEmpty)
                 // Handles get the "@" and the "Tag" label; bank account numbers
                 // are printed bare under "Account". See [_isTagHandle].
                 _isTagHandle(recipientTag)
-                    ? _buildDetailRow('Tag', '@$recipientTag')
-                    : _buildDetailRow('Account', recipientTag),
+                    ? _buildDetailRow(
+                        senderName.isNotEmpty ? 'Recipient tag' : 'Tag',
+                        '@$recipientTag')
+                    : _buildDetailRow(
+                        senderName.isNotEmpty ? 'Recipient account' : 'Account',
+                        recipientTag),
             ],
           ),
         ),

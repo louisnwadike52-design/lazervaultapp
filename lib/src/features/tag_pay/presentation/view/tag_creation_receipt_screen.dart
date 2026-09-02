@@ -468,7 +468,10 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    Get.offAllNamed(AppRoutes.tagPay);
+                    // Land on Created — the tag they just raised is an OUTGOING
+                    // one, so Received would open on a list that doesn't contain it.
+                    Get.offAllNamed(AppRoutes.tagPay,
+                        arguments: {'tab': 'created'});
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4E03D0),

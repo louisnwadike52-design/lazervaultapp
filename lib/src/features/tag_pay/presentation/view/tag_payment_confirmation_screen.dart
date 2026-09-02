@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/user_tag_entity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
@@ -430,14 +431,21 @@ class _TagPaymentConfirmationScreenState
     };
   }
 
+  /// Account accent used for the wallet icon.
+  ///
+  /// The purples are the LIGHTER brand tint (#9B6DFF), not the deep #4E03D0.
+  /// On the near-black #1F1F1F card the deep purple reads as a muddy smudge —
+  /// it carries almost no luminance against that background — while the lighter
+  /// tint keeps the brand hue and is actually legible. Same substitution the
+  /// dark surfaces elsewhere in the app already make.
   Color _getAccountColor(VirtualAccountType type) {
     return switch (type) {
-      VirtualAccountType.personal => const Color(0xFF4E03D0),
+      VirtualAccountType.personal => const Color(0xFF9B6DFF),
       VirtualAccountType.usd => const Color(0xFF10B981),
-      VirtualAccountType.gbp => const Color.fromARGB(255, 78, 3, 208),
+      VirtualAccountType.gbp => const Color(0xFF9B6DFF),
       VirtualAccountType.eur => const Color(0xFF06B6D4),
       VirtualAccountType.family => const Color(0xFFF59E0B),
-      VirtualAccountType.main => const Color(0xFF4E03D0),
+      VirtualAccountType.main => const Color(0xFF9B6DFF),
       _ => const Color(0xFF6B7280),
     };
   }
@@ -484,19 +492,26 @@ class _TagPaymentConfirmationScreenState
             );
           }
 
-          // Auto-select first eligible account with sufficient balance
-          if (_selectedAccountId == null) {
-            final bestAccount = eligibleAccounts.firstWhere(
-              (a) => a.availableBalance >= widget.tag.amount,
-              orElse: () => eligibleAccounts.first,
-            );
-            _selectedAccountId = bestAccount.id.toString();
-          }
-
+          // The ACTIVE account pays — it is not a choice.
+          //
+          // PayTag debits whichever account the session is scoped to: the
+          // handler reads x-account-id from the JWT and only falls back to
+          // source_account_id when the token carries none. So a picker here was
+          // not merely redundant, it could disagree with what the backend
+          // actually debits — the user selects wallet B, the money leaves
+          // wallet A, and the receipt names an account they did not choose.
+          // Showing exactly the account being charged is the honest UI and the
+          // one that matches the tag's own reference.
+          final activeId = GetIt.I<AccountManager>().activeAccountId;
           final displayAccount = eligibleAccounts.firstWhere(
-            (a) => a.id.toString() == _selectedAccountId,
+            (a) => a.id.toString() == activeId,
+            // No match means the active account is not eligible for this tag's
+            // currency; fall back to the first eligible one so the screen still
+            // renders, and the balance check below still guards the payment.
             orElse: () => eligibleAccounts.first,
           );
+          _selectedAccountId = displayAccount.id.toString();
+
           final hasEnough =
               displayAccount.availableBalance >= widget.tag.amount;
           final accentColor = _getAccountColor(displayAccount.accountTypeEnum);
@@ -510,9 +525,8 @@ class _TagPaymentConfirmationScreenState
             insufficientFunds: !hasEnough,
             isSelected: true,
             onTap: () {},
-            onChangeTap: eligibleAccounts.length > 1
-                ? () => _showWalletBottomSheet(eligibleAccounts)
-                : null,
+            // No change affordance — see above.
+            onChangeTap: null,
           );
         }
 
@@ -651,178 +665,6 @@ class _TagPaymentConfirmationScreenState
                       ),
                     ],
                   ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showWalletBottomSheet(List<AccountSummaryEntity> accounts) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return _buildBottomSheetContainer(
-          title: 'Select Wallet',
-          children: accounts.map((account) {
-            final isSelected = _selectedAccountId == account.id.toString();
-            final hasEnough = account.availableBalance >= widget.tag.amount;
-            final accentColor = _getAccountColor(account.accountTypeEnum);
-
-            return _buildBottomSheetOption(
-              icon: _getAccountIcon(account.accountTypeEnum),
-              iconColor: accentColor,
-              title: account.accountType,
-              subtitle:
-                  '${account.currency} ${account.availableBalance.toStringAsFixed(2)}',
-              insufficientFunds: !hasEnough,
-              isSelected: isSelected,
-              onTap: () {
-                setState(() {
-                  _selectedAccountId = account.id.toString();
-                });
-                Navigator.pop(sheetContext);
-              },
-            );
-          }).toList(),
-        );
-      },
-    );
-  }
-
-  Widget _buildBottomSheetContainer({
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.6,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(height: 12.h),
-          Container(
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: const Color(0xFF4B5563),
-              borderRadius: BorderRadius.circular(2.r),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            title,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Flexible(
-            child: ListView(
-              shrinkWrap: true,
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              children: children,
-            ),
-          ),
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 16.h),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomSheetOption({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    bool insufficientFunds = false,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: EdgeInsets.only(bottom: 8.h),
-        padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF4E03D0).withValues(alpha: 0.12)
-              : Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12.r),
-          border: isSelected
-              ? Border.all(color: const Color(0xFF4E03D0), width: 1.5)
-              : null,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Icon(icon, color: iconColor, size: 20.sp),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.inter(
-                      color: insufficientFunds
-                          ? const Color(0xFFEF4444)
-                          : const Color(0xFF9CA3AF),
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (insufficientFunds)
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(4.r),
-                ),
-                child: Text(
-                  'Insufficient',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFFEF4444),
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            if (isSelected)
-              Padding(
-                padding: EdgeInsets.only(left: 8.w),
-                child: Icon(
-                  Icons.check_circle,
-                  color: const Color(0xFF4E03D0),
-                  size: 22.sp,
                 ),
               ),
           ],

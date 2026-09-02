@@ -93,32 +93,53 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
     }
   }
 
+  /// Back arrow on the left, Lazervault mark on the right — the same header the
+  /// send-funds and airtime receipts use, so every receipt in the app is
+  /// recognisably one document family.
+  Widget _brandHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          onPressed: () => Get.offAllNamed(AppRoutes.tagPay),
+          icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/logo.png',
+              width: 28.w,
+              height: 28.w,
+              errorBuilder: (_, __, ___) => Icon(
+                Icons.shield_outlined,
+                color: const Color(0xFF9B6DFF),
+                size: 24.sp,
+              ),
+            ),
+            SizedBox(width: 7.w),
+            Text(
+              'Lazervault',
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.tagPay),
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-            size: 24.sp,
-          ),
-        ),
-        title: Text(
-          'Payment Receipt',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -128,6 +149,11 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    // Brand mark instead of an app-bar title — the outcome
+                    // heading below already says what this screen is, so
+                    // "Payment Receipt" was saying it twice while taking the
+                    // slot the logo belongs in. Matches the send-funds receipt.
+                    _brandHeader(),
                     SizedBox(height: 8.h),
                     _buildOutcomeIcon(),
                     SizedBox(height: 24.h),
@@ -305,6 +331,19 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
     final recipientTag = transaction.receiverTagPay.isNotEmpty
         ? transaction.receiverTagPay
         : tag.taggerTagPay;
+    // A receipt names BOTH parties. With only a recipient, the document does
+    // not say who paid — and for a TagPay that is the whole point: the TAGGED
+    // user pays the TAGGER, so a reader with just one name cannot tell which
+    // side of it they were on. Falls back to the tagged user on the tag, who is
+    // the payer by definition.
+    final senderName = transaction.senderName.isNotEmpty
+        ? transaction.senderName
+        : (tag.taggedUserName.isNotEmpty
+            ? tag.taggedUserName
+            : 'Lazervault User');
+    final senderTag = transaction.senderTagPay.isNotEmpty
+        ? transaction.senderTagPay
+        : tag.taggedUserTagPay;
 
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -331,10 +370,16 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
             ),
           ),
           SizedBox(height: 16.h),
+          _buildDetailRow('From', senderName),
+          SizedBox(height: 12.h),
+          if (senderTag.isNotEmpty) ...[
+            _buildDetailRow('From tag', '@$senderTag'),
+            SizedBox(height: 12.h),
+          ],
           _buildDetailRow('Recipient', recipientName),
           SizedBox(height: 12.h),
           if (recipientTag.isNotEmpty) ...[
-            _buildDetailRow('Tag', '@$recipientTag'),
+            _buildDetailRow('Recipient tag', '@$recipientTag'),
             SizedBox(height: 12.h),
           ],
           _buildDetailRow('Reference', transaction.referenceNumber),
