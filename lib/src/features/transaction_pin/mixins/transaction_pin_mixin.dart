@@ -152,6 +152,12 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
       String? errorMessage;
       final completerRef = _MutableRef<Completer<String?>>(Completer<String?>());
 
+      // Set when the user chooses "Forgot PIN?" rather than "Cancel". Both
+      // resolve the completer with null, so without this the two are
+      // indistinguishable and a reset gets reported as an abandoned payment.
+      // Local to this call: a previous attempt's choice must not leak into it.
+      bool pinResetRequested = false;
+
       // Show PIN modal once — stays open for all phases including retries
       showModalBottomSheet(
         context: context,
@@ -183,10 +189,16 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
             }
           },
           onForgotPin: () {
+            // Mark the intent BEFORE unblocking the loop. "Forgot PIN?" and
+            // "Cancel" both surface as a null pin, and treating them alike told
+            // a user who had just asked to reset their PIN that their payment
+            // was cancelled — then raced a route push against the sheet
+            // dismissal. The navigation now happens in the loop, once the
+            // sheets are actually down.
+            pinResetRequested = true;
             if (!completerRef.value.isCompleted) {
               completerRef.value.complete(null);
             }
-            Get.toNamed(AppRoutes.forgotPin);
           },
           onCancel: () {
             if (!completerRef.value.isCompleted) {
@@ -201,10 +213,62 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
         final pin = await completerRef.value.future;
 
         if (pin == null) {
-          // User cancelled (or chose Forgot PIN). The modal self-pops on the
-          // cancel button; also unwind any sheets stacked beneath it so we
-          // return cleanly to the page rather than stranding a confirmation /
-          // amount sheet.
+          if (pinResetRequested) {
+            // The user asked to RESET, not to abandon. Two things follow.
+            //
+            // The sheets stacked BENEATH the PIN pad are deliberately left
+            // standing: the reset exists so this payment can continue, so the
+            // reset screen goes on top and the user comes back to the
+            // transaction exactly as they left it. (The PIN pad itself has
+            // already self-popped.) Pushing the route from here rather than
+            // from the callback also stops it racing that dismissal.
+            //
+            // And "payment cancelled" is not said, because they didn't cancel.
+            AnalyticsService.instance.trackPinOutcome('pin_reset_requested');
+            final didReset = await Get.toNamed(AppRoutes.forgotPin);
+            if (!mounted) return false;
+            if (didReset != true) {
+              // Backed out without finishing the reset. No PIN, no payment —
+              // unwind to the page. No toast: they navigated away themselves
+              // and don't need to be told what they just did.
+              _dismissPaymentSheets(context);
+              return false;
+            }
+            // Fresh PIN in hand. Reopen the pad on the same transaction so the
+            // payment completes in one sitting, instead of dropping the user
+            // back onto the page to find and redo the whole flow. A fresh call
+            // re-runs the PIN-exists check and starts a clean attempt counter,
+            // which is correct: the old PIN's failures don't belong to the new
+            // one. Recursion is bounded in practice — it only deepens if the
+            // user resets again from within the resumed pad.
+            return validateTransactionPin(
+              context: context,
+              transactionId: transactionId,
+              transactionType: transactionType,
+              amount: amount,
+              currency: currency,
+              onPinValidated: onPinValidated,
+              title: title,
+              message: message,
+              currencySymbol: currencySymbol,
+              fee: fee,
+              totalAmount: totalAmount,
+              maxAttempts: maxAttempts,
+              showProcessingPhase: showProcessingPhase,
+              successMessage: successMessage,
+              headerAction: headerAction,
+              recipientImageUrl: recipientImageUrl,
+              recipientName: recipientName,
+              processingSubtitle: processingSubtitle,
+              successSubtitle: successSubtitle,
+              failureMessageBuilder: failureMessageBuilder,
+              preserveHostSheet: preserveHostSheet,
+            );
+          }
+
+          // Genuine cancel. The modal self-pops; also unwind any sheets stacked
+          // beneath it so we return cleanly to the page rather than stranding
+          // a confirmation / amount sheet.
           _dismissPaymentSheets(context);
           _showCancellationMessage(context);
           AnalyticsService.instance.trackPinOutcome('cancelled');
