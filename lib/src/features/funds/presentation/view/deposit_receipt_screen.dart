@@ -36,6 +36,17 @@ class DepositReceiptScreen extends StatefulWidget {
   final String? depositId; // enables live polling when present
   final bool fromHistory;
 
+  /// Where the money LANDED — the wallet that was credited, e.g.
+  /// "Personal · NGN" or a masked account number.
+  ///
+  /// Optional and never inferred. A deposit receipt should name both ends, but
+  /// the destination is only shown when the caller genuinely knows it: reading
+  /// it off "whatever account happens to be active" would print the wrong
+  /// wallet on a receipt for a deposit into a different one. Callers that don't
+  /// have it pass nothing and the row is simply absent — an omitted fact beats
+  /// a confident wrong one on a financial document.
+  final String toAccountLabel;
+
   const DepositReceiptScreen({
     super.key,
     required this.amount,
@@ -49,6 +60,7 @@ class DepositReceiptScreen extends StatefulWidget {
     this.failureCode = '',
     this.depositId,
     this.fromHistory = false,
+    this.toAccountLabel = '',
   });
 
   /// True while any deposit receipt is on screen. The dashboard's WebSocket
@@ -191,6 +203,23 @@ class _DepositReceiptScreenState extends State<DepositReceiptScreen> {
     }
   }
 
+  /// A field is only printable when it carries a REAL value.
+  ///
+  /// Absence reaches this screen in several disguises depending on the caller —
+  /// empty, an em-dash or hyphen placeholder from history, or a provider
+  /// placeholder like "Unknown"/"Anonymous customer". Each of those printed
+  /// verbatim reads to the customer as a fact about their money, so they are
+  /// all treated as "we don't know" and the row is dropped.
+  static bool _isKnown(String? raw) {
+    final v = (raw ?? '').trim();
+    if (v.isEmpty || v == '—' || v == '-' || v == 'N/A') return false;
+    const placeholders = {
+      'unknown', 'unknown sender', 'anonymous', 'anonymous customer',
+      'null', 'nil', 'undefined',
+    };
+    return !placeholders.contains(v.toLowerCase());
+  }
+
   String _money(double v) =>
       '${widget.currencySymbol}${v.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},')}';
 
@@ -210,12 +239,9 @@ class _DepositReceiptScreenState extends State<DepositReceiptScreen> {
             onPressed: _exit,
             icon: const Icon(Icons.close, color: Colors.white),
           ),
-          title: Text('Deposit Receipt',
-              style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600)),
-          centerTitle: true,
+          // No title — the outcome heading in the body already says what this
+          // screen is, and the brand mark on the right is the identity the
+          // slot is for. Same shape as the send-funds and TagPay receipts.
           actions: [
             Padding(
               padding: EdgeInsets.only(right: 14.w),
@@ -286,14 +312,19 @@ class _DepositReceiptScreenState extends State<DepositReceiptScreen> {
                             ),
                             child: Column(
                               children: [
-                                _row('From', widget.bankName),
+                                // FROM / TO are shown only when actually known.
+                                // A receipt naming the wrong counterparty is
+                                // worse than one naming none, so nothing here
+                                // is inferred or filled with a placeholder.
+                                if (_isKnown(widget.bankName))
+                                  _row('From', widget.bankName.trim()),
                                 // Hide the account row when there's no real
                                 // number (history passes '—' as the absent
                                 // marker) — a dash-only row is just noise.
-                                if (widget.accountNumber.trim().isNotEmpty &&
-                                    widget.accountNumber.trim() != '—' &&
-                                    widget.accountNumber.trim() != '-')
-                                  _row('Account', widget.accountNumber),
+                                if (_isKnown(widget.accountNumber))
+                                  _row('From account', widget.accountNumber),
+                                if (_isKnown(widget.toAccountLabel))
+                                  _row('To', widget.toAccountLabel.trim()),
                                 if (widget.fee > 0)
                                   _row('Fee', _money(widget.fee)),
                                 if (widget.discount > 0)

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/core/widgets/bank_logo.dart';
@@ -36,6 +37,14 @@ class _DepositHistoryScreenState extends State<DepositHistoryScreen> {
 
   final _scroll = ScrollController();
   final List<banking_pb.Deposit> _items = [];
+
+  /// Rows RECEIVED from the server, filtered or not.
+  ///
+  /// The list is filtered to the active locale's currency, so `_items.length`
+  /// is no longer the server offset — paging on it would re-request rows
+  /// already seen and silently skip others. This counts what the server has
+  /// actually handed over.
+  int _fetched = 0;
   bool _loading = true;
   bool _loadingMore = false;
   bool _hasMore = true;
@@ -62,6 +71,17 @@ class _DepositHistoryScreenState extends State<DepositHistoryScreen> {
     }
   }
 
+  /// The active locale's currency code, upper-cased. Empty when it cannot be
+  /// resolved — in which case the list is left UNFILTERED rather than guessing
+  /// a currency and hiding the user's deposits behind a wrong assumption.
+  String _activeCurrency() {
+    try {
+      return serviceLocator<LocaleManager>().currentCurrency.toUpperCase();
+    } catch (_) {
+      return '';
+    }
+  }
+
   Future<void> _load({required bool reset}) async {
     if (reset) {
       setState(() {
@@ -78,16 +98,28 @@ class _DepositHistoryScreenState extends State<DepositHistoryScreen> {
         // user_id left empty — the backend resolves the caller from the JWT.
         banking_pb.GetUserDepositsRequest()
           ..limit = _pageSize
-          ..offset = reset ? 0 : _items.length,
+          // Offset counts SERVER rows, not displayed ones — see [_fetched].
+          ..offset = reset ? 0 : _fetched,
         options: options,
       );
       if (!mounted) return;
       if (!resp.success) throw Exception('fetch failed');
       setState(() {
-        if (reset) _items.clear();
-        _items.addAll(resp.deposits);
-        _hasMore = resp.deposits.length >= _pageSize &&
-            _items.length < resp.total;
+        if (reset) {
+          _items.clear();
+          _fetched = 0;
+        }
+        _fetched += resp.deposits.length;
+        // Show only the ACTIVE locale's currency. A single list mixing ₦, $
+        // and £ rows invites reading one currency's figures as another's, and
+        // the running totals above it are single-currency anyway.
+        final active = _activeCurrency();
+        _items.addAll(resp.deposits.where((d) =>
+            active.isEmpty || d.currency.toUpperCase() == active));
+        // Keep paging while the SERVER still has rows: a page can be entirely
+        // filtered out, and stopping on an empty page would hide older
+        // matching deposits behind it.
+        _hasMore = resp.deposits.length >= _pageSize && _fetched < resp.total;
         _loading = false;
         _loadingMore = false;
         _loadFailed = false;
@@ -182,6 +214,15 @@ class _DepositHistoryScreenState extends State<DepositHistoryScreen> {
           failureCode: d.failureCode,
           depositId: d.id,
           fromHistory: true,
+          // Destination stated only from what the DEPOSIT itself carries. The
+          // record has destination_account_id but no human name for it, and a
+          // raw UUID on a receipt is worse than no row; the account summaries
+          // can't be consulted either (the cubit is a factory, so resolving one
+          // here yields an empty instance). The currency is the one fact about
+          // the destination this row genuinely knows.
+          toAccountLabel: d.currency.isNotEmpty
+              ? 'Your ${d.currency.toUpperCase()} wallet'
+              : '',
         ))?.then((_) {
       if (mounted) _load(reset: true);
     });

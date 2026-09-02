@@ -527,6 +527,24 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       'changed_by', 'recovered_by', 'reconciled_at',
       'provider', 'provider_ref', 'provider_reference',
       'idempotency_key', 'client_intent_id', 'webhook_event_id',
+      // PROVIDER IDs. A customer receipt must not name the rail: `flw_id` is
+      // Flutterwave's own reference and means nothing to the user, and the
+      // active provider can be Nomba (or change again), so printing one
+      // provider's id makes the document wrong the moment the rail switches.
+      // The user-facing identifier is the transaction reference already shown
+      // above; provider ids stay in the admin dashboard's raw metadata view.
+      'flw_id', 'flwref', 'flw_ref', 'nomba_id', 'nomba_ref',
+      'tx_ref', 'session_id',
+      // FEE ACCOUNTING. gross / charged / discount are the platform's own
+      // revenue split — a three-way breakdown of OUR margin, not something the
+      // customer is party to. They are kept in metadata deliberately as an
+      // audit trail (see the banking-service webhook comment: "so a
+      // statement/receipt/audit never has to re-derive from mutable config"),
+      // and belong in admin auditing. What the customer is owed on a receipt is
+      // what they were actually charged, which is already the amount row.
+      'platform_fee_gross_kobo',
+      'platform_fee_charged_kobo',
+      'platform_fee_discount_kobo',
     };
     // Swap/send legs are already rendered as first-class rows above (From/To/
     // Currency + the To counterparty), so the raw metadata keys would repeat
