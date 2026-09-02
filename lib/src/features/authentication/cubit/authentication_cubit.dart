@@ -461,6 +461,17 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       'kyc_onboarding_pending',
       'has_skipped_kyc',
       'chat_current_session_id',
+      // The CACHED LOGIN IDENTIFIERS. These are not cosmetic: the returning-user
+      // lock screen submits `stored_phone` verbatim (see _attemptPasscodeLogin),
+      // and it used to survive a user switch while the display name beside it
+      // was rewritten. The screen then greeted the NEW user by name and sent the
+      // PREVIOUS user's phone number with the new user's passcode — so a correct
+      // passcode was rejected as wrong, and three attempts locked the previous
+      // user out of their own account from someone else's sign-in.
+      'stored_phone',
+      'stored_email',
+      'user_email',
+      'preferred_login_method',
     ]) {
       try {
         await _storage.delete(key: key);
@@ -2630,6 +2641,16 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (email == null || email.isEmpty) {
       email = await _storage.read(key: 'stored_email');
     }
+
+    // INVARIANT: these cached identifiers must belong to the user this screen is
+    // greeting. They are submitted VERBATIM below, and a stale one does not fail
+    // harmlessly — it spends a failed-login attempt against whoever the
+    // identifier really belongs to, and three of those lock THAT person out of
+    // their own account. That is exactly what happened when `stored_phone`
+    // survived a user switch while the display name next to it was rewritten:
+    // the screen said "Hey <new user>" and signed in as the previous one.
+    // `_purgeStaleUserCache` clears all of them on a switch; anything that
+    // writes an identifier here must clear it on the way out too.
 
     // Phone+passcode (passwordless) accounts MUST authenticate by phone
     // (LoginWithPhonePasscode). Using the email path for them fails with
