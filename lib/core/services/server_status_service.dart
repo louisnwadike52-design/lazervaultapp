@@ -30,14 +30,16 @@ class ServerHealthNotifier extends ChangeNotifier {
 /// the server process is down, Cloudflare answers with a 5xx / the request
 /// times out — never a 200. So the only "healthy" signal we trust is a **2xx**.
 ///
-/// Which URL: the core-gateway's real `/health` lives at the ORIGIN root, but
-/// the Cloudflare tunnel only routes `^/api/v1/...` (root `/health` isn't
-/// routed — probing it would falsely fail for every user). We therefore probe
-/// the PUBLIC, unauthenticated `/api/v1/internal/voice-agents/settings` — it's
-/// routed by the `(admin|internal)` ingress rule, needs no auth (200), and the
-/// app already fetches it for config, so it's guaranteed reachable via the same
-/// origin the app uses. A 200 there proves the edge + a gateway on the host are
-/// alive; a machine/server outage yields 5xx/timeout on it too.
+/// Which URL: `/api/v1/health` on core-gateway. It checks the real dependencies
+/// (auth, accounts, redis), not just "the process answered", and it lives under
+/// `/api/v1` because the Cloudflare tunnel only routes `^/api/v1/...` — the
+/// gateway's identical root `/health` is unreachable from outside the origin.
+///
+/// This used to probe `/api/v1/internal/voice-agents/settings`, chosen only
+/// because it happened to be public and tunnel-routed. That tied "is the whole
+/// backend up" to one unrelated feature's endpoint: any change to voice-agent
+/// settings routing would have shown every user the maintenance screen while
+/// the platform was perfectly healthy.
 ///
 /// The probe runs entirely in the background (see AppStartupGate); it never
 /// blocks app startup or the current screen.
@@ -60,17 +62,16 @@ class ServerStatusService {
   /// probe answers 2xx.
   static const int _healthAttempts = 6;
 
-  /// Public, unauthenticated, Cloudflare-routed reachability endpoint.
+  /// Public, unauthenticated, Cloudflare-routed health endpoint.
   /// [endpointRegistry.httpCore] ends in `/api/v1`.
-  Uri _healthUri() =>
-      Uri.parse('${endpointRegistry.httpCore}/internal/voice-agents/settings');
+  Uri _healthUri() => Uri.parse('${endpointRegistry.httpCore}/health');
 
   Future<bool> _probeOnce({Duration? timeout}) async {
     try {
       final resp = await _client.get(_healthUri()).timeout(timeout ?? _timeout);
       // Strictly 2xx = backend up AND healthy. 401/404 would mean a wrong/gated
       // path, and 5xx/503 means degraded — both treated as NOT healthy here
-      // because the public root /health is expected to answer 200 when good.
+      // because /api/v1/health is expected to answer 200 when good.
       return resp.statusCode >= 200 && resp.statusCode < 300;
     } catch (_) {
       return false; // socket/DNS/timeout → edge unreachable (machine off, etc.)
