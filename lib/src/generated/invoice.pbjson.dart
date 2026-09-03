@@ -904,6 +904,14 @@ const UpdateInvoiceRequest$json = {
     {'1': 'tax', '3': 8, '4': 1, '5': 1, '10': 'tax'},
     {'1': 'discount', '3': 9, '4': 1, '5': 1, '10': 'discount'},
     {'1': 'notes', '3': 10, '4': 1, '5': 9, '10': 'notes'},
+    {'1': 'payer_logo_url', '3': 11, '4': 1, '5': 9, '10': 'payerLogoUrl'},
+    {
+      '1': 'recipient_logo_url',
+      '3': 12,
+      '4': 1,
+      '5': 9,
+      '10': 'recipientLogoUrl'
+    },
   ],
 };
 
@@ -914,7 +922,9 @@ final $typed_data.Uint8List updateInvoiceRequestDescriptor = $convert.base64Deco
     'ZRgDIAEoCVINcmVjaXBpZW50TmFtZRIWCgZhbW91bnQYBCABKAFSBmFtb3VudBIgCgtkZXNjcm'
     'lwdGlvbhgFIAEoCVILZGVzY3JpcHRpb24SGQoIZHVlX2RhdGUYBiABKAlSB2R1ZURhdGUSKgoF'
     'aXRlbXMYByADKAsyFC5pbnZvaWNlLkludm9pY2VJdGVtUgVpdGVtcxIQCgN0YXgYCCABKAFSA3'
-    'RheBIaCghkaXNjb3VudBgJIAEoAVIIZGlzY291bnQSFAoFbm90ZXMYCiABKAlSBW5vdGVz');
+    'RheBIaCghkaXNjb3VudBgJIAEoAVIIZGlzY291bnQSFAoFbm90ZXMYCiABKAlSBW5vdGVzEiQK'
+    'DnBheWVyX2xvZ29fdXJsGAsgASgJUgxwYXllckxvZ29VcmwSLAoScmVjaXBpZW50X2xvZ29fdX'
+    'JsGAwgASgJUhByZWNpcGllbnRMb2dvVXJs');
 
 @$core.Deprecated('Use updateInvoiceResponseDescriptor instead')
 const UpdateInvoiceResponse$json = {

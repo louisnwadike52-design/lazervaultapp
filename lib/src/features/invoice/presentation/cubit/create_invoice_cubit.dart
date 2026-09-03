@@ -44,6 +44,20 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
   File? _payerImage;
   File? _recipientImage;
 
+  // EDIT MODE. Null id = creating. When set, the carousel saves through
+  // updateInvoice instead of createInvoice.
+  //
+  // The logo URLs are kept SEPARATELY from the File picks above, because the
+  // two mean different things: a File is a new image the user just chose and
+  // still has to be uploaded, whereas a URL is a logo already on the invoice.
+  // Holding only Files would have meant an edit either re-uploaded an image we
+  // already had or, worse, sent an empty logo and looked like it had been
+  // deleted.
+  String? _editingInvoiceId;
+  InvoiceStatus? _editingStatus;
+  String _payerLogoUrl = '';
+  String _recipientLogoUrl = '';
+
   // Form data - Items & Amounts
   List<InvoiceItem> _items = [];
   double _taxAmount = 0.0;
@@ -93,6 +107,14 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
   String get payerCountry => _payerCountry;
   File? get payerImage => _payerImage;
   File? get recipientImage => _recipientImage;
+
+  /// True when this form is editing an existing invoice rather than creating.
+  bool get isEditing => _editingInvoiceId != null;
+  String? get editingInvoiceId => _editingInvoiceId;
+
+  /// Logos already stored on the invoice being edited. Empty while creating.
+  String get payerLogoUrl => _payerLogoUrl;
+  String get recipientLogoUrl => _recipientLogoUrl;
 
   // Getters - Items & Amounts
   List<InvoiceItem> get items => List.unmodifiable(_items);
@@ -515,6 +537,80 @@ class CreateInvoiceCubit extends Cubit<CreateInvoiceState> {
   }
 
   /// Build the final Invoice entity
+  /// Loads an existing invoice into the form so the carousel can edit it.
+  ///
+  /// The exact inverse of [buildInvoice]. Anything this misses does not merely
+  /// render blank, it gets SENT BACK as a change: the backend treats a
+  /// non-empty field as an overwrite, so a field dropped here would look to
+  /// the user like the edit had silently wiped it. That is why every field
+  /// buildInvoice writes is read back, including the two logo URLs, which are
+  /// held as URLs rather than Files because they are already uploaded.
+  void loadForEdit(Invoice invoice) {
+    _editingInvoiceId = invoice.id;
+    _editingStatus = invoice.status;
+
+    _invoiceType = invoice.type;
+    _title = invoice.title;
+    _description = invoice.description;
+    _dueDate = invoice.dueDate;
+    _invoiceCurrency = invoice.currency;
+
+    final r = invoice.recipientDetails;
+    _recipientCompany = r?.companyName ?? '';
+    _recipientContact = r?.contactName ?? '';
+    _recipientEmail = r?.email ?? '';
+    _recipientPhone = r?.phone ?? '';
+    _recipientAddress1 = r?.addressLine1 ?? '';
+    _recipientAddress2 = r?.addressLine2 ?? '';
+    _recipientCity = r?.city ?? '';
+    _recipientState = r?.state ?? '';
+    _recipientPostcode = r?.postcode ?? '';
+    _recipientCountry = r?.country ?? '';
+
+    final p = invoice.payerDetails;
+    _payerCompany = p?.companyName ?? '';
+    // Fall back to the flat toName/toEmail an older invoice may carry instead
+    // of a payer block, so those still populate rather than opening blank.
+    _payerContact = p?.contactName ?? invoice.toName ?? '';
+    _payerEmail = p?.email ?? invoice.toEmail ?? '';
+    _payerPhone = p?.phone ?? '';
+    _payerAddress1 = p?.addressLine1 ?? '';
+    _payerAddress2 = p?.addressLine2 ?? '';
+    _payerCity = p?.city ?? '';
+    _payerState = p?.state ?? '';
+    _payerPostcode = p?.postcode ?? '';
+    _payerCountry = p?.country ?? '';
+
+    _payerLogoUrl = invoice.payerLogoUrl ?? '';
+    _recipientLogoUrl = invoice.recipientLogoUrl ?? '';
+    // No local picks yet: the stored logos are URLs, and only a fresh pick
+    // needs uploading.
+    _payerImage = null;
+    _recipientImage = null;
+
+    _items = List<InvoiceItem>.from(invoice.items);
+    _taxAmount = invoice.taxAmount ?? 0;
+    _discountAmount = invoice.discountAmount ?? 0;
+    _notes = invoice.notes ?? '';
+
+    _emitFormUpdated();
+  }
+
+  /// Rebuilds the edited invoice, preserving its id and status.
+  ///
+  /// buildInvoice always stamps a blank id and a draft status because it is
+  /// written for creation. Saving an edit with those would address the update
+  /// at no invoice at all.
+  Invoice buildEditedInvoice(String userId, {String currency = 'NGN'}) {
+    final base = buildInvoice(userId, currency: currency);
+    return base.copyWith(
+      id: _editingInvoiceId ?? base.id,
+      status: _editingStatus ?? base.status,
+      payerLogoUrl: _payerLogoUrl.isNotEmpty ? _payerLogoUrl : null,
+      recipientLogoUrl: _recipientLogoUrl.isNotEmpty ? _recipientLogoUrl : null,
+    );
+  }
+
   Invoice buildInvoice(String userId, {String currency = 'NGN'}) {
     final effectiveCurrency = _invoiceCurrency.isNotEmpty ? _invoiceCurrency : currency;
     return Invoice(

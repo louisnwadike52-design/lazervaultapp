@@ -38,7 +38,12 @@ part 'create_invoice_carousel_widgets.dart';
 class CreateInvoiceCarousel extends StatefulWidget {
   final String? serviceFeeRef;
 
-  const CreateInvoiceCarousel({super.key, this.serviceFeeRef});
+  /// When set, the carousel EDITS this invoice instead of creating a new one:
+  /// the form is hydrated from it and saving calls updateInvoice.
+  final Invoice? editInvoice;
+
+  const CreateInvoiceCarousel(
+      {super.key, this.serviceFeeRef, this.editInvoice});
 
   @override
   State<CreateInvoiceCarousel> createState() => _CreateInvoiceCarouselState();
@@ -74,9 +79,14 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
       final authState = context.read<AuthenticationCubit>().state;
       if (authState is AuthenticationSuccess) {
         context.read<InvoiceCubit>().setUserId(authState.profile.user.id);
-        context
-            .read<CreateInvoiceCubit>()
-            .initializeWithUserData(authState.profile.user);
+        final createCubit = context.read<CreateInvoiceCubit>();
+        createCubit.initializeWithUserData(authState.profile.user);
+        // Hydrate AFTER the user defaults, so the invoice's own values win.
+        // Doing it the other way round would let the issuer defaults overwrite
+        // what is actually on the invoice being edited.
+        if (widget.editInvoice != null) {
+          createCubit.loadForEdit(widget.editInvoice!);
+        }
       }
 
       // Initialize invoice currency from active account if not already set
@@ -227,15 +237,39 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
         }
       }
 
-      payerLogoUrl = await uploadLogo(cubit.payerImage, 'customer');
-      recipientLogoUrl = await uploadLogo(cubit.recipientImage, 'business');
+      // A File is a NEW pick that needs uploading; a URL is a logo already on
+      // the invoice. Falling back to the stored URL is what stops an edit that
+      // never touched the logos from clearing them.
+      payerLogoUrl = await uploadLogo(cubit.payerImage, 'customer') ??
+          (cubit.payerLogoUrl.isNotEmpty ? cubit.payerLogoUrl : null);
+      recipientLogoUrl = await uploadLogo(cubit.recipientImage, 'business') ??
+          (cubit.recipientLogoUrl.isNotEmpty ? cubit.recipientLogoUrl : null);
 
       if (failedLogos.isNotEmpty && mounted) {
         _showErrorSnackBar(
           failedLogos.length == 1
-              ? 'We could not upload the ${failedLogos.first} logo, so the invoice was created without it.'
-              : 'We could not upload the logos, so the invoice was created without them.',
+              ? 'We could not upload the ${failedLogos.first} logo, so the invoice was saved without it.'
+              : 'We could not upload the logos, so the invoice was saved without them.',
         );
+      }
+
+      // The logo uploads above are awaited, so this State can be gone by now.
+      // Just leave: setState on an unmounted State throws, and there is no
+      // spinner left to clear.
+      if (!mounted) return;
+      final invoiceCubit = context.read<InvoiceCubit>();
+
+      // EDIT: same form, different verb. buildEditedInvoice keeps the id and
+      // status that buildInvoice would blank out, so the update addresses the
+      // invoice actually being edited.
+      if (cubit.isEditing) {
+        final edited =
+            cubit.buildEditedInvoice(authState.profile.user.id).copyWith(
+                  payerLogoUrl: payerLogoUrl,
+                  recipientLogoUrl: recipientLogoUrl,
+                );
+        await _saveEdit(invoiceCubit, edited);
+        return;
       }
 
       var invoice = cubit.buildInvoice(authState.profile.user.id);
@@ -243,8 +277,6 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
         payerLogoUrl: payerLogoUrl,
         recipientLogoUrl: recipientLogoUrl,
       );
-
-      final invoiceCubit = context.read<InvoiceCubit>();
 
       // Listen for the state change via a stream subscription so we don't
       // miss it due to subsequent state emissions (e.g. loadInvoices).
@@ -378,6 +410,50 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
       _showErrorSnackBar('Failed to create invoice: ${e.toString()}');
       if (mounted) setState(() => _isCreating = false);
     }
+  }
+
+  /// Saves an edited invoice and returns to the list.
+  ///
+  /// Mirrors the create path's completer pattern: InvoiceCubit emits through a
+  /// stream and loadInvoices() fires straight after, so awaiting the cubit
+  /// state directly would race with the refresh and miss the result.
+  Future<void> _saveEdit(InvoiceCubit invoiceCubit, Invoice edited) async {
+    final completer = Completer<InvoiceState>();
+    late final StreamSubscription<InvoiceState> sub;
+    sub = invoiceCubit.stream
+        .where((s) => s is InvoiceOperationSuccess || s is InvoiceError)
+        .listen((s) {
+      if (!completer.isCompleted) completer.complete(s);
+      sub.cancel();
+    });
+
+    if (!mounted) {
+      sub.cancel();
+      return;
+    }
+
+    invoiceCubit.updateInvoice(edited);
+
+    final result = await completer.future.timeout(
+      const Duration(seconds: 30),
+      onTimeout: () {
+        sub.cancel();
+        return const InvoiceError(message: 'Saving your changes timed out');
+      },
+    );
+
+    if (!mounted) return;
+
+    if (result is! InvoiceOperationSuccess) {
+      _showErrorSnackBar(
+        result is InvoiceError ? result.message : 'Could not save your changes',
+      );
+      setState(() => _isCreating = false);
+      return;
+    }
+
+    setState(() => _isCreating = false);
+    Get.back(result: true);
   }
 
   void _showErrorSnackBar(String message) {

@@ -242,11 +242,24 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   Future<Invoice> updateInvoice(Invoice invoice) async {
     return retryWithBackoff(
       operation: () async {
+        // UpdateInvoice is a PARTIAL update: the backend only overwrites a
+        // field when it arrives non-empty, so anything omitted here silently
+        // keeps its old value. That is why recipient, tax, discount and the
+        // logos are all sent — leaving them out was why an edit could only
+        // ever change the description, amount and notes.
         final request = pb.UpdateInvoiceRequest()
           ..invoiceId = invoice.id
           ..description = invoice.description
           ..amount = invoice.amount
-          ..notes = invoice.notes ?? '';
+          ..tax = invoice.taxAmount ?? 0
+          ..discount = invoice.discountAmount ?? 0
+          ..notes = invoice.notes ?? ''
+          ..recipientEmail = invoice.toEmail ?? ''
+          ..recipientName = invoice.toName ?? ''
+          // Empty means "leave as is", so a user who edits without touching
+          // the logos keeps the ones already on the invoice.
+          ..payerLogoUrl = invoice.payerLogoUrl ?? ''
+          ..recipientLogoUrl = invoice.recipientLogoUrl ?? '';
 
         if (invoice.dueDate != null) {
           request.dueDate = invoice.dueDate!.toUtc().toIso8601String();

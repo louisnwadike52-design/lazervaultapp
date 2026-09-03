@@ -560,23 +560,25 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
-            // NO "Edit" ACTION. It used to route to AppRoutes.createInvoice with
-            // the Invoice as the argument, but that route only reads
-            // Get.arguments when it is a Map (to pull serviceFeeRef), so an
-            // Invoice was silently ignored: the carousel opened BLANK with a
-            // fresh CreateInvoiceCubit, which reads as the app having lost the
-            // draft, and completing the form created a SECOND draft while the
-            // original sat untouched. Only drafts ever showed the action, so
-            // nothing payable was duplicated, but nothing was ever edited
-            // either.
-            //
-            // Restoring it needs real edit support, not a rewired argument:
-            // CreateInvoiceCubit has no hydrate-from-invoice path, the save
-            // step always calls create, and UpdateInvoiceRequest carries no
-            // logo fields, so a logo could not survive an edit even once the
-            // form was prefilled. Deleting the draft and creating a new one is
-            // the honest flow until then.
             if (invoice.canBeEdited) ...[
+              ListTile(
+                leading:
+                    Icon(Icons.edit, color: InvoiceThemeColors.primaryPurple),
+                title: Text('Edit', style: InvoiceTextStyles.body16),
+                onTap: () async {
+                  Navigator.pop(context);
+                  // The carousel hydrates from this invoice and saves through
+                  // updateInvoice. It returns true once the edit is saved, so
+                  // the list refreshes rather than showing the pre-edit copy.
+                  final saved = await Get.toNamed(
+                    AppRoutes.createInvoice,
+                    arguments: invoice,
+                  );
+                  if (saved == true && context.mounted) {
+                    context.read<InvoiceCubit>().loadInvoices();
+                  }
+                },
+              ),
               ListTile(
                 leading:
                     Icon(Icons.send, color: InvoiceThemeColors.primaryPurple),

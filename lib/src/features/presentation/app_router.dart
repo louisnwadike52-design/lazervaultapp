@@ -962,9 +962,16 @@ class AppRouter {
       name: AppRoutes.createInvoice,
       page: () {
         String? serviceFeeRef;
+        Invoice? editInvoice;
         final args = Get.arguments;
         if (args is Map<String, dynamic>) {
           serviceFeeRef = args['serviceFeeRef'] as String?;
+          editInvoice = args['editInvoice'] as Invoice?;
+        } else if (args is Invoice) {
+          // The Edit action passes the Invoice directly. This used to fall
+          // through the Map check and be dropped, so the carousel opened blank
+          // and saving created a SECOND draft instead of editing.
+          editInvoice = args;
         }
         return MultiBlocProvider(
           providers: [
@@ -975,7 +982,10 @@ class AppRouter {
               create: (_) => CreateInvoiceCubit(),
             ),
           ],
-          child: CreateInvoiceCarousel(serviceFeeRef: serviceFeeRef),
+          child: CreateInvoiceCarousel(
+            serviceFeeRef: serviceFeeRef,
+            editInvoice: editInvoice,
+          ),
         );
       },
       transition: Transition.rightToLeft,

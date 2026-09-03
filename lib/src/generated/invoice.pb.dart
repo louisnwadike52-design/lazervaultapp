@@ -3594,6 +3594,8 @@ class UpdateInvoiceRequest extends $pb.GeneratedMessage {
     $core.double? tax,
     $core.double? discount,
     $core.String? notes,
+    $core.String? payerLogoUrl,
+    $core.String? recipientLogoUrl,
   }) {
     final result = create();
     if (invoiceId != null) result.invoiceId = invoiceId;
@@ -3606,6 +3608,8 @@ class UpdateInvoiceRequest extends $pb.GeneratedMessage {
     if (tax != null) result.tax = tax;
     if (discount != null) result.discount = discount;
     if (notes != null) result.notes = notes;
+    if (payerLogoUrl != null) result.payerLogoUrl = payerLogoUrl;
+    if (recipientLogoUrl != null) result.recipientLogoUrl = recipientLogoUrl;
     return result;
   }
 
@@ -3633,6 +3637,8 @@ class UpdateInvoiceRequest extends $pb.GeneratedMessage {
     ..a<$core.double>(8, _omitFieldNames ? '' : 'tax', $pb.PbFieldType.OD)
     ..a<$core.double>(9, _omitFieldNames ? '' : 'discount', $pb.PbFieldType.OD)
     ..aOS(10, _omitFieldNames ? '' : 'notes')
+    ..aOS(11, _omitFieldNames ? '' : 'payerLogoUrl')
+    ..aOS(12, _omitFieldNames ? '' : 'recipientLogoUrl')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -3740,6 +3746,28 @@ class UpdateInvoiceRequest extends $pb.GeneratedMessage {
   $core.bool hasNotes() => $_has(9);
   @$pb.TagNumber(10)
   void clearNotes() => $_clearField(10);
+
+  /// Logo URLs, storage public URLs like every other logo field. Empty means
+  /// "leave as is", matching the partial-update semantics of every field above
+  /// (UpdateInvoice only overwrites what it is given), so an edit that does not
+  /// touch the logos cannot wipe them.
+  @$pb.TagNumber(11)
+  $core.String get payerLogoUrl => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set payerLogoUrl($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasPayerLogoUrl() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearPayerLogoUrl() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get recipientLogoUrl => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set recipientLogoUrl($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasRecipientLogoUrl() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearRecipientLogoUrl() => $_clearField(12);
 }
 
 class UpdateInvoiceResponse extends $pb.GeneratedMessage {
