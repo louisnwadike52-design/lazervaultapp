@@ -122,6 +122,11 @@ message SplitBill {
   string settlement_status = 21;        // not_applicable|pending|settling|settled|failed
   double withdrawal_fee = 22;           // external payout fee (major units), folded into the split
   string title = 23;                    // required headline, ≤100 chars; primary label everywhere
+  // Destination bank for an external_bank receiver, snapshotted at creation.
+  // Without it a receipt can only say "Paid to <name> •••• 1234", which does not
+  // identify where the money went — the same name and last-4 can exist at two
+  // banks, and a dispute is resolved on the bank. Empty for internal/legacy.
+  string receiver_bank_name = 24;
 }
 
 message SplitBillParticipant {
@@ -155,6 +160,10 @@ message ReceiverInput {
   string account_number = 4;  // external_bank
   string user_id = 5;         // internal_user: preferred stable key; account resolved server-side
   string display_name = 6;    // internal_user: display only
+  // external_bank: display label for bank_code. The client already has it from
+  // the bank picker; sending it avoids a bank-directory lookup server-side.
+  // Untrusted display data — never used for routing, which uses bank_code.
+  string bank_name = 7;
 }
 
 message SplitBillTransaction {

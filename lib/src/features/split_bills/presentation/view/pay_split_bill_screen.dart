@@ -17,7 +17,6 @@ import '../cubit/split_bill_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'pay_split_bill_screen_widgets.dart';
 
-
 class _PaySplitBillViewState extends State<_PaySplitBillView>
     with TransactionPinMixin {
   @override
@@ -31,6 +30,14 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
   late final String currency;
   late final String creatorName;
   late final String receiverName;
+
+  /// Masked destination account, external-bank receivers only. Carried through
+  /// purely so the receipt and its PDF can show WHICH account was paid.
+  late final String receiverAccountMasked;
+
+  /// Destination bank name, external-bank receivers only. Same purpose as
+  /// [receiverAccountMasked]: it exists so the receipt can name the bank.
+  late final String receiverBankName;
   late final String description;
   bool _invalidArgs = false;
 
@@ -50,6 +57,8 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
     currency = args['currency'] as String? ?? 'NGN';
     creatorName = args['creatorName'] as String? ?? 'Unknown';
     receiverName = args['receiverName'] as String? ?? '';
+    receiverAccountMasked = args['receiverAccountMasked'] as String? ?? '';
+    receiverBankName = args['receiverBankName'] as String? ?? '';
     description = args['description'] as String? ?? '';
     if (splitBillId.isEmpty || amount <= 0) {
       _invalidArgs = true;
@@ -69,7 +78,6 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
       }
     });
   }
-
 
   String get _formattedAmount {
     return '${_currencySymbol(currency)}${amount.toStringAsFixed(2)}';
@@ -254,6 +262,8 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
                 'currency': currency,
                 'creatorName': creatorName,
                 'receiverName': receiverName,
+                'receiverAccountMasked': receiverAccountMasked,
+                'receiverBankName': receiverBankName,
                 'description': description,
                 'paidCount': state.updatedBill.paidCount,
                 'totalParticipants': state.updatedBill.totalParticipants,
@@ -340,124 +350,122 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
     final displayCurrency = _accountDisplayCurrency;
 
     return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: _hasInsufficientFunds
-                ? const Color(0xFFEF4444).withValues(alpha: 0.5)
-                : const Color(0xFF2D2D2D),
-          ),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: _hasInsufficientFunds
+              ? const Color(0xFFEF4444).withValues(alpha: 0.5)
+              : const Color(0xFF2D2D2D),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4834D4).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.account_balance_wallet,
-                    color: Color(0xFF4834D4),
-                    size: 18,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Paying from',
-                        style: TextStyle(
-                          color: Color(0xFF9CA3AF),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        _accountLabel(hasAccount),
-                        style: TextStyle(
-                          color: hasAccount
-                              ? Colors.white
-                              : const Color(0xFFEF4444),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (displayBalance != null)
-                  Text(
-                    '${_currencySymbol(displayCurrency ?? currency)}${displayBalance.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      color: _hasInsufficientFunds
-                          ? const Color(0xFFEF4444)
-                          : const Color(0xFF10B981),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                const SizedBox(width: 8),
-                const Icon(
-                  Icons.lock_outline,
-                  color: Color(0xFF6B7280),
-                  size: 16,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Your active account is used for this payment',
-              style: TextStyle(
-                color: Color(0xFF6B7280),
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            if (_hasInsufficientFunds) ...[
-              const SizedBox(height: 12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
               Container(
-                width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0xFF4834D4).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Row(
+                child: const Icon(
+                  Icons.account_balance_wallet,
+                  color: Color(0xFF4834D4),
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.warning_amber_rounded,
-                      color: Color(0xFFEF4444),
-                      size: 16,
+                    const Text(
+                      'Paying from',
+                      style: TextStyle(
+                        color: Color(0xFF9CA3AF),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Insufficient balance. You need ${_currencySymbol(currency)}${(amount - (_accountBalance ?? 0)).toStringAsFixed(2)} more in your active account.',
-                        style: const TextStyle(
-                          color: Color(0xFFEF4444),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _accountLabel(hasAccount),
+                      style: TextStyle(
+                        color:
+                            hasAccount ? Colors.white : const Color(0xFFEF4444),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
+              if (displayBalance != null)
+                Text(
+                  '${_currencySymbol(displayCurrency ?? currency)}${displayBalance.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: _hasInsufficientFunds
+                        ? const Color(0xFFEF4444)
+                        : const Color(0xFF10B981),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.lock_outline,
+                color: Color(0xFF6B7280),
+                size: 16,
+              ),
             ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Your active account is used for this payment',
+            style: TextStyle(
+              color: Color(0xFF6B7280),
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          if (_hasInsufficientFunds) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    color: Color(0xFFEF4444),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Insufficient balance. You need ${_currencySymbol(currency)}${(amount - (_accountBalance ?? 0)).toStringAsFixed(2)} more in your active account.',
+                      style: const TextStyle(
+                        color: Color(0xFFEF4444),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
-        ),
+        ],
+      ),
     );
   }
 
@@ -524,9 +532,8 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _isProcessing || _hasInsufficientFunds
-            ? null
-            : _submitPayment,
+        onPressed:
+            _isProcessing || _hasInsufficientFunds ? null : _submitPayment,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF10B981),
           disabledBackgroundColor:

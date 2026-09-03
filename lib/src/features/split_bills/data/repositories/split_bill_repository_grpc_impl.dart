@@ -42,6 +42,7 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
             ..username = receiver.username
             ..displayName = receiver.displayName
             ..bankCode = receiver.bankCode
+            ..bankName = receiver.bankName
             ..accountNumber = receiver.accountNumber;
         }
 
@@ -62,8 +63,9 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
           );
 
           if (!response.success) {
-            throw Exception(
-                response.message.isNotEmpty ? response.message : 'Failed to create split bill');
+            throw Exception(response.message.isNotEmpty
+                ? response.message
+                : 'Failed to create split bill');
           }
 
           return _splitBillFromProto(response.splitBill);
@@ -88,8 +90,9 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
           );
 
           if (!response.success) {
-            throw Exception(
-                response.message.isNotEmpty ? response.message : 'Split bill not found');
+            throw Exception(response.message.isNotEmpty
+                ? response.message
+                : 'Split bill not found');
           }
 
           return _splitBillFromProto(response.splitBill);
@@ -195,8 +198,9 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
           );
 
           if (!response.success) {
-            throw Exception(
-                response.message.isNotEmpty ? response.message : 'Payment failed');
+            throw Exception(response.message.isNotEmpty
+                ? response.message
+                : 'Payment failed');
           }
 
           return PaySplitBillResult(
@@ -215,8 +219,7 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
   Future<void> cancelSplitBill({required String splitBillId}) async {
     return retryWithBackoff(
       operation: () async {
-        final request = pb.CancelSplitBillRequest()
-          ..splitBillId = splitBillId;
+        final request = pb.CancelSplitBillRequest()..splitBillId = splitBillId;
 
         final options = await grpcClient.callOptions;
         try {
@@ -226,8 +229,9 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
           );
 
           if (!response.success) {
-            throw Exception(
-                response.message.isNotEmpty ? response.message : 'Failed to cancel');
+            throw Exception(response.message.isNotEmpty
+                ? response.message
+                : 'Failed to cancel');
           }
         } on GrpcError catch (e) {
           _handleGrpcError(e);
@@ -259,8 +263,9 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
           );
 
           if (!response.success) {
-            throw Exception(
-                response.message.isNotEmpty ? response.message : 'Failed to decline');
+            throw Exception(response.message.isNotEmpty
+                ? response.message
+                : 'Failed to decline');
           }
         } on GrpcError catch (e) {
           _handleGrpcError(e);
@@ -291,8 +296,9 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
           );
 
           if (!response.success) {
-            throw Exception(
-                response.message.isNotEmpty ? response.message : 'Failed to send reminders');
+            throw Exception(response.message.isNotEmpty
+                ? response.message
+                : 'Failed to send reminders');
           }
 
           return response.remindersSent;
@@ -346,13 +352,13 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
       totalParticipants: proto.totalParticipants,
       paidCount: proto.paidCount,
       paidAmount: proto.paidAmount,
-      participants:
-          proto.participants.map(_participantFromProto).toList(),
+      participants: proto.participants.map(_participantFromProto).toList(),
       createdAt: proto.createdAt.toDateTime(),
       updatedAt: proto.updatedAt.toDateTime(),
       receiverType: proto.receiverType,
       receiverName: proto.receiverName,
       receiverAccountMasked: proto.receiverAccountMasked,
+      receiverBankName: proto.receiverBankName,
       settlementStatus: proto.settlementStatus,
       withdrawalFee: proto.withdrawalFee,
     );
@@ -408,14 +414,14 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
   SplitBillParticipantStatus _participantStatusFromProto(
       pb_enum.SplitBillParticipantStatus status) {
     switch (status) {
-      case pb_enum.SplitBillParticipantStatus
-            .SPLIT_BILL_PARTICIPANT_STATUS_PENDING:
+      case pb_enum
+            .SplitBillParticipantStatus.SPLIT_BILL_PARTICIPANT_STATUS_PENDING:
         return SplitBillParticipantStatus.pending;
       case pb_enum
             .SplitBillParticipantStatus.SPLIT_BILL_PARTICIPANT_STATUS_PAID:
         return SplitBillParticipantStatus.paid;
-      case pb_enum.SplitBillParticipantStatus
-            .SPLIT_BILL_PARTICIPANT_STATUS_DECLINED:
+      case pb_enum
+            .SplitBillParticipantStatus.SPLIT_BILL_PARTICIPANT_STATUS_DECLINED:
         return SplitBillParticipantStatus.declined;
       case pb_enum.SplitBillParticipantStatus
             .SPLIT_BILL_PARTICIPANT_STATUS_IN_PROGRESS:

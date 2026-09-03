@@ -14,7 +14,6 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 part 'split_bill_home_screen_widgets.dart';
 
-
 class _SplitBillHomeViewState extends State<_SplitBillHomeView>
     with SingleTickerProviderStateMixin {
   // Brand palette — matches the dashboard account-carousel gradient end stop
@@ -41,8 +40,7 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
   String? _incomingError;
   String? _createdError;
 
-  String? get _currentUserId =>
-      context.read<AuthenticationCubit>().userId;
+  String? get _currentUserId => context.read<AuthenticationCubit>().userId;
 
   @override
   void initState() {
@@ -106,68 +104,68 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
         if (!didPop) _handleBack();
       },
       child: Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      extendBodyBehindAppBar: true,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openCreate,
-        backgroundColor: _brandPurple,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          'New Split Bill',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+        backgroundColor: const Color(0xFF0A0A0A),
+        extendBodyBehindAppBar: true,
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _openCreate,
+          backgroundColor: _brandPurple,
+          icon: const Icon(Icons.add, color: Colors.white),
+          label: const Text(
+            'New Split Bill',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
-      ),
-      body: BlocListener<SplitBillCubit, SplitBillState>(
-        listener: (context, state) {
-          // Fold list results into the per-tab caches. The tabs render from
-          // these caches (not the live state), so a load never blanks a tab.
-          if (state is IncomingSplitBillsLoaded) {
-            setState(() {
-              _incomingBills = state.bills;
-              _incomingError = null;
-            });
-          } else if (state is CreatedSplitBillsLoaded) {
-            setState(() {
-              _createdBills = state.bills;
-              _createdError = null;
-            });
-          } else if (state is SplitBillError) {
-            // Surface the failure inline on the affected tab only (the empty
-            // error state renders a user-friendly message + Retry). No snackbar:
-            // it duplicated the in-tab error AND, because GetX's Get.back()
-            // dismisses an open snackbar before popping the route, it made the
-            // back button appear to hang until the toast finished.
-            setState(() {
-              if (_currentTab == 0 && _incomingBills == null) {
-                _incomingError = state.message;
-              } else if (_currentTab == 1 && _createdBills == null) {
-                _createdError = state.message;
-              }
-            });
-          }
-        },
-        child: Column(
-          children: [
-            _buildHeaderBanner(),
-            SizedBox(height: 12),
-            _buildTabBar(),
-            SizedBox(height: 8),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildIncomingTab(),
-                  _buildCreatedTab(),
-                ],
+        body: BlocListener<SplitBillCubit, SplitBillState>(
+          listener: (context, state) {
+            // Fold list results into the per-tab caches. The tabs render from
+            // these caches (not the live state), so a load never blanks a tab.
+            if (state is IncomingSplitBillsLoaded) {
+              setState(() {
+                _incomingBills = state.bills;
+                _incomingError = null;
+              });
+            } else if (state is CreatedSplitBillsLoaded) {
+              setState(() {
+                _createdBills = state.bills;
+                _createdError = null;
+              });
+            } else if (state is SplitBillError) {
+              // Surface the failure inline on the affected tab only (the empty
+              // error state renders a user-friendly message + Retry). No snackbar:
+              // it duplicated the in-tab error AND, because GetX's Get.back()
+              // dismisses an open snackbar before popping the route, it made the
+              // back button appear to hang until the toast finished.
+              setState(() {
+                if (_currentTab == 0 && _incomingBills == null) {
+                  _incomingError = state.message;
+                } else if (_currentTab == 1 && _createdBills == null) {
+                  _createdError = state.message;
+                }
+              });
+            }
+          },
+          child: Column(
+            children: [
+              _buildHeaderBanner(),
+              SizedBox(height: 12),
+              _buildTabBar(),
+              SizedBox(height: 8),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildIncomingTab(),
+                    _buildCreatedTab(),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -213,7 +211,8 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
                 width: 38,
                 height: 38,
                 alignment: Alignment.center,
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                child:
+                    const Icon(Icons.arrow_back, color: Colors.white, size: 20),
               ),
             ),
           ),
@@ -582,8 +581,7 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 22),
+                        padding: const EdgeInsets.symmetric(horizontal: 22),
                       ),
                       icon: const Icon(Icons.refresh, size: 18),
                       label: const Text(

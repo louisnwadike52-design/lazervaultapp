@@ -144,6 +144,13 @@ const SplitBill$json = {
     },
     {'1': 'withdrawal_fee', '3': 22, '4': 1, '5': 1, '10': 'withdrawalFee'},
     {'1': 'title', '3': 23, '4': 1, '5': 9, '10': 'title'},
+    {
+      '1': 'receiver_bank_name',
+      '3': 24,
+      '4': 1,
+      '5': 9,
+      '10': 'receiverBankName'
+    },
   ],
 };
 
@@ -166,7 +173,7 @@ final $typed_data.Uint8List splitBillDescriptor = $convert.base64Decode(
     'ZWl2ZXJOYW1lEjYKF3JlY2VpdmVyX2FjY291bnRfbWFza2VkGBQgASgJUhVyZWNlaXZlckFjY2'
     '91bnRNYXNrZWQSKwoRc2V0dGxlbWVudF9zdGF0dXMYFSABKAlSEHNldHRsZW1lbnRTdGF0dXMS'
     'JQoOd2l0aGRyYXdhbF9mZWUYFiABKAFSDXdpdGhkcmF3YWxGZWUSFAoFdGl0bGUYFyABKAlSBX'
-    'RpdGxl');
+    'RpdGxlEiwKEnJlY2VpdmVyX2JhbmtfbmFtZRgYIAEoCVIQcmVjZWl2ZXJCYW5rTmFtZQ==');
 
 @$core.Deprecated('Use splitBillParticipantDescriptor instead')
 const SplitBillParticipant$json = {
@@ -246,6 +253,7 @@ const ReceiverInput$json = {
     {'1': 'account_number', '3': 4, '4': 1, '5': 9, '10': 'accountNumber'},
     {'1': 'user_id', '3': 5, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'display_name', '3': 6, '4': 1, '5': 9, '10': 'displayName'},
+    {'1': 'bank_name', '3': 7, '4': 1, '5': 9, '10': 'bankName'},
   ],
 };
 
@@ -254,7 +262,7 @@ final $typed_data.Uint8List receiverInputDescriptor = $convert.base64Decode(
     'Cg1SZWNlaXZlcklucHV0EhIKBHR5cGUYASABKAlSBHR5cGUSGgoIdXNlcm5hbWUYAiABKAlSCH'
     'VzZXJuYW1lEhsKCWJhbmtfY29kZRgDIAEoCVIIYmFua0NvZGUSJQoOYWNjb3VudF9udW1iZXIY'
     'BCABKAlSDWFjY291bnROdW1iZXISFwoHdXNlcl9pZBgFIAEoCVIGdXNlcklkEiEKDGRpc3BsYX'
-    'lfbmFtZRgGIAEoCVILZGlzcGxheU5hbWU=');
+    'lfbmFtZRgGIAEoCVILZGlzcGxheU5hbWUSGwoJYmFua19uYW1lGAcgASgJUghiYW5rTmFtZQ==');
 
 @$core.Deprecated('Use splitBillTransactionDescriptor instead')
 const SplitBillTransaction$json = {

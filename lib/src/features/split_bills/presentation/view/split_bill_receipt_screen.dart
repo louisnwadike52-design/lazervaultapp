@@ -22,6 +22,14 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
   late final String currency;
   late final String creatorName;
   late final String receiverName;
+
+  /// Masked destination account for an external-bank receiver ("•••• 1234").
+  /// Empty for internal/legacy bills, where there is no bank account to name.
+  late final String receiverAccountMasked;
+
+  /// Destination bank for an external receiver. Empty for internal receivers
+  /// and for bills created before it was captured.
+  late final String receiverBankName;
   late final String description;
   int paidCount = 0;
   int totalParticipants = 0;
@@ -62,7 +70,9 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
     // Preferred path: derive every field from the authoritative bill + the
     // target payer's participant record (real paidAt / reference / status /
     // amount / payee). Falls back to the legacy scalar args for back-compat.
-    if (bill is SplitBillEntity && payerUserId != null && payerUserId.isNotEmpty) {
+    if (bill is SplitBillEntity &&
+        payerUserId != null &&
+        payerUserId.isNotEmpty) {
       final p = bill.participantForUser(payerUserId);
       _authoritative = true;
       _billId = bill.id;
@@ -71,11 +81,17 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
       currency = bill.currency;
       creatorName = bill.creatorName;
       receiverName = bill.receiverDisplay; // bill-authoritative payee
+      // Only external receivers have a bank account. maskReceiverAccount()
+      // returns the DISPLAY NAME for internal ones, so using it unguarded
+      // would print the payee's name twice, once labelled "Account".
+      receiverAccountMasked =
+          bill.hasExternalReceiver ? bill.receiverAccountMasked : '';
+      receiverBankName = bill.hasExternalReceiver ? bill.receiverBankName : '';
       description = bill.description;
-      transactionReference =
-          (p?.transactionReference != null && p!.transactionReference!.isNotEmpty)
-              ? p.transactionReference!
-              : bill.reference;
+      transactionReference = (p?.transactionReference != null &&
+              p!.transactionReference!.isNotEmpty)
+          ? p.transactionReference!
+          : bill.reference;
       paidCount = bill.paidCount;
       totalParticipants = bill.totalParticipants;
       _paidAt = p?.paidAt;
@@ -86,6 +102,8 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
       currency = args['currency'] as String? ?? 'NGN';
       creatorName = args['creatorName'] as String? ?? 'Unknown';
       receiverName = args['receiverName'] as String? ?? '';
+      receiverAccountMasked = args['receiverAccountMasked'] as String? ?? '';
+      receiverBankName = args['receiverBankName'] as String? ?? '';
       description = args['description'] as String? ?? '';
       paidCount = args['paidCount'] as int? ?? 0;
       totalParticipants = args['totalParticipants'] as int? ?? 0;
@@ -151,6 +169,8 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
         currency: currency,
         creatorName: creatorName,
         receiverName: receiverName,
+        receiverAccountMasked: receiverAccountMasked,
+        receiverBankName: receiverBankName,
         description: description,
         paidCount: paidCount,
         totalParticipants: totalParticipants,
@@ -192,6 +212,8 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
         currency: currency,
         creatorName: creatorName,
         receiverName: receiverName,
+        receiverAccountMasked: receiverAccountMasked,
+        receiverBankName: receiverBankName,
         description: description,
         paidCount: paidCount,
         totalParticipants: totalParticipants,
@@ -288,50 +310,52 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
                 color: const Color(0xFF4834D4),
                 backgroundColor: const Color(0xFF1F1F1F),
                 child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 8),
-                    _buildSuccessIcon(isPaid),
-                    const SizedBox(height: 24),
-                    if (isInProgress) ...[
-                      const Text(
-                        'Pull down to refresh the status',
-                        style: TextStyle(
-                            color: Color(0xFF6B7280), fontSize: 12),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 8),
+                      _buildSuccessIcon(isPaid),
+                      const SizedBox(height: 24),
+                      if (isInProgress) ...[
+                        const Text(
+                          'Pull down to refresh the status',
+                          style:
+                              TextStyle(color: Color(0xFF6B7280), fontSize: 12),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      Text(
+                        headerText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       const SizedBox(height: 8),
-                    ],
-                    Text(
-                      headerText,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
+                      Text(
+                        isPaid
+                            ? 'This share has been paid'
+                            : 'Share status: $_statusLabel',
+                        style: const TextStyle(
+                          color: Color(0xFF9CA3AF),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      isPaid ? 'This share has been paid' : 'Share status: $_statusLabel',
-                      style: const TextStyle(
-                        color: Color(0xFF9CA3AF),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    _buildAmountCard(),
-                    const SizedBox(height: 24),
-                    _buildTransactionDetails(now),
-                    if (description.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      _buildSplitBillInfo(),
+                      const SizedBox(height: 32),
+                      _buildAmountCard(),
+                      const SizedBox(height: 24),
+                      _buildTransactionDetails(now),
+                      if (description.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        _buildSplitBillInfo(),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
               ),
             ),
             _buildActions(),
@@ -414,6 +438,13 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
           ),
           const SizedBox(height: 16),
           _buildDetailRow('Paid to', _paidToName),
+          // Parity with the PDF, which has always had an Account row. The
+          // on-screen receipt omitting it meant the shared file and the screen
+          // it was shared from disagreed about what the payment shows.
+          if (receiverBankName.isNotEmpty)
+            _buildDetailRow('Bank', receiverBankName),
+          if (receiverAccountMasked.isNotEmpty)
+            _buildDetailRow('Account', receiverAccountMasked),
           const SizedBox(height: 12),
           _buildDetailRow('Reference', transactionReference),
           const SizedBox(height: 12),

@@ -44,8 +44,7 @@ class SplitBillDetailScreen extends StatelessWidget {
     }
 
     return BlocProvider(
-      create: (_) =>
-          GetIt.I<SplitBillCubit>()..loadBillDetail(splitBillId),
+      create: (_) => GetIt.I<SplitBillCubit>()..loadBillDetail(splitBillId),
       child: _SplitBillDetailView(splitBillId: splitBillId),
     );
   }
@@ -113,7 +112,9 @@ class _SplitBillDetailView extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          if (state is SplitBillLoading || state is SplitBillDetailLoading || state is SplitBillPaymentProcessing) {
+          if (state is SplitBillLoading ||
+              state is SplitBillDetailLoading ||
+              state is SplitBillPaymentProcessing) {
             return const Center(
               child: LazerVaultLoader.small(),
             );
@@ -138,10 +139,10 @@ class _SplitBillDetailView extends StatelessWidget {
   Widget _buildDetailContent(BuildContext context, SplitBillEntity bill) {
     final currentUserId = _getCurrentUserId(context);
     final isCreator = currentUserId != null && bill.creatorId == currentUserId;
-    final myParticipant = currentUserId != null
-        ? bill.participantForUser(currentUserId)
-        : null;
-    final isParticipantPending = myParticipant != null && myParticipant.isPending;
+    final myParticipant =
+        currentUserId != null ? bill.participantForUser(currentUserId) : null;
+    final isParticipantPending =
+        myParticipant != null && myParticipant.isPending;
 
     return SafeArea(
       child: Column(
@@ -176,8 +177,8 @@ class _SplitBillDetailView extends StatelessWidget {
             ),
           ),
           if (bill.isActive)
-            _buildActionBar(context, bill, isCreator, isParticipantPending,
-                myParticipant),
+            _buildActionBar(
+                context, bill, isCreator, isParticipantPending, myParticipant),
         ],
       ),
     );
@@ -231,9 +232,11 @@ class _SplitBillDetailView extends StatelessWidget {
           const SizedBox(height: 16),
           const Divider(color: Color(0xFF2D2D2D), thickness: 1),
           const SizedBox(height: 16),
-          _buildInfoRow('Created by', bill.creatorName.isNotEmpty
-              ? bill.creatorName
-              : '@${bill.creatorUsername}'),
+          _buildInfoRow(
+              'Created by',
+              bill.creatorName.isNotEmpty
+                  ? bill.creatorName
+                  : '@${bill.creatorUsername}'),
           const SizedBox(height: 10),
           _buildReceiverRow(bill),
           const SizedBox(height: 10),
@@ -287,12 +290,19 @@ class _SplitBillDetailView extends StatelessWidget {
 
     if (bill.hasExternalReceiver) {
       icon = Icons.account_balance_rounded;
-      primary = bill.receiverName.isNotEmpty ? bill.receiverName : 'Bank account';
-      secondary = bill.receiverAccountMasked; // "•••• 1234"
+      primary =
+          bill.receiverName.isNotEmpty ? bill.receiverName : 'Bank account';
+      // "Access Bank · •••• 1234" — the bank is what identifies WHERE the
+      // money went; the last four digits alone do not. Falls back to just the
+      // account for bills created before the bank name was captured.
+      secondary = bill.receiverBankName.trim().isNotEmpty
+          ? '${bill.receiverBankName.trim()} · ${bill.receiverAccountMasked}'
+          : bill.receiverAccountMasked;
       typeLabel = 'External bank';
     } else if (bill.hasInternalReceiver) {
       icon = Icons.person_rounded;
-      primary = bill.receiverName.isNotEmpty ? bill.receiverName : 'Lazervault user';
+      primary =
+          bill.receiverName.isNotEmpty ? bill.receiverName : 'Lazervault user';
       // Backend masks the internal receiver as the display name; avoid repeating it —
       // the "Lazervault user" chip below already conveys the type.
       final masked = bill.receiverAccountMasked;
@@ -301,7 +311,9 @@ class _SplitBillDetailView extends StatelessWidget {
     } else {
       // Legacy / self-collect: the creator collects each share directly.
       icon = Icons.person_rounded;
-      primary = bill.creatorName.isNotEmpty ? bill.creatorName : '@${bill.creatorUsername}';
+      primary = bill.creatorName.isNotEmpty
+          ? bill.creatorName
+          : '@${bill.creatorUsername}';
       secondary = 'Collects directly';
       typeLabel = 'Organizer';
     }
@@ -357,8 +369,7 @@ class _SplitBillDetailView extends StatelessWidget {
               ],
               const SizedBox(height: 4),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFF4834D4).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
@@ -552,8 +563,8 @@ class _SplitBillDetailView extends StatelessWidget {
               Flexible(
                 child: ListView(
                   shrinkWrap: true,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   children: bill.participants
                       .map((p) => _buildWhoPaidRow(p, bill, currentUserId))
                       .toList(),
@@ -601,9 +612,7 @@ class _SplitBillDetailView extends StatelessWidget {
     };
     final isYou = currentUserId != null && p.userId == currentUserId;
 
-    final name = p.displayName.isNotEmpty
-        ? p.displayName
-        : '@${p.username}';
+    final name = p.displayName.isNotEmpty ? p.displayName : '@${p.username}';
 
     // A paid payer's row opens their authoritative, bill-derived receipt.
     final canViewReceipt = p.isPaid;
@@ -753,7 +762,8 @@ class _SplitBillDetailView extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: const Color(0xFF4834D4).withValues(alpha: 0.2),
+                  backgroundColor:
+                      const Color(0xFF4834D4).withValues(alpha: 0.2),
                   child: Text(
                     bill.creatorName.isNotEmpty
                         ? bill.creatorName[0].toUpperCase()
@@ -820,26 +830,26 @@ class _SplitBillDetailView extends StatelessWidget {
           ),
           const Divider(color: Color(0xFF2D2D2D), height: 1),
           ...bill.participants.where((p) => !p.isCreator).map(
-            (p) => Column(
-              children: [
-                ParticipantRow(participant: p, currency: bill.currency),
-                if (p.isPaid && p.transactionReference != null)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 52, bottom: 4),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Ref: ${p.transactionReference}',
-                        style: const TextStyle(
-                          color: Color(0xFF6B7280),
-                          fontSize: 11,
+                (p) => Column(
+                  children: [
+                    ParticipantRow(participant: p, currency: bill.currency),
+                    if (p.isPaid && p.transactionReference != null)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 52, bottom: 4),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Ref: ${p.transactionReference}',
+                            style: const TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 11,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
+                  ],
+                ),
+              ),
         ],
       ),
     );
@@ -849,7 +859,8 @@ class _SplitBillDetailView extends StatelessWidget {
   /// of the whole bill (receiver, total, per-participant breakdown, collection
   /// progress). Mirrors the co-payer receipt's Share/Download actions, but is a
   /// summary of the bill rather than a payment receipt.
-  Widget _buildCreatorSummaryActions(BuildContext context, SplitBillEntity bill) {
+  Widget _buildCreatorSummaryActions(
+      BuildContext context, SplitBillEntity bill) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -886,8 +897,7 @@ class _SplitBillDetailView extends StatelessWidget {
                   icon: const Icon(Icons.share, size: 18),
                   label: const Text(
                     'Share',
-                    style:
-                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
@@ -906,8 +916,7 @@ class _SplitBillDetailView extends StatelessWidget {
                   icon: const Icon(Icons.download, size: 18),
                   label: const Text(
                     'Download',
-                    style:
-                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
@@ -1022,6 +1031,16 @@ class _SplitBillDetailView extends StatelessWidget {
                                 : '@${bill.creatorUsername}',
                             'receiverName':
                                 bill.hasReceiver ? bill.receiverDisplay : '',
+                            // The masked destination account travels with the
+                            // name. Without it the receipt can only say "Paid
+                            // to <name>", and for a bank payout the account is
+                            // what the payer checks the money against.
+                            'receiverAccountMasked': bill.hasExternalReceiver
+                                ? bill.receiverAccountMasked
+                                : '',
+                            'receiverBankName': bill.hasExternalReceiver
+                                ? bill.receiverBankName
+                                : '',
                             'description': bill.description,
                           },
                         );
@@ -1059,7 +1078,8 @@ class _SplitBillDetailView extends StatelessWidget {
                       icon: const Icon(Icons.notifications_active, size: 18),
                       label: const Text(
                         'Send Reminder',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF4834D4),
@@ -1078,7 +1098,8 @@ class _SplitBillDetailView extends StatelessWidget {
                       icon: const Icon(Icons.cancel_outlined, size: 18),
                       label: const Text(
                         'Cancel',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFFEF4444),
@@ -1108,8 +1129,7 @@ class _SplitBillDetailView extends StatelessWidget {
     final remindable = bill.pendingParticipants;
     if (remindable.isEmpty) {
       // Distinguish "all done" from "the only unpaid shares are already being paid".
-      final hasInProgress =
-          bill.participants.any((p) => p.isInProgress);
+      final hasInProgress = bill.participants.any((p) => p.isInProgress);
       showAppSnackbar(
         hasInProgress ? 'Payments in progress' : 'Everyone is settled',
         hasInProgress
@@ -1319,8 +1339,8 @@ class _SplitBillDetailView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 10),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               ),
             ),
           ],
@@ -1386,8 +1406,7 @@ class _SplitBillDetailView extends StatelessWidget {
     return AppErrorView(
       error: message,
       context: 'load this split bill',
-      onRetry: () =>
-          context.read<SplitBillCubit>().loadBillDetail(splitBillId),
+      onRetry: () => context.read<SplitBillCubit>().loadBillDetail(splitBillId),
     );
   }
 }

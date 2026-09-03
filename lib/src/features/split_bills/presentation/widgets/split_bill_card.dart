@@ -18,9 +18,8 @@ class SplitBillCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final myParticipant = currentUserId != null
-        ? bill.participantForUser(currentUserId!)
-        : null;
+    final myParticipant =
+        currentUserId != null ? bill.participantForUser(currentUserId!) : null;
 
     return GestureDetector(
       onTap: onTap,
@@ -39,7 +38,8 @@ class SplitBillCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 18,
-                  backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                  backgroundColor:
+                      const Color(0xFF3B82F6).withValues(alpha: 0.2),
                   child: const Icon(
                     Icons.receipt_long,
                     size: 18,
@@ -175,7 +175,8 @@ class SplitBillCard extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w500),
+        style:
+            TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w500),
       ),
     );
   }

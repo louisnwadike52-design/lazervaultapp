@@ -75,6 +75,7 @@ class SplitBillReceiverInput {
   final String username; // internal_user: optional (display / legacy)
   final String displayName; // internal_user: display only
   final String bankCode; // external_bank
+  final String bankName; // external_bank: display only; routing uses bankCode
   final String accountNumber; // external_bank
 
   /// Internal Lazervault receiver, keyed by a stable user id. [username] /
@@ -85,11 +86,13 @@ class SplitBillReceiverInput {
     this.displayName = '',
   })  : type = 'internal_user',
         bankCode = '',
+        bankName = '',
         accountNumber = '';
 
   const SplitBillReceiverInput.externalBank({
     required this.bankCode,
     required this.accountNumber,
+    this.bankName = '',
   })  : type = 'external_bank',
         userId = '',
         username = '',

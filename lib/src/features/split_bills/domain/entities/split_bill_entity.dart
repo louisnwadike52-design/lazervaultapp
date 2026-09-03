@@ -31,6 +31,10 @@ class SplitBillEntity extends Equatable {
   final String receiverType;
   final String receiverName;
   final String receiverAccountMasked;
+
+  /// Destination bank for an external receiver, snapshotted at creation. Empty
+  /// for internal receivers and for bills created before this was captured.
+  final String receiverBankName;
   final String settlementStatus;
   final double withdrawalFee;
 
@@ -56,6 +60,7 @@ class SplitBillEntity extends Equatable {
     this.receiverType = '',
     this.receiverName = '',
     this.receiverAccountMasked = '',
+    this.receiverBankName = '',
     this.settlementStatus = 'not_applicable',
     this.withdrawalFee = 0.0,
   });
@@ -79,7 +84,8 @@ class SplitBillEntity extends Equatable {
   /// Human label for who collects the money ("the receiver").
   String get receiverDisplay {
     if (receiverName.isNotEmpty) return receiverName;
-    if (!hasReceiver) return creatorName.isNotEmpty ? creatorName : '@$creatorUsername';
+    if (!hasReceiver)
+      return creatorName.isNotEmpty ? creatorName : '@$creatorUsername';
     return receiverAccountMasked;
   }
 
@@ -95,10 +101,9 @@ class SplitBillEntity extends Equatable {
   List<SplitBillParticipantEntity> get unpaidParticipants =>
       participants.where((p) => p.isPending || p.isInProgress).toList();
 
-  double get progressPercent =>
-      totalParticipants > 0
-          ? (paidCount / totalParticipants).clamp(0.0, 1.0)
-          : 0.0;
+  double get progressPercent => totalParticipants > 0
+      ? (paidCount / totalParticipants).clamp(0.0, 1.0)
+      : 0.0;
 
   String get progressLabel => '$paidCount/$totalParticipants paid';
 
@@ -148,6 +153,17 @@ class SplitBillEntity extends Equatable {
         paidAmount,
         participants,
         createdAt,
+        // settlementStatus is MUTABLE and drives the external-receiver chip on
+        // the detail screen. Omitting it made a refreshed bill compare equal to
+        // the stale one whenever an external payout was the only thing that
+        // moved (pending → settling → settled), so SplitBillDetailLoaded —
+        // whose props are just [bill] — was swallowed and the chip never
+        // updated. Pull-to-refresh looked broken on exactly the flow that
+        // needs it most.
+        settlementStatus,
+        // Any server-side mutation bumps this, so it is a general backstop
+        // against the same class of bug for fields not listed here.
+        updatedAt,
       ];
 }
 

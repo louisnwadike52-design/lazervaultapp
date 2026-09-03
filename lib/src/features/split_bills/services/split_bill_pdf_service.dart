@@ -40,6 +40,7 @@ class SplitBillPdfService {
     required String creatorName,
     required String receiverName,
     String receiverAccountMasked = '',
+    String receiverBankName = '',
     required String description,
     required int paidCount,
     required int totalParticipants,
@@ -127,6 +128,10 @@ class SplitBillPdfService {
 
               // Details
               _buildRow('Paid to', paidTo),
+              if (receiverBankName.trim().isNotEmpty) ...[
+                pw.SizedBox(height: 8),
+                _buildRow('Bank', receiverBankName.trim()),
+              ],
               if (receiverAccountMasked.trim().isNotEmpty) ...[
                 pw.SizedBox(height: 8),
                 _buildRow('Account', receiverAccountMasked.trim()),
@@ -247,6 +252,7 @@ class SplitBillPdfService {
     required String creatorName,
     String receiverName = '',
     String receiverAccountMasked = '',
+    String receiverBankName = '',
     required String description,
     required int paidCount,
     required int totalParticipants,
@@ -260,6 +266,7 @@ class SplitBillPdfService {
       creatorName: creatorName,
       receiverName: receiverName,
       receiverAccountMasked: receiverAccountMasked,
+      receiverBankName: receiverBankName,
       description: description,
       paidCount: paidCount,
       totalParticipants: totalParticipants,
@@ -280,6 +287,7 @@ class SplitBillPdfService {
     required String creatorName,
     String receiverName = '',
     String receiverAccountMasked = '',
+    String receiverBankName = '',
     required String description,
     required int paidCount,
     required int totalParticipants,
@@ -295,6 +303,7 @@ class SplitBillPdfService {
       creatorName: creatorName,
       receiverName: receiverName,
       receiverAccountMasked: receiverAccountMasked,
+      receiverBankName: receiverBankName,
       description: description,
       paidCount: paidCount,
       totalParticipants: totalParticipants,
@@ -347,8 +356,7 @@ class SplitBillPdfService {
     final title = bill.displayTitle;
 
     pw.Widget participantRow(SplitBillParticipantEntity p) {
-      final name =
-          p.displayName.isNotEmpty ? p.displayName : '@${p.username}';
+      final name = p.displayName.isNotEmpty ? p.displayName : '@${p.username}';
       return pw.Padding(
         padding: const pw.EdgeInsets.symmetric(vertical: 6),
         child: pw.Row(
@@ -426,12 +434,17 @@ class SplitBillPdfService {
           _buildRow('Reference', bill.reference),
           pw.SizedBox(height: 8),
           _buildRow('Paying to', payee),
+          if (bill.receiverBankName.trim().isNotEmpty) ...[
+            pw.SizedBox(height: 8),
+            _buildRow('Bank', bill.receiverBankName.trim()),
+          ],
           if (bill.receiverAccountMasked.trim().isNotEmpty) ...[
             pw.SizedBox(height: 8),
             _buildRow('Account', bill.receiverAccountMasked.trim()),
           ],
           pw.SizedBox(height: 8),
-          _buildRow('Organizer',
+          _buildRow(
+              'Organizer',
               bill.creatorName.isNotEmpty
                   ? bill.creatorName
                   : '@${bill.creatorUsername}'),

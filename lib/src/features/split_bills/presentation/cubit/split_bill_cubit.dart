@@ -30,7 +30,8 @@ class SplitBillCubit extends Cubit<SplitBillState> {
       ));
     } on SplitBillServiceUnavailableException catch (_) {
       if (isClosed) return;
-      emit(const SplitBillError('Service temporarily unavailable. Please try again.'));
+      emit(const SplitBillError(
+          'Service temporarily unavailable. Please try again.'));
     } catch (e) {
       if (isClosed) return;
       emit(SplitBillError(e.toString()));
@@ -56,7 +57,8 @@ class SplitBillCubit extends Cubit<SplitBillState> {
       ));
     } on SplitBillServiceUnavailableException catch (_) {
       if (isClosed) return;
-      emit(const SplitBillError('Service temporarily unavailable. Please try again.'));
+      emit(const SplitBillError(
+          'Service temporarily unavailable. Please try again.'));
     } catch (e) {
       if (isClosed) return;
       emit(SplitBillError(e.toString()));
@@ -72,13 +74,15 @@ class SplitBillCubit extends Cubit<SplitBillState> {
       emit(SplitBillDetailLoaded(bill));
     } on SplitBillNotFoundException catch (_) {
       if (isClosed) return;
-      emit(const SplitBillError('Split bill not found. It may have been cancelled.'));
+      emit(const SplitBillError(
+          'Split bill not found. It may have been cancelled.'));
     } on SplitBillPermissionDeniedException catch (e) {
       if (isClosed) return;
       emit(SplitBillError(e.message));
     } on SplitBillServiceUnavailableException catch (_) {
       if (isClosed) return;
-      emit(const SplitBillError('Service temporarily unavailable. Please try again.'));
+      emit(const SplitBillError(
+          'Service temporarily unavailable. Please try again.'));
     } catch (e) {
       if (isClosed) return;
       emit(SplitBillError(e.toString()));
@@ -117,7 +121,8 @@ class SplitBillCubit extends Cubit<SplitBillState> {
       ));
     } on SplitBillServiceUnavailableException catch (_) {
       if (isClosed) return;
-      emit(const SplitBillError('Service temporarily unavailable. Please try again.'));
+      emit(const SplitBillError(
+          'Service temporarily unavailable. Please try again.'));
     } catch (e) {
       if (isClosed) return;
       emit(SplitBillError(e.toString()));
@@ -147,7 +152,8 @@ class SplitBillCubit extends Cubit<SplitBillState> {
       ));
     } on SplitBillNotFoundException catch (_) {
       if (isClosed) return;
-      emit(const SplitBillError('Split bill not found. It may have been cancelled.'));
+      emit(const SplitBillError(
+          'Split bill not found. It may have been cancelled.'));
     } on SplitBillStateException catch (e) {
       if (isClosed) return;
       emit(SplitBillError(e.message));
@@ -156,7 +162,8 @@ class SplitBillCubit extends Cubit<SplitBillState> {
       emit(SplitBillError(e.message));
     } on SplitBillServiceUnavailableException catch (_) {
       if (isClosed) return;
-      emit(const SplitBillError('Service temporarily unavailable. Please try again.'));
+      emit(const SplitBillError(
+          'Service temporarily unavailable. Please try again.'));
     } catch (e) {
       if (isClosed) return;
       emit(SplitBillError(e.toString()));
@@ -174,7 +181,8 @@ class SplitBillCubit extends Cubit<SplitBillState> {
       emit(const SplitBillCancelled('Split bill cancelled'));
     } on SplitBillNotFoundException catch (_) {
       if (isClosed) return;
-      emit(const SplitBillError('Split bill not found. It may have been cancelled.'));
+      emit(const SplitBillError(
+          'Split bill not found. It may have been cancelled.'));
     } on SplitBillPermissionDeniedException catch (e) {
       if (isClosed) return;
       emit(SplitBillError(e.message));

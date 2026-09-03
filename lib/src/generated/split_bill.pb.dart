@@ -46,6 +46,7 @@ class SplitBill extends $pb.GeneratedMessage {
     $core.String? settlementStatus,
     $core.double? withdrawalFee,
     $core.String? title,
+    $core.String? receiverBankName,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -72,6 +73,7 @@ class SplitBill extends $pb.GeneratedMessage {
     if (settlementStatus != null) result.settlementStatus = settlementStatus;
     if (withdrawalFee != null) result.withdrawalFee = withdrawalFee;
     if (title != null) result.title = title;
+    if (receiverBankName != null) result.receiverBankName = receiverBankName;
     return result;
   }
 
@@ -128,6 +130,7 @@ class SplitBill extends $pb.GeneratedMessage {
     ..a<$core.double>(
         22, _omitFieldNames ? '' : 'withdrawalFee', $pb.PbFieldType.OD)
     ..aOS(23, _omitFieldNames ? '' : 'title')
+    ..aOS(24, _omitFieldNames ? '' : 'receiverBankName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -355,6 +358,19 @@ class SplitBill extends $pb.GeneratedMessage {
   $core.bool hasTitle() => $_has(22);
   @$pb.TagNumber(23)
   void clearTitle() => $_clearField(23);
+
+  /// Destination bank for an external_bank receiver, snapshotted at creation.
+  /// Without it a receipt can only say "Paid to <name> •••• 1234", which does not
+  /// identify where the money went — the same name and last-4 can exist at two
+  /// banks, and a dispute is resolved on the bank. Empty for internal/legacy.
+  @$pb.TagNumber(24)
+  $core.String get receiverBankName => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set receiverBankName($core.String value) => $_setString(23, value);
+  @$pb.TagNumber(24)
+  $core.bool hasReceiverBankName() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearReceiverBankName() => $_clearField(24);
 }
 
 class SplitBillParticipant extends $pb.GeneratedMessage {
@@ -661,6 +677,7 @@ class ReceiverInput extends $pb.GeneratedMessage {
     $core.String? accountNumber,
     $core.String? userId,
     $core.String? displayName,
+    $core.String? bankName,
   }) {
     final result = create();
     if (type != null) result.type = type;
@@ -669,6 +686,7 @@ class ReceiverInput extends $pb.GeneratedMessage {
     if (accountNumber != null) result.accountNumber = accountNumber;
     if (userId != null) result.userId = userId;
     if (displayName != null) result.displayName = displayName;
+    if (bankName != null) result.bankName = bankName;
     return result;
   }
 
@@ -691,6 +709,7 @@ class ReceiverInput extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'accountNumber')
     ..aOS(5, _omitFieldNames ? '' : 'userId')
     ..aOS(6, _omitFieldNames ? '' : 'displayName')
+    ..aOS(7, _omitFieldNames ? '' : 'bankName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -767,6 +786,18 @@ class ReceiverInput extends $pb.GeneratedMessage {
   $core.bool hasDisplayName() => $_has(5);
   @$pb.TagNumber(6)
   void clearDisplayName() => $_clearField(6);
+
+  /// external_bank: display label for bank_code. The client already has it from
+  /// the bank picker; sending it avoids a bank-directory lookup server-side.
+  /// Untrusted display data — never used for routing, which uses bank_code.
+  @$pb.TagNumber(7)
+  $core.String get bankName => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set bankName($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasBankName() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearBankName() => $_clearField(7);
 }
 
 class SplitBillTransaction extends $pb.GeneratedMessage {
