@@ -32,13 +32,15 @@ void main() {
     });
 
     test('exchange: FX conversion → Currency Exchange', () {
-      expect(title(hc, 'debit', 'Exchange NGN to USD ref=H', 'exchange-service'),
+      expect(
+          title(hc, 'debit', 'Exchange NGN to USD ref=H', 'exchange-service'),
           'Currency Exchange');
     });
 
     test('exchange: international transfer → Transfer Sent', () {
       expect(
-          title(hc, 'debit', 'International transfer to John', 'exchange-service'),
+          title(hc, 'debit', 'International transfer to John',
+              'exchange-service'),
           'Transfer Sent');
       expect(
           title(hc, 'debit', 'International transfer capture (retry) ref=R',
@@ -46,7 +48,8 @@ void main() {
           'Transfer Sent');
     });
 
-    test('insurance: premium capture → Insurance Payment (any description)', () {
+    test('insurance: premium capture → Insurance Payment (any description)',
+        () {
       expect(title(hc, 'debit', 'INS-9af', 'financial-products-service'),
           'Insurance Payment');
       expect(
@@ -63,11 +66,13 @@ void main() {
     test('banking: withdrawal capture → Account Withdrawal', () {
       expect(
           title('withdrawal', 'debit', 'Withdrawal captured: WD-1',
-              'banking-service', ref: 'WD-1'),
+              'banking-service',
+              ref: 'WD-1'),
           'Account Withdrawal');
     });
 
-    test('core-payments: transfer (+fallback descriptions) → Transfer Sent', () {
+    test('core-payments: transfer (+fallback descriptions) → Transfer Sent',
+        () {
       expect(title(hc, 'debit', 'Transfer to Jane', 'core-payments-service'),
           'Transfer Sent');
       expect(
@@ -97,7 +102,9 @@ void main() {
     // credit⇒sell / debit⇒buy heuristic ("Crypto sell +₦0.00" bug).
     test('crypto_convert credit → Crypto swap, never Crypto sell', () {
       expect(
-          title('crypto_convert', 'credit',
+          title(
+              'crypto_convert',
+              'credit',
               'Converted 1.7000000000000000000 USDT → 1.08 XRP',
               'crypto-service',
               ref: 'CRYPTO-6e232840'),
@@ -113,8 +120,10 @@ void main() {
     });
 
     test('swap/send resolve to the crypto service type', () {
-      expect(serviceTypeForDomain('crypto_swap'), TransactionServiceType.crypto);
-      expect(serviceTypeForDomain('crypto_send'), TransactionServiceType.crypto);
+      expect(
+          serviceTypeForDomain('crypto_swap'), TransactionServiceType.crypto);
+      expect(
+          serviceTypeForDomain('crypto_send'), TransactionServiceType.crypto);
       expect(
           classifyDomain('crypto_convert', 'Converted 1.7 USDT → 1.08 XRP',
               'CRYPTO-6e232840', 'crypto-service'),
@@ -136,7 +145,8 @@ void main() {
   group('edge cases', () {
     test('partial / overage capture categories still resolve by service_name',
         () {
-      expect(title('hold_capture_partial', 'debit', 'RMB payout R', 'rmb-service'),
+      expect(
+          title('hold_capture_partial', 'debit', 'RMB payout R', 'rmb-service'),
           'RMB Transfer');
       expect(
           title('hold_capture_overage', 'debit', 'Invoice payment capture',
@@ -148,18 +158,25 @@ void main() {
       expect(title(hc, 'credit', 'Gift card refund - R', 'giftcards-service'),
           'Gift Card Refund');
       expect(
-          title(hc, 'credit', 'Refund: balance refresh fee could not be settled',
+          title(
+              hc,
+              'credit',
+              'Refund: balance refresh fee could not be settled',
               'banking-service'),
           'Balance Refresh Fee Refund');
-      expect(title(hc, 'credit', 'Insurance premium reversal',
-          'financial-products-service'), 'Insurance Refund');
+      expect(
+          title(hc, 'credit', 'Insurance premium reversal',
+              'financial-products-service'),
+          'Insurance Refund');
       expect(title(hc, 'credit', 'Transfer reversal', 'core-payments-service'),
           'Transfer Received');
     });
 
     test('gift-card SALE (credit) stays a sale, not a refund', () {
-      expect(title('gift_card_sell', 'credit', 'payout', 'giftcards-service',
-          ref: 'GC-1'), 'Gift Card Sale');
+      expect(
+          title('gift_card_sell', 'credit', 'payout', 'giftcards-service',
+              ref: 'GC-1'),
+          'Gift Card Sale');
     });
 
     test('legacy rows without service_name recover from description text', () {
@@ -214,10 +231,12 @@ void main() {
   group('classifyDomain — service_name is authoritative', () {
     test('service_name wins even when description is bland/misleading', () {
       expect(classifyDomain(hc, 'HOLD-CAP-x', cap, 'rmb-service'), 'rmb');
-      expect(classifyDomain(hc, 'Quidax order completed', cap, 'crypto-service'),
+      expect(
+          classifyDomain(hc, 'Quidax order completed', cap, 'crypto-service'),
           'crypto');
       // giftcards is the only service that maps to the giftcard domain
-      expect(classifyDomain(hc, 'purchase', cap, 'giftcards-service'), 'giftcard');
+      expect(
+          classifyDomain(hc, 'purchase', cap, 'giftcards-service'), 'giftcard');
     });
   });
 
@@ -265,6 +284,88 @@ void main() {
           '123e4567-e89b-12d3-a456-426614174000');
       expect(invoiceIdFromReference('TRF-123456'), isNull);
       expect(invoiceIdFromReference('IDEM-PW-unlock-not-a-uuid-FROM'), isNull);
+    });
+  });
+  group('service families that used to fall through to unknown', () {
+    // Every one of these rendered the grey help-outline glyph in the dashboard
+    // transaction list, because inferServiceTypeFromCategory simply had no arm
+    // for them. On a list of a user's own payments that reads as "we do not
+    // know what this was" for perfectly ordinary transactions.
+    const cases = <String, TransactionServiceType>{
+      'split_bill': TransactionServiceType.splitBill,
+      'qr_payment': TransactionServiceType.qrPayment,
+      'contactless_pay': TransactionServiceType.contactlessPay,
+      'payroll': TransactionServiceType.payroll,
+      'autosave': TransactionServiceType.autosave,
+      'lock_funds': TransactionServiceType.lockFunds,
+      'group_contribution': TransactionServiceType.groupFunds,
+      'crowdfund': TransactionServiceType.crowdfund,
+      'stocks': TransactionServiceType.stocks,
+      'data': TransactionServiceType.data,
+      'cable_tv': TransactionServiceType.tvSubscription,
+      'internet': TransactionServiceType.internet,
+      'water': TransactionServiceType.water,
+      'education': TransactionServiceType.education,
+      'expense': TransactionServiceType.expense,
+      'tax': TransactionServiceType.tax,
+      'refund': TransactionServiceType.refund,
+      'reversal': TransactionServiceType.reversal,
+    };
+
+    cases.forEach((category, expected) {
+      test('$category resolves to ${expected.name}', () {
+        expect(
+          inferServiceTypeFromCategory(category, 'debit', '', ''),
+          expected,
+          reason: '$category would show the unknown glyph',
+        );
+      });
+    });
+  });
+
+  group('the new arms do not shadow the existing ones', () {
+    test('batch_transfer stays a transfer, which is what it already was', () {
+      // Not in the list above: it was never showing the unknown glyph. An
+      // earlier arm already catches anything containing "transfer", so a batch
+      // shows the transfer icon. That is defensible — a batch transfer IS a
+      // transfer — and re-ordering established classification to win a more
+      // specific glyph is a bigger change than the icon bug being fixed here.
+      expect(inferServiceTypeFromCategory('batch_transfer', 'debit', '', ''),
+          TransactionServiceType.transfer);
+    });
+
+    // Added arms run AFTER the established ones, so anything already
+    // classified must be untouched. These are the pairs where one name
+    // contains or resembles another.
+    test('a split bill is not a generic bill, and vice versa', () {
+      expect(inferServiceTypeFromCategory('split_bill', 'debit', '', ''),
+          TransactionServiceType.splitBill);
+      // Airtime still wins its own arm rather than being caught by a later one.
+      expect(inferServiceTypeFromCategory('airtime', 'debit', '', ''),
+          TransactionServiceType.airtime);
+    });
+
+    test('gift cards are resolved before anything card-shaped', () {
+      expect(inferServiceTypeFromCategory('giftcard', 'debit', '', ''),
+          TransactionServiceType.giftCard);
+    });
+
+    test('a deposit is still a deposit, not a fee or refund', () {
+      expect(inferServiceTypeFromCategory('deposit', 'credit', '', ''),
+          TransactionServiceType.deposit);
+    });
+
+    test('the generic money shapes only apply when nothing specific matched',
+        () {
+      // "crypto refund" must stay crypto — the refund arm is last on purpose.
+      expect(inferServiceTypeFromCategory('crypto', 'debit', 'refund', ''),
+          TransactionServiceType.crypto);
+    });
+
+    test('a genuinely unknown category is still unknown', () {
+      expect(
+          inferServiceTypeFromCategory('something_invented', 'debit', '', ''),
+          TransactionServiceType.unknown);
     });
   });
 }

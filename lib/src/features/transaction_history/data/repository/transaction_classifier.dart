@@ -50,7 +50,9 @@ String classifyDomain(String category, String description, String reference,
   // "credit ⇒ Crypto sell" heuristic mislabelled every refund as a sale.
   final looksCrypto = svc.contains('crypto') || s.contains('crypto');
   if (looksCrypto &&
-      (s.contains('refund') || s.contains('revers') || s.contains('rollback'))) {
+      (s.contains('refund') ||
+          s.contains('revers') ||
+          s.contains('rollback'))) {
     return 'crypto_refund';
   }
 
@@ -104,7 +106,9 @@ String classifyDomain(String category, String description, String reference,
   }
   if (s.contains('crypto') || s.contains('crypto-')) return 'crypto';
   if (s.contains('gift') || RegExp(r'\bgc-').hasMatch(s)) return 'giftcard';
-  if (s.contains('insurance') || RegExp(r'\bins-').hasMatch(s)) return 'insurance';
+  if (s.contains('insurance') || RegExp(r'\bins-').hasMatch(s)) {
+    return 'insurance';
+  }
   if (s.contains('rmb')) return 'rmb';
   if (s.contains('invoice')) return 'invoice';
   if (s.contains('exchange')) return 'exchange';
@@ -298,7 +302,8 @@ TransactionServiceType inferServiceTypeFromCategory(
     return TransactionServiceType.airtime;
   } else if (cat.contains('electricity')) {
     return TransactionServiceType.electricity;
-  } else if (cat.contains('deposit') || (type == 'credit' && cat.contains('fund'))) {
+  } else if (cat.contains('deposit') ||
+      (type == 'credit' && cat.contains('fund'))) {
     return TransactionServiceType.deposit;
   } else if (cat.contains('withdrawal')) {
     return TransactionServiceType.withdrawal;
@@ -311,6 +316,77 @@ TransactionServiceType inferServiceTypeFromCategory(
   } else if (cat.contains('insurance')) {
     return TransactionServiceType.insurance;
   }
+
+  // Families that had no arm at all and therefore fell to `unknown`, which
+  // renders the grey help-outline glyph. On a transaction list that reads as
+  // "we don't know what this was" for perfectly ordinary payments — split
+  // bills, data bundles, QR payments, payroll runs.
+  //
+  // Ordered so overlapping names cannot shadow: split_bill before any generic
+  // bill handling, and gift cards are already resolved above so `card` here
+  // cannot steal them.
+  //
+  // Escrow is absent because TransactionServiceType has no escrow constant.
+  // Mapping it to `transfer` would label held funds as a completed transfer,
+  // which is worse than the neutral unknown glyph — add the enum value first.
+  final text = _textOf(description, category);
+  if (cat.contains('split') || text.contains('split bill')) {
+    return TransactionServiceType.splitBill;
+  } else if (cat.contains('batch')) {
+    return TransactionServiceType.batchTransfer;
+  } else if (cat.contains('qr')) {
+    return TransactionServiceType.qrPayment;
+  } else if (cat.contains('id_pay') ||
+      cat.contains('idpay') ||
+      text.contains('payid')) {
+    return TransactionServiceType.idPay;
+  } else if (cat.contains('contactless') || cat.contains('tap_to_pay')) {
+    return TransactionServiceType.contactlessPay;
+  } else if (cat.contains('payroll') || text.contains('pay run')) {
+    return TransactionServiceType.payroll;
+  } else if (cat.contains('autosave') || cat.contains('auto_save')) {
+    return TransactionServiceType.autosave;
+  } else if (cat.contains('lock') || cat.contains('piggy')) {
+    return TransactionServiceType.lockFunds;
+  } else if (cat.contains('group') || cat.contains('contribution')) {
+    return TransactionServiceType.groupFunds;
+  } else if (cat.contains('crowdfund') || cat.contains('donation')) {
+    return TransactionServiceType.crowdfund;
+  } else if (cat.contains('stock')) {
+    return TransactionServiceType.stocks;
+  } else if (cat.contains('data') || text.contains('data bundle')) {
+    return TransactionServiceType.data;
+  } else if (cat.contains('cable') ||
+      cat.contains('tv') ||
+      text.contains('dstv') ||
+      text.contains('gotv') ||
+      text.contains('startimes')) {
+    return TransactionServiceType.tvSubscription;
+  } else if (cat.contains('internet')) {
+    return TransactionServiceType.internet;
+  } else if (cat.contains('water')) {
+    return TransactionServiceType.water;
+  } else if (cat.contains('education') || cat.contains('school')) {
+    return TransactionServiceType.education;
+  } else if (cat.contains('expense')) {
+    return TransactionServiceType.expense;
+  } else if (cat.contains('sale')) {
+    return TransactionServiceType.sale;
+  } else if (cat.contains('tax')) {
+    return TransactionServiceType.tax;
+  }
+
+  // Generic money-movement shapes, LAST so a domain above always wins. These
+  // are the ledger's own vocabulary rather than a product, so a specific
+  // service name would be wrong — but a refund glyph still beats "unknown".
+  if (cat.contains('refund')) {
+    return TransactionServiceType.refund;
+  } else if (cat.contains('reversal') || cat.contains('reversed')) {
+    return TransactionServiceType.reversal;
+  } else if (cat.contains('fee') || cat.contains('charge')) {
+    return TransactionServiceType.fee;
+  }
+
   return TransactionServiceType.unknown;
 }
 

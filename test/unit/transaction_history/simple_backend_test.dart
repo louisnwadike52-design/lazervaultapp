@@ -38,15 +38,24 @@ void main() {
 
   group('Service Name Mapping', () {
     test('All critical services have backend names', () {
-      expect(AppServiceName.airtime.backendServiceName, equals('airtime-service'));
-      expect(AppServiceName.giftCards.backendServiceName, equals('giftcards-service'));
-      expect(AppServiceName.stocks.backendServiceName, equals('stocks-service'));
-      expect(AppServiceName.crypto.backendServiceName, equals('crypto-service'));
-      expect(AppServiceName.insurance.backendServiceName, equals('insurance-service'));
-      expect(AppServiceName.sendFunds.backendServiceName, equals('transfer-service'));
-      expect(AppServiceName.tagPay.backendServiceName, equals('tag-pay-service'));
-      expect(AppServiceName.autoSave.backendServiceName, equals('accounts-service'));
-      expect(AppServiceName.crowdfund.backendServiceName, equals('crowdfund-service'));
+      expect(
+          AppServiceName.airtime.backendServiceName, equals('airtime-service'));
+      expect(AppServiceName.giftCards.backendServiceName,
+          equals('giftcards-service'));
+      expect(
+          AppServiceName.stocks.backendServiceName, equals('stocks-service'));
+      expect(
+          AppServiceName.crypto.backendServiceName, equals('crypto-service'));
+      expect(AppServiceName.insurance.backendServiceName,
+          equals('insurance-service'));
+      expect(AppServiceName.sendFunds.backendServiceName,
+          equals('transfer-service'));
+      expect(
+          AppServiceName.tagPay.backendServiceName, equals('tag-pay-service'));
+      expect(AppServiceName.autoSave.backendServiceName,
+          equals('accounts-service'));
+      expect(AppServiceName.crowdfund.backendServiceName,
+          equals('crowdfund-service'));
     });
   });
 }

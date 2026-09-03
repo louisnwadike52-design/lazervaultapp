@@ -92,14 +92,17 @@ void main() {
   });
 
   group('Transaction Service Type Mapping', () {
-    test('TransactionServiceType.giftCard maps to AppServiceName.giftCards', () {
+    test('TransactionServiceType.giftCard maps to AppServiceName.giftCards',
+        () {
       const giftCardType = TransactionServiceType.giftCard;
       final appService = giftCardType.toAppServiceName;
 
       expect(appService, equals(AppServiceName.giftCards));
     });
 
-    test('AppServiceName.giftCards maps back to TransactionServiceType.giftCard', () {
+    test(
+        'AppServiceName.giftCards maps back to TransactionServiceType.giftCard',
+        () {
       const giftCardsService = AppServiceName.giftCards;
       final txType = giftCardsService.toTransactionServiceType;
 
@@ -134,13 +137,20 @@ void main() {
     });
 
     test('Common services have expected backend names', () {
-      expect(AppServiceName.airtime.backendServiceName, equals('airtime-service'));
-      expect(AppServiceName.giftCards.backendServiceName, equals('giftcards-service'));
-      expect(AppServiceName.stocks.backendServiceName, equals('stocks-service'));
-      expect(AppServiceName.crypto.backendServiceName, equals('crypto-service'));
-      expect(AppServiceName.insurance.backendServiceName, equals('insurance-service'));
-      expect(AppServiceName.sendFunds.backendServiceName, equals('transfer-service'));
-      expect(AppServiceName.tagPay.backendServiceName, equals('tag-pay-service'));
+      expect(
+          AppServiceName.airtime.backendServiceName, equals('airtime-service'));
+      expect(AppServiceName.giftCards.backendServiceName,
+          equals('giftcards-service'));
+      expect(
+          AppServiceName.stocks.backendServiceName, equals('stocks-service'));
+      expect(
+          AppServiceName.crypto.backendServiceName, equals('crypto-service'));
+      expect(AppServiceName.insurance.backendServiceName,
+          equals('insurance-service'));
+      expect(AppServiceName.sendFunds.backendServiceName,
+          equals('transfer-service'));
+      expect(
+          AppServiceName.tagPay.backendServiceName, equals('tag-pay-service'));
     });
   });
 }
