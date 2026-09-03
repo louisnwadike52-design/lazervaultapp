@@ -16,7 +16,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 part 'email_verification_screen_widgets.dart';
 
-
 class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
   Timer? _resendTimer;
   int _resendCooldown = 0;
@@ -75,7 +74,10 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
     // by the BlocListener below (on the cubit's successMessage emit) — which
     // also covers the "Resend Code" button. Do NOT also show one here or two
     // snackbars (same meaning, different text) appear on load.
-    context.read<EmailVerificationCubit>().resendVerificationEmail().catchError((e) {
+    context
+        .read<EmailVerificationCubit>()
+        .resendVerificationEmail()
+        .catchError((e) {
       if (mounted) {
         Get.snackbar(
           "Couldn't send email",
@@ -127,7 +129,8 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
     }
 
     final visibleStart = localPart.substring(0, 2);
-    final visibleEnd = localPart.length > 4 ? localPart.substring(localPart.length - 1) : '';
+    final visibleEnd =
+        localPart.length > 4 ? localPart.substring(localPart.length - 1) : '';
     final maskedLength = localPart.length - 2 - (visibleEnd.isEmpty ? 0 : 1);
     final masked = '*' * (maskedLength > 0 ? maskedLength : 1);
 
@@ -195,28 +198,27 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                 if (state is EmailVerificationSuccess) {
                   // Update AuthenticationCubit with the verified profile
                   // This ensures the user remains logged in after email verification
-                  context.read<AuthenticationCubit>().updateProfileAfterVerification(state.profile);
+                  context
+                      .read<AuthenticationCubit>()
+                      .updateProfileAfterVerification(state.profile);
 
                   // Navigate to next screen on successful verification
                   _navigateToNextScreen();
                 } else if (state is EmailVerificationInProgress) {
                   // Handle resend success - show feedback and restart cooldown
                   if (state.successMessage.isNotEmpty) {
-                    Get.snackbar(
-                      'Code Sent',
-                      state.successMessage,
-                      snackPosition: SnackPosition.TOP,
-                      backgroundColor: Colors.green,
-                      colorText: Colors.white,
-                      margin: EdgeInsets.all(16.w),
-                      borderRadius: 12.r,
-                      duration: const Duration(seconds: 2),
-                    );
-                    // Start cooldown from backend response (default 60s if not provided)
+                    // No "code sent" toast. This screen's whole job is to say a
+                    // code was sent to this address, and it says so in the
+                    // heading — a banner repeating it covers the input the user
+                    // is trying to type into. The cooldown below is the real
+                    // feedback that the resend took effect; rate-limit and
+                    // failure messages still surface, in the branches below.
                     _startResendCooldown(state.cooldownSeconds ?? 60);
                   }
                   // Handle resend error with cooldown (rate limit scenario)
-                  else if (state.errorMessage.isNotEmpty && state.cooldownSeconds != null && state.cooldownSeconds! > 0) {
+                  else if (state.errorMessage.isNotEmpty &&
+                      state.cooldownSeconds != null &&
+                      state.cooldownSeconds! > 0) {
                     Get.snackbar(
                       'Please Wait',
                       state.errorMessage,
@@ -248,214 +250,229 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
           ],
           child: BlocBuilder<EmailVerificationCubit, EmailVerificationState>(
             builder: (context, state) {
-              final isVerifying = state is EmailVerificationInProgress && state.isLoading;
-              final isResending = state is EmailVerificationInProgress && state.isResending;
+              final isVerifying =
+                  state is EmailVerificationInProgress && state.isLoading;
+              final isResending =
+                  state is EmailVerificationInProgress && state.isResending;
 
               return GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => FocusScope.of(context).unfocus(),
                 child: SafeArea(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(horizontal: 24.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // When launched from Settings this is a normal sub-screen,
-                      // so give it a real back button. The onboarding flow (no
-                      // fromSettings) stays forward-only with no back affordance.
-                      if (widget.fromSettings)
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 8.h),
-                            child: IconButton(
-                              onPressed: () => Navigator.of(context).maybePop(),
-                              icon: const Icon(Icons.arrow_back, color: Color(0xFF1F2937)),
-                              tooltip: 'Back',
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // When launched from Settings this is a normal sub-screen,
+                        // so give it a real back button. The onboarding flow (no
+                        // fromSettings) stays forward-only with no back affordance.
+                        if (widget.fromSettings)
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: EdgeInsets.only(top: 8.h),
+                              child: IconButton(
+                                onPressed: () =>
+                                    Navigator.of(context).maybePop(),
+                                icon: const Icon(Icons.arrow_back,
+                                    color: Color(0xFF1F2937)),
+                                tooltip: 'Back',
+                              ),
                             ),
                           ),
-                        ),
-                      SizedBox(height: widget.fromSettings ? 12.h : 60.h),
+                        SizedBox(height: widget.fromSettings ? 12.h : 60.h),
 
-                      // Shared gradient badge icon (same widget the phone
-                      // verification + phone_passcode OTP screens use).
-                      const VerificationBadgeIcon(icon: Icons.email_rounded),
-                      SizedBox(height: 32.h),
+                        // Shared gradient badge icon (same widget the phone
+                        // verification + phone_passcode OTP screens use).
+                        const VerificationBadgeIcon(icon: Icons.email_rounded),
+                        SizedBox(height: 32.h),
 
-                      // Title
-                      Text(
-                        'Verify Your Email',
-                        style: GoogleFonts.inter(
-                          fontSize: 28.sp,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1F2937),
-                        ),
-                      ),
-                      SizedBox(height: 12.h),
-
-                      // Subtitle with masked email
-                      RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
+                        // Title
+                        Text(
+                          'Verify Your Email',
                           style: GoogleFonts.inter(
-                            fontSize: 15.sp,
-                            color: const Color(0xFF6B7280),
-                            height: 1.5,
+                            fontSize: 28.sp,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1F2937),
                           ),
-                          children: [
-                            const TextSpan(
-                              text: 'Enter the 6-digit code sent to\n',
-                            ),
-                            TextSpan(
-                              text: maskedEmail,
-                              style: GoogleFonts.inter(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF1F2937),
-                              ),
-                            ),
-                          ],
                         ),
-                      ),
-                      SizedBox(height: 40.h),
-
-                      // 6-Digit OTP Input
-                      VerificationCodeInput(
-                        onCompleted: (code) {
-                          context.read<EmailVerificationCubit>().updateVerificationCode(code);
-                          // Auto-submit when complete
-                          context.read<EmailVerificationCubit>().verifyEmail();
-                        },
-                        onChanged: (code) {
-                          context.read<EmailVerificationCubit>().updateVerificationCode(code);
-                        },
-                      ),
-                      SizedBox(height: 24.h),
-
-                      // Verify Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56.h,
-                        child: ElevatedButton(
-                          onPressed: isVerifying
-                              ? null
-                              : () {
-                                  context.read<EmailVerificationCubit>().verifyEmail();
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4834D4),
-                            foregroundColor: Colors.white,
-                            disabledBackgroundColor: const Color(0xFF4834D4).withValues(alpha: 0.5),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.r),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: isVerifying
-                              ? LazerVaultLoader.small()
-                              : Text(
-                                  'Verify Email',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                        ),
-                      ),
-                      SizedBox(height: 24.h),
-
-                      // Resend Code Section
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Didn't receive the code?",
-                            style: GoogleFonts.inter(
-                              fontSize: 14.sp,
-                              color: const Color(0xFF6B7280),
-                            ),
-                          ),
-                          SizedBox(width: 4.w),
-                          TextButton(
-                            onPressed: (_resendCooldown > 0 || isResending)
-                                ? null
-                                : () {
-                                    context.read<EmailVerificationCubit>().resendVerificationEmail();
-                                  },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.symmetric(horizontal: 8.w),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: isResending
-                                ? LazerVaultLoader.tiny()
-                                : Text(
-                                    _resendCooldown > 0
-                                        ? 'Resend in ${_resendCooldown}s'
-                                        : 'Resend Code',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: _resendCooldown > 0
-                                          ? const Color(0xFF9CA3AF)
-                                          : const Color(0xFF4834D4),
-                                    ),
-                                  ),
-                          ),
-                        ],
-                      ),
-
-                      // Skip CTA — onboarding only. From Settings there's nothing
-                      // to skip to, so it's hidden. Also hidden on PROD builds:
-                      // email verification is mandatory in production, so the
-                      // "Skip for now" escape hatch is dev/staging only.
-                      if (!widget.fromSettings &&
-                          !currentAppEnvironment.isProduction)
                         SizedBox(height: 12.h),
-                      if (!widget.fromSettings &&
-                          !currentAppEnvironment.isProduction)
-                        Center(
-                        child: TextButton(
-                          onPressed: _skipVerification,
-                          style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF4834D4),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16.w, vertical: 10.h),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+
+                        // Subtitle with masked email
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style: GoogleFonts.inter(
+                              fontSize: 15.sp,
+                              color: const Color(0xFF6B7280),
+                              height: 1.5,
+                            ),
                             children: [
-                              Text(
-                                'Skip for now',
-                                style: GoogleFonts.inter(
-                                  fontSize: 15.sp,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF4834D4),
-                                ),
+                              const TextSpan(
+                                text: 'Enter the 6-digit code sent to\n',
                               ),
-                              SizedBox(width: 6.w),
-                              Icon(
-                                Icons.arrow_forward_rounded,
-                                size: 18.sp,
-                                color: const Color(0xFF4834D4),
+                              TextSpan(
+                                text: maskedEmail,
+                                style: GoogleFonts.inter(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1F2937),
+                                ),
                               ),
                             ],
                           ),
                         ),
-                      ),
+                        SizedBox(height: 40.h),
 
-                      SizedBox(height: 48.h),
+                        // 6-Digit OTP Input
+                        VerificationCodeInput(
+                          onCompleted: (code) {
+                            context
+                                .read<EmailVerificationCubit>()
+                                .updateVerificationCode(code);
+                            // Auto-submit when complete
+                            context
+                                .read<EmailVerificationCubit>()
+                                .verifyEmail();
+                          },
+                          onChanged: (code) {
+                            context
+                                .read<EmailVerificationCubit>()
+                                .updateVerificationCode(code);
+                          },
+                        ),
+                        SizedBox(height: 24.h),
 
-                      // Shared "Secure Verification" note.
-                      const SecureVerificationNote(
-                        message:
-                            'Check your inbox and spam folder for the 6-digit verification code. The code expires in 15 minutes.',
-                      ),
-                      SizedBox(height: 32.h),
-                    ],
+                        // Verify Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56.h,
+                          child: ElevatedButton(
+                            onPressed: isVerifying
+                                ? null
+                                : () {
+                                    context
+                                        .read<EmailVerificationCubit>()
+                                        .verifyEmail();
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF4834D4),
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: const Color(0xFF4834D4)
+                                  .withValues(alpha: 0.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: isVerifying
+                                ? LazerVaultLoader.small()
+                                : Text(
+                                    'Verify Email',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        SizedBox(height: 24.h),
+
+                        // Resend Code Section
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Didn't receive the code?",
+                              style: GoogleFonts.inter(
+                                fontSize: 14.sp,
+                                color: const Color(0xFF6B7280),
+                              ),
+                            ),
+                            SizedBox(width: 4.w),
+                            TextButton(
+                              onPressed: (_resendCooldown > 0 || isResending)
+                                  ? null
+                                  : () {
+                                      context
+                                          .read<EmailVerificationCubit>()
+                                          .resendVerificationEmail();
+                                    },
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.symmetric(horizontal: 8.w),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: isResending
+                                  ? LazerVaultLoader.tiny()
+                                  : Text(
+                                      _resendCooldown > 0
+                                          ? 'Resend in ${_resendCooldown}s'
+                                          : 'Resend Code',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: _resendCooldown > 0
+                                            ? const Color(0xFF9CA3AF)
+                                            : const Color(0xFF4834D4),
+                                      ),
+                                    ),
+                            ),
+                          ],
+                        ),
+
+                        // Skip CTA — onboarding only. From Settings there's nothing
+                        // to skip to, so it's hidden. Also hidden on PROD builds:
+                        // email verification is mandatory in production, so the
+                        // "Skip for now" escape hatch is dev/staging only.
+                        if (!widget.fromSettings &&
+                            !currentAppEnvironment.isProduction)
+                          SizedBox(height: 12.h),
+                        if (!widget.fromSettings &&
+                            !currentAppEnvironment.isProduction)
+                          Center(
+                            child: TextButton(
+                              onPressed: _skipVerification,
+                              style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFF4834D4),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 16.w, vertical: 10.h),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Skip for now',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF4834D4),
+                                    ),
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  Icon(
+                                    Icons.arrow_forward_rounded,
+                                    size: 18.sp,
+                                    color: const Color(0xFF4834D4),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                        SizedBox(height: 48.h),
+
+                        // Shared "Secure Verification" note.
+                        const SecureVerificationNote(
+                          message:
+                              'Check your inbox and spam folder for the 6-digit verification code. The code expires in 15 minutes.',
+                        ),
+                        SizedBox(height: 32.h),
+                      ],
+                    ),
                   ),
-                ),
                 ),
               );
             },

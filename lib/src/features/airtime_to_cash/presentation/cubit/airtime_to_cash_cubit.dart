@@ -131,8 +131,12 @@ class AirtimeToCashCubit extends Cubit<AirtimeToCashState> {
       final estimatedCash = rate.estimateCash(amount);
 
       // Guard against invalid calculation results
-      if (estimatedCash.isNaN || estimatedCash.isInfinite || estimatedCash < 0) {
-        _safeEmit(const AirtimeToCashError(message: 'Unable to calculate conversion amount. Please try again.'));
+      if (estimatedCash.isNaN ||
+          estimatedCash.isInfinite ||
+          estimatedCash < 0) {
+        _safeEmit(const AirtimeToCashError(
+            message:
+                'Unable to calculate conversion amount. Please try again.'));
         return;
       }
 
@@ -359,7 +363,8 @@ class AirtimeToCashCubit extends Cubit<AirtimeToCashState> {
     try {
       _safeEmit(AirtimeToCashVerifying());
 
-      final result = await repository.verifyService(network, provider: provider);
+      final result =
+          await repository.verifyService(network, provider: provider);
 
       _safeEmit(AirtimeToCashServiceVerified(
         providerName: result.providerName,
@@ -433,7 +438,8 @@ class AirtimeToCashCubit extends Cubit<AirtimeToCashState> {
         case StatusCode.deadlineExceeded:
           return 'The request timed out. Please try again.';
         case StatusCode.failedPrecondition:
-          return error.message ?? 'This operation cannot be completed right now. Please check your account status.';
+          return error.message ??
+              'This operation cannot be completed right now. Please check your account status.';
         case StatusCode.alreadyExists:
           return 'This conversion has already been submitted. Please check your conversion history.';
         case StatusCode.aborted:

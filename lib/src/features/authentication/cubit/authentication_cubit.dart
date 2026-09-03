@@ -2932,7 +2932,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         return false;
       },
       (_) {
-        _showSuccessSnackbar('Code sent', 'A verification code has been sent.');
+        // Deliberately silent on success: the screen the user is looking at
+        // already states that a code was sent, and to where. Failures still
+        // raise a snackbar (above) because those are NOT otherwise visible.
         return true;
       },
     );

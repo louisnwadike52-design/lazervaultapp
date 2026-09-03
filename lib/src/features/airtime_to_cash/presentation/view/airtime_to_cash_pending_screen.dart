@@ -20,7 +20,8 @@ class _AirtimeToCashPendingScreenState
   @override
   Widget build(BuildContext context) {
     final args = Get.arguments as Map<String, dynamic>? ?? {};
-    final message = args['message'] as String? ?? 'Processing your conversion...';
+    final message =
+        args['message'] as String? ?? 'Processing your conversion...';
     final conversion = args['conversion'] is AirtimeToCashConversion
         ? args['conversion'] as AirtimeToCashConversion
         : null;
@@ -101,11 +102,14 @@ class _AirtimeToCashPendingScreenState
                               ],
                             ),
                             SizedBox(height: 12.h),
-                            _buildStep('1', 'VTU Africa verifies the airtime transfer'),
+                            _buildStep('1',
+                                'VTU Africa verifies the airtime transfer'),
                             SizedBox(height: 8.h),
-                            _buildStep('2', 'Webhook confirms successful conversion'),
+                            _buildStep(
+                                '2', 'Webhook confirms successful conversion'),
                             SizedBox(height: 8.h),
-                            _buildStep('3', 'Your wallet is credited automatically'),
+                            _buildStep(
+                                '3', 'Your wallet is credited automatically'),
                           ],
                         ),
                       ),
@@ -190,7 +194,8 @@ class _AirtimeToCashPendingScreenState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(label,
-                  style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+                  style: TextStyle(
+                      fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
               Flexible(
                 child: Text(value,
                     textAlign: TextAlign.end,
@@ -216,7 +221,8 @@ class _AirtimeToCashPendingScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (c.cashAmount > 0)
-            row('Cash to receive', '₦${c.cashAmount.toStringAsFixed(2)}', highlight: true),
+            row('Cash to receive', '₦${c.cashAmount.toStringAsFixed(2)}',
+                highlight: true),
           row('Airtime sent', '₦${c.airtimeAmount.toStringAsFixed(2)}'),
           if (c.network.isNotEmpty) row('Network', c.network),
           if (c.phoneNumber.isNotEmpty) row('Phone', c.phoneNumber),

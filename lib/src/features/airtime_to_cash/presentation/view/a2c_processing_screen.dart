@@ -107,8 +107,10 @@ class _A2CProcessingScreenState extends State<A2CProcessingScreen>
     final network = _params!['network'] as String?;
     final amount = _params!['amount'] as double?;
     final sessionToken = _params!['sessionToken'] as String?;
-    final sessionId = _params!['sessionId'] as String?; // Required for Automation API
-    final pin = _params!['pin'] as String?; // SIM Transfer PIN for Automation API
+    final sessionId =
+        _params!['sessionId'] as String?; // Required for Automation API
+    final pin =
+        _params!['pin'] as String?; // SIM Transfer PIN for Automation API
     final transactionId = _params!['transactionId'] as String?;
     final verificationToken = _params!['verificationToken'] as String?;
 
@@ -163,7 +165,8 @@ class _A2CProcessingScreenState extends State<A2CProcessingScreen>
         if (mounted) {
           Get.offNamed(AppRoutes.airtimeToCashResult, arguments: {
             'isSuccess': false,
-            'errorMessage': 'Session ID is missing. This is required for the Automation API. Please start over.',
+            'errorMessage':
+                'Session ID is missing. This is required for the Automation API. Please start over.',
           });
         }
       });
@@ -175,7 +178,8 @@ class _A2CProcessingScreenState extends State<A2CProcessingScreen>
         if (mounted) {
           Get.offNamed(AppRoutes.airtimeToCashResult, arguments: {
             'isSuccess': false,
-            'errorMessage': 'SIM Transfer PIN is missing. This is required for the Automation API. Please start over.',
+            'errorMessage':
+                'SIM Transfer PIN is missing. This is required for the Automation API. Please start over.',
           });
         }
       });
@@ -188,7 +192,8 @@ class _A2CProcessingScreenState extends State<A2CProcessingScreen>
         if (mounted) {
           Get.offNamed(AppRoutes.airtimeToCashResult, arguments: {
             'isSuccess': false,
-            'errorMessage': 'Invalid SIM Transfer PIN format. PIN must be 4 digits.',
+            'errorMessage':
+                'Invalid SIM Transfer PIN format. PIN must be 4 digits.',
           });
         }
       });
@@ -438,8 +443,7 @@ class _A2CProcessingScreenState extends State<A2CProcessingScreen>
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: () =>
-                    Get.offAllNamed(AppRoutes.airtimeHistory),
+                onPressed: () => Get.offAllNamed(AppRoutes.airtimeHistory),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
                     color: Colors.white.withValues(alpha: 0.3),
@@ -518,8 +522,7 @@ class _A2CProcessingScreenState extends State<A2CProcessingScreen>
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color:
-                            const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -655,8 +658,7 @@ class _A2CProcessingScreenState extends State<A2CProcessingScreen>
                     color: isCompleted || isActive
                         ? Colors.white
                         : const Color(0xFF9CA3AF),
-                    fontWeight:
-                        isActive ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
               ),
@@ -721,8 +723,7 @@ class _A2CProcessingScreenState extends State<A2CProcessingScreen>
             ),
           ),
           SizedBox(height: 16.h),
-          _buildDetailRow(
-              'Airtime Amount', '\u20A6${amt.toStringAsFixed(0)}'),
+          _buildDetailRow('Airtime Amount', '\u20A6${amt.toStringAsFixed(0)}'),
           SizedBox(height: 8.h),
           _buildDetailRow('Phone Number', phoneNum),
           SizedBox(height: 8.h),

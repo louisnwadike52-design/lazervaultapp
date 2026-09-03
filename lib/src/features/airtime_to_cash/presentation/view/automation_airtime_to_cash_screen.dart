@@ -132,12 +132,30 @@ class _AutomationAirtimeToCashScreenState
     if (phone.length < 4) return null;
     final p = phone.substring(0, 4);
     const mtn = [
-      '0803', '0806', '0810', '0813', '0814', '0816', '0903',
-      '0906', '0913', '0916', '0703', '0706'
+      '0803',
+      '0806',
+      '0810',
+      '0813',
+      '0814',
+      '0816',
+      '0903',
+      '0906',
+      '0913',
+      '0916',
+      '0703',
+      '0706'
     ];
     const airtel = [
-      '0802', '0808', '0812', '0701', '0708', '0901',
-      '0902', '0904', '0907', '0912'
+      '0802',
+      '0808',
+      '0812',
+      '0701',
+      '0708',
+      '0901',
+      '0902',
+      '0904',
+      '0907',
+      '0912'
     ];
     const glo = ['0805', '0807', '0811', '0815', '0905', '0915', '0705'];
     const mobile9 = ['0809', '0817', '0818', '0908', '0909'];
@@ -233,9 +251,9 @@ class _AutomationAirtimeToCashScreenState
     final network = _selectedNetwork!;
 
     context.read<AirtimeToCashCubit>().generateAutomationOTP(
-      phoneNumber: phone,
-      network: network,
-    );
+          phoneNumber: phone,
+          network: network,
+        );
   }
 
   void _verifyOTP() {
@@ -253,11 +271,11 @@ class _AutomationAirtimeToCashScreenState
     final otp = _otpController.text.trim();
 
     context.read<AirtimeToCashCubit>().verifyAutomationOTP(
-      phoneNumber: phone,
-      network: network,
-      otp: otp,
-      sessionId: _sessionId ?? '',
-    );
+          phoneNumber: phone,
+          network: network,
+          otp: otp,
+          sessionId: _sessionId ?? '',
+        );
   }
 
   void _checkQuotaAndProceed() {
@@ -267,11 +285,11 @@ class _AutomationAirtimeToCashScreenState
     final amount = _amount!;
 
     context.read<AirtimeToCashCubit>().checkAutomationQuota(
-      phoneNumber: phone,
-      network: network,
-      amount: amount,
-      sessionId: _sessionId!,
-    );
+          phoneNumber: phone,
+          network: network,
+          amount: amount,
+          sessionId: _sessionId!,
+        );
   }
 
   Future<void> _openTransactionPinSheet() async {
@@ -281,8 +299,7 @@ class _AutomationAirtimeToCashScreenState
     final sessionId = _sessionId!;
     final simPin = _simPinController.text;
     final rate = _networkRates[network] ?? 0.7;
-    final transactionId =
-        'A2C-AUTO-${DateTime.now().millisecondsSinceEpoch}';
+    final transactionId = 'A2C-AUTO-${DateTime.now().millisecondsSinceEpoch}';
 
     // Collect the verification token inside the PIN callback but do NOT
     // navigate there. If we push a new route while the modal is still on
@@ -372,7 +389,8 @@ class _AutomationAirtimeToCashScreenState
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 18.sp),
+          Icon(Icons.error_outline,
+              color: const Color(0xFFEF4444), size: 18.sp),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
@@ -402,12 +420,8 @@ class _AutomationAirtimeToCashScreenState
             _sessionId = state.sessionId;
             _errorText = null;
           });
-          Get.snackbar(
-            'OTP Sent',
-            'Enter the 6-digit code sent to your phone',
-            backgroundColor: const Color(0xFF4E03D0),
-            colorText: Colors.white,
-          );
+          // The OTP field appearing is the confirmation; its own label already
+          // says "Enter the 6-digit code sent to your phone".
         } else if (state is AirtimeToCashOTPVerified) {
           setState(() {
             _otpVerified = true;
@@ -597,7 +611,8 @@ class _AutomationAirtimeToCashScreenState
       decoration: BoxDecoration(
         color: const Color(0xFFFB923C).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -655,7 +670,8 @@ class _AutomationAirtimeToCashScreenState
                             behavior: SnackBarBehavior.floating,
                             content: Text(
                               'Network locked to ${_networkLabel(_detectedNetwork!)} based on the phone number. Edit the number to change.',
-                              style: TextStyle(color: Colors.white, fontSize: 12.sp),
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 12.sp),
                             ),
                             duration: const Duration(seconds: 2),
                           ),
@@ -667,7 +683,8 @@ class _AutomationAirtimeToCashScreenState
                     : () => setState(() => _selectedNetwork = network),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  margin: EdgeInsets.only(right: network != '9mobile' ? 8.w : 0),
+                  margin:
+                      EdgeInsets.only(right: network != '9mobile' ? 8.w : 0),
                   padding: EdgeInsets.symmetric(vertical: 12.h),
                   decoration: BoxDecoration(
                     color: isSelected
@@ -681,7 +698,8 @@ class _AutomationAirtimeToCashScreenState
                   ),
                   foregroundDecoration: dimmed
                       ? BoxDecoration(
-                          color: const Color(0xFF0A0A0A).withValues(alpha: 0.55),
+                          color:
+                              const Color(0xFF0A0A0A).withValues(alpha: 0.55),
                           borderRadius: BorderRadius.circular(12.r),
                         )
                       : null,
@@ -770,12 +788,15 @@ class _AutomationAirtimeToCashScreenState
               ),
               prefixIconConstraints: const BoxConstraints(),
               suffixIcon: _otpVerified
-                  ? Icon(Icons.verified, color: const Color(0xFF4E03D0), size: 20.sp)
+                  ? Icon(Icons.verified,
+                      color: const Color(0xFF4E03D0), size: 20.sp)
                   : _phoneValid
-                      ? Icon(Icons.check_circle, color: const Color(0xFF4E03D0), size: 20.sp)
+                      ? Icon(Icons.check_circle,
+                          color: const Color(0xFF4E03D0), size: 20.sp)
                       : null,
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
             ),
           ),
         ),
@@ -790,7 +811,8 @@ class _AutomationAirtimeToCashScreenState
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.check_circle, color: const Color(0xFF4E03D0), size: 14.sp),
+                Icon(Icons.check_circle,
+                    color: const Color(0xFF4E03D0), size: 14.sp),
                 SizedBox(width: 6.w),
                 Text(
                   'Detected: ${_networkLabel(_detectedNetwork!)}',
@@ -873,7 +895,8 @@ class _AutomationAirtimeToCashScreenState
                   letterSpacing: 4,
                 ),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
               ),
             ),
           ),
@@ -885,7 +908,9 @@ class _AutomationAirtimeToCashScreenState
                   builder: (context, state) {
                     final isLoading = state is AirtimeToCashOTPVerifying;
                     return ElevatedButton(
-                      onPressed: isLoading ? null : (_canVerifyOTP ? _verifyOTP : null),
+                      onPressed: isLoading
+                          ? null
+                          : (_canVerifyOTP ? _verifyOTP : null),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _canVerifyOTP
                             ? const Color(0xFF4E03D0)
@@ -927,7 +952,8 @@ class _AutomationAirtimeToCashScreenState
                   ),
                   child: Text(
                     'Resend',
-                    style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w500),
+                    style:
+                        TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w500),
                   ),
                 ),
               ),
@@ -995,7 +1021,8 @@ class _AutomationAirtimeToCashScreenState
               ),
               prefixIconConstraints: const BoxConstraints(),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
             ),
           ),
         ),
@@ -1016,7 +1043,8 @@ class _AutomationAirtimeToCashScreenState
           SizedBox(height: 6.h),
           Row(
             children: [
-              Icon(Icons.error_outline, size: 12.sp, color: const Color(0xFFEF4444)),
+              Icon(Icons.error_outline,
+                  size: 12.sp, color: const Color(0xFFEF4444)),
               SizedBox(width: 4.w),
               Expanded(
                 child: Text(
@@ -1055,7 +1083,8 @@ class _AutomationAirtimeToCashScreenState
               onTap: _showSimPinDetailsDialog,
               child: Row(
                 children: [
-                  Icon(Icons.help_outline, size: 14.sp, color: const Color(0xFF4E03D0)),
+                  Icon(Icons.help_outline,
+                      size: 14.sp, color: const Color(0xFF4E03D0)),
                   SizedBox(width: 4.w),
                   Text(
                     'How to find this',
@@ -1142,7 +1171,8 @@ class _AutomationAirtimeToCashScreenState
               children: [
                 Row(
                   children: [
-                    Icon(Icons.info_outline, color: const Color(0xFF4E03D0), size: 20.sp),
+                    Icon(Icons.info_outline,
+                        color: const Color(0xFF4E03D0), size: 20.sp),
                     SizedBox(width: 8.w),
                     Text(
                       'Set your SIM Transfer PIN',
@@ -1169,11 +1199,13 @@ class _AutomationAirtimeToCashScreenState
                   return Padding(
                     padding: EdgeInsets.only(bottom: 10.h),
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 14.w, vertical: 12.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFF0A0A0A),
                         borderRadius: BorderRadius.circular(10.r),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.08)),
                       ),
                       child: Row(
                         children: [
@@ -1261,7 +1293,9 @@ class _AutomationAirtimeToCashScreenState
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF4E03D0) : const Color(0xFF1F1F1F),
+              color: isSelected
+                  ? const Color(0xFF4E03D0)
+                  : const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Text(
@@ -1304,7 +1338,8 @@ class _AutomationAirtimeToCashScreenState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('You send',
-                  style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+                  style: TextStyle(
+                      fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
               Text('₦${_amount!.toStringAsFixed(0)}',
                   style: TextStyle(
                       fontSize: 15.sp,
@@ -1317,13 +1352,14 @@ class _AutomationAirtimeToCashScreenState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Rate',
-                  style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+                  style: TextStyle(
+                      fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
               Text(
                 '${((_networkRates[_selectedNetwork!] ?? 0.7) * 100).toStringAsFixed(0)}%',
                 style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF4E03D0)),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF4E03D0)),
               ),
             ],
           ),
@@ -1373,7 +1409,8 @@ class _AutomationAirtimeToCashScreenState
           isLoading = state is AirtimeToCashOTPRequesting;
         } else {
           buttonText = 'Check Availability';
-          onPressed = _canProceed && _isAmountValid ? _checkQuotaAndProceed : null;
+          onPressed =
+              _canProceed && _isAmountValid ? _checkQuotaAndProceed : null;
           isLoading = state is AirtimeToCashCheckingQuota;
         }
 
@@ -1400,7 +1437,9 @@ class _AutomationAirtimeToCashScreenState
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
-                        color: onPressed != null ? Colors.white : const Color(0xFF9CA3AF),
+                        color: onPressed != null
+                            ? Colors.white
+                            : const Color(0xFF9CA3AF),
                       ),
                     ),
             ),

@@ -89,5 +89,6 @@ class _EmailOtpVerificationView extends StatefulWidget {
   });
 
   @override
-  State<_EmailOtpVerificationView> createState() => _EmailOtpVerificationViewState();
+  State<_EmailOtpVerificationView> createState() =>
+      _EmailOtpVerificationViewState();
 }

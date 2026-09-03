@@ -7,7 +7,6 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 part 'modern_onboarding_screen_widgets.dart';
 
-
 class ModernOnboardingScreen extends StatefulWidget {
   const ModernOnboardingScreen({super.key});
 
@@ -15,7 +14,8 @@ class ModernOnboardingScreen extends StatefulWidget {
   State<ModernOnboardingScreen> createState() => _ModernOnboardingScreenState();
 }
 
-class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with TickerProviderStateMixin {
+class _ModernOnboardingScreenState extends State<ModernOnboardingScreen>
+    with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   late AnimationController _fadeController;
@@ -38,7 +38,8 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
     OnboardingPage(
       title: 'Welcome to Lazervault',
       subtitle: 'Your all-in-one financial super app',
-      description: 'Bank, save, send and invest from one trusted home — designed for how money actually moves today.',
+      description:
+          'Bank, save, send and invest from one trusted home — designed for how money actually moves today.',
       icon: Icons.account_balance_wallet_rounded,
       features: [
         'Multi-currency wallets out of the box',
@@ -55,7 +56,8 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
     OnboardingPage(
       title: 'Send money anywhere',
       subtitle: 'Local rails. Global reach.',
-      description: 'Instant transfers within Nigeria and 50+ currencies abroad — at rates that respect your money.',
+      description:
+          'Instant transfers within Nigeria and 50+ currencies abroad — at rates that respect your money.',
       icon: Icons.send_rounded,
       features: [
         'Domestic & international transfers',
@@ -72,7 +74,8 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
     OnboardingPage(
       title: 'Grow your wealth',
       subtitle: 'Stocks, crypto and smart vaults',
-      description: 'Buy, sell and auto-invest from one dashboard — backed by analytics that show what your money is actually doing.',
+      description:
+          'Buy, sell and auto-invest from one dashboard — backed by analytics that show what your money is actually doing.',
       icon: Icons.trending_up_rounded,
       features: [
         'Stocks & vetted crypto markets',
@@ -89,7 +92,8 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
     OnboardingPage(
       title: 'Pay every bill',
       subtitle: 'Airtime, data, electricity and more',
-      description: 'One tap for the bills that used to take five apps. Automatic, scheduled and reliable.',
+      description:
+          'One tap for the bills that used to take five apps. Automatic, scheduled and reliable.',
       icon: Icons.payment_rounded,
       features: [
         'Utilities, data, airtime & cable TV',
@@ -106,7 +110,8 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
     OnboardingPage(
       title: 'Yours, safely',
       subtitle: 'AI protection that has your back',
-      description: 'Face, voice and PIN unlock — plus an AI layer watching for fraud the moment it appears.',
+      description:
+          'Face, voice and PIN unlock — plus an AI layer watching for fraud the moment it appears.',
       icon: Icons.security_rounded,
       features: [
         'Face, voice & biometric login',
@@ -212,7 +217,8 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: Colors.white.withValues(alpha: 0.08),
-                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20.w, vertical: 10.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(24.r),
                         ),
@@ -276,8 +282,9 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                           backgroundColor: _pages[_currentPage].accent,
                           foregroundColor: Colors.white,
                           elevation: 0,
-                          shadowColor:
-                              _pages[_currentPage].accent.withValues(alpha: 0.35),
+                          shadowColor: _pages[_currentPage]
+                              .accent
+                              .withValues(alpha: 0.35),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(28.r),
                           ),
@@ -320,17 +327,20 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
     return LayoutBuilder(
       builder: (context, constraints) {
         // Responsive padding based on screen width
-        final horizontalPadding = MediaQuery.of(context).size.width * 0.06 < 24.w
-            ? MediaQuery.of(context).size.width * 0.06
-            : 24.w;
+        final horizontalPadding =
+            MediaQuery.of(context).size.width * 0.06 < 24.w
+                ? MediaQuery.of(context).size.width * 0.06
+                : 24.w;
 
         // Responsive vertical spacing based on screen height
-        final verticalSpacingLarge = MediaQuery.of(context).size.height * 0.04 < 48.h
-            ? MediaQuery.of(context).size.height * 0.04
-            : 48.h;
-        final verticalSpacingMedium = MediaQuery.of(context).size.height * 0.025 < 32.h
-            ? MediaQuery.of(context).size.height * 0.025
-            : 32.h;
+        final verticalSpacingLarge =
+            MediaQuery.of(context).size.height * 0.04 < 48.h
+                ? MediaQuery.of(context).size.height * 0.04
+                : 48.h;
+        final verticalSpacingMedium =
+            MediaQuery.of(context).size.height * 0.025 < 32.h
+                ? MediaQuery.of(context).size.height * 0.025
+                : 32.h;
 
         return FadeTransition(
           opacity: _fadeAnimation,
@@ -344,7 +354,8 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                 ),
                 child: IntrinsicHeight(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: horizontalPadding),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

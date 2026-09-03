@@ -209,7 +209,8 @@ class _A2CTransferInstructionsScreenState
   Widget _buildPhoneNumberCard(Color networkColor) {
     // For Automation provider, we show a different message
     final bool isVTUAfrica = providerName == 'vtuafrica';
-    final displayPhone = isVTUAfrica ? (destinationPhone ?? '08124139638') : 'See next step';
+    final displayPhone =
+        isVTUAfrica ? (destinationPhone ?? '08124139638') : 'See next step';
 
     return Container(
       padding: EdgeInsets.all(24.w),
@@ -454,7 +455,8 @@ class _A2CTransferInstructionsScreenState
               style: TextStyle(
                 fontSize: 13.sp,
                 fontWeight: FontWeight.w700,
-                color: isLast ? const Color(0xFF10B981) : const Color(0xFF3B82F6),
+                color:
+                    isLast ? const Color(0xFF10B981) : const Color(0xFF3B82F6),
               ),
             ),
           ),

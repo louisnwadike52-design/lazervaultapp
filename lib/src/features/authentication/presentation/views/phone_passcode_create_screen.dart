@@ -26,8 +26,7 @@ class PhonePasscodeCreateScreen extends StatefulWidget {
 class _PhonePasscodeCreateScreenState extends State<PhonePasscodeCreateScreen> {
   static const int _length = 6;
 
-  final GlobalKey<ShakeWidgetState> _shakeKey =
-      GlobalKey<ShakeWidgetState>();
+  final GlobalKey<ShakeWidgetState> _shakeKey = GlobalKey<ShakeWidgetState>();
 
   String _entered = '';
   String _initial = '';

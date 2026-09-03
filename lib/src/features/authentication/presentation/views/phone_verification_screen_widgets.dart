@@ -98,5 +98,6 @@ class _PhoneOtpVerificationView extends StatefulWidget {
   });
 
   @override
-  State<_PhoneOtpVerificationView> createState() => _PhoneOtpVerificationViewState();
+  State<_PhoneOtpVerificationView> createState() =>
+      _PhoneOtpVerificationViewState();
 }

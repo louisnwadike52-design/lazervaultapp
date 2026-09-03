@@ -336,8 +336,8 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
           child: Text(
             "Didn't request this? Don't share the code — close the app and "
             'change your password.',
-            style: TextStyle(
-                color: _textSecondary, fontSize: 12.sp, height: 1.4),
+            style:
+                TextStyle(color: _textSecondary, fontSize: 12.sp, height: 1.4),
           ),
         ),
       ],
@@ -360,13 +360,13 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
             return SizedBox(
               width: boxWidth,
               child: KeyboardListener(
-            focusNode: FocusNode(skipTraversal: true),
-            onKeyEvent: (event) {
-              if (event is KeyDownEvent &&
-                  event.logicalKey == LogicalKeyboardKey.backspace) {
-                _onBackspace(i);
-              }
-            },
+                focusNode: FocusNode(skipTraversal: true),
+                onKeyEvent: (event) {
+                  if (event is KeyDownEvent &&
+                      event.logicalKey == LogicalKeyboardKey.backspace) {
+                    _onBackspace(i);
+                  }
+                },
                 child: TextField(
                   controller: _controllers[i],
                   focusNode: _focusNodes[i],

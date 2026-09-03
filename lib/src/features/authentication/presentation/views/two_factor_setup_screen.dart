@@ -141,7 +141,8 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
       final cubit = context.read<AuthenticationCubit>();
       final userId = cubit.currentProfile?.user.id ?? '';
 
-      final success = await cubit.completeTwoFactorSetup(userId, _verificationCode);
+      final success =
+          await cubit.completeTwoFactorSetup(userId, _verificationCode);
 
       setState(() => _isVerifying = false);
 
@@ -231,8 +232,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
               _buildMethodSelector(),
               SizedBox(height: 24.h),
               if (_setupData != null) _buildSetupContent(),
-              if (_setupData == null && !_isLoading)
-                _buildEnableButton(),
+              if (_setupData == null && !_isLoading) _buildEnableButton(),
               if (_isLoading) _buildLoadingIndicator(),
             ],
           ),
@@ -319,24 +319,31 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
                   padding: EdgeInsets.all(16.w),
                   margin: EdgeInsets.only(bottom: 1.h),
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? Colors.blue.shade50
-                        : Colors.transparent,
+                    color:
+                        isSelected ? Colors.blue.shade50 : Colors.transparent,
                     border: Border(
                       top: BorderSide(
-                        color: isSelected ? Colors.blue.shade700 : Colors.transparent,
+                        color: isSelected
+                            ? Colors.blue.shade700
+                            : Colors.transparent,
                         width: isSelected ? 2 : 0,
                       ),
                       bottom: BorderSide(
-                        color: isSelected ? Colors.blue.shade700 : Colors.transparent,
+                        color: isSelected
+                            ? Colors.blue.shade700
+                            : Colors.transparent,
                         width: isSelected ? 2 : 0,
                       ),
                       left: BorderSide(
-                        color: isSelected ? Colors.blue.shade700 : Colors.transparent,
+                        color: isSelected
+                            ? Colors.blue.shade700
+                            : Colors.transparent,
                         width: isSelected ? 2 : 0,
                       ),
                       right: BorderSide(
-                        color: isSelected ? Colors.blue.shade700 : Colors.transparent,
+                        color: isSelected
+                            ? Colors.blue.shade700
+                            : Colors.transparent,
                         width: isSelected ? 2 : 0,
                       ),
                     ),
@@ -353,7 +360,8 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
                         ),
                         child: Icon(
                           _getIconData(method.icon),
-                          color: isSelected ? Colors.white : Colors.grey.shade600,
+                          color:
+                              isSelected ? Colors.white : Colors.grey.shade600,
                           size: 20.sp,
                         ),
                       ),
@@ -678,7 +686,8 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
                     runSpacing: 8.h,
                     children: List.generate(
                       _setupData!.backupCodes.length,
-                      (index) => _buildBackupCodeChip(_setupData!.backupCodes[index]),
+                      (index) =>
+                          _buildBackupCodeChip(_setupData!.backupCodes[index]),
                     ),
                   ),
                 ],
@@ -771,7 +780,8 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4834D4),
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: Colors.blue.shade700.withValues(alpha: 0.5),
+                disabledBackgroundColor:
+                    Colors.blue.shade700.withValues(alpha: 0.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
@@ -844,9 +854,10 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
         children: [
           Row(
             children: [
-              Icon(_selectedMethod == TwoFactorMethod.sms
-                  ? Icons.sms_rounded
-                  : Icons.mail_rounded,
+              Icon(
+                  _selectedMethod == TwoFactorMethod.sms
+                      ? Icons.sms_rounded
+                      : Icons.mail_rounded,
                   color: Colors.blue.shade700),
               SizedBox(width: 12.w),
               Expanded(
@@ -902,16 +913,13 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
                     ? null
                     : () async {
                         try {
-                          await context.read<AuthenticationCubit>().sendTwoFactorCode();
-                          Get.snackbar(
-                            'Code Sent',
-                            'A new code has been sent',
-                            backgroundColor: Colors.green,
-                            colorText: Colors.white,
-                            snackPosition: SnackPosition.TOP,
-                            margin: EdgeInsets.all(15.w),
-                            borderRadius: 10.r,
-                          );
+                          await context
+                              .read<AuthenticationCubit>()
+                              .sendTwoFactorCode();
+                          // No confirmation toast — this screen exists to
+                          // collect the code and says where it went. The
+                          // resend button's own cooldown shows the tap landed.
+                          // The catch below still reports failures.
                         } catch (e) {
                           Get.snackbar(
                             'Error',

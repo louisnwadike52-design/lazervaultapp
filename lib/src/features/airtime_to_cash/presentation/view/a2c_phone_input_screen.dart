@@ -95,19 +95,46 @@ class _A2CPhoneInputScreenState extends State<A2CPhoneInputScreen> {
     final prefix = phone.substring(0, 4);
 
     const mtnPrefixes = [
-      '0803', '0806', '0810', '0813', '0814', '0816',
-      '0903', '0906', '0913', '0916', '0703', '0706',
+      '0803',
+      '0806',
+      '0810',
+      '0813',
+      '0814',
+      '0816',
+      '0903',
+      '0906',
+      '0913',
+      '0916',
+      '0703',
+      '0706',
     ];
     const airtelPrefixes = [
-      '0802', '0808', '0812', '0701', '0708',
-      '0901', '0902', '0904', '0907', '0912',
+      '0802',
+      '0808',
+      '0812',
+      '0701',
+      '0708',
+      '0901',
+      '0902',
+      '0904',
+      '0907',
+      '0912',
     ];
     const gloPrefixes = [
-      '0805', '0807', '0811', '0815',
-      '0905', '0915', '0705',
+      '0805',
+      '0807',
+      '0811',
+      '0815',
+      '0905',
+      '0915',
+      '0705',
     ];
     const nineMobilePrefixes = [
-      '0809', '0817', '0818', '0908', '0909',
+      '0809',
+      '0817',
+      '0818',
+      '0908',
+      '0909',
     ];
 
     if (mtnPrefixes.contains(prefix)) return 'mtn';
@@ -221,7 +248,8 @@ class _A2CPhoneInputScreenState extends State<A2CPhoneInputScreen> {
       return;
     }
     if (selectedRate == null) {
-      _showError('Conversion rate not available. Please go back and select a network.');
+      _showError(
+          'Conversion rate not available. Please go back and select a network.');
       return;
     }
 
@@ -233,7 +261,8 @@ class _A2CPhoneInputScreenState extends State<A2CPhoneInputScreen> {
 
     final network = detectedNetwork ?? selectedNetwork;
     if (network == null) {
-      _showError('Could not detect network. Please go back and select manually.');
+      _showError(
+          'Could not detect network. Please go back and select manually.');
       return;
     }
 
@@ -386,7 +415,9 @@ class _A2CPhoneInputScreenState extends State<A2CPhoneInputScreen> {
             ),
           ),
           GestureDetector(
-            onTap: () => Get.until((route) => route.settings.name == AppRoutes.airtimeToCash || route.isFirst),
+            onTap: () => Get.until((route) =>
+                route.settings.name == AppRoutes.airtimeToCash ||
+                route.isFirst),
             child: Container(
               width: 40.w,
               height: 40.w,
@@ -599,7 +630,8 @@ class _A2CPhoneInputScreenState extends State<A2CPhoneInputScreen> {
         children: [
           Icon(
             isMismatch ? Icons.warning_amber_rounded : Icons.check_circle,
-            color: isMismatch ? const Color(0xFFFB923C) : const Color(0xFF10B981),
+            color:
+                isMismatch ? const Color(0xFFFB923C) : const Color(0xFF10B981),
             size: 20.sp,
           ),
           SizedBox(width: 10.w),
@@ -771,24 +803,31 @@ class _A2CPhoneInputScreenState extends State<A2CPhoneInputScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.calculate_outlined, color: const Color(0xFF3B82F6), size: 20.sp),
+              Icon(Icons.calculate_outlined,
+                  color: const Color(0xFF3B82F6), size: 20.sp),
               SizedBox(width: 8.w),
               Text(
                 'Conversion Estimate',
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white),
               ),
             ],
           ),
           SizedBox(height: 16.h),
-          _buildCalcRow('You send', '\u20A6${selectedAmount!.toStringAsFixed(0)}',
-              Icons.arrow_upward, const Color(0xFFEF4444)),
+          _buildCalcRow(
+              'You send',
+              '\u20A6${selectedAmount!.toStringAsFixed(0)}',
+              Icons.arrow_upward,
+              const Color(0xFFEF4444)),
           SizedBox(height: 12.h),
-          _buildCalcRow('Rate', selectedRate!.ratePercentage,
-              Icons.percent, const Color(0xFF3B82F6)),
+          _buildCalcRow('Rate', selectedRate!.ratePercentage, Icons.percent,
+              const Color(0xFF3B82F6)),
           if (selectedRate!.automationFee > 0) ...[
             SizedBox(height: 12.h),
-            _buildCalcRow('Fee', selectedRate!.formattedFee,
-                Icons.receipt_long, const Color(0xFFFB923C)),
+            _buildCalcRow('Fee', selectedRate!.formattedFee, Icons.receipt_long,
+                const Color(0xFFFB923C)),
           ],
           SizedBox(height: 12.h),
           const Divider(color: Color(0xFF2D2D2D)),
@@ -799,20 +838,29 @@ class _A2CPhoneInputScreenState extends State<A2CPhoneInputScreen> {
               Row(
                 children: [
                   Container(
-                    width: 28.w, height: 28.w,
+                    width: 28.w,
+                    height: 28.w,
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(7.r),
                     ),
-                    child: Icon(Icons.arrow_downward, color: const Color(0xFF10B981), size: 16.sp),
+                    child: Icon(Icons.arrow_downward,
+                        color: const Color(0xFF10B981), size: 16.sp),
                   ),
                   SizedBox(width: 10.w),
-                  Text('You get', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+                  Text('You get',
+                      style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white)),
                 ],
               ),
               Text(
                 '\u20A6${cashAmount.toStringAsFixed(2)}',
-                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700, color: const Color(0xFF10B981)),
+                style: TextStyle(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF10B981)),
               ),
             ],
           ),
@@ -821,14 +869,16 @@ class _A2CPhoneInputScreenState extends State<A2CPhoneInputScreen> {
     );
   }
 
-  Widget _buildCalcRow(String label, String value, IconData icon, Color iconColor) {
+  Widget _buildCalcRow(
+      String label, String value, IconData icon, Color iconColor) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
           children: [
             Container(
-              width: 28.w, height: 28.w,
+              width: 28.w,
+              height: 28.w,
               decoration: BoxDecoration(
                 color: iconColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(7.r),
@@ -836,10 +886,18 @@ class _A2CPhoneInputScreenState extends State<A2CPhoneInputScreen> {
               child: Icon(icon, color: iconColor, size: 16.sp),
             ),
             SizedBox(width: 10.w),
-            Text(label, style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w400, color: Colors.white.withValues(alpha: 0.6))),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white.withValues(alpha: 0.6))),
           ],
         ),
-        Text(value, style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.8))),
+        Text(value,
+            style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+                color: Colors.white.withValues(alpha: 0.8))),
       ],
     );
   }
@@ -852,9 +910,8 @@ class _A2CPhoneInputScreenState extends State<A2CPhoneInputScreen> {
         child: ElevatedButton(
           onPressed: _canProceed ? _validateAndProceed : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: _canProceed
-                ? const Color(0xFF3B82F6)
-                : const Color(0xFF1F1F1F),
+            backgroundColor:
+                _canProceed ? const Color(0xFF3B82F6) : const Color(0xFF1F1F1F),
             padding: EdgeInsets.symmetric(vertical: 16.h),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14.r),

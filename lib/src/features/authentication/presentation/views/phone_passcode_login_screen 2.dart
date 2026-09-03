@@ -30,8 +30,7 @@ class PhonePasscodeLoginScreen extends StatefulWidget {
 class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
   static const int _length = 6;
 
-  final GlobalKey<ShakeWidgetState> _shakeKey =
-      GlobalKey<ShakeWidgetState>();
+  final GlobalKey<ShakeWidgetState> _shakeKey = GlobalKey<ShakeWidgetState>();
 
   String _countryCode = 'NG';
   String _e164Phone = '';
@@ -53,8 +52,8 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
 
   Future<void> _prefillFromStoredPhone() async {
     try {
-      final storedPhone =
-          await serviceLocator<FlutterSecureStorage>().read(key: 'stored_phone');
+      final storedPhone = await serviceLocator<FlutterSecureStorage>()
+          .read(key: 'stored_phone');
       if (storedPhone != null && storedPhone.isNotEmpty) {
         _e164Phone = storedPhone;
         // Split into dial code (country) + national number for the input.
@@ -168,9 +167,8 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
             SizedBox(height: 16.h),
             Center(
               child: TextButton(
-                onPressed: isLoading
-                    ? null
-                    : () => Get.toNamed(AppRoutes.emailSignIn),
+                onPressed:
+                    isLoading ? null : () => Get.toNamed(AppRoutes.emailSignIn),
                 child: Text(
                   'Use another method',
                   style: TextStyle(
@@ -187,9 +185,8 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
             // path into the phone signup flow.
             Center(
               child: TextButton(
-                onPressed: isLoading
-                    ? null
-                    : () => Get.toNamed(AppRoutes.phoneEntry),
+                onPressed:
+                    isLoading ? null : () => Get.toNamed(AppRoutes.phoneEntry),
                 child: Text.rich(
                   TextSpan(
                     text: 'New to LazerVault? ',

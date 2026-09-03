@@ -24,9 +24,8 @@ class NetworkRateCard extends StatelessWidget {
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF3B82F6)
-                : const Color(0xFF2D2D2D),
+            color:
+                isSelected ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),

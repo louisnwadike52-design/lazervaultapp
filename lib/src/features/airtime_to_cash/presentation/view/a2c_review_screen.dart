@@ -120,7 +120,8 @@ class _A2CReviewScreenState extends State<A2CReviewScreen>
     setState(() => _isOTPRequestInProgress = false);
 
     if (state.sessionId.isEmpty) {
-      _showError('Failed to initiate verification. Session ID is empty. Please try again.');
+      _showError(
+          'Failed to initiate verification. Session ID is empty. Please try again.');
       setState(() => _isProcessing = false);
       return;
     }
@@ -247,8 +248,7 @@ class _A2CReviewScreenState extends State<A2CReviewScreen>
                   Navigator.pop(sheetContext);
                 },
                 child: Container(
-                  margin:
-                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 6.h),
+                  margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 6.h),
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
                     color: isSelected
@@ -268,8 +268,7 @@ class _A2CReviewScreenState extends State<A2CReviewScreen>
                         width: 40.w,
                         height: 40.w,
                         decoration: BoxDecoration(
-                          color:
-                              const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                          color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Icon(
@@ -477,7 +476,9 @@ class _A2CReviewScreenState extends State<A2CReviewScreen>
           ),
           if (!_isOTPRequestInProgress)
             GestureDetector(
-              onTap: () => Get.until((route) => route.settings.name == AppRoutes.airtimeToCash || route.isFirst),
+              onTap: () => Get.until((route) =>
+                  route.settings.name == AppRoutes.airtimeToCash ||
+                  route.isFirst),
               child: Container(
                 width: 40.w,
                 height: 40.w,
@@ -629,8 +630,8 @@ class _A2CReviewScreenState extends State<A2CReviewScreen>
           SizedBox(height: 12.h),
           _buildDetailRow('Phone Number', phoneNumber ?? ''),
           SizedBox(height: 12.h),
-          _buildDetailRow(
-              'Airtime Amount', '\u20A6${amount?.toStringAsFixed(2) ?? '0.00'}'),
+          _buildDetailRow('Airtime Amount',
+              '\u20A6${amount?.toStringAsFixed(2) ?? '0.00'}'),
           SizedBox(height: 12.h),
           _buildDetailRow('Conversion Rate', rate?.ratePercentage ?? ''),
           SizedBox(height: 12.h),

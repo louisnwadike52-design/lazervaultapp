@@ -7,7 +7,8 @@ import 'package:lazervault/src/features/whatsapp_banking/domain/entities/securit
 import 'package:lazervault/src/features/whatsapp_banking/domain/repositories/i_whatsapp_repository.dart';
 import 'package:lazervault/src/features/whatsapp_banking/data/models/whatsapp_user_model.dart';
 import 'package:lazervault/src/features/whatsapp_banking/data/models/security_settings_model.dart';
-import 'package:lazervault/src/generated/whatsapp.pbgrpc.dart' hide SecuritySettings, WhatsAppUser;
+import 'package:lazervault/src/generated/whatsapp.pbgrpc.dart'
+    hide SecuritySettings, WhatsAppUser;
 import 'package:lazervault/src/generated/whatsapp.pb.dart' as whatsapp_pb;
 
 class WhatsAppRepositoryImpl implements IWhatsAppRepository {
@@ -100,9 +101,8 @@ class WhatsAppRepositoryImpl implements IWhatsAppRepository {
         return const Right(true);
       }
       return Left(ServerFailure(
-          message: response.message.isNotEmpty
-              ? response.message
-              : 'Unlink failed',
+          message:
+              response.message.isNotEmpty ? response.message : 'Unlink failed',
           statusCode: 400));
     } on GrpcError catch (e) {
       return Left(ServerFailure(
@@ -156,8 +156,8 @@ class WhatsAppRepositoryImpl implements IWhatsAppRepository {
       if (response.hasSettings()) {
         return Right(SecuritySettingsModel.fromProto(response.settings));
       }
-      return Left(ServerFailure(
-          message: 'Failed to update settings', statusCode: 500));
+      return Left(
+          ServerFailure(message: 'Failed to update settings', statusCode: 500));
     } on GrpcError catch (e) {
       return Left(ServerFailure(
           message: e.message ?? 'Failed to update security settings',

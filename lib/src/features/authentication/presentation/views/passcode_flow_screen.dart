@@ -22,7 +22,6 @@ import 'package:lazervault/src/features/identity/cubit/identity_state.dart';
 import 'package:lazervault/src/features/identity/domain/repositories/i_identity_repository.dart';
 part 'passcode_flow_screen_widgets.dart';
 
-
 class PasscodeFlowScreen extends StatefulWidget {
   final PasscodeFlowMode mode;
   final String? accountPassword;
@@ -547,43 +546,43 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
     return PopScope(
       canPop: !_busy,
       child: Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: _busy ? null : () => Navigator.of(context).pop(),
+        backgroundColor: const Color(0xFF0A0A0A),
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: _busy ? null : () => Navigator.of(context).pop(),
+          ),
+          // No title — the step heading ("Enter Current Passcode" / "Create
+          // Passcode" / "Confirm New Passcode") already names the action.
         ),
-        // No title — the step heading ("Enter Current Passcode" / "Create
-        // Passcode" / "Confirm New Passcode") already names the action.
-      ),
-      body: Stack(
-        children: [
-          // Background image (matching passcode login/setup).
-          DecoratedBox(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(AuthBackground.current),
-                fit: BoxFit.cover,
+        body: Stack(
+          children: [
+            // Background image (matching passcode login/setup).
+            DecoratedBox(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(AuthBackground.current),
+                  fit: BoxFit.cover,
+                ),
               ),
+              child: const SizedBox.expand(),
             ),
-            child: const SizedBox.expand(),
-          ),
-          // Dark overlay (0.6) so dots, prompts and keypad read clearly over
-          // the bright auth background — kept in sync with the setup screens.
-          Container(color: Colors.black.withValues(alpha: 0.6)),
-          SafeArea(
-            child: _busy
-                ? const Center(child: LazerVaultLoader.small())
-                : _step == 3
-                    ? _buildPasswordGate()
-                    : _buildKeypad(),
-          ),
-        ],
-      ),
+            // Dark overlay (0.6) so dots, prompts and keypad read clearly over
+            // the bright auth background — kept in sync with the setup screens.
+            Container(color: Colors.black.withValues(alpha: 0.6)),
+            SafeArea(
+              child: _busy
+                  ? const Center(child: LazerVaultLoader.small())
+                  : _step == 3
+                      ? _buildPasswordGate()
+                      : _buildKeypad(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -611,58 +610,58 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-              SizedBox(height: 16.h),
-              Text(
-                _stepTitle,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 24.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 10.h),
-              Text(
-                _stepSubtitle,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.white.withValues(alpha: 0.7),
-                ),
-              ),
-              SizedBox(height: 36.h),
-              ShakeWidget(
-                key: _shakeKey,
-                child: PasscodeDots(
-                  length: _passcodeLength,
-                  filled: _activePasscode.length,
-                ),
-              ),
-              SizedBox(height: 12.h),
-              if (_locked)
-                Text(
-                  'Too many attempts. Try again in '
-                  '${_formatDuration(_lockoutRemaining)}.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 13.sp,
-                    color: const Color(0xFFFB923C),
-                    fontWeight: FontWeight.w600,
+                  SizedBox(height: 16.h),
+                  Text(
+                    _stepTitle,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
-                )
-              else if (_error.isEmpty)
-                SizedBox(height: 20.h)
-              else
-                Text(
-                  _error,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 13.sp,
-                    color: const Color(0xFFEF4444),
-                    fontWeight: FontWeight.w500,
+                  SizedBox(height: 10.h),
+                  Text(
+                    _stepSubtitle,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
                   ),
-                ),
+                  SizedBox(height: 36.h),
+                  ShakeWidget(
+                    key: _shakeKey,
+                    child: PasscodeDots(
+                      length: _passcodeLength,
+                      filled: _activePasscode.length,
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  if (_locked)
+                    Text(
+                      'Too many attempts. Try again in '
+                      '${_formatDuration(_lockoutRemaining)}.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        color: const Color(0xFFFB923C),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    )
+                  else if (_error.isEmpty)
+                    SizedBox(height: 20.h)
+                  else
+                    Text(
+                      _error,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        color: const Color(0xFFEF4444),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                 ],
               ),
               // ===== BOTTOM zone: keypad anchored low (system-keyboard feel) =====
@@ -721,11 +720,9 @@ class _PasscodeFlowScreenState extends State<PasscodeFlowScreen> {
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               labelText: 'Account password',
-              labelStyle:
-                  TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+              labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
               hintText: 'Your Lazervault password',
-              hintStyle:
-                  TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+              hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
               filled: true,
               fillColor: const Color(0xFF1F1F1F),
               border: OutlineInputBorder(

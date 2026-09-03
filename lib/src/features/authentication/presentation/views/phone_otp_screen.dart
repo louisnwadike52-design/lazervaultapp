@@ -66,8 +66,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
             _resendKey++;
           }
           setState(() => _resetKey++);
-          showAppSnackbar('Error', state.message,
-              type: AppSnackbarType.error);
+          showAppSnackbar('Error', state.message, type: AppSnackbarType.error);
         }
       },
       builder: (context, state) {
@@ -89,8 +88,9 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
               : TextButton(
                   onPressed: isLoading
                       ? null
-                      : () =>
-                          context.read<PhonePasscodeCubit>().skipPhoneVerification(),
+                      : () => context
+                          .read<PhonePasscodeCubit>()
+                          .skipPhoneVerification(),
                   child: Text(
                     'Skip for now',
                     style: TextStyle(

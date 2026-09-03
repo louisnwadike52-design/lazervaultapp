@@ -53,8 +53,10 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
     if (!_settingsLoaded && state.settings != null) {
       final s = state.settings!;
       _dailyLimitController.text = s.dailyTransactionLimit.toStringAsFixed(2);
-      _perTransactionLimitController.text = s.perTransactionLimit.toStringAsFixed(2);
-      _biometricThresholdController.text = s.biometricThreshold.toStringAsFixed(2);
+      _perTransactionLimitController.text =
+          s.perTransactionLimit.toStringAsFixed(2);
+      _biometricThresholdController.text =
+          s.biometricThreshold.toStringAsFixed(2);
       _requirePinForAll = s.requirePinForAll;
       _settingsLoaded = true;
     }
@@ -64,7 +66,8 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final dailyLimit = double.tryParse(_dailyLimitController.text) ?? 0;
-    final perTxLimit = double.tryParse(_perTransactionLimitController.text) ?? 0;
+    final perTxLimit =
+        double.tryParse(_perTransactionLimitController.text) ?? 0;
 
     if (dailyLimit < perTxLimit) {
       Get.snackbar(
@@ -80,11 +83,12 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
     }
 
     context.read<WhatsAppBankingCubit>().updateSecuritySettings(
-      dailyTransactionLimit: dailyLimit,
-      perTransactionLimit: perTxLimit,
-      requirePinForAll: _requirePinForAll,
-      biometricThreshold: double.tryParse(_biometricThresholdController.text) ?? 0,
-    );
+          dailyTransactionLimit: dailyLimit,
+          perTransactionLimit: perTxLimit,
+          requirePinForAll: _requirePinForAll,
+          biometricThreshold:
+              double.tryParse(_biometricThresholdController.text) ?? 0,
+        );
   }
 
   void _resetToDefaults() {
@@ -241,13 +245,16 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [
-                                Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                                Color.fromARGB(255, 120, 40, 230).withValues(alpha: 0.05),
+                                Color.fromARGB(255, 78, 3, 208)
+                                    .withValues(alpha: 0.1),
+                                Color.fromARGB(255, 120, 40, 230)
+                                    .withValues(alpha: 0.05),
                               ],
                             ),
                             borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(
-                              color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                              color: Color.fromARGB(255, 78, 3, 208)
+                                  .withValues(alpha: 0.2),
                             ),
                           ),
                           child: Row(
@@ -287,7 +294,8 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
                         _buildLimitCard(
                           icon: Icons.calendar_today,
                           label: 'Daily Transaction Limit',
-                          description: 'Maximum amount you can transact per day',
+                          description:
+                              'Maximum amount you can transact per day',
                           controller: _dailyLimitController,
                           hint: '5000.00',
                         ),
@@ -316,7 +324,8 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
                         _buildLimitCard(
                           icon: Icons.fingerprint,
                           label: 'Biometric Threshold',
-                          description: 'Amounts above this require biometric confirmation in-app',
+                          description:
+                              'Amounts above this require biometric confirmation in-app',
                           controller: _biometricThresholdController,
                           hint: '5000.00',
                         ),
@@ -345,7 +354,8 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
                                     width: 40.w,
                                     height: 40.w,
                                     decoration: BoxDecoration(
-                                      color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                                      color: Color.fromARGB(255, 78, 3, 208)
+                                          .withValues(alpha: 0.1),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
@@ -357,7 +367,8 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
                                   SizedBox(width: 12.w),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'Require PIN for All Transactions',
@@ -386,7 +397,8 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
                                         _hasChanges = true;
                                       });
                                     },
-                                    activeThumbColor: Color.fromARGB(255, 78, 3, 208),
+                                    activeThumbColor:
+                                        Color.fromARGB(255, 78, 3, 208),
                                   ),
                                 ],
                               ),
@@ -425,10 +437,13 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
                                 ],
                               ),
                               SizedBox(height: 12.h),
-                              _buildTip('Keep your daily limit reasonable for your needs'),
-                              _buildTip('Enable biometric for large transactions'),
+                              _buildTip(
+                                  'Keep your daily limit reasonable for your needs'),
+                              _buildTip(
+                                  'Enable biometric for large transactions'),
                               _buildTip('Always keep PIN requirement enabled'),
-                              _buildTip('Monitor your transaction history regularly'),
+                              _buildTip(
+                                  'Monitor your transaction history regularly'),
                             ],
                           ),
                         ),
@@ -451,7 +466,8 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
                     ],
                   ),
                   child: ElevatedButton(
-                    onPressed: (isLoading || !_hasChanges) ? null : _saveSettings,
+                    onPressed:
+                        (isLoading || !_hasChanges) ? null : _saveSettings,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color.fromARGB(255, 78, 3, 208),
                       foregroundColor: Colors.white,

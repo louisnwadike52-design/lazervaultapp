@@ -8,7 +8,6 @@ import '../cubit/airtime_to_cash_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'vtuafrica_transfer_screen_widgets.dart';
 
-
 /// VTU Africa transfer confirmation screen.
 /// Shows the destination number to transfer airtime to, then submits the conversion.
 class VtuafricaTransferScreen extends StatefulWidget {
@@ -84,7 +83,8 @@ class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
                       SizedBox(height: 24.h),
                       _buildInstructions(),
                       SizedBox(height: 16.h),
-                      _buildUssdHelpButton(context, network, destinationPhone, amount),
+                      _buildUssdHelpButton(
+                          context, network, destinationPhone, amount),
                       SizedBox(height: 32.h),
                       _buildWarning(),
                       SizedBox(height: 40.h),
@@ -97,7 +97,8 @@ class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
                   padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 4.h),
                   child: _buildInlineError(_errorText!),
                 ),
-              _buildConfirmButton(context, phoneNumber, network, amount, destinationPhone),
+              _buildConfirmButton(
+                  context, phoneNumber, network, amount, destinationPhone),
             ],
           ),
         ),
@@ -120,7 +121,8 @@ class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 18.sp),
+          Icon(Icons.error_outline,
+              color: const Color(0xFFEF4444), size: 18.sp),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
@@ -254,7 +256,8 @@ class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
           Divider(color: Colors.white.withValues(alpha: 0.1), height: 24.h),
           _buildDestinationRow(destinationPhone),
           Divider(color: Colors.white.withValues(alpha: 0.1), height: 24.h),
-          _buildDetailRow('You will receive', '₦${estimatedCash.toStringAsFixed(2)}',
+          _buildDetailRow(
+              'You will receive', '₦${estimatedCash.toStringAsFixed(2)}',
               highlight: true),
         ],
       ),
@@ -372,11 +375,14 @@ class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
             ],
           ),
           SizedBox(height: 12.h),
-          _buildInstructionStep('1', 'Transfer the exact airtime amount to the number above'),
+          _buildInstructionStep(
+              '1', 'Transfer the exact airtime amount to the number above'),
           SizedBox(height: 8.h),
-          _buildInstructionStep('2', 'Wait for confirmation (usually within 2-5 minutes)'),
+          _buildInstructionStep(
+              '2', 'Wait for confirmation (usually within 2-5 minutes)'),
           SizedBox(height: 8.h),
-          _buildInstructionStep('3', 'Your wallet will be credited automatically via webhook'),
+          _buildInstructionStep(
+              '3', 'Your wallet will be credited automatically via webhook'),
         ],
       ),
     );
@@ -469,7 +475,8 @@ class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
           ),
-          side: BorderSide(color: const Color(0xFF4E03D0).withValues(alpha: 0.4)),
+          side:
+              BorderSide(color: const Color(0xFF4E03D0).withValues(alpha: 0.4)),
         ),
         label: Text(
           'Show me how to transfer airtime',
@@ -566,7 +573,8 @@ class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.warning_amber, size: 16.sp, color: const Color(0xFFFB923C)),
+                      Icon(Icons.warning_amber,
+                          size: 16.sp, color: const Color(0xFFFB923C)),
                       SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
@@ -653,7 +661,8 @@ class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.3)),
+                border: Border.all(
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -668,7 +677,8 @@ class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
                       ),
                     ),
                   ),
-                  Icon(Icons.copy, size: 16.sp, color: Colors.white.withValues(alpha: 0.5)),
+                  Icon(Icons.copy,
+                      size: 16.sp, color: Colors.white.withValues(alpha: 0.5)),
                 ],
               ),
             ),
@@ -733,12 +743,14 @@ class _VtuafricaTransferScreenState extends State<VtuafricaTransferScreen> {
                   onPressed: isLoading
                       ? null
                       : () {
-                          context.read<AirtimeToCashCubit>().submitVtuafricaConversion(
-                            phoneNumber: phoneNumber,
-                            network: network,
-                            amount: amount,
-                            destinationPhone: destinationPhone,
-                          );
+                          context
+                              .read<AirtimeToCashCubit>()
+                              .submitVtuafricaConversion(
+                                phoneNumber: phoneNumber,
+                                network: network,
+                                amount: amount,
+                                destinationPhone: destinationPhone,
+                              );
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4E03D0),

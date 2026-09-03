@@ -44,9 +44,12 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
 
   void _populateSettings(SecuritySettings settings) {
     if (!_settingsLoaded) {
-      _dailyLimitController.text = settings.dailyTransactionLimit.toStringAsFixed(2);
-      _perTransactionLimitController.text = settings.perTransactionLimit.toStringAsFixed(2);
-      _biometricThresholdController.text = settings.biometricThreshold.toStringAsFixed(2);
+      _dailyLimitController.text =
+          settings.dailyTransactionLimit.toStringAsFixed(2);
+      _perTransactionLimitController.text =
+          settings.perTransactionLimit.toStringAsFixed(2);
+      _biometricThresholdController.text =
+          settings.biometricThreshold.toStringAsFixed(2);
       _requirePinForAll = settings.requirePinForAll;
       _settingsLoaded = true;
     }
@@ -54,7 +57,8 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
 
   void _saveInlineSettings() {
     final dailyLimit = double.tryParse(_dailyLimitController.text) ?? 0;
-    final perTxLimit = double.tryParse(_perTransactionLimitController.text) ?? 0;
+    final perTxLimit =
+        double.tryParse(_perTransactionLimitController.text) ?? 0;
 
     if (dailyLimit <= 0 || perTxLimit <= 0) {
       Get.snackbar(
@@ -83,11 +87,12 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
     }
 
     context.read<WhatsAppBankingCubit>().updateSecuritySettings(
-      dailyTransactionLimit: dailyLimit,
-      perTransactionLimit: perTxLimit,
-      requirePinForAll: _requirePinForAll,
-      biometricThreshold: double.tryParse(_biometricThresholdController.text) ?? 0,
-    );
+          dailyTransactionLimit: dailyLimit,
+          perTransactionLimit: perTxLimit,
+          requirePinForAll: _requirePinForAll,
+          biometricThreshold:
+              double.tryParse(_biometricThresholdController.text) ?? 0,
+        );
     setState(() => _hasSettingsChanges = false);
   }
 
@@ -114,56 +119,56 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
       ),
       body: ServiceEntranceAnimation(
         child: BlocConsumer<WhatsAppBankingCubit, WhatsAppBankingState>(
-        listener: (context, state) {
-          if (state is WhatsAppBankingUnlinkSuccess) {
-            Get.snackbar(
-              'Account Unlinked',
-              'Your WhatsApp account has been unlinked successfully',
-              backgroundColor: Colors.green.withValues(alpha: 0.9),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
-              duration: Duration(seconds: 3),
-              margin: EdgeInsets.all(16.w),
-            );
-            setState(() {
-              _settingsLoaded = false;
-              _securityExpanded = false;
-            });
-            context.read<WhatsAppBankingCubit>().loadStatus();
-          } else if (state is WhatsAppBankingSettingsUpdated) {
-            Get.snackbar(
-              'Settings Updated',
-              'Your security settings have been saved',
-              backgroundColor: Colors.green.withValues(alpha: 0.9),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
-              duration: Duration(seconds: 3),
-              margin: EdgeInsets.all(16.w),
-            );
-          } else if (state is WhatsAppBankingError) {
-            Get.snackbar(
-              'Error',
-              state.message,
-              backgroundColor: Colors.red.withValues(alpha: 0.9),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
-              duration: Duration(seconds: 3),
-              margin: EdgeInsets.all(16.w),
-            );
-          }
-        },
-        builder: (context, state) {
-          if (state is WhatsAppBankingLoading && !_settingsLoaded) {
-            return Center(
-              child: LazerVaultLoader.small(),
-            );
-          }
-          if (state is WhatsAppBankingLoaded && state.isLinked) {
-            return _buildLinkedView(state);
-          }
-          return _buildUnlinkedView();
-        },
-      ),
+          listener: (context, state) {
+            if (state is WhatsAppBankingUnlinkSuccess) {
+              Get.snackbar(
+                'Account Unlinked',
+                'Your WhatsApp account has been unlinked successfully',
+                backgroundColor: Colors.green.withValues(alpha: 0.9),
+                colorText: Colors.white,
+                snackPosition: SnackPosition.TOP,
+                duration: Duration(seconds: 3),
+                margin: EdgeInsets.all(16.w),
+              );
+              setState(() {
+                _settingsLoaded = false;
+                _securityExpanded = false;
+              });
+              context.read<WhatsAppBankingCubit>().loadStatus();
+            } else if (state is WhatsAppBankingSettingsUpdated) {
+              Get.snackbar(
+                'Settings Updated',
+                'Your security settings have been saved',
+                backgroundColor: Colors.green.withValues(alpha: 0.9),
+                colorText: Colors.white,
+                snackPosition: SnackPosition.TOP,
+                duration: Duration(seconds: 3),
+                margin: EdgeInsets.all(16.w),
+              );
+            } else if (state is WhatsAppBankingError) {
+              Get.snackbar(
+                'Error',
+                state.message,
+                backgroundColor: Colors.red.withValues(alpha: 0.9),
+                colorText: Colors.white,
+                snackPosition: SnackPosition.TOP,
+                duration: Duration(seconds: 3),
+                margin: EdgeInsets.all(16.w),
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state is WhatsAppBankingLoading && !_settingsLoaded) {
+              return Center(
+                child: LazerVaultLoader.small(),
+              );
+            }
+            if (state is WhatsAppBankingLoaded && state.isLinked) {
+              return _buildLinkedView(state);
+            }
+            return _buildUnlinkedView();
+          },
+        ),
       ),
     );
   }
@@ -269,42 +274,48 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
           _buildFeatureCard(
             icon: Icons.send,
             title: 'Send Money',
-            description: 'Transfer funds to anyone, anytime via simple WhatsApp messages',
+            description:
+                'Transfer funds to anyone, anytime via simple WhatsApp messages',
           ),
           SizedBox(height: 12.h),
 
           _buildFeatureCard(
             icon: Icons.receipt_long,
             title: 'Bills Hub',
-            description: 'Settle electricity bills, buy airtime, and more in seconds',
+            description:
+                'Settle electricity bills, buy airtime, and more in seconds',
           ),
           SizedBox(height: 12.h),
 
           _buildFeatureCard(
             icon: Icons.account_balance_wallet,
             title: 'Check Balance',
-            description: 'View your account balance and transaction history instantly',
+            description:
+                'View your account balance and transaction history instantly',
           ),
           SizedBox(height: 12.h),
 
           _buildFeatureCard(
             icon: Icons.trending_up,
             title: 'Investments',
-            description: 'Buy stocks, crypto, gift cards, and manage investments',
+            description:
+                'Buy stocks, crypto, gift cards, and manage investments',
           ),
           SizedBox(height: 12.h),
 
           _buildFeatureCard(
             icon: Icons.receipt,
             title: 'Invoices',
-            description: 'Create, send, and track invoices directly from WhatsApp',
+            description:
+                'Create, send, and track invoices directly from WhatsApp',
           ),
           SizedBox(height: 12.h),
 
           _buildFeatureCard(
             icon: Icons.shield_outlined,
             title: 'Secure & Private',
-            description: 'Banking-grade security with PIN, biometric, and transaction limits',
+            description:
+                'Banking-grade security with PIN, biometric, and transaction limits',
           ),
         ],
       ),
@@ -466,9 +477,11 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
                   ],
                 ),
                 SizedBox(height: 16.h),
-                _buildGuideStep('1', 'Open WhatsApp and message your linked number'),
+                _buildGuideStep(
+                    '1', 'Open WhatsApp and message your linked number'),
                 SizedBox(height: 12.h),
-                _buildGuideStep('2', 'Type "menu" to see all available services'),
+                _buildGuideStep(
+                    '2', 'Type "menu" to see all available services'),
                 SizedBox(height: 12.h),
                 _buildGuideStep('3', 'Send commands like "send \$50 to John"'),
                 SizedBox(height: 12.h),
@@ -535,7 +548,8 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
                     width: 48.w,
                     height: 48.w,
                     decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                      color: Color.fromARGB(255, 78, 3, 208)
+                          .withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(

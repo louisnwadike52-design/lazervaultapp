@@ -25,10 +25,12 @@ class TwoFactorVerificationScreen extends StatefulWidget {
   final String? userFirstName;
 
   @override
-  State<TwoFactorVerificationScreen> createState() => _TwoFactorVerificationScreenState();
+  State<TwoFactorVerificationScreen> createState() =>
+      _TwoFactorVerificationScreenState();
 }
 
-class _TwoFactorVerificationScreenState extends State<TwoFactorVerificationScreen> {
+class _TwoFactorVerificationScreenState
+    extends State<TwoFactorVerificationScreen> {
   final List<TextEditingController> _codeControllers = List.generate(
     6,
     (index) => TextEditingController(),
@@ -45,7 +47,9 @@ class _TwoFactorVerificationScreenState extends State<TwoFactorVerificationScree
     if (widget.method == 'sms' || widget.method == 'email') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          context.read<AuthenticationCubit>().sendTwoFactorCode(widget.twoFactorToken);
+          context
+              .read<AuthenticationCubit>()
+              .sendTwoFactorCode(widget.twoFactorToken);
         }
       });
     }
@@ -84,7 +88,8 @@ class _TwoFactorVerificationScreenState extends State<TwoFactorVerificationScree
 
     try {
       final cubit = context.read<AuthenticationCubit>();
-      final success = await cubit.verifyTwoFactor(widget.twoFactorToken, _verificationCode);
+      final success =
+          await cubit.verifyTwoFactor(widget.twoFactorToken, _verificationCode);
 
       setState(() => _isLoading = false);
 

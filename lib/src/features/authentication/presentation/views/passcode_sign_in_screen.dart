@@ -11,8 +11,6 @@ class PasscodeSignInScreen extends StatefulWidget {
 }
 
 class _PasscodeSignInScreenState extends State<PasscodeSignInScreen> {
-
-
   @override
   void initState() {
     super.initState();

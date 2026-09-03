@@ -21,8 +21,7 @@ class A2COTPScreen extends StatefulWidget {
   State<A2COTPScreen> createState() => _A2COTPScreenState();
 }
 
-class _A2COTPScreenState extends State<A2COTPScreen>
-    with TransactionPinMixin {
+class _A2COTPScreenState extends State<A2COTPScreen> with TransactionPinMixin {
   @override
   ITransactionPinService get transactionPinService =>
       GetIt.I<ITransactionPinService>();
@@ -139,7 +138,8 @@ class _A2COTPScreenState extends State<A2COTPScreen>
   }
 
   void _resendOTP() {
-    if (!_canResend || !mounted || phoneNumber == null || network == null) return;
+    if (!_canResend || !mounted || phoneNumber == null || network == null)
+      return;
 
     // Clear OTP input fields on resend
     _clearOTPFields();
@@ -150,8 +150,7 @@ class _A2COTPScreenState extends State<A2COTPScreen>
     _startExpiryCountdown(); // Reset expiry on new OTP
   }
 
-  String get _otpValue =>
-      _otpControllers.map((c) => c.text).join();
+  String get _otpValue => _otpControllers.map((c) => c.text).join();
 
   void _onOTPComplete() {
     final otp = _otpValue;
@@ -237,13 +236,8 @@ class _A2COTPScreenState extends State<A2COTPScreen>
     setState(() {
       sessionId = state.sessionId;
     });
-    Get.snackbar(
-      'OTP Sent',
-      state.message,
-      backgroundColor: const Color(0xFF10B981),
-      colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
-    );
+    // No "OTP Sent" toast — the screen already tells the user a code went to
+    // their phone, and the resend cooldown shows the resend landed.
   }
 
   @override
@@ -418,7 +412,9 @@ class _A2COTPScreenState extends State<A2COTPScreen>
             ),
           ),
           GestureDetector(
-            onTap: () => Get.until((route) => route.settings.name == AppRoutes.airtimeToCash || route.isFirst),
+            onTap: () => Get.until((route) =>
+                route.settings.name == AppRoutes.airtimeToCash ||
+                route.isFirst),
             child: Container(
               width: 40.w,
               height: 40.w,
@@ -603,9 +599,7 @@ class _A2COTPScreenState extends State<A2COTPScreen>
             ),
           ),
           Text(
-            _canResend
-                ? 'Resend OTP'
-                : 'Resend in ${_resendCountdown}s',
+            _canResend ? 'Resend OTP' : 'Resend in ${_resendCountdown}s',
             style: TextStyle(
               fontSize: 14.sp,
               color: _canResend

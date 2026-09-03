@@ -106,7 +106,8 @@ class _EmailPasscodeLoginScreenState extends State<EmailPasscodeLoginScreen> {
             _entered = '';
             if (unknownAccount) {
               _passcodePhase = false;
-              _emailError = 'We don’t recognise this email. Check it and try again.';
+              _emailError =
+                  'We don’t recognise this email. Check it and try again.';
             }
           });
           if (!unknownAccount) {

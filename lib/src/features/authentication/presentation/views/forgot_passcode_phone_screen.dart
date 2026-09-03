@@ -56,8 +56,7 @@ class _ForgotPasscodePhoneScreenState extends State<ForgotPasscodePhoneScreen> {
   bool get _isPhoneIdentifier => _identifierType == LoginIdentifierType.phone;
 
   void _onIdentifierChanged(String identifier, LoginIdentifierType type) {
-    final needsRepaint =
-        type != _identifierType || _identifierError != null;
+    final needsRepaint = type != _identifierType || _identifierError != null;
     _identifier = identifier;
     _identifierType = type;
     if (needsRepaint && mounted) {
@@ -116,8 +115,7 @@ class _ForgotPasscodePhoneScreenState extends State<ForgotPasscodePhoneScreen> {
     switch (_identifierType) {
       case LoginIdentifierType.email:
         if (!isEmailIdentifier(_identifier)) {
-          setState(() =>
-              _identifierError = 'Enter a valid email address.');
+          setState(() => _identifierError = 'Enter a valid email address.');
           return;
         }
         break;
@@ -184,7 +182,6 @@ class _ForgotPasscodePhoneScreenState extends State<ForgotPasscodePhoneScreen> {
     );
   }
 
-
   void _onOtpContinue() {
     if (_code.length != _length) {
       showAppSnackbar('Incomplete', 'Enter the 6-digit code.',
@@ -205,7 +202,8 @@ class _ForgotPasscodePhoneScreenState extends State<ForgotPasscodePhoneScreen> {
       _passcodeError = null;
     });
     if (_entered.length == _length) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _onPasscodeComplete());
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _onPasscodeComplete());
     }
   }
 

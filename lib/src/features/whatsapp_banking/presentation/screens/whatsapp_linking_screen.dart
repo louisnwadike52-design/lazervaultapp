@@ -59,7 +59,9 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
 
   void _verifyOTP() {
     if (_otpController.text.length != 6) return;
-    context.read<WhatsAppBankingCubit>().verifyLinking(_phoneNumber, _otpController.text);
+    context
+        .read<WhatsAppBankingCubit>()
+        .verifyLinking(_phoneNumber, _otpController.text);
   }
 
   void _resendOTP() {
@@ -179,17 +181,10 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
       body: BlocConsumer<WhatsAppBankingCubit, WhatsAppBankingState>(
         listener: (context, state) {
           if (state is WhatsAppBankingOtpSent) {
+            // Revealing the OTP field and starting the resend timer IS the
+            // confirmation; a toast saying the same thing just covers the field.
             setState(() => _otpSent = true);
             _startTimer();
-            Get.snackbar(
-              'OTP Sent',
-              'Check your WhatsApp for the verification code',
-              backgroundColor: Colors.green.withValues(alpha: 0.9),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
-              duration: Duration(seconds: 3),
-              margin: EdgeInsets.all(16.w),
-            );
           } else if (state is WhatsAppBankingLinkingSuccess) {
             _timer?.cancel();
             _showSuccessDialog();
@@ -222,8 +217,10 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-                          Color.fromARGB(255, 120, 40, 230).withValues(alpha: 0.1),
+                          Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.2),
+                          Color.fromARGB(255, 120, 40, 230)
+                              .withValues(alpha: 0.1),
                         ],
                       ),
                       shape: BoxShape.circle,
@@ -313,10 +310,12 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
                     Container(
                       padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
+                        color: Color.fromARGB(255, 78, 3, 208)
+                            .withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(
-                          color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                          color: Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.2),
                         ),
                       ),
                       child: Row(
@@ -347,10 +346,12 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
                     // Timer
                     if (_remainingSeconds > 0)
                       Container(
-                        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                        padding: EdgeInsets.symmetric(
+                            vertical: 12.h, horizontal: 16.w),
                         margin: EdgeInsets.only(bottom: 20.h),
                         decoration: BoxDecoration(
-                          color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                          color: Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Row(
@@ -397,7 +398,9 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
                           letterSpacing: 8.w,
                         ),
                         maxLength: 6,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
                         decoration: InputDecoration(
                           hintText: '000000',
                           counterText: '',
@@ -431,9 +434,8 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
 
                   // Action Button
                   ElevatedButton(
-                    onPressed: isLoading
-                        ? null
-                        : (_otpSent ? _verifyOTP : _sendOTP),
+                    onPressed:
+                        isLoading ? null : (_otpSent ? _verifyOTP : _sendOTP),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color.fromARGB(255, 78, 3, 208),
                       foregroundColor: Colors.white,
@@ -447,7 +449,9 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
                     child: isLoading
                         ? LazerVaultLoader.small()
                         : Text(
-                            _otpSent ? 'Verify & Link Account' : 'Send Verification Code',
+                            _otpSent
+                                ? 'Verify & Link Account'
+                                : 'Send Verification Code',
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,

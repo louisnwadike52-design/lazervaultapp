@@ -90,9 +90,7 @@ class ConversionCalculatorWidget extends StatelessWidget {
           const SizedBox(height: 6),
           _buildDetailRow(
             'Net amount',
-            isValid
-                ? '\u20A6${estimatedCash.toStringAsFixed(2)}'
-                : '--',
+            isValid ? '\u20A6${estimatedCash.toStringAsFixed(2)}' : '--',
             isHighlighted: true,
           ),
 
@@ -174,7 +172,8 @@ class ConversionCalculatorWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {bool isHighlighted = false}) {
+  Widget _buildDetailRow(String label, String value,
+      {bool isHighlighted = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

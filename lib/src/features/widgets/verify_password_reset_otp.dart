@@ -204,13 +204,9 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
           );
         },
         (data) {
-          Get.snackbar(
-            'Code Sent',
-            data.message,
-            backgroundColor: Colors.green.withValues(alpha: 0.8),
-            colorText: Colors.white,
-            snackPosition: SnackPosition.TOP,
-          );
+          // No confirmation toast — the expiry countdown restarting below is
+          // the visible proof a fresh code was issued. Failures still toast
+          // (the Left branch above).
           setState(() {
             _expiresInSeconds = data.expiresInSeconds;
             _remainingSeconds = data.expiresInSeconds;
@@ -261,7 +257,9 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
               shape: BoxShape.circle,
             ),
             child: Icon(
-              _deliveryMethod == 'email' ? Icons.email_outlined : Icons.sms_outlined,
+              _deliveryMethod == 'email'
+                  ? Icons.email_outlined
+                  : Icons.sms_outlined,
               size: 32.w,
               color: const Color(0xFF4834D4),
             ),
@@ -381,7 +379,8 @@ class _VerifyPasswordResetOTPState extends State<VerifyPasswordResetOTP> {
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF4834D4),
             foregroundColor: Colors.white,
-            disabledBackgroundColor: const Color(0xFF4834D4).withValues(alpha: 0.4),
+            disabledBackgroundColor:
+                const Color(0xFF4834D4).withValues(alpha: 0.4),
             disabledForegroundColor: Colors.white70,
             elevation: 0,
             shape: const StadiumBorder(),

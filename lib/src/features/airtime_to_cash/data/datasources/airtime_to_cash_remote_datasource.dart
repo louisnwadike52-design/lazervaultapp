@@ -19,7 +19,8 @@ abstract class AirtimeToCashRemoteDataSource {
     String sessionId,
   );
 
-  Future<ServiceVerificationResult> verifyService(String network, {String provider});
+  Future<ServiceVerificationResult> verifyService(String network,
+      {String provider});
 
   Future<ProviderInfoResult> getProviderInfo();
 
@@ -63,9 +64,7 @@ class AirtimeToCashRemoteDataSourceImpl
             'No conversion rates available. Please try again later.');
       }
 
-      return rates
-          .map((rate) => NetworkRateModel.fromProto(rate))
-          .toList();
+      return rates.map((rate) => NetworkRateModel.fromProto(rate)).toList();
     } on GrpcError catch (e) {
       throw Exception('Failed to fetch airtime-to-cash rates: ${e.message}');
     } on TimeoutException {
@@ -89,7 +88,9 @@ class AirtimeToCashRemoteDataSourceImpl
           .requestAirtimeToCashOTP(request, options: options);
 
       // Validate sessionId when OTP is required and request succeeded
-      if (response.success && response.otpRequired && response.sessionId.isEmpty) {
+      if (response.success &&
+          response.otpRequired &&
+          response.sessionId.isEmpty) {
         throw Exception(
             'Server returned an invalid session. Please try again.');
       }
@@ -98,10 +99,13 @@ class AirtimeToCashRemoteDataSourceImpl
         success: response.success,
         message: response.message.isNotEmpty
             ? response.message
-            : (response.success ? 'OTP sent successfully' : 'Failed to send OTP'),
+            : (response.success
+                ? 'OTP sent successfully'
+                : 'Failed to send OTP'),
         sessionId: response.sessionId,
         otpRequired: response.otpRequired,
-        destinationPhone: response.hasDestinationPhone() ? response.destinationPhone : '',
+        destinationPhone:
+            response.hasDestinationPhone() ? response.destinationPhone : '',
         providerName: response.hasProviderName() ? response.providerName : '',
       );
     } on GrpcError catch (e) {
@@ -265,8 +269,7 @@ class AirtimeToCashRemoteDataSourceImpl
               AirtimeToCashConversionModel.fromProto(conversion))
           .toList();
     } on GrpcError catch (e) {
-      throw Exception(
-          'Failed to fetch airtime-to-cash history: ${e.message}');
+      throw Exception('Failed to fetch airtime-to-cash history: ${e.message}');
     } on TimeoutException {
       throw Exception(
           'Request timed out. Please check your connection and try again.');
@@ -277,7 +280,8 @@ class AirtimeToCashRemoteDataSourceImpl
   }
 
   @override
-  Future<ServiceVerificationResult> verifyService(String network, {String provider = ''}) async {
+  Future<ServiceVerificationResult> verifyService(String network,
+      {String provider = ''}) async {
     try {
       // Call the real VerifyAirtimeToCashService RPC — it returns the actual
       // destination_phone (VTU's pooled number the user must transfer airtime
@@ -331,14 +335,16 @@ class AirtimeToCashRemoteDataSourceImpl
           .getAirtimeToCashRates(request, options: options);
 
       // Map network rates to provider status info
-      final providers = response.rates.map((rate) => ProviderStatusInfo(
-        name: rate.network,
-        displayName: '${rate.network} Airtime',
-        isActive: rate.isAvailable,
-        isHealthy: rate.isAvailable,
-        networkCount: 1,
-        errorMessage: rate.isAvailable ? '' : 'Network unavailable',
-      )).toList();
+      final providers = response.rates
+          .map((rate) => ProviderStatusInfo(
+                name: rate.network,
+                displayName: '${rate.network} Airtime',
+                isActive: rate.isAvailable,
+                isHealthy: rate.isAvailable,
+                networkCount: 1,
+                errorMessage: rate.isAvailable ? '' : 'Network unavailable',
+              ))
+          .toList();
 
       return ProviderInfoResult(
         providerName: 'VTUAfrica',
@@ -350,7 +356,8 @@ class AirtimeToCashRemoteDataSourceImpl
     } on GrpcError catch (e) {
       throw Exception('Failed to get provider info: ${e.message}');
     } on TimeoutException {
-      throw Exception('Request timed out. Please check your connection and try again.');
+      throw Exception(
+          'Request timed out. Please check your connection and try again.');
     } catch (e) {
       if (e is Exception) rethrow;
       throw Exception('Failed to get provider info: $e');

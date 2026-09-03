@@ -58,9 +58,8 @@ class AirtimeToCashConversionModel extends AirtimeToCashConversion {
       providerName: conversion.providerName,
       providerTxId: conversion.providerTxId,
       status: _statusFromString(conversion.status),
-      failureReason: conversion.failureReason.isEmpty
-          ? null
-          : conversion.failureReason,
+      failureReason:
+          conversion.failureReason.isEmpty ? null : conversion.failureReason,
       reference: conversion.reference,
       createdAt: DateTime.tryParse(conversion.createdAt) ?? DateTime.now(),
       completedAt: conversion.completedAt.isEmpty

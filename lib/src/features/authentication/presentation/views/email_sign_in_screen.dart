@@ -79,8 +79,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
     _checkPasscodeAvailability();
     // Reflect an armed self-lock / emergency lock proactively (countdown modal)
     // on arrival — this is where an email-mode lock lands the user.
-    WidgetsBinding.instance.addPostFrameCallback(
-        (_) => maybeShowSelfLockOnLaunch(context));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => maybeShowSelfLockOnLaunch(context));
   }
 
   Future<void> _checkPasscodeAvailability() async {
@@ -91,7 +91,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
       final userEmail = await _storage.read(key: 'user_email');
 
       final hasEmail = (storedEmail != null && storedEmail.isNotEmpty) ||
-                       (userEmail != null && userEmail.isNotEmpty);
+          (userEmail != null && userEmail.isNotEmpty);
 
       if (mounted) {
         setState(() {
@@ -125,7 +125,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
       }
       if (!mounted) return;
       if (email.isEmpty || !email.contains('@')) {
-        _altSnack('Voice Login', 'Enter your email first, then use Voice login.');
+        _altSnack(
+            'Voice Login', 'Enter your email first, then use Voice login.');
         return;
       }
 
@@ -227,7 +228,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: _accent.withValues(alpha: 0.08),
-              border: Border.all(color: _accent.withValues(alpha: 0.4), width: 1.4),
+              border:
+                  Border.all(color: _accent.withValues(alpha: 0.4), width: 1.4),
             ),
             child: Icon(icon, color: _accent, size: 26.w),
           ),
@@ -256,8 +258,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
     final fromForgotPasscode = arguments?['fromForgotPasscode'] == true;
 
     return Scaffold(
-        extendBodyBehindAppBar: true,
-        body: Stack(
+      extendBodyBehindAppBar: true,
+      body: Stack(
         children: [
           Container(
             decoration: const BoxDecoration(
@@ -280,135 +282,139 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
               // errors), which previously re-fired navigation / the error
               // snackbar multiple times. Gating on the transition means a
               // re-emit of the SAME terminal state never re-triggers the handler.
-              if (curr is AuthenticationSuccess) return prev is! AuthenticationSuccess;
-              if (curr is AuthenticationFailure) return prev is! AuthenticationFailure;
+              if (curr is AuthenticationSuccess)
+                return prev is! AuthenticationSuccess;
+              if (curr is AuthenticationFailure)
+                return prev is! AuthenticationFailure;
               return true;
             },
             listener: (context, state) async {
               switch (state) {
-              case LoginTwoFactorRequired(
-                  twoFactorToken: final tfToken,
-                  method: final tfMethod,
-                ):
-                Get.to(() => BlocProvider(
-                      create: (_) => serviceLocator<AuthenticationCubit>(),
-                      child: TwoFactorVerificationScreen(
-                        twoFactorToken: tfToken,
-                        method: tfMethod,
-                      ),
-                    ));
-                break;
-              case LoginStepUpRequired(
-                  stepUpToken: final token,
-                  method: final method,
-                  destination: final dest,
-                ):
-                // Risk-based step-up: collect the OTP. The screen is self-
-                // contained (owns a fresh cubit + routes to dashboard on success).
-                Get.to(() => LoginOtpScreen(
-                      stepUpToken: token,
-                      method: method,
-                      destination: dest,
-                    ));
-                break;
-              case AuthenticationSuccess(profile: final profile):
-                // Guard against a duplicate navigation if the listener re-fires.
-                if (_navigated) break;
-                _navigated = true;
-                // Load user profile after successful authentication
-                context.read<ProfileCubit>().getUserProfile();
-
-                if (fromForgotPasscode) {
-                  // Go to passcode setup when resetting — pass hasTransactionPin
-                  // so user isn't routed to TX PIN setup if they already have one
-                  Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {
-                    'fromLoginFlow': true,
-                    'hasTransactionPin': profile.user.hasTransactionPin,
-                    'fromForgotPasscode': true,
-                  });
+                case LoginTwoFactorRequired(
+                    twoFactorToken: final tfToken,
+                    method: final tfMethod,
+                  ):
+                  Get.to(() => BlocProvider(
+                        create: (_) => serviceLocator<AuthenticationCubit>(),
+                        child: TwoFactorVerificationScreen(
+                          twoFactorToken: tfToken,
+                          method: tfMethod,
+                        ),
+                      ));
                   break;
-                }
-
-                // Resume from any incomplete signup step — the backend
-                // is source of truth (users.current_signup_step + users.
-                // signup_status). If the user logged in mid-signup
-                // (e.g. they signed up, didn't verify their phone, and
-                // came back days later), drop them at the right resume
-                // route instead of the dashboard. `null` / empty / the
-                // "complete" status means signup is done → fall through
-                // to the usual dashboard-or-passcode-setup branch.
-                final resumeRoute = signupResumeRoute(
-                  profile.user.currentSignupStep,
-                  profile.user.signupStatus,
-                  email: profile.user.email,
-                  phone: profile.user.phoneNumber,
-                  hasPasscode: profile.user.hasPasscode,
-                  hasTransactionPin: profile.user.hasTransactionPin,
-                );
-                if (resumeRoute != null) {
-                  Get.offAllNamed(resumeRoute.name, arguments: resumeRoute.args);
+                case LoginStepUpRequired(
+                    stepUpToken: final token,
+                    method: final method,
+                    destination: final dest,
+                  ):
+                  // Risk-based step-up: collect the OTP. The screen is self-
+                  // contained (owns a fresh cubit + routes to dashboard on success).
+                  Get.to(() => LoginOtpScreen(
+                        stepUpToken: token,
+                        method: method,
+                        destination: dest,
+                      ));
                   break;
-                }
+                case AuthenticationSuccess(profile: final profile):
+                  // Guard against a duplicate navigation if the listener re-fires.
+                  if (_navigated) break;
+                  _navigated = true;
+                  // Load user profile after successful authentication
+                  context.read<ProfileCubit>().getUserProfile();
 
-                // Backend is source of truth — use login response data
-                if (profile.user.hasPasscode) {
-                  // Passcode already set — persist login method.
-                  await _storage.write(key: 'login_method', value: 'passcode');
-                  if (!profile.user.hasTransactionPin) {
-                    // No transaction PIN yet — resume the (skippable) PIN setup
-                    // before the dashboard, mirroring the KYC onboarding gate.
-                    Get.offAllNamed(AppRoutes.transactionPinSetup,
-                        arguments: {'fromLoginFlow': true});
-                  } else {
-                    Get.offAllNamed(AppRoutes.dashboard);
+                  if (fromForgotPasscode) {
+                    // Go to passcode setup when resetting — pass hasTransactionPin
+                    // so user isn't routed to TX PIN setup if they already have one
+                    Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {
+                      'fromLoginFlow': true,
+                      'hasTransactionPin': profile.user.hasTransactionPin,
+                      'fromForgotPasscode': true,
+                    });
+                    break;
                   }
-                } else {
-                  // No passcode — route to setup, pass hasTransactionPin for downstream
-                  Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {
-                    'fromLoginFlow': true,
-                    'hasTransactionPin': profile.user.hasTransactionPin,
-                  });
-                }
-                break;
-              case AuthenticationFailure(message: final msg):
-                // Self-lock / failed-login lockout: show the blocking countdown
-                // modal instead of a transient snackbar (there's no early unlock).
-                final lockUntil = parseAccountLockUntil(msg);
-                if (lockUntil != null) {
-                  showAccountLockedModal(context, lockUntil,
-                      selfLock: isSelfLock(msg),
-                      fraudFreeze: isFraudFreeze(msg));
+
+                  // Resume from any incomplete signup step — the backend
+                  // is source of truth (users.current_signup_step + users.
+                  // signup_status). If the user logged in mid-signup
+                  // (e.g. they signed up, didn't verify their phone, and
+                  // came back days later), drop them at the right resume
+                  // route instead of the dashboard. `null` / empty / the
+                  // "complete" status means signup is done → fall through
+                  // to the usual dashboard-or-passcode-setup branch.
+                  final resumeRoute = signupResumeRoute(
+                    profile.user.currentSignupStep,
+                    profile.user.signupStatus,
+                    email: profile.user.email,
+                    phone: profile.user.phoneNumber,
+                    hasPasscode: profile.user.hasPasscode,
+                    hasTransactionPin: profile.user.hasTransactionPin,
+                  );
+                  if (resumeRoute != null) {
+                    Get.offAllNamed(resumeRoute.name,
+                        arguments: resumeRoute.args);
+                    break;
+                  }
+
+                  // Backend is source of truth — use login response data
+                  if (profile.user.hasPasscode) {
+                    // Passcode already set — persist login method.
+                    await _storage.write(
+                        key: 'login_method', value: 'passcode');
+                    if (!profile.user.hasTransactionPin) {
+                      // No transaction PIN yet — resume the (skippable) PIN setup
+                      // before the dashboard, mirroring the KYC onboarding gate.
+                      Get.offAllNamed(AppRoutes.transactionPinSetup,
+                          arguments: {'fromLoginFlow': true});
+                    } else {
+                      Get.offAllNamed(AppRoutes.dashboard);
+                    }
+                  } else {
+                    // No passcode — route to setup, pass hasTransactionPin for downstream
+                    Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {
+                      'fromLoginFlow': true,
+                      'hasTransactionPin': profile.user.hasTransactionPin,
+                    });
+                  }
                   break;
-                }
-                // Never stack error snackbars — GetX queues them, so a fast
-                // retry (or any re-fire) would show several. Close any open one
-                // first so at most a single login-error toast is visible.
-                if (Get.isSnackbarOpen) {
-                  Get.closeAllSnackbars();
-                }
-                // A connectivity/edge failure is NOT a bad credential — don't
-                // say "Login Error" (reads as wrong password). Poke the health
-                // gate to re-probe (a genuine outage surfaces the maintenance
-                // modal; the user's own offline network stays this snackbar).
-                final ml = msg.toLowerCase();
-                final looksNetwork = isNetworkError(msg) ||
-                    ml.contains('network error') ||
-                    ml.contains('check your connection');
-                if (looksNetwork) {
-                  ServerHealthNotifier.instance.pokeRecheck();
-                }
-                Get.snackbar(
-                  looksNetwork ? 'Connection problem' : 'Login Error',
-                  looksNetwork
-                      ? "We couldn't reach our servers. Please try again in a moment."
-                      : msg,
-                  snackPosition: SnackPosition.TOP,
-                  backgroundColor: Colors.redAccent,
-                  colorText: Colors.white,
-                  margin: EdgeInsets.all(15.w),
-                  borderRadius: 10.r,
-                );
-                break;
+                case AuthenticationFailure(message: final msg):
+                  // Self-lock / failed-login lockout: show the blocking countdown
+                  // modal instead of a transient snackbar (there's no early unlock).
+                  final lockUntil = parseAccountLockUntil(msg);
+                  if (lockUntil != null) {
+                    showAccountLockedModal(context, lockUntil,
+                        selfLock: isSelfLock(msg),
+                        fraudFreeze: isFraudFreeze(msg));
+                    break;
+                  }
+                  // Never stack error snackbars — GetX queues them, so a fast
+                  // retry (or any re-fire) would show several. Close any open one
+                  // first so at most a single login-error toast is visible.
+                  if (Get.isSnackbarOpen) {
+                    Get.closeAllSnackbars();
+                  }
+                  // A connectivity/edge failure is NOT a bad credential — don't
+                  // say "Login Error" (reads as wrong password). Poke the health
+                  // gate to re-probe (a genuine outage surfaces the maintenance
+                  // modal; the user's own offline network stays this snackbar).
+                  final ml = msg.toLowerCase();
+                  final looksNetwork = isNetworkError(msg) ||
+                      ml.contains('network error') ||
+                      ml.contains('check your connection');
+                  if (looksNetwork) {
+                    ServerHealthNotifier.instance.pokeRecheck();
+                  }
+                  Get.snackbar(
+                    looksNetwork ? 'Connection problem' : 'Login Error',
+                    looksNetwork
+                        ? "We couldn't reach our servers. Please try again in a moment."
+                        : msg,
+                    snackPosition: SnackPosition.TOP,
+                    backgroundColor: Colors.redAccent,
+                    colorText: Colors.white,
+                    margin: EdgeInsets.all(15.w),
+                    borderRadius: 10.r,
+                  );
+                  break;
                 default:
                   break;
               }
@@ -429,114 +435,129 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          SizedBox(height: _responsiveController.screenHeight * 0.1),
+                          SizedBox(
+                              height: _responsiveController.screenHeight * 0.1),
                           Center(
-                        child: UniversalImageLoader(
-                          imagePath: AppData.appLogo,
-                          height: 70.0.h,
-                          width: 70.0.w,
-                        ),
-                      ),
-                       SizedBox(height: 16.0.h),
-                      Text(
-                        fromForgotPasscode ? "Reset Your Passcode" : "Welcome Back!",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 20.0.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      SizedBox(height: 8.0.h),
-                      Text(
-                        fromForgotPasscode
-                            ? "Sign in with email/password to reset your passcode"
-                            : "Sign in to continue",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16.0.sp,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black54,
-                        ),
-                      ),
-                      SizedBox(height: 42.0.h),
-                        _buildSignInForm(context),
-                      SizedBox(height: 24.0.h),
-                      isLoading
-                          ? const Center(child: LazerVaultLoader.small())
-                          : SizedBox(
-                              width: double.infinity,
-                              height: 54.h,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4834D4),
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  // Pill-rounded edges — half-height radius
-                                  // gives a true capsule shape regardless of
-                                  // device scale.
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(32.r),
-                                  ),
-                                ),
-                                onPressed: () {
-                                    context.read<AuthenticationCubit>().loginUser(
-                                      email: _emailController.text.trim(),
-                                      password: _passwordController.text.trim(),
-                                      countryIso: _selectedCountryIso,
-                                    );
-                                },
-                                child: Text(
-                                  "Sign In",
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
-                                ),
-                              ),
-                            ),
-                      if (!isLoading) _buildAlternateAuthRow(),
-                      SizedBox(height: 12.0.h),
-                      if (_hasPasscodeSetup && !isLoading)
-                        Center(
-                          child: TextButton(
-                            onPressed: _switchToPasscodeLogin,
-                            child: Text(
-                              'Use Passcode Instead',
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                color: Colors.black87,
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.underline,
-                              ),
+                            child: UniversalImageLoader(
+                              imagePath: AppData.appLogo,
+                              height: 70.0.h,
+                              width: 70.0.w,
                             ),
                           ),
-                        ),
-                      // Social sign-in (Google/Apple) is hidden until wired — see
-                      // _socialSignInEnabled. When hidden, keep balanced spacing so
-                      // the sign-up link isn't cramped against the field above.
-                      if (_socialSignInEnabled) ...[
-                        SizedBox(height: 12.0.h),
-                        UniversalImageLoader(imagePath: AppData.orDivider),
-                        SizedBox(height: 24.0.h),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _socialLoginButton(context, AppData.googleLogo, () {
-                              context.read<AuthenticationCubit>().signInWithGoogle();
-                            }),
-                            SizedBox(width: 10.w),
-                            _socialLoginButton(context, AppData.appleLogo, () {
-                              context.read<AuthenticationCubit>().signInWithApple();
-                            }),
-                          ],
-                        ),
-                        SizedBox(height: 56.h),
-                      ] else
-                        SizedBox(height: 32.h),
-                      _buildSignUpLink(context),
-                      SizedBox(height: 16.h),
-                    ],
+                          SizedBox(height: 16.0.h),
+                          Text(
+                            fromForgotPasscode
+                                ? "Reset Your Passcode"
+                                : "Welcome Back!",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 20.0.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          SizedBox(height: 8.0.h),
+                          Text(
+                            fromForgotPasscode
+                                ? "Sign in with email/password to reset your passcode"
+                                : "Sign in to continue",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16.0.sp,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black54,
+                            ),
+                          ),
+                          SizedBox(height: 42.0.h),
+                          _buildSignInForm(context),
+                          SizedBox(height: 24.0.h),
+                          isLoading
+                              ? const Center(child: LazerVaultLoader.small())
+                              : SizedBox(
+                                  width: double.infinity,
+                                  height: 54.h,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF4834D4),
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      // Pill-rounded edges — half-height radius
+                                      // gives a true capsule shape regardless of
+                                      // device scale.
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(32.r),
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      context
+                                          .read<AuthenticationCubit>()
+                                          .loginUser(
+                                            email: _emailController.text.trim(),
+                                            password:
+                                                _passwordController.text.trim(),
+                                            countryIso: _selectedCountryIso,
+                                          );
+                                    },
+                                    child: Text(
+                                      "Sign In",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16.sp),
+                                    ),
+                                  ),
+                                ),
+                          if (!isLoading) _buildAlternateAuthRow(),
+                          SizedBox(height: 12.0.h),
+                          if (_hasPasscodeSetup && !isLoading)
+                            Center(
+                              child: TextButton(
+                                onPressed: _switchToPasscodeLogin,
+                                child: Text(
+                                  'Use Passcode Instead',
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          // Social sign-in (Google/Apple) is hidden until wired — see
+                          // _socialSignInEnabled. When hidden, keep balanced spacing so
+                          // the sign-up link isn't cramped against the field above.
+                          if (_socialSignInEnabled) ...[
+                            SizedBox(height: 12.0.h),
+                            UniversalImageLoader(imagePath: AppData.orDivider),
+                            SizedBox(height: 24.0.h),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _socialLoginButton(context, AppData.googleLogo,
+                                    () {
+                                  context
+                                      .read<AuthenticationCubit>()
+                                      .signInWithGoogle();
+                                }),
+                                SizedBox(width: 10.w),
+                                _socialLoginButton(context, AppData.appleLogo,
+                                    () {
+                                  context
+                                      .read<AuthenticationCubit>()
+                                      .signInWithApple();
+                                }),
+                              ],
+                            ),
+                            SizedBox(height: 56.h),
+                          ] else
+                            SizedBox(height: 32.h),
+                          _buildSignUpLink(context),
+                          SizedBox(height: 16.h),
+                        ],
+                      ),
                     ),
                   ),
-                ),
                 );
               },
             ),
@@ -558,8 +579,10 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
     return RegExp(r'^\+?[0-9]+$').hasMatch(cleaned);
   }
 
-  bool _startsWithPlus() =>
-      _emailController.text.trim().replaceAll(RegExp(r'[\s\-()]'), '').startsWith('+');
+  bool _startsWithPlus() => _emailController.text
+      .trim()
+      .replaceAll(RegExp(r'[\s\-()]'), '')
+      .startsWith('+');
 
   /// National digits (dial code stripped when the user typed a leading "+",
   /// national trunk "0" dropped) for the current identifier.
@@ -586,7 +609,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
     if (national.isEmpty) return null;
     final expected = _expectedNationalLength();
     if (national.length > expected) {
-      final name = CountryConfigs.getByCode(_selectedCountryIso)?.name ?? 'this country';
+      final name =
+          CountryConfigs.getByCode(_selectedCountryIso)?.name ?? 'this country';
       return 'Too long for $name — $expected digits';
     }
     return null;
@@ -670,7 +694,9 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
-                      color: selected ? const Color(0xFF4834D4) : Colors.grey.shade600,
+                      color: selected
+                          ? const Color(0xFF4834D4)
+                          : Colors.grey.shade600,
                     ),
                   ),
                   selected: selected,
@@ -778,33 +804,33 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
   }
 
   Widget _buildSignInForm(BuildContext context) {
-      return Column(
-        children: [
-          BuildFormField(
-            name: "email",
-            placeholder: "Email, phone or username",
-            keyboardType: TextInputType.emailAddress,
-            prefixIcon: _isPhone
-                ? null
-                : const Icon(Icons.person, color: Colors.black45),
-            leading: (_isPhone && !_startsWithPlus()) ? _buildCountryPill() : null,
-            controller: _emailController,
-            onChanged: _onIdentifierChanged,
-            validator: _validateIdentifier,
-            // Cap the number of characters accepted while a national phone number
-            // is being typed, based on the selected country (national length + 1
-            // for an optional leading "0"). No cap in email mode or for an
-            // explicit "+" international number.
-            inputFormatters: (_isPhone && !_startsWithPlus())
-                ? [LengthLimitingTextInputFormatter(_phoneMaxInputLength())]
-                : null,
-          ),
-          _buildDetectionHint(),
+    return Column(
+      children: [
+        BuildFormField(
+          name: "email",
+          placeholder: "Email, phone or username",
+          keyboardType: TextInputType.emailAddress,
+          prefixIcon:
+              _isPhone ? null : const Icon(Icons.person, color: Colors.black45),
+          leading:
+              (_isPhone && !_startsWithPlus()) ? _buildCountryPill() : null,
+          controller: _emailController,
+          onChanged: _onIdentifierChanged,
+          validator: _validateIdentifier,
+          // Cap the number of characters accepted while a national phone number
+          // is being typed, based on the selected country (national length + 1
+          // for an optional leading "0"). No cap in email mode or for an
+          // explicit "+" international number.
+          inputFormatters: (_isPhone && !_startsWithPlus())
+              ? [LengthLimitingTextInputFormatter(_phoneMaxInputLength())]
+              : null,
+        ),
+        _buildDetectionHint(),
         SizedBox(height: 8.0.h),
-          BuildFormField(
-            name: "password",
+        BuildFormField(
+          name: "password",
           placeholder: "Password",
-            obscureText: true,
+          obscureText: true,
           prefixIcon: const Icon(Icons.lock, color: Colors.black45),
           controller: _passwordController,
           validator: (value) {
@@ -814,75 +840,76 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
             }
             return null;
           },
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () => Get.toNamed(AppRoutes.passwordRecovery),
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(
-                'Forgot Password?',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-   Widget _socialLoginButton(BuildContext context, String imagePath, VoidCallback onPressed) {
-      return InkWell(
-        onTap: onPressed,
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 8.0.h, horizontal: 50.0.w),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(32.0.r),
-            border: Border.all(color: Colors.black, width: 1.2),
-          ),
-          child: UniversalImageLoader(
-            imagePath: imagePath,
-            height: 24.0.h,
-            width: 24.0.w,
-          ),
         ),
-      );
-    }
-
-  Widget _buildSignUpLink(BuildContext context) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            "Don't have an account?",
-            style: TextStyle(fontSize: 16.sp, color: Colors.white),
-          ),
-          SizedBox(width: 4.w),
-          TextButton(
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () => Get.toNamed(AppRoutes.passwordRecovery),
             style: TextButton.styleFrom(
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: Text(
-              "Sign Up",
+              'Forgot Password?',
               style: TextStyle(
-                fontSize: 16.sp,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+                fontSize: 14.sp,
+                color: Colors.black87,
+                fontWeight: FontWeight.w500,
               ),
             ),
-            onPressed: () => Get.toNamed(AppRoutes.signupEntry),
-          )
-        ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _socialLoginButton(
+      BuildContext context, String imagePath, VoidCallback onPressed) {
+    return InkWell(
+      onTap: onPressed,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 8.0.h, horizontal: 50.0.w),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(32.0.r),
+          border: Border.all(color: Colors.black, width: 1.2),
+        ),
+        child: UniversalImageLoader(
+          imagePath: imagePath,
+          height: 24.0.h,
+          width: 24.0.w,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignUpLink(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          "Don't have an account?",
+          style: TextStyle(fontSize: 16.sp, color: Colors.white),
+        ),
+        SizedBox(width: 4.w),
+        TextButton(
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text(
+            "Sign Up",
+            style: TextStyle(
+              fontSize: 16.sp,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          onPressed: () => Get.toNamed(AppRoutes.signupEntry),
+        )
+      ],
     );
   }
 }

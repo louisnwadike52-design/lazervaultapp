@@ -149,7 +149,8 @@ class _A2CPinInputScreenState extends State<A2CPinInputScreen>
         amount: amount,
         currency: 'NGN',
         title: 'Confirm Airtime to Cash',
-        message: 'Confirm airtime to cash conversion of ₦${amount.toStringAsFixed(2)}',
+        message:
+            'Confirm airtime to cash conversion of ₦${amount.toStringAsFixed(2)}',
         onPinValidated: (token) async {
           verificationToken = token;
         },
@@ -243,9 +244,9 @@ class _A2CPinInputScreenState extends State<A2CPinInputScreen>
                   ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

@@ -105,17 +105,15 @@ class _PhoneEmailVerificationScreenState
             _resendInitial = 60;
             _resendKey++;
           });
-          showAppSnackbar('Code sent',
-              'We sent a 6-digit code to ${_emailCtrl.text.trim()}.',
-              type: AppSnackbarType.success);
+          // Moving to the code phase IS the confirmation, and that screen
+          // names the address the code went to.
         } else if (state is PhoneEmailVerified) {
           context.read<AuthenticationCubit>().hydrateProfile(state.profile);
           _goToPin();
         } else if (state is PhoneEmailCodeResent) {
-          // The ResendCodeButton owns its own countdown (restarts on tap), so we
-          // only confirm delivery here.
-          showAppSnackbar('Code sent', 'A new code is on its way.',
-              type: AppSnackbarType.success);
+          // Nothing to show: the ResendCodeButton owns its own countdown and
+          // restarts it on tap, which already tells the user the resend went
+          // through. A toast on top of that is noise.
         } else if (state is PhonePasscodeFailure) {
           if (state.restartFlow) {
             showAppSnackbar('Session expired', state.message,
@@ -123,7 +121,9 @@ class _PhoneEmailVerificationScreenState
             Get.offAllNamed(AppRoutes.phoneEntry);
           } else {
             showAppSnackbar(
-                _phase == _Phase.email ? 'Couldn\'t use that email' : 'Invalid code',
+                _phase == _Phase.email
+                    ? 'Couldn\'t use that email'
+                    : 'Invalid code',
                 state.message,
                 type: AppSnackbarType.error);
           }

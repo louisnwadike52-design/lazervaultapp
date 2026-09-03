@@ -133,7 +133,9 @@ class _A2CNetworkSelectionScreenState extends State<A2CNetworkSelectionScreen> {
             ),
           ),
           GestureDetector(
-            onTap: () => Get.until((route) => route.settings.name == AppRoutes.airtimeToCash || route.isFirst),
+            onTap: () => Get.until((route) =>
+                route.settings.name == AppRoutes.airtimeToCash ||
+                route.isFirst),
             child: Container(
               width: 40.w,
               height: 40.w,
@@ -179,10 +181,11 @@ class _A2CNetworkSelectionScreenState extends State<A2CNetworkSelectionScreen> {
     return GestureDetector(
       onTap: rate.isAvailable
           ? () {
-              Get.toNamed(AppRoutes.airtimeToCashServiceVerification, arguments: {
-                'network': rate.network,
-                'rate': rate,
-              });
+              Get.toNamed(AppRoutes.airtimeToCashServiceVerification,
+                  arguments: {
+                    'network': rate.network,
+                    'rate': rate,
+                  });
             }
           : null,
       child: Container(
@@ -214,7 +217,8 @@ class _A2CNetworkSelectionScreenState extends State<A2CNetworkSelectionScreen> {
                   ),
                   child: Center(
                     child: Text(
-                      (rate.network.isNotEmpty ? rate.network[0] : '?').toUpperCase(),
+                      (rate.network.isNotEmpty ? rate.network[0] : '?')
+                          .toUpperCase(),
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w700,
@@ -224,8 +228,7 @@ class _A2CNetworkSelectionScreenState extends State<A2CNetworkSelectionScreen> {
                   ),
                 ),
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: rate.isAvailable
                         ? const Color(0xFF10B981).withValues(alpha: 0.15)
@@ -339,8 +342,7 @@ class _A2CNetworkSelectionScreenState extends State<A2CNetworkSelectionScreen> {
             onPressed: () => Get.back(),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF3B82F6),
-              padding:
-                  EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),
@@ -419,8 +421,8 @@ class _A2CNetworkSelectionScreenState extends State<A2CNetworkSelectionScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF3B82F6),
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 20.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
                     ),
@@ -439,8 +441,8 @@ class _A2CNetworkSelectionScreenState extends State<A2CNetworkSelectionScreen> {
                   onPressed: () => Get.back(),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFF2D2D2D)),
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 20.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
                     ),

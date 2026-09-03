@@ -52,7 +52,8 @@ class AirtimeToCashOTPSent extends AirtimeToCashState {
   });
 
   @override
-  List<Object?> get props => [sessionId, otpRequired, message, destinationPhone, providerName];
+  List<Object?> get props =>
+      [sessionId, otpRequired, message, destinationPhone, providerName];
 }
 
 // OTP verification states
@@ -108,7 +109,8 @@ class AirtimeToCashServiceVerified extends AirtimeToCashState {
   });
 
   @override
-  List<Object?> get props => [providerName, destinationPhone, network, requiresTransfer, message];
+  List<Object?> get props =>
+      [providerName, destinationPhone, network, requiresTransfer, message];
 }
 
 // Provider info states
@@ -128,7 +130,8 @@ class AirtimeToCashProviderInfoLoaded extends AirtimeToCashState {
   });
 
   @override
-  List<Object?> get props => [providerName, requiresOTP, requiresTransfer, displayName, providers];
+  List<Object?> get props =>
+      [providerName, requiresOTP, requiresTransfer, displayName, providers];
 }
 
 // Review state
@@ -148,7 +151,8 @@ class AirtimeToCashReviewReady extends AirtimeToCashState {
   });
 
   @override
-  List<Object?> get props => [phoneNumber, network, amount, rate, estimatedCash];
+  List<Object?> get props =>
+      [phoneNumber, network, amount, rate, estimatedCash];
 }
 
 // Processing states

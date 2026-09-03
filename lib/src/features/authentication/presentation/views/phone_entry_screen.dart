@@ -50,8 +50,8 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
 
   void _onContinue() {
     if (_e164Phone.isEmpty) {
-      showAppSnackbar('Phone required',
-          'Please enter your phone number to continue.',
+      showAppSnackbar(
+          'Phone required', 'Please enter your phone number to continue.',
           type: AppSnackbarType.error);
       return;
     }
@@ -65,8 +65,7 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
       if (nsn.startsWith(dial)) nsn = nsn.substring(dial.length);
       final err = country.validateNationalNumber(nsn);
       if (err != null) {
-        showAppSnackbar('Invalid number', err,
-            type: AppSnackbarType.error);
+        showAppSnackbar('Invalid number', err, type: AppSnackbarType.error);
         return;
       }
     }
@@ -236,7 +235,8 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
                 child: TextButton.icon(
                   onPressed: isLoading ? null : _useDevicePhone,
                   style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -272,7 +272,7 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
     );
     // A phone-mode self-lock / emergency lock lands the user here — reflect it
     // proactively with a live countdown instead of only on a failed attempt.
-    WidgetsBinding.instance.addPostFrameCallback(
-        (_) => maybeShowSelfLockOnLaunch(context));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => maybeShowSelfLockOnLaunch(context));
   }
 }

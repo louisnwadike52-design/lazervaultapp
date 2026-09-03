@@ -17,13 +17,15 @@ class TwoFactorSettingsScreen extends StatefulWidget {
   const TwoFactorSettingsScreen({super.key});
 
   @override
-  State<TwoFactorSettingsScreen> createState() => _TwoFactorSettingsScreenState();
+  State<TwoFactorSettingsScreen> createState() =>
+      _TwoFactorSettingsScreenState();
 }
 
 class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
   TwoFactorStatus? _status;
   bool _isLoading = true;
-  TwoFactorMethod _selectedMethod = TwoFactorMethod.totp; // inline-enable picker
+  TwoFactorMethod _selectedMethod =
+      TwoFactorMethod.totp; // inline-enable picker
   bool _enabling = false;
 
   @override
@@ -82,7 +84,8 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
     final setup = await cubit.enableTwoFactor(_selectedMethod);
     if (!mounted) return;
     setState(() => _enabling = false);
-    if (!setup.verificationRequired) return; // failure (cubit already snackbar'd)
+    if (!setup.verificationRequired)
+      return; // failure (cubit already snackbar'd)
 
     final bool? ok;
     if (_selectedMethod == TwoFactorMethod.totp) {
@@ -264,10 +267,12 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
     final proceed = await showDialog<bool>(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Row(
           children: [
-            Icon(Icons.swap_horiz_rounded, color: Colors.orange.shade800, size: 22.sp),
+            Icon(Icons.swap_horiz_rounded,
+                color: Colors.orange.shade800, size: 22.sp),
             SizedBox(width: 10.w),
             const Expanded(child: Text('Switch 2FA method?')),
           ],
@@ -343,8 +348,9 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
       iconColor: Colors.orange.shade700,
       onVerify: (code) async {
         try {
-          final codes =
-              await context.read<AuthenticationCubit>().regenerateBackupCodes(code);
+          final codes = await context
+              .read<AuthenticationCubit>()
+              .regenerateBackupCodes(code);
           if (codes.isNotEmpty) {
             newCodes = codes;
             return true;
@@ -380,7 +386,8 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
                 spacing: 8.w,
                 runSpacing: 8.h,
                 children: codes.map((code) {
-                  final formattedCode = '${code.substring(0, 4)}-${code.substring(4)}';
+                  final formattedCode =
+                      '${code.substring(0, 4)}-${code.substring(4)}';
                   return InkWell(
                     onTap: () {
                       Clipboard.setData(ClipboardData(text: code));
@@ -475,9 +482,7 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
         color: isEnabled ? Colors.green.shade50 : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: isEnabled
-              ? Colors.green.shade200
-              : Colors.grey.shade300,
+          color: isEnabled ? Colors.green.shade200 : Colors.grey.shade300,
         ),
       ),
       child: Row(
@@ -485,9 +490,7 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: isEnabled
-                  ? Colors.green
-                  : Colors.grey.shade400,
+              color: isEnabled ? Colors.green : Colors.grey.shade400,
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -696,10 +699,12 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.tune_rounded, color: Colors.blue.shade700, size: 20.sp),
+              Icon(Icons.tune_rounded,
+                  color: Colors.blue.shade700, size: 20.sp),
               SizedBox(width: 12.w),
               Text('Authentication methods',
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+                  style:
+                      TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
             ],
           ),
           SizedBox(height: 4.h),
@@ -719,16 +724,21 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
                 child: Container(
                   padding: EdgeInsets.all(14.w),
                   decoration: BoxDecoration(
-                    color: isActive ? Colors.green.shade50 : Colors.grey.shade50,
+                    color:
+                        isActive ? Colors.green.shade50 : Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(
-                      color: isActive ? Colors.green.shade300 : Colors.grey.shade300,
+                      color: isActive
+                          ? Colors.green.shade300
+                          : Colors.grey.shade300,
                     ),
                   ),
                   child: Row(
                     children: [
                       Icon(_getMethodIcon(m),
-                          color: isActive ? Colors.green.shade700 : Colors.grey.shade600,
+                          color: isActive
+                              ? Colors.green.shade700
+                              : Colors.grey.shade600,
                           size: 20.sp),
                       SizedBox(width: 14.w),
                       Expanded(
@@ -737,17 +747,20 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
                           children: [
                             Text(m.displayName,
                                 style: TextStyle(
-                                    fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                                    fontSize: 15.sp,
+                                    fontWeight: FontWeight.w600)),
                             SizedBox(height: 2.h),
                             Text(_getMethodDescription(m),
                                 style: TextStyle(
-                                    fontSize: 12.sp, color: Colors.grey.shade600)),
+                                    fontSize: 12.sp,
+                                    color: Colors.grey.shade600)),
                           ],
                         ),
                       ),
                       if (isActive)
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10.w, vertical: 4.h),
                           decoration: BoxDecoration(
                             color: Colors.green.shade600,
                             borderRadius: BorderRadius.circular(20.r),
@@ -759,7 +772,8 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
                                   fontWeight: FontWeight.w600)),
                         )
                       else
-                        Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400),
+                        Icon(Icons.chevron_right_rounded,
+                            color: Colors.grey.shade400),
                     ],
                   ),
                 ),
@@ -888,7 +902,8 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
                   ? LazerVaultLoader.small()
                   : Text(
                       'Enable ${_selectedMethod.displayName}',
-                      style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                      style: GoogleFonts.inter(
+                          fontSize: 14.sp, fontWeight: FontWeight.w600),
                     ),
               onPressed: _enabling ? null : _enableSelected,
               style: ElevatedButton.styleFrom(
@@ -904,5 +919,4 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
       ),
     );
   }
-
 }

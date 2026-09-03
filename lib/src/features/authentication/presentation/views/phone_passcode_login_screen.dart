@@ -45,8 +45,8 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
   void initState() {
     super.initState();
     // Reflect an armed self-lock / emergency lock proactively (countdown modal).
-    WidgetsBinding.instance.addPostFrameCallback(
-        (_) => maybeShowSelfLockOnLaunch(context));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => maybeShowSelfLockOnLaunch(context));
   }
 
   final GlobalKey<ShakeWidgetState> _shakeKey = GlobalKey<ShakeWidgetState>();
@@ -89,8 +89,7 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
   }
 
   void _onIdentifierChanged(String identifier, LoginIdentifierType type) {
-    final needsRepaint =
-        type != _identifierType || _identifierError != null;
+    final needsRepaint = type != _identifierType || _identifierError != null;
     _identifier = identifier;
     _identifierType = type;
     if (needsRepaint && mounted) {
@@ -119,6 +118,7 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
       _identifierType = LoginIdentifierType.phone;
     });
   }
+
   String _entered = '';
   bool _submitting = false;
 
@@ -131,8 +131,7 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
     switch (_identifierType) {
       case LoginIdentifierType.email:
         if (!isEmailIdentifier(_identifier)) {
-          setState(() =>
-              _identifierError = 'Enter a valid email address.');
+          setState(() => _identifierError = 'Enter a valid email address.');
           return;
         }
         break;
@@ -407,7 +406,8 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
-          onPressed: _submitting ? null : () => Get.toNamed(AppRoutes.signupEntry),
+          onPressed:
+              _submitting ? null : () => Get.toNamed(AppRoutes.signupEntry),
           child: Text(
             'Sign up',
             style: TextStyle(

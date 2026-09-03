@@ -28,9 +28,12 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
   // De-dupes the error haptic so a heavy buzz fires once per distinct
   // passcode error, not on every rebuild while the error is shown.
   String? _lastError;
-  bool get _fromLoginFlow => (Get.arguments as Map<String, dynamic>?)?['fromLoginFlow'] == true;
-  bool get _hasTransactionPin => (Get.arguments as Map<String, dynamic>?)?['hasTransactionPin'] == true;
-  bool get _fromForgotPasscode => (Get.arguments as Map<String, dynamic>?)?['fromForgotPasscode'] == true;
+  bool get _fromLoginFlow =>
+      (Get.arguments as Map<String, dynamic>?)?['fromLoginFlow'] == true;
+  bool get _hasTransactionPin =>
+      (Get.arguments as Map<String, dynamic>?)?['hasTransactionPin'] == true;
+  bool get _fromForgotPasscode =>
+      (Get.arguments as Map<String, dynamic>?)?['fromForgotPasscode'] == true;
 
   @override
   void initState() {
@@ -239,13 +242,15 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
                             children: [
                               ...List.generate(9, (index) {
                                 final number = (index + 1).toString();
-                                return _buildNumberButton(number, isRegistering);
+                                return _buildNumberButton(
+                                    number, isRegistering);
                               }),
                               Container(), // Empty space
                               _buildNumberButton('0', isRegistering),
                               _buildIconButton(
                                 icon: Icons.backspace_outlined,
-                                onPressed: isRegistering ? null : _onBackspacePressed,
+                                onPressed:
+                                    isRegistering ? null : _onBackspacePressed,
                               ),
                             ],
                           ),
@@ -297,9 +302,9 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
           child: Text(
             number,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: isDisabled ? Colors.grey : Colors.white,
-            ),
+                  fontWeight: FontWeight.w500,
+                  color: isDisabled ? Colors.grey : Colors.white,
+                ),
           ),
         ),
       ),

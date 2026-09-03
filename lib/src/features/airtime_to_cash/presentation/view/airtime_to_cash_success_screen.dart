@@ -84,7 +84,8 @@ class AirtimeToCashSuccessScreen extends StatelessWidget {
                           ),
                           borderRadius: BorderRadius.circular(20.r),
                           border: Border.all(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.3),
                             width: 1,
                           ),
                         ),

@@ -55,7 +55,8 @@ class _PhoneOptionalEmailScreenState extends State<PhoneOptionalEmailScreen> {
     final email = _email.text.trim();
     if (withEmail) {
       if (email.isEmpty || !_isValidEmail(email)) {
-        setState(() => _error = 'Please enter a valid email, or skip this step.');
+        setState(
+            () => _error = 'Please enter a valid email, or skip this step.');
         return;
       }
     }
@@ -123,7 +124,8 @@ class _PhoneOptionalEmailScreenState extends State<PhoneOptionalEmailScreen> {
               placeholder: 'Email (optional)',
               controller: _email,
               keyboardType: TextInputType.emailAddress,
-              prefixIcon: const Icon(Icons.email_outlined, color: Colors.black45),
+              prefixIcon:
+                  const Icon(Icons.email_outlined, color: Colors.black45),
               onChanged: (_) {
                 if (_error != null) setState(() => _error = null);
               },

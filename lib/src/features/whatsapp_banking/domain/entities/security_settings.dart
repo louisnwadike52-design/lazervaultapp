@@ -18,7 +18,8 @@ class SecuritySettings {
     double? biometricThreshold,
   }) {
     return SecuritySettings(
-      dailyTransactionLimit: dailyTransactionLimit ?? this.dailyTransactionLimit,
+      dailyTransactionLimit:
+          dailyTransactionLimit ?? this.dailyTransactionLimit,
       perTransactionLimit: perTransactionLimit ?? this.perTransactionLimit,
       requirePinForAll: requirePinForAll ?? this.requirePinForAll,
       biometricThreshold: biometricThreshold ?? this.biometricThreshold,

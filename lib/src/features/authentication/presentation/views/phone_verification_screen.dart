@@ -14,7 +14,6 @@ import 'package:lazervault/src/features/widgets/verification_code_input.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'phone_verification_screen_widgets.dart';
 
-
 class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
   Timer? _resendTimer;
   Timer? _expiryTimer;
@@ -138,8 +137,8 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
     if (_resendCooldown > 0) return;
 
     context.read<PhoneVerificationCubit>().resendVerificationCode(
-      phoneNumber: widget.phoneNumber,
-    );
+          phoneNumber: widget.phoneNumber,
+        );
 
     // Restart countdown
     _startResendCooldown(60);
@@ -199,16 +198,10 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
         body: BlocListener<PhoneVerificationCubit, PhoneVerificationState>(
           listener: (context, state) {
             if (state is PhoneVerificationCodeSent) {
-              Get.snackbar(
-                'Code Sent',
-                state.message,
-                snackPosition: SnackPosition.TOP,
-                backgroundColor: Colors.green,
-                colorText: Colors.white,
-                margin: EdgeInsets.all(16.w),
-                borderRadius: 12.r,
-                duration: const Duration(seconds: 3),
-              );
+              // No "Code Sent" toast: the screen already states a code went to
+              // this number, and a banner over the input is in the way of the
+              // one thing the user is here to do. The expiry countdown below
+              // is the feedback that a NEW code replaced the old one.
               // Restart expiry countdown when new code is sent
               if (state.expiresIn != null) {
                 _startExpiryCountdown(state.expiresIn!);
@@ -262,270 +255,281 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                 behavior: HitTestBehavior.opaque,
                 onTap: () => FocusScope.of(context).unfocus(),
                 child: SafeArea(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(horizontal: 24.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // From Settings this is a normal sub-screen → real back
-                      // button. Onboarding (no fromSettings) stays forward-only.
-                      if (widget.fromSettings)
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 8.h),
-                            child: IconButton(
-                              onPressed: () => Navigator.of(context).maybePop(),
-                              icon: const Icon(Icons.arrow_back, color: Color(0xFF1F2937)),
-                              tooltip: 'Back',
-                            ),
-                          ),
-                        ),
-                      SizedBox(height: widget.fromSettings ? 12.h : 60.h),
-
-                      // Shared gradient badge icon (same as the phone_passcode
-                      // OTP screen + email verification).
-                      const VerificationBadgeIcon(
-                          icon: Icons.phone_android_rounded),
-                      SizedBox(height: 32.h),
-
-                      // Title
-                      Text(
-                        'Verify Your Phone',
-                        style: GoogleFonts.inter(
-                          fontSize: 28.sp,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1F2937),
-                        ),
-                      ),
-                      SizedBox(height: 12.h),
-
-                      // Subtitle with masked phone
-                      RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          style: GoogleFonts.inter(
-                            fontSize: 15.sp,
-                            color: const Color(0xFF6B7280),
-                            height: 1.5,
-                          ),
-                          children: [
-                            const TextSpan(
-                              text: 'Enter the 6-digit code sent to\n',
-                            ),
-                            TextSpan(
-                              text: maskedPhone,
-                              style: GoogleFonts.inter(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF1F2937),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // From Settings this is a normal sub-screen → real back
+                        // button. Onboarding (no fromSettings) stays forward-only.
+                        if (widget.fromSettings)
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: EdgeInsets.only(top: 8.h),
+                              child: IconButton(
+                                onPressed: () =>
+                                    Navigator.of(context).maybePop(),
+                                icon: const Icon(Icons.arrow_back,
+                                    color: Color(0xFF1F2937)),
+                                tooltip: 'Back',
                               ),
                             ),
-                          ],
+                          ),
+                        SizedBox(height: widget.fromSettings ? 12.h : 60.h),
+
+                        // Shared gradient badge icon (same as the phone_passcode
+                        // OTP screen + email verification).
+                        const VerificationBadgeIcon(
+                            icon: Icons.phone_android_rounded),
+                        SizedBox(height: 32.h),
+
+                        // Title
+                        Text(
+                          'Verify Your Phone',
+                          style: GoogleFonts.inter(
+                            fontSize: 28.sp,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1F2937),
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 40.h),
+                        SizedBox(height: 12.h),
 
-                      // OTP Input
-                      VerificationCodeInput(
-                        onCompleted: (code) {
-                          context.read<PhoneVerificationCubit>().updateVerificationCode(code);
-                        },
-                        onChanged: (code) {
-                          context.read<PhoneVerificationCubit>().updateVerificationCode(code);
-                        },
-                      ),
-                      SizedBox(height: 16.h),
-
-                      // Expiry countdown
-                      if (!_isExpired && _expiryCountdown > 0)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.timer_outlined,
-                              size: 18.sp,
-                              color: _expiryCountdown < 60
-                                  ? Colors.red
-                                  : const Color(0xFF6B7280),
+                        // Subtitle with masked phone
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style: GoogleFonts.inter(
+                              fontSize: 15.sp,
+                              color: const Color(0xFF6B7280),
+                              height: 1.5,
                             ),
-                            SizedBox(width: 6.w),
-                            Text(
-                              'Code expires in ${_formatCountdown(_expiryCountdown)}',
-                              style: GoogleFonts.inter(
-                                fontSize: 14.sp,
+                            children: [
+                              const TextSpan(
+                                text: 'Enter the 6-digit code sent to\n',
+                              ),
+                              TextSpan(
+                                text: maskedPhone,
+                                style: GoogleFonts.inter(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1F2937),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 40.h),
+
+                        // OTP Input
+                        VerificationCodeInput(
+                          onCompleted: (code) {
+                            context
+                                .read<PhoneVerificationCubit>()
+                                .updateVerificationCode(code);
+                          },
+                          onChanged: (code) {
+                            context
+                                .read<PhoneVerificationCubit>()
+                                .updateVerificationCode(code);
+                          },
+                        ),
+                        SizedBox(height: 16.h),
+
+                        // Expiry countdown
+                        if (!_isExpired && _expiryCountdown > 0)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.timer_outlined,
+                                size: 18.sp,
                                 color: _expiryCountdown < 60
                                     ? Colors.red
                                     : const Color(0xFF6B7280),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        )
-                      else if (_isExpired)
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 8.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.warning_amber_rounded,
-                                size: 18.sp,
-                                color: Colors.red,
                               ),
                               SizedBox(width: 6.w),
                               Text(
-                                'Code expired. Please request a new one.',
+                                'Code expires in ${_formatCountdown(_expiryCountdown)}',
                                 style: GoogleFonts.inter(
-                                  fontSize: 13.sp,
-                                  color: Colors.red,
+                                  fontSize: 14.sp,
+                                  color: _expiryCountdown < 60
+                                      ? Colors.red
+                                      : const Color(0xFF6B7280),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                      SizedBox(height: 32.h),
-
-                      // Verify Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56.h,
-                        child: ElevatedButton(
-                          onPressed: (isVerifying || _isExpired)
-                              ? null
-                              : () {
-                                  if (state is PhoneVerificationInProgress) {
-                                    if (state.verificationCode.length != 6) {
-                                      Get.snackbar(
-                                        'Invalid Code',
-                                        'Please enter the complete 6-digit code',
-                                        snackPosition: SnackPosition.TOP,
-                                        backgroundColor: Colors.redAccent,
-                                        colorText: Colors.white,
-                                        margin: EdgeInsets.all(16.w),
-                                        borderRadius: 12.r,
-                                      );
-                                      return;
-                                    }
-                                    context.read<PhoneVerificationCubit>().verifyPhoneNumber(
-                                      phoneNumber: widget.phoneNumber,
-                                      verificationCode: state.verificationCode,
-                                    );
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4834D4),
-                            foregroundColor: Colors.white,
-                            disabledBackgroundColor: const Color(0xFF4834D4).withValues(alpha: 0.5),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.r),
+                          )
+                        else if (_isExpired)
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12.w,
+                              vertical: 8.h,
                             ),
-                            elevation: 0,
-                          ),
-                          child: isVerifying
-                              ? LazerVaultLoader.small()
-                              : Text(
-                                  'Verify Phone Number',
+                            decoration: BoxDecoration(
+                              color: Colors.red.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.warning_amber_rounded,
+                                  size: 18.sp,
+                                  color: Colors.red,
+                                ),
+                                SizedBox(width: 6.w),
+                                Text(
+                                  'Code expired. Please request a new one.',
                                   style: GoogleFonts.inter(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13.sp,
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                        ),
-                      ),
-                      SizedBox(height: 24.h),
-
-                      // Resend Code Section
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Didn't receive the code?",
-                            style: GoogleFonts.inter(
-                              fontSize: 14.sp,
-                              color: const Color(0xFF6B7280),
+                              ],
                             ),
                           ),
-                          SizedBox(width: 4.w),
-                          TextButton(
-                            onPressed: (_resendCooldown > 0 || isSending)
+                        SizedBox(height: 32.h),
+
+                        // Verify Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56.h,
+                          child: ElevatedButton(
+                            onPressed: (isVerifying || _isExpired)
                                 ? null
-                                : _resendCode,
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.symmetric(horizontal: 8.w),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                : () {
+                                    if (state is PhoneVerificationInProgress) {
+                                      if (state.verificationCode.length != 6) {
+                                        Get.snackbar(
+                                          'Invalid Code',
+                                          'Please enter the complete 6-digit code',
+                                          snackPosition: SnackPosition.TOP,
+                                          backgroundColor: Colors.redAccent,
+                                          colorText: Colors.white,
+                                          margin: EdgeInsets.all(16.w),
+                                          borderRadius: 12.r,
+                                        );
+                                        return;
+                                      }
+                                      context
+                                          .read<PhoneVerificationCubit>()
+                                          .verifyPhoneNumber(
+                                            phoneNumber: widget.phoneNumber,
+                                            verificationCode:
+                                                state.verificationCode,
+                                          );
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF4834D4),
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: const Color(0xFF4834D4)
+                                  .withValues(alpha: 0.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                              ),
+                              elevation: 0,
                             ),
-                            child: isSending
-                                ? LazerVaultLoader.tiny()
+                            child: isVerifying
+                                ? LazerVaultLoader.small()
                                 : Text(
-                                    _resendCooldown > 0
-                                        ? 'Resend in ${_resendCooldown}s'
-                                        : 'Resend Code',
+                                    'Verify Phone Number',
                                     style: GoogleFonts.inter(
-                                      fontSize: 14.sp,
+                                      fontSize: 16.sp,
                                       fontWeight: FontWeight.w600,
-                                      color: _resendCooldown > 0
-                                          ? const Color(0xFF9CA3AF)
-                                          : const Color(0xFF4834D4),
                                     ),
                                   ),
                           ),
-                        ],
-                      ),
-
-                      // Skip CTA — onboarding only; hidden when from Settings.
-                      if (!widget.fromSettings) SizedBox(height: 12.h),
-                      if (!widget.fromSettings) Center(
-                        child: TextButton(
-                          onPressed: _skipVerification,
-                          style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF4834D4),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16.w, vertical: 10.h),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Skip for now',
-                                style: GoogleFonts.inter(
-                                  fontSize: 15.sp,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF4834D4),
-                                ),
-                              ),
-                              SizedBox(width: 6.w),
-                              Icon(
-                                Icons.arrow_forward_rounded,
-                                size: 18.sp,
-                                color: const Color(0xFF4834D4),
-                              ),
-                            ],
-                          ),
                         ),
-                      ),
+                        SizedBox(height: 24.h),
 
-                      SizedBox(height: 48.h),
+                        // Resend Code Section
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Didn't receive the code?",
+                              style: GoogleFonts.inter(
+                                fontSize: 14.sp,
+                                color: const Color(0xFF6B7280),
+                              ),
+                            ),
+                            SizedBox(width: 4.w),
+                            TextButton(
+                              onPressed: (_resendCooldown > 0 || isSending)
+                                  ? null
+                                  : _resendCode,
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.symmetric(horizontal: 8.w),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: isSending
+                                  ? LazerVaultLoader.tiny()
+                                  : Text(
+                                      _resendCooldown > 0
+                                          ? 'Resend in ${_resendCooldown}s'
+                                          : 'Resend Code',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: _resendCooldown > 0
+                                            ? const Color(0xFF9CA3AF)
+                                            : const Color(0xFF4834D4),
+                                      ),
+                                    ),
+                            ),
+                          ],
+                        ),
 
-                      // Shared "Secure Verification" note.
-                      const SecureVerificationNote(
-                        message:
-                            'We sent a 6-digit code via SMS to verify your phone number. Standard message rates may apply.',
-                      ),
-                      SizedBox(height: 32.h),
-                    ],
+                        // Skip CTA — onboarding only; hidden when from Settings.
+                        if (!widget.fromSettings) SizedBox(height: 12.h),
+                        if (!widget.fromSettings)
+                          Center(
+                            child: TextButton(
+                              onPressed: _skipVerification,
+                              style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFF4834D4),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 16.w, vertical: 10.h),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Skip for now',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF4834D4),
+                                    ),
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  Icon(
+                                    Icons.arrow_forward_rounded,
+                                    size: 18.sp,
+                                    color: const Color(0xFF4834D4),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                        SizedBox(height: 48.h),
+
+                        // Shared "Secure Verification" note.
+                        const SecureVerificationNote(
+                          message:
+                              'We sent a 6-digit code via SMS to verify your phone number. Standard message rates may apply.',
+                        ),
+                        SizedBox(height: 32.h),
+                      ],
+                    ),
                   ),
-                ),
                 ),
               );
             },

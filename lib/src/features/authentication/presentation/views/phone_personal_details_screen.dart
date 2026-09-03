@@ -106,84 +106,84 @@ class _PhonePersonalDetailsScreenState
       primaryLabel: 'Continue',
       onPrimary: _onContinue,
       children: [
-            SizedBox(height: 8.h),
-            BuildFormField(
-              name: 'firstName',
-              placeholder: 'First Name',
-              controller: _firstName,
-              textCapitalization: TextCapitalization.words,
-              prefixIcon: const Icon(Icons.person_outline, color: Colors.black45),
-              onChanged: (_) {
-                if (_error != null) setState(() => _error = null);
-              },
+        SizedBox(height: 8.h),
+        BuildFormField(
+          name: 'firstName',
+          placeholder: 'First Name',
+          controller: _firstName,
+          textCapitalization: TextCapitalization.words,
+          prefixIcon: const Icon(Icons.person_outline, color: Colors.black45),
+          onChanged: (_) {
+            if (_error != null) setState(() => _error = null);
+          },
+        ),
+        SizedBox(height: 12.h),
+        BuildFormField(
+          name: 'lastName',
+          placeholder: 'Last Name',
+          controller: _lastName,
+          textCapitalization: TextCapitalization.words,
+          prefixIcon: const Icon(Icons.person_outline, color: Colors.black45),
+          onChanged: (_) {
+            if (_error != null) setState(() => _error = null);
+          },
+        ),
+        SizedBox(height: 12.h),
+        // Tappable date field: AbsorbPointer lets the outer GestureDetector
+        // own the tap (BuildFormField only wires onTap when `disabled`).
+        GestureDetector(
+          onTap: _pickDob,
+          child: AbsorbPointer(
+            child: BuildFormField(
+              name: 'dateOfBirth',
+              placeholder: 'Date of Birth',
+              controller: _dobController,
+              readOnly: true,
+              prefixIcon:
+                  const Icon(Icons.cake_outlined, color: Colors.black45),
+              suffixIcon:
+                  const Icon(Icons.calendar_today, color: Colors.black45),
             ),
-            SizedBox(height: 12.h),
-            BuildFormField(
-              name: 'lastName',
-              placeholder: 'Last Name',
-              controller: _lastName,
-              textCapitalization: TextCapitalization.words,
-              prefixIcon: const Icon(Icons.person_outline, color: Colors.black45),
-              onChanged: (_) {
-                if (_error != null) setState(() => _error = null);
-              },
+          ),
+        ),
+        SizedBox(height: 12.h),
+        BuildFormField(
+          name: 'username',
+          placeholder: 'Username / Lazertag (optional)',
+          controller: _username,
+          autocorrect: false,
+          enableSuggestions: false,
+          prefixIcon: const Icon(Icons.alternate_email, color: Colors.black45),
+          onChanged: (_) {
+            if (_error != null) setState(() => _error = null);
+          },
+        ),
+        SizedBox(height: 12.h),
+        BuildFormField(
+          name: 'referralCode',
+          placeholder: 'Referral Code (optional)',
+          controller: _referral,
+          prefixIcon: const Icon(Icons.card_giftcard, color: Colors.black45),
+          textCapitalization: TextCapitalization.characters,
+        ),
+        if (_error != null) ...[
+          SizedBox(height: 12.h),
+          Text(
+            _error!,
+            style: TextStyle(
+              color: const Color(0xFFEF4444),
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w500,
             ),
-            SizedBox(height: 12.h),
-            // Tappable date field: AbsorbPointer lets the outer GestureDetector
-            // own the tap (BuildFormField only wires onTap when `disabled`).
-            GestureDetector(
-              onTap: _pickDob,
-              child: AbsorbPointer(
-                child: BuildFormField(
-                  name: 'dateOfBirth',
-                  placeholder: 'Date of Birth',
-                  controller: _dobController,
-                  readOnly: true,
-                  prefixIcon:
-                      const Icon(Icons.cake_outlined, color: Colors.black45),
-                  suffixIcon: const Icon(Icons.calendar_today,
-                      color: Colors.black45),
-                ),
-              ),
-            ),
-            SizedBox(height: 12.h),
-            BuildFormField(
-              name: 'username',
-              placeholder: 'Username / Lazertag (optional)',
-              controller: _username,
-              autocorrect: false,
-              enableSuggestions: false,
-              prefixIcon: const Icon(Icons.alternate_email, color: Colors.black45),
-              onChanged: (_) {
-                if (_error != null) setState(() => _error = null);
-              },
-            ),
-            SizedBox(height: 12.h),
-            BuildFormField(
-              name: 'referralCode',
-              placeholder: 'Referral Code (optional)',
-              controller: _referral,
-              prefixIcon: const Icon(Icons.card_giftcard, color: Colors.black45),
-              textCapitalization: TextCapitalization.characters,
-            ),
-            if (_error != null) ...[
-              SizedBox(height: 12.h),
-              Text(
-                _error!,
-                style: TextStyle(
-                  color: const Color(0xFFEF4444),
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-            SizedBox(height: 16.h),
-            // Implicit legal consent — "Continue" here leads directly to account
-            // creation (email verification step). Store-review requirement;
-            // links open the admin-configured Terms/Privacy in the themed
-            // webview.
-            const LegalConsentText(action: 'Continue'),
-          ],
-        );
+          ),
+        ],
+        SizedBox(height: 16.h),
+        // Implicit legal consent — "Continue" here leads directly to account
+        // creation (email verification step). Store-review requirement;
+        // links open the admin-configured Terms/Privacy in the themed
+        // webview.
+        const LegalConsentText(action: 'Continue'),
+      ],
+    );
   }
 }

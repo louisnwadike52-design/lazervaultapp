@@ -117,12 +117,30 @@ class _VtuafricaAirtimeToCashScreenState
     if (phone.length < 4) return null;
     final p = phone.substring(0, 4);
     const mtn = [
-      '0803', '0806', '0810', '0813', '0814', '0816', '0903',
-      '0906', '0913', '0916', '0703', '0706'
+      '0803',
+      '0806',
+      '0810',
+      '0813',
+      '0814',
+      '0816',
+      '0903',
+      '0906',
+      '0913',
+      '0916',
+      '0703',
+      '0706'
     ];
     const airtel = [
-      '0802', '0808', '0812', '0701', '0708', '0901',
-      '0902', '0904', '0907', '0912'
+      '0802',
+      '0808',
+      '0812',
+      '0701',
+      '0708',
+      '0901',
+      '0902',
+      '0904',
+      '0907',
+      '0912'
     ];
     const glo = ['0805', '0807', '0811', '0815', '0905', '0915', '0705'];
     const mobile9 = ['0809', '0817', '0818', '0908', '0909'];
@@ -153,10 +171,10 @@ class _VtuafricaAirtimeToCashScreenState
     final amount = _amount!;
 
     context.read<AirtimeToCashCubit>().verifyVtuafricaService(
-      phoneNumber: phone,
-      network: network,
-      amount: amount,
-    );
+          phoneNumber: phone,
+          network: network,
+          amount: amount,
+        );
   }
 
   Color _networkColor(String network) {
@@ -398,7 +416,8 @@ class _VtuafricaAirtimeToCashScreenState
                 }),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  margin: EdgeInsets.only(right: network != '9mobile' ? 8.w : 0),
+                  margin:
+                      EdgeInsets.only(right: network != '9mobile' ? 8.w : 0),
                   padding: EdgeInsets.symmetric(vertical: 14.h),
                   decoration: BoxDecoration(
                     color: isSelected
@@ -425,9 +444,7 @@ class _VtuafricaAirtimeToCashScreenState
                         '${(_rateValue(network) * 100).toStringAsFixed(0)}%',
                         style: TextStyle(
                           fontSize: 11.sp,
-                          color: isSelected
-                              ? color
-                              : const Color(0xFF10B981),
+                          color: isSelected ? color : const Color(0xFF10B981),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -488,10 +505,12 @@ class _VtuafricaAirtimeToCashScreenState
               ),
               prefixIconConstraints: const BoxConstraints(),
               suffixIcon: _phoneValid
-                  ? Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 20.sp)
+                  ? Icon(Icons.check_circle,
+                      color: const Color(0xFF10B981), size: 20.sp)
                   : null,
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
             ),
           ),
         ),
@@ -506,7 +525,8 @@ class _VtuafricaAirtimeToCashScreenState
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 14.sp),
+                Icon(Icons.check_circle,
+                    color: const Color(0xFF10B981), size: 14.sp),
                 SizedBox(width: 6.w),
                 Text(
                   'Detected: ${_networkLabel(_detectedNetwork!)}',
@@ -581,7 +601,8 @@ class _VtuafricaAirtimeToCashScreenState
               ),
               prefixIconConstraints: const BoxConstraints(),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
             ),
           ),
         ),
@@ -624,7 +645,8 @@ class _VtuafricaAirtimeToCashScreenState
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 18.sp),
+          Icon(Icons.error_outline,
+              color: const Color(0xFFEF4444), size: 18.sp),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
@@ -656,7 +678,9 @@ class _VtuafricaAirtimeToCashScreenState
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF4E03D0) : const Color(0xFF1F1F1F),
+              color: isSelected
+                  ? const Color(0xFF4E03D0)
+                  : const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Text(
@@ -664,7 +688,9 @@ class _VtuafricaAirtimeToCashScreenState
               style: TextStyle(
                 fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.8),
+                color: isSelected
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.8),
               ),
             ),
           ),
@@ -692,7 +718,8 @@ class _VtuafricaAirtimeToCashScreenState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('You send',
-                  style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+                  style: TextStyle(
+                      fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
               Text('₦${_amount!.toStringAsFixed(0)}',
                   style: TextStyle(
                       fontSize: 15.sp,
@@ -705,13 +732,14 @@ class _VtuafricaAirtimeToCashScreenState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Rate',
-                  style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+                  style: TextStyle(
+                      fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
               Text(
                 '${(_rateValue(_selectedNetwork!) * 100).toStringAsFixed(0)}%',
                 style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF4E03D0)),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF4E03D0)),
               ),
             ],
           ),
@@ -748,7 +776,8 @@ class _VtuafricaAirtimeToCashScreenState
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: isLoading ? null : (_canProceed ? _verifyService : null),
+              onPressed:
+                  isLoading ? null : (_canProceed ? _verifyService : null),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _canProceed
                     ? const Color(0xFF4E03D0)
@@ -766,7 +795,9 @@ class _VtuafricaAirtimeToCashScreenState
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
-                        color: _canProceed ? Colors.white : const Color(0xFF9CA3AF),
+                        color: _canProceed
+                            ? Colors.white
+                            : const Color(0xFF9CA3AF),
                       ),
                     ),
             ),

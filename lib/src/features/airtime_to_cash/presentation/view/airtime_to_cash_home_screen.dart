@@ -44,8 +44,7 @@ class _AirtimeToCashHomeScreenState extends State<AirtimeToCashHomeScreen> {
                   if (state is AirtimeToCashRatesError) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(
-                            'Failed to load rates: ${state.message}'),
+                        content: Text('Failed to load rates: ${state.message}'),
                         backgroundColor: const Color(0xFFEF4444),
                         behavior: SnackBarBehavior.floating,
                         margin: EdgeInsets.all(16.w),
@@ -303,7 +302,8 @@ class _AirtimeToCashHomeScreenState extends State<AirtimeToCashHomeScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    (rate.network.isNotEmpty ? rate.network[0] : '?').toUpperCase(),
+                    (rate.network.isNotEmpty ? rate.network[0] : '?')
+                        .toUpperCase(),
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w700,
@@ -313,8 +313,7 @@ class _AirtimeToCashHomeScreenState extends State<AirtimeToCashHomeScreen> {
                 ),
               ),
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                 decoration: BoxDecoration(
                   color: rate.isAvailable
                       ? const Color(0xFF10B981).withValues(alpha: 0.15)
@@ -429,7 +428,10 @@ class _AirtimeToCashHomeScreenState extends State<AirtimeToCashHomeScreen> {
                   ),
                   child: Center(
                     child: Text(
-                      (conversion.network.isNotEmpty ? conversion.network[0] : '?').toUpperCase(),
+                      (conversion.network.isNotEmpty
+                              ? conversion.network[0]
+                              : '?')
+                          .toUpperCase(),
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
@@ -550,8 +552,8 @@ class _AirtimeToCashHomeScreenState extends State<AirtimeToCashHomeScreen> {
                   onPressed: _loadInitialData,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF3B82F6),
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 20.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
                     ),
@@ -570,8 +572,8 @@ class _AirtimeToCashHomeScreenState extends State<AirtimeToCashHomeScreen> {
                   onPressed: () => Get.back(),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFF2D2D2D)),
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 20.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
                     ),

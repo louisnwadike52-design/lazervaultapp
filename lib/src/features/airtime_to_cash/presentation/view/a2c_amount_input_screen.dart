@@ -281,8 +281,7 @@ class _A2CAmountInputScreenState extends State<A2CAmountInputScreen> {
           ),
           if (rate != null)
             Container(
-              padding:
-                  EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
               decoration: BoxDecoration(
                 color: const Color(0xFF10B981).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8.r),
@@ -411,14 +410,12 @@ class _A2CAmountInputScreenState extends State<A2CAmountInputScreen> {
           runSpacing: 8.h,
           children: quickAmounts.map((amount) {
             final isSelected = selectedAmount == amount;
-            final isWithinRange =
-                rate == null || rate!.isAmountValid(amount);
+            final isWithinRange = rate == null || rate!.isAmountValid(amount);
 
             return GestureDetector(
               onTap: isWithinRange ? () => _selectAmount(amount) : null,
               child: Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: 16.w, vertical: 12.h),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? const Color(0xFF3B82F6)
@@ -641,9 +638,8 @@ class _A2CAmountInputScreenState extends State<A2CAmountInputScreen> {
         child: ElevatedButton(
           onPressed: isValid ? _validateAndProceed : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: isValid
-                ? const Color(0xFF3B82F6)
-                : const Color(0xFF1F1F1F),
+            backgroundColor:
+                isValid ? const Color(0xFF3B82F6) : const Color(0xFF1F1F1F),
             padding: EdgeInsets.symmetric(vertical: 16.h),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14.r),

@@ -228,7 +228,8 @@ class _A2CResultScreenState extends State<A2CResultScreen>
                     'Your cash will be credited once the transfer is confirmed. This usually takes 2-5 minutes.')
                 : isSuccess
                     ? '\u20A6${conversion?.cashAmount.toStringAsFixed(2) ?? estimatedCash?.toStringAsFixed(2) ?? '0.00'} credited to your wallet'
-                    : errorMessage ?? 'Something went wrong with your conversion',
+                    : errorMessage ??
+                        'Something went wrong with your conversion',
             style: TextStyle(
               fontSize: 14.sp,
               color: Colors.white.withValues(alpha: 0.6),
@@ -260,9 +261,11 @@ class _A2CResultScreenState extends State<A2CResultScreen>
   // payment metadata when the backend stamped them, otherwise they're omitted
   // rather than shown as a misleading ₦0.00.
   Widget _buildHistoryReceiptCard(AirtimeTransaction t) {
-    final cash = _metaNum(t.metadata, ['cash_amount', 'cashAmount', 'amount_paid']);
+    final cash =
+        _metaNum(t.metadata, ['cash_amount', 'cashAmount', 'amount_paid']);
     final rate = _metaNum(t.metadata, ['conversion_rate', 'conversionRate']);
-    final fee = t.fee ?? _metaNum(t.metadata, ['fee', 'automation_fee', 'charge']);
+    final fee =
+        t.fee ?? _metaNum(t.metadata, ['fee', 'automation_fee', 'charge']);
     final headline = cash ?? t.amount;
     final headlineLabel = cash != null ? 'Cash Received' : 'Airtime Converted';
 
@@ -279,7 +282,10 @@ class _A2CResultScreenState extends State<A2CResultScreen>
                 padding: EdgeInsets.all(24.w),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+                    colors: [
+                      Color(0xFF3B82F6),
+                      Color.fromARGB(255, 78, 3, 208)
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -315,16 +321,20 @@ class _A2CResultScreenState extends State<A2CResultScreen>
                     ],
                     _buildReceiptRow('Phone Number', t.recipientPhoneNumber),
                     _buildDivider(),
-                    _buildReceiptRow('Network', t.networkProvider.name.toUpperCase()),
+                    _buildReceiptRow(
+                        'Network', t.networkProvider.name.toUpperCase()),
                     _buildDivider(),
-                    _buildReceiptRow('Airtime Amount', '₦${t.amount.toStringAsFixed(2)}'),
+                    _buildReceiptRow(
+                        'Airtime Amount', '₦${t.amount.toStringAsFixed(2)}'),
                     if (cash != null) ...[
                       _buildDivider(),
-                      _buildReceiptRow('Cash Received', '₦${cash.toStringAsFixed(2)}'),
+                      _buildReceiptRow(
+                          'Cash Received', '₦${cash.toStringAsFixed(2)}'),
                     ],
                     if (rate != null && rate > 0) ...[
                       _buildDivider(),
-                      _buildReceiptRow('Conversion Rate', '${(rate * 100).toStringAsFixed(0)}%'),
+                      _buildReceiptRow('Conversion Rate',
+                          '${(rate * 100).toStringAsFixed(0)}%'),
                     ],
                     if (fee != null && fee > 0) ...[
                       _buildDivider(),
@@ -585,8 +595,7 @@ class _A2CResultScreenState extends State<A2CResultScreen>
           style: TextStyle(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
-            color: Colors.white
-                .withValues(alpha: isTotal ? 1.0 : 0.6),
+            color: Colors.white.withValues(alpha: isTotal ? 1.0 : 0.6),
           ),
         ),
         Flexible(
@@ -652,8 +661,7 @@ class _A2CResultScreenState extends State<A2CResultScreen>
               if (!isSuccess)
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () =>
-                        Get.offAllNamed(AppRoutes.airtimeToCash),
+                    onPressed: () => Get.offAllNamed(AppRoutes.airtimeToCash),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0xFF1F1F1F)),
                       padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -674,8 +682,7 @@ class _A2CResultScreenState extends State<A2CResultScreen>
               if (isSuccess)
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () =>
-                        Get.offAllNamed(AppRoutes.airtimeToCash),
+                    onPressed: () => Get.offAllNamed(AppRoutes.airtimeToCash),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0xFF1F1F1F)),
                       padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -696,8 +703,7 @@ class _A2CResultScreenState extends State<A2CResultScreen>
               SizedBox(width: 12.w),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () =>
-                      Get.toNamed(AppRoutes.airtimeHistory),
+                  onPressed: () => Get.toNamed(AppRoutes.airtimeHistory),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFF1F1F1F)),
                     padding: EdgeInsets.symmetric(vertical: 14.h),

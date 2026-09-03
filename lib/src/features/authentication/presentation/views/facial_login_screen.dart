@@ -13,7 +13,6 @@ class FacialLoginScreen extends StatefulWidget {
 }
 
 class _FacialLoginScreenState extends State<FacialLoginScreen> {
-
   @override
   void initState() {
     super.initState();
