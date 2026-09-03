@@ -21,8 +21,8 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
     final id = _first(data, const [
       'invoice_id',
       'invoiceId',
-      'reference_id'
-          'entity_id',
+      'reference_id',
+      'entity_id',
     ]);
     if (id != null) {
       return _record(
@@ -40,8 +40,8 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
     final ref = _first(data, const [
       'reference',
       'order_reference',
-      'reference_id'
-          'entity_id',
+      'reference_id',
+      'entity_id',
     ]);
     if (ref != null) {
       return _record(AppRoutes.giftCardFromReference, arguments: ref);
@@ -56,8 +56,8 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
     final ref = _first(data, const [
       'escrow_id',
       'deal_id',
-      'reference'
-          'entity_id',
+      'reference',
+      'entity_id',
     ]);
     if (ref != null) {
       return _record('${AppRoutes.escrowDetail}/$ref');

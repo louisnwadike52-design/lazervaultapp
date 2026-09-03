@@ -1,0 +1,125 @@
+[
+  {
+    "type": "split_bill.reminder",
+    "data": {
+      "amount": "2500.00",
+      "currency": "NGN",
+      "entity_id": "11111111-1111-1111-1111-111111111111",
+      "entity_type": "split_bill",
+      "reference": "SB-REMIND-1",
+      "sender_name": "Ada Lovelace",
+      "split_bill_id": "11111111-1111-1111-1111-111111111111"
+    },
+    "app_link": "lazervault://n/split_bill.reminder?entity_id=11111111-1111-1111-1111-111111111111\u0026entity_type=split_bill\u0026reference=SB-REMIND-1\u0026split_bill_id=11111111-1111-1111-1111-111111111111",
+    "web_link": "https://lazervault.app/n/split_bill.reminder?entity_id=11111111-1111-1111-1111-111111111111\u0026entity_type=split_bill\u0026reference=SB-REMIND-1\u0026split_bill_id=11111111-1111-1111-1111-111111111111"
+  },
+  {
+    "type": "split_bill.created",
+    "data": {
+      "entity_id": "22222222-2222-2222-2222-222222222222",
+      "entity_type": "split_bill"
+    },
+    "app_link": "lazervault://n/split_bill.created?entity_id=22222222-2222-2222-2222-222222222222\u0026entity_type=split_bill",
+    "web_link": "https://lazervault.app/n/split_bill.created?entity_id=22222222-2222-2222-2222-222222222222\u0026entity_type=split_bill"
+  },
+  {
+    "type": "invoice",
+    "data": {
+      "entity_id": "33333333-3333-3333-3333-333333333333",
+      "entity_type": "invoice"
+    },
+    "app_link": "lazervault://n/invoice?entity_id=33333333-3333-3333-3333-333333333333\u0026entity_type=invoice",
+    "web_link": "https://lazervault.app/n/invoice?entity_id=33333333-3333-3333-3333-333333333333\u0026entity_type=invoice"
+  },
+  {
+    "type": "invoice.external_tag",
+    "data": {
+      "entity_id": "44444444-4444-4444-4444-444444444444",
+      "entity_type": "invoice"
+    },
+    "app_link": "lazervault://n/invoice.external_tag?entity_id=44444444-4444-4444-4444-444444444444\u0026entity_type=invoice",
+    "web_link": "https://lazervault.app/n/invoice.external_tag?entity_id=44444444-4444-4444-4444-444444444444\u0026entity_type=invoice"
+  },
+  {
+    "type": "giftcard",
+    "data": {
+      "entity_id": "55555555-5555-5555-5555-555555555555",
+      "entity_type": "giftcard",
+      "reference": "GC-ORDER-9"
+    },
+    "app_link": "lazervault://n/giftcard?entity_id=55555555-5555-5555-5555-555555555555\u0026entity_type=giftcard\u0026reference=GC-ORDER-9",
+    "web_link": "https://lazervault.app/n/giftcard?entity_id=55555555-5555-5555-5555-555555555555\u0026entity_type=giftcard\u0026reference=GC-ORDER-9"
+  },
+  {
+    "type": "recurring_transfer_auto_paused",
+    "data": {
+      "entity_id": "66666666-6666-6666-6666-666666666666",
+      "entity_type": "recurring_transfer"
+    },
+    "app_link": "lazervault://n/recurring_transfer_auto_paused?entity_id=66666666-6666-6666-6666-666666666666\u0026entity_type=recurring_transfer",
+    "web_link": "https://lazervault.app/n/recurring_transfer_auto_paused?entity_id=66666666-6666-6666-6666-666666666666\u0026entity_type=recurring_transfer"
+  },
+  {
+    "type": "p2p_message",
+    "data": {
+      "conversation_id": "88888888-8888-8888-8888-888888888888",
+      "sender_user_id": "77777777-7777-7777-7777-777777777777"
+    },
+    "app_link": "lazervault://n/p2p_message?conversation_id=88888888-8888-8888-8888-888888888888\u0026sender_user_id=77777777-7777-7777-7777-777777777777",
+    "web_link": "https://lazervault.app/n/p2p_message?conversation_id=88888888-8888-8888-8888-888888888888\u0026sender_user_id=77777777-7777-7777-7777-777777777777"
+  },
+  {
+    "type": "security",
+    "data": {
+      "event_type": "transaction_pin.admin_reset"
+    },
+    "app_link": "lazervault://n/security?event_type=transaction_pin.admin_reset",
+    "web_link": "https://lazervault.app/n/security?event_type=transaction_pin.admin_reset"
+  },
+  {
+    "type": "transfer.received",
+    "data": {
+      "amount": "500.00",
+      "reference": "IDEM-XFER-abc"
+    },
+    "app_link": "lazervault://n/transfer.received?reference=IDEM-XFER-abc",
+    "web_link": "https://lazervault.app/n/transfer.received?reference=IDEM-XFER-abc"
+  },
+  {
+    "type": "deposit",
+    "data": {
+      "reference": "DEP-1"
+    },
+    "app_link": "lazervault://n/deposit?reference=DEP-1",
+    "web_link": "https://lazervault.app/n/deposit?reference=DEP-1"
+  },
+  {
+    "type": "bill",
+    "data": {
+      "biller_name": "Ikeja Electric",
+      "reference": "BILL-1"
+    },
+    "app_link": "lazervault://n/bill?biller_name=Ikeja+Electric\u0026reference=BILL-1",
+    "web_link": "https://lazervault.app/n/bill?biller_name=Ikeja+Electric\u0026reference=BILL-1"
+  },
+  {
+    "type": "tagpay.request",
+    "data": {
+      "reference": "TPREQ-1"
+    },
+    "app_link": "lazervault://n/tagpay.request?reference=TPREQ-1",
+    "web_link": "https://lazervault.app/n/tagpay.request?reference=TPREQ-1"
+  },
+  {
+    "type": "account",
+    "data": {},
+    "app_link": "lazervault://n/account",
+    "web_link": "https://lazervault.app/n/account"
+  },
+  {
+    "type": "plain",
+    "data": {},
+    "app_link": "lazervault://n/plain",
+    "web_link": "https://lazervault.app/n/plain"
+  }
+]

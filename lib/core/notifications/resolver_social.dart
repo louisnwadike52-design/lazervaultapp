@@ -83,8 +83,8 @@ NotificationTarget? _resolveSocial(String type, Map<String, String> data) {
     }
     final familyId = _first(data, const [
       'family_id',
-      'familyId'
-          'entity_id',
+      'familyId',
+      'entity_id',
     ]);
     if (familyId != null) {
       return _record(
@@ -107,8 +107,8 @@ NotificationTarget? _resolveSocial(String type, Map<String, String> data) {
     final groupId = _first(data, const [
       'group_id',
       'groupId',
-      'account_id'
-          'entity_id',
+      'account_id',
+      'entity_id',
     ]);
     if (groupId != null) {
       return _record(AppRoutes.groupDetails, arguments: groupId);
