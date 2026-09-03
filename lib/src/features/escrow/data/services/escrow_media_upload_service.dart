@@ -98,8 +98,8 @@ class EscrowMediaUploadService {
     // Safety-net compression pass, then re-check the compressed result.
     final rawName = _basename(x.path, 'escrow-photo.jpg');
     var contentType = imageContentTypeFor(rawName);
-    final compressed =
-        await ImageCompressor.compressForUpload(bytes, contentType: contentType);
+    final compressed = await ImageCompressor.compressForUpload(bytes,
+        contentType: contentType);
     bytes = compressed.bytes;
     contentType = compressed.contentType;
     final filename = ImageCompressor.alignedFilename(rawName, contentType);
@@ -171,7 +171,8 @@ class EscrowMediaUploadService {
         contentType = 'video/mp4';
         filename = _basename(outFile.path, 'escrow-video.mp4');
         final durMs = out?.duration;
-        if (durMs != null && durMs > 0) durationSeconds = (durMs / 1000).round();
+        if (durMs != null && durMs > 0)
+          durationSeconds = (durMs / 1000).round();
       }
     } catch (_) {
       // Compression is best effort; fall back to the original pick.
@@ -186,6 +187,21 @@ class EscrowMediaUploadService {
     if (durationSeconds > kEscrowVideoMaxSeconds) {
       throw const EscrowMediaUploadException(
         'This video is a little long. Please trim it to 60 seconds or less and try again.',
+      );
+    }
+    // An UNKNOWN duration has to be caught here, before we spend the upload.
+    //
+    // Both probes above swallow their errors, so a video whose duration we
+    // could not read arrives at this point as 0. Zero passes every check in
+    // this method (they all test "greater than"), so the bytes used to upload
+    // fine and then AddAttachment rejected them server side, where 0 is
+    // treated as invalid. The user had already paid for the upload and was
+    // then told to trim a video that might be ten seconds long.
+    //
+    // Failing here costs nothing and says something true.
+    if (durationSeconds <= 0) {
+      throw const EscrowMediaUploadException(
+        'We could not read how long this video is. Please try a different video, or record a new one in the app.',
       );
     }
 
