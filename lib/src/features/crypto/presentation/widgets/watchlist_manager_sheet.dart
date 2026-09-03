@@ -76,7 +76,8 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
       if (!mounted) return;
       setState(() => _ensuringWatchlist = false);
       Get.snackbar('Watchlist error', 'Could not create a default watchlist',
-          backgroundColor: _card, colorText: Colors.white,
+          backgroundColor: _card,
+          colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);
     }
   }
@@ -97,7 +98,8 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
     final wlId = _defaultWatchlistId;
     if (wlId == null) {
       Get.snackbar('Not ready', 'Watchlist still initialising, try again',
-          backgroundColor: _card, colorText: Colors.white,
+          backgroundColor: _card,
+          colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
@@ -113,7 +115,8 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
     } catch (_) {
       if (!mounted) return;
       Get.snackbar('Save failed', 'Could not update watchlist',
-          backgroundColor: _card, colorText: Colors.white,
+          backgroundColor: _card,
+          colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);
     } finally {
       if (mounted) setState(() => _busy.remove(crypto.id));
@@ -170,7 +173,8 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
           );
         }
         if (state is! CryptosLoaded) {
-          return _shell(child: const Center(
+          return _shell(
+              child: const Center(
             child: Padding(
               padding: EdgeInsets.all(48),
               child: LazerVaultLoader.small(),
@@ -239,10 +243,11 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
                       ),
                     ),
                     const Spacer(),
-                    if (_ensuringWatchlist)
-                      LazerVaultLoader(size: 14),
+                    if (_ensuringWatchlist) LazerVaultLoader(size: 14),
                     IconButton(
-                      icon: Icon(Icons.close, color: Colors.white.withValues(alpha: 0.7), size: 20.sp),
+                      icon: Icon(Icons.close,
+                          color: Colors.white.withValues(alpha: 0.7),
+                          size: 20.sp),
                       onPressed: () => Get.back(),
                     ),
                   ],
@@ -253,11 +258,14 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
                 child: TextField(
                   controller: _searchCtl,
                   onChanged: (v) => setState(() => _query = v),
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
                   decoration: InputDecoration(
                     hintText: 'Search by name or symbol',
-                    hintStyle: GoogleFonts.inter(color: Colors.white38, fontSize: 14.sp),
-                    prefixIcon: Icon(Icons.search, color: Colors.white38, size: 18.sp),
+                    hintStyle: GoogleFonts.inter(
+                        color: Colors.white38, fontSize: 14.sp),
+                    prefixIcon:
+                        Icon(Icons.search, color: Colors.white38, size: 18.sp),
                     isDense: true,
                     filled: true,
                     fillColor: Colors.white.withValues(alpha: 0.05),
@@ -283,14 +291,15 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
                     ? Center(
                         child: Text(
                           'No matches',
-                          style: GoogleFonts.inter(color: Colors.white38, fontSize: 14.sp),
+                          style: GoogleFonts.inter(
+                              color: Colors.white38, fontSize: 14.sp),
                         ),
                       )
                     : ListView.separated(
                         padding: EdgeInsets.symmetric(vertical: 8.h),
                         itemCount: filtered.length,
-                        separatorBuilder: (_, __) =>
-                            const Divider(color: _divider, height: 1, indent: 64),
+                        separatorBuilder: (_, __) => const Divider(
+                            color: _divider, height: 1, indent: 64),
                         itemBuilder: (context, i) {
                           final c = filtered[i];
                           final inList = watchlisted.contains(c.id);
@@ -348,12 +357,14 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
                         placeholder: (_, __) => Container(color: _card),
                         errorWidget: (_, __, ___) => Container(
                           color: _card,
-                          child: Icon(Icons.token, color: Colors.white24, size: 16.sp),
+                          child: Icon(Icons.token,
+                              color: Colors.white24, size: 16.sp),
                         ),
                       )
                     : Container(
                         color: _card,
-                        child: Icon(Icons.token, color: Colors.white24, size: 16.sp),
+                        child: Icon(Icons.token,
+                            color: Colors.white24, size: 16.sp),
                       ),
               ),
             ),
@@ -382,17 +393,28 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
               ),
             ),
             SizedBox(width: 12.w),
-            if (busy)
-              LazerVaultLoader(size: 18)
-            else
-              Container(
+            // The checkbox ALWAYS renders, showing the optimistic state.
+            //
+            // It used to be replaced by a spinner while the call was in
+            // flight, so tapping made the box go blank and the tick only
+            // appeared once the server answered — the opposite of the
+            // optimistic update this sheet already performs on the list. The
+            // in-flight hint is a dimmed box instead, which keeps the tick
+            // visible from the instant of the tap.
+            AnimatedOpacity(
+              opacity: busy ? 0.55 : 1,
+              duration: const Duration(milliseconds: 120),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 140),
+                curve: Curves.easeOut,
                 width: 28.w,
                 height: 28.w,
                 decoration: BoxDecoration(
                   color: inList ? _accent : Colors.transparent,
                   borderRadius: BorderRadius.circular(8.r),
                   border: Border.all(
-                    color: inList ? _accent : Colors.white.withValues(alpha: 0.25),
+                    color:
+                        inList ? _accent : Colors.white.withValues(alpha: 0.25),
                     width: 1.5,
                   ),
                 ),
@@ -400,6 +422,7 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
                     ? Icon(Icons.check, color: Colors.white, size: 16.sp)
                     : null,
               ),
+            ),
           ],
         ),
       ),
