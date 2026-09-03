@@ -34,14 +34,15 @@ NotificationTarget? _resolveAccount(String type, Map<String, String> data) {
   }
 
   // ---- KYC -----------------------------------------------------------------
-  // "Your verification succeeded / needs another document" — the status screen
-  // is the one page that explains where the user stands and what is missing.
+  // "Your verification succeeded / needs another document" — the progressive
+  // KYC screen is the one page that explains where the user stands and what is
+  // still missing.
+  //
+  // Not kycStatus or kycDocuments: those are AppRoutes constants with no
+  // GetPage behind them and no other caller in the app, so naming them would
+  // compile and then dead-end at runtime.
   if (_is(type, 'kyc') || _is(type, 'verification') || _is(type, 'bvn')) {
-    if (type.contains('document') ||
-        (data['event_type'] ?? '').contains('document')) {
-      return _landing(AppRoutes.kycDocuments);
-    }
-    return _landing(AppRoutes.kycStatus);
+    return _landing(AppRoutes.kycProgressive);
   }
 
   // ---- Account -------------------------------------------------------------

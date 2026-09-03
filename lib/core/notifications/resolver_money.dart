@@ -84,7 +84,7 @@ NotificationTarget? _resolveMoney(String type, Map<String, String> data) {
   // field is the only thing that distinguishes them, so use it when present.
   if (type == 'payment' || _is(type, 'payment')) {
     final method = (data['payment_method'] ?? '').toLowerCase();
-    if (method.contains('card')) return _landing(AppRoutes.cardsList);
+    if (method.contains('card')) return _landing(AppRoutes.myAccount);
     return _landing(AppRoutes.dashboardTransactionHistory);
   }
 

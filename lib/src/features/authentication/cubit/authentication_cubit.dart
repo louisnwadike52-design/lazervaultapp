@@ -473,6 +473,16 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   }
 
   Future<void> _clearSession() async {
+    // Drop any notification destination stashed for the outgoing user. These
+    // targets are account-specific (an invoice id, a chat with a contact) and
+    // the stash is a process-lifetime singleton, so a push tapped before a
+    // session ends would otherwise replay into the NEXT session and open a
+    // record that user has no business seeing.
+    //
+    // Here rather than in logout(): this is the chokepoint every teardown goes
+    // through, including the auto-login path that clears a definitively
+    // rejected refresh token without the user ever pressing Log out.
+    PendingDeepLink.instance.clear();
     try {
       await _storage.delete(key: _accessTokenKey);
       await _storage.delete(key: _refreshTokenKey);
@@ -943,13 +953,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     // suppressed instead of popping a noisy auth-error snackbar. Cleared on the
     // next login attempt (startPasscodeLogin / loginWithPasscode / login).
     _isLoggingOut = true;
-
-    // Drop any notification destination stashed for the outgoing user. These
-    // targets are account-specific (an invoice id, a chat with a contact), and
-    // the stash is a process-lifetime singleton — without this, a push tapped
-    // before a user switch would replay into the NEXT user's session and open
-    // a record they have no business seeing.
-    PendingDeepLink.instance.clear();
 
     // Snapshot current user's email to stored_email before clearing session,
     // so passcode login screen shows the correct user after logout.

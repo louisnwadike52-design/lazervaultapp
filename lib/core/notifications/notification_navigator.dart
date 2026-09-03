@@ -96,9 +96,25 @@ class PendingDeepLink {
     // change — both throw, and a thrown navigation reads to the user as the
     // app ignoring their tap.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // `toNamed`, not `offNamed`: the destination stacks over the dashboard so
-      // Back returns there rather than out of the app or onto the login gate.
-      Get.toNamed(confirmed.route, arguments: confirmed.arguments);
+      try {
+        // `toNamed`, not `offNamed`: the destination stacks over the dashboard
+        // so Back returns there rather than out of the app or onto the login
+        // gate.
+        Get.toNamed(confirmed.route, arguments: confirmed.arguments);
+      } catch (_) {
+        // A route the resolver names but this build does not register, or one
+        // whose arguments the destination rejects. Throwing inside a
+        // post-frame callback is invisible to the user — the tap simply does
+        // nothing — so fall back to the feed, where they can at least read
+        // what the notification said.
+        //
+        // `notification_route_coverage_test.dart` asserts every route the
+        // resolver can return is registered, so this should be unreachable;
+        // it exists because a dead tap is a bad way to discover otherwise.
+        try {
+          Get.toNamed(AppRoutes.notificationsFeed);
+        } catch (_) {}
+      }
     });
   }
 

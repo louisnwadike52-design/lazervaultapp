@@ -60,7 +60,11 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
       'entity_id',
     ]);
     if (ref != null) {
-      return _record('${AppRoutes.escrowDetail}/$ref');
+      // The only target built by string interpolation rather than a constant,
+      // because `/escrow/detail/:reference` is a path-param route. Encode the
+      // reference: an unescaped `/`, `?` or `#` in it would silently produce a
+      // different path than intended and land somewhere else entirely.
+      return _record('${AppRoutes.escrowDetail}/${Uri.encodeComponent(ref)}');
     }
     return _landing(AppRoutes.escrow);
   }
@@ -125,12 +129,14 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
   }
 
   // ---- Crypto / stocks / investments --------------------------------------
-  // The detail screens take hydrated `Crypto` / `Insurance` entities, so these
-  // land on the portfolio — which is the page a "your order filled" push is
-  // actually about anyway.
+  // The detail screens take hydrated `Crypto` / `Insurance` entities, which a
+  // payload cannot build, so these land on the service.
+  //
+  // AppRoutes.cryptoPortfolio and .cryptoOrders would read better here but are
+  // constants with no GetPage and no other caller — naming them would compile
+  // and then dead-end at runtime. AppRoutes.crypto is the registered landing.
   if (_is(type, 'crypto')) {
-    if (type.contains('order')) return _landing(AppRoutes.cryptoOrders);
-    return _landing(AppRoutes.cryptoPortfolio);
+    return _landing(AppRoutes.crypto);
   }
   if (_is(type, 'stock') || _is(type, 'stocks')) {
     return _landing(AppRoutes.stockPortfolio);
@@ -193,8 +199,11 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
   }
 
   // ---- Cards ---------------------------------------------------------------
+  // AppRoutes.cardsList has no GetPage (constant only, referenced nowhere), and
+  // cardCreationForm is "create a card" — the wrong place to land a "your card
+  // was issued" push. My Account is where cards live and is registered.
   if (_is(type, 'card')) {
-    return _landing(AppRoutes.cardsList);
+    return _landing(AppRoutes.myAccount);
   }
 
   // ---- Business ------------------------------------------------------------
