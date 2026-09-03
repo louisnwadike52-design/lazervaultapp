@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/notifications/notification_navigator.dart';
+import 'package:lazervault/core/notifications/notification_service_icon.dart';
 import 'package:lazervault/core/notifications/notification_route_resolver.dart';
 import 'package:lazervault/core/notifications/notification_target.dart';
 import 'package:lazervault/core/services/account_manager.dart';
@@ -19,44 +20,6 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Maps a backend notification `type` to the AppService whose icon the
 /// NotificationsBuilder renders. Defaults to a transfer icon for unknown types.
-AppService _appServiceForType(String type) {
-  // Uplift emits typed events like `uplift_offer_received`,
-  // `uplift_milestone_released`, etc. — route them all to the Uplift service
-  // icon so its notifications don't fall back to the generic transfer glyph.
-  if (type.toLowerCase().startsWith('uplift')) {
-    return const AppService(serviceName: AppServiceName.uplift, serviceImg: AppServiceImg.uplift);
-  }
-  switch (type.toLowerCase()) {
-    case 'transfer':
-    case 'payment':
-    case 'deposit':
-    case 'withdrawal':
-      return const AppService(
-          serviceName: AppServiceName.sendFunds,
-          serviceImg: AppServiceImg.sendFunds);
-    case 'investment':
-      return const AppService(
-          serviceName: AppServiceName.invest, serviceImg: AppServiceImg.invest);
-    case 'giftcard':
-      return const AppService(
-          serviceName: AppServiceName.giftCards,
-          serviceImg: AppServiceImg.giftCards);
-    case 'bill':
-      return const AppService(
-          serviceName: AppServiceName.payBills,
-          serviceImg: AppServiceImg.payBills);
-    case 'invoice':
-      return const AppService(
-          serviceName: AppServiceName.invoice,
-          serviceImg: AppServiceImg.invoice);
-    case 'security':
-    case 'account':
-    default:
-      return const AppService(
-          serviceName: AppServiceName.phoneBanking,
-          serviceImg: AppServiceImg.phoneBanking);
-  }
-}
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -265,7 +228,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final target = NotificationRouteResolver.resolve(n.type, n.data);
 
     return NotificationService(
-      appService: _appServiceForType(n.type),
+      appService: notificationServiceFor(n.type),
       title: n.title,
       subTitle: n.body,
       date: n.createdAt,
@@ -373,8 +336,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         child: ListView(
           children: [
             SizedBox(height: 120.h),
-            Icon(Icons.cloud_off_rounded,
-                size: 48.sp, color: Colors.grey[400]),
+            Icon(Icons.cloud_off_rounded, size: 48.sp, color: Colors.grey[400]),
             SizedBox(height: 16.h),
             Text(_error!,
                 textAlign: TextAlign.center,
@@ -476,7 +438,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
           TextButton(
             style: TextButton.styleFrom(
-              backgroundColor: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+              backgroundColor:
+                  Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
               foregroundColor: Color.fromARGB(255, 78, 3, 208),
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               shape: RoundedRectangleBorder(
@@ -549,5 +512,4 @@ class _NotificationScreenState extends State<NotificationScreen> {
       child: NotificationsBuilder(notifications: notificationsList),
     );
   }
-
 }

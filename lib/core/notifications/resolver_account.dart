@@ -62,6 +62,13 @@ NotificationTarget? _resolveAccount(String type, Map<String, String> data) {
   }
 
   // ---- Planning ------------------------------------------------------------
+  // The email digest is about the inbox, not the reminder list. Checked first
+  // because it also matches the `planning` prefix below, and landing a "you
+  // have 12 unread emails" push on the Reminders screen shows the user a list
+  // that has nothing to do with what buzzed.
+  if (type.startsWith('planning_email') || type.contains('email_digest')) {
+    return _landing(AppRoutes.emailInbox);
+  }
   if (_is(type, 'planning_reminder') ||
       _is(type, 'planning') ||
       _is(type, 'reminder')) {

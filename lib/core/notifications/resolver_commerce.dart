@@ -207,10 +207,27 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
   }
 
   // ---- Business ------------------------------------------------------------
-  if (_is(type, 'payroll')) return _landing(AppRoutes.payRuns);
+  // These arrive through the GENERIC notification path, where the publisher
+  // picks the type string freely, so the names are not always prefixed the way
+  // a domain enum would be — `scheduled_payroll` does not start with
+  // "payroll", and matching only the prefix silently dropped it to the feed.
+  if (_is(type, 'payroll') || type.contains('payroll')) {
+    return _landing(AppRoutes.payRuns);
+  }
   if (_is(type, 'expense')) return _landing(AppRoutes.expenses);
   if (_is(type, 'bulk_sms') || _is(type, 'bulksms')) {
     return _landing(AppRoutes.bulkSmsCampaigns);
+  }
+  // inventory_low_stock, published by financial-products-service.
+  if (_is(type, 'inventory') || type.contains('low_stock')) {
+    return _landing(AppRoutes.inventory);
+  }
+  // uplift_disbursement / uplift_disbursement_rollback — money moving to a
+  // business. Uplift has no AppRoutes entry and no GetPage of its own, so this
+  // lands on the account's transaction history, where the disbursement shows
+  // up, rather than naming a route that would dead-end.
+  if (_is(type, 'uplift')) {
+    return _landing(AppRoutes.dashboardTransactionHistory);
   }
 
   return null;

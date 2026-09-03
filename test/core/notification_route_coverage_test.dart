@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lazervault/core/notifications/notification_route_resolver.dart';
+import 'package:lazervault/core/notifications/notification_service_icon.dart';
 import 'package:lazervault/core/notifications/notification_target.dart';
+import 'package:lazervault/core/types/services.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/presentation/app_router.dart';
 
 /// Asserts every destination the resolver can name is actually registered.
@@ -125,6 +128,26 @@ void main() {
     ('statement', {}),
     ('plain', {}),
     ('test', {}),
+
+    // ---- Types from the GENERIC notification path --------------------------
+    // GenericNotificationEvent carries a producer-supplied type string, so a
+    // dozen services can publish anything they like. These are the real values
+    // in the tree, and they are the ones most likely to be missed: they do not
+    // follow the domain-prefix convention the enum-backed handlers use.
+    ('uplift_disbursement', {}),
+    ('uplift_disbursement_rollback', {}),
+    ('inventory_low_stock', {}),
+    ('scheduled_payroll', {}),
+    ('planning_email_digest', {}),
+    ('autosave_mandate_reauth_required', {}),
+    ('autosave.triggered', {}),
+    ('connection.birthday', {}),
+    ('security.fraud_freeze', {}),
+    ('kyc.verified', {}),
+    ('group_funds_auto_charge_failed', {}),
+    ('group_funds_auto_charge_failed_creator', {}),
+    ('escrow_funded', {}),
+    ('escrow_released', {}),
   ];
 
   test('every route the resolver names is registered in the router', () {
@@ -157,6 +180,32 @@ void main() {
     expect(t.route.startsWith('/escrow/detail/'), isTrue);
   });
 
+  test('generic-path types reach the right service, not just any page', () {
+    // Each of these went somewhere wrong or nowhere before: the generic path's
+    // type strings do not follow the domain-prefix convention, so a
+    // prefix-only match dropped them to the feed.
+    NotificationTarget? r(String t) => NotificationRouteResolver.resolve(t, {});
+
+    // An email digest is about the inbox. It also matches the `planning`
+    // prefix, so without an earlier branch it landed on Reminders — a list
+    // with nothing to do with what buzzed.
+    expect(r('planning_email_digest')!.route, AppRoutes.emailInbox);
+    expect(r('planning_reminder')!.route, AppRoutes.planReminders);
+
+    // "scheduled_payroll" does not START with payroll.
+    expect(r('scheduled_payroll')!.route, AppRoutes.payRuns);
+
+    expect(r('inventory_low_stock')!.route, AppRoutes.inventory);
+    expect(r('group_funds_auto_charge_failed')!.route, AppRoutes.groupAccount);
+    expect(r('autosave_mandate_reauth_required')!.route,
+        AppRoutes.autoSaveDashboard);
+    expect(r('kyc.verified')!.route, AppRoutes.kycProgressive);
+    expect(r('security.fraud_freeze')!.route, AppRoutes.myAccount);
+    expect(r('connection.birthday')!.route, AppRoutes.financialConnections);
+    // escrow_<event> is the shape escrow-service publishes.
+    expect(r('escrow_funded')!.route, AppRoutes.escrow);
+  });
+
   test('resolver never returns an empty or relative route', () {
     for (final (type, data) in cases) {
       final t = NotificationRouteResolver.resolve(type, data);
@@ -181,5 +230,62 @@ void main() {
       expect(t.arguments, isNotNull,
           reason: '$type is record-precision but passes no arguments');
     }
+  });
+  test('the in-app feed shows a meaningful glyph, not the catch-all', () {
+    // _appServiceForType used to be an exact-match switch on 'transfer',
+    // 'invoice', 'bill' and a few more. notifications-service emits
+    // transfer.sent, split_bill.created, tagpay.request,
+    // electricity_payment_completed — none of which matched — so almost every
+    // row in the feed fell through to the phone-banking glyph and the list
+    // looked undifferentiated regardless of what it was about.
+    const catchAll = AppServiceName.phoneBanking;
+    const shouldNotBeGeneric = [
+      'transfer.sent',
+      'transfer.received',
+      'transfer.reversed',
+      'split_bill.created',
+      'split_bill.reminder',
+      'tagpay.request',
+      'tagpay.claimed',
+      'invoice.external_tag',
+      'electricity_payment_completed',
+      'giftcard',
+      'escrow_funded',
+      'crypto',
+      'exchange',
+      'deposit',
+      'withdrawal',
+      'payment',
+      'bill',
+      'group_funds_auto_charge_failed',
+      'autosave.triggered',
+      'uplift_disbursement',
+      'scheduled_payroll',
+      'inventory_low_stock',
+      'airtime',
+      'betting',
+      'qr_pay',
+      'id_pay',
+    ];
+    for (final t in shouldNotBeGeneric) {
+      expect(notificationServiceFor(t).serviceName, isNot(catchAll),
+          reason: '$t still falls through to the catch-all glyph');
+    }
+  });
+
+  test('the glyph mapper resolves overlapping names in the right order', () {
+    // Names that contain each other must not shadow: a split bill is not a
+    // utility bill, and a gift card is not a bank card.
+    expect(notificationServiceFor('split_bill.created').serviceName,
+        AppServiceName.splitBills);
+    expect(notificationServiceFor('bill').serviceName, AppServiceName.payBills);
+    expect(notificationServiceFor('giftcard').serviceName,
+        AppServiceName.giftCards);
+  });
+
+  test('an unknown type still gets the catch-all rather than throwing', () {
+    expect(notificationServiceFor('invented_next_year').serviceName,
+        AppServiceName.phoneBanking);
+    expect(notificationServiceFor('').serviceName, AppServiceName.phoneBanking);
   });
 }
