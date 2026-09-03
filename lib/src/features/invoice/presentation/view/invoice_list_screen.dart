@@ -35,7 +35,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   List<Invoice> _lastInvoices = const [];
   Map<String, dynamic>? _lastStats;
   bool _hasLoadedOnce = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -176,19 +176,23 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               style: InvoiceTextStyles.body16,
               decoration: InputDecoration(
                 hintText: 'Search invoices...',
-                hintStyle: GoogleFonts.inter(color: InvoiceThemeColors.textGray500),
-                prefixIcon: Icon(Icons.search, color: InvoiceThemeColors.textGray500),
+                hintStyle:
+                    GoogleFonts.inter(color: InvoiceThemeColors.textGray500),
+                prefixIcon:
+                    Icon(Icons.search, color: InvoiceThemeColors.textGray500),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
                         onPressed: () {
                           _searchController.clear();
                           context.read<InvoiceCubit>().loadInvoices();
                         },
-                        icon: Icon(Icons.close, color: InvoiceThemeColors.textGray500),
+                        icon: Icon(Icons.close,
+                            color: InvoiceThemeColors.textGray500),
                       )
                     : null,
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
               ),
               onChanged: (query) {
                 if (query.isNotEmpty) {
@@ -200,7 +204,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          
+
           // Filter chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -213,13 +217,13 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                 ),
                 SizedBox(width: 8.w),
                 ...InvoiceStatus.values.map((status) => Padding(
-                  padding: EdgeInsets.only(right: 8.w),
-                  child: InvoiceFilterChip(
-                    label: _getStatusDisplayName(status),
-                    isSelected: _selectedFilter == status,
-                    onTap: () => _applyFilter(status),
-                  ),
-                )),
+                      padding: EdgeInsets.only(right: 8.w),
+                      child: InvoiceFilterChip(
+                        label: _getStatusDisplayName(status),
+                        isSelected: _selectedFilter == status,
+                        onTap: () => _applyFilter(status),
+                      ),
+                    )),
               ],
             ),
           ),
@@ -293,8 +297,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
             return _buildLoadedColumn(_lastInvoices, _lastStats);
           }
           return Center(
-            child:
-                LazerVaultLoader.small(),
+            child: LazerVaultLoader.small(),
           );
         }
 
@@ -506,7 +509,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.refresh, color: InvoiceThemeColors.primaryPurple),
+              leading:
+                  Icon(Icons.refresh, color: InvoiceThemeColors.primaryPurple),
               title: Text(
                 'Refresh',
                 style: InvoiceTextStyles.body16,
@@ -517,7 +521,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.download, color: InvoiceThemeColors.primaryPurple),
+              leading:
+                  Icon(Icons.download, color: InvoiceThemeColors.primaryPurple),
               title: Text(
                 'Export Data',
                 style: InvoiceTextStyles.body16,
@@ -555,17 +560,26 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
+            // NO "Edit" ACTION. It used to route to AppRoutes.createInvoice with
+            // the Invoice as the argument, but that route only reads
+            // Get.arguments when it is a Map (to pull serviceFeeRef), so an
+            // Invoice was silently ignored: the carousel opened BLANK with a
+            // fresh CreateInvoiceCubit, which reads as the app having lost the
+            // draft, and completing the form created a SECOND draft while the
+            // original sat untouched. Only drafts ever showed the action, so
+            // nothing payable was duplicated, but nothing was ever edited
+            // either.
+            //
+            // Restoring it needs real edit support, not a rewired argument:
+            // CreateInvoiceCubit has no hydrate-from-invoice path, the save
+            // step always calls create, and UpdateInvoiceRequest carries no
+            // logo fields, so a logo could not survive an edit even once the
+            // form was prefilled. Deleting the draft and creating a new one is
+            // the honest flow until then.
             if (invoice.canBeEdited) ...[
               ListTile(
-                leading: Icon(Icons.edit, color: InvoiceThemeColors.primaryPurple),
-                title: Text('Edit', style: InvoiceTextStyles.body16),
-                onTap: () {
-                  Navigator.pop(context);
-                  Get.toNamed(AppRoutes.createInvoice, arguments: invoice);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.send, color: InvoiceThemeColors.primaryPurple),
+                leading:
+                    Icon(Icons.send, color: InvoiceThemeColors.primaryPurple),
                 title: Text('Send', style: InvoiceTextStyles.body16),
                 onTap: () {
                   Navigator.pop(context);
@@ -573,9 +587,11 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                 },
               ),
             ],
-            if (invoice.status == InvoiceStatus.pending || invoice.isOverdue) ...[
+            if (invoice.status == InvoiceStatus.pending ||
+                invoice.isOverdue) ...[
               ListTile(
-                leading: Icon(Icons.refresh, color: InvoiceThemeColors.infoBlue),
+                leading:
+                    Icon(Icons.refresh, color: InvoiceThemeColors.infoBlue),
                 title: Text('Resend', style: InvoiceTextStyles.body16),
                 onTap: () {
                   Navigator.pop(context);
@@ -585,7 +601,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
             ],
             if (invoice.canBePaid) ...[
               ListTile(
-                leading: Icon(Icons.payment, color: InvoiceThemeColors.successGreen),
+                leading:
+                    Icon(Icons.payment, color: InvoiceThemeColors.successGreen),
                 title: Text('Mark as Paid', style: InvoiceTextStyles.body16),
                 onTap: () {
                   Navigator.pop(context);
@@ -594,7 +611,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               ),
             ],
             ListTile(
-              leading: Icon(Icons.share, color: InvoiceThemeColors.primaryPurple),
+              leading:
+                  Icon(Icons.share, color: InvoiceThemeColors.primaryPurple),
               title: Text('Share', style: InvoiceTextStyles.body16),
               onTap: () async {
                 final screenContext = this.context;
@@ -610,7 +628,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                   if (screenContext.mounted) {
                     ScaffoldMessenger.of(screenContext).showSnackBar(
                       SnackBar(
-                        content: Text('Failed to share invoice: ${e.toString().replaceFirst('Exception: ', '')}'),
+                        content: Text(
+                            'Failed to share invoice: ${e.toString().replaceFirst('Exception: ', '')}'),
                         backgroundColor: const Color(0xFFEF4444),
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -621,7 +640,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
             ),
             if (invoice.status != InvoiceStatus.paid) ...[
               ListTile(
-                leading: Icon(Icons.cancel, color: InvoiceThemeColors.warningOrange),
+                leading:
+                    Icon(Icons.cancel, color: InvoiceThemeColors.warningOrange),
                 title: Text('Cancel', style: InvoiceTextStyles.body16),
                 onTap: () {
                   Navigator.pop(context);
@@ -638,7 +658,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.visibility, color: InvoiceThemeColors.primaryPurple),
+              leading: Icon(Icons.visibility,
+                  color: InvoiceThemeColors.primaryPurple),
               title: Text('View Details', style: InvoiceTextStyles.body16),
               onTap: () {
                 Navigator.pop(context);
@@ -646,7 +667,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.download, color: InvoiceThemeColors.successGreen),
+              leading:
+                  Icon(Icons.download, color: InvoiceThemeColors.successGreen),
               title: Text('Download PDF', style: InvoiceTextStyles.body16),
               onTap: () {
                 final screenContext = this.context;
@@ -723,10 +745,12 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
             onPressed: () {
               Navigator.pop(context);
               context.read<InvoiceCubit>().markAsPaid(
-                invoice.id,
-                selectedMethod,
-                referenceController.text.isEmpty ? null : referenceController.text,
-              );
+                    invoice.id,
+                    selectedMethod,
+                    referenceController.text.isEmpty
+                        ? null
+                        : referenceController.text,
+                  );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
@@ -822,7 +846,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
             ],
           ),
           backgroundColor: const Color(0xFF6366F1),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),
         ),
@@ -842,7 +867,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               ? 'Invoice PDF downloaded'
               : 'Invoice PDF saved to $filePath'),
           backgroundColor: const Color(0xFF10B981),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -851,12 +877,14 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to download PDF: ${e.toString().replaceFirst('Exception: ', '')}'),
+          content: Text(
+              'Failed to download PDF: ${e.toString().replaceFirst('Exception: ', '')}'),
           backgroundColor: const Color(0xFFEF4444),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
         ),
       );
     }
   }
-} 
+}
