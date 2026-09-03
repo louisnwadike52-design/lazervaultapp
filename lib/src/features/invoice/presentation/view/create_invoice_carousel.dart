@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,6 +14,7 @@ import '../../../authentication/cubit/authentication_state.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../domain/entities/invoice_entity.dart';
+import 'package:lazervault/core/utils/logger.dart';
 import '../widgets/create_invoice/invoice_type_basic_info_screen.dart';
 import '../widgets/create_invoice/recipient_details_screen.dart';
 import '../widgets/create_invoice/payer_details_screen.dart';
@@ -200,26 +202,40 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
       String? recipientLogoUrl;
       final uploader = InvoiceImageUploadService(endpoints: endpointRegistry);
 
-      if (cubit.payerImage != null) {
+      // Failures here used to be swallowed whole. The invoice was created with
+      // no logo and the user was told nothing, so the only symptom was a logo
+      // that had "definitely been uploaded" never appearing on the preview or
+      // the PDF, with nothing anywhere to say why. Still non-fatal, because a
+      // logo is not worth losing a completed invoice over, but no longer
+      // silent: the user is told, and the reason reaches the logs.
+      final failedLogos = <String>[];
+
+      Future<String?> uploadLogo(File? file, String label) async {
+        if (file == null) return null;
         try {
-          final file = cubit.payerImage!;
-          if (await file.exists()) {
-            payerLogoUrl = (await uploader.uploadFromFile(file)).publicUrl;
+          if (!await file.exists()) {
+            failedLogos.add(label);
+            AppLogger.warning(
+                'invoice: $label logo file missing at ${file.path}');
+            return null;
           }
-        } catch (_) {
-          // Non-fatal: continue without the customer logo.
+          return (await uploader.uploadFromFile(file)).publicUrl;
+        } catch (e) {
+          failedLogos.add(label);
+          AppLogger.error('invoice: $label logo upload failed', error: e);
+          return null;
         }
       }
 
-      if (cubit.recipientImage != null) {
-        try {
-          final file = cubit.recipientImage!;
-          if (await file.exists()) {
-            recipientLogoUrl = (await uploader.uploadFromFile(file)).publicUrl;
-          }
-        } catch (_) {
-          // Non-fatal: continue without the issuer logo.
-        }
+      payerLogoUrl = await uploadLogo(cubit.payerImage, 'customer');
+      recipientLogoUrl = await uploadLogo(cubit.recipientImage, 'business');
+
+      if (failedLogos.isNotEmpty && mounted) {
+        _showErrorSnackBar(
+          failedLogos.length == 1
+              ? 'We could not upload the ${failedLogos.first} logo, so the invoice was created without it.'
+              : 'We could not upload the logos, so the invoice was created without them.',
+        );
       }
 
       var invoice = cubit.buildInvoice(authState.profile.user.id);
