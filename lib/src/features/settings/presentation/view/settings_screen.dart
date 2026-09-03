@@ -64,14 +64,15 @@ import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:lazervault/src/features/settings/presentation/widgets/birthday_celebration_card.dart';
 part 'settings_screen_widgets.dart';
 
-
 // ============================================================
 // Feature flags — flip when the backend RPCs land. Each row is
 // wrapped in `if (_kXxxEnabled)` so the section visually disappears
 // without leaving a half-wired tile that pretends to work.
 // ============================================================
-const bool _kTrustedDevicesEnabled = true; // backed by AuthService ListDevices/RevokeDevice
-const bool _kLoginActivityEnabled = true; // backed by AuthService GetLoginHistory
+const bool _kTrustedDevicesEnabled =
+    true; // backed by AuthService ListDevices/RevokeDevice
+const bool _kLoginActivityEnabled =
+    true; // backed by AuthService GetLoginHistory
 const bool _kDataSharingEnabled = false; // no rpc
 const bool _kMarketingOptInEnabled = false; // no rpc
 const bool _kAnalyticsOptInEnabled = false; // no rpc
@@ -165,8 +166,7 @@ class _SettingsViewState extends State<_SettingsView> {
 
   Future<void> _loadFraudSetting() async {
     try {
-      final on =
-          await serviceLocator<FraudDetectionService>().getEnabled();
+      final on = await serviceLocator<FraudDetectionService>().getEnabled();
       if (mounted) setState(() => _fraudDetectionEnabled = on);
     } catch (_) {/* keep default ON */}
   }
@@ -319,40 +319,41 @@ class _SettingsViewState extends State<_SettingsView> {
         await _loadSignupFlow();
       },
       child: SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(height: 16.h),
-          _buildProfileHeader(state),
-          if (showBirthday) BirthdayCelebrationCard(firstName: birthdayName),
-          SizedBox(height: 16.h),
-          _buildSearchField(),
-          SizedBox(height: 12.h),
-          for (var i = 0; i < sections.length; i++)
-            // While searching, hide non-matching sections and auto-expand the
-            // matches so the item the user searched for is revealed in place.
-            if (!searching || sections[i].matches(_searchQuery)) ...[
-              _AccordionSection(
-                key: ValueKey('section-$i-${sections[i].title}'),
-                icon: sections[i].icon,
-                title: sections[i].title,
-                subtitle: sections[i].subtitle,
-                expanded: searching ? true : _expandedIndex == i,
-                onTap: searching
-                    ? () {} // stays expanded while filtering
-                    : () => setState(() {
-                          _expandedIndex = _expandedIndex == i ? -1 : i;
-                        }),
-                child: sections[i].body,
-              ),
-              SizedBox(height: 12.h),
-            ],
-          if (searching && !sections.any((s) => s.matches(_searchQuery)))
-            _buildNoSearchResults(),
-          SizedBox(height: 24.h),
-        ],
-      ),
+        physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics()),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(height: 16.h),
+            _buildProfileHeader(state),
+            if (showBirthday) BirthdayCelebrationCard(firstName: birthdayName),
+            SizedBox(height: 16.h),
+            _buildSearchField(),
+            SizedBox(height: 12.h),
+            for (var i = 0; i < sections.length; i++)
+              // While searching, hide non-matching sections and auto-expand the
+              // matches so the item the user searched for is revealed in place.
+              if (!searching || sections[i].matches(_searchQuery)) ...[
+                _AccordionSection(
+                  key: ValueKey('section-$i-${sections[i].title}'),
+                  icon: sections[i].icon,
+                  title: sections[i].title,
+                  subtitle: sections[i].subtitle,
+                  expanded: searching ? true : _expandedIndex == i,
+                  onTap: searching
+                      ? () {} // stays expanded while filtering
+                      : () => setState(() {
+                            _expandedIndex = _expandedIndex == i ? -1 : i;
+                          }),
+                  child: sections[i].body,
+                ),
+                SizedBox(height: 12.h),
+              ],
+            if (searching && !sections.any((s) => s.matches(_searchQuery)))
+              _buildNoSearchResults(),
+            SizedBox(height: 24.h),
+          ],
+        ),
       ),
     );
   }
@@ -391,8 +392,8 @@ class _SettingsViewState extends State<_SettingsView> {
                   fontWeight: FontWeight.w500),
               decoration: InputDecoration(
                 hintText: 'Search settings',
-                hintStyle: GoogleFonts.inter(
-                    color: _kTextSecondary, fontSize: 14.sp),
+                hintStyle:
+                    GoogleFonts.inter(color: _kTextSecondary, fontSize: 14.sp),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding:
@@ -443,8 +444,16 @@ class _SettingsViewState extends State<_SettingsView> {
         icon: Icons.verified_user_outlined,
         body: _verificationBody(),
         keywords: const [
-          'kyc', 'tier', 'identity', 'bvn', 'nin', 'verification',
-          'transaction limits', 'daily limit', 'spending limit', 'upgrade',
+          'kyc',
+          'tier',
+          'identity',
+          'bvn',
+          'nin',
+          'verification',
+          'transaction limits',
+          'daily limit',
+          'spending limit',
+          'upgrade',
         ],
       ),
       _SectionSpec(
@@ -452,12 +461,31 @@ class _SettingsViewState extends State<_SettingsView> {
         icon: Icons.security_outlined,
         body: _securityBody(),
         keywords: const [
-          'passcode', 'change passcode', 'transaction pin', 'payment pin',
-          'panic balance', 'decoy', 'banking channels', 'whatsapp banking',
-          'sms banking', 'phone banking', 'admin alerts', 'biometric login',
-          'fingerprint', 'face id', 'voice login', 'verify email',
-          'verify phone number', 'two factor', '2fa', 'mfa', 'otp',
-          'authenticator', 'totp', 'update password', 'device permissions',
+          'passcode',
+          'change passcode',
+          'transaction pin',
+          'payment pin',
+          'panic balance',
+          'decoy',
+          'banking channels',
+          'whatsapp banking',
+          'sms banking',
+          'phone banking',
+          'admin alerts',
+          'biometric login',
+          'fingerprint',
+          'face id',
+          'voice login',
+          'verify email',
+          'verify phone number',
+          'two factor',
+          '2fa',
+          'mfa',
+          'otp',
+          'authenticator',
+          'totp',
+          'update password',
+          'device permissions',
         ],
       ),
       // Dedicated Account Lock section — a scheduled or emergency self-lock that
@@ -468,8 +496,12 @@ class _SettingsViewState extends State<_SettingsView> {
         icon: Icons.lock_clock_outlined,
         body: _accountLockBody(),
         keywords: const [
-          'lock account', 'self lock', 'freeze', 'emergency lock',
-          'timed lock', 'disable account',
+          'lock account',
+          'self lock',
+          'freeze',
+          'emergency lock',
+          'timed lock',
+          'disable account',
         ],
       ),
       _SectionSpec(
@@ -477,10 +509,24 @@ class _SettingsViewState extends State<_SettingsView> {
         icon: Icons.tune_rounded,
         body: _customizeBody(),
         keywords: const [
-          'login method', 'email password', 'phone passcode', 'send flow',
-          'transfer flow', 'service tiles', 'home tiles', 'entrance animation',
-          'appearance', 'preferences', 'send money', 'classic', 'standard',
-          'sign in', 'transfer style', 'send funds', 'sendfunds', 'transfer',
+          'login method',
+          'email password',
+          'phone passcode',
+          'send flow',
+          'transfer flow',
+          'service tiles',
+          'home tiles',
+          'entrance animation',
+          'appearance',
+          'preferences',
+          'send money',
+          'classic',
+          'standard',
+          'sign in',
+          'transfer style',
+          'send funds',
+          'sendfunds',
+          'transfer',
         ],
       ),
       _SectionSpec(
@@ -488,8 +534,14 @@ class _SettingsViewState extends State<_SettingsView> {
         icon: Icons.public_outlined,
         body: _regionalBody(state),
         keywords: const [
-          'country', 'currency', 'language', 'locale', 'region', 'timezone',
-          'fx', 'money',
+          'country',
+          'currency',
+          'language',
+          'locale',
+          'region',
+          'timezone',
+          'fx',
+          'money',
         ],
       ),
       _SectionSpec(
@@ -497,11 +549,25 @@ class _SettingsViewState extends State<_SettingsView> {
         icon: Icons.tune_outlined,
         body: _notificationsBody(state),
         keywords: const [
-          'notifications', 'push', 'email notifications', 'sms',
-          'dark mode', 'theme', 'display', 'sound', 'alerts',
-          'chat sound', 'message sound', 'vibration', 'haptics',
-          'balance vibration', 'balance update', 'vibrate on balance',
-          'haptic feedback', 'balance animation', 'account update',
+          'notifications',
+          'push',
+          'email notifications',
+          'sms',
+          'dark mode',
+          'theme',
+          'display',
+          'sound',
+          'alerts',
+          'chat sound',
+          'message sound',
+          'vibration',
+          'haptics',
+          'balance vibration',
+          'balance update',
+          'vibrate on balance',
+          'haptic feedback',
+          'balance animation',
+          'account update',
         ],
       ),
       // Voice & Chat Assistant — hidden unless the admin enables it via the
@@ -519,10 +585,12 @@ class _SettingsViewState extends State<_SettingsView> {
             'voice enrollment', 'enroll', 'voice recognition', 'my voice',
             'assistant voice', 'tts', 'voice selection', 'voice language',
             // Voice transaction-PIN controls (VoiceTxPinSection).
-            'pin', 'transaction pin', 'ask for my pin', 'ask for my pin in voice',
+            'pin', 'transaction pin', 'ask for my pin',
+            'ask for my pin in voice',
             'require pin', 'voice pin', 'skip pin', 'pin entry', 'say my pin',
             // Per-service tuning entry points.
-            'per-service voice', 'per service', 'transfers voice', 'crypto voice',
+            'per-service voice', 'per service', 'transfers voice',
+            'crypto voice',
             'bills voice', 'exchange voice',
           ],
         ),
@@ -531,8 +599,13 @@ class _SettingsViewState extends State<_SettingsView> {
         icon: Icons.description_outlined,
         body: _statementsBody(),
         keywords: const [
-          'statement', 'export', 'download data', 'transactions export',
-          'delete account', 'privacy', 'data',
+          'statement',
+          'export',
+          'download data',
+          'transactions export',
+          'delete account',
+          'privacy',
+          'data',
         ],
       ),
       _SectionSpec(
@@ -540,8 +613,17 @@ class _SettingsViewState extends State<_SettingsView> {
         icon: Icons.help_outline,
         body: _helpBody(),
         keywords: const [
-          'help', 'support', 'contact', 'faq', 'terms', 'privacy policy',
-          'about', 'chat with us', 'ticket', 'logout', 'sign out',
+          'help',
+          'support',
+          'contact',
+          'faq',
+          'terms',
+          'privacy policy',
+          'about',
+          'chat with us',
+          'ticket',
+          'logout',
+          'sign out',
         ],
       ),
     ];
@@ -629,8 +711,7 @@ class _SettingsViewState extends State<_SettingsView> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: _kAccent,
-                              border:
-                                  Border.all(color: Colors.white, width: 2),
+                              border: Border.all(color: Colors.white, width: 2),
                             ),
                             child: Icon(Icons.camera_alt_rounded,
                                 size: 11.sp, color: Colors.white),
@@ -714,8 +795,8 @@ class _SettingsViewState extends State<_SettingsView> {
                       color: _kAccent.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
-                    child: Icon(Icons.edit_outlined,
-                        size: 16.sp, color: _kAccent),
+                    child:
+                        Icon(Icons.edit_outlined, size: 16.sp, color: _kAccent),
                   ),
                 ),
               ],
@@ -762,8 +843,14 @@ class _SettingsViewState extends State<_SettingsView> {
           icon: Icons.bolt_rounded,
           title: 'Send Funds',
           keywords: const [
-            'transfer style', 'classic', 'standard', 'send',
-            'transfer', 'send funds', 'sendfunds', 'send money',
+            'transfer style',
+            'classic',
+            'standard',
+            'send',
+            'transfer',
+            'send funds',
+            'sendfunds',
+            'send money',
           ],
           subtitle: _transferStyleClassic
               ? 'Classic — fast, streamlined'
@@ -774,9 +861,8 @@ class _SettingsViewState extends State<_SettingsView> {
           icon: Icons.login_rounded,
           title: 'Login Method',
           keywords: const ['passcode', 'password', 'email', 'phone', 'sign in'],
-          subtitle: isEmailMode
-              ? 'Email or phone + password'
-              : 'Phone + passcode',
+          subtitle:
+              isEmailMode ? 'Email or phone + password' : 'Phone + passcode',
           onTap: () => _openLoginMethodSheet(hasPassword),
         );
         final dashboardLayoutTile = _navTile(
@@ -828,8 +914,9 @@ class _SettingsViewState extends State<_SettingsView> {
         // guide on the deposit screen. Reads the SAME uid-scoped flag the modal's
         // "Don't show this again" checkbox writes, so the two stay in sync.
         final uid = user?.id ?? '';
-        final depositGuideOn =
-            uid.isNotEmpty ? FeatureFlags.depositBalanceGuideEnabled(uid) : true;
+        final depositGuideOn = uid.isNotEmpty
+            ? FeatureFlags.depositBalanceGuideEnabled(uid)
+            : true;
         final depositTipsTile = _switchTile(
           icon: Icons.tips_and_updates_rounded,
           title: 'Deposit balance tips',
@@ -859,6 +946,49 @@ class _SettingsViewState extends State<_SettingsView> {
             );
           },
         );
+        // Pending payments: re-enable the launch prompt after the user chose
+        // "Don't show this again" on the sheet. Reads the SAME uid-scoped flag
+        // the sheet writes, so the switch can never disagree with the sheet.
+        final pendingPromptOn = uid.isNotEmpty
+            ? FeatureFlags.pendingPaymentsPromptEnabled(uid)
+            : true;
+        final pendingPromptTile = _switchTile(
+          icon: Icons.schedule_rounded,
+          title: 'Payment reminders on launch',
+          keywords: const [
+            'pending',
+            'payments',
+            'reminder',
+            'reminders',
+            'launch',
+            'startup',
+            'prompt',
+            'popup',
+            'waiting',
+            'invoice',
+            'split bill',
+            'tag pay',
+            'requests',
+            'dont show again',
+            "don't show again",
+          ],
+          subtitle:
+              'Show what you owe and who is waiting on you when you open the app',
+          value: pendingPromptOn,
+          onChanged: (v) async {
+            if (uid.isEmpty) return; // no profile yet — nothing to scope to
+            await FeatureFlags.setPendingPaymentsPromptEnabled(uid, v);
+            if (!mounted) return;
+            setState(() {});
+            showAppSnackbar(
+              v ? 'Payment reminders on' : 'Payment reminders off',
+              v
+                  ? 'You will see what is waiting next time you open the app.'
+                  : 'Your pending items stay on their service tiles.',
+              type: AppSnackbarType.success,
+            );
+          },
+        );
         // While searching, drop the group labels/spacing and filter down to the
         // matching tiles (item-level search, consistent with the other
         // sections). Non-searching keeps the grouped, spaced layout with labels.
@@ -868,6 +998,7 @@ class _SettingsViewState extends State<_SettingsView> {
             dashboardLayoutTile,
             adaptiveServicesTile,
             depositTipsTile,
+            pendingPromptTile,
             loginMethodTile,
           ]);
         }
@@ -901,6 +1032,13 @@ class _SettingsViewState extends State<_SettingsView> {
             ),
             SizedBox(height: 10.h),
             depositTipsTile,
+            SizedBox(height: 18.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: _customizeGroupLabel('Reminders'),
+            ),
+            SizedBox(height: 10.h),
+            pendingPromptTile,
             SizedBox(height: 18.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -961,223 +1099,222 @@ class _SettingsViewState extends State<_SettingsView> {
                 : 'email_password');
         final isEmailMode = currentMode == 'email_password';
         return _filterableColumn([
-        // Login method now lives under the "Customize" section (it's a flow
-        // choice). Security keeps password / passcode / PIN management.
-        // Update Password — shown ONLY in email+password mode. Opens the change
-        // dialog when a password exists, or the set-password sheet as a safety
-        // net (email mode normally implies a password is already set).
-        if (isEmailMode)
+          // Login method now lives under the "Customize" section (it's a flow
+          // choice). Security keeps password / passcode / PIN management.
+          // Update Password — shown ONLY in email+password mode. Opens the change
+          // dialog when a password exists, or the set-password sheet as a safety
+          // net (email mode normally implies a password is already set).
+          if (isEmailMode)
+            _navTile(
+              icon: Icons.lock_outline,
+              title: 'Update Password',
+              subtitle: 'Change your account password',
+              onTap: () {
+                if (!hasPassword) {
+                  _openSetPasswordSheet();
+                  return;
+                }
+                showDialog(
+                  context: context,
+                  builder: (dialogContext) => BlocProvider.value(
+                    value: context.read<ProfileCubit>(),
+                    child: const ChangePasswordDialog(),
+                  ),
+                );
+              },
+            ),
           _navTile(
-            icon: Icons.lock_outline,
-            title: 'Update Password',
-            subtitle: 'Change your account password',
-            onTap: () {
-              if (!hasPassword) {
-                _openSetPasswordSheet();
-                return;
+            icon: Icons.pin_outlined,
+            title: 'Passcode',
+            subtitle: 'Set up or change your 6-digit login passcode',
+            onTap: () => _openPasscodeFlow(context),
+          ),
+          _switchTile(
+            icon: Icons.shield_outlined,
+            title: 'Fraud detection',
+            subtitle:
+                'Automatically pause unusually large transfers on your account for review',
+            value: _fraudDetectionEnabled,
+            onChanged: _fraudSettingBusy ? (_) {} : _setFraudSetting,
+            keywords: const [
+              'fraud',
+              'fraud detection',
+              'security',
+              'anomaly',
+              'freeze',
+              'protection',
+            ],
+          ),
+          _navTile(
+            icon: Icons.lock_clock_outlined,
+            title: 'Transaction PIN',
+            subtitle: 'Set or change your 4-digit payment PIN',
+            onTap: () => Get.toNamed(AppRoutes.pinManagement),
+          ),
+          // Panic Balance now lives under Security (a decoy balance + its
+          // triggers/sound are a personal-safety control).
+          _navTile(
+            icon: Icons.shield_moon_outlined,
+            title: 'Panic Balance',
+            subtitle: 'Decoy balance, triggers & sound',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PanicBalanceScreen()),
+            ),
+          ),
+          _navTile(
+            icon: Icons.swap_horiz_rounded,
+            title: 'Banking Channels',
+            subtitle: 'Manage WhatsApp, phone & SMS banking',
+            onTap: () => Get.toNamed(AppRoutes.channelManagement),
+          ),
+          // Admin-only: operational alerts (Prometheus/Alertmanager). Hidden from
+          // non-admin users; the backend feed is admin-gated too.
+          if (isAdminRoles(
+              context.read<AuthenticationCubit>().currentProfile?.user.roles))
+            _navTile(
+              icon: Icons.shield_outlined,
+              title: 'Admin Alerts',
+              subtitle: 'Operational alerts for system admins',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminAlertsScreen()),
+              ),
+            ),
+          _navTile(
+            icon: Icons.fingerprint,
+            title: 'Biometric Login',
+            subtitle: 'Use fingerprint, Face ID or voice to unlock',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const BiometricLoginScreen(),
+              ),
+            ),
+          ),
+          _navTile(
+            icon: Icons.email_outlined,
+            title: 'Verify Email',
+            subtitle: emailVerified
+                ? 'Your email is verified'
+                : 'Verify the email on your account',
+            badge: emailVerified ? 'Verified' : 'Not verified',
+            badgeColor: emailVerified
+                ? const Color(0xFF10B981)
+                : const Color(0xFFFB923C),
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider(
+                    create: (_) => serviceLocator<EmailVerificationCubit>(),
+                    child: EmailVerificationScreen(
+                      email: user?.email,
+                      fromSettings: true,
+                    ),
+                  ),
+                ),
+              );
+              if (result == true && context.mounted) {
+                context.read<ProfileCubit>().getUserProfile();
               }
-              showDialog(
-                context: context,
-                builder: (dialogContext) => BlocProvider.value(
-                  value: context.read<ProfileCubit>(),
-                  child: const ChangePasswordDialog(),
+            },
+          ),
+          _navTile(
+            icon: Icons.phone_android_outlined,
+            title: 'Verify Phone Number',
+            subtitle: phoneVerified
+                ? 'Your phone number is verified'
+                : 'Verify your phone number',
+            badge: phoneVerified ? 'Verified' : 'Not verified',
+            badgeColor: phoneVerified
+                ? const Color(0xFF10B981)
+                : const Color(0xFFFB923C),
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider(
+                    create: (_) => serviceLocator<PhoneVerificationCubit>(),
+                    child: PhoneVerificationScreen(
+                      phoneNumber: user?.phoneNumber,
+                      fromSettings: true,
+                    ),
+                  ),
+                ),
+              );
+              if (result == true && context.mounted) {
+                context.read<ProfileCubit>().getUserProfile();
+              }
+            },
+          ),
+          _navTile(
+            icon: Icons.vpn_key_outlined,
+            keywords: const ['2fa', 'mfa', 'otp', 'authenticator', 'totp'],
+            title: 'Two-Factor Authentication',
+            subtitle: twoFaOn
+                ? 'On${twoFaMethod != null && twoFaMethod.isNotEmpty ? ' · ${twoFaMethod.toUpperCase()}' : ''}. Extra login security'
+                : 'Off. Add an extra layer of login security',
+            badge: twoFaOn ? 'On' : null,
+            badgeColor: const Color(0xFF3B82F6),
+            onTap: () {
+              // Pass the existing AuthenticationCubit through — the 2FA
+              // settings screen reads `currentProfile` from it for the
+              // user id used in EnableTwoFactor.
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider.value(
+                    value: context.read<AuthenticationCubit>(),
+                    child: const TwoFactorSettingsScreen(),
+                  ),
                 ),
               );
             },
           ),
-        _navTile(
-          icon: Icons.pin_outlined,
-          title: 'Passcode',
-          subtitle: 'Set up or change your 6-digit login passcode',
-          onTap: () => _openPasscodeFlow(context),
-        ),
-        _switchTile(
-          icon: Icons.shield_outlined,
-          title: 'Fraud detection',
-          subtitle:
-              'Automatically pause unusually large transfers on your account for review',
-          value: _fraudDetectionEnabled,
-          onChanged: _fraudSettingBusy ? (_) {} : _setFraudSetting,
-          keywords: const [
-            'fraud',
-            'fraud detection',
-            'security',
-            'anomaly',
-            'freeze',
-            'protection',
-          ],
-        ),
-        _navTile(
-          icon: Icons.lock_clock_outlined,
-          title: 'Transaction PIN',
-          subtitle: 'Set or change your 4-digit payment PIN',
-          onTap: () => Get.toNamed(AppRoutes.pinManagement),
-        ),
-        // Panic Balance now lives under Security (a decoy balance + its
-        // triggers/sound are a personal-safety control).
-        _navTile(
-          icon: Icons.shield_moon_outlined,
-          title: 'Panic Balance',
-          subtitle: 'Decoy balance, triggers & sound',
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const PanicBalanceScreen()),
-          ),
-        ),
-        _navTile(
-          icon: Icons.swap_horiz_rounded,
-          title: 'Banking Channels',
-          subtitle: 'Manage WhatsApp, phone & SMS banking',
-          onTap: () => Get.toNamed(AppRoutes.channelManagement),
-        ),
-        // Admin-only: operational alerts (Prometheus/Alertmanager). Hidden from
-        // non-admin users; the backend feed is admin-gated too.
-        if (isAdminRoles(
-            context.read<AuthenticationCubit>().currentProfile?.user.roles))
-          _navTile(
-            icon: Icons.shield_outlined,
-            title: 'Admin Alerts',
-            subtitle: 'Operational alerts for system admins',
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AdminAlertsScreen()),
-            ),
-          ),
-        _navTile(
-          icon: Icons.fingerprint,
-          title: 'Biometric Login',
-          subtitle: 'Use fingerprint, Face ID or voice to unlock',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const BiometricLoginScreen(),
-            ),
-          ),
-        ),
-        _navTile(
-          icon: Icons.email_outlined,
-          title: 'Verify Email',
-          subtitle: emailVerified
-              ? 'Your email is verified'
-              : 'Verify the email on your account',
-          badge: emailVerified ? 'Verified' : 'Not verified',
-          badgeColor: emailVerified
-              ? const Color(0xFF10B981)
-              : const Color(0xFFFB923C),
-          onTap: () async {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => BlocProvider(
-                  create: (_) =>
-                      serviceLocator<EmailVerificationCubit>(),
-                  child: EmailVerificationScreen(
-                    email: user?.email,
-                    fromSettings: true,
+          if (_kTrustedDevicesEnabled)
+            _navTile(
+              icon: Icons.devices_outlined,
+              title: 'Trusted Devices',
+              subtitle: 'Manage devices with access to your account',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const TrustedDevicesScreen(),
                   ),
-                ),
-              ),
-            );
-            if (result == true && context.mounted) {
-              context.read<ProfileCubit>().getUserProfile();
-            }
-          },
-        ),
-        _navTile(
-          icon: Icons.phone_android_outlined,
-          title: 'Verify Phone Number',
-          subtitle: phoneVerified
-              ? 'Your phone number is verified'
-              : 'Verify your phone number',
-          badge: phoneVerified ? 'Verified' : 'Not verified',
-          badgeColor: phoneVerified
-              ? const Color(0xFF10B981)
-              : const Color(0xFFFB923C),
-          onTap: () async {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => BlocProvider(
-                  create: (_) =>
-                      serviceLocator<PhoneVerificationCubit>(),
-                  child: PhoneVerificationScreen(
-                    phoneNumber: user?.phoneNumber,
-                    fromSettings: true,
-                  ),
-                ),
-              ),
-            );
-            if (result == true && context.mounted) {
-              context.read<ProfileCubit>().getUserProfile();
-            }
-          },
-        ),
-        _navTile(
-          icon: Icons.vpn_key_outlined,
-          keywords: const ['2fa', 'mfa', 'otp', 'authenticator', 'totp'],
-          title: 'Two-Factor Authentication',
-          subtitle: twoFaOn
-              ? 'On${twoFaMethod != null && twoFaMethod.isNotEmpty ? ' · ${twoFaMethod.toUpperCase()}' : ''}. Extra login security'
-              : 'Off. Add an extra layer of login security',
-          badge: twoFaOn ? 'On' : null,
-          badgeColor: const Color(0xFF3B82F6),
-          onTap: () {
-            // Pass the existing AuthenticationCubit through — the 2FA
-            // settings screen reads `currentProfile` from it for the
-            // user id used in EnableTwoFactor.
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => BlocProvider.value(
-                  value: context.read<AuthenticationCubit>(),
-                  child: const TwoFactorSettingsScreen(),
-                ),
-              ),
-            );
-          },
-        ),
-        if (_kTrustedDevicesEnabled)
+                );
+              },
+            ),
+          if (_kLoginActivityEnabled)
+            _navTile(
+              icon: Icons.history_outlined,
+              title: 'Login Activity',
+              subtitle: 'Review recent sign-ins',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const LoginActivityScreen()),
+                );
+              },
+            ),
           _navTile(
-            icon: Icons.devices_outlined,
-            title: 'Trusted Devices',
-            subtitle: 'Manage devices with access to your account',
+            icon: Icons.admin_panel_settings_outlined,
+            title: 'Device Permissions',
+            subtitle: 'Camera, mic and contacts access',
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const TrustedDevicesScreen(),
+                  builder: (_) => BlocProvider(
+                    create: (_) => serviceLocator<IdentityCubit>(),
+                    child: const DevicePermissionsScreen(),
+                  ),
                 ),
               );
             },
           ),
-        if (_kLoginActivityEnabled)
-          _navTile(
-            icon: Icons.history_outlined,
-            title: 'Login Activity',
-            subtitle: 'Review recent sign-ins',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginActivityScreen()),
-              );
-            },
-          ),
-        _navTile(
-          icon: Icons.admin_panel_settings_outlined,
-          title: 'Device Permissions',
-          subtitle: 'Camera, mic and contacts access',
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => BlocProvider(
-                  create: (_) => serviceLocator<IdentityCubit>(),
-                  child: const DevicePermissionsScreen(),
-                ),
-              ),
-            );
-          },
-        ),
-          ]);
+        ]);
       },
     );
   }
@@ -1196,72 +1333,69 @@ class _SettingsViewState extends State<_SettingsView> {
     final currencySync = serviceLocator<CurrencySyncService>();
 
     return _filterableColumn([
-        _navTile(
-          icon: Icons.location_on_outlined,
-          title: 'Country',
-          subtitle: country,
-          onTap: () {
-            final currentCountry = state is ProfileLoaded
-                ? (state.user.country ?? 'United Kingdom')
-                : 'United Kingdom';
-            final currentCurrency = state is ProfileLoaded
-                ? (state.user.currency ?? 'GBP')
-                : 'GBP';
-            showDialog<String>(
-              context: context,
-              builder: (dialogContext) => BlocProvider.value(
-                value: context.read<ProfileCubit>(),
-                child: CountryPickerDialog(
-                  currentCountry: currentCountry,
-                  currentCurrency: currentCurrency,
-                ),
+      _navTile(
+        icon: Icons.location_on_outlined,
+        title: 'Country',
+        subtitle: country,
+        onTap: () {
+          final currentCountry = state is ProfileLoaded
+              ? (state.user.country ?? 'United Kingdom')
+              : 'United Kingdom';
+          final currentCurrency =
+              state is ProfileLoaded ? (state.user.currency ?? 'GBP') : 'GBP';
+          showDialog<String>(
+            context: context,
+            builder: (dialogContext) => BlocProvider.value(
+              value: context.read<ProfileCubit>(),
+              child: CountryPickerDialog(
+                currentCountry: currentCountry,
+                currentCurrency: currentCurrency,
               ),
-            ).then((countryCode) {
-              if (!mounted) return;
-              if (countryCode == null || countryCode.isEmpty) return;
-              final profileState = context.read<ProfileCubit>().state;
-              if (profileState is ProfileLoaded) {
-                context
-                    .read<AccountCardsSummaryCubit>()
-                    .fetchAccountSummaries(
-                      userId: profileState.user.id,
-                      country: countryCode,
-                    );
-              }
-            });
+            ),
+          ).then((countryCode) {
+            if (!mounted) return;
+            if (countryCode == null || countryCode.isEmpty) return;
+            final profileState = context.read<ProfileCubit>().state;
+            if (profileState is ProfileLoaded) {
+              context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+                    userId: profileState.user.id,
+                    country: countryCode,
+                  );
+            }
+          });
+        },
+      ),
+      // Wrapped in _FilterableTile so the live StreamBuilder row still
+      // participates in item-level search (otherwise a non-_FilterableTile
+      // child is always shown, and Regional could never filter down).
+      _FilterableTile(
+        title: 'Currency',
+        subtitle: '',
+        keywords: const ['currency', 'money', 'fx'],
+        child: StreamBuilder<String>(
+          stream: currencySync.currencyStream,
+          initialData: currencySync.currentCurrency,
+          builder: (context, snapshot) {
+            final currentCurrency = snapshot.data ?? 'USD';
+            return _navTile(
+              icon: Icons.attach_money_outlined,
+              title: 'Currency',
+              subtitle: currentCurrency,
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (dialogContext) => BlocProvider.value(
+                    value: context.read<ProfileCubit>(),
+                    child:
+                        CurrencyPickerDialog(currentCurrency: currentCurrency),
+                  ),
+                );
+              },
+            );
           },
         ),
-        // Wrapped in _FilterableTile so the live StreamBuilder row still
-        // participates in item-level search (otherwise a non-_FilterableTile
-        // child is always shown, and Regional could never filter down).
-        _FilterableTile(
-          title: 'Currency',
-          subtitle: '',
-          keywords: const ['currency', 'money', 'fx'],
-          child: StreamBuilder<String>(
-            stream: currencySync.currencyStream,
-            initialData: currencySync.currentCurrency,
-            builder: (context, snapshot) {
-              final currentCurrency = snapshot.data ?? 'USD';
-              return _navTile(
-                icon: Icons.attach_money_outlined,
-                title: 'Currency',
-                subtitle: currentCurrency,
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (dialogContext) => BlocProvider.value(
-                      value: context.read<ProfileCubit>(),
-                      child: CurrencyPickerDialog(
-                          currentCurrency: currentCurrency),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ),
-      ]);
+      ),
+    ]);
   }
 
   Widget _notificationsBody(ProfileState state) {
@@ -1271,8 +1405,7 @@ class _SettingsViewState extends State<_SettingsView> {
         state is ProfileLoaded ? state.preferences.emailNotifications : true;
     final sms =
         state is ProfileLoaded ? state.preferences.smsNotifications : false;
-    final dark =
-        state is ProfileLoaded ? state.preferences.darkMode : false;
+    final dark = state is ProfileLoaded ? state.preferences.darkMode : false;
 
     // Reconcile the live theme with the server preference (cross-device): if the
     // loaded pref differs from the current theme, align it after this frame.
@@ -1300,187 +1433,187 @@ class _SettingsViewState extends State<_SettingsView> {
     }
 
     return _filterableColumn([
-        _switchTile(
-          icon: Icons.notifications_outlined,
-          title: 'Push Notifications',
-          subtitle: 'Transaction alerts and updates',
-          value: _pushOverride ?? push,
-          onChanged: (v) {
-            setState(() => _pushOverride = v); // instant flip
-            update(push: v); // persist in background
-          },
-        ),
-        // Haptic pulse while the dashboard balance ANIMATES — after login and
-        // on live websocket updates (transfers, deposits, any service). Local
-        // device preference (persisted on-device), ON by default.
-        _switchTile(
-          icon: Icons.vibration_rounded,
-          title: 'Vibrate on balance updates',
-          subtitle: 'Haptic pulse while your balance animates',
-          value: serviceLocator<PanicBalanceService>().vibrationEnabled,
-          onChanged: (v) async {
-            await serviceLocator<PanicBalanceService>().setVibrationEnabled(v);
-            if (mounted) setState(() {});
-          },
-        ),
-        _switchTile(
-          icon: Icons.email_outlined,
-          title: 'Email Notifications',
-          subtitle: 'Receive updates via email',
-          value: _emailOverride ?? email,
-          onChanged: (v) {
-            setState(() => _emailOverride = v);
-            update(email: v);
-          },
-        ),
-        _switchTile(
-          icon: Icons.sms_outlined,
-          title: 'SMS Notifications',
-          subtitle: 'Receive updates via SMS',
-          value: _smsOverride ?? sms,
-          onChanged: (v) {
-            setState(() => _smsOverride = v);
-            update(sms: v);
-          },
-        ),
-        _switchTile(
-          icon: Icons.dark_mode_outlined,
-          title: 'Dark Mode',
-          subtitle: 'Use the dark theme',
-          value: dark,
-          onChanged: (v) {
-            // Switch the theme instantly + cache locally, then persist to server.
-            serviceLocator<ThemeController>().setDark(v);
-            update(dark: v);
-          },
-        ),
-        // Global chat feedback defaults. Each conversation can override these
-        // from that peer's profile sheet; these are the fall-through values.
-        _switchTile(
-          icon: Icons.volume_up_outlined,
-          title: 'Chat message sound',
-          subtitle: 'Play a sound when you send or receive a chat message',
-          value: ChatSoundSettings.instance.globalSound,
-          onChanged: (v) async {
-            await ChatSoundSettings.instance.setGlobalSound(v);
-            if (mounted) setState(() {});
-          },
-        ),
-        // Tunable loudness for the chat message tones (only meaningful while the
-        // sound above is on). Dragging previews the send tone at the new level.
-        if (ChatSoundSettings.instance.globalSound)
-          _FilterableTile(
-            title: 'Message sound volume',
-            subtitle: 'How loud chat message tones play',
-            keywords: const ['volume', 'loud', 'quiet', 'sound'],
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(16.w, 4.h, 12.w, 4.h),
-              child: Row(
-                children: [
-                  Icon(Icons.graphic_eq_rounded, color: _kBrand, size: 20.w),
-                  SizedBox(width: 14.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Message sound volume',
-                          style: GoogleFonts.inter(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                            color: _kTextPrimary,
-                          ),
+      _switchTile(
+        icon: Icons.notifications_outlined,
+        title: 'Push Notifications',
+        subtitle: 'Transaction alerts and updates',
+        value: _pushOverride ?? push,
+        onChanged: (v) {
+          setState(() => _pushOverride = v); // instant flip
+          update(push: v); // persist in background
+        },
+      ),
+      // Haptic pulse while the dashboard balance ANIMATES — after login and
+      // on live websocket updates (transfers, deposits, any service). Local
+      // device preference (persisted on-device), ON by default.
+      _switchTile(
+        icon: Icons.vibration_rounded,
+        title: 'Vibrate on balance updates',
+        subtitle: 'Haptic pulse while your balance animates',
+        value: serviceLocator<PanicBalanceService>().vibrationEnabled,
+        onChanged: (v) async {
+          await serviceLocator<PanicBalanceService>().setVibrationEnabled(v);
+          if (mounted) setState(() {});
+        },
+      ),
+      _switchTile(
+        icon: Icons.email_outlined,
+        title: 'Email Notifications',
+        subtitle: 'Receive updates via email',
+        value: _emailOverride ?? email,
+        onChanged: (v) {
+          setState(() => _emailOverride = v);
+          update(email: v);
+        },
+      ),
+      _switchTile(
+        icon: Icons.sms_outlined,
+        title: 'SMS Notifications',
+        subtitle: 'Receive updates via SMS',
+        value: _smsOverride ?? sms,
+        onChanged: (v) {
+          setState(() => _smsOverride = v);
+          update(sms: v);
+        },
+      ),
+      _switchTile(
+        icon: Icons.dark_mode_outlined,
+        title: 'Dark Mode',
+        subtitle: 'Use the dark theme',
+        value: dark,
+        onChanged: (v) {
+          // Switch the theme instantly + cache locally, then persist to server.
+          serviceLocator<ThemeController>().setDark(v);
+          update(dark: v);
+        },
+      ),
+      // Global chat feedback defaults. Each conversation can override these
+      // from that peer's profile sheet; these are the fall-through values.
+      _switchTile(
+        icon: Icons.volume_up_outlined,
+        title: 'Chat message sound',
+        subtitle: 'Play a sound when you send or receive a chat message',
+        value: ChatSoundSettings.instance.globalSound,
+        onChanged: (v) async {
+          await ChatSoundSettings.instance.setGlobalSound(v);
+          if (mounted) setState(() {});
+        },
+      ),
+      // Tunable loudness for the chat message tones (only meaningful while the
+      // sound above is on). Dragging previews the send tone at the new level.
+      if (ChatSoundSettings.instance.globalSound)
+        _FilterableTile(
+          title: 'Message sound volume',
+          subtitle: 'How loud chat message tones play',
+          keywords: const ['volume', 'loud', 'quiet', 'sound'],
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 4.h, 12.w, 4.h),
+            child: Row(
+              children: [
+                Icon(Icons.graphic_eq_rounded, color: _kBrand, size: 20.w),
+                SizedBox(width: 14.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Message sound volume',
+                        style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: _kTextPrimary,
                         ),
-                        Row(
-                          children: [
-                            Icon(Icons.volume_mute_rounded,
-                                size: 16.w, color: _kTextSecondary),
-                            Expanded(
-                              child: Slider(
-                                value: ChatSoundSettings.instance.globalVolume,
-                                activeColor: _kBrand,
-                                onChanged: (v) {
-                                  // Live-update only (no disk write per frame);
-                                  // persist once the drag ends.
-                                  ChatSoundSettings.instance
-                                      .setGlobalVolumeLive(v);
-                                  if (mounted) setState(() {});
-                                },
-                                onChangeEnd: (v) {
-                                  ChatSoundSettings.instance
-                                      .setGlobalVolume(v); // persist final value
-                                  ChatSoundSettings.instance
-                                      .playSendFeedback(null); // preview tone
-                                },
-                              ),
+                      ),
+                      Row(
+                        children: [
+                          Icon(Icons.volume_mute_rounded,
+                              size: 16.w, color: _kTextSecondary),
+                          Expanded(
+                            child: Slider(
+                              value: ChatSoundSettings.instance.globalVolume,
+                              activeColor: _kBrand,
+                              onChanged: (v) {
+                                // Live-update only (no disk write per frame);
+                                // persist once the drag ends.
+                                ChatSoundSettings.instance
+                                    .setGlobalVolumeLive(v);
+                                if (mounted) setState(() {});
+                              },
+                              onChangeEnd: (v) {
+                                ChatSoundSettings.instance
+                                    .setGlobalVolume(v); // persist final value
+                                ChatSoundSettings.instance
+                                    .playSendFeedback(null); // preview tone
+                              },
                             ),
-                            Icon(Icons.volume_up_rounded,
-                                size: 18.w, color: _kTextSecondary),
-                          ],
-                        ),
-                      ],
-                    ),
+                          ),
+                          Icon(Icons.volume_up_rounded,
+                              size: 18.w, color: _kTextSecondary),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        _switchTile(
-          icon: Icons.vibration_outlined,
-          title: 'Chat vibration',
-          subtitle: 'Vibrate when you send or receive a chat message',
-          value: ChatSoundSettings.instance.globalVibrate,
-          onChanged: (v) async {
-            await ChatSoundSettings.instance.setGlobalVibrate(v);
-            if (mounted) setState(() {});
+        ),
+      _switchTile(
+        icon: Icons.vibration_outlined,
+        title: 'Chat vibration',
+        subtitle: 'Vibrate when you send or receive a chat message',
+        value: ChatSoundSettings.instance.globalVibrate,
+        onChanged: (v) async {
+          await ChatSoundSettings.instance.setGlobalVibrate(v);
+          if (mounted) setState(() {});
+        },
+      ),
+      if (_kInAppCategoriesEnabled)
+        _navTile(
+          icon: Icons.category_outlined,
+          title: 'In-App Notifications',
+          subtitle: 'Choose which categories to receive',
+          onTap: () {},
+        ),
+      if (_kCardSettingsEnabled)
+        _navTile(
+          icon: Icons.card_membership_outlined,
+          title: 'Card Settings',
+          subtitle: 'Manage your cards',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const CardSettingsScreen(),
+              ),
+            );
           },
         ),
-        if (_kInAppCategoriesEnabled)
-          _navTile(
-            icon: Icons.category_outlined,
-            title: 'In-App Notifications',
-            subtitle: 'Choose which categories to receive',
-            onTap: () {},
-          ),
-        if (_kCardSettingsEnabled)
-          _navTile(
-            icon: Icons.card_membership_outlined,
-            title: 'Card Settings',
-            subtitle: 'Manage your cards',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const CardSettingsScreen(),
-                ),
-              );
-            },
-          ),
-        if (_kDataSharingEnabled)
-          _switchTile(
-            icon: Icons.share_outlined,
-            title: 'Data Sharing',
-            subtitle: 'Share aggregate usage with partners',
-            value: false,
-            onChanged: (_) {},
-          ),
-        if (_kMarketingOptInEnabled)
-          _switchTile(
-            icon: Icons.campaign_outlined,
-            title: 'Marketing emails',
-            subtitle: 'Promotions and product news',
-            value: false,
-            onChanged: (_) {},
-          ),
-        if (_kAnalyticsOptInEnabled)
-          _switchTile(
-            icon: Icons.analytics_outlined,
-            title: 'Analytics',
-            subtitle: 'Help us improve the app',
-            value: false,
-            onChanged: (_) {},
-          ),
-      ]);
+      if (_kDataSharingEnabled)
+        _switchTile(
+          icon: Icons.share_outlined,
+          title: 'Data Sharing',
+          subtitle: 'Share aggregate usage with partners',
+          value: false,
+          onChanged: (_) {},
+        ),
+      if (_kMarketingOptInEnabled)
+        _switchTile(
+          icon: Icons.campaign_outlined,
+          title: 'Marketing emails',
+          subtitle: 'Promotions and product news',
+          value: false,
+          onChanged: (_) {},
+        ),
+      if (_kAnalyticsOptInEnabled)
+        _switchTile(
+          icon: Icons.analytics_outlined,
+          title: 'Analytics',
+          subtitle: 'Help us improve the app',
+          value: false,
+          onChanged: (_) {},
+        ),
+    ]);
   }
 
   Widget _voiceAssistantBody() {
@@ -1493,9 +1626,7 @@ class _SettingsViewState extends State<_SettingsView> {
           label: 'Send funds & transfers',
           icon: Icons.swap_horiz_rounded),
       _VoiceServiceTile(
-          slug: 'crypto',
-          label: 'Crypto',
-          icon: Icons.currency_bitcoin),
+          slug: 'crypto', label: 'Crypto', icon: Icons.currency_bitcoin),
       _VoiceServiceTile(
           slug: 'investments',
           label: 'Investments',
@@ -1517,9 +1648,7 @@ class _SettingsViewState extends State<_SettingsView> {
           label: 'Invoices & gift cards',
           icon: Icons.card_giftcard_outlined),
       _VoiceServiceTile(
-          slug: 'insurance',
-          label: 'Insurance',
-          icon: Icons.shield_outlined),
+          slug: 'insurance', label: 'Insurance', icon: Icons.shield_outlined),
       _VoiceServiceTile(
           slug: 'business',
           label: 'Business (payroll & customers)',
@@ -1533,111 +1662,125 @@ class _SettingsViewState extends State<_SettingsView> {
           label: 'Lazerspray',
           icon: Icons.celebration_outlined),
       _VoiceServiceTile(
-          slug: 'lifestyle',
-          label: 'Lifestyle',
-          icon: Icons.spa_outlined),
+          slug: 'lifestyle', label: 'Lifestyle', icon: Icons.spa_outlined),
       _VoiceServiceTile(
           slug: 'accounts',
           label: 'Accounts & cards',
           icon: Icons.credit_card_outlined),
     ];
     return _filterableColumn([
-        // Full voice-agent setup — opens the SAME screen the in-call settings
-        // gear opens (voice recognition/enrollment, voice cloning, and voice &
-        // language selection). It's a self-contained registered route driving the
-        // shared VoiceSessionCubit / VoiceSettingsService, so every change here
-        // persists (SharedPreferences + voice gateway) and takes effect in the
-        // next voice conversation — no live session required.
+      // Full voice-agent setup — opens the SAME screen the in-call settings
+      // gear opens (voice recognition/enrollment, voice cloning, and voice &
+      // language selection). It's a self-contained registered route driving the
+      // shared VoiceSessionCubit / VoiceSettingsService, so every change here
+      // persists (SharedPreferences + voice gateway) and takes effect in the
+      // next voice conversation — no live session required.
+      _navTile(
+        icon: Icons.record_voice_over_rounded,
+        title: 'Voice assistant setup',
+        subtitle: 'Recognition, voice cloning, voice & language',
+        onTap: () => Get.toNamed(AppRoutes.voiceSettings),
+        keywords: const [
+          'voice setup',
+          'set up voice',
+          'voice clone',
+          'cloning',
+          'clone my voice',
+          'voice enrollment',
+          'enroll',
+          'voice recognition',
+          'my voice',
+          'assistant voice',
+          'tts',
+          'voice selection',
+          'language',
+        ],
+      ),
+      SizedBox(height: 14.h),
+      // Group labels are organisational only — hide them while a settings
+      // search is active (the section auto-expands and keeps every raw child),
+      // so a filtered result never shows an orphan header with no matching row.
+      // Voice transactions — per-user PIN policy for money moves by voice.
+      if (_searchQuery.trim().isEmpty)
+        Padding(
+          padding: EdgeInsets.only(left: 16.w, bottom: 8.h),
+          child: Text(
+            'Voice transactions',
+            style: TextStyle(
+              color: _kTextSecondary,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      // Same 16.w side inset as the nav rows so the PIN card doesn't sit flush
+      // against the accordion card's edges.
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        child: const VoiceTxPinSection(),
+      ),
+      SizedBox(height: 18.h),
+      // Per-service voice tuning (language, voice and prompt hints per service).
+      if (_searchQuery.trim().isEmpty)
+        Padding(
+          padding: EdgeInsets.only(left: 16.w, bottom: 8.h),
+          child: Text(
+            'Per-service voice',
+            style: TextStyle(
+              color: _kTextSecondary,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      for (final s in services)
         _navTile(
-          icon: Icons.record_voice_over_rounded,
-          title: 'Voice assistant setup',
-          subtitle: 'Recognition, voice cloning, voice & language',
-          onTap: () => Get.toNamed(AppRoutes.voiceSettings),
-          keywords: const [
-            'voice setup', 'set up voice', 'voice clone', 'cloning',
-            'clone my voice', 'voice enrollment', 'enroll', 'voice recognition',
-            'my voice', 'assistant voice', 'tts', 'voice selection', 'language',
+          icon: s.icon,
+          title: s.label,
+          subtitle: 'Language, voice and prompt hints',
+          onTap: () => _openVoiceSettingsFor(s.slug),
+          keywords: [
+            'voice',
+            'chat',
+            'assistant',
+            'voice agent',
+            'per-service',
+            'language',
+            'voice selection',
+            'prompt hint',
+            s.label.toLowerCase(),
+            s.slug,
           ],
         ),
-        SizedBox(height: 14.h),
-        // Group labels are organisational only — hide them while a settings
-        // search is active (the section auto-expands and keeps every raw child),
-        // so a filtered result never shows an orphan header with no matching row.
-        // Voice transactions — per-user PIN policy for money moves by voice.
-        if (_searchQuery.trim().isEmpty)
-          Padding(
-            padding: EdgeInsets.only(left: 16.w, bottom: 8.h),
-            child: Text(
-              'Voice transactions',
-              style: TextStyle(
-                color: _kTextSecondary,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        // Same 16.w side inset as the nav rows so the PIN card doesn't sit flush
-        // against the accordion card's edges.
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
-          child: const VoiceTxPinSection(),
-        ),
-        SizedBox(height: 18.h),
-        // Per-service voice tuning (language, voice and prompt hints per service).
-        if (_searchQuery.trim().isEmpty)
-          Padding(
-            padding: EdgeInsets.only(left: 16.w, bottom: 8.h),
-            child: Text(
-              'Per-service voice',
-              style: TextStyle(
-                color: _kTextSecondary,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        for (final s in services)
-          _navTile(
-            icon: s.icon,
-            title: s.label,
-            subtitle: 'Language, voice and prompt hints',
-            onTap: () => _openVoiceSettingsFor(s.slug),
-            keywords: [
-              'voice', 'chat', 'assistant', 'voice agent', 'per-service',
-              'language', 'voice selection', 'prompt hint',
-              s.label.toLowerCase(), s.slug,
-            ],
-          ),
-      ]);
+    ]);
   }
 
   Widget _statementsBody() {
     return _filterableColumn([
-        _navTile(
-          icon: Icons.download_outlined,
-          title: 'Download Statements',
-          subtitle: 'Export PDF/CSV transaction history',
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => MultiBlocProvider(
-                  providers: [
-                    BlocProvider(
-                      create: (_) => serviceLocator<StatementCubit>(),
-                    ),
-                    BlocProvider(
-                      create: (_) =>
-                          serviceLocator<AccountCardsSummaryCubit>(),
-                    ),
-                  ],
-                  child: const DownloadStatementsScreen(),
-                ),
+      _navTile(
+        icon: Icons.download_outlined,
+        title: 'Download Statements',
+        subtitle: 'Export PDF/CSV transaction history',
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => MultiBlocProvider(
+                providers: [
+                  BlocProvider(
+                    create: (_) => serviceLocator<StatementCubit>(),
+                  ),
+                  BlocProvider(
+                    create: (_) => serviceLocator<AccountCardsSummaryCubit>(),
+                  ),
+                ],
+                child: const DownloadStatementsScreen(),
               ),
-            );
-          },
-        ),
-      ]);
+            ),
+          );
+        },
+      ),
+    ]);
   }
 
   /// Account Lock section — a single consolidated entry that opens the lock
@@ -1647,125 +1790,121 @@ class _SettingsViewState extends State<_SettingsView> {
   /// — no early unlock — and is surfaced proactively on both login screens.
   Widget _accountLockBody() {
     return _filterableColumn([
-        _navTile(
-          icon: Icons.lock_clock_outlined,
-          title: 'Lock account',
-          subtitle: 'Block sign-in and transactions for a set time',
-          onTap: () => LockAccountSheet.show(context),
-        ),
-        _navTile(
-          icon: Icons.gpp_bad_outlined,
-          title: 'Emergency lock',
-          subtitle: 'Instantly lock this account if it may be compromised',
-          badge: 'URGENT',
-          badgeColor: const Color(0xFFEF4444),
-          onTap: () => LockAccountSheet.show(context, emergency: true),
-        ),
-      ]);
+      _navTile(
+        icon: Icons.lock_clock_outlined,
+        title: 'Lock account',
+        subtitle: 'Block sign-in and transactions for a set time',
+        onTap: () => LockAccountSheet.show(context),
+      ),
+      _navTile(
+        icon: Icons.gpp_bad_outlined,
+        title: 'Emergency lock',
+        subtitle: 'Instantly lock this account if it may be compromised',
+        badge: 'URGENT',
+        badgeColor: const Color(0xFFEF4444),
+        onTap: () => LockAccountSheet.show(context, emergency: true),
+      ),
+    ]);
   }
 
   Widget _helpBody() {
     final cfg = _helpConfig;
     return _filterableColumn([
-        // Help & FAQ — opens the admin-configured FAQ/help center in a webview.
-        if (cfg.faqUrl.isNotEmpty)
-          _navTile(
-            icon: Icons.help_center_outlined,
-            title: 'Help Center',
-            subtitle: 'Browse FAQs and how-to guides',
-            onTap: () => _openHelpLink(cfg.faqUrl, 'Help Center'),
-          ),
-        // Support materials (videos, PDFs) — each opens in a webview.
-        ...cfg.materials.map(
-          (mat) => _navTile(
-            icon: Icons.play_circle_outline,
-            title: mat.title,
-            subtitle: 'Watch / read',
-            onTap: () => _openHelpLink(mat.url, mat.title),
-          ),
-        ),
-        // In-app support — lands on the ticket hub (open/closed tickets +
-        // new-ticket FAB), the same first screen as the drawer entry.
+      // Help & FAQ — opens the admin-configured FAQ/help center in a webview.
+      if (cfg.faqUrl.isNotEmpty)
         _navTile(
-          icon: Icons.support_agent_outlined,
-          title: 'Contact support',
-          subtitle: 'Message our team and track your tickets',
-          onTap: () => Get.to(() => const SupportTicketsScreen()),
+          icon: Icons.help_center_outlined,
+          title: 'Help Center',
+          subtitle: 'Browse FAQs and how-to guides',
+          onTap: () => _openHelpLink(cfg.faqUrl, 'Help Center'),
         ),
-        _navTile(
-          icon: Icons.mail_outline,
-          title: 'Contact Us',
-          subtitle: 'Get in touch with our team',
-          onTap: _showContactSheet,
+      // Support materials (videos, PDFs) — each opens in a webview.
+      ...cfg.materials.map(
+        (mat) => _navTile(
+          icon: Icons.play_circle_outline,
+          title: mat.title,
+          subtitle: 'Watch / read',
+          onTap: () => _openHelpLink(mat.url, mat.title),
         ),
-        _navTile(
-          icon: Icons.description_outlined,
-          title: 'Terms & Conditions',
-          subtitle: 'Read our terms of service',
-          onTap: () => _openHelpLink(cfg.termsUrl, 'Terms & Conditions'),
+      ),
+      // In-app support — lands on the ticket hub (open/closed tickets +
+      // new-ticket FAB), the same first screen as the drawer entry.
+      _navTile(
+        icon: Icons.support_agent_outlined,
+        title: 'Contact support',
+        subtitle: 'Message our team and track your tickets',
+        onTap: () => Get.to(() => const SupportTicketsScreen()),
+      ),
+      _navTile(
+        icon: Icons.mail_outline,
+        title: 'Contact Us',
+        subtitle: 'Get in touch with our team',
+        onTap: _showContactSheet,
+      ),
+      _navTile(
+        icon: Icons.description_outlined,
+        title: 'Terms & Conditions',
+        subtitle: 'Read our terms of service',
+        onTap: () => _openHelpLink(cfg.termsUrl, 'Terms & Conditions'),
+      ),
+      _navTile(
+        icon: Icons.privacy_tip_outlined,
+        title: 'Privacy Policy',
+        subtitle: 'Learn how we protect your data',
+        onTap: () => _openHelpLink(cfg.privacyUrl, 'Privacy Policy'),
+      ),
+      _navTile(
+        icon: Icons.info_outline,
+        title: 'About Lazervault',
+        subtitle: 'App version & company info',
+        // Always opens the admin-configured About page (with a safe default)
+        // in the webview sheet — the sheet handles empty/unavailable/errors.
+        onTap: () => _openHelpLink(
+            cfg.aboutUrl.isNotEmpty
+                ? cfg.aboutUrl
+                : HelpConfig.fallback.aboutUrl,
+            'About Lazervault'),
+      ),
+      // Open-source licenses — Flutter's built-in license registry page.
+      // Standard/expected on both stores; no URL needed.
+      _navTile(
+        icon: Icons.article_outlined,
+        title: 'Open-source licenses',
+        subtitle: 'Third-party software we use',
+        onTap: () => showLicensePage(
+          context: context,
+          applicationName: 'Lazervault',
         ),
-        _navTile(
-          icon: Icons.privacy_tip_outlined,
-          title: 'Privacy Policy',
-          subtitle: 'Learn how we protect your data',
-          onTap: () => _openHelpLink(cfg.privacyUrl, 'Privacy Policy'),
-        ),
-        _navTile(
-          icon: Icons.info_outline,
-          title: 'About Lazervault',
-          subtitle: 'App version & company info',
-          // Always opens the admin-configured About page (with a safe default)
-          // in the webview sheet — the sheet handles empty/unavailable/errors.
-          onTap: () => _openHelpLink(
-              cfg.aboutUrl.isNotEmpty
-                  ? cfg.aboutUrl
-                  : HelpConfig.fallback.aboutUrl,
-              'About Lazervault'),
-        ),
-        // Open-source licenses — Flutter's built-in license registry page.
-        // Standard/expected on both stores; no URL needed.
-        _navTile(
-          icon: Icons.article_outlined,
-          title: 'Open-source licenses',
-          subtitle: 'Third-party software we use',
-          onTap: () => showLicensePage(
-            context: context,
-            applicationName: 'Lazervault',
-          ),
-        ),
-        // Replay the first-run dashboard coach-mark tour on demand. Clears the
-        // seen flag then rebuilds the dashboard fresh so its first-frame trigger
-        // restarts the showcase (and bumps the tracked view count).
-        _navTile(
-          icon: Icons.tips_and_updates_outlined,
-          title: 'Replay app tour',
-          subtitle: 'See the dashboard walkthrough again',
-          onTap: () async {
-            // Replay for THIS account only (per-account gating). Clear the
-            // current user's seen flag, then reload the dashboard so its
-            // first-frame trigger restarts the tour + bumps their view count.
-            final uid = context
-                    .read<AuthenticationCubit>()
-                    .currentProfile
-                    ?.user
-                    .id ??
-                '';
-            await DashboardWalkthrough.reset(uid);
-            Get.offAllNamed(AppRoutes.dashboard);
-          },
-        ),
-        // Self-lock: temporarily block sign-in + all transactions for a chosen
-        // Account lock (scheduled + emergency) now lives in its own dedicated
-        // "Account Lock" section — see _accountLockBody().
-        // In-app account deletion (required by both app stores). Danger action —
-        // opens a dedicated confirmation screen (type-to-confirm + 30-day grace).
-        _navTile(
-          icon: Icons.delete_forever_outlined,
-          title: 'Delete account',
-          subtitle: 'Permanently delete your account and data',
-          onTap: () => Get.to(() => const DeleteAccountScreen()),
-        ),
-      ]);
+      ),
+      // Replay the first-run dashboard coach-mark tour on demand. Clears the
+      // seen flag then rebuilds the dashboard fresh so its first-frame trigger
+      // restarts the showcase (and bumps the tracked view count).
+      _navTile(
+        icon: Icons.tips_and_updates_outlined,
+        title: 'Replay app tour',
+        subtitle: 'See the dashboard walkthrough again',
+        onTap: () async {
+          // Replay for THIS account only (per-account gating). Clear the
+          // current user's seen flag, then reload the dashboard so its
+          // first-frame trigger restarts the tour + bumps their view count.
+          final uid =
+              context.read<AuthenticationCubit>().currentProfile?.user.id ?? '';
+          await DashboardWalkthrough.reset(uid);
+          Get.offAllNamed(AppRoutes.dashboard);
+        },
+      ),
+      // Self-lock: temporarily block sign-in + all transactions for a chosen
+      // Account lock (scheduled + emergency) now lives in its own dedicated
+      // "Account Lock" section — see _accountLockBody().
+      // In-app account deletion (required by both app stores). Danger action —
+      // opens a dedicated confirmation screen (type-to-confirm + 30-day grace).
+      _navTile(
+        icon: Icons.delete_forever_outlined,
+        title: 'Delete account',
+        subtitle: 'Permanently delete your account and data',
+        onTap: () => Get.to(() => const DeleteAccountScreen()),
+      ),
+    ]);
   }
 
   /// Opens an admin-configured link in the webview bottom sheet. Falls back to
@@ -1800,7 +1939,8 @@ class _SettingsViewState extends State<_SettingsView> {
           () => _launch('https://wa.me/$wa')));
     }
     if (cfg.contactAddress.isNotEmpty) {
-      rows.add(_contactRow(Icons.location_on_outlined, 'Address', cfg.contactAddress, null));
+      rows.add(_contactRow(
+          Icons.location_on_outlined, 'Address', cfg.contactAddress, null));
     }
     // Optional admin-configured contact/help page — opens in the themed webview
     // bottom sheet (mailto/tel/WhatsApp above are OS actions, not webviews).
@@ -1816,7 +1956,9 @@ class _SettingsViewState extends State<_SettingsView> {
       ));
     }
     if (rows.isEmpty) {
-      rows.add(_contactRow(Icons.mail_outline, 'Email',
+      rows.add(_contactRow(
+          Icons.mail_outline,
+          'Email',
           HelpConfig.fallback.contactEmail,
           () => _launch('mailto:${HelpConfig.fallback.contactEmail}')));
     }
@@ -1835,7 +1977,9 @@ class _SettingsViewState extends State<_SettingsView> {
             children: [
               Text('Contact Us',
                   style: GoogleFonts.inter(
-                      color: _kTextPrimary, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                      color: _kTextPrimary,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700)),
               SizedBox(height: 12.h),
               ...rows,
             ],
@@ -1845,12 +1989,16 @@ class _SettingsViewState extends State<_SettingsView> {
     );
   }
 
-  Widget _contactRow(IconData icon, String label, String value, VoidCallback? onTap) {
+  Widget _contactRow(
+      IconData icon, String label, String value, VoidCallback? onTap) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(icon, color: _kBrand, size: 22.sp),
       title: Text(label,
-          style: GoogleFonts.inter(color: _kTextPrimary, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+          style: GoogleFonts.inter(
+              color: _kTextPrimary,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600)),
       subtitle: Text(value,
           style: GoogleFonts.inter(color: _kTextSecondary, fontSize: 12.5.sp)),
       trailing: onTap != null
@@ -1948,8 +2096,9 @@ class _SettingsViewState extends State<_SettingsView> {
   }
 
   Future<void> _applyLoginMethod(String method) async {
-    final res =
-        await context.read<AuthenticationCubit>().setPreferredLoginMethod(method);
+    final res = await context
+        .read<AuthenticationCubit>()
+        .setPreferredLoginMethod(method);
     if (!mounted) return;
     res.fold(
       (failure) => showAppSnackbar('Could not update', failure.message,
@@ -2000,8 +2149,8 @@ class _SettingsViewState extends State<_SettingsView> {
     if (chosen == null || chosen == current || !mounted) return;
     await FeatureFlags.setDashboardLayout(chosen);
     if (!mounted) return;
-    setState(() => _dashboardShowcase =
-        chosen == FeatureFlags.dashboardLayoutShowcase);
+    setState(() =>
+        _dashboardShowcase = chosen == FeatureFlags.dashboardLayoutShowcase);
     showAppSnackbar(
       'Dashboard updated',
       _dashboardShowcase
@@ -2015,8 +2164,9 @@ class _SettingsViewState extends State<_SettingsView> {
   Future<bool> _openSetPasswordSheet() async {
     final newPassword = await showSetPasswordSheet(context);
     if (newPassword == null || !mounted) return false;
-    final res =
-        await context.read<AuthenticationCubit>().setInitialPassword(newPassword);
+    final res = await context
+        .read<AuthenticationCubit>()
+        .setInitialPassword(newPassword);
     if (!mounted) return false;
     return res.fold(
       (failure) {
@@ -2039,8 +2189,11 @@ class _SettingsViewState extends State<_SettingsView> {
     var hasPasscode = state is ProfileLoaded ? state.user.hasPasscode : false;
 
     // Brief blocking check so we never misroute the flow.
-    final result = await serviceLocator<IIdentityRepository>().checkPasscodeExists();
-    result.fold((_) {/* keep cubit fallback */}, (exists) => hasPasscode = exists);
+    final result =
+        await serviceLocator<IIdentityRepository>().checkPasscodeExists();
+    result.fold((_) {
+      /* keep cubit fallback */
+    }, (exists) => hasPasscode = exists);
 
     Get.toNamed(
       AppRoutes.passcodeFlow,
@@ -2064,35 +2217,35 @@ class _SettingsViewState extends State<_SettingsView> {
       subtitle: subtitle,
       keywords: keywords,
       child: _SettingsRow(
-      icon: icon,
-      title: title,
-      subtitle: subtitle,
-      onTap: onTap,
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (badge != null) ...[
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-              decoration: BoxDecoration(
-                color: badgeColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Text(
-                badge,
-                style: GoogleFonts.inter(
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w700,
-                  color: badgeColor,
+        icon: icon,
+        title: title,
+        subtitle: subtitle,
+        onTap: onTap,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (badge != null) ...[
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                decoration: BoxDecoration(
+                  color: badgeColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Text(
+                  badge,
+                  style: GoogleFonts.inter(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w700,
+                    color: badgeColor,
+                  ),
                 ),
               ),
-            ),
-            SizedBox(width: 8.w),
+              SizedBox(width: 8.w),
+            ],
+            Icon(Icons.arrow_forward_ios,
+                size: 14.sp, color: const Color(0xFF9CA3AF)),
           ],
-          Icon(Icons.arrow_forward_ios,
-              size: 14.sp, color: const Color(0xFF9CA3AF)),
-        ],
-      ),
+        ),
       ),
     );
   }
@@ -2149,5 +2302,4 @@ class _SettingsViewState extends State<_SettingsView> {
       ],
     );
   }
-
 }

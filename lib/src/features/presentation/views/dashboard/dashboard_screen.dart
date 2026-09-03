@@ -77,8 +77,6 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// once and wouldn't otherwise re-scroll on re-entry.
   final ValueNotifier<int> _activeTab = ValueNotifier<int>(0);
 
-
-
   void _handleOnTabChange(int index) {
     setState(() {
       _currentIndex = index;
@@ -103,7 +101,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     final args = Get.arguments;
     if (args is! Map) return;
     final raw = args['initialTab'];
-    if (raw is! int || raw < 0 || raw >= DashboardScreen.tabItems.length) return;
+    if (raw is! int || raw < 0 || raw >= DashboardScreen.tabItems.length)
+      return;
     if (raw == _currentIndex) return;
     setState(() {
       _currentIndex = raw;
@@ -156,7 +155,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       onPhoneShake: (_) {
         final panic = serviceLocator<PanicBalanceService>();
         if (!panic.shakeTriggerEnabled) {
-          _panicShakeCount = 0; // don't carry a stale first shake across disable
+          _panicShakeCount =
+              0; // don't carry a stale first shake across disable
           return;
         }
         final now = DateTime.now().millisecondsSinceEpoch;
@@ -271,7 +271,11 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (!await gate.shouldShow(ids)) return;
     if (!mounted) return;
 
-    gate.markShown();
+    await gate.markShown();
+    // Offered only from the third showing: switching off a money reminder
+    // before you know what it does is a decision the app should not invite.
+    final canOptOut = await gate.canOfferOptOut();
+    if (!mounted) return;
     _pendingPromptActive = true;
     AnalyticsService.instance.trackPendingPaymentsPrompt(
       outcome: 'shown',
@@ -284,6 +288,16 @@ class _DashboardScreenState extends State<DashboardScreen>
         backgroundColor: Colors.transparent,
         builder: (sheetContext) => PendingPaymentsPromptSheet(
           actions: actions,
+          onNeverShowAgain: canOptOut
+              ? () async {
+                  AnalyticsService.instance.trackPendingPaymentsPrompt(
+                    outcome: 'never_show_again',
+                    pendingCount: actions.length,
+                  );
+                  await gate.setEnabled(false);
+                  if (sheetContext.mounted) Navigator.pop(sheetContext);
+                }
+              : null,
           onPay: (action) {
             AnalyticsService.instance.trackPendingPaymentsPrompt(
               outcome: 'pay',
@@ -559,109 +573,111 @@ class _DashboardScreenState extends State<DashboardScreen>
       canPop: false,
       onPopInvokedWithResult: (didPop, _) => _handleDashboardBack(didPop),
       child: BlocProvider<AppUpdateCubit>.value(
-      value: _updateCubit,
-      child: BlocConsumer<AppUpdateCubit, AppUpdateState>(
-        // Show the one-time optional modal whenever an optional update surfaces;
-        // shouldShowOptionalModal() de-dupes so it only appears once per build.
-        listenWhen: (prev, curr) => curr is AppUpdateOptional,
-        listener: (context, state) {
-          if (state is AppUpdateOptional) {
-            _maybeShowUpdateModal(state.info);
-          }
-        },
-        builder: (context, updateState) {
-          // Below the minimum supported build → block the whole app with a
-          // non-dismissible gate (replaces the dashboard entirely).
-          if (updateState is AppUpdateForced) {
-            return ForcedUpdateScreen(
-              info: updateState.info,
-              onUpdate: () => _openUpdateStore(updateState.info),
-            );
-          }
-          final Widget? updateBanner = updateState is AppUpdateOptional
-              ? UpdateBanner(
-                  info: updateState.info,
-                  onUpdate: () => _openUpdateStore(updateState.info),
-                  onDismiss: _updateCubit.dismissOptional,
-                )
-              : null;
-          return DashboardWalkthrough.wrapShowcase(
-            builder: (context) => DefaultTabController(
-            initialIndex: _currentIndex,
-            length: DashboardScreen.tabItems.length,
-            child: Scaffold(
-              backgroundColor: Colors.white,
-              drawer: ThemedDrawer(),
-              onDrawerChanged: (isOpened) {
-                setState(() {
-                  isDrawerOpen = isOpened;
-                });
-              },
-              // The bottom nav is toured item-by-item for the high-value items.
-              // Rather than reach into the adaptive nav bar for per-item keys,
-              // overlay five equal transparent slots across it — only the toured
-              // ones carry a coach-mark (IgnorePointer, so real taps still reach
-              // the nav once the tour is done).
-              bottomNavigationBar: Stack(
-                children: [
-                  _buildAdaptiveBottomNav(),
-                  DashboardWalkthrough.bottomNavTourTargets(),
-                ],
-              ),
-              body: Column(
-                children: [
-                  if (updateBanner != null) updateBanner,
-                  Expanded(
-                    child: Stack(
-          children: [
-            TabBarView(
-                        physics: const NeverScrollableScrollPhysics(),
-              controller: _tabController,
-              children: DashboardScreen.tabItems
-                  .asMap()
-                  .entries
-                  .map((entry) {
-                    // Pass tab-switch + voice-open callbacks to the dashboard
-                    // tab so the swipe-down quick-actions sheet can drive them.
-                    if (entry.key == 0) {
-                      return _buildDashboardTab();
-                    }
-                    // Pass tab-switch callback to the lifestyle tab so SprayMe
-                    // bottom nav can jump back to any dashboard tab.
-                    if (entry.key == 4) {
-                      return _buildLifestyleTab();
-                    }
-                    // AI Chat tab: hand it the active-tab notifier so it scrolls
-                    // its conversation to the bottom every time it's opened.
-                    if (entry.key == 2) {
-                      return AiChats(activeTab: _activeTab, chatTabIndex: 2);
-                    }
-                    return entry.value.widget;
-                  })
-                  .toList(),
-            ),
-            if (_currentIndex >= 2)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: 80,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xFF1E1E1E),
-                  ),
-                ),
-              ),
-          ],
-                    ),
-                  ),
-                ],
-              ),
-              extendBody: _currentIndex >= 2,
-            ),
-          ));
-        },
-      ),
+        value: _updateCubit,
+        child: BlocConsumer<AppUpdateCubit, AppUpdateState>(
+          // Show the one-time optional modal whenever an optional update surfaces;
+          // shouldShowOptionalModal() de-dupes so it only appears once per build.
+          listenWhen: (prev, curr) => curr is AppUpdateOptional,
+          listener: (context, state) {
+            if (state is AppUpdateOptional) {
+              _maybeShowUpdateModal(state.info);
+            }
+          },
+          builder: (context, updateState) {
+            // Below the minimum supported build → block the whole app with a
+            // non-dismissible gate (replaces the dashboard entirely).
+            if (updateState is AppUpdateForced) {
+              return ForcedUpdateScreen(
+                info: updateState.info,
+                onUpdate: () => _openUpdateStore(updateState.info),
+              );
+            }
+            final Widget? updateBanner = updateState is AppUpdateOptional
+                ? UpdateBanner(
+                    info: updateState.info,
+                    onUpdate: () => _openUpdateStore(updateState.info),
+                    onDismiss: _updateCubit.dismissOptional,
+                  )
+                : null;
+            return DashboardWalkthrough.wrapShowcase(
+                builder: (context) => DefaultTabController(
+                      initialIndex: _currentIndex,
+                      length: DashboardScreen.tabItems.length,
+                      child: Scaffold(
+                        backgroundColor: Colors.white,
+                        drawer: ThemedDrawer(),
+                        onDrawerChanged: (isOpened) {
+                          setState(() {
+                            isDrawerOpen = isOpened;
+                          });
+                        },
+                        // The bottom nav is toured item-by-item for the high-value items.
+                        // Rather than reach into the adaptive nav bar for per-item keys,
+                        // overlay five equal transparent slots across it — only the toured
+                        // ones carry a coach-mark (IgnorePointer, so real taps still reach
+                        // the nav once the tour is done).
+                        bottomNavigationBar: Stack(
+                          children: [
+                            _buildAdaptiveBottomNav(),
+                            DashboardWalkthrough.bottomNavTourTargets(),
+                          ],
+                        ),
+                        body: Column(
+                          children: [
+                            if (updateBanner != null) updateBanner,
+                            Expanded(
+                              child: Stack(
+                                children: [
+                                  TabBarView(
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    controller: _tabController,
+                                    children: DashboardScreen.tabItems
+                                        .asMap()
+                                        .entries
+                                        .map((entry) {
+                                      // Pass tab-switch + voice-open callbacks to the dashboard
+                                      // tab so the swipe-down quick-actions sheet can drive them.
+                                      if (entry.key == 0) {
+                                        return _buildDashboardTab();
+                                      }
+                                      // Pass tab-switch callback to the lifestyle tab so SprayMe
+                                      // bottom nav can jump back to any dashboard tab.
+                                      if (entry.key == 4) {
+                                        return _buildLifestyleTab();
+                                      }
+                                      // AI Chat tab: hand it the active-tab notifier so it scrolls
+                                      // its conversation to the bottom every time it's opened.
+                                      if (entry.key == 2) {
+                                        return AiChats(
+                                            activeTab: _activeTab,
+                                            chatTabIndex: 2);
+                                      }
+                                      return entry.value.widget;
+                                    }).toList(),
+                                  ),
+                                  if (_currentIndex >= 2)
+                                    Positioned(
+                                      bottom: 0,
+                                      left: 0,
+                                      right: 0,
+                                      height: 80,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Color(0xFF1E1E1E),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        extendBody: _currentIndex >= 2,
+                      ),
+                    ));
+          },
+        ),
       ),
     );
   }
@@ -722,8 +738,8 @@ class _DashboardScreenState extends State<DashboardScreen>
           Icon(
             _getIconData(index),
             size: 24,
-            color: index == _currentIndex 
-                    ? Colors.blue 
+            color: index == _currentIndex
+                ? Colors.blue
                 : Colors.white.withValues(alpha: 0.7),
           ),
           if (index != _currentIndex) ...[

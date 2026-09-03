@@ -82,7 +82,8 @@ class FeatureFlags {
   // ── Scan Account Details (OCR) config (admin-toggled) ─────────────────────
   // scanAccountDetailsEnabled: true (DEFAULT) = the "Scan Account Details"
   //   quick action + scan history are shown; false hides them.
-  static const String scanAccountDetailsEnabled = 'scan_account_details_enabled';
+  static const String scanAccountDetailsEnabled =
+      'scan_account_details_enabled';
   // scanResolveUsersEnabled: true (DEFAULT) = a scanned phone/email/username
   //   resolved to a Lazervault user is offered as a free internal transfer;
   //   false ignores resolution (bank/external routing only). UI gate.
@@ -105,6 +106,7 @@ class FeatureFlags {
   static const String authMode = 'auth_mode';
   static const String authModeEmailPassword = 'email_password';
   static const String authModePhonePasscode = 'phone_passcode';
+
   /// Canonical per-user resolved login flow (see [loginFlow]). Distinct from the
   /// platform [authMode]: this is what the specific account/user should see.
   static const String effectiveLoginMethod = 'effective_login_method';
@@ -126,7 +128,8 @@ class FeatureFlags {
   // passcode keypad) when biometric isn't ready. Admins can turn it OFF
   // platform-wide from the admin dashboard with no redeploy. Mirrored from
   // system_settings via the same internal endpoint the app already polls.
-  static const String autoBiometricLoginEnabled = 'auto_biometric_login_enabled';
+  static const String autoBiometricLoginEnabled =
+      'auto_biometric_login_enabled';
 
   // ── Insurance hosted-webview entry points (admin-toggled) ─────────────────
   // When ON, the in-app "Buy" and "Manage Plan" insurance entry points open
@@ -291,7 +294,9 @@ class FeatureFlags {
       final m = mode.toLowerCase().trim();
       await prefs.setString(
         authMode,
-        m == authModeEmailPassword ? authModeEmailPassword : authModePhonePasscode,
+        m == authModeEmailPassword
+            ? authModeEmailPassword
+            : authModePhonePasscode,
       );
     }
   }
@@ -400,7 +405,8 @@ class FeatureFlags {
   // (locally + synced to the backend). DEFAULT OFF — nothing is tracked until
   // the user opts in from Settings. Send Funds stays pinned first, and revenue
   // services still lead the default (OFF) order.
-  static const String userAdaptiveQuickServices = 'user_adaptive_quick_services';
+  static const String userAdaptiveQuickServices =
+      'user_adaptive_quick_services';
 
   /// `true` when the user has opted into adaptive (usage-based) quick-services
   /// reordering. Defaults to `false`. Synchronous — call after [init].
@@ -441,6 +447,52 @@ class FeatureFlags {
     final prefs = _prefs ?? await SharedPreferences.getInstance();
     _prefs = prefs;
     await prefs.setBool(depositBalanceGuideKey(uid), !enabled);
+  }
+
+  // ---- Pending-payments launch prompt -------------------------------------
+  //
+  // Uid-scoped like the deposit guide above: the device is shared (family
+  // accounts, a handed-over phone), and one person switching off a money
+  // reminder must not silence another's.
+  //
+  // Lives here rather than in secure storage because Settings reads it
+  // SYNCHRONOUSLY during build, and because the sheet's "Don't show this
+  // again" and the Settings switch have to be the same flag — two stores would
+  // drift and the switch would lie.
+  static String pendingPaymentsPromptKey(String uid) =>
+      'pending_payments_prompt_disabled_$uid';
+
+  /// How many times the prompt has been shown to [uid]. Gates the opt-out.
+  static String pendingPaymentsShowCountKey(String uid) =>
+      'pending_payments_prompt_shows_$uid';
+
+  /// `true` when the launch prompt is ENABLED (the default).
+  ///
+  /// Fails OPEN: an unreadable preference shows the prompt. Silence is the
+  /// damaging direction, because it hides money the user owes.
+  static bool pendingPaymentsPromptEnabled(String uid) =>
+      !(_prefs?.getBool(pendingPaymentsPromptKey(uid)) ?? false);
+
+  static Future<void> setPendingPaymentsPromptEnabled(
+      String uid, bool enabled) async {
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
+    _prefs = prefs;
+    await prefs.setBool(pendingPaymentsPromptKey(uid), !enabled);
+    if (enabled) {
+      // Re-enabling restarts the count, so someone who turns it back on is not
+      // immediately re-offered the opt-out on the very next launch.
+      await prefs.remove(pendingPaymentsShowCountKey(uid));
+    }
+  }
+
+  static int pendingPaymentsShowCount(String uid) =>
+      _prefs?.getInt(pendingPaymentsShowCountKey(uid)) ?? 0;
+
+  static Future<void> incrementPendingPaymentsShowCount(String uid) async {
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
+    _prefs = prefs;
+    final n = prefs.getInt(pendingPaymentsShowCountKey(uid)) ?? 0;
+    await prefs.setInt(pendingPaymentsShowCountKey(uid), n + 1);
   }
 
   // User-selectable transfer style: "classic" (short flow) | "standard" (long
@@ -492,7 +544,9 @@ class FeatureFlags {
   /// network). Falls back to the live [useShortSendFlow] only before the first
   /// pin (a brand-new install that has never resolved one).
   static bool get sendFlowShortForSession =>
-      _sessionShortSendFlow ?? _prefs?.getBool(sendFlowPinned) ?? useShortSendFlow;
+      _sessionShortSendFlow ??
+      _prefs?.getBool(sendFlowPinned) ??
+      useShortSendFlow;
 
   /// (Re)resolve [useShortSendFlow] and pin it in memory + persist it (write-
   /// through) so the next cold start routes instantly with the last-known value.
@@ -665,7 +719,9 @@ class FeatureFlags {
     final m = mode.toLowerCase().trim();
     await prefs.setString(
       authMode,
-      m == authModeEmailPassword ? authModeEmailPassword : authModePhonePasscode,
+      m == authModeEmailPassword
+          ? authModeEmailPassword
+          : authModePhonePasscode,
     );
   }
 
@@ -701,7 +757,9 @@ class FeatureFlags {
     final m = mode.toLowerCase().trim();
     await prefs.setString(
       effectiveLoginMethod,
-      m == authModeEmailPassword ? authModeEmailPassword : authModePhonePasscode,
+      m == authModeEmailPassword
+          ? authModeEmailPassword
+          : authModePhonePasscode,
     );
   }
 
@@ -767,7 +825,8 @@ class FeatureFlags {
   /// Admin-configured store URL for the platform, or empty when unset (the
   /// service falls back to a sensible default store link).
   static String appStoreUrl({required bool isIOS}) {
-    return (_prefs?.getString(isIOS ? appStoreUrlIos : appStoreUrlAndroid) ?? '')
+    return (_prefs?.getString(isIOS ? appStoreUrlIos : appStoreUrlAndroid) ??
+            '')
         .trim();
   }
 

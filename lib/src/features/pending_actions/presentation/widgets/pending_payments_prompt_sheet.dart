@@ -5,19 +5,25 @@ import 'package:lazervault/src/features/pending_actions/domain/pending_action.da
 
 const _kAccent = Color(0xFF9B6DFF);
 const _kDeep = Color(0xFF4E03D0);
+const _kInk = Color(0xFF111827);
+const _kMuted = Color(0xFF6B7280);
+const _kFaint = Color(0xFF9CA3AF);
+const _kHairline = Color(0xFFEEF0F4);
 
-/// The launch-time "payments waiting" sheet.
+/// The launch-time "waiting on you" sheet.
 ///
-/// Shows at most [_maxVisible] items so it stays a nudge rather than a second
-/// inbox — the rest are reachable from their own service, which the tile badges
-/// now point at. Every row is a one-tap route into the real payment flow: this
-/// sheet never moves money itself, it only shortens the path to the screen that
-/// does.
+/// Every row is a one-tap route into the real flow: this sheet never moves
+/// money itself, it only shortens the path to the screen that does.
+///
+/// Grouped by category because the two halves are not the same kind of thing —
+/// a bill you owe and a friend request should not sit in one undifferentiated
+/// list under a single verb. Payments offer "Pay", requests offer "Review".
 class PendingPaymentsPromptSheet extends StatelessWidget {
   const PendingPaymentsPromptSheet({
     required this.actions,
     required this.onPay,
     required this.onLater,
+    this.onNeverShowAgain,
     super.key,
   });
 
@@ -25,99 +31,108 @@ class PendingPaymentsPromptSheet extends StatelessWidget {
   final void Function(PendingAction action) onPay;
   final VoidCallback onLater;
 
-  static const int _maxVisible = 4;
+  /// Supplied only once the user has seen the sheet enough times to know what
+  /// they would be switching off. Null hides the control entirely — see
+  /// `PendingPaymentsPromptGate.optOutAfterShows`.
+  final VoidCallback? onNeverShowAgain;
+
+  /// How many rows are listed before the sheet points at the service instead.
+  /// This is a nudge, not a second inbox.
+  static const int _maxVisible = 6;
 
   @override
   Widget build(BuildContext context) {
     final visible = actions.take(_maxVisible).toList();
     final hidden = actions.length - visible.length;
 
-    return SafeArea(
-      top: false,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        ),
-        padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 20.h),
+    final payments = visible
+        .where((a) => a.category == PendingActionCategory.payment)
+        .toList();
+    final requests = visible
+        .where((a) => a.category == PendingActionCategory.request)
+        .toList();
+
+    // The white surface must extend to the physical bottom edge, with the safe
+    // area applied INSIDE it. Wrapping the container in a SafeArea instead
+    // leaves the home-indicator inset transparent, which renders as a grey band
+    // under the sheet — it reads as the sheet failing to reach the bottom.
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      // Never taller than 80% of the screen: the sheet is a prompt, and one
+      // that covers everything is a screen the user did not ask to open.
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.8,
+      ),
+      child: SafeArea(
+        top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            _header(),
-            SizedBox(height: 16.h),
-            // Constrained + scrollable so four rows with long names can never
-            // push the actions off a small screen.
-            ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: 0.42.sh),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    for (final action in visible) ...[
-                      _PendingRow(action: action, onPay: () => onPay(action)),
-                      SizedBox(height: 10.h),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-            if (hidden > 0) ...[
-              SizedBox(height: 2.h),
-              Text(
-                '+ $hidden more waiting — open the service to see ${hidden == 1 ? 'it' : 'them'}.',
-                style: GoogleFonts.inter(
-                  fontSize: 11.sp,
-                  color: const Color(0xFF6B7280),
-                ),
-              ),
-            ],
+            SizedBox(height: 10.h),
+            _grabber(),
             SizedBox(height: 14.h),
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: onLater,
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12.h),
-                ),
-                child: Text(
-                  'Not now',
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF6B7280),
-                  ),
-                ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: _header(),
+            ),
+            SizedBox(height: 14.h),
+            // Flexible + shrinkWrap: short lists size to content (no dead
+            // space), long ones scroll inside the sheet rather than pushing
+            // the actions off-screen.
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                children: [
+                  if (payments.isNotEmpty) ...[
+                    _sectionLabel('To pay', payments.length),
+                    ...payments.map(_row),
+                  ],
+                  if (requests.isNotEmpty) ...[
+                    if (payments.isNotEmpty) SizedBox(height: 14.h),
+                    _sectionLabel('Waiting on you', requests.length),
+                    ...requests.map(_row),
+                  ],
+                  if (hidden > 0) _moreLine(hidden),
+                ],
               ),
             ),
+            _footer(),
           ],
         ),
       ),
     );
   }
 
+  Widget _grabber() => Container(
+        width: 40.w,
+        height: 4.h,
+        decoration: BoxDecoration(
+          color: const Color(0xFFE5E7EB),
+          borderRadius: BorderRadius.circular(2.r),
+        ),
+      );
+
   Widget _header() {
+    final payments = actions
+        .where((a) => a.category == PendingActionCategory.payment)
+        .length;
+    final requests = actions.length - payments;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 40.w,
-          height: 40.w,
+          width: 36.w,
+          height: 36.w,
           decoration: BoxDecoration(
             color: _kDeep.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.schedule_rounded, color: _kAccent, size: 20.sp),
+          child: Icon(Icons.schedule_rounded, color: _kAccent, size: 18.sp),
         ),
         SizedBox(width: 12.w),
         Expanded(
@@ -125,20 +140,22 @@ class PendingPaymentsPromptSheet extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _headline,
+                _headline(payments, requests),
                 style: GoogleFonts.inter(
-                  fontSize: 16.sp,
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF111827),
+                  color: _kInk,
                 ),
               ),
-              SizedBox(height: 3.h),
+              SizedBox(height: 2.h),
               Text(
-                _subhead,
+                payments > 0
+                    ? 'Settle now, or come back any time from the service.'
+                    : 'Review now, or come back any time.',
                 style: GoogleFonts.inter(
-                  fontSize: 12.sp,
+                  fontSize: 11.5.sp,
                   height: 1.35,
-                  color: const Color(0xFF6B7280),
+                  color: _kMuted,
                 ),
               ),
             ],
@@ -148,18 +165,12 @@ class PendingPaymentsPromptSheet extends StatelessWidget {
     );
   }
 
-  /// Names both halves so the prompt never announces the wrong kind of thing.
-  /// Before categories existed this always said "payments waiting", which would
-  /// have described a lone friend request as a payment.
-  String get _headline {
-    final payments = actions
-        .where((a) => a.category == PendingActionCategory.payment)
-        .length;
-    final requests = actions.length - payments;
-    String plural(int n, String word) => '$n $word${n == 1 ? '' : 's'}';
+  /// Names both halves so the sheet never announces the wrong kind of thing —
+  /// a lone friend request described as a "payment" is simply wrong.
+  String _headline(int payments, int requests) {
+    String plural(int n, String w) => '$n $w${n == 1 ? '' : 's'}';
     if (payments > 0 && requests > 0) {
-      return 'You have ${plural(payments, 'payment')} and '
-          '${plural(requests, 'request')} waiting';
+      return '${plural(payments, 'payment')} and ${plural(requests, 'request')} waiting';
     }
     if (payments > 0) {
       return payments == 1
@@ -171,132 +182,193 @@ class PendingPaymentsPromptSheet extends StatelessWidget {
         : '$requests people are waiting on you';
   }
 
-  String get _subhead {
-    final hasPayments =
-        actions.any((a) => a.category == PendingActionCategory.payment);
-    return hasPayments
-        ? 'Settle now, or come back to them any time from their service.'
-        : 'Review these now, or come back to them any time.';
-  }
+  Widget _sectionLabel(String text, int count) => Padding(
+        padding: EdgeInsets.only(bottom: 8.h, left: 2.w),
+        child: Row(
+          children: [
+            Text(
+              text.toUpperCase(),
+              style: GoogleFonts.inter(
+                fontSize: 10.sp,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.6,
+                color: _kFaint,
+              ),
+            ),
+            SizedBox(width: 6.w),
+            Text(
+              '$count',
+              style: GoogleFonts.inter(
+                fontSize: 10.sp,
+                fontWeight: FontWeight.w700,
+                color: _kFaint,
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _row(PendingAction action) =>
+      _PendingRow(action: action, onTap: () => onPay(action));
+
+  Widget _moreLine(int hidden) => Padding(
+        padding: EdgeInsets.only(top: 10.h, left: 2.w),
+        child: Text(
+          '+$hidden more — open the service to see the rest',
+          style: GoogleFonts.inter(fontSize: 11.5.sp, color: _kMuted),
+        ),
+      );
+
+  Widget _footer() => Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 6.h),
+        child: Column(
+          children: [
+            Divider(height: 1, color: _kHairline),
+            SizedBox(height: 6.h),
+            TextButton(
+              onPressed: onLater,
+              style: TextButton.styleFrom(
+                minimumSize: Size(double.infinity, 44.h),
+              ),
+              child: Text(
+                'Not now',
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: _kMuted,
+                ),
+              ),
+            ),
+            // Only offered once the user has seen this enough times to know
+            // what it is. Understated on purpose: it is a real choice, not one
+            // to trip over while reaching for "Not now".
+            if (onNeverShowAgain != null)
+              TextButton(
+                onPressed: onNeverShowAgain,
+                style: TextButton.styleFrom(
+                  minimumSize: Size(double.infinity, 34.h),
+                ),
+                child: Text(
+                  "Don't show this again",
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                    color: _kFaint,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
 }
 
+/// One compact row. Two lines instead of three, so six fit where four did.
 class _PendingRow extends StatelessWidget {
-  const _PendingRow({required this.action, required this.onPay});
+  const _PendingRow({required this.action, required this.onTap});
 
   final PendingAction action;
-  final VoidCallback onPay;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final amount = action.formattedAmount;
     final deadline = action.deadlineLabel;
-    // Under a day left is the only case worth colouring — anything longer is
-    // information, not urgency.
-    final urgent = (action.timeLeft?.inHours ?? 999) < 24;
 
-    return InkWell(
-      onTap: onPay,
-      borderRadius: BorderRadius.circular(14.r),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF9FAFB),
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: const Color(0xFFEEF0F4)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 34.w,
-              height: 34.w,
-              decoration: BoxDecoration(
-                color: _kDeep.withValues(alpha: 0.08),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(_icon, color: _kAccent, size: 17.sp),
-            ),
-            SizedBox(width: 10.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    action.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF111827),
-                    ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    // The source is always named: a bare "₦500 from Praiz"
-                    // doesn't tell you which screen to go fix it on.
-                    [action.source.label, action.subtitle]
-                        .whereType<String>()
-                        .where((s) => s.isNotEmpty)
-                        .join(' · '),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 11.sp,
-                      color: const Color(0xFF6B7280),
-                    ),
-                  ),
-                  if (deadline != null) ...[
-                    SizedBox(height: 3.h),
-                    Text(
-                      deadline,
-                      style: GoogleFonts.inter(
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w600,
-                        color: urgent
-                            ? const Color(0xFFEF4444)
-                            : const Color(0xFF9CA3AF),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            SizedBox(width: 8.w),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h),
+      child: Material(
+        color: const Color(0xFFFAFAFC),
+        borderRadius: BorderRadius.circular(12.r),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12.r),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            child: Row(
               children: [
-                // Requests carry no amount. Rendering a placeholder here
-                // would put a money figure on a friend request.
-                if (action.formattedAmount != null) ...[
-                  Text(
-                    action.formattedAmount!,
-                    style: GoogleFonts.inter(
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF111827),
-                    ),
+                Container(
+                  width: 30.w,
+                  height: 30.w,
+                  decoration: BoxDecoration(
+                    color: _kDeep.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(9.r),
                   ),
-                  SizedBox(height: 4.h),
-                ],
-                Row(
+                  child: Icon(_icon, size: 15.sp, color: _kAccent),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        action.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                          color: _kInk,
+                        ),
+                      ),
+                      SizedBox(height: 1.h),
+                      // Source, detail and deadline on ONE line. Three stacked
+                      // lines per row is what made four items fill the screen.
+                      Text(
+                        [
+                          action.source.label,
+                          if (action.subtitle != null &&
+                              action.subtitle!.isNotEmpty)
+                            action.subtitle,
+                          if (deadline != null) deadline,
+                        ].whereType<String>().join(' · '),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 11.sp,
+                          color: _kMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      action.actionLabel,
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w700,
-                        color: _kAccent,
+                    // Requests carry no amount; rendering a placeholder would
+                    // put a money figure on a friend request.
+                    if (amount != null)
+                      Text(
+                        amount,
+                        style: GoogleFonts.inter(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w700,
+                          color: _kInk,
+                        ),
                       ),
+                    SizedBox(height: amount != null ? 2.h : 0),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          action.actionLabel,
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5.sp,
+                            fontWeight: FontWeight.w700,
+                            color: _kAccent,
+                          ),
+                        ),
+                        Icon(Icons.chevron_right_rounded,
+                            size: 14.sp, color: _kAccent),
+                      ],
                     ),
-                    Icon(Icons.chevron_right_rounded,
-                        size: 16.sp, color: _kAccent),
                   ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 
@@ -33,10 +34,22 @@ class PendingPaymentsPromptGate {
   /// Call on sign-in / user switch so the next user gets their own prompt.
   static void resetForNewSession() => _shownThisRun = false;
 
+  /// How many showings the user must see before they are offered the
+  /// permanent opt-out.
+  ///
+  /// Offering it on the first launch would let someone switch off a money
+  /// reminder before they have any idea what it does — and the people most
+  /// likely to do that are the ones who most need it. Three showings is enough
+  /// to have read it, understood it, and decided it is not for them.
+  static const int optOutAfterShows = 3;
+
   /// True when the sheet may open for exactly this set of pending item ids.
   Future<bool> shouldShow(Set<String> actionIds) async {
     if (_shownThisRun) return false;
     if (actionIds.isEmpty) return false;
+    // The user turned it off for good. Re-enabled from Settings, never
+    // silently — see [setEnabled].
+    if (await isDisabled()) return false;
 
     final key = await _snoozeKey();
     if (key == null) return false;
@@ -61,8 +74,55 @@ class PendingPaymentsPromptGate {
     }
   }
 
-  /// Records that the sheet was opened. Idempotent.
-  void markShown() => _shownThisRun = true;
+  /// Records that the sheet was opened.
+  ///
+  /// The in-memory latch is idempotent, but the persisted counter is what gates
+  /// the opt-out, so it increments once per actual showing.
+  Future<void> markShown() async {
+    _shownThisRun = true;
+    final uid = await _uid();
+    if (uid == null) return;
+    await FeatureFlags.incrementPendingPaymentsShowCount(uid);
+  }
+
+  /// How many times this user has been shown the sheet.
+  Future<int> showCount() async {
+    final uid = await _uid();
+    if (uid == null) return 0;
+    return FeatureFlags.pendingPaymentsShowCount(uid);
+  }
+
+  /// Whether to offer "Don't show this again" on this showing.
+  ///
+  /// Counts the CURRENT showing, so the control appears on the third rather
+  /// than the fourth.
+  Future<bool> canOfferOptOut() async =>
+      (await showCount()) >= optOutAfterShows;
+
+  /// True when the user switched the launch prompt off.
+  Future<bool> isDisabled() async {
+    final uid = await _uid();
+    if (uid == null) return false;
+    return !FeatureFlags.pendingPaymentsPromptEnabled(uid);
+  }
+
+  /// Turns the launch prompt on or off. Settings writes `true` here to undo a
+  /// "Don't show this again"; both surfaces read and write the SAME flag, so
+  /// the switch can never disagree with the sheet.
+  Future<void> setEnabled(bool enabled) async {
+    final uid = await _uid();
+    if (uid == null) return;
+    await FeatureFlags.setPendingPaymentsPromptEnabled(uid, enabled);
+  }
+
+  Future<String?> _uid() async {
+    try {
+      final id = await _secure.getCurrentUserId();
+      return (id == null || id.isEmpty) ? null : id;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// "Later" — quiet these specific items for the snooze window.
   Future<void> snooze(Set<String> actionIds) async {
@@ -91,11 +151,15 @@ class PendingPaymentsPromptGate {
     }
   }
 
-  Future<String?> _snoozeKey() async {
+  Future<String?> _snoozeKey() => _userKey('pending_payments_snooze');
+
+  /// Per-user key. The device is shared (family accounts, a handed-over
+  /// phone), so one person's preference must never silence another's debts.
+  Future<String?> _userKey(String prefix) async {
     try {
       final userId = await _secure.getCurrentUserId();
       if (userId == null || userId.isEmpty) return null;
-      return 'pending_payments_snooze_$userId';
+      return '${prefix}_$userId';
     } catch (_) {
       return null;
     }

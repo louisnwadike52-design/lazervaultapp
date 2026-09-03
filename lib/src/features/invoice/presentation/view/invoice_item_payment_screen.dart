@@ -49,6 +49,13 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
   String _selectedAccountCurrency = '';
   bool _isProcessingPayment = false;
 
+  /// True while the cross-currency pre-checks run (the foreign-holding lookup
+  /// and the live rate fetch) before the explainer sheet opens.
+  ///
+  /// Without it the CTA sits inert through a network round-trip and the sheet
+  /// appears from nowhere, so the tap reads as ignored.
+  bool _isPreparingFx = false;
+
   /// The confirmed conversion when the payer's account currency differs from the
   /// invoice currency. Null for a same-currency payment. Set in [_processPayment]
   /// and consumed by the success listener to render both currencies on the receipt.
@@ -74,8 +81,7 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
     return widget.invoice.totalAmount;
   }
 
-  bool get _isSplit =>
-      (widget.invoice.taggedUsers?.length ?? 0) > 1;
+  bool get _isSplit => (widget.invoice.taggedUsers?.length ?? 0) > 1;
 
   // No payer-side processing fee exists on the backend — the old 0.5% row
   // was display-only fiction that inflated the affordability check too.
@@ -539,8 +545,9 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
             // not become "you can no longer pay this invoice at all".
             final activeId = GetIt.I<AccountManager>().activeAccountId;
             final activeMatch = accounts.where((a) => a.id == activeId);
-            final shown =
-                activeMatch.isNotEmpty ? [activeMatch.first] : <AccountSummaryEntity>[];
+            final shown = activeMatch.isNotEmpty
+                ? [activeMatch.first]
+                : <AccountSummaryEntity>[];
             if (shown.isEmpty) {
               return Container(
                 padding: EdgeInsets.all(20.w),
@@ -561,9 +568,19 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
               );
             }
             // Preselect it — there is nothing else to choose.
+            //
+            // The assignment alone was not enough: it happens DURING build, and
+            // the Pay button is built earlier in the tree, so on the first frame
+            // the button still read an empty _selectedAccountId and rendered
+            // disabled. The user had to tap the (already highlighted) account to
+            // force a rebuild before they could pay. Schedule a rebuild for the
+            // frame after, so the button is live as soon as the account loads.
             if (_selectedAccountId != shown.first.id) {
               _selectedAccountId = shown.first.id;
               _selectedAccountCurrency = shown.first.currency;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) setState(() {});
+              });
             }
 
             return Column(
@@ -646,8 +663,8 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
                             padding: EdgeInsets.symmetric(
                                 horizontal: 8.w, vertical: 4.h),
                             decoration: BoxDecoration(
-                              color:
-                                  const Color(0xFFEF4444).withValues(alpha: 0.2),
+                              color: const Color(0xFFEF4444)
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(6.r),
                             ),
                             child: Text(
@@ -802,7 +819,9 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
             width: double.infinity,
             height: 56.h,
             child: ElevatedButton(
-              onPressed: _selectedAccountId.isNotEmpty && !_isProcessingPayment
+              onPressed: _selectedAccountId.isNotEmpty &&
+                      !_isProcessingPayment &&
+                      !_isPreparingFx
                   ? _processPayment
                   : null,
               style: ElevatedButton.styleFrom(
@@ -814,7 +833,7 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
                 ),
                 elevation: 0,
               ),
-              child: _isProcessingPayment
+              child: (_isProcessingPayment || _isPreparingFx)
                   ? Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -874,7 +893,8 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
     // failing at the backend guard after the user has done all the work.
     if (widget.invoice.isQuote) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('This is a quote — it becomes payable once the sender converts it to an invoice.'),
+        content: Text(
+            'This is a quote — it becomes payable once the sender converts it to an invoice.'),
         backgroundColor: Colors.orange,
       ));
       return;
@@ -889,8 +909,7 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
     // conversion sheet does its own check against the balance.
     final source = _selectedAccount();
     final sameCurrency = source != null &&
-        source.currency.toUpperCase() ==
-            widget.invoice.currency.toUpperCase();
+        source.currency.toUpperCase() == widget.invoice.currency.toUpperCase();
     if (sameCurrency && source.availableBalance < _totalAmount) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(
@@ -924,11 +943,23 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
 
       // Explain the conversion BEFORE quoting a rate. Meeting an FX sheet with
       // no lead-in reads like the app picked the wrong wallet. The holding
-      // lookup needs includeAllCurrencies — the account list this screen shows
+      // lookup needs includeAllCurrencies: the account list this screen shows
       // is locale-currency only, so it cannot see a foreign wallet at all.
-      final holding =
-          await CurrencyHoldingsService.largestActiveBalance(invoiceCurrency);
+      //
+      // The lookup is a network call, so the CTA shows a spinner for its
+      // duration. `finally` clears it on EVERY exit — an early return or a
+      // throw that left the button spinning would strand the user on a screen
+      // they cannot act on.
+      double? holding;
+      setState(() => _isPreparingFx = true);
+      try {
+        holding =
+            await CurrencyHoldingsService.largestActiveBalance(invoiceCurrency);
+      } finally {
+        if (mounted) setState(() => _isPreparingFx = false);
+      }
       if (!mounted) return;
+
       final proceed = await InvoiceCrossCurrencyNotice.show(
         context,
         invoiceCurrency: invoiceCurrency,
@@ -936,6 +967,8 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
         invoiceAmount: _baseAmount,
         holdingInInvoiceCurrency: holding,
       );
+      // Covers the swipe-to-dismiss case too: show() resolves false when the
+      // sheet is dragged away rather than confirmed.
       if (!mounted) return;
       if (!proceed) return;
 
@@ -947,7 +980,9 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
         availableBalance: account?.availableBalance ?? 0,
       );
       if (!mounted) return;
-      if (quote == null) return; // payer cancelled or rate unavailable
+      // Null covers all three no-go paths: cancelled, swiped away, or the rate
+      // could not be fetched. None of them may fall through to the PIN.
+      if (quote == null) return;
       _fxQuote = quote;
       pinAmount = quote.convertedAmount;
       pinCurrency = quote.toCurrency;
@@ -969,7 +1004,8 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
       amount: pinAmount,
       currency: pinCurrency,
       title: 'Confirm Payment',
-      message: 'Confirm invoice payment of $pinCurrency ${pinAmount.toStringAsFixed(2)}',
+      message:
+          'Confirm invoice payment of $pinCurrency ${pinAmount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -998,8 +1034,18 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
 
   String _formatDate(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
