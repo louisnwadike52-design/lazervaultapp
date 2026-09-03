@@ -239,7 +239,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     PendingActionsSnapshot snapshot,
   ) async {
     if (_pendingPromptActive || _fraudModalActive || !mounted) return;
-    final actions = snapshot.all;
+    var actions = snapshot.all;
     if (actions.isEmpty) return;
 
     // Never invite a payment that cannot succeed. On a frozen account every
@@ -248,8 +248,19 @@ class _DashboardScreenState extends State<DashboardScreen>
     // prompt offering four "Pay" buttons would walk them into four dead ends.
     // The tile badges still show what is owed; this only withholds the
     // invitation to act on it.
+    //
+    // Withholds the PAYMENTS only. A frozen wallet is no reason to hide a
+    // family invitation or a connection request: none of them move money, and
+    // accepting one is often exactly what an affected user needs to do next.
+    // Before categories existed this suppressed the whole prompt, which
+    // silently buried every request behind an unrelated account state.
     try {
-      if (serviceLocator<AccountManager>().isActiveAccountFrozen) return;
+      if (serviceLocator<AccountManager>().isActiveAccountFrozen) {
+        actions = actions
+            .where((a) => a.category == PendingActionCategory.request)
+            .toList();
+        if (actions.isEmpty) return;
+      }
     } catch (_) {
       // Locator not ready — fall through and show the prompt rather than
       // silently swallowing a real reminder.

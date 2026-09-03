@@ -2337,6 +2337,12 @@ Future<void> init() async {
       tagPayRepository: serviceLocator<TagPayRepository>(),
       invoiceRepository: serviceLocator<TaggedInvoiceRepository>(),
       splitBillRepository: serviceLocator<SplitBillRepository>(),
+      // Request sources: invitations and connection requests. Fetched in a
+      // second wave after the payment sources, so the launch prompt is not
+      // gated on all six round-trips.
+      familyRepository: serviceLocator<FamilyAccountRepository>(),
+      groupRepository: serviceLocator<GroupAccountRepository>(),
+      chatRepository: serviceLocator<P2PChatRepository>(),
     ),
   );
 

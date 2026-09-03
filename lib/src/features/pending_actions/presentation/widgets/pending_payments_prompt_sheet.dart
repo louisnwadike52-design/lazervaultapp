@@ -107,7 +107,6 @@ class PendingPaymentsPromptSheet extends StatelessWidget {
   }
 
   Widget _header() {
-    final count = actions.length;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -126,9 +125,7 @@ class PendingPaymentsPromptSheet extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                count == 1
-                    ? 'You have a payment waiting'
-                    : 'You have $count payments waiting',
+                _headline,
                 style: GoogleFonts.inter(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
@@ -137,7 +134,7 @@ class PendingPaymentsPromptSheet extends StatelessWidget {
               ),
               SizedBox(height: 3.h),
               Text(
-                'Settle now, or come back to them any time from their service.',
+                _subhead,
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
                   height: 1.35,
@@ -149,6 +146,37 @@ class PendingPaymentsPromptSheet extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// Names both halves so the prompt never announces the wrong kind of thing.
+  /// Before categories existed this always said "payments waiting", which would
+  /// have described a lone friend request as a payment.
+  String get _headline {
+    final payments = actions
+        .where((a) => a.category == PendingActionCategory.payment)
+        .length;
+    final requests = actions.length - payments;
+    String plural(int n, String word) => '$n $word${n == 1 ? '' : 's'}';
+    if (payments > 0 && requests > 0) {
+      return 'You have ${plural(payments, 'payment')} and '
+          '${plural(requests, 'request')} waiting';
+    }
+    if (payments > 0) {
+      return payments == 1
+          ? 'You have a payment waiting'
+          : 'You have $payments payments waiting';
+    }
+    return requests == 1
+        ? 'Someone is waiting on you'
+        : '$requests people are waiting on you';
+  }
+
+  String get _subhead {
+    final hasPayments =
+        actions.any((a) => a.category == PendingActionCategory.payment);
+    return hasPayments
+        ? 'Settle now, or come back to them any time from their service.'
+        : 'Review these now, or come back to them any time.';
   }
 }
 
@@ -238,20 +266,24 @@ class _PendingRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  action.formattedAmount,
-                  style: GoogleFonts.inter(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF111827),
+                // Requests carry no amount. Rendering a placeholder here
+                // would put a money figure on a friend request.
+                if (action.formattedAmount != null) ...[
+                  Text(
+                    action.formattedAmount!,
+                    style: GoogleFonts.inter(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF111827),
+                    ),
                   ),
-                ),
-                SizedBox(height: 4.h),
+                  SizedBox(height: 4.h),
+                ],
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Pay',
+                      action.actionLabel,
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w700,
@@ -274,5 +306,8 @@ class _PendingRow extends StatelessWidget {
         PendingActionSource.tagPay => Icons.tag,
         PendingActionSource.invoice => Icons.receipt_long,
         PendingActionSource.splitBill => Icons.call_split_rounded,
+        PendingActionSource.familyInvite => Icons.family_restroom_rounded,
+        PendingActionSource.groupInvite => Icons.groups_2_outlined,
+        PendingActionSource.connectionRequest => Icons.person_add_alt_1_rounded,
       };
 }

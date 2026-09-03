@@ -6,6 +6,11 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/invoice/domain/entities/tagged_invoice_entity.dart';
 import 'package:lazervault/src/features/invoice/domain/repositories/tagged_invoice_repository.dart';
+import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
+import 'package:lazervault/src/features/family_account/domain/repositories/family_account_repository.dart';
+import 'package:lazervault/src/features/group_account/domain/entities/group_entities.dart';
+import 'package:lazervault/src/features/group_account/domain/repositories/group_account_repository.dart';
+import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
 import 'package:lazervault/src/features/pending_actions/domain/pending_action.dart';
 import 'package:lazervault/src/features/split_bills/domain/entities/split_bill_entity.dart';
 import 'package:lazervault/src/features/split_bills/domain/repositories/split_bill_repository.dart';
@@ -31,14 +36,23 @@ class PendingActionsCubit extends Cubit<PendingActionsSnapshot> {
     required TagPayRepository tagPayRepository,
     required TaggedInvoiceRepository invoiceRepository,
     required SplitBillRepository splitBillRepository,
+    required FamilyAccountRepository familyRepository,
+    required GroupAccountRepository groupRepository,
+    required P2PChatRepository chatRepository,
   })  : _tagPay = tagPayRepository,
         _invoices = invoiceRepository,
         _splitBills = splitBillRepository,
+        _family = familyRepository,
+        _groups = groupRepository,
+        _chat = chatRepository,
         super(const PendingActionsSnapshot());
 
   final TagPayRepository _tagPay;
   final TaggedInvoiceRepository _invoices;
   final SplitBillRepository _splitBills;
+  final FamilyAccountRepository _family;
+  final GroupAccountRepository _groups;
+  final P2PChatRepository _chat;
 
   /// How many items each source contributes. The prompt shows a handful and
   /// links out for the rest; the badge counts what we fetched. Deliberately
@@ -74,35 +88,74 @@ class PendingActionsCubit extends Cubit<PendingActionsSnapshot> {
   /// inherits the previous one's badges.
   void clear() => _safeEmit(const PendingActionsSnapshot());
 
+  /// Refreshes in two waves rather than one six-way fan-out.
+  ///
+  /// Payments first, and the snapshot is emitted as soon as they land, so the
+  /// launch prompt is not gated on six round-trips completing. Requests follow
+  /// and emit again.
+  ///
+  /// The split is deliberate on two counts. The prompt exists to catch someone
+  /// at launch, so the half that costs them money if missed should not wait on
+  /// the half that does not. And six concurrent calls at launch is exactly the
+  /// connection pressure that made the app's gRPC channels trip Cloudflare's
+  /// ENHANCE_YOUR_CALM — see `grpc_channel_factory.dart`.
   Future<void> _refreshAll(String userId) async {
-    final results = await Future.wait([
+    final payments = await Future.wait([
       _guard(PendingActionSource.tagPay, _loadTags),
       _guard(PendingActionSource.invoice, () => _loadInvoices(userId)),
       _guard(PendingActionSource.splitBill, () => _loadSplitBills(userId)),
     ]);
+    var snapshot = _merge(state, payments, isLoading: true);
+    _safeEmit(snapshot);
+    if (isClosed) return;
 
-    final next = <PendingActionSource, List<PendingAction>>{};
-    final stale = <PendingActionSource>{};
+    final requests = await Future.wait([
+      _guard(PendingActionSource.familyInvite, _loadFamilyInvites),
+      _guard(PendingActionSource.groupInvite, _loadGroupInvites),
+      _guard(PendingActionSource.connectionRequest, _loadConnectionRequests),
+    ]);
+    _safeEmit(_merge(snapshot, requests, isLoading: false));
+  }
+
+  /// Folds one wave's results into [base], preserving the other wave's entries.
+  ///
+  /// A source that failed keeps its LAST GOOD list and is marked stale rather
+  /// than collapsing to zero: a badge that vanishes on a flaky connection tells
+  /// the user they owe nothing, which is the exact failure this feature exists
+  /// to prevent.
+  PendingActionsSnapshot _merge(
+    PendingActionsSnapshot base,
+    List<_SourceResult> results, {
+    required bool isLoading,
+  }) {
+    final next = Map<PendingActionSource, List<PendingAction>>.from(
+      base.bySource,
+    );
+    final stale = Set<PendingActionSource>.from(base.staleSources);
+
     for (final result in results) {
       final actions = result.actions;
       if (actions == null) {
-        // Failed: retain whatever we last knew for this source.
-        final previous = state.bySource[result.source];
-        if (previous != null && previous.isNotEmpty) {
-          next[result.source] = previous;
-        }
+        // Failed: retain whatever we last knew for this source, and say so.
         stale.add(result.source);
-      } else if (actions.isNotEmpty) {
+        continue;
+      }
+      stale.remove(result.source);
+      if (actions.isEmpty) {
+        // Genuinely nothing here now — drop any stale entry so a cleared
+        // queue stops badging.
+        next.remove(result.source);
+      } else {
         next[result.source] = actions;
       }
     }
 
-    _safeEmit(PendingActionsSnapshot(
+    return PendingActionsSnapshot(
       bySource: next,
-      isLoading: false,
+      isLoading: isLoading,
       fetchedAt: DateTime.now(),
       staleSources: stale,
-    ));
+    );
   }
 
   Future<_SourceResult> _guard(
@@ -232,6 +285,96 @@ class PendingActionsCubit extends Cubit<PendingActionsSnapshot> {
       ));
     }
     return actions;
+  }
+
+  // -------------------------------------------------------------------
+  // Requests — someone waiting on a decision, no money attached
+  // -------------------------------------------------------------------
+
+  /// Family-account invitations addressed to this user.
+  ///
+  /// The repository returns Either, so a Left is turned into a throw for
+  /// [_guard] to catch — otherwise a failed fetch would look like an empty
+  /// inbox and silently clear the entry.
+  ///
+  /// Carries no amount even though the invitation names an allocation: that is
+  /// money the INVITER proposes to give, not money this user owes, and putting
+  /// it on a row whose sibling rows are debts would read as a bill.
+  Future<List<PendingAction>> _loadFamilyInvites() async {
+    final result = await _family.getPendingInvitations();
+    final invites = result.fold<List<PendingInvitation>>(
+      (failure) => throw Exception('family invitations: ${failure.message}'),
+      (list) => list,
+    );
+    final now = DateTime.now();
+    return invites
+        // An expired invitation cannot be accepted, so prompting for it would
+        // send the user to a dead end.
+        .where((i) => i.expiresAt.isAfter(now))
+        .map((i) => PendingAction(
+              source: PendingActionSource.familyInvite,
+              id: i.invitationToken,
+              title: i.creatorName.isNotEmpty
+                  ? i.creatorName
+                  : (i.familyName.isNotEmpty ? i.familyName : 'Family account'),
+              subtitle: i.familyName.isNotEmpty
+                  ? 'Invited you to ${i.familyName}'
+                  : 'Invited you to a family account',
+              createdAt: i.createdAt,
+              dueAt: i.expiresAt,
+              route: AppRoutes.familyInvitations,
+              routeArguments: {'invitationToken': i.invitationToken},
+            ))
+        .toList();
+  }
+
+  /// Joint Funds (group account) invitations still awaiting a decision.
+  Future<List<PendingAction>> _loadGroupInvites() async {
+    final invites = await _groups.listMyInvitations(
+      statuses: const [GroupInvitationStatus.pending],
+      limit: _perSourceLimit,
+    );
+    final now = DateTime.now();
+    return invites
+        .where((i) => i.expiresAt.isAfter(now))
+        .map((i) => PendingAction(
+              source: PendingActionSource.groupInvite,
+              id: i.id,
+              title: i.inviterName.isNotEmpty ? i.inviterName : 'Someone',
+              subtitle: i.groupName.isNotEmpty
+                  ? 'Invited you to ${i.groupName}'
+                  : 'Invited you to a joint account',
+              createdAt: i.invitedAt,
+              dueAt: i.expiresAt,
+              route: AppRoutes.groupDetails,
+              routeArguments: i.groupId,
+            ))
+        .toList();
+  }
+
+  /// Incoming financial-connection requests.
+  ///
+  /// Routes to the connections screen rather than to the conversation: the
+  /// decision to accept lives there, and opening a chat with someone the user
+  /// has not accepted yet would skip the decision the notification is asking
+  /// for.
+  Future<List<PendingAction>> _loadConnectionRequests() async {
+    final requests = await _chat.listIncomingRequests(
+      page: 1,
+      limit: _perSourceLimit,
+    );
+    return requests
+        .map((r) => PendingAction(
+              source: PendingActionSource.connectionRequest,
+              id: r.id,
+              title: r.otherUserName?.isNotEmpty == true
+                  ? r.otherUserName!
+                  : 'Someone',
+              subtitle: 'Wants to connect with you',
+              createdAt: r.createdAt,
+              route: AppRoutes.financialConnections,
+            ))
+        .toList();
   }
 
   // -------------------------------------------------------------------
