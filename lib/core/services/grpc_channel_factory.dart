@@ -260,17 +260,39 @@ class GrpcChannelFactory {
             : const ChannelCredentials.insecure(),
         codecRegistry: CodecRegistry(codecs: const [GzipCodec()]), // Enable gzip compression
         keepAlive: const ClientKeepAliveOptions(
-          pingInterval: Duration(seconds: 30), // Keep connection alive
+          // Pings only while a call is in flight. Do NOT set
+          // permitWithoutCalls back to true to "keep connections warm" — that
+          // is what this line is undoing.
+          //
+          // Pinging idle connections got them killed by the EDGE, not by us.
+          // Cloudflare terminates idle-pinging HTTP/2 connections with GOAWAY
+          // ENHANCE_YOUR_CALM, which the Dart client surfaces as
+          // "Connection error: Connection is being forcefully terminated.
+          // (errorCode: 10)". Observed in production on 2026-09-03: nine of
+          // them in the same second — one per open gateway channel — followed
+          // by the balance socket cycling "closed — scheduling reconnect" and
+          // the user's balance card spinning indefinitely while plain REST
+          // calls on the same device kept returning 200.
+          //
+          // Our own gateway was never the complainant: core-gateway allows
+          // client pings every 10s (KeepaliveEnforcementPolicy.MinTime), which
+          // a 30s interval never violates. Only the edge objected, and only to
+          // pings sent with no active stream.
+          pingInterval: Duration(seconds: 30),
           timeout: Duration(seconds: 10), // Ping timeout
-          permitWithoutCalls: true, // Allow pings even when idle
+          permitWithoutCalls: false,
         ),
         connectionTimeout: const Duration(seconds: 10), // Connection establishment timeout
-        // Long idleTimeout: the channel is registered as a GetIt singleton,
-        // so once it transitions to SHUTDOWN it cannot recover and every
-        // subsequent RPC fails with "Connection shutting down" until the
-        // app is restarted. The keepalive PING/TIMEOUT pair already detects
-        // dead connections; idleTimeout was redundant and actively harmful.
-        // We keep a 24h cap as a defensive ceiling rather than disabling it.
+        // Long idleTimeout. This was originally set because a channel that
+        // reached SHUTDOWN could never recover — every later RPC failed with
+        // "Connection shutting down" until the app was killed.
+        //
+        // That is no longer true: _createChannel wraps this in a
+        // ResilientClientChannel, which swaps in a fresh inner channel on
+        // shutdown. The 24h cap is kept as a defensive ceiling, not because
+        // recovery is impossible. (Left stale, this comment reads as "a dead
+        // channel is permanent", which sends anyone debugging a stuck screen
+        // hunting for a recovery mechanism that already exists.)
         idleTimeout: const Duration(hours: 24),
       ),
     );
