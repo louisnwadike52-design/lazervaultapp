@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/notifications/notification_navigator.dart';
+import 'package:lazervault/core/notifications/notification_route_resolver.dart';
+import 'package:lazervault/core/notifications/notification_target.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
@@ -242,12 +247,60 @@ class _NotificationScreenState extends State<NotificationScreen> {
     _load();
   }
 
-  NotificationService _toService(AppNotification n) => NotificationService(
-        appService: _appServiceForType(n.type),
-        title: n.title,
-        subTitle: n.body,
-        date: n.createdAt,
-      );
+  /// Marks a single notification read and refreshes the dashboard bell count.
+  /// Best-effort — a failure here must never cost the user the navigation.
+  Future<void> _markRead(String id) async {
+    try {
+      await _ds.markAsRead(id);
+      if (serviceLocator.isRegistered<NotificationBadgeCubit>()) {
+        serviceLocator<NotificationBadgeCubit>().refresh();
+      }
+    } catch (_) {}
+  }
+
+  NotificationService _toService(AppNotification n) {
+    // Resolve the destination up front rather than at tap time: a row whose
+    // type this build does not recognise must render as plain text, not as a
+    // tappable target that leads nowhere.
+    final target = NotificationRouteResolver.resolve(n.type, n.data);
+
+    return NotificationService(
+      appService: _appServiceForType(n.type),
+      title: n.title,
+      subTitle: n.body,
+      date: n.createdAt,
+      onTap: target == null ? null : () => _openNotification(n, target),
+    );
+  }
+
+  /// Opens what a feed row is about, through the same resolver and navigator a
+  /// tapped push uses — so the two doors cannot drift apart.
+  void _openNotification(AppNotification n, NotificationTarget target) {
+    // Reading it in the feed is as much an acknowledgement as tapping the push,
+    // so clear the unread state before leaving. Fire-and-forget: a failed
+    // mark-read must not block the navigation the user actually asked for.
+    if (!n.read && n.id.isNotEmpty) {
+      unawaited(_markRead(n.id));
+    }
+
+    // This screen is usually presented inside a modal bottom sheet (the bell on
+    // the dashboard header and on the card summary both do that), and is also
+    // used as a full page and as a tab. Pushing the destination without closing
+    // the sheet would leave it stacked underneath, so Back would return to a
+    // half-height sheet over the new screen.
+    //
+    // `PopupRoute` is what distinguishes the sheet case: ModalBottomSheetRoute
+    // extends it, while a page route and a tab do not — so this dismisses
+    // exactly when there is a sheet to dismiss.
+    final modal = ModalRoute.of(context);
+    if (modal is PopupRoute && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+
+    // PendingDeepLink navigates on the next frame via GetX's root navigator, so
+    // it is unaffected by this screen's context going away with the sheet.
+    PendingDeepLink.instance.push(target);
+  }
 
   @override
   Widget build(BuildContext context) {

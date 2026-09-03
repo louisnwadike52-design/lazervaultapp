@@ -239,8 +239,11 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
       itemBuilder: (context, index) {
         final notification = widget.notifications[index];
         final serviceColor = _getServiceColor(notification.appService.serviceName);
-        
-        return Container(
+
+        // Wrapped only when the notification actually resolves somewhere.
+        // A row with no destination stays inert rather than offering a ripple
+        // that leads nowhere.
+        final row = Container(
           padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 18.h),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,6 +321,13 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
               ),
             ],
           ),
+        );
+
+        final onTap = notification.onTap;
+        if (onTap == null) return row;
+        return InkWell(
+          onTap: onTap,
+          child: row,
         );
       },
     );

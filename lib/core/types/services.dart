@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart' show VoidCallback;
+
 enum AppServiceName {
   sendFunds,
   batchTransfer,
@@ -376,11 +378,19 @@ class NotificationService {
   final String subTitle;
   final DateTime date;
 
+  /// What tapping this row should open, when the notification's type resolves
+  /// to a destination. Null means the type is one this build does not
+  /// recognise, and the row renders as plain text rather than as a dead
+  /// tappable target — a row that looks tappable and does nothing is worse
+  /// than one that never invited the tap.
+  final VoidCallback? onTap;
+
   const NotificationService(
       {required this.appService,
       required this.title,
       required this.subTitle,
-      required this.date});
+      required this.date,
+      this.onTap});
 }
 
 class AppService {

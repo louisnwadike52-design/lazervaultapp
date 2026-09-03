@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -17,6 +19,21 @@ class AppNotification {
   final bool read;
   final DateTime createdAt;
 
+  /// The server's `data` payload — the same map the push carries, holding the
+  /// ids a tapped row needs to open the actual record (`invoice_id`,
+  /// `split_bill_id`, `sender_user_id`, …).
+  ///
+  /// The list API has always returned this (the handler unmarshals
+  /// `n.Data` into the proto), but the client parsed only the display fields
+  /// and dropped it — which is why a feed row could not be made tappable even
+  /// after the push side could route: there was nothing to route WITH.
+  final Map<String, dynamic> data;
+
+  /// The server's `reference_id`, when set. A second place an entity id can
+  /// arrive; folded into [data] below so the resolver only has one thing to
+  /// look at.
+  final String referenceId;
+
   const AppNotification({
     required this.id,
     required this.type,
@@ -24,12 +41,36 @@ class AppNotification {
     required this.body,
     required this.read,
     required this.createdAt,
+    this.data = const {},
+    this.referenceId = '',
   });
 
   factory AppNotification.fromJson(Map<String, dynamic> j) {
     DateTime parsed;
     final raw = (j['created_at'] ?? j['createdAt'])?.toString();
     parsed = DateTime.tryParse(raw ?? '')?.toLocal() ?? DateTime.now();
+
+    // `data` arrives as a JSON object, but tolerate a JSON *string* too: the
+    // column is jsonb and has been written both ways over the years.
+    final rawData = j['data'];
+    Map<String, dynamic> data = const {};
+    if (rawData is Map) {
+      data = Map<String, dynamic>.from(rawData);
+    } else if (rawData is String && rawData.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawData);
+        if (decoded is Map) data = Map<String, dynamic>.from(decoded);
+      } catch (_) {
+        // Malformed data must not cost the user the whole notification — the
+        // row still renders, it just cannot deep-link.
+      }
+    }
+
+    final refId = (j['reference_id'] ?? j['referenceId'] ?? '').toString();
+    if (refId.isNotEmpty && !data.containsKey('reference_id')) {
+      data = {...data, 'reference_id': refId};
+    }
+
     return AppNotification(
       id: (j['id'] ?? '').toString(),
       type: (j['type'] ?? '').toString(),
@@ -37,6 +78,8 @@ class AppNotification {
       body: (j['body'] ?? '').toString(),
       read: j['read'] == true || j['read'] == 'true',
       createdAt: parsed,
+      data: data,
+      referenceId: refId,
     );
   }
 }
