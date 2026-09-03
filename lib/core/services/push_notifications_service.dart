@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io' show Platform;
 
 import 'package:dio/dio.dart';
@@ -148,10 +149,26 @@ class PushNotificationsService {
     await _local.initialize(
       const InitializationSettings(android: androidInit, iOS: iosInit),
       onDidReceiveNotificationResponse: (resp) {
-        if (resp.payload == null) return;
-        onMessageTap?.call(
-          RemoteMessage(data: const {'tap_source': 'local_notification'}),
-        );
+        final payload = resp.payload;
+        if (payload == null || payload.isEmpty) return;
+        // Rebuild the ORIGINAL data map. This handler used to construct
+        // `RemoteMessage(data: {'tap_source': 'local_notification'})` — throwing
+        // away the type and every id — so tapping an Android foreground banner
+        // could only ever land on the dashboard, no matter what it was about.
+        // _onForegroundMessage now serialises the whole map into the payload.
+        Map<String, dynamic> data;
+        try {
+          final decoded = jsonDecode(payload);
+          data = decoded is Map
+              ? Map<String, dynamic>.from(decoded)
+              : {'type': payload};
+        } catch (_) {
+          // Older builds wrote the bare type string as the payload; a banner
+          // posted before an app update can still be sitting in the tray.
+          data = {'type': payload};
+        }
+        data['tap_source'] = 'local_notification';
+        onMessageTap?.call(RemoteMessage(data: data));
       },
     );
 
@@ -223,7 +240,11 @@ class PushNotificationsService {
         ),
         iOS: const DarwinNotificationDetails(),
       ),
-      payload: message.data['type']?.toString(),
+      // Carry the WHOLE data map, not just the type. The tap handler needs the
+      // ids in here (invoice_id, split_bill_id, sender_user_id, …) to open the
+      // actual record — with only the type it can reach the service but never
+      // the thing the notification was about.
+      payload: jsonEncode(message.data),
     );
   }
 

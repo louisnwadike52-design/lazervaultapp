@@ -630,6 +630,11 @@ import 'package:lazervault/src/features/transaction_history/presentation/screens
 import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../gift_cards/presentation/view/gift_card_sale_receipt_screen.dart';
+// Notification destinations — see the GetPages at the end of this list.
+import 'package:lazervault/src/features/admin_alerts/admin_alerts_screen.dart';
+import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
+import 'package:lazervault/src/features/plan_my_day/presentation/screens/reminder_management_screen.dart';
+import 'package:lazervault/src/features/presentation/views/notification_screen.dart';
 
 class AppRouter {
   // Phone+passcode SIGNUP is a multi-screen journey whose working state
@@ -4994,6 +4999,33 @@ GetPage(
         create: (_) => serviceLocator<EmailCubit>(),
         child: const EmailSettingsScreen(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // ---- Notification destinations -------------------------------------
+    // These three were only ever reachable as widget pushes, which left them
+    // with no name a deep link, an email link or an in-app feed row could
+    // address. Naming them lets NotificationRouteResolver treat them like any
+    // other destination instead of needing a special case.
+    GetPage(
+      name: AppRoutes.adminAlerts,
+      page: () => const AdminAlertsScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.planReminders,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<PlanMyDayCubit>()..loadReminders(),
+        child: const ReminderManagementScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // The landing for a notification whose type this build does not recognise
+    // (an older app meeting a newer server). The user still reads the message
+    // rather than being dropped on the dashboard wondering what buzzed.
+    GetPage(
+      name: AppRoutes.notificationsFeed,
+      page: () => const NotificationScreen(),
       transition: Transition.rightToLeft,
     ),
   ];

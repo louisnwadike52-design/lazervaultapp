@@ -25,6 +25,7 @@ import 'package:lazervault/core/services/login_flow_resolver.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/services/remote_log_sink.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/notifications/notification_navigator.dart';
 import 'package:lazervault/src/features/authentication/utils/login_identifier.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
@@ -942,6 +943,13 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     // suppressed instead of popping a noisy auth-error snackbar. Cleared on the
     // next login attempt (startPasscodeLogin / loginWithPasscode / login).
     _isLoggingOut = true;
+
+    // Drop any notification destination stashed for the outgoing user. These
+    // targets are account-specific (an invoice id, a chat with a contact), and
+    // the stash is a process-lifetime singleton — without this, a push tapped
+    // before a user switch would replay into the NEXT user's session and open
+    // a record they have no business seeing.
+    PendingDeepLink.instance.clear();
 
     // Snapshot current user's email to stored_email before clearing session,
     // so passcode login screen shows the correct user after logout.

@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/voice/managers/voice_activation_manager.
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/notifications/notification_navigator.dart';
 import 'package:lazervault/core/services/pending_chat_navigation.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/panic_balance_service.dart';
@@ -190,10 +191,13 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _applyInitialTab();
-      // If a P2P push was tapped while signed out (cold start), the dashboard
-      // is the first authenticated screen — open the stashed conversation now
-      // (pushed on top, so Back returns here).
+      // If a push or a deep link was tapped while signed out (cold start), the
+      // dashboard is the first authenticated screen — open the stashed
+      // destination now (pushed on top, so Back returns here). This is what
+      // makes "tap the notification, log in, land on the right page" work for
+      // every notification type, not just chat.
       PendingChatNavigation.instance.consumeAndNavigate();
+      PendingDeepLink.instance.consumeAndNavigate();
       // Shorebird OTA: if a Dart-only patch was downloaded in the background,
       // gently nudge a restart to apply it. No-op on non-Shorebird builds.
       _maybeNudgePatchRestart();

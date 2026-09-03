@@ -16,6 +16,8 @@ import 'package:lazervault/core/services/login_flow_resolver.dart';
 // FreshInstallGuard intentionally disabled (see call site below); re-enable the
 // import + the clearIfBuildChanged() call together if a stale-state regression returns.
 // import 'package:lazervault/core/services/fresh_install_guard.dart';
+import 'package:lazervault/core/notifications/notification_navigator.dart';
+import 'package:lazervault/core/notifications/notification_target.dart';
 import 'package:lazervault/core/services/pending_chat_navigation.dart';
 import 'package:lazervault/core/services/chat_sound_settings.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -28,19 +30,15 @@ import 'core/services/endpoint_registry.dart';
 import 'core/services/inactivity_watcher.dart';
 import 'core/services/remote_log_sink.dart';
 import 'src/core/services/analytics_service.dart';
-import 'src/features/admin_alerts/admin_alerts_screen.dart';
 import 'src/core/config/app_environment.dart'
     show currentAppEnvironment, resolvedFlavor;
 import 'core/services/injection_container.dart';
-import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
 import 'core/services/secure_storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'core/services/push_notifications_service.dart';
 import 'src/features/authentication/cubit/authentication_cubit.dart';
-import 'src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
-import 'src/features/plan_my_day/presentation/screens/reminder_management_screen.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/database/database_helper.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
@@ -306,34 +304,26 @@ void main() {
   // Initialize push notifications (Firebase + FCM). Fire-and-forget so we don't
   // block first frame on permission prompts or token retrieval — the token is
   // re-registered post-login via authentication_cubit.
-  // Deep-link ops-alert pushes (data.type == ops_alert) to the admin-only
-  // Admin Alerts screen; everything else falls through to default handling.
+  //
+  // Every tapped push routes through NotificationRouteResolver, which is the
+  // single mapping shared with the in-app feed, universal links and the
+  // server's email/SMS links. This used to be a hand-written if-chain covering
+  // four types out of roughly sixty; everything else landed on the dashboard,
+  // so most notifications told the user something had happened and then made
+  // them go find it.
+  //
+  // PendingDeepLink owns the timing: it routes immediately when there is a
+  // session and a navigator, and otherwise stashes the destination until the
+  // dashboard consumes it after login.
   final pushSvc = serviceLocator<PushNotificationsService>();
   pushSvc.onMessageTap = (m) {
-    if (m.data['type'] == 'ops_alert') {
-      Get.to(() => const AdminAlertsScreen());
-      return;
-    }
-    // Security: a super-admin cleared this user's transaction PIN. Invalidate the
-    // session "has PIN" cache and route straight to setup so an already-logged-in
-    // user can re-enrol immediately (a not-yet-logged-in user is routed to setup
-    // by the login flow anyway, since the login response reports has PIN = false).
-    if (m.data['type'] == 'security' &&
-        m.data['event_type'] == 'transaction_pin.admin_reset') {
-      if (serviceLocator.isRegistered<ITransactionPinService>()) {
-        try {
-          serviceLocator<ITransactionPinService>().resetPinCache();
-        } catch (_) {}
-      }
-      Get.toNamed(AppRoutes.transactionPinSetup);
-      return;
-    }
-    // P2P chat push: open the conversation with the SENDER (the other party).
-    // Stash the target then try to route now — if the app isn't authenticated
-    // yet (cold start from a terminated tap), it stays stashed and the
-    // dashboard consumes it after login. Get.toNamed pushes over the dashboard
-    // so Back returns to the dashboard, never to the login gate.
-    if (m.data['type'] == 'p2p_message') {
+    final type = m.data['type']?.toString() ?? '';
+
+    // P2P chat keeps its dedicated holder: it carries extra chat-specific state
+    // (isSavedRecipient, conversationId) that the chat screen and the message
+    // highlight both read, and it is consumed from more places than the
+    // dashboard alone.
+    if (type == 'p2p_message') {
       PendingChatNavigation.instance.set(
         otherUserId: m.data['sender_user_id']?.toString() ?? '',
         otherUserName: m.data['sender_name']?.toString(),
@@ -342,20 +332,18 @@ void main() {
       PendingChatNavigation.instance.consumeAndNavigate();
       return;
     }
-    // Plan My Day reminder push → open the Reminders screen. Guarded on auth so
-    // a cold-start tap by a not-yet-logged-in user isn't pushed over the login
-    // gate (the notification content already delivered the reminder itself).
-    if (m.data['type'] == 'planning_reminder') {
-      final authed = serviceLocator.isRegistered<AuthenticationCubit>() &&
-          serviceLocator<AuthenticationCubit>().isAuthenticated;
-      if (authed) {
-        Get.to(() => BlocProvider<PlanMyDayCubit>(
-              create: (_) => serviceLocator<PlanMyDayCubit>()..loadReminders(),
-              child: const ReminderManagementScreen(),
-            ));
-      }
-      return;
-    }
+
+    if (PendingDeepLink.instance.handle(type, m.data)) return;
+
+    // Unknown type — an older app meeting a newer server. Open the feed so the
+    // user at least reads what buzzed, rather than being dropped on the
+    // dashboard with no idea what the notification was.
+    PendingDeepLink.instance.push(
+      const NotificationTarget(
+        route: AppRoutes.notificationsFeed,
+        precision: TargetPrecision.serviceLanding,
+      ),
+    );
   };
   unawaited(pushSvc.initialize());
 
@@ -771,6 +759,15 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _handleDeepLink(DeepLinkData data) {
+    // Notification links (`lazervault://n/<type>?…` and the
+    // `https://lazervault.app/n/<type>` universal-link form the server puts in
+    // emails and SMS) resolve through the same mapping as a tapped push, so an
+    // emailed link and its push open the same page. PendingDeepLink handles the
+    // signed-out case: the destination survives the login gate instead of the
+    // user landing on the dashboard after signing in.
+    final uri = Uri.tryParse(data.rawUri);
+    if (uri != null && PendingDeepLink.instance.handleUri(uri)) return;
+
     switch (data.type) {
       case DeepLinkType.familyInvite:
         // Defer to a post-frame so we don't race the in-flight build.

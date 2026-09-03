@@ -728,4 +728,13 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String emailThread = '/plan-my-day/email/thread';
   static const String emailDrafts = '/plan-my-day/email/drafts';
   static const String emailSettings = '/plan-my-day/email/settings';
+
+  // Screens that only a notification sends you to. They existed before as
+  // widget pushes (`Get.to(() => const AdminAlertsScreen())`), which meant they
+  // had no name a deep link could address — so a notification could reach them
+  // from a hard-coded tap handler but never from a link, an email or the
+  // in-app feed. Naming them makes them routable like everything else.
+  static const String adminAlerts = '/admin/alerts';
+  static const String planReminders = '/plan-my-day/reminders';
+  static const String notificationsFeed = '/notifications';
 }
