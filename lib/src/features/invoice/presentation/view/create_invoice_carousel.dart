@@ -27,7 +27,6 @@ import '../notifiers/invoice_refresh_notifier.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'create_invoice_carousel_widgets.dart';
 
-
 /// Main carousel controller for invoice creation
 ///
 /// Manages a progressive 3-screen flow:
@@ -83,13 +82,21 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
       if (createCubit.invoiceCurrency.isEmpty) {
         try {
           final acctState = context.read<AccountCardsSummaryCubit>().state;
-          if (acctState is AccountCardsSummaryLoaded && acctState.accountSummaries.isNotEmpty) {
+          if (acctState is AccountCardsSummaryLoaded &&
+              acctState.accountSummaries.isNotEmpty) {
             final acctCurrency = acctState.accountSummaries.first.currency;
             createCubit.updateInvoiceCurrency(acctCurrency);
             // Derive country from currency
             const currencyToCountry = {
-              'NGN': 'NG', 'USD': 'US', 'GBP': 'GB', 'CAD': 'CA', 'INR': 'IN',
-              'EUR': 'DE', 'ZAR': 'ZA', 'AUD': 'AU', 'JPY': 'JP',
+              'NGN': 'NG',
+              'USD': 'US',
+              'GBP': 'GB',
+              'CAD': 'CA',
+              'INR': 'IN',
+              'EUR': 'DE',
+              'ZAR': 'ZA',
+              'AUD': 'AU',
+              'JPY': 'JP',
             };
             final country = currencyToCountry[acctCurrency];
             if (country != null) {
@@ -227,8 +234,12 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
       // miss it due to subsequent state emissions (e.g. loadInvoices).
       final stateCompleter = Completer<InvoiceState>();
       late final StreamSubscription<InvoiceState> sub;
-      sub = invoiceCubit.stream.where((s) =>
-          s is InvoiceOperationSuccess || s is InvoiceError || s is InvoiceCreationQueued).listen((s) {
+      sub = invoiceCubit.stream
+          .where((s) =>
+              s is InvoiceOperationSuccess ||
+              s is InvoiceError ||
+              s is InvoiceCreationQueued)
+          .listen((s) {
         if (!stateCompleter.isCompleted) {
           stateCompleter.complete(s);
         }
@@ -250,8 +261,9 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
             ? null
             : invoice.payerDetails?.email ?? invoice.recipientDetails?.email,
         toName: cubit.splitMode
-            ? 'Split among ${cubit.splitPayers.length} ${cubit.splitPayers.length == 1 ? 'person' : 'people'}'
-            : invoice.payerDetails?.contactName ?? invoice.recipientDetails?.contactName,
+            ? _splitPayerNames(cubit.splitPayers)
+            : invoice.payerDetails?.contactName ??
+                invoice.recipientDetails?.contactName,
         dueDate: invoice.dueDate,
         taxAmount: invoice.taxAmount,
         discountAmount: invoice.discountAmount,
@@ -313,7 +325,8 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
         return;
       }
 
-      if (resultState is! InvoiceOperationSuccess || resultState.invoice == null) {
+      if (resultState is! InvoiceOperationSuccess ||
+          resultState.invoice == null) {
         final errorMsg = resultState is InvoiceError
             ? resultState.message
             : 'Failed to create invoice';
@@ -328,7 +341,8 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
         recipientDetails: invoice.recipientDetails,
         payerDetails: invoice.payerDetails,
         payerLogoUrl: resultState.invoice!.payerLogoUrl ?? invoice.payerLogoUrl,
-        recipientLogoUrl: resultState.invoice!.recipientLogoUrl ?? invoice.recipientLogoUrl,
+        recipientLogoUrl:
+            resultState.invoice!.recipientLogoUrl ?? invoice.recipientLogoUrl,
       );
 
       cubit.reset();
@@ -437,10 +451,12 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
               if (!_visibleOptionalFields.contains('recipientPhone'))
                 _ChipField('recipientPhone', 'Phone', Icons.phone_outlined),
               if (!_visibleOptionalFields.contains('recipientAddress'))
-                _ChipField('recipientAddress', 'Address', Icons.location_on_outlined),
+                _ChipField(
+                    'recipientAddress', 'Address', Icons.location_on_outlined),
             ],
             showChips: _showFieldChipsRecipient,
-            onToggle: () => setState(() => _showFieldChipsRecipient = !_showFieldChipsRecipient),
+            onToggle: () => setState(
+                () => _showFieldChipsRecipient = !_showFieldChipsRecipient),
           ),
           SizedBox(height: 24.h),
         ],
@@ -471,7 +487,8 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
               ],
             ],
             showChips: _showFieldChipsPayer,
-            onToggle: () => setState(() => _showFieldChipsPayer = !_showFieldChipsPayer),
+            onToggle: () =>
+                setState(() => _showFieldChipsPayer = !_showFieldChipsPayer),
           ),
           SizedBox(height: 24.h),
         ],
@@ -499,7 +516,8 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                 _ChipField('notes', 'Notes', Icons.note_alt_outlined),
             ],
             showChips: _showFieldChipsItems,
-            onToggle: () => setState(() => _showFieldChipsItems = !_showFieldChipsItems),
+            onToggle: () =>
+                setState(() => _showFieldChipsItems = !_showFieldChipsItems),
           ),
           SizedBox(height: 24.h),
         ],
@@ -538,7 +556,9 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    showChips ? Icons.remove_circle_outline : Icons.add_circle_outline,
+                    showChips
+                        ? Icons.remove_circle_outline
+                        : Icons.add_circle_outline,
                     color: const Color(0xFF60A5FA),
                     size: 22.sp,
                   ),
@@ -564,7 +584,8 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                 runSpacing: 8.h,
                 children: fields.map((field) {
                   return ActionChip(
-                    avatar: Icon(field.icon, size: 16.sp, color: const Color(0xFF60A5FA)),
+                    avatar: Icon(field.icon,
+                        size: 16.sp, color: const Color(0xFF60A5FA)),
                     label: Text(
                       field.label,
                       style: GoogleFonts.inter(
@@ -577,8 +598,10 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                     side: BorderSide.none,
                     elevation: 4,
                     shadowColor: Colors.black.withValues(alpha: 0.3),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.r)),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     onPressed: () {
                       setState(() {
                         _visibleOptionalFields.add(field.key);
@@ -588,7 +611,9 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                 }).toList(),
               ),
             ),
-            crossFadeState: showChips ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+            crossFadeState: showChips
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
             duration: const Duration(milliseconds: 250),
           ),
         ],
@@ -668,7 +693,10 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                   gradient: LinearGradient(
                     colors: _currentPage == _totalPages - 1
                         ? [Colors.green, Colors.green.shade700]
-                        : [const Color(0xFF3B82F6), const Color.fromARGB(255, 78, 3, 208)],
+                        : [
+                            const Color(0xFF3B82F6),
+                            const Color.fromARGB(255, 78, 3, 208)
+                          ],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
@@ -770,8 +798,7 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        if (isLastPage && _isCreating)
-                          LazerVaultLoader.small(),
+                        if (isLastPage && _isCreating) LazerVaultLoader.small(),
                         if (isLastPage && _isCreating) SizedBox(width: 8.w),
                         Text(
                           isLastPage
@@ -802,4 +829,40 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
       ),
     );
   }
+}
+
+/// Renders the split payers as a readable "Bill To" line.
+///
+/// This value is PERSISTED as the invoice's recipient name, so it is what every
+/// downstream surface shows: the details screen, the preview, the shared PDF
+/// and the receipt. It used to be the literal placeholder
+/// "Split among N person", which told the recipient of a shared invoice
+/// nothing about who it was actually shared with — and read as a bug on a
+/// document people forward to each other.
+///
+/// Falls back to the count only when no payer has a usable name (an external
+/// tag can be an email or phone with no profile attached), because an empty
+/// "Bill To" is worse than an imprecise one.
+String _splitPayerNames(List<TaggedUserInfo> payers) {
+  final names = <String>[];
+  for (final p in payers) {
+    final full = '${p.firstName} ${p.lastName}'.trim();
+    if (full.isNotEmpty) {
+      names.add(full);
+    } else if (p.username.isNotEmpty) {
+      names.add('@${p.username}');
+    } else if ((p.tagValue ?? '').isNotEmpty) {
+      // External tag: the email/phone is the only identity we have.
+      names.add(p.tagValue!);
+    }
+  }
+  if (names.isEmpty) {
+    final n = payers.length;
+    return 'Split among $n ${n == 1 ? 'person' : 'people'}';
+  }
+  // Keep the line readable on a PDF: name every payer up to three, then
+  // summarise the tail rather than wrapping across the box.
+  if (names.length <= 3) return names.join(', ');
+  final rest = names.length - 3;
+  return '${names.take(3).join(', ')} +$rest more';
 }
