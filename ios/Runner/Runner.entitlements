@@ -20,6 +20,27 @@
 	<array>
 		<string>Default</string>
 	</array>
+	<!-- Universal Links, so a notification link opens the app instead of Safari.
+	     Without this key iOS ignores https://lazervault.app links entirely, no
+	     matter what the site serves — which is why notification links minted by
+	     notifications-service only worked through the lazervault:// scheme.
+
+	     `applinks:` pairs with /.well-known/apple-app-site-association on the
+	     site (public/.well-known/ in the lazervault-website repo, served as
+	     application/json via a next.config.js header — an extensionless file
+	     would otherwise go out as octet-stream and iOS would reject it
+	     silently). The AASA claims /n/* (notification routing) and
+	     /family/invite/* (the older invitation link).
+
+	     ASSOCIATED_DOMAINS is already enabled on the App ID com.lazervault.app
+	     (verified against the App Store Connect API), so the match AppStore
+	     profile grants it. If codesign ever complains that the profile lacks
+	     this entitlement, the profile predates the capability — regenerate with
+	     `bundle exec fastlane match appstore --force`. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:lazervault.app</string>
+	</array>
 	<!-- NFC Tag Reading capability for contactless tap-to-pay.
 	     Must ALSO be enabled on the App ID in the Apple Developer portal.
 	     ONLY `TAG` here — NOT `NDEF`. The app reads/writes NDEF *through a
