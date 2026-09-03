@@ -135,7 +135,29 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
   if (_is(type, 'stock') || _is(type, 'stocks')) {
     return _landing(AppRoutes.stockPortfolio);
   }
+  // `investment` is a shared envelope, not a product. Four different services
+  // publish InvestmentNotificationEvent — investments, group accounts,
+  // crowdfund and insurance — and notifications-service stamps them all
+  // `type: investment`, so a "money added to your group" push used to land on
+  // the Investments screen.
+  //
+  // entity_type (set at the publish site) says which product it really is;
+  // event_type is the fallback for events published before that existed.
   if (_is(type, 'investment')) {
+    final kind =
+        (data['entity_type'] ?? data['event_type'] ?? '').toLowerCase();
+    final id = _first(data, const ['entity_id']);
+
+    if (kind.startsWith('group')) {
+      if (id != null) return _record(AppRoutes.groupDetails, arguments: id);
+      return _landing(AppRoutes.groupAccount);
+    }
+    if (kind.startsWith('crowdfund')) {
+      return _landing(AppRoutes.crowdfundList);
+    }
+    if (kind.startsWith('insurance')) {
+      return _landing(AppRoutes.insuranceAllPolicies);
+    }
     return _landing(AppRoutes.investments);
   }
   if (_is(type, 'insurance')) {

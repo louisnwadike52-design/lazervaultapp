@@ -25,8 +25,8 @@ void main() {
     });
 
     test('true for SocketException and TimeoutException', () {
-      expect(isNetworkError(const SocketException('failed host lookup')),
-          isTrue);
+      expect(
+          isNetworkError(const SocketException('failed host lookup')), isTrue);
       expect(isNetworkError(TimeoutException('slow')), isTrue);
     });
 

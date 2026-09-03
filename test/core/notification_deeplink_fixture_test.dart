@@ -61,8 +61,8 @@ void main() {
     for (final raw in fixture) {
       final c = raw as Map<String, dynamic>;
       final type = c['type'] as String;
-      final target =
-          NotificationRouteResolver.resolveUri(Uri.parse(c['app_link'] as String));
+      final target = NotificationRouteResolver.resolveUri(
+          Uri.parse(c['app_link'] as String));
       expect(
         target,
         isNotNull,
@@ -82,12 +82,13 @@ void main() {
       final data = Map<String, dynamic>.from(c['data'] as Map);
 
       final fromPayload = NotificationRouteResolver.resolve(type, data);
-      final fromLink =
-          NotificationRouteResolver.resolveUri(Uri.parse(c['app_link'] as String));
+      final fromLink = NotificationRouteResolver.resolveUri(
+          Uri.parse(c['app_link'] as String));
 
       expect(fromLink?.route, fromPayload?.route,
           reason: '$type routes differently via link vs payload');
-      expect(fromLink?.arguments?.toString(), fromPayload?.arguments?.toString(),
+      expect(
+          fromLink?.arguments?.toString(), fromPayload?.arguments?.toString(),
           reason: '$type passes different arguments via link vs payload');
     }
   });
@@ -96,7 +97,13 @@ void main() {
     // A deep link says WHICH record. Amount, currency and counterparty names in
     // a URL would leak transaction detail into email bodies, SMS bodies, and
     // anything that logs a URL or sends a referrer.
-    const leaky = ['amount', 'currency', 'sender_name', 'receiver_name', 'code'];
+    const leaky = [
+      'amount',
+      'currency',
+      'sender_name',
+      'receiver_name',
+      'code'
+    ];
     for (final raw in fixture) {
       final c = raw as Map<String, dynamic>;
       for (final key in leaky) {
@@ -108,15 +115,16 @@ void main() {
     }
     // Sanity: the split-bill case really did carry those fields in its payload,
     // so the assertion above had something to catch.
-    final sb = fixture.firstWhere(
-        (e) => (e as Map)['type'] == 'split_bill.reminder') as Map;
+    final sb = fixture
+        .firstWhere((e) => (e as Map)['type'] == 'split_bill.reminder') as Map;
     expect((sb['data'] as Map)['amount'], isNotNull);
   });
 
   test('the ids added at creation reach the exact record', () {
-    NotificationTarget? of(String type) => NotificationRouteResolver.resolveUri(
-        Uri.parse(fixture.firstWhere((e) => (e as Map)['type'] == type)['app_link']
-            as String));
+    NotificationTarget? of(String type) =>
+        NotificationRouteResolver.resolveUri(Uri.parse(
+            fixture.firstWhere((e) => (e as Map)['type'] == type)['app_link']
+                as String));
 
     final splitBill = of('split_bill.reminder');
     expect(splitBill!.route, AppRoutes.splitBillDetail);

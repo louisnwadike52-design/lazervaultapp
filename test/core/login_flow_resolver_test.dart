@@ -69,7 +69,8 @@ void main() {
       expect(LoginFlowResolver.compute(hasPassword: true), _email);
     });
 
-    test('BOTH passcode + password, no explicit → phone_passcode (passcode wins)',
+    test(
+        'BOTH passcode + password, no explicit → phone_passcode (passcode wins)',
         () {
       expect(
         LoginFlowResolver.compute(hasPasscode: true, hasPassword: true),
@@ -84,7 +85,8 @@ void main() {
       );
     });
 
-    test('explicit email_password but NO password → falls to shape (default phone)',
+    test(
+        'explicit email_password but NO password → falls to shape (default phone)',
         () {
       // Can't honor an email choice with no password → fall through to shape.
       expect(LoginFlowResolver.compute(preferred: _email), _phone);

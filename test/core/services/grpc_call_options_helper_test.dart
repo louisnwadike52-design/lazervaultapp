@@ -100,8 +100,10 @@ void main() {
         }
       }
 
-      expect(callCount, equals(2), reason: 'Call should be retried after refresh');
-      expect(refreshTriggered, isTrue, reason: 'Refresh should be triggered on 401');
+      expect(callCount, equals(2),
+          reason: 'Call should be retried after refresh');
+      expect(refreshTriggered, isTrue,
+          reason: 'Refresh should be triggered on 401');
     });
 
     test('Token refresh timeout handling', () async {
@@ -128,7 +130,8 @@ void main() {
 
       final options = CallOptions(metadata: metadata);
 
-      expect(options.metadata['authorization'], equals('Bearer test-token-123'));
+      expect(
+          options.metadata['authorization'], equals('Bearer test-token-123'));
       expect(options.metadata['x-locale'], equals('en-US'));
     });
   });

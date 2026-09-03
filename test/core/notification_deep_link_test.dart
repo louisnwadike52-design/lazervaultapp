@@ -50,7 +50,8 @@ void main() {
         NotificationLink.parse(Uri.parse('lazervault://family/invite/tok')),
         isNull,
       );
-      expect(NotificationLink.parse(Uri.parse('https://example.com/n/x')), isNull);
+      expect(
+          NotificationLink.parse(Uri.parse('https://example.com/n/x')), isNull);
     });
 
     test('drops empty values so a link never carries a blank id', () {
@@ -190,7 +191,6 @@ void main() {
       }
     });
 
-
     // entity_id is the generic key every notifications-service handler now
     // sets at creation time. A specific key still wins when both are present —
     // otherwise a handler that learned entity_id would start overriding the
@@ -233,6 +233,54 @@ void main() {
       );
       expect(t!.route, AppRoutes.recurringTransferDetail);
       expect(t.arguments, 'rt-9');
+    });
+
+    // `investment` is a shared envelope: investments, group accounts, crowdfund
+    // and insurance all publish InvestmentNotificationEvent and arrive stamped
+    // `type: investment`. Without dispatching on entity_type, "money added to
+    // your group" lands on the Investments screen.
+    test('investment envelope splits by product', () {
+      final group = NotificationRouteResolver.resolve('investment', {
+        'entity_type': 'group_account',
+        'entity_id': 'grp-1',
+      });
+      expect(group!.route, AppRoutes.groupDetails);
+      expect(group.arguments, 'grp-1');
+      expect(group.precision, TargetPrecision.record);
+
+      expect(
+        NotificationRouteResolver.resolve(
+                'investment', {'entity_type': 'crowdfund'})!
+            .route,
+        AppRoutes.crowdfundList,
+      );
+      expect(
+        NotificationRouteResolver.resolve(
+                'investment', {'entity_type': 'insurance'})!
+            .route,
+        AppRoutes.insuranceAllPolicies,
+      );
+      // A real investment, and the no-metadata case, still go to Investments.
+      expect(
+        NotificationRouteResolver.resolve('investment', {})!.route,
+        AppRoutes.investments,
+      );
+    });
+
+    // Events published before entity_type existed still carry event_type.
+    test('falls back to event_type for older investment events', () {
+      expect(
+        NotificationRouteResolver.resolve(
+                'investment', {'event_type': 'group.contribution'})!
+            .route,
+        AppRoutes.groupAccount,
+      );
+      expect(
+        NotificationRouteResolver.resolve(
+                'investment', {'event_type': 'insurance.purchased'})!
+            .route,
+        AppRoutes.insuranceAllPolicies,
+      );
     });
 
     test('is case- and whitespace-tolerant', () {

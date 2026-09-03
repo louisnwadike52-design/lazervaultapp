@@ -46,7 +46,8 @@ void main() {
       expect(r.args?['hasTransactionPin'], false);
     });
 
-    test('legacy account (status null) falls through to the gates → dashboard', () {
+    test('legacy account (status null) falls through to the gates → dashboard',
+        () {
       final r = resolvePostLoginRoute(
         step: null,
         status: null,
@@ -86,7 +87,8 @@ void main() {
       expect(r.args?['phoneNumber'], '+2348012345678');
     });
 
-    test('incomplete: phone_verify WITHOUT phone → defensive passcode setup', () {
+    test('incomplete: phone_verify WITHOUT phone → defensive passcode setup',
+        () {
       final r = resolvePostLoginRoute(
         step: 'phone_verify',
         status: 'incomplete',
