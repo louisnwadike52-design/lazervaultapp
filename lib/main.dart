@@ -17,7 +17,6 @@ import 'package:lazervault/core/services/login_flow_resolver.dart';
 // import + the clearIfBuildChanged() call together if a stale-state regression returns.
 // import 'package:lazervault/core/services/fresh_install_guard.dart';
 import 'package:lazervault/core/notifications/notification_navigator.dart';
-import 'package:lazervault/core/notifications/notification_target.dart';
 import 'package:lazervault/core/services/pending_chat_navigation.dart';
 import 'package:lazervault/core/services/chat_sound_settings.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -333,17 +332,9 @@ void main() {
       return;
     }
 
-    if (PendingDeepLink.instance.handle(type, m.data)) return;
-
-    // Unknown type — an older app meeting a newer server. Open the feed so the
-    // user at least reads what buzzed, rather than being dropped on the
-    // dashboard with no idea what the notification was.
-    PendingDeepLink.instance.push(
-      const NotificationTarget(
-        route: AppRoutes.notificationsFeed,
-        precision: TargetPrecision.serviceLanding,
-      ),
-    );
+    // Unknown types open the feed rather than the dashboard — an older app
+    // meeting a newer server must still show the user what buzzed.
+    PendingDeepLink.instance.handleOrFeed(type, m.data);
   };
   unawaited(pushSvc.initialize());
 

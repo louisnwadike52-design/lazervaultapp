@@ -64,11 +64,34 @@ class PendingDeepLink {
   }
 
   /// Same, from a `lazervault://n/...` or `https://lazervault.app/n/...` link.
+  ///
+  /// Returns false only when [uri] is not a notification link at all — the
+  /// older `lazervault://deposit/callback` and family-invite links still belong
+  /// to their own handlers. A link that IS a notification link but names a type
+  /// this build does not know still returns true, having opened the feed: it
+  /// was addressed to us, so swallowing it silently would be a dead tap.
   bool handleUri(Uri uri) {
-    final target = NotificationRouteResolver.resolveUri(uri);
-    if (target == null) return false;
-    push(target);
+    final parsed = NotificationLink.parse(uri);
+    if (parsed == null) return false;
+    handleOrFeed(parsed.type, parsed.data);
     return true;
+  }
+
+  /// Routes [type]/[data], falling back to the notifications feed when this
+  /// build does not recognise the type.
+  ///
+  /// The fallback is the point: an older app meeting a newer server must still
+  /// show the user what buzzed rather than dropping them on the dashboard. Both
+  /// doors — a tapped push and a tapped link — go through here so they cannot
+  /// diverge on that behaviour.
+  void handleOrFeed(String type, Map<String, dynamic> data) {
+    if (handle(type, data)) return;
+    push(
+      const NotificationTarget(
+        route: AppRoutes.notificationsFeed,
+        precision: TargetPrecision.serviceLanding,
+      ),
+    );
   }
 
   /// Stashes [target] and tries to route right away.

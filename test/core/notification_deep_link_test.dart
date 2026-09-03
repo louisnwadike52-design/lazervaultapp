@@ -283,6 +283,26 @@ void main() {
       );
     });
 
+    // A notification link naming a type this build does not know must still be
+    // claimed — it was addressed to us. Returning false would drop it back to
+    // DeepLinkService's switch, which has no case for it, and the tap would do
+    // nothing. The push path opens the feed; the link path must match.
+    test('an unknown notification type is still claimed by the link handler',
+        () {
+      final parsed = NotificationLink.parse(
+        Uri.parse('lazervault://n/invented_next_year?entity_id=x'),
+      );
+      expect(parsed, isNotNull,
+          reason: 'it is a well-formed notification link');
+      expect(parsed!.type, 'invented_next_year');
+      // ...and the resolver correctly has no destination for it, which is what
+      // makes handleOrFeed fall through to the feed.
+      expect(
+        NotificationRouteResolver.resolve(parsed.type, parsed.data),
+        isNull,
+      );
+    });
+
     test('is case- and whitespace-tolerant', () {
       expect(NotificationRouteResolver.resolve('  Invoice  ', {}), isNotNull);
     });
