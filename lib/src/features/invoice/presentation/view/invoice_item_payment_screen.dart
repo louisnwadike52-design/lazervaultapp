@@ -22,6 +22,8 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart'
     show AuthenticationSuccess;
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/currency_holdings_service.dart';
+import '../widgets/invoice_cross_currency_notice.dart';
 import '../widgets/invoice_fx_confirm_sheet.dart';
 
 class InvoiceItemPaymentScreen extends StatefulWidget {
@@ -919,6 +921,24 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
     if (payCurrency.isNotEmpty &&
         payCurrency.toUpperCase() != invoiceCurrency.toUpperCase()) {
       final account = _selectedAccount();
+
+      // Explain the conversion BEFORE quoting a rate. Meeting an FX sheet with
+      // no lead-in reads like the app picked the wrong wallet. The holding
+      // lookup needs includeAllCurrencies — the account list this screen shows
+      // is locale-currency only, so it cannot see a foreign wallet at all.
+      final holding =
+          await CurrencyHoldingsService.largestActiveBalance(invoiceCurrency);
+      if (!mounted) return;
+      final proceed = await InvoiceCrossCurrencyNotice.show(
+        context,
+        invoiceCurrency: invoiceCurrency,
+        payCurrency: payCurrency,
+        invoiceAmount: _baseAmount,
+        holdingInInvoiceCurrency: holding,
+      );
+      if (!mounted) return;
+      if (!proceed) return;
+
       final quote = await InvoiceFxConfirmSheet.show(
         context,
         fromCurrency: invoiceCurrency,
