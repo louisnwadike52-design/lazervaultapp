@@ -143,8 +143,15 @@ class TagPayTransactionEntity extends Equatable {
   }
 }
 
+/// The money-request lifecycle as the backend actually stores it.
+///
+/// [paying] is a CLAIM held while the remote transfer runs. It had no wire
+/// value at all until the accept path gained a claim phase, so the server
+/// reported it as [pending] — advertising a request whose payment was already
+/// in flight as still acceptable. Only [pending] may ever offer an Accept.
 enum MoneyRequestStatus {
   pending,
+  paying,
   accepted,
   declined,
   expired,
@@ -218,6 +225,14 @@ class MoneyRequestEntity extends Equatable {
         return 'Expired';
       case MoneyRequestStatus.cancelled:
         return 'Cancelled';
+      case MoneyRequestStatus.paying:
+        return 'Processing';
     }
   }
+
+  /// The ONLY gate an Accept action may use. A [MoneyRequestStatus.paying]
+  /// request already has a transfer in flight, and every other non-pending
+  /// state is closed — accepting from any of them is either a duplicate
+  /// payment attempt or a payment against a request that no longer exists.
+  bool get isAcceptable => status == MoneyRequestStatus.pending && !isExpired;
 }

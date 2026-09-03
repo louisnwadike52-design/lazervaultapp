@@ -249,6 +249,12 @@ enum MoneyRequestStatus {
   MONEY_REQUEST_STATUS_DECLINED = 2;
   MONEY_REQUEST_STATUS_EXPIRED = 3;
   MONEY_REQUEST_STATUS_CANCELLED = 4;
+  // PAYING is transient: the request is claimed and the transfer is in flight.
+  // Same omission TagStatus had — accepting a money request now claims the row
+  // before the remote transfer runs, and with no wire value for it the
+  // handler's switch fell through to PENDING, advertising a request whose
+  // payment is already in flight as still acceptable.
+  MONEY_REQUEST_STATUS_PAYING = 5;
 }
 
 enum TagStatus {

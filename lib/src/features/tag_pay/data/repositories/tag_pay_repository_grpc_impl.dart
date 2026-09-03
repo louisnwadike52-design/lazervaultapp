@@ -411,6 +411,8 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
         return MoneyRequestStatus.expired;
       case pb.MoneyRequestStatus.MONEY_REQUEST_STATUS_CANCELLED:
         return MoneyRequestStatus.cancelled;
+      case pb.MoneyRequestStatus.MONEY_REQUEST_STATUS_PAYING:
+        return MoneyRequestStatus.paying;
       default:
         return MoneyRequestStatus.pending;
     }

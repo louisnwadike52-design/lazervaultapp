@@ -100,16 +100,26 @@ class MoneyRequestStatus extends $pb.ProtobufEnum {
       MoneyRequestStatus._(
           4, _omitEnumNames ? '' : 'MONEY_REQUEST_STATUS_CANCELLED');
 
+  /// PAYING is transient: the request is claimed and the transfer is in flight.
+  /// Same omission TagStatus had — accepting a money request now claims the row
+  /// before the remote transfer runs, and with no wire value for it the
+  /// handler's switch fell through to PENDING, advertising a request whose
+  /// payment is already in flight as still acceptable.
+  static const MoneyRequestStatus MONEY_REQUEST_STATUS_PAYING =
+      MoneyRequestStatus._(
+          5, _omitEnumNames ? '' : 'MONEY_REQUEST_STATUS_PAYING');
+
   static const $core.List<MoneyRequestStatus> values = <MoneyRequestStatus>[
     MONEY_REQUEST_STATUS_PENDING,
     MONEY_REQUEST_STATUS_ACCEPTED,
     MONEY_REQUEST_STATUS_DECLINED,
     MONEY_REQUEST_STATUS_EXPIRED,
     MONEY_REQUEST_STATUS_CANCELLED,
+    MONEY_REQUEST_STATUS_PAYING,
   ];
 
   static final $core.List<MoneyRequestStatus?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 4);
+      $pb.ProtobufEnum.$_initByValueList(values, 5);
   static MoneyRequestStatus? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 
