@@ -18,7 +18,12 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
     if (type == 'invoice.external_tag' || type.contains('tag')) {
       return _landing(AppRoutes.incomingTaggedInvoices);
     }
-    final id = _first(data, const ['invoice_id', 'invoiceId', 'reference_id']);
+    final id = _first(data, const [
+      'invoice_id',
+      'invoiceId',
+      'reference_id'
+          'entity_id',
+    ]);
     if (id != null) {
       return _record(
         AppRoutes.invoiceDetails,
@@ -32,7 +37,12 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
   // giftCardFromReference takes a String reference (or a Map carrying one) and
   // fetches the card itself — exact whenever a reference travelled.
   if (_is(type, 'giftcard') || _is(type, 'gift_card')) {
-    final ref = _first(data, const ['reference', 'order_reference', 'reference_id']);
+    final ref = _first(data, const [
+      'reference',
+      'order_reference',
+      'reference_id'
+          'entity_id',
+    ]);
     if (ref != null) {
       return _record(AppRoutes.giftCardFromReference, arguments: ref);
     }
@@ -43,7 +53,12 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
   // Reuses the `/escrow/detail/:reference` path-param route already wired for
   // the chat receipt deep link.
   if (_is(type, 'escrow')) {
-    final ref = _first(data, const ['escrow_id', 'deal_id', 'reference']);
+    final ref = _first(data, const [
+      'escrow_id',
+      'deal_id',
+      'reference'
+          'entity_id',
+    ]);
     if (ref != null) {
       return _record('${AppRoutes.escrowDetail}/$ref');
     }
@@ -95,7 +110,9 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
     if (biller.contains('electric') || biller.contains('disco')) {
       return _landing(AppRoutes.electricityBillHistory);
     }
-    if (biller.contains('dstv') || biller.contains('gotv') || biller.contains('startimes')) {
+    if (biller.contains('dstv') ||
+        biller.contains('gotv') ||
+        biller.contains('startimes')) {
       return _landing(AppRoutes.cableTVHistory);
     }
     if (biller.contains('water')) return _landing(AppRoutes.waterBillHistory);
@@ -130,7 +147,9 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
   if (_is(type, 'autosave') || _is(type, 'auto_save')) {
     return _landing(AppRoutes.autoSaveDashboard);
   }
-  if (_is(type, 'lock_funds') || _is(type, 'piggyvault') || _is(type, 'piggy')) {
+  if (_is(type, 'lock_funds') ||
+      _is(type, 'piggyvault') ||
+      _is(type, 'piggy')) {
     return _landing(AppRoutes.lockFunds);
   }
   if (_is(type, 'goal') || _is(type, 'financial_goal')) {

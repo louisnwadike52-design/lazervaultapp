@@ -75,7 +75,6 @@ class NotificationRouteResolver {
     if (parsed == null) return null;
     return resolve(parsed.type, parsed.data);
   }
-
 }
 
 // ---------------------------------------------------------------------------

@@ -190,6 +190,51 @@ void main() {
       }
     });
 
+
+    // entity_id is the generic key every notifications-service handler now
+    // sets at creation time. A specific key still wins when both are present —
+    // otherwise a handler that learned entity_id would start overriding the
+    // more precise id it was already sending.
+    test('falls back to the generic entity_id', () {
+      final t = NotificationRouteResolver.resolve(
+        'split_bill.paid',
+        {'entity_id': 'bill-from-entity'},
+      );
+      expect(t!.route, AppRoutes.splitBillDetail);
+      expect((t.arguments as Map)['splitBillId'], 'bill-from-entity');
+      expect(t.precision, TargetPrecision.record);
+    });
+
+    test('a specific id beats entity_id when both travel', () {
+      final t = NotificationRouteResolver.resolve(
+        'split_bill.paid',
+        {'split_bill_id': 'specific', 'entity_id': 'generic'},
+      );
+      expect((t!.arguments as Map)['splitBillId'], 'specific');
+    });
+
+    // The giftcard handler carries the order reference under `code`; it is
+    // mirrored onto `reference` server-side so this resolves to the card
+    // itself rather than the My Gift Cards list.
+    test('opens a specific gift card from its reference', () {
+      final t = NotificationRouteResolver.resolve(
+        'giftcard',
+        {'reference': 'GC-REF-1', 'code': 'GC-REF-1'},
+      );
+      expect(t!.route, AppRoutes.giftCardFromReference);
+      expect(t.arguments, 'GC-REF-1');
+      expect(t.precision, TargetPrecision.record);
+    });
+
+    test('opens the recurring transfer a schedule notification is about', () {
+      final t = NotificationRouteResolver.resolve(
+        'recurring_transfer_auto_paused',
+        {'entity_id': 'rt-9'},
+      );
+      expect(t!.route, AppRoutes.recurringTransferDetail);
+      expect(t.arguments, 'rt-9');
+    });
+
     test('is case- and whitespace-tolerant', () {
       expect(NotificationRouteResolver.resolve('  Invoice  ', {}), isNotNull);
     });

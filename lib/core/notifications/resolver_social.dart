@@ -20,6 +20,7 @@ NotificationTarget? _resolveSocial(String type, Map<String, String> data) {
       'splitBillId',
       'bill_id',
       'reference_id',
+      'entity_id',
     ]);
     if (id != null) {
       return _record(
@@ -48,6 +49,7 @@ NotificationTarget? _resolveSocial(String type, Map<String, String> data) {
       'sender_user_id',
       'other_user_id',
       'user_id',
+      'entity_id',
     ]);
     if (otherId != null) {
       return _record(AppRoutes.p2pChat, arguments: {
@@ -79,7 +81,11 @@ NotificationTarget? _resolveSocial(String type, Map<String, String> data) {
     if (type.contains('invit')) {
       return _landing(AppRoutes.familyInvitations);
     }
-    final familyId = _first(data, const ['family_id', 'familyId']);
+    final familyId = _first(data, const [
+      'family_id',
+      'familyId'
+          'entity_id',
+    ]);
     if (familyId != null) {
       return _record(
         AppRoutes.familyDetails,
@@ -98,7 +104,12 @@ NotificationTarget? _resolveSocial(String type, Map<String, String> data) {
     if (type.contains('invit')) {
       return _landing(AppRoutes.groupAccount);
     }
-    final groupId = _first(data, const ['group_id', 'groupId', 'account_id']);
+    final groupId = _first(data, const [
+      'group_id',
+      'groupId',
+      'account_id'
+          'entity_id',
+    ]);
     if (groupId != null) {
       return _record(AppRoutes.groupDetails, arguments: groupId);
     }

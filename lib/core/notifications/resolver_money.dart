@@ -37,6 +37,7 @@ NotificationTarget? _resolveMoney(String type, Map<String, String> data) {
       'recurring_transfer_id',
       'scheduled_transfer_id',
       'schedule_id',
+      'entity_id',
     ]);
     if (id != null) {
       return _record(AppRoutes.recurringTransferDetail, arguments: id);

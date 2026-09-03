@@ -37,7 +37,8 @@ NotificationTarget? _resolveAccount(String type, Map<String, String> data) {
   // "Your verification succeeded / needs another document" — the status screen
   // is the one page that explains where the user stands and what is missing.
   if (_is(type, 'kyc') || _is(type, 'verification') || _is(type, 'bvn')) {
-    if (type.contains('document') || (data['event_type'] ?? '').contains('document')) {
+    if (type.contains('document') ||
+        (data['event_type'] ?? '').contains('document')) {
       return _landing(AppRoutes.kycDocuments);
     }
     return _landing(AppRoutes.kycStatus);
