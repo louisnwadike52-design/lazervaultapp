@@ -229,16 +229,37 @@ class _InsightsView extends StatelessWidget {
           SizedBox(height: 32.h),
         ],
 
-        // Apply Button
+        // Apply. This used to call Get.back() and create nothing: the AI's
+        // per-category amounts were computed, rendered, then discarded by the
+        // button that said it would apply them.
+        //
+        // It opens a review rather than creating straight away, because these
+        // become budgets the send-funds flow ENFORCES — a strict one refuses a
+        // transfer — so the amounts have to be seen and editable first.
         ElevatedButton(
-          onPressed: () => Get.back(),
+          onPressed: insights.budgetRecommendations.isEmpty
+              ? null
+              : () => Get.to(
+                    () => BlocProvider.value(
+                      value: context.read<BudgetCubit>(),
+                      child: BudgetAllocationReviewScreen(
+                        recommendations: insights.budgetRecommendations,
+                        currency: CurrencySymbols.currentCurrency,
+                      ),
+                    ),
+                  ),
           style: ElevatedButton.styleFrom(
             backgroundColor: InvoiceThemeColors.primaryPurple,
             foregroundColor: Colors.white,
             minimumSize: Size(double.infinity, 50.h),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
           ),
-          child: const Text('Apply Recommendations', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          child: Text(
+            insights.budgetRecommendations.isEmpty
+                ? 'No allocation to apply'
+                : 'Review & apply allocation',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
         ),
       ],
     );
