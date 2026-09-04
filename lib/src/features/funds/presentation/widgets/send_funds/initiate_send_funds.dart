@@ -42,6 +42,8 @@ import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/bu
 import 'package:lazervault/src/features/widgets/budget_warning_widget.dart';
 import 'package:lazervault/src/features/widgets/budget_override_dialog.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
+import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
+import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
 import 'package:uuid/uuid.dart';
 
@@ -76,6 +78,15 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   String? get _activeAccountId =>
       serviceLocator<AccountManager>().activeAccountId;
   ServiceCategory? selectedCategory;
+
+  /// True when the user has at least one ACTIVE budget set to block.
+  ///
+  /// Budget checks only run when a category is chosen, and choosing one is
+  /// optional, so a budget the user asked us to ENFORCE could be walked past
+  /// simply by leaving the category blank. Requiring a category for everyone
+  /// would be friction for the many to close a hole that only affects the few
+  /// who opted into blocking, so the requirement is scoped to exactly them.
+  bool _hasStrictBudget = false;
   List<ServiceCategory> _availableCategories = ServiceCategory.commonTransferCategories;
   final TextEditingController _referenceController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
@@ -229,6 +240,36 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     _loadCategories();
   }
 
+  /// Learns whether any active budget is set to block, so the category
+  /// requirement below applies only to users who asked for one.
+  ///
+  /// Best effort: if this cannot be determined the flag stays false and the
+  /// flow behaves exactly as before. Failing the other way would block sends
+  /// for a budget we are not even sure exists.
+  Future<void> _detectStrictBudgets(BudgetCubit budgetCubit) async {
+    try {
+      await budgetCubit.loadBudgets();
+      final state = budgetCubit.state;
+      if (!mounted || state is! BudgetsLoaded) return;
+      // Anything still live counts, not just ACTIVE. A budget already sitting
+      // at EXCEEDED or NEAR_LIMIT is precisely the one about to block, so
+      // checking for ACTIVE alone would drop the requirement exactly when it
+      // matters most.
+      const live = {
+        pb.BudgetStatus.BUDGET_STATUS_ACTIVE,
+        pb.BudgetStatus.BUDGET_STATUS_NEAR_LIMIT,
+        pb.BudgetStatus.BUDGET_STATUS_EXCEEDED,
+      };
+      final strict = state.budgets.any((b) =>
+          b.enforcementMode ==
+              pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_STRICT &&
+          live.contains(b.status));
+      if (mounted) setState(() => _hasStrictBudget = strict);
+    } catch (_) {
+      // Leave the flag false: no new friction on an unknown.
+    }
+  }
+
   Future<void> _loadCategories() async {
     try {
       final budgetCubit = context.read<BudgetCubit>();
@@ -238,6 +279,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           _availableCategories = categories;
         });
       }
+      await _detectStrictBudgets(budgetCubit);
     } on ProviderNotFoundException catch (_) {
       // BudgetCubit not in tree — keep fallback categories
     } catch (e) {
@@ -1123,6 +1165,25 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     }
 
     // 9. Budget enforcement check
+    //
+    // A category is normally optional. It stops being optional once the user
+    // has a budget set to BLOCK, because the check below only runs when one is
+    // chosen: without this, the way past a limit the user asked us to enforce
+    // is simply not to pick a category.
+    if (_hasStrictBudget && selectedCategory == null) {
+      Get.snackbar(
+        'Pick a category',
+        'You have a budget set to block overspending, so this transfer needs a '
+            'category before it can go through.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withValues(alpha: 0.85),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+      );
+      _showCategoryPicker();
+      return;
+    }
+
     _lastBudgetResult = null;
     if (selectedCategory != null) {
       final budgetCubit = context.read<BudgetCubit>();
