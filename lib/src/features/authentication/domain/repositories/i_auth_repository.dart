@@ -105,6 +105,9 @@ abstract class IAuthRepository {
 
   /// Complete an adaptive step-up login by verifying the OTP that was sent when
   /// a login returned [StepUpRequiredFailure]. Returns a full session.
+  /// Requests a fresh step-up code; returns the new lifetime in seconds.
+  Future<Either<Failure, int>> resendLoginOtp({required String stepUpToken});
+
   Future<Either<Failure, ProfileEntity>> verifyLoginOtp({
     required String stepUpToken,
     required String code,

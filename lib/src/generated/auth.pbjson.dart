@@ -2463,6 +2463,19 @@ final $typed_data.Uint8List getLoginHistoryResponseDescriptor = $convert.base64D
     '1lc3NhZ2UYAiABKAlSB21lc3NhZ2USMAoHZW50cmllcxgDIAMoCzIWLnBiLkxvZ2luQWN0aXZp'
     'dHlFbnRyeVIHZW50cmllcw==');
 
+@$core.Deprecated('Use resendLoginOtpRequestDescriptor instead')
+const ResendLoginOtpRequest$json = {
+  '1': 'ResendLoginOtpRequest',
+  '2': [
+    {'1': 'step_up_token', '3': 1, '4': 1, '5': 9, '10': 'stepUpToken'},
+  ],
+};
+
+/// Descriptor for `ResendLoginOtpRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List resendLoginOtpRequestDescriptor = $convert.base64Decode(
+    'ChVSZXNlbmRMb2dpbk90cFJlcXVlc3QSIgoNc3RlcF91cF90b2tlbhgBIAEoCVILc3RlcFVwVG'
+    '9rZW4=');
+
 @$core.Deprecated('Use verifyLoginOtpRequestDescriptor instead')
 const VerifyLoginOtpRequest$json = {
   '1': 'VerifyLoginOtpRequest',

@@ -244,6 +244,40 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
+  /// Asks for a fresh step-up code. Returns the NEW lifetime in seconds so the
+  /// screen can restart its countdown from what the server will honour.
+  ///
+  /// Not routed through _processAuthResponse: a resend deliberately does not
+  /// produce a session, so that helper's success path (which requires a user
+  /// and a session) would treat every resend as a failure.
+  @override
+  Future<Either<Failure, int>> resendLoginOtp({
+    required String stepUpToken,
+  }) async {
+    try {
+      final response = await _authServiceClient.resendLoginOtp(
+        auth_req_resp.ResendLoginOtpRequest(stepUpToken: stepUpToken),
+      );
+      if (response.success) {
+        return Right(response.stepUpExpiresIn.toInt());
+      }
+      return Left(StepUpVerifyFailure(
+        message: response.msg.isNotEmpty
+            ? response.msg
+            : 'Could not send a new code.',
+        code: response.errorCode,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not send a new code.'),
+        statusCode: e.code,
+      ));
+    } catch (_) {
+      return Left(ServerFailure(
+          message: 'Could not send a new code.', statusCode: 500));
+    }
+  }
+
   Future<Either<Failure, ProfileEntity>> verifyLoginOtp({
     required String stepUpToken,
     required String code,

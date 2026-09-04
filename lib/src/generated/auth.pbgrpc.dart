@@ -289,6 +289,17 @@ class AuthServiceClient extends $grpc.Client {
 
   /// Public: complete an adaptive step-up login by verifying the OTP that was
   /// sent when LoginResponse.step_up_required was true. Returns a full session.
+  /// Issues a fresh step-up code for an in-flight challenge. The code is
+  /// replaced in place, so the caller keeps the same step_up_token and there is
+  /// only ever one live code per session. Rate limited by cooldown and a resend
+  /// cap; both admin-tunable.
+  $grpc.ResponseFuture<$0.LoginResponse> resendLoginOtp(
+    $0.ResendLoginOtpRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$resendLoginOtp, request, options: options);
+  }
+
   $grpc.ResponseFuture<$0.LoginResponse> verifyLoginOtp(
     $0.VerifyLoginOtpRequest request, {
     $grpc.CallOptions? options,
@@ -490,6 +501,15 @@ class AuthServiceClient extends $grpc.Client {
   }) {
     return $createUnaryCall(_$adminResetTransactionPin, request,
         options: options);
+  }
+
+  /// Admin: clear a failed-login lockout so a locked-out customer can sign in
+  /// again without waiting out the timer.
+  $grpc.ResponseFuture<$0.AdminUnlockAccountResponse> adminUnlockAccount(
+    $0.AdminUnlockAccountRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adminUnlockAccount, request, options: options);
   }
 
   /// GetKYCTier returns the canonical kyc_tier for a user (service-only; gated by
@@ -918,6 +938,31 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$requestAccountLock, request, options: options);
   }
 
+  /// FreezeAccount locks a user's account for suspicious/fraudulent activity.
+  /// gRPC-only, SERVICE-TO-SERVICE (x-service-name: core-payments-service or
+  /// admin-gateway) — NO HTTP route, never app-callable. Reuses the self-lock
+  /// mechanism (stamps self_locked_until, revokes sessions, emits
+  /// user.self_locked so accounts-service freezes money movement). reason is
+  /// stored under a "fraud:" prefix so the login gate + app render the
+  /// fraud-specific freeze modal instead of the generic self-lock one.
+  $grpc.ResponseFuture<$0.FreezeAccountResponse> freezeAccount(
+    $0.FreezeAccountRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$freezeAccount, request, options: options);
+  }
+
+  /// UnfreezeAccount clears a fraud freeze early (admin-gateway only). The plain
+  /// self-lock deliberately has no early unlock; a fraud freeze is a false-positive
+  /// risk, so support/admin can lift it. Clears self_locked_until + emits
+  /// user.self_unlocked so accounts-service unfreezes money movement.
+  $grpc.ResponseFuture<$0.UnfreezeAccountResponse> unfreezeAccount(
+    $0.UnfreezeAccountRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$unfreezeAccount, request, options: options);
+  }
+
   // method descriptors
 
   static final _$signup =
@@ -1073,6 +1118,11 @@ class AuthServiceClient extends $grpc.Client {
           '/pb.AuthService/LoginWithPasscode',
           ($0.LoginWithPasscodeRequest value) => value.writeToBuffer(),
           $0.LoginResponse.fromBuffer);
+  static final _$resendLoginOtp =
+      $grpc.ClientMethod<$0.ResendLoginOtpRequest, $0.LoginResponse>(
+          '/pb.AuthService/ResendLoginOtp',
+          ($0.ResendLoginOtpRequest value) => value.writeToBuffer(),
+          $0.LoginResponse.fromBuffer);
   static final _$verifyLoginOtp =
       $grpc.ClientMethod<$0.VerifyLoginOtpRequest, $0.LoginResponse>(
           '/pb.AuthService/VerifyLoginOtp',
@@ -1189,6 +1239,11 @@ class AuthServiceClient extends $grpc.Client {
       '/pb.AuthService/AdminResetTransactionPin',
       ($0.AdminResetTransactionPinRequest value) => value.writeToBuffer(),
       $0.AdminResetTransactionPinResponse.fromBuffer);
+  static final _$adminUnlockAccount = $grpc.ClientMethod<
+          $0.AdminUnlockAccountRequest, $0.AdminUnlockAccountResponse>(
+      '/pb.AuthService/AdminUnlockAccount',
+      ($0.AdminUnlockAccountRequest value) => value.writeToBuffer(),
+      $0.AdminUnlockAccountResponse.fromBuffer);
   static final _$getKYCTier =
       $grpc.ClientMethod<$0.GetKYCTierRequest, $0.GetKYCTierResponse>(
           '/pb.AuthService/GetKYCTier',
@@ -1416,6 +1471,16 @@ class AuthServiceClient extends $grpc.Client {
       '/pb.AuthService/RequestAccountLock',
       ($0.RequestAccountLockRequest value) => value.writeToBuffer(),
       $0.RequestAccountLockResponse.fromBuffer);
+  static final _$freezeAccount =
+      $grpc.ClientMethod<$0.FreezeAccountRequest, $0.FreezeAccountResponse>(
+          '/pb.AuthService/FreezeAccount',
+          ($0.FreezeAccountRequest value) => value.writeToBuffer(),
+          $0.FreezeAccountResponse.fromBuffer);
+  static final _$unfreezeAccount =
+      $grpc.ClientMethod<$0.UnfreezeAccountRequest, $0.UnfreezeAccountResponse>(
+          '/pb.AuthService/UnfreezeAccount',
+          ($0.UnfreezeAccountRequest value) => value.writeToBuffer(),
+          $0.UnfreezeAccountResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('pb.AuthService')
@@ -1685,6 +1750,14 @@ abstract class AuthServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.LoginWithPasscodeRequest.fromBuffer(value),
             ($0.LoginResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ResendLoginOtpRequest, $0.LoginResponse>(
+        'ResendLoginOtp',
+        resendLoginOtp_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ResendLoginOtpRequest.fromBuffer(value),
+        ($0.LoginResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.VerifyLoginOtpRequest, $0.LoginResponse>(
         'VerifyLoginOtp',
         verifyLoginOtp_Pre,
@@ -1884,6 +1957,15 @@ abstract class AuthServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.AdminResetTransactionPinRequest.fromBuffer(value),
         ($0.AdminResetTransactionPinResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminUnlockAccountRequest,
+            $0.AdminUnlockAccountResponse>(
+        'AdminUnlockAccount',
+        adminUnlockAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminUnlockAccountRequest.fromBuffer(value),
+        ($0.AdminUnlockAccountResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetKYCTierRequest, $0.GetKYCTierResponse>(
         'GetKYCTier',
         getKYCTier_Pre,
@@ -2268,6 +2350,24 @@ abstract class AuthServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.RequestAccountLockRequest.fromBuffer(value),
         ($0.RequestAccountLockResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.FreezeAccountRequest, $0.FreezeAccountResponse>(
+            'FreezeAccount',
+            freezeAccount_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.FreezeAccountRequest.fromBuffer(value),
+            ($0.FreezeAccountResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UnfreezeAccountRequest,
+            $0.UnfreezeAccountResponse>(
+        'UnfreezeAccount',
+        unfreezeAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.UnfreezeAccountRequest.fromBuffer(value),
+        ($0.UnfreezeAccountResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.SignupResponse> signup_Pre(
@@ -2531,6 +2631,14 @@ abstract class AuthServiceBase extends $grpc.Service {
   $async.Future<$0.LoginResponse> loginWithPasscode(
       $grpc.ServiceCall call, $0.LoginWithPasscodeRequest request);
 
+  $async.Future<$0.LoginResponse> resendLoginOtp_Pre($grpc.ServiceCall $call,
+      $async.Future<$0.ResendLoginOtpRequest> $request) async {
+    return resendLoginOtp($call, await $request);
+  }
+
+  $async.Future<$0.LoginResponse> resendLoginOtp(
+      $grpc.ServiceCall call, $0.ResendLoginOtpRequest request);
+
   $async.Future<$0.LoginResponse> verifyLoginOtp_Pre($grpc.ServiceCall $call,
       $async.Future<$0.VerifyLoginOtpRequest> $request) async {
     return verifyLoginOtp($call, await $request);
@@ -2729,6 +2837,15 @@ abstract class AuthServiceBase extends $grpc.Service {
 
   $async.Future<$0.AdminResetTransactionPinResponse> adminResetTransactionPin(
       $grpc.ServiceCall call, $0.AdminResetTransactionPinRequest request);
+
+  $async.Future<$0.AdminUnlockAccountResponse> adminUnlockAccount_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.AdminUnlockAccountRequest> $request) async {
+    return adminUnlockAccount($call, await $request);
+  }
+
+  $async.Future<$0.AdminUnlockAccountResponse> adminUnlockAccount(
+      $grpc.ServiceCall call, $0.AdminUnlockAccountRequest request);
 
   $async.Future<$0.GetKYCTierResponse> getKYCTier_Pre($grpc.ServiceCall $call,
       $async.Future<$0.GetKYCTierRequest> $request) async {
@@ -3115,4 +3232,22 @@ abstract class AuthServiceBase extends $grpc.Service {
 
   $async.Future<$0.RequestAccountLockResponse> requestAccountLock(
       $grpc.ServiceCall call, $0.RequestAccountLockRequest request);
+
+  $async.Future<$0.FreezeAccountResponse> freezeAccount_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.FreezeAccountRequest> $request) async {
+    return freezeAccount($call, await $request);
+  }
+
+  $async.Future<$0.FreezeAccountResponse> freezeAccount(
+      $grpc.ServiceCall call, $0.FreezeAccountRequest request);
+
+  $async.Future<$0.UnfreezeAccountResponse> unfreezeAccount_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.UnfreezeAccountRequest> $request) async {
+    return unfreezeAccount($call, await $request);
+  }
+
+  $async.Future<$0.UnfreezeAccountResponse> unfreezeAccount(
+      $grpc.ServiceCall call, $0.UnfreezeAccountRequest request);
 }

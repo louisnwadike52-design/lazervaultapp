@@ -152,6 +152,21 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
     });
   }
 
+  void _restartTicker(int seconds) {
+    _ticker?.cancel();
+    _deadline = DateTime.now().add(Duration(seconds: seconds));
+    _remaining = seconds;
+    _ticker = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      final left = _secondsLeft();
+      if (left <= 0) t.cancel();
+      setState(() => _remaining = left);
+    });
+  }
+
   int _secondsLeft() {
     final d = _deadline;
     if (d == null) return 0;
@@ -242,17 +257,52 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   /// which also keeps a stolen step-up token from being replayed for new codes).
   /// So "send a new code" pops back to the still-mounted login screen where the
   /// user re-enters their passcode/password and a new challenge is issued.
-  void _requestNewCode() {
+  bool _resending = false;
+
+  /// Requests a fresh code for the SAME step-up session.
+  ///
+  /// The server replaces the code in place, so the step-up token this screen
+  /// already holds keeps working and the countdown simply restarts from the
+  /// new lifetime it returns. Refusals (cooldown, resend cap) arrive as
+  /// AuthenticationError with a stable code and are handled there.
+  Future<void> _requestNewCode() async {
+    if (_resending) return;
+    setState(() {
+      _resending = true;
+      _errorText = null;
+    });
+
+    final seconds = await context
+        .read<AuthenticationCubit>()
+        .resendLoginOtp(stepUpToken: widget.stepUpToken);
+
+    if (!mounted) return;
+    if (seconds == null) {
+      // The cubit emitted the reason; the listener has already shown it.
+      setState(() => _resending = false);
+      return;
+    }
+
+    setState(() {
+      _resending = false;
+      _terminal = false;
+      _errorText = null;
+    });
+    _clearBoxes();
+    // Restart from the lifetime the server just told us, not the original one:
+    // an admin may have retuned it between the first send and this resend.
+    _restartTicker(seconds);
+    _focusNodes.first.requestFocus();
+
     Get.snackbar(
-      'Get a new code',
-      'Sign in again to have a fresh code sent to your ${widget.method == 'sms' ? 'phone' : 'email'}.',
+      'New code sent',
+      'We sent a fresh code to your ${widget.method == 'sms' ? 'phone' : 'email'}.',
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: _ink,
       colorText: Colors.white,
       margin: const EdgeInsets.all(12),
       duration: const Duration(seconds: 3),
     );
-    Navigator.of(context).maybePop();
   }
 
   /// A connectivity/edge failure is NOT a wrong code — surface it as a connection
@@ -283,6 +333,17 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
       case 'OTP_USED':
       case 'OTP_ATTEMPTS_EXCEEDED':
       case 'STEP_UP_SESSION_EXPIRED':
+      case 'RESEND_TOO_SOON':
+        // Not terminal: the code on screen is still good and they may resend
+        // shortly. Saying "sign in again" here would be wrong and alarming.
+        setState(() {
+          _submitting = false;
+          _errorText = message.isNotEmpty
+              ? message
+              : 'Please wait a moment before asking for another code.';
+        });
+        return;
+      case 'RESEND_LIMIT_REACHED':
       case 'STEP_UP_UNAVAILABLE':
         _ticker?.cancel();
         setState(() {
@@ -330,10 +391,12 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
         // user needs at that moment is a way to get a new code, and the button
         // they are already looking at became unusable. With a ninety second
         // window this is a routine outcome, not an edge case.
-        primaryLabel: (_expired || _terminal)
-            ? 'Sign in again for a new code'
-            : 'Verify & continue',
-        onPrimary: _submitting
+        primaryLabel: _resending
+            ? 'Sending a new code…'
+            : ((_expired || _terminal)
+                ? 'Send me a new code'
+                : 'Verify & continue'),
+        onPrimary: (_submitting || _resending)
             ? null
             : ((_expired || _terminal) ? _requestNewCode : _submit),
         isLoading: _submitting,

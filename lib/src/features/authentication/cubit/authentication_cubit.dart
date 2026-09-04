@@ -634,6 +634,25 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   /// Complete an adaptive step-up login: verify the OTP and, on success, save the
   /// session and emit [AuthenticationSuccess] (same as a normal login).
+  /// Requests a fresh step-up code. Returns the new lifetime in seconds, or
+  /// null when the server refused; the reason surfaces as AuthenticationError
+  /// with a stable code so the screen can distinguish "wait a moment" from
+  /// "you are out of resends".
+  Future<int?> resendLoginOtp({required String stepUpToken}) async {
+    final result = await _authRepository.resendLoginOtp(stepUpToken: stepUpToken);
+    if (isClosed) return null;
+    return result.fold(
+      (failure) {
+        emit(AuthenticationError(
+          failure.message,
+          code: failure is StepUpVerifyFailure ? failure.code : '',
+        ));
+        return null;
+      },
+      (seconds) => seconds,
+    );
+  }
+
   Future<void> verifyLoginOtp({
     required String stepUpToken,
     required String code,

@@ -10413,6 +10413,64 @@ class GetLoginHistoryResponse extends $pb.GeneratedMessage {
   $pb.PbList<LoginActivityEntry> get entries => $_getList(2);
 }
 
+class ResendLoginOtpRequest extends $pb.GeneratedMessage {
+  factory ResendLoginOtpRequest({
+    $core.String? stepUpToken,
+  }) {
+    final result = create();
+    if (stepUpToken != null) result.stepUpToken = stepUpToken;
+    return result;
+  }
+
+  ResendLoginOtpRequest._();
+
+  factory ResendLoginOtpRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ResendLoginOtpRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ResendLoginOtpRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'stepUpToken')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ResendLoginOtpRequest clone() =>
+      ResendLoginOtpRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ResendLoginOtpRequest copyWith(
+          void Function(ResendLoginOtpRequest) updates) =>
+      super.copyWith((message) => updates(message as ResendLoginOtpRequest))
+          as ResendLoginOtpRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ResendLoginOtpRequest create() => ResendLoginOtpRequest._();
+  @$core.override
+  ResendLoginOtpRequest createEmptyInstance() => create();
+  static $pb.PbList<ResendLoginOtpRequest> createRepeated() =>
+      $pb.PbList<ResendLoginOtpRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ResendLoginOtpRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ResendLoginOtpRequest>(create);
+  static ResendLoginOtpRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get stepUpToken => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set stepUpToken($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasStepUpToken() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStepUpToken() => $_clearField(1);
+}
+
 class VerifyLoginOtpRequest extends $pb.GeneratedMessage {
   factory VerifyLoginOtpRequest({
     $core.String? stepUpToken,
