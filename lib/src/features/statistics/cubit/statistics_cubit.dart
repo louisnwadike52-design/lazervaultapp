@@ -232,8 +232,21 @@ class StatisticsCubit extends Cubit<StatisticsState> {
       final includesExternal = loadSource != StatisticsSource.lazervault;
       final includesWallet = loadSource != StatisticsSource.bank;
 
-      // Monthly trends has no source filter — load once for every source.
-      final monthlyTrendsFuture = analyticsRepository.getMonthlyTrends(months: 6);
+      // Monthly trends is a WALLET-side query (accounts-service), so it can
+      // only answer for the wallet. It used to run unscoped, which blended
+      // linked-bank rows into it and returned the SAME chart on all three
+      // tabs — wrong on every one of them: the LazerVault tab included bank
+      // spend, and the bank tabs were never answered by this query at all.
+      //
+      // Now it reflects the scope it can actually serve, and the Bank-only tab
+      // does not call it: there is no bank-side trends source, and showing a
+      // wallet chart there would be worse than showing none.
+      final monthlyTrendsFuture = includesWallet
+          ? analyticsRepository.getMonthlyTrends(
+              months: 6,
+              includeExternalBanks: includesExternal,
+            )
+          : Future<accounts_pb.GetMonthlyTrendsResponse?>.value(null);
 
       // Freshness note: analytics read the LAST-SYNCED external transactions
       // stored in banking-service — never a live Mono pull on load. The old

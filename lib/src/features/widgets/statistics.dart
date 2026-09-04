@@ -162,6 +162,20 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
   // Selected linked-bank scope. Empty = ALL linked banks; one or more narrows
   // every external number on the page to that SUBSET of banks (multi-select).
   Set<String> _selectedBankIds = <String>{};
+
+  /// The bank scope to send with credit-score / insight reads.
+  ///
+  /// A comma-separated list of EVERY selected bank, or null when none are
+  /// selected. banking-service parses either form and scores across all of
+  /// them; null genuinely means unscoped, which it resolves to the user's
+  /// default account.
+  ///
+  /// This used to send an id only when exactly one bank was selected, so
+  /// choosing two silently scored the default account instead of the two.
+  String? _selectedBankScopeId() {
+    if (_selectedBankIds.isEmpty) return null;
+    return _selectedBankIds.join(',');
+  }
   ExternalDataStatus _externalStatus = ExternalDataStatus.notApplicable;
   String? _externalError;
   String _userId = '';
@@ -1236,10 +1250,12 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
               arguments: {
                 'userId': _userId,
                 'showAllSources': _includeExternalBanks,
-                // Credit-score screen is single-bank: only pass one when exactly
-                // one bank is selected, else leave unscoped (all banks).
-                'linkedAccountId':
-                    _selectedBankIds.length == 1 ? _selectedBankIds.first : null,
+                // EVERY selected bank, not just one. Passing null for a
+                // multi-bank selection did not mean "all banks" as the old
+                // comment claimed: banking-service reads an absent scope as
+                // GetDefaultByUserID, so the screen showed the DEFAULT bank's
+                // score while the UI implied it covered the selection.
+                'linkedAccountId': _selectedBankScopeId(),
               },
             ),
           ),
@@ -2005,10 +2021,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
         arguments: {
           'userId': _userId,
           'showAllSources': _includeExternalBanks,
-          // The credit-score screen scopes to a SINGLE bank; only pass one when
-          // exactly one bank is selected, else leave it unscoped (all banks).
-          'linkedAccountId':
-              _selectedBankIds.length == 1 ? _selectedBankIds.first : null,
+          // Every selected bank (see _selectedBankScopeId).
+          'linkedAccountId': _selectedBankScopeId(),
         },
       ),
       child: Container(

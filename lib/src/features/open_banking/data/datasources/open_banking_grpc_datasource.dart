@@ -700,6 +700,10 @@ class OpenBankingGrpcDataSource {
       final callOptions = await _callOptionsHelper.withAuth();
       final extra = <String, String>{};
       if (linkedAccountId != null && linkedAccountId.isNotEmpty) {
+        // May carry ONE id or a comma-separated list. banking-service parses
+        // both and scores across every account given. Sending only one when the
+        // user had several banks selected was how a multi-bank selection ended
+        // up showing the DEFAULT account's score.
         extra['x-linked-account-id'] = linkedAccountId;
       }
 
@@ -813,6 +817,10 @@ class OpenBankingGrpcDataSource {
       final callOptions = await _callOptionsHelper.withAuth();
       final extra = <String, String>{};
       if (linkedAccountId != null && linkedAccountId.isNotEmpty) {
+        // May carry ONE id or a comma-separated list. banking-service parses
+        // both and scores across every account given. Sending only one when the
+        // user had several banks selected was how a multi-bank selection ended
+        // up showing the DEFAULT account's score.
         extra['x-linked-account-id'] = linkedAccountId;
       }
 

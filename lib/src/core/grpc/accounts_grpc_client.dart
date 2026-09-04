@@ -343,10 +343,14 @@ class AccountsGrpcClient {
     required String accountId,
     int months = 6,
     String? locale,
+    bool includeExternalBanks = true,
   }) async {
     final request = GetMonthlyTrendsRequest()
       ..accountId = accountId
-      ..months = months;
+      ..months = months
+      // Explicit: without this the query blended wallet and linked-bank rows
+      // and returned the same chart on every source tab.
+      ..includeExternalBanks = includeExternalBanks;
 
     if (locale != null && locale.isNotEmpty) {
       request.locale = locale;

@@ -72,6 +72,7 @@ class FinancialAnalyticsRepository {
   /// Get monthly income/expense trends
   Future<GetMonthlyTrendsResponse> getMonthlyTrends({
     int months = 6,
+    bool includeExternalBanks = true,
   }) async {
     final accountId = _accountId;
     if (accountId == null || accountId.isEmpty) {
@@ -83,6 +84,7 @@ class FinancialAnalyticsRepository {
         accountId: accountId,
         locale: _locale,
         months: months,
+        includeExternalBanks: includeExternalBanks,
       ),
     );
   }
