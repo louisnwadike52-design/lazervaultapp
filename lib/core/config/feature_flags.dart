@@ -466,6 +466,43 @@ class FeatureFlags {
   static String pendingPaymentsShowCountKey(String uid) =>
       'pending_payments_prompt_shows_$uid';
 
+  // ── Per-account balance visibility ─────────────────────────────────────
+  // Which account cards have their balance hidden, stored per user as a list
+  // of account ids. Scoped to the uid for the same reason the prompt flags
+  // are: two people sharing a device must not inherit each other's choices.
+
+  static String hiddenBalanceAccountsKey(String uid) =>
+      'hidden_balance_accounts_$uid';
+
+  /// Account ids whose balance the user has hidden.
+  ///
+  /// Fails CLOSED to "everything visible": an unreadable preference shows the
+  /// balance, which is the state the user already sees today. Failing the
+  /// other way would blank every card and look like the balances had been
+  /// lost.
+  static Set<String> hiddenBalanceAccounts(String uid) =>
+      (_prefs?.getStringList(hiddenBalanceAccountsKey(uid)) ?? const [])
+          .toSet();
+
+  static bool isBalanceHidden(String uid, String accountId) =>
+      hiddenBalanceAccounts(uid).contains(accountId);
+
+  /// Toggles one account and returns the new hidden state.
+  static Future<bool> toggleBalanceHidden(String uid, String accountId) async {
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
+    _prefs = prefs;
+    final current = hiddenBalanceAccounts(uid);
+    final nowHidden = !current.contains(accountId);
+    if (nowHidden) {
+      current.add(accountId);
+    } else {
+      current.remove(accountId);
+    }
+    await prefs.setStringList(
+        hiddenBalanceAccountsKey(uid), current.toList(growable: false));
+    return nowHidden;
+  }
+
   /// `true` when the launch prompt is ENABLED (the default).
   ///
   /// Fails OPEN: an unreadable preference shows the prompt. Silence is the

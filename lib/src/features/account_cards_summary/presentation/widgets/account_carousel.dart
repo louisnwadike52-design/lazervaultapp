@@ -13,6 +13,8 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/services/balance_websocket_service.dart';
+import 'package:flutter/services.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/presentation/widgets/animated_balance_counter.dart';
@@ -20,7 +22,6 @@ import 'package:lazervault/src/features/family_account/presentation/cubit/family
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'account_carousel_widgets.dart';
-
 
 class AccountCarousel extends StatefulWidget {
   final List<AccountSummaryEntity> accountSummaries;
@@ -56,6 +57,14 @@ class _AccountCarouselState extends State<AccountCarousel> {
   static const Duration _kPanicRollDuration = Duration(milliseconds: 900);
   bool _panicRolling = false;
   Timer? _panicRollTimer;
+
+  /// Account ids whose balance the user has hidden on this device.
+  ///
+  /// Held in memory and mirrored to prefs so a toggle is instant. Reading the
+  /// store on every rebuild would put a synchronous preference lookup inside
+  /// the build of an animating card.
+  Set<String> _hiddenBalances = <String>{};
+  String _balanceUid = '';
 
   // Store cubit reference early to avoid context.read() in delayed callbacks
   // (accessing context after Element is defunct causes crashes)
@@ -169,6 +178,24 @@ class _AccountCarouselState extends State<AccountCarousel> {
     _checkForPendingAnimation();
     // Re-render when the panic decoy is toggled (shake / long-press) or edited.
     _panic.addListener(_onPanicChanged);
+    // Restore hidden balances for THIS user. Post-frame because it needs the
+    // authenticated context, which is not available during initState.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final auth = context.read<AuthenticationCubit>().state;
+      final uid = switch (auth) {
+        AuthenticationSuccess s => s.profile.user.id,
+        AuthenticationAuthenticated s => s.profile.user.id,
+        _ => '',
+      };
+      if (uid.isEmpty) return;
+      final restored = FeatureFlags.hiddenBalanceAccounts(uid);
+      if (!mounted) return;
+      setState(() {
+        _balanceUid = uid;
+        _hiddenBalances = restored;
+      });
+    });
   }
 
   void _onPanicChanged() {
@@ -192,6 +219,26 @@ class _AccountCarouselState extends State<AccountCarousel> {
     _panicRollTimer?.cancel();
     _panic.removeListener(_onPanicChanged);
     super.dispose();
+  }
+
+  bool _isHidden(String accountId) => _hiddenBalances.contains(accountId);
+
+  /// Hides or reveals one account's balance and remembers the choice.
+  ///
+  /// Optimistic: the card flips immediately and the preference write follows.
+  /// A failed write costs the user the setting on next launch, which is far
+  /// cheaper than a toggle that visibly lags behind the tap.
+  Future<void> _toggleBalanceVisibility(String accountId) async {
+    if (_balanceUid.isEmpty) return;
+    setState(() {
+      if (_hiddenBalances.contains(accountId)) {
+        _hiddenBalances = {..._hiddenBalances}..remove(accountId);
+      } else {
+        _hiddenBalances = {..._hiddenBalances}..add(accountId);
+      }
+    });
+    HapticFeedback.selectionClick();
+    await FeatureFlags.toggleBalanceHidden(_balanceUid, accountId);
   }
 
   /// Balance to DISPLAY: the decoy amount when the panic camouflage is on, else
@@ -252,10 +299,11 @@ class _AccountCarouselState extends State<AccountCarousel> {
 
   /// Initialize carousel position to show the currently active account
   void _initializeCarouselPosition() {
-    if (_accountManager.hasActiveAccount && widget.accountSummaries.isNotEmpty) {
+    if (_accountManager.hasActiveAccount &&
+        widget.accountSummaries.isNotEmpty) {
       final activeId = _accountManager.activeAccountId;
-      final index = widget.accountSummaries
-          .indexWhere((a) => a.id == activeId || a.spendingAccountId == activeId);
+      final index = widget.accountSummaries.indexWhere(
+          (a) => a.id == activeId || a.spendingAccountId == activeId);
       if (index >= 0) {
         _currentIndex = index;
       }
@@ -263,10 +311,12 @@ class _AccountCarouselState extends State<AccountCarousel> {
   }
 
   Future<void> _initializeActiveAccount() async {
-    if (!_accountManager.hasActiveAccount && widget.accountSummaries.isNotEmpty) {
+    if (!_accountManager.hasActiveAccount &&
+        widget.accountSummaries.isNotEmpty) {
       // Set the first account as active by default (spending id so a family
       // card resolves to its real-money virtual account).
-      _accountManager.setActiveAccount(widget.accountSummaries.first.spendingAccountId);
+      _accountManager
+          .setActiveAccount(widget.accountSummaries.first.spendingAccountId);
     }
     _syncActiveFrozenFlag();
   }
@@ -280,10 +330,12 @@ class _AccountCarouselState extends State<AccountCarousel> {
       _accountManager.setActiveAccountFrozen(false);
       return;
     }
-    final idx = _currentIndex >= 0 && _currentIndex < widget.accountSummaries.length
-        ? _currentIndex
-        : 0;
-    _accountManager.setActiveAccountFrozen(widget.accountSummaries[idx].isFrozen);
+    final idx =
+        _currentIndex >= 0 && _currentIndex < widget.accountSummaries.length
+            ? _currentIndex
+            : 0;
+    _accountManager
+        .setActiveAccountFrozen(widget.accountSummaries[idx].isFrozen);
   }
 
   /// Called when user swipes the carousel - automatically sets active account
@@ -295,11 +347,13 @@ class _AccountCarouselState extends State<AccountCarousel> {
     // Skip setting active account when on the "+" add card (last index).
     // Use spendingAccountId so a family card activates its real-money virtual
     // account (the pool) — that's the source the payments path debits + limits.
-    if (widget.accountSummaries.isNotEmpty && index < widget.accountSummaries.length) {
+    if (widget.accountSummaries.isNotEmpty &&
+        index < widget.accountSummaries.length) {
       final newAccountId = widget.accountSummaries[index].spendingAccountId;
       _accountManager.setActiveAccount(newAccountId);
       // Keep the global frozen flag aligned with the newly-active account.
-      _accountManager.setActiveAccountFrozen(widget.accountSummaries[index].isFrozen);
+      _accountManager
+          .setActiveAccountFrozen(widget.accountSummaries[index].isFrozen);
     }
   }
 
@@ -307,65 +361,65 @@ class _AccountCarouselState extends State<AccountCarousel> {
 
   @override
   Widget build(BuildContext context) {
-     // Apply any buffered balance updates now that we're building (visible)
-     if (_pendingBalanceUpdates.isNotEmpty) {
-       WidgetsBinding.instance.addPostFrameCallback((_) {
-         _applyPendingUpdates();
-       });
-     }
+    // Apply any buffered balance updates now that we're building (visible)
+    if (_pendingBalanceUpdates.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _applyPendingUpdates();
+      });
+    }
 
-     if (widget.accountSummaries.isEmpty) {
-        return SizedBox(
-          height: 228.h,
-          child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 4.w),
-            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.6),
-                  const Color(0xFF4834D4).withValues(alpha: 0.6),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.15),
-                width: 1,
-              ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.account_balance_wallet_outlined,
-                  color: Colors.white.withValues(alpha: 0.7),
-                  size: 36.sp,
-                ),
-                SizedBox(height: 12.h),
-                Text(
-                  'No accounts found',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 6.h),
-                Text(
-                  'Pull down to refresh or check your connection.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 12.sp,
-                  ),
-                ),
+    if (widget.accountSummaries.isEmpty) {
+      return SizedBox(
+        height: 228.h,
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: 4.w),
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.6),
+                const Color(0xFF4834D4).withValues(alpha: 0.6),
               ],
             ),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.15),
+              width: 1,
+            ),
           ),
-        );
-     }
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.account_balance_wallet_outlined,
+                color: Colors.white.withValues(alpha: 0.7),
+                size: 36.sp,
+              ),
+              SizedBox(height: 12.h),
+              Text(
+                'No accounts found',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 6.h),
+              Text(
+                'Pull down to refresh or check your connection.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 12.sp,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     // Wrap with BlocListener to handle real-time balance updates.
     //
@@ -398,7 +452,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
               viewportFraction: 0.95, // Wider cards
               enlargeCenterPage: true,
               initialPage: _currentIndex, // Start at active account position
-              onPageChanged: _onPageChanged, // Automatically sets active account on swipe
+              onPageChanged:
+                  _onPageChanged, // Automatically sets active account on swipe
             ),
             itemBuilder: (context, index, realIndex) {
               final account = widget.accountSummaries[index];
@@ -456,17 +511,24 @@ class _AccountCarouselState extends State<AccountCarousel> {
     } else {
       // Dashboard is not visible — buffer with from→to for two-phase animation on return.
       // "from" is the currently displayed balance (use putIfAbsent to keep earliest value).
-      final currentDisplayed = _realtimeBalances[accountId]
-          ?? widget.accountSummaries.where((a) => a.id == accountId).firstOrNull?.balance;
+      final currentDisplayed = _realtimeBalances[accountId] ??
+          widget.accountSummaries
+              .where((a) => a.id == accountId)
+              .firstOrNull
+              ?.balance;
       if (currentDisplayed != null) {
-        _pendingBalanceUpdates.putIfAbsent(accountId, () => (from: currentDisplayed, to: newBalance));
+        _pendingBalanceUpdates.putIfAbsent(
+            accountId, () => (from: currentDisplayed, to: newBalance));
         // Always update "to" in case multiple events arrive while away
-        _pendingBalanceUpdates[accountId] = (from: _pendingBalanceUpdates[accountId]!.from, to: newBalance);
+        _pendingBalanceUpdates[accountId] =
+            (from: _pendingBalanceUpdates[accountId]!.from, to: newBalance);
       }
-      debugPrint('AccountCarousel: Buffered balance update for account $accountId (dashboard not visible)');
+      debugPrint(
+          'AccountCarousel: Buffered balance update for account $accountId (dashboard not visible)');
     }
 
-    debugPrint('AccountCarousel: Real-time balance update for account $accountId: $newBalance (${event.eventType})');
+    debugPrint(
+        'AccountCarousel: Real-time balance update for account $accountId: $newBalance (${event.eventType})');
   }
 
   /// Apply any pending balance updates when dashboard becomes visible.
@@ -474,7 +536,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
   void _applyPendingUpdates() {
     if (_pendingBalanceUpdates.isEmpty || !mounted) return;
 
-    final updates = Map<String, ({double from, double to})>.from(_pendingBalanceUpdates);
+    final updates =
+        Map<String, ({double from, double to})>.from(_pendingBalanceUpdates);
     _pendingBalanceUpdates.clear();
 
     // Phase 1: Set to "from" values (shows old balance)
@@ -503,7 +566,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
         _cubit.markBalanceUpdateConsumed();
       });
 
-      debugPrint('AccountCarousel: Applied pending balance updates (two-phase animation)');
+      debugPrint(
+          'AccountCarousel: Applied pending balance updates (two-phase animation)');
     });
   }
 
@@ -526,11 +590,14 @@ class _AccountCarouselState extends State<AccountCarousel> {
       // Real-time update: if account has holds, subtract pending from new balance
       final realtimeTotal = _realtimeBalances[account.id]!;
       if (account.hasPendingBalance) {
-        return (realtimeTotal - account.reservedBalance).clamp(0.0, realtimeTotal);
+        return (realtimeTotal - account.reservedBalance)
+            .clamp(0.0, realtimeTotal);
       }
       return realtimeTotal;
     }
-    return account.availableBalance > 0 ? account.availableBalance : account.balance;
+    return account.availableBalance > 0
+        ? account.availableBalance
+        : account.balance;
   }
 
   /// Resolves the family account ID for a legacy NUBAN (familyAccountId == null),
@@ -607,7 +674,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
       // verification" state for empty, matching the bank/holder empty handling
       // below. (Prior bug: the masked '•••• ????' string was passed here and
       // shown as if it were a real account number.)
-      'accountNumber': account.accountNumber ?? '', // Full NUBAN for deposits (empty until provisioned)
+      'accountNumber': account.accountNumber ??
+          '', // Full NUBAN for deposits (empty until provisioned)
       'accountNumberMasked': '•••• ${account.accountNumberLast4}',
       // Real provider values ONLY. When the backend hasn't populated the
       // partner bank / NUBAN holder name yet (account still being set up),
@@ -615,8 +683,10 @@ class _AccountCarouselState extends State<AccountCarousel> {
       // empty state — never a mock ("Wema Bank" / "Lazervault Account") and
       // never the account TYPE masquerading as the holder name.
       'bankName': account.bankName ?? '', // Partner bank name (real or empty)
-      'accountName': account.accountName ?? '', // NUBAN holder name (real or empty)
-      'trend': '${account.trendPercentage > 0 ? '+' : ''}${account.trendPercentage.toStringAsFixed(1)}%',
+      'accountName':
+          account.accountName ?? '', // NUBAN holder name (real or empty)
+      'trend':
+          '${account.trendPercentage > 0 ? '+' : ''}${account.trendPercentage.toStringAsFixed(1)}%',
       'isUp': isUp,
     };
 
@@ -685,7 +755,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
                 if (frozen) const _FrozenFrostOverlay(),
                 // Main content
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -700,7 +771,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
                                     "${account.accountType} Account",
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.9),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.9),
                                       fontSize: 16.sp,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -711,231 +783,281 @@ class _AccountCarouselState extends State<AccountCarousel> {
                               ],
                             ),
                           ),
-                        // Trend chip — tap to open the period picker so
-                        // the user can choose whether the percentage
-                        // tracks against the last day, week or month.
-                        GestureDetector(
-                          onTap: () => _openTrendPeriodPicker(account),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 10.w,
-                              vertical: 4.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isUp
-                                  ? Colors.green.withValues(alpha: 0.2)
-                                  : Colors.red.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(20.r),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  cardArguments['trend'] as String,
-                                  style: TextStyle(
+                          // Trend chip — tap to open the period picker so
+                          // the user can choose whether the percentage
+                          // tracks against the last day, week or month.
+                          GestureDetector(
+                            onTap: () => _openTrendPeriodPicker(account),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10.w,
+                                vertical: 4.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isUp
+                                    ? Colors.green.withValues(alpha: 0.2)
+                                    : Colors.red.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(20.r),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    cardArguments['trend'] as String,
+                                    style: TextStyle(
+                                      color: isUp
+                                          ? Colors.green[300]
+                                          : Colors.red[300],
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  SizedBox(width: 2.w),
+                                  Icon(
+                                    Icons.expand_more,
                                     color: isUp
                                         ? Colors.green[300]
                                         : Colors.red[300],
-                                    fontSize: 11.sp,
-                                    fontWeight: FontWeight.w600,
+                                    size: 12.sp,
                                   ),
-                                ),
-                                SizedBox(width: 2.w),
-                                Icon(
-                                  Icons.expand_more,
-                                  color: isUp
-                                      ? Colors.green[300]
-                                      : Colors.red[300],
-                                  size: 12.sp,
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(width: 8.w),
-                        // "Details" chip — replaces the bare info-icon
-                        // circle. Same tap target (28dp+ height) but
-                        // self-labelled so the affordance is obvious.
-                        GestureDetector(
-                          onTap: () => widget.onShowDetails(cardArguments),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 10.w,
-                              vertical: 4.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(20.r),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.info_outline,
-                                  color: Colors.white,
-                                  size: 14.sp,
-                                ),
-                                SizedBox(width: 4.w),
-                                Text(
-                                  'Details',
-                                  style: TextStyle(
+                          SizedBox(width: 8.w),
+                          // "Details" chip — replaces the bare info-icon
+                          // circle. Same tap target (28dp+ height) but
+                          // self-labelled so the affordance is obvious.
+                          GestureDetector(
+                            onTap: () => widget.onShowDetails(cardArguments),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10.w,
+                                vertical: 4.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20.r),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.info_outline,
                                     color: Colors.white,
-                                    fontSize: 11.sp,
-                                    fontWeight: FontWeight.w600,
+                                    size: 14.sp,
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    // Balance sits in the optical center of the card.
-                    // Spacer above + the existing Spacer between balance
-                    // and the bottom row pushes the amount to roughly
-                    // 40% from the top — feels visually centered while
-                    // leaving room for the bottom "account no + buttons"
-                    // strip and the top "label + chips" row.
-                    const Spacer(),
-                    // Animated balance counter — shows AVAILABLE balance on dashboard
-                    // Long-press the balance to toggle the panic decoy (one of the
-                    // two triggers; shake is the other). No-op until configured.
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onLongPress: _panic.longPressTriggerEnabled
-                                ? () => _panic.toggle()
-                                : null,
-                            child: CompactAnimatedBalance(
-                              balance: _displayBalance(account),
-                              currencySymbol: currencySymbol,
-                              fontSize: 28,
-                              color: Colors.white,
-                              duration: _panicRolling ? _kPanicRollDuration : const Duration(seconds: 3),
-                              startDelay: _panicRolling ? Duration.zero : const Duration(milliseconds: 500),
-                              enableSound: _panic.soundEnabled,
-                              enableVibration: _panic.vibrationEnabled,
-                              // Panic decoy shows instantly (no roll/countdown).
-                              animate: _panicRolling || !_panic.isCamouflageOn,
-                            ),
-                          ),
-                        ),
-                        // Frozen badge — at the right end of the balance amount.
-                        // Mirrors the accounts-service block (no outgoing
-                        // transfers/payments) so the state is visible on the card.
-                        if (account.isFrozen) ...[
-                          SizedBox(width: 10.w),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 8.w, vertical: 3.h),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.22),
-                              borderRadius: BorderRadius.circular(20.r),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.ac_unit,
-                                    color: Colors.white, size: 11.sp),
-                                SizedBox(width: 3.w),
-                                Text(
-                                  'Frozen',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10.sp,
-                                    fontWeight: FontWeight.w700,
+                                  SizedBox(width: 4.w),
+                                  Text(
+                                    'Details',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ],
-                      ],
-                    ),
-                    // Stale balance indicator — shown while WebSocket update is animating
-                    if (_animatingAccounts.contains(account.id))
-                      Padding(
-                        padding: EdgeInsets.only(top: 2.h),
-                        child: Row(
-                          children: [
-                            // Tiny inline indicator — the WebSocket
-                            // "Updating…" microspinner sits next to
-                            // 10sp body text, so the loader is sized
-                            // to read as a subtle dot rather than a
-                            // dominant visual element on the card.
-                            LazerVaultLoader(size: 4),
-                            SizedBox(width: 4.w),
-                            Text(
-                              'Updating...',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.6),
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                    // Pending balance is intentionally NOT surfaced on
-                    // the dashboard card anymore — held/clearing funds
-                    // show up in the Pending tab inside the account
-                    // details bottom sheet (opened via the "Details"
-                    // chip at the top-right). Keeps the card compact
-                    // for the common case where pending is zero.
-                    const Spacer(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Masked account number — only the last 4 digits
-                        // are visible on the dashboard. Full NUBAN is
-                        // still in cardArguments['accountNumber'] for
-                        // the Deposit / Withdraw flows where the
-                        // unmasked value is required.
-                        Text(
-                          _maskAccountNumber(
-                            cardArguments['accountNumber'] as String,
+                      // Balance sits in the optical center of the card.
+                      // Spacer above + the existing Spacer between balance
+                      // and the bottom row pushes the amount to roughly
+                      // 40% from the top — feels visually centered while
+                      // leaving room for the bottom "account no + buttons"
+                      // strip and the top "label + chips" row.
+                      const Spacer(),
+                      // Animated balance counter — shows AVAILABLE balance on dashboard
+                      // Long-press the balance to toggle the panic decoy (one of the
+                      // two triggers; shake is the other). No-op until configured.
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Expanded, NOT Flexible + Spacer: those both default
+                          // to flex 1, so they would split the row down the
+                          // middle and ellipsize a wide balance at half width.
+                          // Expanded on the left group takes whatever the
+                          // button does not, which pins the eye to the right
+                          // AND lets the amount use the full remaining width.
+                          Expanded(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Flexible(
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onLongPress: _panic.longPressTriggerEnabled
+                                        ? () => _panic.toggle()
+                                        : null,
+                                    child: _isHidden(account.id)
+                                        // Masked: keep the currency symbol and the
+                                        // balance's type scale so the card holds its
+                                        // shape. Swapping in a shorter, lighter string
+                                        // would make the whole row jump on every
+                                        // toggle.
+                                        ? Text(
+                                            '$currencySymbol ••••••',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 28.sp,
+                                              fontWeight: FontWeight.w700,
+                                              letterSpacing: 2,
+                                            ),
+                                          )
+                                        : CompactAnimatedBalance(
+                                            balance: _displayBalance(account),
+                                            currencySymbol: currencySymbol,
+                                            fontSize: 28,
+                                            color: Colors.white,
+                                            duration: _panicRolling
+                                                ? _kPanicRollDuration
+                                                : const Duration(seconds: 3),
+                                            startDelay: _panicRolling
+                                                ? Duration.zero
+                                                : const Duration(
+                                                    milliseconds: 500),
+                                            enableSound: _panic.soundEnabled,
+                                            enableVibration:
+                                                _panic.vibrationEnabled,
+                                            // Panic decoy shows instantly (no roll/countdown).
+                                            animate: _panicRolling ||
+                                                !_panic.isCamouflageOn,
+                                          ),
+                                  ),
+                                ),
+                                // Frozen badge — at the right end of the balance amount.
+                                // Mirrors the accounts-service block (no outgoing
+                                // transfers/payments) so the state is visible on the card.
+                                if (account.isFrozen) ...[
+                                  SizedBox(width: 10.w),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 8.w, vertical: 3.h),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.22),
+                                      borderRadius: BorderRadius.circular(20.r),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.ac_unit,
+                                            color: Colors.white, size: 11.sp),
+                                        SizedBox(width: 3.w),
+                                        Text(
+                                          'Frozen',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            fontSize: 14.sp,
-                            // No letter-spacing — this is an account
-                            // number, not a card PIN, so we want the
-                            // bullets to read as one tight run.
+                          // Pinned to the card's right edge. The balance is an
+                          // ANIMATED counter whose width changes as it rolls,
+                          // so an icon sitting directly beside the number would
+                          // slide about while it counts. Here it stays put and
+                          // lines up with the Details chip above it and the
+                          // action buttons below.
+                          _BalanceVisibilityButton(
+                            hidden: _isHidden(account.id),
+                            onTap: () => _toggleBalanceVisibility(account.id),
+                          ),
+                        ],
+                      ),
+                      // Stale balance indicator — shown while WebSocket update is animating
+                      if (_animatingAccounts.contains(account.id))
+                        Padding(
+                          padding: EdgeInsets.only(top: 2.h),
+                          child: Row(
+                            children: [
+                              // Tiny inline indicator — the WebSocket
+                              // "Updating…" microspinner sits next to
+                              // 10sp body text, so the loader is sized
+                              // to read as a subtle dot rather than a
+                              // dominant visual element on the card.
+                              LazerVaultLoader(size: 4),
+                              SizedBox(width: 4.w),
+                              Text(
+                                'Updating...',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        SizedBox(width: 16.w),
-                        Row(
-                          children: [
-                            _buildActionButton(
-                              "Deposit",
-                              Icons.add_rounded,
-                              dimmed: frozen,
-                              onTap: frozen
-                                  ? _showFrozenActionBlocked
-                                  : () {
-                                      Get.toNamed(AppRoutes.depositFunds,
-                                          arguments: {
-                                            'selectedCard': cardArguments
-                                          });
-                                    },
+                      // Pending balance is intentionally NOT surfaced on
+                      // the dashboard card anymore — held/clearing funds
+                      // show up in the Pending tab inside the account
+                      // details bottom sheet (opened via the "Details"
+                      // chip at the top-right). Keeps the card compact
+                      // for the common case where pending is zero.
+                      const Spacer(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Masked account number — only the last 4 digits
+                          // are visible on the dashboard. Full NUBAN is
+                          // still in cardArguments['accountNumber'] for
+                          // the Deposit / Withdraw flows where the
+                          // unmasked value is required.
+                          Text(
+                            _maskAccountNumber(
+                              cardArguments['accountNumber'] as String,
                             ),
-                            SizedBox(width: 12.w),
-                            _buildActionButton(
-                              "Withdraw",
-                              Icons.remove_rounded,
-                              dimmed: frozen,
-                              onTap: frozen
-                                  ? _showFrozenActionBlocked
-                                  : () => Get.toNamed(AppRoutes.withdrawFunds,
-                                      arguments: {'selectedCard': cardArguments}),
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 14.sp,
+                              // No letter-spacing — this is an account
+                              // number, not a card PIN, so we want the
+                              // bullets to read as one tight run.
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
+                          ),
+                          SizedBox(width: 16.w),
+                          Row(
+                            children: [
+                              _buildActionButton(
+                                "Deposit",
+                                Icons.add_rounded,
+                                dimmed: frozen,
+                                onTap: frozen
+                                    ? _showFrozenActionBlocked
+                                    : () {
+                                        Get.toNamed(AppRoutes.depositFunds,
+                                            arguments: {
+                                              'selectedCard': cardArguments
+                                            });
+                                      },
+                              ),
+                              SizedBox(width: 12.w),
+                              _buildActionButton(
+                                "Withdraw",
+                                Icons.remove_rounded,
+                                dimmed: frozen,
+                                onTap: frozen
+                                    ? _showFrozenActionBlocked
+                                    : () => Get.toNamed(AppRoutes.withdrawFunds,
+                                            arguments: {
+                                              'selectedCard': cardArguments
+                                            }),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -1034,11 +1156,13 @@ class _AccountCarouselState extends State<AccountCarousel> {
     );
   }
 
-  Widget _buildFamilyAccountCard(BuildContext context, AccountSummaryEntity account) {
+  Widget _buildFamilyAccountCard(
+      BuildContext context, AccountSummaryEntity account) {
     final currencySymbol = _getCurrencySymbol(account.currency);
     // If it's a proper family entity, check its status. If it's a generic family
     // account (from regular accounts, isFamilyAccount==false), treat as pending setup.
-    final isPendingSetup = account.isFamilyPendingSetup || !account.isFamilyAccount;
+    final isPendingSetup =
+        account.isFamilyPendingSetup || !account.isFamilyAccount;
     // Frozen family/pool account → iced-over theme (the freeze rides familyStatus).
     final bool frozen = account.isFrozen;
 
@@ -1068,307 +1192,325 @@ class _AccountCarouselState extends State<AccountCarousel> {
             }
           },
           child: Container(
-          margin: EdgeInsets.symmetric(horizontal: 4.w),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: frozen
-                  ? const [Color(0xFF2B5876), Color(0xFF4E7A9B)]
-                  : const [Color(0xFF1A1A3E), Color(0xFF2D2B6B)],
-            ),
-            borderRadius: BorderRadius.circular(20.r),
-            boxShadow: [
-              BoxShadow(
-                color: (frozen ? const Color(0xFF2B5876) : const Color(0xFF1A1A3E))
-                    .withValues(alpha: 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+            margin: EdgeInsets.symmetric(horizontal: 4.w),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: frozen
+                    ? const [Color(0xFF2B5876), Color(0xFF4E7A9B)]
+                    : const [Color(0xFF1A1A3E), Color(0xFF2D2B6B)],
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20.r),
-            child: Stack(
-              children: [
-                // Background decorative circles
-                Positioned(
-                  right: -30,
-                  top: -30,
-                  child: Container(
-                    width: 120.w,
-                    height: 120.w,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.06),
-                    ),
-                  ),
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(
+                  color: (frozen
+                          ? const Color(0xFF2B5876)
+                          : const Color(0xFF1A1A3E))
+                      .withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
-                Positioned(
-                  left: -20,
-                  bottom: -40,
-                  child: Container(
-                    width: 100.w,
-                    height: 100.w,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.04),
-                    ),
-                  ),
-                ),
-                // Frost treatment for a frozen family/pool account.
-                if (frozen) const _FrozenFrostOverlay(),
-                // Main content
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.family_restroom,
-                                color: Colors.white,
-                                size: 18.sp,
-                              ),
-                              SizedBox(width: 6.w),
-                              Text(
-                                // Category label — the specific account name is
-                                // shown as the subtitle below the balance.
-                                'Family & Friends',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (!isPendingSetup)
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF7C6BF0).withValues(alpha: 0.3),
-                                borderRadius: BorderRadius.circular(20.r),
-                              ),
-                              child: Text(
-                                '${account.memberCount ?? 0} members',
-                                style: TextStyle(
-                                  color: const Color(0xFFB8ABFF),
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            )
-                          else
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF7C6BF0).withValues(alpha: 0.25),
-                                borderRadius: BorderRadius.circular(20.r),
-                              ),
-                              child: Text(
-                                'NEW',
-                                style: TextStyle(
-                                  color: const Color(0xFFB8ABFF),
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ),
-                        ],
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20.r),
+              child: Stack(
+                children: [
+                  // Background decorative circles
+                  Positioned(
+                    right: -30,
+                    top: -30,
+                    child: Container(
+                      width: 120.w,
+                      height: 120.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.06),
                       ),
-                      SizedBox(height: 12.h),
-                      if (isPendingSetup) ...[
-                        Text(
-                          'Share & Manage',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-                        Text(
-                          'Money Together',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ] else ...[
-                        // Group/family balance — shows the decoy when panic
-                        // camouflage is on (long-press toggles), matching the
-                        // standard card so no wallet leaks the real balance.
-                        GestureDetector(
-                          onLongPress: _panic.longPressTriggerEnabled
-                              ? () => _panic.toggle()
-                              : null,
-                          child: CompactAnimatedBalance(
-                            balance: _displayBalance(account),
-                            currencySymbol: currencySymbol,
-                            fontSize: 26,
-                            color: Colors.white,
-                            duration: _panicRolling ? _kPanicRollDuration : const Duration(seconds: 3),
-                            startDelay: _panicRolling ? Duration.zero : const Duration(milliseconds: 500),
-                            enableSound: _panic.soundEnabled,
-                            enableVibration: _panic.vibrationEnabled,
-                            // Panic decoy shows instantly (no roll/countdown).
-                            animate: _panicRolling || !_panic.isCamouflageOn,
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-                        if (_animatingAccounts.contains(account.id))
-                          Row(
-                            children: [
-                              // Tiny inline indicator — the WebSocket
-                            // "Updating…" microspinner sits next to
-                            // 10sp body text, so the loader is sized
-                            // to read as a subtle dot rather than a
-                            // dominant visual element on the card.
-                            LazerVaultLoader(size: 4),
-                              SizedBox(width: 4.w),
-                              Text(
-                                'Updating...',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  Positioned(
+                    left: -20,
+                    bottom: -40,
+                    child: Container(
+                      width: 100.w,
+                      height: 100.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.04),
+                      ),
+                    ),
+                  ),
+                  // Frost treatment for a frozen family/pool account.
+                  if (frozen) const _FrozenFrostOverlay(),
+                  // Main content
+                  Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.family_restroom,
+                                  color: Colors.white,
+                                  size: 18.sp,
+                                ),
+                                SizedBox(width: 6.w),
+                                Text(
+                                  // Category label — the specific account name is
+                                  // shown as the subtitle below the balance.
+                                  'Family & Friends',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (!isPendingSetup)
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10.w, vertical: 4.h),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF7C6BF0)
+                                      .withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(20.r),
+                                ),
+                                child: Text(
+                                  '${account.memberCount ?? 0} members',
+                                  style: TextStyle(
+                                    color: const Color(0xFFB8ABFF),
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              )
+                            else
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10.w, vertical: 4.h),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF7C6BF0)
+                                      .withValues(alpha: 0.25),
+                                  borderRadius: BorderRadius.circular(20.r),
+                                ),
+                                child: Text(
+                                  'NEW',
+                                  style: TextStyle(
+                                    color: const Color(0xFFB8ABFF),
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.2,
+                                  ),
                                 ),
                               ),
-                            ],
-                          )
-                        else
+                          ],
+                        ),
+                        SizedBox(height: 12.h),
+                        if (isPendingSetup) ...[
                           Text(
-                            // The account's actual name (falls back to the
-                            // generic label only when the account is unnamed).
-                            (account.accountLabel?.trim().isNotEmpty ?? false)
-                                ? account.accountLabel!.trim()
-                                : 'Family Balance',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            'Share & Manage',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            'Money Together',
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 11.sp,
+                              fontSize: 14.sp,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                      ],
-                      const Spacer(),
-                      if (account.isFamilyProcessing)
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 14.w, vertical: 8.h),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(20.r),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(
-                                width: 12.w,
-                                height: 12.w,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white),
-                                ),
-                              ),
-                              SizedBox(width: 8.w),
-                              Text(
-                                'Setting up your account…',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.85),
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      else if (isPendingSetup)
-                        GestureDetector(
-                          onTap: _isResolvingFamilyId
-                              ? null
-                              : () {
-                                  if (account.familyAccountId == null) {
-                                    _resolveFamilyIdAndNavigate(account);
-                                  } else {
-                                    final familyId = account.familyAccountId ?? account.id;
-                                    Get.toNamed(AppRoutes.familyActivationSetup,
-                                        arguments: {'familyId': familyId});
-                                  }
-                                },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                            decoration: BoxDecoration(
+                        ] else ...[
+                          // Group/family balance — shows the decoy when panic
+                          // camouflage is on (long-press toggles), matching the
+                          // standard card so no wallet leaks the real balance.
+                          GestureDetector(
+                            onLongPress: _panic.longPressTriggerEnabled
+                                ? () => _panic.toggle()
+                                : null,
+                            child: CompactAnimatedBalance(
+                              balance: _displayBalance(account),
+                              currencySymbol: currencySymbol,
+                              fontSize: 26,
                               color: Colors.white,
+                              duration: _panicRolling
+                                  ? _kPanicRollDuration
+                                  : const Duration(seconds: 3),
+                              startDelay: _panicRolling
+                                  ? Duration.zero
+                                  : const Duration(milliseconds: 500),
+                              enableSound: _panic.soundEnabled,
+                              enableVibration: _panic.vibrationEnabled,
+                              // Panic decoy shows instantly (no roll/countdown).
+                              animate: _panicRolling || !_panic.isCamouflageOn,
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          if (_animatingAccounts.contains(account.id))
+                            Row(
+                              children: [
+                                // Tiny inline indicator — the WebSocket
+                                // "Updating…" microspinner sits next to
+                                // 10sp body text, so the loader is sized
+                                // to read as a subtle dot rather than a
+                                // dominant visual element on the card.
+                                LazerVaultLoader(size: 4),
+                                SizedBox(width: 4.w),
+                                Text(
+                                  'Updating...',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.6),
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            )
+                          else
+                            Text(
+                              // The account's actual name (falls back to the
+                              // generic label only when the account is unnamed).
+                              (account.accountLabel?.trim().isNotEmpty ?? false)
+                                  ? account.accountLabel!.trim()
+                                  : 'Family Balance',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                        ],
+                        const Spacer(),
+                        if (account.isFamilyProcessing)
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 14.w, vertical: 8.h),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(20.r),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  _isResolvingFamilyId ? 'Loading...' : 'Get Started',
-                                  style: TextStyle(
-                                    color: const Color(0xFF1A1A3E),
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.w600,
+                                SizedBox(
+                                  width: 12.w,
+                                  height: 12.w,
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
                                   ),
                                 ),
-                                if (!_isResolvingFamilyId) ...[
-                                  SizedBox(width: 4.w),
-                                  Icon(
-                                    Icons.arrow_forward_rounded,
-                                    color: const Color(0xFF1A1A3E),
-                                    size: 16.sp,
+                                SizedBox(width: 8.w),
+                                Text(
+                                  'Setting up your account…',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.85),
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w500,
                                   ),
-                                ],
+                                ),
                               ],
                             ),
-                          ),
-                        )
-                      else
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '•••• ${account.accountNumberLast4}',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.7),
-                                fontSize: 12.sp,
+                          )
+                        else if (isPendingSetup)
+                          GestureDetector(
+                            onTap: _isResolvingFamilyId
+                                ? null
+                                : () {
+                                    if (account.familyAccountId == null) {
+                                      _resolveFamilyIdAndNavigate(account);
+                                    } else {
+                                      final familyId =
+                                          account.familyAccountId ?? account.id;
+                                      Get.toNamed(
+                                          AppRoutes.familyActivationSetup,
+                                          arguments: {'familyId': familyId});
+                                    }
+                                  },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16.w, vertical: 8.h),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20.r),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _isResolvingFamilyId
+                                        ? 'Loading...'
+                                        : 'Get Started',
+                                    style: TextStyle(
+                                      color: const Color(0xFF1A1A3E),
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  if (!_isResolvingFamilyId) ...[
+                                    SizedBox(width: 4.w),
+                                    Icon(
+                                      Icons.arrow_forward_rounded,
+                                      color: const Color(0xFF1A1A3E),
+                                      size: 16.sp,
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
-                            _buildActionButton(
-                              "Details",
-                              Icons.arrow_forward_rounded,
-                              onTap: () {
-                                final familyId = account.familyAccountId ?? account.id;
-                                Get.toNamed(AppRoutes.familyDetails,
-                                    arguments: {'familyId': familyId});
-                              },
-                            ),
-                          ],
-                        ),
-                    ],
+                          )
+                        else
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '•••• ${account.accountNumberLast4}',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  fontSize: 12.sp,
+                                ),
+                              ),
+                              _buildActionButton(
+                                "Details",
+                                Icons.arrow_forward_rounded,
+                                onTap: () {
+                                  final familyId =
+                                      account.familyAccountId ?? account.id;
+                                  Get.toNamed(AppRoutes.familyDetails,
+                                      arguments: {'familyId': familyId});
+                                },
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
         );
       },
     );
   }
 
-  Widget _buildBusinessAccountCard(BuildContext context, AccountSummaryEntity account) {
+  Widget _buildBusinessAccountCard(
+      BuildContext context, AccountSummaryEntity account) {
     final currencySymbol = _getCurrencySymbol(account.currency);
 
     // selectedCard payload for the Deposit / Withdraw flows so they target the
@@ -1416,8 +1558,9 @@ class _AccountCarouselState extends State<AccountCarousel> {
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: (frozen ? const Color(0xFF2B5876) : const Color(0xFF6D28D9))
-                    .withValues(alpha: 0.3),
+                color:
+                    (frozen ? const Color(0xFF2B5876) : const Color(0xFF6D28D9))
+                        .withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -1456,7 +1599,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
                 if (frozen) const _FrozenFrostOverlay(),
                 // Main content
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1464,7 +1608,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
                         children: [
                           // Identity — top-left; ellipsised so it never overflows.
                           Icon(Icons.business_center,
-                              color: Colors.white.withValues(alpha: 0.9), size: 18.sp),
+                              color: Colors.white.withValues(alpha: 0.9),
+                              size: 18.sp),
                           SizedBox(width: 6.w),
                           Expanded(
                             child: Text(
@@ -1480,7 +1625,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           SizedBox(width: 10.w),
                           // PRO badge + Manage CTA — top-right.
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 10.w, vertical: 4.h),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.18),
                               borderRadius: BorderRadius.circular(20.r),
@@ -1516,8 +1662,12 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           currencySymbol: currencySymbol,
                           fontSize: 26,
                           color: Colors.white,
-                          duration: _panicRolling ? _kPanicRollDuration : const Duration(seconds: 3),
-                          startDelay: _panicRolling ? Duration.zero : const Duration(milliseconds: 500),
+                          duration: _panicRolling
+                              ? _kPanicRollDuration
+                              : const Duration(seconds: 3),
+                          startDelay: _panicRolling
+                              ? Duration.zero
+                              : const Duration(milliseconds: 500),
                           enableVibration: _panic.vibrationEnabled,
                           // Panic decoy shows instantly (no roll/countdown).
                           animate: _panicRolling || !_panic.isCamouflageOn,
@@ -1640,8 +1790,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Row(
                     children: [
-                      Icon(Icons.trending_up,
-                          color: Colors.white, size: 18.sp),
+                      Icon(Icons.trending_up, color: Colors.white, size: 18.sp),
                       SizedBox(width: 10.w),
                       Text(
                         'Track change over…',
@@ -1710,5 +1859,63 @@ class _AccountCarouselState extends State<AccountCarousel> {
         );
       }
     });
+  }
+}
+
+/// The show/hide control for one card's balance.
+///
+/// Deliberately quiet: no filled chip like "Details" or the trend pill. Those
+/// two already compete at the top of the card, and a third solid shape beside
+/// the balance is what would make it feel cluttered. This reads as an icon
+/// only, at the same 0.15 white the other chips use but applied to a circle
+/// small enough to sit under the amount's cap height.
+///
+/// The 36dp box is the TAP TARGET; the glyph inside is 16sp. Sizing the box to
+/// the glyph would have made it a 16dp target, which fails a thumb.
+class _BalanceVisibilityButton extends StatelessWidget {
+  const _BalanceVisibilityButton({required this.hidden, required this.onTap});
+
+  final bool hidden;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: hidden ? 'Show balance' : 'Hide balance',
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          width: 36.w,
+          height: 36.w,
+          child: Center(
+            child: Container(
+              width: 28.w,
+              height: 28.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                // Cross-fades rather than swapping, so the toggle reads as one
+                // control changing state instead of two icons flickering.
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 180),
+                  child: Icon(
+                    hidden
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                    key: ValueKey<bool>(hidden),
+                    color: Colors.white,
+                    size: 16.sp,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
