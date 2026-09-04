@@ -564,6 +564,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           stepUpToken: failure.stepUpToken,
           method: failure.stepUpMethod,
           destination: failure.destination,
+          expiresInSeconds: failure.expiresInSeconds,
         ));
         return;
       }
@@ -616,6 +617,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           stepUpToken: failure.stepUpToken,
           method: failure.stepUpMethod,
           destination: failure.destination,
+          expiresInSeconds: failure.expiresInSeconds,
         ));
         return;
       }
@@ -645,7 +647,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (isClosed) return;
     if (result.isLeft()) {
       final failure = result.fold((l) => l, (r) => throw StateError('unreachable'));
-      emit(AuthenticationError(failure.message));
+      emit(AuthenticationError(
+        failure.message,
+        code: failure is StepUpVerifyFailure ? failure.code : '',
+      ));
     } else {
       final profile = result.fold((l) => throw StateError('unreachable'), (r) => r);
       await _saveSession(profile);
@@ -2697,6 +2702,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
               stepUpToken: failure.stepUpToken,
               method: failure.stepUpMethod,
               destination: failure.destination,
+              expiresInSeconds: failure.expiresInSeconds,
             ));
             return;
           }
@@ -2755,6 +2761,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             stepUpToken: failure.stepUpToken,
             method: failure.stepUpMethod,
             destination: failure.destination,
+            expiresInSeconds: failure.expiresInSeconds,
           ));
           return;
         }

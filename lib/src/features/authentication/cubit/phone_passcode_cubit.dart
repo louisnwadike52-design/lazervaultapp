@@ -430,6 +430,7 @@ class PhonePasscodeCubit extends Cubit<PhonePasscodeState> {
             stepUpToken: failure.stepUpToken,
             method: failure.stepUpMethod,
             destination: failure.destination,
+            expiresInSeconds: failure.expiresInSeconds,
           ));
           return;
         }

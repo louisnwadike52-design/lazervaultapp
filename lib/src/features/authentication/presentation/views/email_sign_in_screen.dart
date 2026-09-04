@@ -306,6 +306,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                     stepUpToken: final token,
                     method: final method,
                     destination: final dest,
+                    expiresInSeconds: final ttl,
                   ):
                   // Risk-based step-up: collect the OTP. The screen is self-
                   // contained (owns a fresh cubit + routes to dashboard on success).
@@ -313,6 +314,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                         stepUpToken: token,
                         method: method,
                         destination: dest,
+                        expiresInSeconds: ttl,
                       ));
                   break;
                 case AuthenticationSuccess(profile: final profile):

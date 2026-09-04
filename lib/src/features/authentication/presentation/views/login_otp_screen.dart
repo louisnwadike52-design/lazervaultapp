@@ -33,11 +33,16 @@ class LoginOtpScreen extends StatelessWidget {
   final String method; // "email" | "sms"
   final String destination; // masked
 
+  /// Code lifetime in seconds, from the login response. 0 = server did not
+  /// say, in which case the screen uses its fallback.
+  final int expiresInSeconds;
+
   const LoginOtpScreen({
     super.key,
     required this.stepUpToken,
     required this.method,
     required this.destination,
+    this.expiresInSeconds = 0,
   });
 
   @override
@@ -48,6 +53,7 @@ class LoginOtpScreen extends StatelessWidget {
         stepUpToken: stepUpToken,
         method: method,
         destination: destination,
+        expiresInSeconds: expiresInSeconds,
       ),
     );
   }
@@ -57,11 +63,13 @@ class _LoginOtpView extends StatefulWidget {
   final String stepUpToken;
   final String method;
   final String destination;
+  final int expiresInSeconds;
 
   const _LoginOtpView({
     required this.stepUpToken,
     required this.method,
     required this.destination,
+    required this.expiresInSeconds,
   });
 
   @override
@@ -81,10 +89,12 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   static const _divider = Color(0xFFE5E7EB);
   static const _errorColor = Color(0xFFDC2626); // AA on a light background
 
-  // Server-side OTP TTL is 10 minutes (auth-service loginOTPTTL). Mirror it so the
-  // user sees an accurate countdown and we can flip to an "expired" state that
-  // prompts a fresh sign-in rather than letting them keep submitting a dead code.
-  static const int _ttlSeconds = 10 * 60;
+  // Fallback only. The real lifetime comes from the login response
+  // (LoginResponse.step_up_expires_in), which auth-service fills from the
+  // admin-tunable auth_login_otp_ttl_seconds. The screen used to hardcode its
+  // own 10 minutes and "mirror" the server by hand, so retuning the server
+  // silently left every installed app counting down from the old number.
+  static const int _fallbackTtlSeconds = 90;
 
   static const int _boxes = 6;
   final List<TextEditingController> _controllers =
@@ -92,7 +102,7 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   final List<FocusNode> _focusNodes = List.generate(_boxes, (_) => FocusNode());
 
   Timer? _ticker;
-  int _remaining = _ttlSeconds;
+  int _remaining = _fallbackTtlSeconds;
   bool _submitting = false;
   String? _errorText;
 
@@ -114,17 +124,39 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
     super.dispose();
   }
 
+  /// When the code actually dies. Everything reads from this.
+  ///
+  /// The countdown used to DECREMENT once per second, which only tells the
+  /// truth while the app is foregrounded and the timer is firing. Backgrounding
+  /// the app, or any stall, left the display ahead of reality and the user
+  /// entering a code the screen still showed as live. At ninety seconds that
+  /// gap is most of the window, so the deadline is fixed once and the tick just
+  /// re-reads the clock.
+  DateTime? _deadline;
+
   void _startTicker() {
     _ticker?.cancel();
-    _remaining = _ttlSeconds;
+    final ttl = widget.expiresInSeconds > 0
+        ? widget.expiresInSeconds
+        : _fallbackTtlSeconds;
+    _deadline = DateTime.now().add(Duration(seconds: ttl));
+    _remaining = ttl;
     _ticker = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) return;
-      if (_remaining <= 0) {
+      if (!mounted) {
         t.cancel();
         return;
       }
-      setState(() => _remaining -= 1);
+      final left = _secondsLeft();
+      if (left <= 0) t.cancel();
+      setState(() => _remaining = left);
     });
+  }
+
+  int _secondsLeft() {
+    final d = _deadline;
+    if (d == null) return 0;
+    final left = d.difference(DateTime.now()).inSeconds;
+    return left > 0 ? left : 0;
   }
 
   bool get _expired => _remaining <= 0;
@@ -188,7 +220,10 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
       return;
     }
     if (_expired) {
-      setState(() => _errorText = 'This code has expired. Request a new one.');
+      setState(() {
+        _terminal = true;
+        _errorText = 'This code has expired. Sign in again to get a fresh one.';
+      });
       return;
     }
     setState(() {
@@ -223,7 +258,12 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   /// A connectivity/edge failure is NOT a wrong code — surface it as a connection
   /// problem (and poke the health gate) rather than raw transport text. Wrong /
   /// expired-code messages pass through as an inline error under the boxes.
-  void _handleFailure(String message) {
+  /// Set when the code can never work again (expired, used, attempts spent, or
+  /// the step-up session itself died). The only way forward is a fresh sign-in,
+  /// so the screen stops pretending the boxes are useful.
+  bool _terminal = false;
+
+  void _handleFailure(String message, {String code = ''}) {
     final m = message.toLowerCase();
     final looksNetwork = isNetworkError(message) ||
         m.contains('network error') ||
@@ -237,6 +277,26 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
       });
       return;
     }
+    // Branch on the server's stable code, never on its prose.
+    switch (code) {
+      case 'OTP_EXPIRED':
+      case 'OTP_USED':
+      case 'OTP_ATTEMPTS_EXCEEDED':
+      case 'STEP_UP_SESSION_EXPIRED':
+      case 'STEP_UP_UNAVAILABLE':
+        _ticker?.cancel();
+        setState(() {
+          _submitting = false;
+          _terminal = true;
+          _remaining = 0;
+          _errorText = message.isNotEmpty
+              ? message
+              : 'That code can no longer be used. Please sign in again.';
+        });
+        _clearBoxes();
+        return;
+    }
+
     setState(() {
       _submitting = false;
       _errorText = message.isNotEmpty ? message : 'That code is incorrect.';
@@ -256,7 +316,7 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
           } catch (_) {/* dashboard loads it */}
           Get.offAllNamed(AppRoutes.dashboard);
         } else if (state is AuthenticationError) {
-          _handleFailure(state.message);
+          _handleFailure(state.message, code: state.code);
         } else if (state is AuthenticationFailure) {
           _handleFailure(state.message);
         }
@@ -266,8 +326,16 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
         subtitle: 'We sent a 6-digit code to your $channel '
             '(${widget.destination}). Enter it to continue.',
         showHeadingLogo: false,
-        primaryLabel: _expired ? 'Code expired' : 'Verify & continue',
-        onPrimary: (_submitting || _expired) ? null : _submit,
+        // A disabled "Code expired" button was a dead end: the one thing the
+        // user needs at that moment is a way to get a new code, and the button
+        // they are already looking at became unusable. With a ninety second
+        // window this is a routine outcome, not an edge case.
+        primaryLabel: (_expired || _terminal)
+            ? 'Sign in again for a new code'
+            : 'Verify & continue',
+        onPrimary: _submitting
+            ? null
+            : ((_expired || _terminal) ? _requestNewCode : _submit),
         isLoading: _submitting,
         secondaryAction: Center(
           child: TextButton(

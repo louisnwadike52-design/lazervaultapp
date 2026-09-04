@@ -94,14 +94,29 @@ class PhoneSignupOtpResult {
 /// Returned (as a Left) when a login needs an adaptive step-up OTP before a
 /// session is issued. Carries everything the OTP screen needs. The cubit
 /// inspects for this type and routes to the OTP flow instead of showing an error.
+/// A step-up verify that failed, with the server's stable reason attached.
+class StepUpVerifyFailure extends Failure {
+  final String code;
+  StepUpVerifyFailure({required String message, required this.code})
+      : super(message: message, statusCode: 401);
+}
+
 class StepUpRequiredFailure extends Failure {
   final String stepUpToken;
   final String stepUpMethod;  // "email" | "sms"
   final String destination;   // masked, for display
+
+  /// Seconds the code is valid for, straight from the server. The OTP screen
+  /// counts down from this instead of a constant of its own, so the admin can
+  /// retune the lifetime and installed apps follow on the next sign-in.
+  /// Zero means the server did not say; the screen falls back to its default.
+  final int expiresInSeconds;
+
   StepUpRequiredFailure({
     required this.stepUpToken,
     required this.stepUpMethod,
     required this.destination,
+    this.expiresInSeconds = 0,
   }) : super(message: 'Verification required', statusCode: 0);
 }
 

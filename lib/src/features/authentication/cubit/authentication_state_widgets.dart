@@ -38,14 +38,19 @@ class LoginStepUpRequired extends AuthenticationState {
   final String method;      // "email" | "sms"
   final String destination; // masked, for display
 
+  /// Code lifetime in seconds as the server reported it. 0 = not supplied.
+  final int expiresInSeconds;
+
   const LoginStepUpRequired({
     required this.stepUpToken,
     required this.method,
     required this.destination,
+    this.expiresInSeconds = 0,
   });
 
   @override
-  List<Object?> get props => [stepUpToken, method, destination];
+  List<Object?> get props =>
+      [stepUpToken, method, destination, expiresInSeconds];
 }
 
 // 2FA required at login: the user has 2FA enabled. The login screen navigates to
@@ -165,12 +170,21 @@ class UserCreated extends AuthenticationState {
 }
 
 class AuthenticationError extends AuthenticationState {
-  const AuthenticationError(this.message);
+  const AuthenticationError(this.message, {this.code = ''});
 
   final String message;
 
+  /// Stable server reason, when there is one (LoginResponse.error_code):
+  /// OTP_EXPIRED, OTP_USED, OTP_ATTEMPTS_EXCEEDED, OTP_INCORRECT,
+  /// STEP_UP_SESSION_EXPIRED, STEP_UP_UNAVAILABLE.
+  ///
+  /// The OTP screen has to treat these differently — a wrong code keeps the
+  /// user on the screen to retry, everything else is terminal and needs a
+  /// fresh sign-in — and matching on prose breaks the moment copy is reworded.
+  final String code;
+
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }
 
 // Enum to track which contact type was entered on page 1

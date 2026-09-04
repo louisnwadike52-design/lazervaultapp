@@ -602,6 +602,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                 stepUpToken: state.stepUpToken,
                 method: state.method,
                 destination: state.destination,
+                expiresInSeconds: state.expiresInSeconds,
               ))?.then((_) {
             if (mounted) authCubit.startPasscodeLogin();
           });

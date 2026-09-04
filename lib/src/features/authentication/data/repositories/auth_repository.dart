@@ -213,6 +213,17 @@ class AuthRepositoryImpl implements IAuthRepository {
           stepUpToken: response.stepUpToken,
           stepUpMethod: response.stepUpMethod,
           destination: response.stepUpDestination,
+          expiresInSeconds: response.stepUpExpiresIn.toInt(),
+        ));
+      } else if (response.errorCode.isNotEmpty) {
+        // A classified step-up failure. The server's own copy is already
+        // user-ready, so it is passed through; the CODE is what the UI branches
+        // on to decide whether the user can retry or must sign in again.
+        return Left(StepUpVerifyFailure(
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'That code could not be verified.',
+          code: response.errorCode,
         ));
       } else {
         return Left(ServerFailure(

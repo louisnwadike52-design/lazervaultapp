@@ -230,6 +230,67 @@ final $typed_data.Uint8List requestAccountLockResponseDescriptor =
         'EKDGxvY2tlZF91bnRpbBgCIAEoCVILbG9ja2VkVW50aWwSGAoHbWVzc2FnZRgDIAEoCVIHbWVz'
         'c2FnZQ==');
 
+@$core.Deprecated('Use freezeAccountRequestDescriptor instead')
+const FreezeAccountRequest$json = {
+  '1': 'FreezeAccountRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'duration_seconds', '3': 2, '4': 1, '5': 5, '10': 'durationSeconds'},
+    {'1': 'reason', '3': 3, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `FreezeAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List freezeAccountRequestDescriptor = $convert.base64Decode(
+    'ChRGcmVlemVBY2NvdW50UmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSKQoQZHVyYX'
+    'Rpb25fc2Vjb25kcxgCIAEoBVIPZHVyYXRpb25TZWNvbmRzEhYKBnJlYXNvbhgDIAEoCVIGcmVh'
+    'c29u');
+
+@$core.Deprecated('Use freezeAccountResponseDescriptor instead')
+const FreezeAccountResponse$json = {
+  '1': 'FreezeAccountResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'locked_until', '3': 2, '4': 1, '5': 9, '10': 'lockedUntil'},
+    {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `FreezeAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List freezeAccountResponseDescriptor = $convert.base64Decode(
+    'ChVGcmVlemVBY2NvdW50UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIhCgxsb2'
+    'NrZWRfdW50aWwYAiABKAlSC2xvY2tlZFVudGlsEhgKB21lc3NhZ2UYAyABKAlSB21lc3NhZ2U=');
+
+@$core.Deprecated('Use unfreezeAccountRequestDescriptor instead')
+const UnfreezeAccountRequest$json = {
+  '1': 'UnfreezeAccountRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'reason', '3': 2, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `UnfreezeAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List unfreezeAccountRequestDescriptor =
+    $convert.base64Decode(
+        'ChZVbmZyZWV6ZUFjY291bnRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIWCgZyZW'
+        'Fzb24YAiABKAlSBnJlYXNvbg==');
+
+@$core.Deprecated('Use unfreezeAccountResponseDescriptor instead')
+const UnfreezeAccountResponse$json = {
+  '1': 'UnfreezeAccountResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `UnfreezeAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List unfreezeAccountResponseDescriptor =
+    $convert.base64Decode(
+        'ChdVbmZyZWV6ZUFjY291bnRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB2'
+        '1lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+
 @$core.Deprecated('Use requestAccountDeletionRequestDescriptor instead')
 const RequestAccountDeletionRequest$json = {
   '1': 'RequestAccountDeletionRequest',
@@ -542,6 +603,14 @@ const LoginResponse$json = {
     {'1': 'two_factor_token', '3': 8, '4': 1, '5': 9, '10': 'twoFactorToken'},
     {'1': 'step_up_required', '3': 9, '4': 1, '5': 8, '10': 'stepUpRequired'},
     {'1': 'step_up_token', '3': 10, '4': 1, '5': 9, '10': 'stepUpToken'},
+    {
+      '1': 'step_up_expires_in',
+      '3': 14,
+      '4': 1,
+      '5': 3,
+      '10': 'stepUpExpiresIn'
+    },
+    {'1': 'error_code', '3': 15, '4': 1, '5': 9, '10': 'errorCode'},
     {'1': 'step_up_method', '3': 11, '4': 1, '5': 9, '10': 'stepUpMethod'},
     {
       '1': 'step_up_destination',
@@ -568,9 +637,11 @@ final $typed_data.Uint8List loginResponseDescriptor = $convert.base64Decode(
     'RhdGEYBiABKAsyDS5wYi5Mb2dpbkRhdGFSBGRhdGESLgoTdHdvX2ZhY3Rvcl9yZXF1aXJlZBgH'
     'IAEoCFIRdHdvRmFjdG9yUmVxdWlyZWQSKAoQdHdvX2ZhY3Rvcl90b2tlbhgIIAEoCVIOdHdvRm'
     'FjdG9yVG9rZW4SKAoQc3RlcF91cF9yZXF1aXJlZBgJIAEoCFIOc3RlcFVwUmVxdWlyZWQSIgoN'
-    'c3RlcF91cF90b2tlbhgKIAEoCVILc3RlcFVwVG9rZW4SJAoOc3RlcF91cF9tZXRob2QYCyABKA'
-    'lSDHN0ZXBVcE1ldGhvZBIuChNzdGVwX3VwX2Rlc3RpbmF0aW9uGAwgASgJUhFzdGVwVXBEZXN0'
-    'aW5hdGlvbhIqChF0d29fZmFjdG9yX21ldGhvZBgNIAEoCVIPdHdvRmFjdG9yTWV0aG9k');
+    'c3RlcF91cF90b2tlbhgKIAEoCVILc3RlcFVwVG9rZW4SKwoSc3RlcF91cF9leHBpcmVzX2luGA'
+    '4gASgDUg9zdGVwVXBFeHBpcmVzSW4SHQoKZXJyb3JfY29kZRgPIAEoCVIJZXJyb3JDb2RlEiQK'
+    'DnN0ZXBfdXBfbWV0aG9kGAsgASgJUgxzdGVwVXBNZXRob2QSLgoTc3RlcF91cF9kZXN0aW5hdG'
+    'lvbhgMIAEoCVIRc3RlcFVwRGVzdGluYXRpb24SKgoRdHdvX2ZhY3Rvcl9tZXRob2QYDSABKAlS'
+    'D3R3b0ZhY3Rvck1ldGhvZA==');
 
 @$core.Deprecated('Use loginDataDescriptor instead')
 const LoginData$json = {
@@ -3520,6 +3591,38 @@ final $typed_data.Uint8List adminResetTransactionPinResponseDescriptor =
     $convert.base64Decode(
         'CiBBZG1pblJlc2V0VHJhbnNhY3Rpb25QaW5SZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdW'
         'NjZXNzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+
+@$core.Deprecated('Use adminUnlockAccountRequestDescriptor instead')
+const AdminUnlockAccountRequest$json = {
+  '1': 'AdminUnlockAccountRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'actor_admin_id', '3': 2, '4': 1, '5': 9, '10': 'actorAdminId'},
+    {'1': 'reason', '3': 3, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `AdminUnlockAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminUnlockAccountRequestDescriptor = $convert.base64Decode(
+    'ChlBZG1pblVubG9ja0FjY291bnRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIkCg'
+    '5hY3Rvcl9hZG1pbl9pZBgCIAEoCVIMYWN0b3JBZG1pbklkEhYKBnJlYXNvbhgDIAEoCVIGcmVh'
+    'c29u');
+
+@$core.Deprecated('Use adminUnlockAccountResponseDescriptor instead')
+const AdminUnlockAccountResponse$json = {
+  '1': 'AdminUnlockAccountResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'was_locked', '3': 3, '4': 1, '5': 8, '10': 'wasLocked'},
+  ],
+};
+
+/// Descriptor for `AdminUnlockAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminUnlockAccountResponseDescriptor =
+    $convert.base64Decode(
+        'ChpBZG1pblVubG9ja0FjY291bnRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
+        'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USHQoKd2FzX2xvY2tlZBgDIAEoCFIJd2FzTG9ja2Vk');
 
 @$core.Deprecated('Use getKYCTierRequestDescriptor instead')
 const GetKYCTierRequest$json = {

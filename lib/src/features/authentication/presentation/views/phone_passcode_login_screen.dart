@@ -239,6 +239,7 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
                 stepUpToken: state.stepUpToken,
                 method: state.method,
                 destination: state.destination,
+                expiresInSeconds: state.expiresInSeconds,
               ));
           return;
         }

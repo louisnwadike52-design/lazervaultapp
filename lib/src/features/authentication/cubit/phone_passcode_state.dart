@@ -122,14 +122,19 @@ class PhoneLoginStepUpRequired extends PhonePasscodeState {
   final String method;      // "email" | "sms"
   final String destination; // masked
 
+  /// Code lifetime in seconds as the server reported it. 0 = not supplied.
+  final int expiresInSeconds;
+
   const PhoneLoginStepUpRequired({
     required this.stepUpToken,
     required this.method,
     required this.destination,
+    this.expiresInSeconds = 0,
   });
 
   @override
-  List<Object?> get props => [stepUpToken, method, destination];
+  List<Object?> get props =>
+      [stepUpToken, method, destination, expiresInSeconds];
 }
 
 /// A failure; [message] is safe to surface to the user.

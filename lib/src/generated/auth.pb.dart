@@ -176,6 +176,311 @@ class RequestAccountLockResponse extends $pb.GeneratedMessage {
   void clearMessage() => $_clearField(3);
 }
 
+/// ===== Fraud freeze (service-to-service) =====
+class FreezeAccountRequest extends $pb.GeneratedMessage {
+  factory FreezeAccountRequest({
+    $core.String? userId,
+    $core.int? durationSeconds,
+    $core.String? reason,
+  }) {
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (durationSeconds != null) result.durationSeconds = durationSeconds;
+    if (reason != null) result.reason = reason;
+    return result;
+  }
+
+  FreezeAccountRequest._();
+
+  factory FreezeAccountRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory FreezeAccountRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FreezeAccountRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..a<$core.int>(
+        2, _omitFieldNames ? '' : 'durationSeconds', $pb.PbFieldType.O3)
+    ..aOS(3, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FreezeAccountRequest clone() =>
+      FreezeAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FreezeAccountRequest copyWith(void Function(FreezeAccountRequest) updates) =>
+      super.copyWith((message) => updates(message as FreezeAccountRequest))
+          as FreezeAccountRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static FreezeAccountRequest create() => FreezeAccountRequest._();
+  @$core.override
+  FreezeAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<FreezeAccountRequest> createRepeated() =>
+      $pb.PbList<FreezeAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static FreezeAccountRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FreezeAccountRequest>(create);
+  static FreezeAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get durationSeconds => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set durationSeconds($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasDurationSeconds() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDurationSeconds() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get reason => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set reason($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasReason() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearReason() => $_clearField(3);
+}
+
+class FreezeAccountResponse extends $pb.GeneratedMessage {
+  factory FreezeAccountResponse({
+    $core.bool? success,
+    $core.String? lockedUntil,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (lockedUntil != null) result.lockedUntil = lockedUntil;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  FreezeAccountResponse._();
+
+  factory FreezeAccountResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory FreezeAccountResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FreezeAccountResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'lockedUntil')
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FreezeAccountResponse clone() =>
+      FreezeAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FreezeAccountResponse copyWith(
+          void Function(FreezeAccountResponse) updates) =>
+      super.copyWith((message) => updates(message as FreezeAccountResponse))
+          as FreezeAccountResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static FreezeAccountResponse create() => FreezeAccountResponse._();
+  @$core.override
+  FreezeAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<FreezeAccountResponse> createRepeated() =>
+      $pb.PbList<FreezeAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static FreezeAccountResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FreezeAccountResponse>(create);
+  static FreezeAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get lockedUntil => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set lockedUntil($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLockedUntil() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLockedUntil() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get message => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set message($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessage() => $_clearField(3);
+}
+
+class UnfreezeAccountRequest extends $pb.GeneratedMessage {
+  factory UnfreezeAccountRequest({
+    $core.String? userId,
+    $core.String? reason,
+  }) {
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (reason != null) result.reason = reason;
+    return result;
+  }
+
+  UnfreezeAccountRequest._();
+
+  factory UnfreezeAccountRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory UnfreezeAccountRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'UnfreezeAccountRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  UnfreezeAccountRequest clone() =>
+      UnfreezeAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  UnfreezeAccountRequest copyWith(
+          void Function(UnfreezeAccountRequest) updates) =>
+      super.copyWith((message) => updates(message as UnfreezeAccountRequest))
+          as UnfreezeAccountRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UnfreezeAccountRequest create() => UnfreezeAccountRequest._();
+  @$core.override
+  UnfreezeAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<UnfreezeAccountRequest> createRepeated() =>
+      $pb.PbList<UnfreezeAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UnfreezeAccountRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<UnfreezeAccountRequest>(create);
+  static UnfreezeAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => $_clearField(2);
+}
+
+class UnfreezeAccountResponse extends $pb.GeneratedMessage {
+  factory UnfreezeAccountResponse({
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  UnfreezeAccountResponse._();
+
+  factory UnfreezeAccountResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory UnfreezeAccountResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'UnfreezeAccountResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  UnfreezeAccountResponse clone() =>
+      UnfreezeAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  UnfreezeAccountResponse copyWith(
+          void Function(UnfreezeAccountResponse) updates) =>
+      super.copyWith((message) => updates(message as UnfreezeAccountResponse))
+          as UnfreezeAccountResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UnfreezeAccountResponse create() => UnfreezeAccountResponse._();
+  @$core.override
+  UnfreezeAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<UnfreezeAccountResponse> createRepeated() =>
+      $pb.PbList<UnfreezeAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UnfreezeAccountResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<UnfreezeAccountResponse>(create);
+  static UnfreezeAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+}
+
 /// ===== Account deletion =====
 class RequestAccountDeletionRequest extends $pb.GeneratedMessage {
   factory RequestAccountDeletionRequest({
@@ -1471,6 +1776,8 @@ class LoginResponse extends $pb.GeneratedMessage {
     $core.String? stepUpMethod,
     $core.String? stepUpDestination,
     $core.String? twoFactorMethod,
+    $fixnum.Int64? stepUpExpiresIn,
+    $core.String? errorCode,
   }) {
     final result = create();
     if (success != null) result.success = success;
@@ -1486,6 +1793,8 @@ class LoginResponse extends $pb.GeneratedMessage {
     if (stepUpMethod != null) result.stepUpMethod = stepUpMethod;
     if (stepUpDestination != null) result.stepUpDestination = stepUpDestination;
     if (twoFactorMethod != null) result.twoFactorMethod = twoFactorMethod;
+    if (stepUpExpiresIn != null) result.stepUpExpiresIn = stepUpExpiresIn;
+    if (errorCode != null) result.errorCode = errorCode;
     return result;
   }
 
@@ -1516,6 +1825,8 @@ class LoginResponse extends $pb.GeneratedMessage {
     ..aOS(11, _omitFieldNames ? '' : 'stepUpMethod')
     ..aOS(12, _omitFieldNames ? '' : 'stepUpDestination')
     ..aOS(13, _omitFieldNames ? '' : 'twoFactorMethod')
+    ..aInt64(14, _omitFieldNames ? '' : 'stepUpExpiresIn')
+    ..aOS(15, _omitFieldNames ? '' : 'errorCode')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1660,6 +1971,32 @@ class LoginResponse extends $pb.GeneratedMessage {
   $core.bool hasTwoFactorMethod() => $_has(12);
   @$pb.TagNumber(13)
   void clearTwoFactorMethod() => $_clearField(13);
+
+  /// Seconds the step-up OTP remains valid. The app drives its countdown from
+  /// THIS, not a mirrored constant: the two used to be separate numbers that
+  /// only agreed by hand, so changing the server TTL silently left the app
+  /// counting down from the old one.
+  @$pb.TagNumber(14)
+  $fixnum.Int64 get stepUpExpiresIn => $_getI64(13);
+  @$pb.TagNumber(14)
+  set stepUpExpiresIn($fixnum.Int64 value) => $_setInt64(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasStepUpExpiresIn() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearStepUpExpiresIn() => $_clearField(14);
+
+  /// Stable reason for a failed step-up verify, so the app can branch on a
+  /// contract instead of matching on prose. One of: STEP_UP_UNAVAILABLE,
+  /// STEP_UP_SESSION_EXPIRED, OTP_EXPIRED, OTP_USED, OTP_ATTEMPTS_EXCEEDED,
+  /// OTP_INCORRECT. Empty on success and on unclassified failures.
+  @$pb.TagNumber(15)
+  $core.String get errorCode => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set errorCode($core.String value) => $_setString(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasErrorCode() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearErrorCode() => $_clearField(15);
 }
 
 class LoginData extends $pb.GeneratedMessage {
@@ -14871,6 +15208,177 @@ class AdminResetTransactionPinResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
   void clearMessage() => $_clearField(2);
+}
+
+/// Clears the FAILED-LOGIN lockout (users.locked_until + failed_login_count).
+/// Deliberately distinct from AdminUnfreezeAccount, which lifts a user's OWN
+/// self-lock: a support agent clearing "too many wrong passcodes" must not also
+/// silently undo a lock the customer armed on purpose.
+class AdminUnlockAccountRequest extends $pb.GeneratedMessage {
+  factory AdminUnlockAccountRequest({
+    $core.String? userId,
+    $core.String? actorAdminId,
+    $core.String? reason,
+  }) {
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (actorAdminId != null) result.actorAdminId = actorAdminId;
+    if (reason != null) result.reason = reason;
+    return result;
+  }
+
+  AdminUnlockAccountRequest._();
+
+  factory AdminUnlockAccountRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminUnlockAccountRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminUnlockAccountRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'actorAdminId')
+    ..aOS(3, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminUnlockAccountRequest clone() =>
+      AdminUnlockAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminUnlockAccountRequest copyWith(
+          void Function(AdminUnlockAccountRequest) updates) =>
+      super.copyWith((message) => updates(message as AdminUnlockAccountRequest))
+          as AdminUnlockAccountRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminUnlockAccountRequest create() => AdminUnlockAccountRequest._();
+  @$core.override
+  AdminUnlockAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminUnlockAccountRequest> createRepeated() =>
+      $pb.PbList<AdminUnlockAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminUnlockAccountRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminUnlockAccountRequest>(create);
+  static AdminUnlockAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get actorAdminId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set actorAdminId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasActorAdminId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearActorAdminId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get reason => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set reason($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasReason() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearReason() => $_clearField(3);
+}
+
+class AdminUnlockAccountResponse extends $pb.GeneratedMessage {
+  factory AdminUnlockAccountResponse({
+    $core.bool? success,
+    $core.String? message,
+    $core.bool? wasLocked,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (message != null) result.message = message;
+    if (wasLocked != null) result.wasLocked = wasLocked;
+    return result;
+  }
+
+  AdminUnlockAccountResponse._();
+
+  factory AdminUnlockAccountResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminUnlockAccountResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminUnlockAccountResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOB(3, _omitFieldNames ? '' : 'wasLocked')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminUnlockAccountResponse clone() =>
+      AdminUnlockAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminUnlockAccountResponse copyWith(
+          void Function(AdminUnlockAccountResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as AdminUnlockAccountResponse))
+          as AdminUnlockAccountResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminUnlockAccountResponse create() => AdminUnlockAccountResponse._();
+  @$core.override
+  AdminUnlockAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminUnlockAccountResponse> createRepeated() =>
+      $pb.PbList<AdminUnlockAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminUnlockAccountResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminUnlockAccountResponse>(create);
+  static AdminUnlockAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+
+  /// False when the account was not actually locked — the call still succeeds
+  /// (it is idempotent) but the operator sees that nothing needed doing.
+  @$pb.TagNumber(3)
+  $core.bool get wasLocked => $_getBF(2);
+  @$pb.TagNumber(3)
+  set wasLocked($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasWasLocked() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearWasLocked() => $_clearField(3);
 }
 
 class GetKYCTierRequest extends $pb.GeneratedMessage {
