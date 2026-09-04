@@ -1180,7 +1180,23 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => ValidateTokenUseCase(serviceLocator<IAuthRepository>()));
 
   // Blocs/Cubits
-  serviceLocator.registerFactory(() => AuthenticationCubit(
+  // LAZY SINGLETON, not a factory.
+  //
+  // AuthenticationCubit holds the signed-in identity in memory
+  // (`_currentProfile`). As a factory, every serviceLocator call handed back a
+  // NEW cubit with a null profile, and the login screens each created their
+  // own. So a sign-in set the identity on the login screen's instance while
+  // the dashboard read the root instance, which never learned about it: tokens
+  // were in storage so the tiles and API calls worked, but the drawer rendered
+  // "Guest User" and anything gated on the profile waited on an identity that
+  // was sitting in a different object. It showed up most on the new-device OTP
+  // path because that screen creates one more instance again.
+  //
+  // Every provider for this cubit MUST therefore use BlocProvider.value:
+  // BlocProvider(create:) closes the bloc when its widget unmounts, which on a
+  // shared instance would close the app-wide session cubit the moment a login
+  // screen popped.
+  serviceLocator.registerLazySingleton(() => AuthenticationCubit(
         login: serviceLocator<LoginUseCase>(),
         loginWithPasscode: serviceLocator<LoginWithPasscodeUseCase>(),
         registerPasscode: serviceLocator<RegisterPasscodeUseCase>(),

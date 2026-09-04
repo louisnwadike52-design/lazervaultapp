@@ -583,8 +583,8 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
           // (otherwise the lock screen is stuck on a spinner). Capture the cubit
           // synchronously so we don't touch context across the async gap.
           final authCubit = context.read<AuthenticationCubit>();
-          Get.to(() => BlocProvider(
-                create: (_) => serviceLocator<AuthenticationCubit>(),
+          Get.to(() => BlocProvider.value(
+                value: serviceLocator<AuthenticationCubit>(),
                 child: TwoFactorVerificationScreen(
                   twoFactorToken: state.twoFactorToken,
                   method: state.method,

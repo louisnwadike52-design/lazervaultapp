@@ -294,8 +294,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                     twoFactorToken: final tfToken,
                     method: final tfMethod,
                   ):
-                  Get.to(() => BlocProvider(
-                        create: (_) => serviceLocator<AuthenticationCubit>(),
+                  Get.to(() => BlocProvider.value(
+                        value: serviceLocator<AuthenticationCubit>(),
                         child: TwoFactorVerificationScreen(
                           twoFactorToken: tfToken,
                           method: tfMethod,

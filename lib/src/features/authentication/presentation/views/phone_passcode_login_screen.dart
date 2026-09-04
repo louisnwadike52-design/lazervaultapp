@@ -223,8 +223,8 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
       listener: (context, state) {
         if (state is PhoneLoginTwoFactorRequired) {
           // 2FA enabled: collect the 2FA code (self-contained screen + cubit).
-          Get.to(() => BlocProvider(
-                create: (_) => serviceLocator<AuthenticationCubit>(),
+          Get.to(() => BlocProvider.value(
+                value: serviceLocator<AuthenticationCubit>(),
                 child: TwoFactorVerificationScreen(
                   twoFactorToken: state.twoFactorToken,
                   method: state.method,

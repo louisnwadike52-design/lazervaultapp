@@ -42,8 +42,8 @@ class LoginOtpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AuthenticationCubit>(
-      create: (_) => serviceLocator<AuthenticationCubit>(),
+    return BlocProvider<AuthenticationCubit>.value(
+      value: serviceLocator<AuthenticationCubit>(),
       child: _LoginOtpView(
         stepUpToken: stepUpToken,
         method: method,
