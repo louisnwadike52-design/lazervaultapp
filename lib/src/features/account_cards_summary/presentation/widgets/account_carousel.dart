@@ -178,24 +178,6 @@ class _AccountCarouselState extends State<AccountCarousel> {
     _checkForPendingAnimation();
     // Re-render when the panic decoy is toggled (shake / long-press) or edited.
     _panic.addListener(_onPanicChanged);
-    // Restore hidden balances for THIS user. Post-frame because it needs the
-    // authenticated context, which is not available during initState.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final auth = context.read<AuthenticationCubit>().state;
-      final uid = switch (auth) {
-        AuthenticationSuccess s => s.profile.user.id,
-        AuthenticationAuthenticated s => s.profile.user.id,
-        _ => '',
-      };
-      if (uid.isEmpty) return;
-      final restored = FeatureFlags.hiddenBalanceAccounts(uid);
-      if (!mounted) return;
-      setState(() {
-        _balanceUid = uid;
-        _hiddenBalances = restored;
-      });
-    });
   }
 
   void _onPanicChanged() {
@@ -221,7 +203,82 @@ class _AccountCarouselState extends State<AccountCarousel> {
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // SYNCHRONOUS, and deliberately not a post-frame callback.
+    //
+    // main() awaits FeatureFlags.init() before the first frame, so the prefs
+    // are already in memory and this is a map lookup. Loading after the first
+    // paint instead meant a card the user had hidden rendered its REAL balance
+    // for a frame before blanking — a visible flash of the exact number they
+    // asked us not to show, on every single launch.
+    _syncHiddenBalancesForCurrentUser();
+  }
+
+  /// Re-reads the hidden set when the signed-in user changes.
+  ///
+  /// Cheap and idempotent: it early-returns unless the uid actually moved.
+  /// Without it a user switch would keep the previous person's hidden cards on
+  /// screen and, worse, write this user's toggles under the old uid's key.
+  void _syncHiddenBalancesForCurrentUser() {
+    final auth = context.read<AuthenticationCubit>().state;
+    final uid = switch (auth) {
+      AuthenticationSuccess s => s.profile.user.id,
+      AuthenticationAuthenticated s => s.profile.user.id,
+      _ => '',
+    };
+    if (uid == _balanceUid) return;
+    _balanceUid = uid;
+    _hiddenBalances =
+        uid.isEmpty ? <String>{} : FeatureFlags.hiddenBalanceAccounts(uid);
+  }
+
   bool _isHidden(String accountId) => _hiddenBalances.contains(accountId);
+
+  /// The balance as the card should show it: masked when hidden, otherwise the
+  /// live (or decoy) counter.
+  ///
+  /// Shared by all three card variants — standard, group/family and business —
+  /// because a toggle that only blanked one of them would be trivially
+  /// defeated by swiping to the next card. The existing panic-decoy comments
+  /// in this file make the same point about not letting any wallet leak the
+  /// real balance.
+  Widget _balanceOrMask(
+    AccountSummaryEntity account,
+    String currencySymbol,
+    double fontSize,
+  ) {
+    if (_isHidden(account.id)) {
+      // Keeps the currency symbol and the type scale so the card holds its
+      // shape; a shorter, lighter placeholder made the row jump on toggle.
+      return Text(
+        '$currencySymbol ••••••',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: fontSize.sp,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 2,
+        ),
+      );
+    }
+    return CompactAnimatedBalance(
+      balance: _displayBalance(account),
+      currencySymbol: currencySymbol,
+      fontSize: fontSize,
+      color: Colors.white,
+      duration:
+          _panicRolling ? _kPanicRollDuration : const Duration(seconds: 3),
+      startDelay:
+          _panicRolling ? Duration.zero : const Duration(milliseconds: 500),
+      enableSound: _panic.soundEnabled,
+      enableVibration: _panic.vibrationEnabled,
+      // Panic decoy shows instantly (no roll/countdown).
+      animate: _panicRolling || !_panic.isCamouflageOn,
+    );
+  }
 
   /// Hides or reveals one account's balance and remembers the choice.
   ///
@@ -891,42 +948,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
                                     onLongPress: _panic.longPressTriggerEnabled
                                         ? () => _panic.toggle()
                                         : null,
-                                    child: _isHidden(account.id)
-                                        // Masked: keep the currency symbol and the
-                                        // balance's type scale so the card holds its
-                                        // shape. Swapping in a shorter, lighter string
-                                        // would make the whole row jump on every
-                                        // toggle.
-                                        ? Text(
-                                            '$currencySymbol ••••••',
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 28.sp,
-                                              fontWeight: FontWeight.w700,
-                                              letterSpacing: 2,
-                                            ),
-                                          )
-                                        : CompactAnimatedBalance(
-                                            balance: _displayBalance(account),
-                                            currencySymbol: currencySymbol,
-                                            fontSize: 28,
-                                            color: Colors.white,
-                                            duration: _panicRolling
-                                                ? _kPanicRollDuration
-                                                : const Duration(seconds: 3),
-                                            startDelay: _panicRolling
-                                                ? Duration.zero
-                                                : const Duration(
-                                                    milliseconds: 500),
-                                            enableSound: _panic.soundEnabled,
-                                            enableVibration:
-                                                _panic.vibrationEnabled,
-                                            // Panic decoy shows instantly (no roll/countdown).
-                                            animate: _panicRolling ||
-                                                !_panic.isCamouflageOn,
-                                          ),
+                                    child: _balanceOrMask(
+                                        account, currencySymbol, 28),
                                   ),
                                 ),
                                 // Frozen badge — at the right end of the balance amount.
@@ -1336,26 +1359,24 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           // Group/family balance — shows the decoy when panic
                           // camouflage is on (long-press toggles), matching the
                           // standard card so no wallet leaks the real balance.
-                          GestureDetector(
-                            onLongPress: _panic.longPressTriggerEnabled
-                                ? () => _panic.toggle()
-                                : null,
-                            child: CompactAnimatedBalance(
-                              balance: _displayBalance(account),
-                              currencySymbol: currencySymbol,
-                              fontSize: 26,
-                              color: Colors.white,
-                              duration: _panicRolling
-                                  ? _kPanicRollDuration
-                                  : const Duration(seconds: 3),
-                              startDelay: _panicRolling
-                                  ? Duration.zero
-                                  : const Duration(milliseconds: 500),
-                              enableSound: _panic.soundEnabled,
-                              enableVibration: _panic.vibrationEnabled,
-                              // Panic decoy shows instantly (no roll/countdown).
-                              animate: _panicRolling || !_panic.isCamouflageOn,
-                            ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onLongPress: _panic.longPressTriggerEnabled
+                                      ? () => _panic.toggle()
+                                      : null,
+                                  child: _balanceOrMask(
+                                      account, currencySymbol, 26),
+                                ),
+                              ),
+                              _BalanceVisibilityButton(
+                                hidden: _isHidden(account.id),
+                                onTap: () =>
+                                    _toggleBalanceVisibility(account.id),
+                              ),
+                            ],
                           ),
                           SizedBox(height: 2.h),
                           if (_animatingAccounts.contains(account.id))
@@ -1655,23 +1676,21 @@ class _AccountCarouselState extends State<AccountCarousel> {
                       SizedBox(height: 12.h),
                       // Animated balance counter for business accounts — shows
                       // the decoy when panic camouflage is on (long-press toggles).
-                      GestureDetector(
-                        onLongPress: () => _panic.toggle(),
-                        child: CompactAnimatedBalance(
-                          balance: _displayBalance(account),
-                          currencySymbol: currencySymbol,
-                          fontSize: 26,
-                          color: Colors.white,
-                          duration: _panicRolling
-                              ? _kPanicRollDuration
-                              : const Duration(seconds: 3),
-                          startDelay: _panicRolling
-                              ? Duration.zero
-                              : const Duration(milliseconds: 500),
-                          enableVibration: _panic.vibrationEnabled,
-                          // Panic decoy shows instantly (no roll/countdown).
-                          animate: _panicRolling || !_panic.isCamouflageOn,
-                        ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onLongPress: () => _panic.toggle(),
+                              child:
+                                  _balanceOrMask(account, currencySymbol, 26),
+                            ),
+                          ),
+                          _BalanceVisibilityButton(
+                            hidden: _isHidden(account.id),
+                            onTap: () => _toggleBalanceVisibility(account.id),
+                          ),
+                        ],
                       ),
                       SizedBox(height: 2.h),
                       if (_animatingAccounts.contains(account.id))
