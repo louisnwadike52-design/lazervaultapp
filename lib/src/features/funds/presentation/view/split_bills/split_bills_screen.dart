@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -46,18 +47,10 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
     return acctDetails?.currency ?? 'NGN';
   }
 
-  String get _currencySymbol {
-    switch (_currency.toUpperCase()) {
-      case 'NGN': return '\u20a6';
-      case 'GBP': return '\u00a3';
-      case 'EUR': return '\u20ac';
-      case 'USD': return '\$';
-      case 'ZAR': return 'R';
-      case 'CAD': return 'C\$';
-      case 'AUD': return 'A\$';
-      default: return '\u20a6';
-    }
-  }
+  /// Shared resolver — see SplitBillEntity._currencySymbol. _currency comes
+  /// from the ACTIVE ACCOUNT, whose currency is not guaranteed to be an ISO
+  /// code, so it must be normalised rather than switched on raw.
+  String get _currencySymbol => CurrencyUtils.getSymbol(_currency);
 
   @override
   void initState() {

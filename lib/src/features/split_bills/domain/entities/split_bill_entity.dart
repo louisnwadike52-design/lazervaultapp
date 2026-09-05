@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:lazervault/core/utils/currency_utils.dart';
 
 enum SplitBillStatus { active, completed, cancelled, expired }
 
@@ -122,26 +123,13 @@ class SplitBillEntity extends Equatable {
     }
   }
 
-  static String _currencySymbol(String code) {
-    switch (code) {
-      case 'NGN':
-        return '\u20A6';
-      case 'USD':
-        return '\$';
-      case 'GBP':
-        return '\u00A3';
-      case 'EUR':
-        return '\u20AC';
-      case 'GHS':
-        return 'GH\u20B5';
-      case 'KES':
-        return 'KSh';
-      case 'ZAR':
-        return 'R';
-      default:
-        return '$code ';
-    }
-  }
+  /// Delegates to the shared resolver. This used to be one of FIVE copies of
+  /// the same switch across the split-bill screens, and they had already
+  /// drifted \u2014 this one matched on the RAW code (so a lowercase or
+  /// display-name currency fell through), while others uppercased and each
+  /// carried a different fallback. One resolver means a currency renders the
+  /// same everywhere, and normalisation happens in exactly one place.
+  static String _currencySymbol(String code) => CurrencyUtils.getSymbol(code);
 
   @override
   List<Object?> get props => [

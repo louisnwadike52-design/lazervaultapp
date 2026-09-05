@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -133,26 +134,10 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     }
   }
 
-  String get _currencySymbol {
-    switch (_currency.toUpperCase()) {
-      case 'NGN':
-        return '\u20a6';
-      case 'GBP':
-        return '\u00a3';
-      case 'EUR':
-        return '\u20ac';
-      case 'USD':
-        return '\$';
-      case 'ZAR':
-        return 'R';
-      case 'GHS':
-        return 'GH\u20b5'; // cedi \u2014 matches the GH bank-country support
-      case 'KES':
-        return 'KSh'; // shilling \u2014 matches the KE bank-country support
-      default:
-        return '\u20a6';
-    }
-  }
+  /// Shared resolver — see SplitBillEntity._currencySymbol. Normalising here
+  /// matters because _currency comes from the ACTIVE ACCOUNT, whose currency
+  /// is not guaranteed to be an ISO code.
+  String get _currencySymbol => CurrencyUtils.getSymbol(_currency);
 
   @override
   void initState() {
@@ -1246,6 +1231,23 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
     // result also leaves _suggestingReceiverBanks alone, because the NEWER
     // lookup owns that flag now.
     if (seq != _receiverLookupSeq) return;
+    // EXACTLY ONE match → apply it, the same rule the saved-recipient path
+    // above already uses. Asking the user to tap the single answer we just
+    // resolved is a step that cannot change the outcome; leaving the two paths
+    // inconsistent also meant the SAME account number behaved differently
+    // depending on whether it was typed or picked from saved recipients.
+    //
+    // Ambiguity is left to the user on purpose: multiple matches are different
+    // banks sharing an account number, each with a DIFFERENT account holder, so
+    // auto-taking the first would aim the payout at the wrong person.
+    if (suggestions.length == 1) {
+      setState(() {
+        _suggestingReceiverBanks = false;
+        _receiverSuggestAttempted = true;
+      });
+      _selectReceiverSuggestion(suggestions.first);
+      return;
+    }
     setState(() {
       _suggestingReceiverBanks = false;
       _receiverBankSuggestions = suggestions;

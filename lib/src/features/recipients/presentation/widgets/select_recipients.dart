@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/endpoint_registry.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -796,18 +797,26 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                   label: 'Scan History',
                                   onTap: showScanHistory,
                                 ),
-                              // Split Bills quick action with pending co-payer badge
-                              BlocBuilder<SplitBillCountCubit, int>(
-                                bloc: serviceLocator<SplitBillCountCubit>(),
-                                builder: (context, pendingCount) {
-                                  return _buildQuickAction(
-                                    icon: Icons.group_outlined,
-                                    label: 'Split Bills',
-                                    onTap: _launchSplitBills,
-                                    badgeCount: pendingCount,
-                                  );
-                                },
-                              ),
+                              // Split Bills quick action with pending co-payer
+                              // badge. Admin-hideable: when
+                              // splitbill_sendfunds_entry_visible is off the
+                              // tile is omitted here and Split Bills is reached
+                              // from quick services instead. Nothing else is
+                              // disabled — routes, deep links and existing bills
+                              // keep working, so a co-payer who was sent a link
+                              // can still pay.
+                              if (endpointRegistry.splitBillSendFundsEntryVisible)
+                                BlocBuilder<SplitBillCountCubit, int>(
+                                  bloc: serviceLocator<SplitBillCountCubit>(),
+                                  builder: (context, pendingCount) {
+                                    return _buildQuickAction(
+                                      icon: Icons.group_outlined,
+                                      label: 'Split Bills',
+                                      onTap: _launchSplitBills,
+                                      badgeCount: pendingCount,
+                                    );
+                                  },
+                                ),
                               // Scheduled / recurring transfers — surfaced here so
                               // users can find their upcoming & repeating payments
                               // at a glance (shown in both flows).

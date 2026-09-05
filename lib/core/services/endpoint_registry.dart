@@ -58,6 +58,11 @@ class EndpointRegistry {
   static const Set<String> _persistedNonUrlKeys = {
     'session_inactivity_logout_seconds',
     'splitbill_external_receiver_enabled',
+    // Whether Split Bills appears as a quick action INSIDE the send-funds flow.
+    // Cached like the other admin knobs so the send-funds screen can decide on
+    // the first frame — a tile that appears a moment after the sheet opens is
+    // worse than one that was never there.
+    'splitbill_sendfunds_entry_visible',
     // Flutter feature flags (admin-toggled). Cached here like every other
     // admin knob; FeatureFlags.applyRemoteSnapshot reads them at boot.
     'dashboard_cards_section_visible',
@@ -575,6 +580,18 @@ class EndpointRegistry {
   /// wins over this default via the background settings refresh).
   bool get splitBillExternalReceiverEnabled =>
       _get('splitbill_external_receiver_enabled', 'true').trim().toLowerCase() !=
+          'false';
+
+  /// Whether the Split Bills quick action shows inside the SEND-FUNDS flow.
+  /// Admin-tunable via `splitbill_sendfunds_entry_visible`.
+  ///
+  /// Turning this off does NOT disable split bills — the service tile and every
+  /// route stay live, so existing bills, deep links and notifications still
+  /// work. It only removes the entry point from send-funds, for when the
+  /// feature belongs under quick services rather than in the middle of a
+  /// transfer. Defaults to ON so behaviour is unchanged until an admin opts out.
+  bool get splitBillSendFundsEntryVisible =>
+      _get('splitbill_sendfunds_entry_visible', 'true').trim().toLowerCase() !=
           'false';
 
   /// Raw read for any registered key — for places that store/read a key

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/src/features/pending_actions/presentation/cubit/pending_actions_cubit.dart';
@@ -238,26 +239,8 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
     return '${_currencySymbol(currency)}${amount.toStringAsFixed(2)}';
   }
 
-  String _currencySymbol(String code) {
-    switch (code) {
-      case 'NGN':
-        return '\u20A6';
-      case 'USD':
-        return '\$';
-      case 'GBP':
-        return '\u00A3';
-      case 'EUR':
-        return '\u20AC';
-      case 'GHS':
-        return 'GH\u20B5';
-      case 'KES':
-        return 'KSh';
-      case 'ZAR':
-        return 'R';
-      default:
-        return '$code ';
-    }
-  }
+  /// Shared resolver — see SplitBillEntity._currencySymbol.
+  String _currencySymbol(String code) => CurrencyUtils.getSymbol(code);
 
   String _formatDate(DateTime dt) {
     final day = dt.day.toString().padLeft(2, '0');

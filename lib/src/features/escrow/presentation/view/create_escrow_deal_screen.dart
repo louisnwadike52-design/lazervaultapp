@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:lazervault/src/features/recipients/domain/entities/unified_search_result.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,6 +35,9 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
   ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
 
   final _sellerCtrl = TextEditingController();
+  /// The seller chosen from the platform directory. Non-null is the ONLY
+  /// way past page 1 — see _sellerPicker for why free text is unsafe here.
+  UnifiedSearchResult? _seller;
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _amountCtrl = TextEditingController();
@@ -89,8 +94,8 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
   void _goToNextPage() {
     FocusScope.of(context).unfocus();
     if (_currentPage == 0) {
-      if (_sellerCtrl.text.trim().isEmpty) {
-        _snack('Enter the seller (username, tag or phone)', EscrowTheme.error);
+      if (_seller == null || _sellerCtrl.text.trim().isEmpty) {
+        _snack('Search for and select the seller', EscrowTheme.error);
         return;
       }
       if (_titleCtrl.text.trim().isEmpty) {
@@ -309,11 +314,8 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label('Seller (username, tag or phone)'),
-          _field(_sellerCtrl,
-              hint: 'e.g. @jane or 080...',
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Required' : null),
+          _label('Seller'),
+          _sellerPicker(),
           SizedBox(height: 16.h),
           _label('What is this deal for?'),
           _field(_titleCtrl,
@@ -461,6 +463,101 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
           );
         }).toList(),
       );
+
+  /// Seller picker — the shared platform user search, not free text.
+  ///
+  /// An escrow deal locks the BUYER'S money until the seller acts, so a seller
+  /// who is not on the platform cannot mark delivered, cannot be paid, and
+  /// cannot be disputed against: the funds would simply sit until they expire
+  /// back. Free text made that failure reachable by typo — a mistyped tag was
+  /// accepted at entry and only discovered after the money was committed.
+  /// Selecting from the directory means the counterparty provably exists before
+  /// anything is held.
+  Widget _sellerPicker() {
+    final picked = _seller;
+    return InkWell(
+      onTap: _pickSeller,
+      borderRadius: BorderRadius.circular(12.r),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+        decoration: BoxDecoration(
+          color: EscrowTheme.card,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: picked == null ? EscrowTheme.border : EscrowTheme.primary,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              picked == null ? Icons.person_search_outlined : Icons.verified_user,
+              color: picked == null
+                  ? EscrowTheme.textSecondary
+                  : EscrowTheme.primary,
+              size: 20.sp,
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: picked == null
+                  ? Text(
+                      'Search for the seller on LazerVault',
+                      style: GoogleFonts.inter(
+                          color: EscrowTheme.textSecondary, fontSize: 13.sp),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          picked.displayName.isNotEmpty
+                              ? picked.displayName
+                              : picked.username,
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        if (picked.username.isNotEmpty)
+                          Text('@${picked.username}',
+                              style: GoogleFonts.inter(
+                                  color: EscrowTheme.textSecondary,
+                                  fontSize: 12.sp)),
+                      ],
+                    ),
+            ),
+            Icon(picked == null ? Icons.chevron_right : Icons.edit_outlined,
+                color: EscrowTheme.textSecondary, size: 18.sp),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickSeller() async {
+    FocusScope.of(context).unfocus();
+    // internalOnly: an escrow counterparty MUST be a LazerVault user — an
+    // external bank recipient has no way to accept, deliver or dispute.
+    final result = await UnifiedUserSearchSheet.show(
+      context,
+      title: 'Find seller',
+      subtitle: 'The seller must be on LazerVault to accept and deliver.',
+      internalOnly: true,
+    );
+    if (result == null || !mounted) return;
+    if (!result.isLazervault || result.userId.trim().isEmpty) {
+      // Defensive: internalOnly should preclude this, but committing a buyer's
+      // money to an unresolvable counterparty is not a risk worth trusting a
+      // flag with.
+      _snack('That recipient is not a LazerVault user', EscrowTheme.error);
+      return;
+    }
+    setState(() {
+      _seller = result;
+      // The backend resolves sellerQuery; send the username it can look up,
+      // falling back to the user id when the account has no username set.
+      _sellerCtrl.text =
+          result.username.trim().isNotEmpty ? result.username.trim() : result.userId;
+    });
+  }
 
   Widget _field(TextEditingController c,
       {String? hint,

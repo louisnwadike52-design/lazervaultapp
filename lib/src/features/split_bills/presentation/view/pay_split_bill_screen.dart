@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -83,26 +84,10 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
     return '${_currencySymbol(currency)}${amount.toStringAsFixed(2)}';
   }
 
-  String _currencySymbol(String code) {
-    switch (code) {
-      case 'NGN':
-        return '\u20A6';
-      case 'USD':
-        return '\$';
-      case 'GBP':
-        return '\u00A3';
-      case 'EUR':
-        return '\u20AC';
-      case 'GHS':
-        return 'GH\u20B5';
-      case 'KES':
-        return 'KSh';
-      case 'ZAR':
-        return 'R';
-      default:
-        return '$code ';
-    }
-  }
+  /// Shared resolver — see SplitBillEntity._currencySymbol. This copy matched
+  /// on the RAW code, so a lowercase or display-name currency silently fell
+  /// through to a bare code prefix.
+  String _currencySymbol(String code) => CurrencyUtils.getSymbol(code);
 
   /// The currently selected source account, resolved from the cubit's loaded
   /// summaries by the active id. The cubit's `setActiveAccount` only updates the

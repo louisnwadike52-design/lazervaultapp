@@ -3352,7 +3352,26 @@ class _AddRecipientState extends State<AddRecipient> with WidgetsBindingObserver
       });
       // Auto-resolution couldn't pick a bank → reveal the manual bank field as
       // the fallback (keeping the tooltip only when there ARE matches to tap).
-      if (suggestions.isEmpty) _revealBankField();
+      if (suggestions.isEmpty) {
+        _revealBankField();
+        _syncSuggestOverlay();
+        return;
+      }
+      // EXACTLY ONE match → apply it. Asking the user to tap the single answer
+      // we already resolved is a step that cannot change the outcome, and the
+      // submit path has always auto-applied a lone suggestion anyway — so this
+      // only moves that same decision earlier, where it saves the tap.
+      //
+      // Deliberately NOT extended to the multi-match case: those are different
+      // banks that share an account number, each resolving to a DIFFERENT
+      // account holder, so "just take the first" would silently aim the
+      // transfer at the wrong person. Ambiguity is exactly when a human should
+      // choose. The confirmation sheet still shows the resolved account name
+      // either way, so the single-match path is confirmed, not assumed.
+      if (suggestions.length == 1) {
+        _selectSuggestion(suggestions.first);
+        return; // _selectSuggestion syncs the overlay itself
+      }
       _syncSuggestOverlay();
     } catch (_) {
       if (!mounted) return;
