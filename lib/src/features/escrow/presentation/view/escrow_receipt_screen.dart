@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:get_it/get_it.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
@@ -50,9 +52,24 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
   EscrowDealEntity? _deal;
   String _kind = 'funded';
 
+  /// Who is READING this receipt. An escrow receipt is inherently two-sided —
+  /// the buyer paid buyerTotal, the seller received sellerNet — so a single
+  /// fixed rendering is wrong for one of them. Resolved from secure storage;
+  /// null until it arrives, and the fallbacks below stay truthful without it.
+  String? _viewerId;
+  bool get _viewerIsSeller =>
+      _viewerId != null && _deal != null && _deal!.sellerUserId == _viewerId;
+  bool get _viewerIsBuyer =>
+      _viewerId != null && _deal != null && _deal!.buyerUserId == _viewerId;
+
   @override
   void initState() {
     super.initState();
+    GetIt.I<SecureStorageService>().getUserId().then((id) {
+      if (mounted && id != null && id.trim().isNotEmpty) {
+        setState(() => _viewerId = id.trim());
+      }
+    });
     final args = Get.arguments;
     if (args is Map) {
       final deal = args['deal'];
@@ -93,6 +110,17 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
 
   double get _headlineAmount {
     final d = _deal!;
+    // The headline is "what this event meant for YOU". Keying it purely off the
+    // event kind showed a BUYER the seller's net payout on a released deal —
+    // a number they never paid and never received, printed as the headline of
+    // their own receipt. Falls back to the event-shaped amount while the viewer
+    // id is still resolving, so the figure is never blank.
+    if (_viewerIsSeller) {
+      return _kind == 'released' ? d.sellerNet : d.amount;
+    }
+    if (_viewerIsBuyer) {
+      return d.buyerTotal; // paid on funding, returned on refund
+    }
     switch (_kind) {
       case 'released':
         return d.sellerNet;
@@ -338,10 +366,27 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
       if (deal.sellerName.isNotEmpty)
         _DetailEntry('Seller', '@${deal.sellerName}'),
       _DetailEntry('Item', deal.title),
-      _DetailEntry('Amount', _money(deal.amount)),
-      _DetailEntry('Platform fee', _money(deal.fee)),
-      _DetailEntry('Buyer total', _money(deal.buyerTotal)),
-      _DetailEntry('Seller net', _money(deal.sellerNet)),
+      _DetailEntry('Item price', _money(deal.amount)),
+      // The fee is shown to the party who actually BEARS it (feePayer), so the
+      // other side isn't invited to reconcile a charge that was never theirs.
+      if (deal.fee > 0 &&
+          (_viewerId == null ||
+              (_viewerIsBuyer && deal.feePayer == 'buyer') ||
+              (_viewerIsSeller && deal.feePayer == 'seller')))
+        _DetailEntry('Platform fee', _money(deal.fee)),
+      // Each party sees THEIR OWN figure. Printing both put the counterparty's
+      // total on every receipt: a seller learned exactly what the buyer was
+      // charged, and a buyer exactly what the seller pocketed — neither is
+      // theirs to reconcile, and on a shareable document that is worse than
+      // merely noisy.
+      if (_viewerIsSeller)
+        _DetailEntry('You received', _money(deal.sellerNet))
+      else if (_viewerIsBuyer)
+        _DetailEntry('You paid', _money(deal.buyerTotal))
+      else ...[
+        _DetailEntry('Buyer total', _money(deal.buyerTotal)),
+        _DetailEntry('Seller net', _money(deal.sellerNet)),
+      ],
       _DetailEntry('Status', EscrowTheme.statusMeta(deal.status).$1),
       _DetailEntry(
         'Date',
