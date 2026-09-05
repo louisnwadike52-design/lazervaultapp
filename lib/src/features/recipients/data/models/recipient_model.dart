@@ -128,9 +128,30 @@ class RecipientModel {
   /// then the stored [name] (unless it's empty or an account-TYPE token like
   /// "personal"), then falls back to the email local-part or a masked account
   /// number so the UI never renders an account type where a name belongs.
+  /// Strips a leading `institution/` prefix from a stored name.
+  ///
+  /// Some recipients are saved with the account label rather than the person —
+  /// "Lazervault/Nnaemeka Ezeke" — which reads as an account reference in a list
+  /// of PEOPLE (financial connections, chat peers), where the institution is
+  /// both redundant and the least useful half.
+  ///
+  /// Only strips when the prefix is THIS recipient's own bankName, so a person
+  /// whose name legitimately contains a slash is never mangled, and a different
+  /// institution's label is left visible rather than silently hidden.
+  String _withoutInstitutionPrefix(String value) {
+    final v = value.trim();
+    final bank = bankName.trim();
+    if (bank.isEmpty || !v.contains('/')) return v;
+    final head = v.substring(0, v.indexOf('/')).trim();
+    if (head.toLowerCase() != bank.toLowerCase()) return v;
+    final tail = v.substring(v.indexOf('/') + 1).trim();
+    // Never strip down to nothing — a bare institution name beats an empty row.
+    return tail.isEmpty ? v : tail;
+  }
+
   String get displayName {
     if (alias != null && alias!.trim().isNotEmpty) return alias!.trim();
-    if (!_isUnusableName(name)) return name.trim();
+    if (!_isUnusableName(name)) return _withoutInstitutionPrefix(name);
     if (email != null && email!.contains('@')) {
       final local = email!.split('@').first.trim();
       if (local.isNotEmpty) return local;

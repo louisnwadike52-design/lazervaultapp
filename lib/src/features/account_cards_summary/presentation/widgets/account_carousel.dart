@@ -825,7 +825,13 @@ class _AccountCarouselState extends State<AccountCarousel> {
                               children: [
                                 Flexible(
                                   child: Text(
-                                    "${account.accountType} Account",
+                                    // Just the type ("Personal", "Business") —
+                                    // the " Account" suffix said nothing on a
+                                    // card that is self-evidently an account,
+                                    // while costing the width that pushed
+                                    // longer types into an ellipsis and shifted
+                                    // the row's alignment.
+                                    account.accountType,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       color:
