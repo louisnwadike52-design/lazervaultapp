@@ -10,6 +10,7 @@ import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/panic_balance_service.dart';
 import 'package:lazervault/src/features/fraud_detection/data/fraud_detection_service.dart';
+import 'package:lazervault/core/services/service_order_service.dart';
 import 'package:lazervault/core/services/service_usage_service.dart';
 import 'package:lazervault/core/theme/theme_controller.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -897,14 +898,24 @@ class _SettingsViewState extends State<_SettingsView> {
           onChanged: (v) {
             setState(() => _adaptiveQuickServices = v);
             FeatureFlags.setAdaptiveQuickServices(v);
+            final hadCustom =
+                serviceLocator<ServiceOrderService>().hasCustomOrder;
             if (v) {
+              // A hand-placed arrangement OUTRANKS adaptive ordering, so
+              // leaving it in place would make this toggle look broken —
+              // switched on, nothing moves. Turning adaptive on is the user
+              // asking for the app's ordering back, so the manual arrangement
+              // is dropped and they are told, rather than silently overridden.
+              serviceLocator<ServiceOrderService>().clearOrder();
               // Seed the local tally from the server (cross-device continuity).
               serviceLocator<ServiceUsageService>().syncFromBackend();
             }
             showAppSnackbar(
               v ? 'Adaptive quick services on' : 'Adaptive quick services off',
               v
-                  ? 'Your most-used services will move to the front.'
+                  ? (hadCustom
+                      ? 'Your manual arrangement was cleared. Most-used services will move to the front.'
+                      : 'Your most-used services will move to the front.')
                   : 'Quick services keep the standard order.',
               type: AppSnackbarType.success,
             );

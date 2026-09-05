@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:lazervault/core/services/service_order_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -54,6 +56,26 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   bool _isFamilyProcessing = false;
   String? _activeFamilyAccountId;
   bool _isResolvingFamilyId = false;
+
+  // ── Drag-to-arrange ────────────────────────────────────────────────────────
+  // Long-press a tile to pick it up, drop it where you want it. Dropping saves
+  // the arrangement and turns adaptive ordering OFF — see ServiceOrderService:
+  // an order the user set by hand must not be re-sorted by a later usage tally.
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
+  /// Global index (across pages) of the tile currently being dragged.
+  int? _draggingIndex;
+  /// Page count of the last build — needed by the edge auto-advance, which runs
+  /// from a drag callback rather than inside build().
+  int _pageCount = 1;
+  /// Debounces edge auto-advance so a slow drag near the edge doesn't flip
+  /// through every page at once.
+  DateTime _lastEdgeFlip = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// Only the PERSONAL grid is arrangeable — the other account types carry a
+  /// hand-picked order that isn't the user's to rearrange.
+  bool get _reorderEnabled =>
+      identical(_rawServicesForActiveAccount(), _personalServices);
 
   static const int _itemsPerRow = 4;
   static const int _maxRows = 3;
@@ -351,8 +373,119 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     return out;
   }
 
-  List<AppService> get _activeServices {
-    final raw = switch (_activeAccountType) {
+  /// The per-account-type source list, BEFORE hiding/ordering. Pulled out so
+  /// the reorder gate can ask "is this the personal grid?" without duplicating
+  /// the switch (a second copy would drift and silently enable dragging on a
+  /// curated list).
+  // ── Drag-to-arrange implementation ─────────────────────────────────────────
+
+  /// One draggable + droppable tile.
+  ///
+  /// Carries its GLOBAL index (page * itemsPerPage + slot) rather than its slot,
+  /// so a drop is meaningful across pages — the whole point of the feature is
+  /// moving a service to a different slide, and a per-page index could not
+  /// express that.
+  Widget _buildReorderableTile(AppService service, int globalIndex) {
+    final tile = AppServiceBuilder(appService: service);
+
+    return DragTarget<int>(
+      // Never accept a drop onto itself: it is a no-op that would still write a
+      // "new" order and disable adaptive ordering for nothing.
+      onWillAcceptWithDetails: (d) => d.data != globalIndex,
+      onAcceptWithDetails: (d) => _moveService(d.data, globalIndex),
+      builder: (context, candidate, rejected) {
+        final isTarget = candidate.isNotEmpty;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          decoration: BoxDecoration(
+            // A drop target has to be visible while the finger covers the tile
+            // under it, hence a ring rather than a fill.
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
+              color: isTarget ? _accentColor : Colors.transparent,
+              width: 2,
+            ),
+          ),
+          child: LongPressDraggable<int>(
+            data: globalIndex,
+            // Long-press (not pan) so the carousel keeps its horizontal swipe —
+            // a plain drag would fight the pager on every sideways gesture.
+            delay: const Duration(milliseconds: 220),
+            onDragStarted: () {
+              HapticFeedback.mediumImpact();
+              setState(() => _draggingIndex = globalIndex);
+            },
+            onDragEnd: (_) => setState(() => _draggingIndex = null),
+            onDraggableCanceled: (_, __) =>
+                setState(() => _draggingIndex = null),
+            onDragUpdate: _maybeFlipPage,
+            feedback: Material(
+              color: Colors.transparent,
+              child: Opacity(
+                opacity: 0.9,
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width / _itemsPerRow,
+                  child: tile,
+                ),
+              ),
+            ),
+            // The vacated slot stays laid out (just faded) so the grid does not
+            // reflow under the finger mid-drag.
+            childWhenDragging: Opacity(opacity: 0.25, child: tile),
+            child: tile,
+          ),
+        );
+      },
+    );
+  }
+
+  /// Auto-advance the carousel when a drag hovers near either edge.
+  ///
+  /// This is what makes the arrangement work ACROSS slides: without it a tile
+  /// could only ever be dropped on the page it started from, and a user would
+  /// have to guess that the feature is page-local. Debounced so holding near an
+  /// edge steps one page at a time instead of racing to the end.
+  void _maybeFlipPage(DragUpdateDetails details) {
+    if (_pageCount <= 1) return;
+    final width = MediaQuery.of(context).size.width;
+    const edge = 56.0; // generous enough to hit with a fingertip
+    final x = details.globalPosition.dx;
+    final goLeft = x < edge;
+    final goRight = x > width - edge;
+    if (!goLeft && !goRight) return;
+    if (DateTime.now().difference(_lastEdgeFlip) <
+        const Duration(milliseconds: 700)) {
+      return;
+    }
+    final next = goLeft ? _currentIndex - 1 : _currentIndex + 1;
+    if (next < 0 || next >= _pageCount) return;
+    _lastEdgeFlip = DateTime.now();
+    HapticFeedback.selectionClick();
+    _carouselController.animateToPage(next);
+  }
+
+  /// Apply a move and persist it.
+  ///
+  /// Works on the FULL ordered list (not the page) so a cross-page move lands
+  /// exactly where it was dropped.
+  Future<void> _moveService(int from, int to) async {
+    final services = _activeServices;
+    if (from < 0 || from >= services.length) return;
+    if (to < 0 || to >= services.length) return;
+    final reordered = [...services];
+    final moved = reordered.removeAt(from);
+    reordered.insert(to, moved);
+    HapticFeedback.lightImpact();
+    // saveOrder bumps dashboardLayoutRevision (and turns adaptive off), which
+    // is what re-renders the grid — no local setState of the list needed.
+    await serviceLocator<ServiceOrderService>()
+        .saveOrder(reordered.map((s) => s.serviceName).toList());
+    if (!mounted) return;
+    if (FeatureFlags.adaptiveQuickServices) return; // defensive; already off
+  }
+
+  List<AppService> _rawServicesForActiveAccount() {
+    return switch (_activeAccountType) {
       VirtualAccountType.business => _businessServices,
       VirtualAccountType.savings => _savingsServices,
       VirtualAccountType.investment => _investmentServices,
@@ -363,6 +496,10 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
       VirtualAccountType.family => _familyServices,
       _ => _personalServices,
     };
+  }
+
+  List<AppService> get _activeServices {
+    final raw = _rawServicesForActiveAccount();
     final hidden = _effectiveHiddenServices;
     final filtered =
         raw.where((s) => !hidden.contains(s.serviceName)).toList();
@@ -380,6 +517,29 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   /// with [revenuePriority] as the (unique) tiebreak. Default OFF → pure
   /// revenue-priority order.
   List<AppService> _orderPersonalServices(List<AppService> services) {
+    // A HAND-PLACED order outranks everything below it. Usage ordering is a
+    // guess the app makes; this is an instruction the user gave by dragging a
+    // tile, so it wins — including over the Send Funds pin, because a user who
+    // deliberately moved Send Funds meant it.
+    //
+    // Services with no rank (added since the arrangement, or never dragged)
+    // keep their relative default order and sit AFTER the arranged ones, so a
+    // new service appears without disturbing anything already placed.
+    final ranks = serviceLocator<ServiceOrderService>().ranks();
+    if (ranks.isNotEmpty) {
+      final ordered = [...services];
+      ordered.sort((a, b) {
+        final ar = ranks[a.serviceName];
+        final br = ranks[b.serviceName];
+        if (ar != null && br != null) return ar.compareTo(br);
+        if (ar != null) return -1; // arranged before unarranged
+        if (br != null) return 1;
+        return a.serviceName.revenuePriority
+            .compareTo(b.serviceName.revenuePriority);
+      });
+      return ordered;
+    }
+
     final adaptive = FeatureFlags.adaptiveQuickServices;
     final usage = adaptive
         ? serviceLocator<ServiceUsageService>().counts()
@@ -461,6 +621,16 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
       });
       usage.syncFromBackend();
     }
+    // A hand-placed arrangement is loaded UNCONDITIONALLY — unlike the adaptive
+    // tally it is not behind a toggle, and it outranks the default order, so
+    // the grid must know about it on the very first build after a fresh install
+    // or a user switch. The backend seed only fills in when nothing local
+    // exists (see ServiceOrderService.syncFromBackend).
+    final order = serviceLocator<ServiceOrderService>();
+    order.ensureLoaded().then((_) {
+      if (mounted) FeatureFlags.dashboardLayoutRevision.value++;
+    });
+    order.syncFromBackend();
   }
 
   @override
@@ -595,6 +765,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     }
 
     final servicePages = _getServicePages();
+    // Captured for the edge auto-advance, which runs from a drag callback and
+    // therefore cannot read build-local state.
+    _pageCount = servicePages.length;
     final carouselHeight = _calculateCarouselHeight(context);
     final activeServices = _activeServices;
     final accentColor = _accentColor;
@@ -697,6 +870,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
 
           // Services Carousel
           CarouselSlider.builder(
+            carouselController: _carouselController,
             itemCount: servicePages.length,
             options: CarouselOptions(
               height: carouselHeight, // Dynamic height based on content
@@ -725,11 +899,43 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
                 itemBuilder: (context, index) {
-                  return AppServiceBuilder(appService: servicesOnPage[index]);
+                  final service = servicesOnPage[index];
+                  // Reorder is only offered on the PERSONAL grid — the other
+                  // account types carry a hand-picked order that is not the
+                  // user's to rearrange.
+                  if (!_reorderEnabled) {
+                    return AppServiceBuilder(appService: service);
+                  }
+                  final globalIndex = pageIndex * _itemsPerPage + index;
+                  return _buildReorderableTile(service, globalIndex);
                 },
               );
             },
           ),
+
+          // Drag hint. The ability to move a tile to ANOTHER slide is invisible
+          // otherwise — a user would reasonably assume the arrangement is
+          // page-local and never try. Shown only while actually dragging, and
+          // only when there IS another page to reach.
+          if (_draggingIndex != null && servicePages.length > 1) ...[
+            SizedBox(height: 6.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.swipe_outlined,
+                    size: 13.sp, color: accentColor.withValues(alpha: 0.75)),
+                SizedBox(width: 5.w),
+                Text(
+                  'Hold near the edge to move it to another page',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                    color: accentColor.withValues(alpha: 0.75),
+                  ),
+                ),
+              ],
+            ),
+          ],
 
           // Carousel Indicators (only show if more than 1 page).
           if (servicePages.length > 1) ...[
