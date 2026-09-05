@@ -831,7 +831,16 @@ class _AccountCarouselState extends State<AccountCarousel> {
                                     // while costing the width that pushed
                                     // longer types into an ellipsis and shifted
                                     // the row's alignment.
-                                    account.accountType,
+                                    //
+                                    // accountType is nullable upstream (defaults
+                                    // to ""), and dropping the suffix turned that
+                                    // from a harmless " Account" into a BLANK
+                                    // label — so the generic word is the fallback
+                                    // for exactly the case where we don't know
+                                    // the type.
+                                    account.accountType.trim().isEmpty
+                                        ? 'Account'
+                                        : account.accountType,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       color:

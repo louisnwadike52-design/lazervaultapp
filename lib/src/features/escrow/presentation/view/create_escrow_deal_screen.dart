@@ -550,12 +550,25 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
       _snack('That recipient is not a LazerVault user', EscrowTheme.error);
       return;
     }
+    // The backend resolves sellerQuery as a STRING: exact username first, then
+    // a directory search. A raw user id matches neither, so sending one would
+    // fail with "no user found" AFTER the user had already picked a valid
+    // person. Send the best identifier the backend can actually resolve.
+    final query = [
+      result.username.trim(),
+      result.phoneNumber.trim(),
+      result.email.trim(),
+    ].firstWhere((v) => v.isNotEmpty, orElse: () => '');
+    if (query.isEmpty) {
+      // Selectable but unaddressable: nothing to resolve them by. Say so now
+      // rather than at submit, with the buyer's money already on the line.
+      _snack('That account has no username, phone or email to identify it by',
+          EscrowTheme.error);
+      return;
+    }
     setState(() {
       _seller = result;
-      // The backend resolves sellerQuery; send the username it can look up,
-      // falling back to the user id when the account has no username set.
-      _sellerCtrl.text =
-          result.username.trim().isNotEmpty ? result.username.trim() : result.userId;
+      _sellerCtrl.text = query;
     });
   }
 
