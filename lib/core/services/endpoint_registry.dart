@@ -63,6 +63,8 @@ class EndpointRegistry {
     // the first frame — a tile that appears a moment after the sheet opens is
     // worse than one that was never there.
     'splitbill_sendfunds_entry_visible',
+    // Shows the "Skip for now" affordance on the new-device OTP screen.
+    'auth_otp_skip_button_visible',
     // Flutter feature flags (admin-toggled). Cached here like every other
     // admin knob; FeatureFlags.applyRemoteSnapshot reads them at boot.
     'dashboard_cards_section_visible',
@@ -592,6 +594,18 @@ class EndpointRegistry {
   /// transfer. Defaults to ON so behaviour is unchanged until an admin opts out.
   bool get splitBillSendFundsEntryVisible =>
       _get('splitbill_sendfunds_entry_visible', 'true').trim().toLowerCase() !=
+          'false';
+
+  /// Whether the new-device OTP screen offers a "Skip for now" affordance.
+  /// Admin-tunable via `auth_otp_skip_button_visible`; defaults to ON.
+  ///
+  /// UI-ONLY, and deliberately so: this screen holds a step-up token and NO
+  /// session — tokens are issued only after the code is verified — so nothing
+  /// here can skip INTO the app. The button abandons the step-up and returns to
+  /// login. Whether a code is demanded at all is a BACKEND decision
+  /// (`auth_adaptive_otp_enabled`), not something the client can wave away.
+  bool get otpSkipButtonVisible =>
+      _get('auth_otp_skip_button_visible', 'true').trim().toLowerCase() !=
           'false';
 
   /// Raw read for any registered key — for places that store/read a key
