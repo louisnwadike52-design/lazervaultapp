@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../domain/usecases/get_my_referral_code_usecase.dart';
@@ -197,24 +198,15 @@ class ReferralCubit extends Cubit<ReferralState> {
   }
 
   /// Get currency symbol for display
-  String _getCurrencySymbol(String currency) {
-    switch (currency.toUpperCase()) {
-      case 'GBP':
-        return '£';
-      case 'USD':
-        return '\$';
-      case 'EUR':
-        return '€';
-      case 'NGN':
-        return '₦';
-      case 'CAD':
-        return 'C\$';
-      case 'AUD':
-        return 'A\$';
-      default:
-        return '\$';
-    }
-  }
+  /// Delegates to the shared resolver.
+  ///
+  /// This was a local switch whose DEFAULT was a dollar sign, so any currency
+  /// string it did not match EXACTLY — a lowercase code, a display name like
+  /// 'Nigerian Naira', an empty value — rendered a naira amount as DOLLARS.
+  /// CurrencyUtils normalises first and falls back to the CODE, so an
+  /// unrecognised currency is labelled, never mislabelled as another one.
+  String _getCurrencySymbol(String currency) =>
+      CurrencyUtils.getSymbol(currency);
 
   /// Load all referrals with optional filter (for All Referrals screen)
   Future<void> loadAllReferrals({String filter = '', int page = 1}) async {

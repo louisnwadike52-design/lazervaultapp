@@ -53,6 +53,30 @@ void main() {
     });
   });
 
+
+    test('covers every currency the local switches it replaced could render', () {
+      // Converting a local switch to this resolver must never LOSE a currency —
+      // that would swap a correct symbol for a bare code.
+      expect(CurrencyUtils.getSymbol('JPY'), '¥');
+      expect(CurrencyUtils.getSymbol('INR'), '₹');
+      expect(CurrencyUtils.getSymbol('CHF'), 'Fr');
+      expect(CurrencyUtils.getSymbol('CNY'), '¥');
+      expect(CurrencyUtils.getSymbol('CAD'), 'C\$');
+      expect(CurrencyUtils.getSymbol('AUD'), 'A\$');
+    });
+
+    test('an unrecognised currency is NEVER rendered as another currency', () {
+      // The replaced switches defaulted to a dollar sign, so anything they did
+      // not match exactly rendered as USD — which is how a naira amount showed
+      // up as dollars.
+      for (final v in ['', 'ngn', 'Nigerian Naira', 'XYZ', 'ZZZ']) {
+        final out = CurrencyUtils.getSymbol(v);
+        if (v.trim().isEmpty) continue;
+        expect(out, isNot('\$'),
+            reason: '"\$v" must not fall back to a dollar sign');
+      }
+    });
+
   group('sameCurrency', () {
     test('tolerates code-vs-name', () {
       expect(CurrencyUtils.sameCurrency('NGN', 'Nigerian Naira'), isTrue);

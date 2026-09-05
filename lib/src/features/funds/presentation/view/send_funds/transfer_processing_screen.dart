@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -514,19 +515,15 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
     );
   }
 
-  String _getCurrencySymbol(String currency) {
-    switch (currency.toUpperCase()) {
-      case 'NGN':
-        return '₦';
-      case 'GBP':
-        return '£';
-      case 'EUR':
-        return '€';
-      case 'USD':
-      default:
-        return '\$';
-    }
-  }
+  /// Delegates to the shared resolver.
+  ///
+  /// This was a local switch whose DEFAULT was a dollar sign, so any currency
+  /// string it did not match EXACTLY — a lowercase code, a display name like
+  /// 'Nigerian Naira', an empty value — rendered a naira amount as DOLLARS.
+  /// CurrencyUtils normalises first and falls back to the CODE, so an
+  /// unrecognised currency is labelled, never mislabelled as another one.
+  String _getCurrencySymbol(String currency) =>
+      CurrencyUtils.getSymbol(currency);
 
   Widget _buildProcessingSteps() {
     return Container(

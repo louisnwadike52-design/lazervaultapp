@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/utils/currency_utils.dart';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
@@ -98,30 +99,15 @@ class _AccountCarouselState extends State<AccountCarousel> {
   // Whether we're currently resolving a family account ID for setup navigation
   bool _isResolvingFamilyId = false;
   // Helper to convert currency code to symbol
-  String _getCurrencySymbol(String currency) {
-    switch (currency.toUpperCase()) {
-      case 'USD':
-        return '\$';
-      case 'GBP':
-        return '£';
-      case 'EUR':
-        return '€';
-      case 'NGN':
-        return '₦';
-      case 'ZAR':
-        return 'R';
-      case 'CAD':
-        return 'C\$';
-      case 'AUD':
-        return 'A\$';
-      case 'KES':
-        return 'KSh';
-      case 'GHS':
-        return 'GH₵';
-      default:
-        return '\$';
-    }
-  }
+  /// Delegates to the shared resolver.
+  ///
+  /// This was a local switch whose DEFAULT was a dollar sign, so any currency
+  /// string it did not match EXACTLY — a lowercase code, a display name like
+  /// 'Nigerian Naira', an empty value — rendered a naira amount as DOLLARS.
+  /// CurrencyUtils normalises first and falls back to the CODE, so an
+  /// unrecognised currency is labelled, never mislabelled as another one.
+  String _getCurrencySymbol(String currency) =>
+      CurrencyUtils.getSymbol(currency);
 
   /// Format balance with comma separators and 2 decimal places
   /// Returns a clearing time estimate string for pending deposits.

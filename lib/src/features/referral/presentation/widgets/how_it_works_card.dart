@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HowItWorksCard extends StatelessWidget {
@@ -13,22 +14,14 @@ class HowItWorksCard extends StatelessWidget {
     this.refereeReward = 5000,   // £50 in minor units
   });
 
-  String _getCurrencySymbol() {
-    switch (currency.toUpperCase()) {
-      case 'GBP':
-        return '£';
-      case 'USD':
-        return '\$';
-      case 'EUR':
-        return '€';
-      case 'NGN':
-        return '₦';
-      case 'CAD':
-        return 'C\$';
-      default:
-        return '\$';
-    }
-  }
+  /// Delegates to the shared resolver.
+  ///
+  /// This was a local switch whose DEFAULT was a dollar sign, so any currency
+  /// string it did not match EXACTLY — a lowercase code, a display name like
+  /// 'Nigerian Naira', an empty value — rendered a naira amount as DOLLARS.
+  /// CurrencyUtils normalises first and falls back to the CODE, so an
+  /// unrecognised currency is labelled, never mislabelled as another one.
+  String _getCurrencySymbol() => CurrencyUtils.getSymbol(currency);
 
   String _formatAmount(int amount) {
     return '${_getCurrencySymbol()}${(amount / 100).toStringAsFixed(0)}';

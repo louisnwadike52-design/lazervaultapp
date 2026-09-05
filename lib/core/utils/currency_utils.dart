@@ -12,6 +12,13 @@ class CurrencyUtils {
     'CAD': 'C\$',
     'AUD': 'A\$',
     'PHP': '\u20B1',
+    // Present so this map is a strict SUPERSET of every local switch it
+    // replaces. A site converted to this resolver must never lose a currency it
+    // used to render \u2014 that would swap a correct symbol for a bare code.
+    'JPY': '\u00A5',
+    'INR': '\u20B9',
+    'CHF': 'Fr',
+    'CNY': '\u00A5',
   };
 
   /// Returns the currency symbol for an ISO code OR a full currency name.

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 
@@ -80,34 +81,15 @@ class _CurrencyDisplayWidgetState extends State<CurrencyDisplayWidget> {
     return buffer.toString();
   }
 
-  String _getCurrencySymbol(String currency) {
-    switch (currency.toUpperCase()) {
-      case 'USD':
-        return '\$';
-      case 'GBP':
-        return '£';
-      case 'EUR':
-        return '€';
-      case 'JPY':
-        return '¥';
-      case 'CAD':
-        return 'C\$';
-      case 'AUD':
-        return 'A\$';
-      case 'CHF':
-        return 'Fr';
-      case 'CNY':
-        return '¥';
-      case 'INR':
-        return '₹';
-      case 'NGN':
-        return '₦';
-      case 'ZAR':
-        return 'R';
-      default:
-        return '\$'; // Default to dollar symbol
-    }
-  }
+  /// Delegates to the shared resolver.
+  ///
+  /// This was a local switch whose DEFAULT was a dollar sign, so any currency
+  /// string it did not match EXACTLY — a lowercase code, a display name like
+  /// 'Nigerian Naira', an empty value — rendered a naira amount as DOLLARS.
+  /// CurrencyUtils normalises first and falls back to the CODE, so an
+  /// unrecognised currency is labelled, never mislabelled as another one.
+  String _getCurrencySymbol(String currency) =>
+      CurrencyUtils.getSymbol(currency);
 }
 
 /// Simple widget that displays just the currency symbol.
@@ -139,34 +121,15 @@ class CurrencySymbolWidget extends StatelessWidget {
     );
   }
 
-  String _getCurrencySymbol(String currency) {
-    switch (currency.toUpperCase()) {
-      case 'USD':
-        return '\$';
-      case 'GBP':
-        return '£';
-      case 'EUR':
-        return '€';
-      case 'JPY':
-        return '¥';
-      case 'CAD':
-        return 'C\$';
-      case 'AUD':
-        return 'A\$';
-      case 'CHF':
-        return 'Fr';
-      case 'CNY':
-        return '¥';
-      case 'INR':
-        return '₹';
-      case 'NGN':
-        return '₦';
-      case 'ZAR':
-        return 'R';
-      default:
-        return '\$';
-    }
-  }
+  /// Delegates to the shared resolver.
+  ///
+  /// This was a local switch whose DEFAULT was a dollar sign, so any currency
+  /// string it did not match EXACTLY — a lowercase code, a display name like
+  /// 'Nigerian Naira', an empty value — rendered a naira amount as DOLLARS.
+  /// CurrencyUtils normalises first and falls back to the CODE, so an
+  /// unrecognised currency is labelled, never mislabelled as another one.
+  String _getCurrencySymbol(String currency) =>
+      CurrencyUtils.getSymbol(currency);
 }
 
 /// Widget that displays the current currency code (e.g., "USD", "GBP").
