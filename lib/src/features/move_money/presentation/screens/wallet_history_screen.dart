@@ -360,15 +360,42 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
     );
   }
 
+  /// Display label for one of the user's OWN accounts, by id.
+  ///
+  /// An internal beam moves money between two accounts the SAME person owns, so
+  /// framing it as a "recipient" (the generic transfer row's language) is simply
+  /// wrong — there is no counterparty. Resolving both ids to account names lets
+  /// the row read as what it is: a move from one of your accounts to another.
+  String _accountLabel(String? accountId) {
+    if (accountId == null || accountId.trim().isEmpty) return '';
+    final state = context.read<AccountCardsSummaryCubit>().state;
+    if (state is! AccountCardsSummaryLoaded) return '';
+    for (final a in state.accountSummaries) {
+      if (a.id.toString() == accountId) {
+        final t = a.accountType.trim();
+        return t.isEmpty ? a.currency : t;
+      }
+    }
+    return '';
+  }
+
   Widget _buildTransferItem(PaymentsTransferResult transfer) {
     final ccy = transfer.currency ?? 'NGN';
     final amountDisplay =
         '${CurrencyUtils.getSymbol(ccy)}${NumberFormat('#,##0.00', 'en_NG').format((transfer.amount ?? 0) / 100)}';
-    final description = transfer.recipientName ??
-        transfer.description ??
-        transfer.reference ??
-        transfer.transferId ??
-        'Transfer';
+    // Beam framing: "Personal → Savings", the same shape the external (bank)
+    // beam history uses. Falls back to the generic label only when the accounts
+    // can't be resolved (summaries not loaded yet, or an account since closed),
+    // so the row is never blank.
+    final fromLabel = _accountLabel(transfer.sourceAccountId);
+    final toLabel = _accountLabel(transfer.destinationAccountId);
+    final description = (fromLabel.isNotEmpty && toLabel.isNotEmpty)
+        ? '$fromLabel → $toLabel'
+        : (transfer.description ??
+            transfer.recipientName ??
+            transfer.reference ??
+            transfer.transferId ??
+            'Beam');
     final date = transfer.createdAt ?? DateTime.now();
     final status = (transfer.status ?? 'processing').toLowerCase();
 
@@ -387,7 +414,10 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
-                Icons.account_balance_wallet_outlined,
+                // A beam is a MOVE between your own accounts — the swap glyph
+                // says that at a glance, where the generic wallet icon made
+                // these rows indistinguishable from ordinary transfers.
+                Icons.swap_horiz_rounded,
                 color: BeamStyle.purpleLight,
                 size: 22.sp,
               ),

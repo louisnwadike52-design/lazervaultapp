@@ -679,22 +679,41 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
   ///    drop the user back onto the (short OR long) amount screen, regardless of
   ///    how the stack was built or whether the flow flag flipped mid-journey.
   void _handleReceiptBack() {
+    final canPop =
+        Get.context != null && Navigator.of(Get.context!).canPop();
+    final prevRoute = Get.previousRoute.split('?').first;
+    final beneathIsFlow = _sendFlowRoutes.any((r) => prevRoute == r);
+
     final backRoute = transferDetails['backRoute'] as String?;
     if (backRoute != null) {
+      // When this receipt was PUSHED to VIEW a past transfer (e.g. from Beam
+      // history), the origin screen is still alive underneath — so pop to it.
+      //
+      // offAllNamed here tore the stack down and REBUILT the destination, and
+      // Beam's backRoute is the dashboard-with-initialTab, so the rebuild
+      // painted the dashboard's default tab for a frame before switching to
+      // Beam: the reported flash. Popping restores the live screen with no
+      // rebuild and no intermediate frame.
+      //
+      // The send-flow guard still applies: after COMPLETING a transfer the
+      // screen beneath is the amount/transfer screen, which the user must never
+      // be dropped back onto — that case still resets via backRoute.
+      if (canPop && prevRoute.isNotEmpty && !beneathIsFlow) {
+        Get.back();
+        return;
+      }
       Get.offAllNamed(backRoute, arguments: transferDetails['backArgs']);
       return;
     }
-    final canPop =
-        Get.context != null && Navigator.of(Get.context!).canPop();
-    // Strip any query/args suffix so a route like `/initiate-send-funds?x=1`
-    // still matches the flow set (exact-match would miss it and pop into the
-    // amount screen — the very bug we're fixing).
-    final prev = Get.previousRoute.split('?').first;
-    final beneathIsSendFlow = _sendFlowRoutes.any((r) => prev == r);
+    // prevRoute/beneathIsFlow are computed above (the query/args suffix is
+    // already stripped, so a route like `/initiate-send-funds?x=1` still
+    // matches the flow set — an exact match would miss it and pop into the
+    // amount screen, the very bug this guard exists for).
+    //
     // Pop back ONLY to a real, non-send-flow origin (e.g. a P2P chat viewing a
     // past transfer). An empty/unknown previous route, or a send-flow screen
     // beneath, resets to the dashboard — never re-enters the amount screen.
-    if (canPop && prev.isNotEmpty && !beneathIsSendFlow) {
+    if (canPop && prevRoute.isNotEmpty && !beneathIsFlow) {
       Get.back();
     } else {
       Get.offAllNamed(AppRoutes.dashboard);
