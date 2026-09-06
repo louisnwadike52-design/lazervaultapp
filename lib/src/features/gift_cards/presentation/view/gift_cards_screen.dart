@@ -108,14 +108,66 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     super.dispose();
   }
 
+  /// How far from the end to start fetching the NEXT page.
+  ///
+  /// A flat 200px was too late: on a normal flick that is a few frames of
+  /// scrolling, so the request only started once the user had effectively
+  /// arrived and they watched a spinner. Leading by one and a half viewports
+  /// means the fetch is usually already resolved by the time those rows are
+  /// reached, and because it scales with the viewport it behaves the same on a
+  /// small phone and a tablet rather than being generous on one and useless on
+  /// the other. The floor covers very short viewports.
+  ///
+  /// This changes only WHEN a page is requested, never how many: page size and
+  /// the one-page-at-a-time rule below are untouched, so the server sees the
+  /// same number of requests for the same amount of scrolling.
+  static double _prefetchExtent(ScrollPosition position) {
+    final viewport = position.viewportDimension;
+    final lead = viewport * 1.5;
+    return lead < 400 ? 400 : lead;
+  }
+
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      final state = context.read<GiftCardCubit>().state;
-      if (state is GiftCardBrandsLoaded && state.hasNext) {
-        context.read<GiftCardCubit>().loadMoreBrands();
-      }
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    if (pos.pixels < pos.maxScrollExtent - _prefetchExtent(pos)) return;
+    final state = context.read<GiftCardCubit>().state;
+    // loadMoreBrands() itself returns early unless hasNext && !isLoadingMore, so
+    // exactly one request is ever in flight and we never run more than a page
+    // ahead however fast the user scrolls.
+    if (state is GiftCardBrandsLoaded && state.hasNext) {
+      context.read<GiftCardCubit>().loadMoreBrands();
     }
+  }
+
+  /// Whether page two has already been primed for the current buy result set.
+  /// Reset whenever the catalogue is reloaded (refresh, category change), since
+  /// that starts a new result set whose second page has not been fetched.
+  bool _primedSecondBrandsPage = false;
+
+  /// Fetches page two as soon as page one is on screen, without waiting for a
+  /// scroll. This is the case a scroll threshold can never cover: the user has
+  /// not moved yet, so no threshold has been crossed, and the first flick is
+  /// exactly when the list feels slowest.
+  ///
+  /// Deliberately ONE page, once per result set. It is a head start, not
+  /// read-ahead of the whole catalogue: without the guard, each arriving page
+  /// would immediately request the next and we would pull the entire list on
+  /// open, which is the server load this is supposed to avoid.
+  void _primeSecondBrandsPage(GiftCardBrandsLoaded state) {
+    // A settled page-1 emission IS a new result set: the cubit resets
+    // _currentPage to 0 before a fresh load and then takes the server's page
+    // number, so first load, pull-to-refresh, category and country changes all
+    // arrive here as page 1. Keying off that rather than the fourteen
+    // loadGiftCardBrands() call sites means a future call site cannot forget to
+    // re-enable priming. Guarded on !isLoadingMore so the in-flight emission of
+    // the prime itself (still page 1) does not clear the latch and re-fire.
+    if (state.currentPage <= 1 && !state.isLoadingMore) {
+      _primedSecondBrandsPage = false;
+    }
+    if (_primedSecondBrandsPage || !state.hasNext || state.isLoadingMore) return;
+    _primedSecondBrandsPage = true;
+    context.read<GiftCardCubit>().loadMoreBrands();
   }
 
   /// Size of the current filtered sell result set, published by the grid so
@@ -127,10 +179,12 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
   /// promise more rows than the active filters actually yield.
   void _onSellScroll() {
     if (!_sellScrollController.hasClients) return;
-    if (_sellScrollController.position.pixels <
-        _sellScrollController.position.maxScrollExtent - 200) {
-      return;
-    }
+    final pos = _sellScrollController.position;
+    // Same lead as the buy tab so both tabs feel identical. Widening the window
+    // here costs no request at all — the sell catalogue is already in memory —
+    // it only builds more rows, so the lead is purely about not making the user
+    // wait a frame for cards we already hold.
+    if (pos.pixels < pos.maxScrollExtent - _prefetchExtent(pos)) return;
     if (_sellVisibleCount >= _sellTotal) return;
     setState(() {
       _sellVisibleCount =
@@ -182,8 +236,11 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
           setState(() {
             _supportedCountries = state.countries;
           });
-        } else if (state is GiftCardBrandsLoaded && _selectedCategory == null) {
-          _updateDynamicCategories(state.brands);
+        } else if (state is GiftCardBrandsLoaded) {
+          if (_selectedCategory == null) _updateDynamicCategories(state.brands);
+          // Give the buy grid a one-page head start the moment page one lands,
+          // so the first flick scrolls into rows that are already there.
+          _primeSecondBrandsPage(state);
         }
       },
       child: PopScope(
