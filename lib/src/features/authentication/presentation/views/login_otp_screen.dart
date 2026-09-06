@@ -404,6 +404,16 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
         subtitle: 'We sent a 6-digit code to your $channel '
             '(${widget.destination}). Enter it to continue.',
         showHeadingLogo: false,
+        // This is a step-up SECURITY gate, so it has no back button and the
+        // Android system-back gesture is inert (onBack is a no-op; the scaffold
+        // wraps a non-null onBack in PopScope(canPop:false)). A silent back would
+        // let the user slip past device verification. The deliberate way out is
+        // the labeled "Use a different account" (and admin-tunable "Skip for
+        // now") below — and even those no longer bypass anything: the backend
+        // keeps the device 'pending' until the OTP is verified, so any later
+        // login re-issues the challenge.
+        showBack: false,
+        onBack: () {},
         // A disabled "Code expired" button was a dead end: the one thing the
         // user needs at that moment is a way to get a new code, and the button
         // they are already looking at became unusable. With a ninety second
