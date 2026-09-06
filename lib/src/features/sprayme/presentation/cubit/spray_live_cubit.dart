@@ -375,6 +375,10 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
     final room = state.room;
     if (room == null || isClosed) return;
     final tracks = <SprayLiveTrack>[];
+    // Does the HOST have live audio? Used below to tell an audio-only
+    // broadcast apart from a stream that simply has not arrived — see
+    // SprayLiveState.isAudioOnly.
+    var hostHasAudio = false;
 
     // LiveKit identity is "user-<userId>" (gateway MintToken), so the host is
     // identifiable — the video layer always makes the host the full-screen
@@ -385,6 +389,9 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
 
     final lp = room.localParticipant;
     if (lp != null) {
+      if (hostIdentity.isNotEmpty && lp.identity == hostIdentity) {
+        hostHasAudio = lp.audioTrackPublications.any((p) => !p.muted);
+      }
       for (final pub in lp.videoTrackPublications) {
         final VideoTrack? t = pub.track;
         if (t == null) continue;
@@ -399,6 +406,9 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
     }
 
     for (final rp in room.remoteParticipants.values) {
+      if (hostIdentity.isNotEmpty && rp.identity == hostIdentity) {
+        hostHasAudio = rp.audioTrackPublications.any((p) => !p.muted);
+      }
       for (final pub in rp.videoTrackPublications) {
         final VideoTrack? t = pub.track;
         if (t == null || !pub.subscribed) continue;
@@ -412,7 +422,16 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
       }
     }
 
-    emit(state.copyWith(tracks: tracks));
+    // AUDIO-ONLY = the host is carrying live audio but published no video.
+    // Derived rather than stored so it follows the actual media state: a host
+    // toggling the camera flips this without any extra signalling, and a viewer
+    // still connecting (no host audio yet) is correctly NOT called audio-only,
+    // so they keep the honest "Waiting for video…" message.
+    final hostVideo = tracks.any((t) => t.isHost);
+    emit(state.copyWith(
+      tracks: tracks,
+      isAudioOnly: hostHasAudio && !hostVideo,
+    ));
   }
 
   Future<void> _teardownRoom() async {

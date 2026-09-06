@@ -36,7 +36,11 @@ class SprayLiveVideoLayer extends StatelessWidget {
 
       case SprayLivePhase.broadcasting:
       case SprayLivePhase.watchingWebRtc:
-        base = _WebRtcView(tracks: state.tracks, nameByIdentity: nameByIdentity);
+        base = _WebRtcView(
+          tracks: state.tracks,
+          nameByIdentity: nameByIdentity,
+          isAudioOnly: state.isAudioOnly,
+        );
 
       case SprayLivePhase.idle:
       case SprayLivePhase.error:
@@ -90,11 +94,44 @@ class _PausedOverlay extends StatelessWidget {
 class _WebRtcView extends StatelessWidget {
   final List<SprayLiveTrack> tracks;
   final Map<String, String> nameByIdentity;
-  const _WebRtcView({required this.tracks, this.nameByIdentity = const {}});
+  /// The host is live on audio with the camera off — a valid broadcast, not a
+  /// missing one. Without this the audio-only case is indistinguishable from a
+  /// stream that has not arrived, and viewers were told "Waiting for video…"
+  /// for the whole broadcast.
+  final bool isAudioOnly;
+  const _WebRtcView({
+    required this.tracks,
+    this.nameByIdentity = const {},
+    this.isAudioOnly = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     if (tracks.isEmpty) {
+      if (isAudioOnly) {
+        // Audio mode: say what IS happening. Spraying, gifting and comments all
+        // work here, so this must not read as a broken stream.
+        return const ColoredBox(
+          color: Color(0xFF0A0A0A),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.graphic_eq_rounded, color: Colors.white70, size: 40),
+                SizedBox(height: 12),
+                Text('Audio only',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600)),
+                SizedBox(height: 6),
+                Text("The host's camera is off",
+                    style: TextStyle(color: Colors.white60, fontSize: 13)),
+              ],
+            ),
+          ),
+        );
+      }
       return const ColoredBox(
         color: Color(0xFF0A0A0A),
         child: Center(

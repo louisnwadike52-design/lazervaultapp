@@ -58,6 +58,15 @@ class SprayLiveState {
   // A co-host invite addressed to the current user (awaiting accept).
   final bool coHostInvitePending;
 
+  /// The broadcast is LIVE but carrying audio only — the host's camera is off.
+  ///
+  /// Without this the viewer cannot tell "camera deliberately off" from "video
+  /// hasn't arrived yet": both leave `tracks` empty, because tracks only ever
+  /// holds VIDEO publications. Viewers were shown "Waiting for video…" — a
+  /// failure message — for the entire duration of a perfectly working
+  /// audio-only broadcast.
+  final bool isAudioOnly;
+
   final String? error;
 
   const SprayLiveState({
@@ -68,6 +77,7 @@ class SprayLiveState {
     this.hlsUrl = '',
     this.isCameraOn = true,
     this.isMicOn = true,
+    this.isAudioOnly = false,
     this.isRecording = false,
     this.isPaused = false,
     this.coHostInvitePending = false,
@@ -86,6 +96,7 @@ class SprayLiveState {
     Room? room,
     bool clearRoom = false,
     List<SprayLiveTrack>? tracks,
+    bool? isAudioOnly,
     String? hlsUrl,
     bool? isCameraOn,
     bool? isMicOn,
@@ -100,6 +111,7 @@ class SprayLiveState {
       role: role ?? this.role,
       room: clearRoom ? null : (room ?? this.room),
       tracks: tracks ?? this.tracks,
+      isAudioOnly: isAudioOnly ?? this.isAudioOnly,
       hlsUrl: hlsUrl ?? this.hlsUrl,
       isCameraOn: isCameraOn ?? this.isCameraOn,
       isMicOn: isMicOn ?? this.isMicOn,
