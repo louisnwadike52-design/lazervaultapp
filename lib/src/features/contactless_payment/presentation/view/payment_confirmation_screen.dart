@@ -116,6 +116,17 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
   }
 
   void _processPayment() async {
+    // Re-entrancy guard at the METHOD entry, not just on the button. The button's
+    // isDisabled reflects _isProcessing, but a fast double tap in the async gap
+    // before the PIN sheet renders can enter here twice and stack two PIN sheets,
+    // each with its OWN transactionId — so the backend's idempotency key differs
+    // and it cannot dedupe, risking a DOUBLE DEBIT of the payer. Setting the flag
+    // here, before the first await, makes the second tap a no-op. Every early
+    // return below clears it so a corrected mistake (wrong account, expired,
+    // cancelled PIN) can be retried.
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+
     if (_selectedAccountId == null) {
       Get.snackbar(
         'No Account Selected',
@@ -124,6 +135,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
       );
+      setState(() => _isProcessing = false);
       return;
     }
 
@@ -158,10 +170,13 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
       },
     );
 
-    if (!success || verificationToken == null) return;
+    // PIN cancelled or failed: release the guard so the payer can try again.
+    if (!success || verificationToken == null) {
+      if (mounted) setState(() => _isProcessing = false);
+      return;
+    }
 
     if (!mounted) return;
-    setState(() => _isProcessing = true);
 
     context.read<ContactlessPaymentCubit>().processPayment(
           sessionId: widget.session.id,

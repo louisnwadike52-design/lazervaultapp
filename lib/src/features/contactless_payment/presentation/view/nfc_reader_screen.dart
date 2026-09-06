@@ -19,6 +19,11 @@ part 'nfc_reader_screen_widgets.dart';
 class _NfcReaderViewState extends State<_NfcReaderView>
     with TickerProviderStateMixin {
   bool _isScanning = false;
+  // Latches once a valid tag has been accepted. onDiscovered can fire repeatedly
+  // while the tag stays in range, and there is an async gap (ndef.read) before
+  // _stopNfcScan runs — without this, two reads could both load the session and
+  // push two confirmation screens onto the stack.
+  bool _tagHandled = false;
   bool _nfcAvailable = true;
   String _statusMessage = 'Ready to scan';
   bool _hasError = false;
@@ -118,6 +123,9 @@ class _NfcReaderViewState extends State<_NfcReaderView>
       pollingOptions: {NfcPollingOption.iso14443, NfcPollingOption.iso15693},
       alertMessageIos: 'Hold your device near the payment terminal',
       onDiscovered: (NfcTag tag) async {
+        // Ignore repeat discoveries of the same (or another) tag once one has
+        // already been accepted — the first valid read wins.
+        if (_tagHandled) return;
         try {
           final ndef = Ndef.from(tag);
           if (ndef == null) {
@@ -169,6 +177,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
             return;
           }
 
+          _tagHandled = true;
           _stopNfcScan();
 
           if (!mounted) return;
@@ -211,6 +220,9 @@ class _NfcReaderViewState extends State<_NfcReaderView>
     setState(() {
       _hasError = false;
       _statusMessage = 'Ready to scan';
+      // Release the one-tag latch so a retry can actually read again; otherwise
+      // a failed session load would leave the reader permanently deaf.
+      _tagHandled = false;
     });
     _checkNfcAndStartScan();
   }
