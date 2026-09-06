@@ -94,6 +94,13 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
   }
 
   void _createSession() {
+    // Entry guard: the button's onTap only becomes null after a rebuild, so two
+    // taps in the same frame could both fire and create duplicate sessions. The
+    // extra session is harmless (it just expires unpaid, no double charge) but
+    // untidy, so the second tap is a no-op — same pattern as the payer's
+    // confirmation guard.
+    if (_isCreating) return;
+
     if (!_isValid) {
       Get.snackbar(
         'Invalid Amount',

@@ -210,6 +210,11 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
   }
 
   void _cancelSession() {
+    // No-op if a cancel is already in flight, or if the payment already landed.
+    // The backend CAS makes a double-cancel harmless, but this avoids a second
+    // request and a confusing double response flash. Also refuse once completed
+    // so a cancel tapped in the 1s before the success screen pushes cannot fire.
+    if (_isCancelling || _isCompleted) return;
     setState(() => _isCancelling = true);
     context
         .read<ContactlessPaymentCubit>()
