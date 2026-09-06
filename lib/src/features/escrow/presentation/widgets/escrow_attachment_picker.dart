@@ -256,7 +256,14 @@ class _EscrowAttachmentPickerState extends State<EscrowAttachmentPicker> {
           );
     return Stack(
       children: [
-        _tileBox(child: Positioned.fill(child: media)),
+        // NOT Positioned.fill here. _tileBox is a Container, so a Positioned
+        // child lands on a RenderObject that takes BoxParentData, and Flutter
+        // throws "Incorrect use of ParentDataWidget". In release that renders
+        // the fallback error widget — an unconstrained blank box that stretches
+        // the whole form — which is what broke the page the instant the first
+        // photo or video thumbnail appeared. The Container already gives the
+        // media a tight 84x84 box and clips it, so it just fills it directly.
+        _tileBox(child: media),
         Positioned(
           top: 2.h,
           right: 2.w,
