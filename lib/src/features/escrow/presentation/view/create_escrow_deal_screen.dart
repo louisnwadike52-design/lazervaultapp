@@ -208,12 +208,17 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
     // Attach the buyer's evidence (best effort). A failed attach never blocks
     // the funded deal from flowing into the receipt.
     if (_dealItemMedia.isNotEmpty) {
-      await attachEscrowMedia(
+      final failed = await attachEscrowMedia(
         cubit: cubit,
         dealId: deal.id,
         purpose: 'deal_item',
         items: _dealItemMedia,
       );
+      // Never block the funded deal, but never hide the loss either: this is the
+      // buyer's record of what they actually ordered, and they would otherwise
+      // reach the receipt believing it was attached.
+      final warning = escrowAttachWarning(failed);
+      if (warning != null) _snack(warning, EscrowTheme.error);
     }
 
     Get.offNamed(AppRoutes.escrowReceipt,

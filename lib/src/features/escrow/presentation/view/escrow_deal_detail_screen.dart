@@ -71,6 +71,18 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         dealId: deal.id, transactionId: txnId, verificationToken: token!, idempotencyKey: idem);
   }
 
+  /// Surfaces an evidence-attach failure without blocking the action itself.
+  /// The screen otherwise reports only through the cubit's state, which cannot
+  /// carry this: addAttachment swallows its own errors, so a lost photo would be
+  /// invisible on the very screen the evidence is meant to appear on.
+  void _warnAttach(int failed) {
+    final msg = escrowAttachWarning(failed);
+    if (msg == null || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: EscrowTheme.error),
+    );
+  }
+
   Future<void> _markDelivered(EscrowDealEntity deal) async {
     final cubit = context.read<EscrowCubit>();
     // One sheet captures an optional note AND optional proof-of-delivery media
@@ -79,12 +91,12 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     if (result == null) return; // dismissed
     // Attach the proof first so the post-mark reload shows it right away.
     if (result.media.isNotEmpty) {
-      await attachEscrowMedia(
+      _warnAttach(await attachEscrowMedia(
         cubit: cubit,
         dealId: deal.id,
         purpose: 'delivery_proof',
         items: result.media,
-      );
+      ));
     }
     // Keep the legacy single-image field in step for older receipts/back-compat.
     final firstImage = result.media.where((m) => !m.isVideo);
@@ -205,12 +217,12 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     if (result == null) return;
     // Attach evidence media first so the reload after opening shows it.
     if (result.media.isNotEmpty) {
-      await attachEscrowMedia(
+      _warnAttach(await attachEscrowMedia(
         cubit: cubit,
         dealId: deal.id,
         purpose: 'dispute_evidence',
         items: result.media,
-      );
+      ));
     }
     await cubit.openDispute(
       dealId: deal.id,
@@ -226,12 +238,12 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     final result = await _refundRequestSheet();
     if (result == null) return;
     if (result.media.isNotEmpty) {
-      await attachEscrowMedia(
+      _warnAttach(await attachEscrowMedia(
         cubit: cubit,
         dealId: deal.id,
         purpose: 'refund_evidence',
         items: result.media,
-      );
+      ));
     }
     await cubit.requestRefund(dealId: deal.id, reason: result.reason);
   }

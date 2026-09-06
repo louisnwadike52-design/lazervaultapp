@@ -7,17 +7,30 @@ import '../../data/services/escrow_media_upload_service.dart';
 import '../cubit/escrow_cubit.dart';
 import '../view/escrow_theme.dart';
 
-/// Attaches already-uploaded evidence [items] to [dealId] under [purpose].
-/// Best effort: skips failures so the surrounding action still completes.
+/// Attaches already-uploaded evidence [items] to [dealId] under [purpose], and
+/// returns HOW MANY FAILED to attach (0 means everything landed).
+///
+/// Still best effort — a failed attach must never roll back a funded deal or
+/// block a delivery/dispute action. But the caller has to be TOLD, because
+/// `EscrowCubit.addAttachment` catches its own errors and returns false, so
+/// previously every failure was discarded here and the user was carried on to
+/// the receipt believing their photos and video were attached.
+///
+/// That silence is expensive in escrow specifically: these attachments are the
+/// evidence a dispute is decided on (`deal_item`, `delivery_proof`,
+/// `dispute_evidence`). Losing them quietly is worse than a visible warning,
+/// because nobody discovers it until the moment it is needed.
+///
 /// Routed through the cubit so every call rides the repository retry pipeline.
-Future<void> attachEscrowMedia({
+Future<int> attachEscrowMedia({
   required EscrowCubit cubit,
   required String dealId,
   required String purpose,
   required List<EscrowMediaUploadResult> items,
 }) async {
+  var failed = 0;
   for (final m in items) {
-    await cubit.addAttachment(
+    final ok = await cubit.addAttachment(
       dealId: dealId,
       purpose: purpose,
       mediaKind: m.mediaKind,
@@ -26,7 +39,18 @@ Future<void> attachEscrowMedia({
       sizeBytes: m.sizeBytes,
       durationSeconds: m.durationSeconds,
     );
+    if (!ok) failed++;
   }
+  return failed;
+}
+
+/// A human message for [failed] evidence items that did not attach, or null
+/// when everything landed. Kept here so all four call sites word it the same.
+String? escrowAttachWarning(int failed) {
+  if (failed <= 0) return null;
+  return failed == 1
+      ? 'One photo or video could not be attached. You can add it again from the deal.'
+      : '$failed photos or videos could not be attached. You can add them again from the deal.';
 }
 
 /// A reusable evidence picker: the user can add several photos and one short
