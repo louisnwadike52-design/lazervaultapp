@@ -464,6 +464,14 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
               ),
               child: TextField(
                 controller: _searchController,
+                // Dismiss on ANY tap outside the field, on both tabs. The body's
+                // tap handler only sees taps that reach it, so a tap landing on
+                // a chip, a filter row or a card left the keyboard up. This is
+                // reported by the field itself, so it fires wherever the tap
+                // lands. FocusManager rather than FocusScope.of(context): it
+                // targets whatever actually holds focus instead of depending on
+                // this subtree's scope.
+                onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                 style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
                 decoration: InputDecoration(
                   hintText: _currentTab == 0
@@ -1049,6 +1057,11 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
       controller: _scrollController,
       padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 16.h),
       physics: const AlwaysScrollableScrollPhysics(),
+      // Scrolling the results is the clearest "I am done typing" signal there
+      // is, and it was leaving the keyboard up covering half the grid. The
+      // tap-outside handler on the body cannot cover this: a scroll is a drag,
+      // never a tap, so it never reached that handler.
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 10.w,
@@ -1523,6 +1536,9 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
       controller: _sellScrollController,
       padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 16.h),
       physics: const AlwaysScrollableScrollPhysics(),
+      // Same on the sell tab — the two tabs share one search field, so they must
+      // dismiss the keyboard the same way.
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12.w,
