@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/endpoint_registry.dart';
 
@@ -17,7 +18,7 @@ import 'package:lazervault/core/services/endpoint_registry.dart';
 /// guessed or defaulted server-side, so the form must collect everything.
 class FCYAccountService {
   FCYAccountService({FlutterSecureStorage? storage, http.Client? client})
-      : _storage = storage ?? const FlutterSecureStorage(),
+      : _storage = storage ?? kAppSecureStorage,
         _client = client ?? http.Client();
 
   final FlutterSecureStorage _storage;

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/secure_storage_defaults.dart';
 
 /// HTTP client for Transaction History Service
 /// Connects to the Core Gateway (port 7878) which routes to the Transaction History microservice
@@ -11,7 +12,7 @@ class TransactionHistoryHttpClient {
   TransactionHistoryHttpClient({
     required this.baseUrl,
     String? authToken,
-  })  : storage = const FlutterSecureStorage(),
+  })  : storage = kAppSecureStorage,
       dio = Dio(BaseOptions(
         baseUrl: baseUrl,
         connectTimeout: const Duration(seconds: 30),

@@ -29,7 +29,7 @@ class P2PChatCubit extends Cubit<P2PChatState> {
   final LocaleManager _localeManager;
   // MUST use the DI-configured FlutterSecureStorage singleton (Android:
   // EncryptedSharedPreferences). A bare `P2PChatMediaUploadService()` falls back
-  // to `const FlutterSecureStorage()` (default Android keystore-backed store) and
+  // to a bare `FlutterSecureStorage()` (default Android keystore-backed store) and
   // reads a DIFFERENT store than where the access_token was written → null token
   // → media upload aborts with "You must be signed in" (silently → bubble goes
   // "failed"). This broke ALL P2P image AND voice-note sends on Android. See the

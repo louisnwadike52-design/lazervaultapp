@@ -1,5 +1,6 @@
 import 'package:grpc/grpc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import '../../../core/auth/jwt_payload.dart';
 import '../../../core/services/grpc_call_options_helper.dart';
 import '../../generated/invoice.pbgrpc.dart';
@@ -62,7 +63,7 @@ class GrpcClient {
     FlutterSecureStorage? secureStorage,
     GrpcCallOptionsHelper? callOptionsHelper,
   })  : _channel = channel,
-        _secureStorage = secureStorage ?? const FlutterSecureStorage(),
+        _secureStorage = secureStorage ?? kAppSecureStorage,
         _callOptionsHelper = callOptionsHelper;
 
   Future<void> initialize() async {

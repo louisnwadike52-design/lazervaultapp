@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/p2p_chat/presentation/cubit/p2p_chat_sna
 import 'package:lazervault/src/features/p2p_chat/services/p2p_chat_websocket_service.dart';
 import 'package:lazervault/core/utilities/passcode_policy.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
@@ -128,7 +129,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         _validateTokenUseCase = validateToken,
         _createVirtualAccountUseCase = createVirtualAccount,
         _authRepository = authRepository,
-        _storage = storage ?? const FlutterSecureStorage(),
+        _storage = storage ?? kAppSecureStorage,
         _currencySyncService = currencySyncService,
         _accountManager = accountManager,
         _signupStateService = signupStateService,

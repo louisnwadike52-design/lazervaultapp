@@ -22,7 +22,7 @@ class BusinessOverviewService {
     http.Client? httpClient,
   })  : _endpoints = endpoints,
         // Reuse the ONE app-wide FlutterSecureStorage singleton (same instance
-        // every gRPC call reads). A hand-rolled `const FlutterSecureStorage()`
+        // every gRPC call reads). A hand-rolled `FlutterSecureStorage()`
         // reads a different Android backend and finds no token → getOverview
         // throws → the analytics Revenue tab silently shows 0 sales revenue.
         _storage = storage ?? serviceLocator<FlutterSecureStorage>(),

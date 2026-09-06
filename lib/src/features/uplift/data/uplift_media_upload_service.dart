@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/endpoint_registry.dart';
 
@@ -17,7 +18,7 @@ class UpliftMediaUploadService {
   static const _uploadTimeout = Duration(seconds: 45);
   static const _allowedExtensions = {'.jpg', '.jpeg', '.png', '.webp', '.gif'};
 
-  final _storage = const FlutterSecureStorage();
+  final _storage = kAppSecureStorage;
 
   String get _baseUrl {
     final override = dotenv.env['PRODUCTS_BASE_URL']?.trim();

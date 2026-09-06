@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/utils/image_compressor.dart';
@@ -43,7 +44,12 @@ class InvoiceImageUploadService {
     FlutterSecureStorage? storage,
     http.Client? httpClient,
   })  : _endpoints = endpoints,
-        _storage = storage ?? const FlutterSecureStorage(),
+        // kAppSecureStorage, NOT a bare instance: create_invoice_carousel
+        // constructs this without a `storage`, and a bare default reads
+        // Android's DEFAULT keystore instead of the EncryptedSharedPreferences
+        // store holding `access_token` — so invoice logo uploads failed the
+        // token check while the user was signed in.
+        _storage = storage ?? kAppSecureStorage,
         _httpClient = httpClient ?? http.Client();
 
   /// Read a [File] from disk, upload it, return its public URL.

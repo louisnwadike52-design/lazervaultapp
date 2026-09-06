@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:video_compress/video_compress.dart';
@@ -71,7 +72,12 @@ class EscrowMediaUploadService {
     http.Client? httpClient,
     ImagePicker? picker,
   })  : _endpoints = endpoints,
-        _storage = storage ?? const FlutterSecureStorage(),
+        // kAppSecureStorage, NOT a bare instance: the only caller
+        // (EscrowAttachmentPicker) constructs this without a `storage`, and a
+        // bare default reads Android's DEFAULT keystore instead of the
+        // EncryptedSharedPreferences store holding `access_token` — so every
+        // escrow photo/video upload failed the token check while signed in.
+        _storage = storage ?? kAppSecureStorage,
         _httpClient = httpClient ?? http.Client(),
         _picker = picker ?? ImagePicker();
 

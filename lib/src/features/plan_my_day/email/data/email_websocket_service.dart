@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -24,7 +25,7 @@ class EmailWsEvent {
 class EmailWebSocketService {
   final FlutterSecureStorage _storage;
   EmailWebSocketService({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+      : _storage = storage ?? kAppSecureStorage;
 
   WebSocketChannel? _channel;
   final _events = StreamController<EmailWsEvent>.broadcast();

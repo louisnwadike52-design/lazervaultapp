@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart' show Rect;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/utils/user_search_query.dart';
 import '../../data/datasources/past_memberships_remote_data_source.dart';
@@ -192,7 +193,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     this.reportService,
     PastMembershipsRemoteDataSource? pastMembershipsDataSource,
     FlutterSecureStorage? secureStorage,
-  })  : _secureStorage = secureStorage ?? const FlutterSecureStorage(),
+  })  : _secureStorage = secureStorage ?? kAppSecureStorage,
         _pastMemberships =
             pastMembershipsDataSource ?? PastMembershipsRemoteDataSource(),
         super(GroupAccountInitial());

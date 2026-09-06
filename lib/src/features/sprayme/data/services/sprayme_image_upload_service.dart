@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:http/http.dart' as http;
 
@@ -16,7 +17,18 @@ class SpraymeImageUploadService {
 
   static const _allowedExtensions = {'.jpg', '.jpeg', '.png', '.webp', '.gif'};
 
-  final _storage = const FlutterSecureStorage();
+  final FlutterSecureStorage _storage;
+
+  /// [storage] lets callers inject the shared `serviceLocator<FlutterSecureStorage>()`.
+  ///
+  /// The default is [kAppSecureStorage], NOT a bare `FlutterSecureStorage()`:
+  /// create_session_screen constructs this service with no arguments, and a bare
+  /// instance reads Android's DEFAULT keystore rather than the
+  /// EncryptedSharedPreferences store the auth flow writes `access_token` to, so
+  /// every cover upload failed with "You need to be logged in to upload images"
+  /// while the host was signed in.
+  SpraymeImageUploadService({FlutterSecureStorage? storage})
+      : _storage = storage ?? kAppSecureStorage;
 
   String get _baseUrl {
     final url = dotenv.env['LIFESTYLE_GATEWAY_URL'];

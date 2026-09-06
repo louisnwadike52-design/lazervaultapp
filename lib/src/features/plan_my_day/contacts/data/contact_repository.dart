@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
@@ -39,7 +40,7 @@ class ContactRepository {
         _accountManager = accountManager,
         _localeManager = localeManager,
         _client = client ?? http.Client(),
-        _storage = storage ?? const FlutterSecureStorage();
+        _storage = storage ?? kAppSecureStorage;
 
   Future<Map<String, String>> _headers() async {
     final token = await _storage.read(key: _accessTokenKey);
