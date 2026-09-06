@@ -78,3 +78,10 @@ venv/
 __pycache__/
 *.pyc
 ios/build/
+
+# Finder/iCloud duplicate artifacts ("name 2.ext"). The space defeats patterns
+# like `.env.*`, so a duplicate of an ignored file is NOT ignored — that is how
+# `android/.env 2.firebase` and a stray `pubspec 2.yaml` got committed.
+.env *
+* 2.*
+* [0-9].*
