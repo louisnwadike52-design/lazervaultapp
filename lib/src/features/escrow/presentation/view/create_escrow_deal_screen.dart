@@ -217,8 +217,23 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
       // Never block the funded deal, but never hide the loss either: this is the
       // buyer's record of what they actually ordered, and they would otherwise
       // reach the receipt believing it was attached.
+      //
+      // Get.snackbar, NOT the local _snack: _snack uses ScaffoldMessenger.of the
+      // create screen, and the Get.offNamed below replaces this route
+      // immediately, tearing that messenger down so the SnackBar would flash and
+      // vanish unseen. Get.snackbar renders in the app overlay and survives the
+      // navigation, landing on the receipt where the user looks for the evidence.
       final warning = escrowAttachWarning(failed);
-      if (warning != null) _snack(warning, EscrowTheme.error);
+      if (warning != null) {
+        Get.snackbar(
+          'Some evidence not attached', warning,
+          backgroundColor: EscrowTheme.error,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 6),
+          margin: EdgeInsets.all(12.w),
+        );
+      }
     }
 
     Get.offNamed(AppRoutes.escrowReceipt,
