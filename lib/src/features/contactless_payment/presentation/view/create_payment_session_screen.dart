@@ -12,6 +12,7 @@ import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
 import 'nfc_broadcast_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../../services/contactless_websocket_service.dart';
 part 'create_payment_session_screen_widgets.dart';
 
 class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
@@ -139,9 +140,9 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF1A1A3E),
-              Color(0xFF0A0E27),
-              Color(0xFF0F0F23),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -275,7 +276,7 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+            const Color(0xFF1F1F1F).withValues(alpha: 0.8),
             const Color(0xFF1F1F35).withValues(alpha: 0.9),
           ],
         ),
@@ -307,7 +308,7 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
               Text(
                 _selectedCurrency,
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF4E03D0),
                   fontSize: 24.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -547,7 +548,7 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
                     gradient: isSelected
                         ? const LinearGradient(
                             colors: [
-                              Color(0xFF6366F1),
+                              Color(0xFF4E03D0),
                               Color.fromARGB(255, 78, 3, 208)
                             ],
                           )

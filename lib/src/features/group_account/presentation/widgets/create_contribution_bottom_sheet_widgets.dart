@@ -367,7 +367,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+          colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
         ),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20.r),
@@ -465,7 +465,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
             prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 20.sp),
@@ -638,14 +638,14 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF6366F1).withValues(alpha: 0.2)
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
               : isAlreadyMember
                   ? const Color(0xFFF59E0B).withValues(alpha: 0.1)
                   : const Color(0xFF0A0A0A),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF6366F1)
+                ? const Color(0xFF4E03D0)
                 : isAlreadyMember
                     ? const Color(0xFFF59E0B).withValues(alpha: 0.3)
                     : const Color(0xFF2D2D2D),
@@ -660,7 +660,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
               height: 44.w,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                  colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
                 ),
                 borderRadius: BorderRadius.circular(22.r),
               ),
@@ -738,7 +738,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
                     user.username.isNotEmpty ? '@${user.username}' : user.email,
                     style: GoogleFonts.inter(
                       fontSize: 13.sp,
-                      color: const Color(0xFF6366F1),
+                      color: const Color(0xFF4E03D0),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -748,7 +748,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
             ),
             // Selection indicator
             if (isSelected)
-              Icon(Icons.check_circle, color: const Color(0xFF6366F1), size: 24.sp)
+              Icon(Icons.check_circle, color: const Color(0xFF4E03D0), size: 24.sp)
             else if (!isAlreadyMember)
               Icon(Icons.radio_button_unchecked, color: Colors.grey[600], size: 24.sp),
           ],
@@ -785,7 +785,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
           child: ElevatedButton(
             onPressed: _isAddingMember || !canAdd ? null : _addMember,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6366F1),
+              backgroundColor: const Color(0xFF4E03D0),
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),

@@ -33,8 +33,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
           message: friendlyGrpcError(e, 'Failed to generate QR code'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -50,8 +49,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
           message: friendlyGrpcError(e, 'Failed to get QR details'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -77,8 +75,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
           message: friendlyGrpcError(e, 'Failed to process QR payment'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -100,8 +97,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
           message: friendlyGrpcError(e, 'Failed to get generated QR codes'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -121,8 +117,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
           message: friendlyGrpcError(e, 'Failed to get QR payments'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -138,8 +133,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
           message: friendlyGrpcError(e, 'Failed to cancel QR code'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -157,8 +151,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
           message: friendlyGrpcError(e, 'Failed to get transaction receipt'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 }

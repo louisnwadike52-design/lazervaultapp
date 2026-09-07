@@ -26,7 +26,7 @@ class _ActionCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+              const Color(0xFF1F1F1F).withValues(alpha: 0.8),
               const Color(0xFF1F1F35).withValues(alpha: 0.9),
             ],
           ),

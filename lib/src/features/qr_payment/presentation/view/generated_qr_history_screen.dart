@@ -34,9 +34,9 @@ class _GeneratedQRHistoryScreenState extends State<GeneratedQRHistoryScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF1A1A3E),
-              Color(0xFF0A0E27),
-              Color(0xFF0F0F23),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -252,7 +252,7 @@ class _GeneratedQRHistoryScreenState extends State<GeneratedQRHistoryScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+              const Color(0xFF1F1F1F).withValues(alpha: 0.8),
               const Color(0xFF1F1F35).withValues(alpha: 0.9),
             ],
           ),
@@ -348,8 +348,8 @@ class _GeneratedQRHistoryScreenState extends State<GeneratedQRHistoryScreen> {
                     onTap: () =>
                         context.read<QRPaymentCubit>().cancelQR(qrId: qr.id),
                     child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 12.w, vertical: 6.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8.r),

@@ -329,7 +329,7 @@ class _PastContributionCard extends StatelessWidget {
                     text: entry.selfExit
                         ? 'Left at cycle ${entry.removedAtCycleIndex}'
                         : 'Removed at cycle ${entry.removedAtCycleIndex}',
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF4E03D0),
                     icon: entry.selfExit
                         ? Icons.logout
                         : Icons.person_remove_alt_1_outlined,
@@ -338,7 +338,7 @@ class _PastContributionCard extends StatelessWidget {
                   StatusPill(
                     text:
                         entry.selfExit ? 'Left' : 'Removed',
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF4E03D0),
                     icon: entry.selfExit
                         ? Icons.logout
                         : Icons.person_remove_alt_1_outlined,

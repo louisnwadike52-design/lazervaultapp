@@ -170,9 +170,9 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
-              const Color(0xFF0F0F23),
+              const Color(0xFF0A0A0A),
+              const Color(0xFF0A0A0A),
+              const Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -1564,7 +1564,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
         }
         if (invites.isEmpty) {
           return RefreshIndicator(
-            color: const Color(0xFF6366F1),
+            color: const Color(0xFF4E03D0),
             backgroundColor: const Color(0xFF1F1F1F),
             onRefresh: () async =>
                 ctx.read<GroupAccountCubit>().loadMyInvitations(),
@@ -1606,7 +1606,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           );
         }
         return RefreshIndicator(
-          color: const Color(0xFF6366F1),
+          color: const Color(0xFF4E03D0),
           backgroundColor: const Color(0xFF1F1F1F),
           onRefresh: () async =>
               ctx.read<GroupAccountCubit>().loadMyInvitations(),

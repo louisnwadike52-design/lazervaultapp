@@ -19,6 +19,7 @@ import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
 import 'payment_success_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../../services/contactless_websocket_service.dart';
 part 'payment_confirmation_screen_widgets.dart';
 
 class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
@@ -198,9 +199,9 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF1A1A3E),
-              Color(0xFF0A0E27),
-              Color(0xFF0F0F23),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -405,7 +406,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+            const Color(0xFF1F1F1F).withValues(alpha: 0.8),
             const Color(0xFF1F1F35).withValues(alpha: 0.9),
           ],
         ),
@@ -428,13 +429,13 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                   width: 64.w,
                   height: 64.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
                   child: Icon(
                     _getCategoryIcon(widget.session.category),
                     size: 32.sp,
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF4E03D0),
                   ),
                 ),
                 SizedBox(height: 16.h),
@@ -518,7 +519,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+                  const Color(0xFF1F1F1F).withValues(alpha: 0.8),
                   const Color(0xFF1F1F35).withValues(alpha: 0.9),
                 ],
               ),
@@ -634,7 +635,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                       gradient: isSelected
                           ? LinearGradient(
                               colors: [
-                                const Color(0xFF6366F1).withValues(alpha: 0.15),
+                                const Color(0xFF4E03D0).withValues(alpha: 0.15),
                                 const Color.fromARGB(255, 78, 3, 208)
                                     .withValues(alpha: 0.1),
                               ],
@@ -642,10 +643,10 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                           : null,
                       color: isSelected
                           ? null
-                          : const Color(0xFF2A2A3E).withValues(alpha: 0.5),
+                          : const Color(0xFF1F1F1F).withValues(alpha: 0.5),
                       border: Border.all(
                         color: isSelected
-                            ? const Color(0xFF6366F1)
+                            ? const Color(0xFF4E03D0)
                             : hasInsufficientBalance
                                 ? const Color(0xFFEF4444).withValues(alpha: 0.4)
                                 : Colors.white.withValues(alpha: 0.1),
@@ -660,12 +661,12 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                           height: 44.w,
                           decoration: BoxDecoration(
                             color:
-                                const Color(0xFF6366F1).withValues(alpha: 0.2),
+                                const Color(0xFF4E03D0).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Icon(
                             Icons.account_balance_wallet_rounded,
-                            color: const Color(0xFF6366F1),
+                            color: const Color(0xFF4E03D0),
                             size: 22.sp,
                           ),
                         ),
@@ -731,7 +732,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [
-                                  Color(0xFF6366F1),
+                                  Color(0xFF4E03D0),
                                   Color.fromARGB(255, 78, 3, 208)
                                 ],
                               ),

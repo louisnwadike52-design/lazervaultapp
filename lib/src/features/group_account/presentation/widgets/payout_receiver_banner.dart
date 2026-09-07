@@ -484,7 +484,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
         children: [
           Row(children: [
             Icon(Icons.schedule,
-                color: const Color(0xFF6366F1), size: 18.sp),
+                color: const Color(0xFF4E03D0), size: 18.sp),
             SizedBox(width: 8.w),
             Text('Auto-payout scheduled',
                 style: GoogleFonts.inter(
@@ -503,7 +503,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
           ],
         ],
       ),
-      accent: const Color(0xFF6366F1),
+      accent: const Color(0xFF4E03D0),
     );
   }
 
@@ -518,7 +518,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
               style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
         ),
       ]),
-      accent: const Color(0xFF6366F1),
+      accent: const Color(0xFF4E03D0),
     );
   }
 

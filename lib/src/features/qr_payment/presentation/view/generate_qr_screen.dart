@@ -142,9 +142,8 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
               : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF3B82F6)
-                : const Color(0xFF2D2D2D),
+            color:
+                isSelected ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
           ),
         ),
         child: Column(
@@ -311,9 +310,8 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
                     child: Text(
                       opt['label'] as String,
                       style: TextStyle(
-                        color: isSelected
-                            ? const Color(0xFF3B82F6)
-                            : Colors.white,
+                        color:
+                            isSelected ? const Color(0xFF3B82F6) : Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),

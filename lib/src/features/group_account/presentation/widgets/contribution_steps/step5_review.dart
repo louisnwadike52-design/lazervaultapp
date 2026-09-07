@@ -127,7 +127,7 @@ class Step5Review extends StatelessWidget {
               _buildReviewSection(
                 title: 'Settings',
                 icon: Icons.settings,
-                iconColor: const Color(0xFF6366F1),
+                iconColor: const Color(0xFF4E03D0),
                 children: [
                   _buildReviewItem(
                     'Auto-Pay',
@@ -348,7 +348,7 @@ class Step5Review extends StatelessWidget {
                 width: 24.w,
                 height: 24.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -357,7 +357,7 @@ class Step5Review extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF6366F1),
+                      color: const Color(0xFF4E03D0),
                     ),
                   ),
                 ),
@@ -365,7 +365,7 @@ class Step5Review extends StatelessWidget {
               SizedBox(width: 12.w),
               CircleAvatar(
                 radius: 14.r,
-                backgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                 child: Text(
                   member.userName.isNotEmpty
                       ? member.userName[0].toUpperCase()

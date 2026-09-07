@@ -284,7 +284,7 @@ class _CreateContributionCarouselState
                   gradient: LinearGradient(
                     colors: currentStep == totalSteps - 1
                         ? [Colors.green, Colors.green.shade700]
-                        : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
+                        : [const Color(0xFF4E03D0), const Color.fromARGB(255, 78, 3, 208)],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
@@ -306,7 +306,7 @@ class _CreateContributionCarouselState
                 margin: EdgeInsets.symmetric(horizontal: 4.w),
                 decoration: BoxDecoration(
                   color: index <= currentStep
-                      ? const Color(0xFF6366F1)
+                      ? const Color(0xFF4E03D0)
                       : Colors.white.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4.r),
                 ),
@@ -375,7 +375,7 @@ class _CreateContributionCarouselState
                     gradient: isSubmitting
                         ? null
                         : const LinearGradient(
-                            colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                            colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),

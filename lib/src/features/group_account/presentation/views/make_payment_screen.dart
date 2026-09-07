@@ -876,7 +876,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
         border: Border.all(
           color: fullyCovered
               ? const Color(0xFF10B981).withValues(alpha: 0.4)
-              : const Color(0xFF6366F1).withValues(alpha: 0.3),
+              : const Color(0xFF4E03D0).withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -888,7 +888,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                 fullyCovered ? Icons.check_circle : Icons.donut_large,
                 color: fullyCovered
                     ? const Color(0xFF10B981)
-                    : const Color(0xFF6366F1),
+                    : const Color(0xFF4E03D0),
                 size: 16.sp,
               ),
               SizedBox(width: 8.w),
@@ -908,7 +908,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                 Text(
                   '$currency ${fmt(remainder)} left',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF4E03D0),
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -925,7 +925,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
               valueColor: AlwaysStoppedAnimation<Color>(
                 fullyCovered
                     ? const Color(0xFF10B981)
-                    : const Color(0xFF6366F1),
+                    : const Color(0xFF4E03D0),
               ),
             ),
           ),

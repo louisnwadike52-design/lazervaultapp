@@ -17,6 +17,7 @@ import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
 import 'payment_success_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../../services/contactless_websocket_service.dart';
 part 'nfc_broadcast_screen_widgets.dart';
 
 class _NfcBroadcastViewState extends State<_NfcBroadcastView>
@@ -254,9 +255,9 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF1A1A3E),
-              Color(0xFF0A0E27),
-              Color(0xFF0F0F23),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -514,7 +515,7 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                     : _isExpired
                         ? [const Color(0xFFEF4444), const Color(0xFFDC2626)]
                         : [
-                            const Color(0xFF6366F1),
+                            const Color(0xFF4E03D0),
                             const Color.fromARGB(255, 78, 3, 208)
                           ],
               ),
@@ -523,7 +524,7 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                 BoxShadow(
                   color: (_isCompleted
                           ? const Color(0xFF10B981)
-                          : const Color(0xFF6366F1))
+                          : const Color(0xFF4E03D0))
                       .withValues(alpha: 0.4),
                   blurRadius: 30,
                   offset: const Offset(0, 12),
@@ -573,7 +574,7 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
 
     final isLow = _remainingSeconds <= 30;
     final timerColor =
-        isLow ? const Color(0xFFEF4444) : const Color(0xFF6366F1);
+        isLow ? const Color(0xFFEF4444) : const Color(0xFF4E03D0);
 
     return Column(
       children: [
@@ -621,7 +622,7 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
       statusColor = const Color(0xFFEF4444);
     } else {
       statusIcon = Icons.contactless_rounded;
-      statusColor = const Color(0xFF6366F1);
+      statusColor = const Color(0xFF4E03D0);
     }
 
     return Container(
@@ -631,7 +632,7 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+            const Color(0xFF1F1F1F).withValues(alpha: 0.8),
             const Color(0xFF1F1F35).withValues(alpha: 0.9),
           ],
         ),
@@ -816,26 +817,26 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xFF6366F1).withValues(alpha: 0.2),
+                      const Color(0xFF4E03D0).withValues(alpha: 0.2),
                       const Color.fromARGB(255, 78, 3, 208)
                           .withValues(alpha: 0.2),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(14.r),
                   border: Border.all(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
                   ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.copy_rounded,
-                        color: const Color(0xFF6366F1), size: 18.sp),
+                        color: const Color(0xFF4E03D0), size: 18.sp),
                     SizedBox(width: 8.w),
                     Text(
                       'Copy Session ID',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF6366F1),
+                        color: const Color(0xFF4E03D0),
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -882,7 +883,7 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [
-                      Color(0xFF6366F1),
+                      Color(0xFF4E03D0),
                       Color.fromARGB(255, 78, 3, 208)
                     ],
                   ),

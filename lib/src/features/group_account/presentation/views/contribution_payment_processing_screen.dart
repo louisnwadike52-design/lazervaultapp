@@ -180,7 +180,7 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
               colors: [
                 const Color(0xFF1F1F1F),
                 const Color(0xFF0A0A0A),
-                const Color(0xFF0F0F23),
+                const Color(0xFF0A0A0A),
               ],
             ),
           ),

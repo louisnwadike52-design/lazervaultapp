@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/widgets/status_filter_chips.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -18,10 +19,28 @@ class QRPaymentsHistoryScreen extends StatefulWidget {
 }
 
 class _QRPaymentsHistoryScreenState extends State<QRPaymentsHistoryScreen> {
+  static const _filters = ['All', 'Completed', 'Failed'];
+  String _selectedFilter = 'All';
+
   @override
   void initState() {
     super.initState();
     context.read<QRPaymentCubit>().getMyQRPayments();
+  }
+
+  List<QRTransactionEntity> _applyFilter(List<QRTransactionEntity> txns) {
+    switch (_selectedFilter) {
+      case 'Completed':
+        return txns
+            .where((t) => t.status == QRTransactionStatus.completed)
+            .toList();
+      case 'Failed':
+        return txns
+            .where((t) => t.status == QRTransactionStatus.failed)
+            .toList();
+      default:
+        return txns;
+    }
   }
 
   @override
@@ -34,9 +53,9 @@ class _QRPaymentsHistoryScreenState extends State<QRPaymentsHistoryScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF1A1A3E),
-              Color(0xFF0A0E27),
-              Color(0xFF0F0F23),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -57,7 +76,22 @@ class _QRPaymentsHistoryScreenState extends State<QRPaymentsHistoryScreen> {
                       if (state.transactions.isEmpty) {
                         return _buildEmptyState();
                       }
-                      return _buildList(state.transactions);
+                      final filtered = _applyFilter(state.transactions);
+                      return Column(
+                        children: [
+                          StatusFilterChips(
+                            filters: _filters,
+                            selected: _selectedFilter,
+                            onSelected: (f) =>
+                                setState(() => _selectedFilter = f),
+                          ),
+                          Expanded(
+                            child: filtered.isEmpty
+                                ? _buildEmptyState()
+                                : _buildList(filtered),
+                          ),
+                        ],
+                      );
                     }
 
                     if (state is QRPaymentError) {
@@ -235,8 +269,7 @@ class _QRPaymentsHistoryScreenState extends State<QRPaymentsHistoryScreen> {
           context: context,
           backgroundColor: Colors.transparent,
           isScrollControlled: true,
-          builder: (_) =>
-              QRTransactionDetailsBottomSheet(transaction: txn),
+          builder: (_) => QRTransactionDetailsBottomSheet(transaction: txn),
         );
       },
       child: Container(
@@ -247,7 +280,7 @@ class _QRPaymentsHistoryScreenState extends State<QRPaymentsHistoryScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+              const Color(0xFF1F1F1F).withValues(alpha: 0.8),
               const Color(0xFF1F1F35).withValues(alpha: 0.9),
             ],
           ),

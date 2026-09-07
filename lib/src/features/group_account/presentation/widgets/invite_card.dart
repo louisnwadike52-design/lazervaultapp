@@ -64,7 +64,7 @@ class InviteCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
           color: invitation.isPending
-              ? const Color(0xFF6366F1).withValues(alpha: 0.4)
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.4)
               : const Color(0xFF2D2D2D),
         ),
       ),

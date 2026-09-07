@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/core/utilities/safe_args.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -43,7 +45,40 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<IDPayCubit>().getIDPayTransactions(payId: _idPay.payId);
+      _subscribeToLiveEvents();
     });
+  }
+
+  /// Realtime: the CREATOR finally learns a payment landed without leaving
+  /// and re-entering. subscribeToCreatedIDPay existed with zero callers —
+  /// payers saw their receipt while the creator's screen sat stale.
+  void _subscribeToLiveEvents() {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    context.read<IDPayCubit>().subscribeToCreatedIDPay(
+          creatorUserId: authState.profile.userId,
+          accessToken: authState.profile.session.accessToken,
+          onEvent: (event) {
+            if (!mounted) return;
+            if (event.payId != _idPay.payId) return;
+            // Any event on THIS PayID → refresh the transactions list and
+            // surface a heads-up for a landed payment.
+            context
+                .read<IDPayCubit>()
+                .getIDPayTransactions(payId: _idPay.payId);
+            if (event.eventType == 'payment' || event.status == 'paid') {
+              Get.snackbar(
+                'Payment received',
+                event.payerName != null && event.payerName!.isNotEmpty
+                    ? '${event.payerName} just paid this PayID.'
+                    : 'Someone just paid this PayID.',
+                backgroundColor: const Color(0xFF10B981),
+                colorText: Colors.white,
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            }
+          },
+        );
   }
 
   void _cancelIDPay() {

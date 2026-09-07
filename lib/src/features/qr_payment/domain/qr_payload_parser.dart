@@ -157,8 +157,7 @@ class LegacyTokenQr extends QrPayload {
     }
   }
 
-  bool get isExpired =>
-      expiresAt != null && DateTime.now().isAfter(expiresAt!);
+  bool get isExpired => expiresAt != null && DateTime.now().isAfter(expiresAt!);
 }
 
 /// Unrecognised / malformed QR.

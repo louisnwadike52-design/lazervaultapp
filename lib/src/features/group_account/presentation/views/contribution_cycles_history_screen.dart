@@ -418,7 +418,7 @@ class _ContributionCyclesHistoryScreenState
   Color _statusColor(ContributionCycleStatus status) {
     switch (status) {
       case ContributionCycleStatus.inProgress:
-        return const Color(0xFF6366F1);
+        return const Color(0xFF4E03D0);
       case ContributionCycleStatus.closedSettled:
         return const Color(0xFF10B981);
       case ContributionCycleStatus.closedFailed:

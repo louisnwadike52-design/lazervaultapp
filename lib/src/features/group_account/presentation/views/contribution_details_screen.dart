@@ -2744,7 +2744,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  const Color(0xFF2A2A3E).withValues(alpha: 0.95),
+                  const Color(0xFF1F1F1F).withValues(alpha: 0.95),
                   const Color(0xFF1F1F35).withValues(alpha: 0.98),
                 ],
               ),
@@ -2987,7 +2987,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF2A2A3E).withValues(alpha: 0.95),
+              const Color(0xFF1F1F1F).withValues(alpha: 0.95),
               const Color(0xFF1F1F35).withValues(alpha: 0.98),
             ],
           ),
@@ -3166,7 +3166,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           children: [
             Icon(
               Icons.receipt_long,
-              color: const Color(0xFF6366F1),
+              color: const Color(0xFF4E03D0),
               size: 20.sp,
             ),
             SizedBox(width: 8.w),

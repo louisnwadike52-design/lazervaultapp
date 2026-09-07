@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/widgets/status_filter_chips.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -28,6 +29,30 @@ class IDPayHomeScreen extends StatefulWidget {
 
 class _IDPayHomeScreenState extends State<IDPayHomeScreen>
     with SingleTickerProviderStateMixin {
+  static const _statusFilters = [
+    'All',
+    'Active',
+    'Paid',
+    'Expired',
+    'Cancelled',
+  ];
+  String _selectedStatusFilter = 'All';
+
+  List<IDPayEntity> _applyStatusFilter(List<IDPayEntity> list) {
+    switch (_selectedStatusFilter) {
+      case 'Active':
+        return list.where((p) => p.status == IDPayStatus.active).toList();
+      case 'Paid':
+        return list.where((p) => p.status == IDPayStatus.paid).toList();
+      case 'Expired':
+        return list.where((p) => p.status == IDPayStatus.expired).toList();
+      case 'Cancelled':
+        return list.where((p) => p.status == IDPayStatus.cancelled).toList();
+      default:
+        return list;
+    }
+  }
+
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
 
@@ -231,18 +256,33 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
           if (idPays.isEmpty) {
             return _buildEmptyState();
           }
-          return RefreshIndicator(
-            onRefresh: _onRefresh,
-            color: const Color(0xFF3B82F6),
-            backgroundColor: const Color(0xFF1F1F1F),
-            child: ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-              itemCount: idPays.length,
-              itemBuilder: (context, index) {
-                return _buildIDPayCard(idPays[index]);
-              },
-            ),
+          final filtered = _applyStatusFilter(idPays);
+          return Column(
+            children: [
+              StatusFilterChips(
+                filters: _statusFilters,
+                selected: _selectedStatusFilter,
+                onSelected: (f) => setState(() => _selectedStatusFilter = f),
+              ),
+              Expanded(
+                child: filtered.isEmpty
+                    ? _buildEmptyState()
+                    : RefreshIndicator(
+                        onRefresh: _onRefresh,
+                        color: const Color(0xFF3B82F6),
+                        backgroundColor: const Color(0xFF1F1F1F),
+                        child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20.w, vertical: 8.h),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            return _buildIDPayCard(filtered[index]);
+                          },
+                        ),
+                      ),
+              ),
+            ],
           );
         }
 

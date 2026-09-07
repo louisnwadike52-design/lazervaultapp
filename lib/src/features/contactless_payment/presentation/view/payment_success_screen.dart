@@ -129,7 +129,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
   void _generateParticles() {
     final random = Random();
     const colors = [
-      Color(0xFF6366F1),
+      Color(0xFF4E03D0),
       Color.fromARGB(255, 78, 3, 208),
       Color(0xFF10B981),
       Color(0xFFF59E0B),
@@ -312,7 +312,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27), Color(0xFF0F0F23)],
+            colors: [Color(0xFF0A0A0A), Color(0xFF0A0A0A), Color(0xFF0A0A0A)],
           ),
         ),
         child: Stack(
@@ -546,14 +546,14 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
                                     colors: [
-                                      Color(0xFF6366F1),
+                                      Color(0xFF4E03D0),
                                       Color.fromARGB(255, 78, 3, 208),
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(14.r),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF6366F1)
+                                      color: const Color(0xFF4E03D0)
                                           .withValues(alpha: 0.4),
                                       blurRadius: 12,
                                       offset: const Offset(0, 4),
@@ -606,7 +606,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF2A2A3E), Color(0xFF1F1F35)],
+          colors: [Color(0xFF1F1F1F), Color(0xFF1F1F35)],
         ),
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
@@ -741,7 +741,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
             width: 36.w,
             height: 36.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.12),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(icon,
@@ -785,7 +785,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
           width: 36.w,
           height: 36.w,
           decoration: BoxDecoration(
-            color: const Color(0xFF6366F1).withValues(alpha: 0.12),
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10.r),
           ),
           child: Icon(Icons.tag_rounded,
@@ -823,7 +823,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
           child: Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.12),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(

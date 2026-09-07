@@ -94,8 +94,7 @@ class QrPayWebSocketService {
     // commerce-gateway HTTP defaults to 8080; tunnel route on 443 flips
     // the scheme automatically.
     final ep = endpointRegistry.resolveServiceHostPort(
-      overrideHost:
-          dotenv.env['QR_WS_HOST'] ?? dotenv.env['COMMERCE_WS_HOST'],
+      overrideHost: dotenv.env['QR_WS_HOST'] ?? dotenv.env['COMMERCE_WS_HOST'],
       overridePort: int.tryParse(
           dotenv.env['QR_WS_PORT'] ?? dotenv.env['COMMERCE_WS_PORT'] ?? ''),
       devPort: 8080,

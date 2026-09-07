@@ -19,6 +19,7 @@ import 'nfc_reader_screen.dart';
 import 'payment_history_screen.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import '../../services/contactless_websocket_service.dart';
 part 'contactless_payment_home_screen_widgets.dart';
 
 class _ContactlessPaymentHomeViewState
@@ -98,9 +99,9 @@ class _ContactlessPaymentHomeViewState
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF1A1A3E),
-              Color(0xFF0A0E27),
-              Color(0xFF0F0F23),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -226,7 +227,7 @@ class _ContactlessPaymentHomeViewState
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF6366F1),
+                    Color(0xFF4E03D0),
                     Color.fromARGB(255, 78, 3, 208),
                     Color(0xFFA78BFA),
                   ],
@@ -234,7 +235,7 @@ class _ContactlessPaymentHomeViewState
                 borderRadius: BorderRadius.circular(20.r),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.35),
                     blurRadius: 24,
                     offset: const Offset(0, 10),
                   ),
@@ -335,7 +336,7 @@ class _ContactlessPaymentHomeViewState
         _ActionCard(
           icon: Icons.nfc_rounded,
           iconGradient: const [
-            Color(0xFF6366F1),
+            Color(0xFF4E03D0),
             Color.fromARGB(255, 78, 3, 208)
           ],
           title: 'Pay with NFC',
@@ -380,7 +381,7 @@ class _ContactlessPaymentHomeViewState
                     'Total Payments',
                     '$totalPayments',
                     Icons.receipt_long_rounded,
-                    const Color(0xFF6366F1),
+                    const Color(0xFF4E03D0),
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -409,7 +410,7 @@ class _ContactlessPaymentHomeViewState
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+            const Color(0xFF1F1F1F).withValues(alpha: 0.8),
             const Color(0xFF1F1F35).withValues(alpha: 0.9),
           ],
         ),
@@ -494,17 +495,17 @@ class _ContactlessPaymentHomeViewState
                       padding:
                           EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(
                             color:
-                                const Color(0xFF6366F1).withValues(alpha: 0.3)),
+                                const Color(0xFF4E03D0).withValues(alpha: 0.3)),
                       ),
                       child: Text(
                         'View all',
                         style: GoogleFonts.inter(
                           fontSize: 11.5.sp,
-                          color: const Color(0xFF6366F1),
+                          color: const Color(0xFF4E03D0),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -532,7 +533,7 @@ class _ContactlessPaymentHomeViewState
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF2A2A3E).withValues(alpha: 0.6),
+            const Color(0xFF1F1F1F).withValues(alpha: 0.6),
             const Color(0xFF1F1F35).withValues(alpha: 0.7),
           ],
         ),
@@ -547,13 +548,13 @@ class _ContactlessPaymentHomeViewState
             width: 56.w,
             height: 56.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.contactless_rounded,
               size: 26.sp,
-              color: const Color(0xFF6366F1).withValues(alpha: 0.6),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.6),
             ),
           ),
           SizedBox(height: 14.h),
@@ -597,7 +598,7 @@ class _ContactlessPaymentHomeViewState
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+            const Color(0xFF1F1F1F).withValues(alpha: 0.8),
             const Color(0xFF1F1F35).withValues(alpha: 0.9),
           ],
         ),
@@ -616,10 +617,10 @@ class _ContactlessPaymentHomeViewState
             width: 44.w,
             height: 44.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
-            child: Icon(icon, color: const Color(0xFF6366F1), size: 22.sp),
+            child: Icon(icon, color: const Color(0xFF4E03D0), size: 22.sp),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -669,13 +670,13 @@ class _ContactlessPaymentHomeViewState
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF6366F1).withValues(alpha: 0.1),
+            const Color(0xFF4E03D0).withValues(alpha: 0.1),
             const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -683,12 +684,12 @@ class _ContactlessPaymentHomeViewState
           Container(
             padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
               Icons.shield_rounded,
-              color: const Color(0xFF6366F1),
+              color: const Color(0xFF4E03D0),
               size: 22.sp,
             ),
           ),

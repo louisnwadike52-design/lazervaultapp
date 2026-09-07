@@ -264,12 +264,11 @@ class _QRCodeDetailsBottomSheetState extends State<QRCodeDetailsBottomSheet> {
               // Download Summary Button
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed:
-                      _isDownloadingSummary ? null : _downloadSummary,
+                  onPressed: _isDownloadingSummary ? null : _downloadSummary,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side: const BorderSide(
-                        color: Color(0xFF60A5FA), width: 1.5),
+                    side:
+                        const BorderSide(color: Color(0xFF60A5FA), width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -296,8 +295,8 @@ class _QRCodeDetailsBottomSheetState extends State<QRCodeDetailsBottomSheet> {
                   onPressed: _isSharingSummary ? null : _shareSummary,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side: const BorderSide(
-                        color: Color(0xFF34D399), width: 1.5),
+                    side:
+                        const BorderSide(color: Color(0xFF34D399), width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -329,8 +328,7 @@ class _QRCodeDetailsBottomSheetState extends State<QRCodeDetailsBottomSheet> {
                 onPressed: _cancelQR,
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
-                  side:
-                      const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+                  side: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
                   padding: EdgeInsets.symmetric(vertical: 14.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),

@@ -14,6 +14,7 @@ import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
 import 'payment_confirmation_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../../services/contactless_websocket_service.dart';
 part 'nfc_reader_screen_widgets.dart';
 
 class _NfcReaderViewState extends State<_NfcReaderView>
@@ -274,9 +275,9 @@ class _NfcReaderViewState extends State<_NfcReaderView>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF1A1A3E),
-              Color(0xFF0A0E27),
-              Color(0xFF0F0F23),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -417,7 +418,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
     final Color indicatorColor = _hasError
         ? const Color(0xFFEF4444)
         : _isScanning
-            ? const Color(0xFF6366F1)
+            ? const Color(0xFF4E03D0)
             : const Color(0xFF9CA3AF);
 
     return SizedBox(
@@ -483,7 +484,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
                               const Color(0xFFEF4444).withValues(alpha: 0.1),
                             ]
                           : [
-                              const Color(0xFF6366F1).withValues(alpha: 0.2),
+                              const Color(0xFF4E03D0).withValues(alpha: 0.2),
                               const Color.fromARGB(255, 78, 3, 208)
                                   .withValues(alpha: 0.1),
                             ],
@@ -546,12 +547,12 @@ class _NfcReaderViewState extends State<_NfcReaderView>
         padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 14.h),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+            colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
           ),
           borderRadius: BorderRadius.circular(14.r),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -646,7 +647,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
           Icon(
             Icons.vpn_key_rounded,
             size: 48.sp,
-            color: const Color(0xFF6366F1),
+            color: const Color(0xFF4E03D0),
           ),
           SizedBox(height: 20.h),
           Text(
@@ -739,7 +740,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
                     ? null
                     : const LinearGradient(
                         colors: [
-                          Color(0xFF6366F1),
+                          Color(0xFF4E03D0),
                           Color.fromARGB(255, 78, 3, 208)
                         ],
                       ),
@@ -751,7 +752,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
                     ? null
                     : [
                         BoxShadow(
-                          color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+                          color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
                           blurRadius: 16,
                           offset: const Offset(0, 6),
                         ),
@@ -784,7 +785,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
             child: Text(
               'Back to NFC Scan',
               style: GoogleFonts.inter(
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF4E03D0),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
               ),
@@ -806,7 +807,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF2A2A3E).withValues(alpha: 0.6),
+              const Color(0xFF1F1F1F).withValues(alpha: 0.6),
               const Color(0xFF1F1F35).withValues(alpha: 0.6),
             ],
           ),
@@ -837,7 +838,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
   Widget _buildHintRow(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFF6366F1), size: 18.sp),
+        Icon(icon, color: const Color(0xFF4E03D0), size: 18.sp),
         SizedBox(width: 12.w),
         Expanded(
           child: Text(

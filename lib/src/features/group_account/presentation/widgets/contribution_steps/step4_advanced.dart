@@ -222,14 +222,14 @@ class _Step4AdvancedState extends State<Step4Advanced> {
             height: 40.w,
             decoration: BoxDecoration(
               color: (enabled && value)
-                  ? const Color(0xFF6366F1).withValues(alpha: 0.2)
+                  ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
                   : Colors.grey.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(
               icon,
               color: (enabled && value)
-                  ? const Color(0xFF6366F1)
+                  ? const Color(0xFF4E03D0)
                   : Colors.grey[500],
               size: 20.sp,
             ),
@@ -261,8 +261,8 @@ class _Step4AdvancedState extends State<Step4Advanced> {
           Switch(
             value: value,
             onChanged: enabled ? onChanged : null,
-            activeThumbColor: const Color(0xFF6366F1),
-            activeTrackColor: const Color(0xFF6366F1).withValues(alpha: 0.3),
+            activeThumbColor: const Color(0xFF4E03D0),
+            activeTrackColor: const Color(0xFF4E03D0).withValues(alpha: 0.3),
             inactiveThumbColor: Colors.grey[400],
             inactiveTrackColor: Colors.grey[800],
           ),
@@ -284,11 +284,11 @@ class _Step4AdvancedState extends State<Step4Advanced> {
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: isActive
-              ? const Color(0xFF6366F1).withValues(alpha: 0.2)
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
               : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-            color: isActive ? const Color(0xFF6366F1) : const Color(0xFF2D2D2D),
+            color: isActive ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
             width: isActive ? 2 : 1,
           ),
         ),
@@ -297,7 +297,7 @@ class _Step4AdvancedState extends State<Step4Advanced> {
           children: [
             Icon(
               isActive ? Icons.check_circle : icon,
-              color: isActive ? const Color(0xFF6366F1) : Colors.grey[400],
+              color: isActive ? const Color(0xFF4E03D0) : Colors.grey[400],
               size: 18.sp,
             ),
             SizedBox(width: 8.w),
@@ -306,7 +306,7 @@ class _Step4AdvancedState extends State<Step4Advanced> {
               style: GoogleFonts.inter(
                 fontSize: 13.sp,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                color: isActive ? const Color(0xFF6366F1) : Colors.grey[300],
+                color: isActive ? const Color(0xFF4E03D0) : Colors.grey[300],
               ),
             ),
           ],
@@ -323,7 +323,7 @@ class _Step4AdvancedState extends State<Step4Advanced> {
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -412,7 +412,7 @@ class _Step4AdvancedState extends State<Step4Advanced> {
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -492,7 +492,7 @@ class _Step4AdvancedState extends State<Step4Advanced> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.r),
-          borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
         ),
         contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       ),
@@ -533,7 +533,7 @@ class _Step4AdvancedState extends State<Step4Advanced> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.r),
-          borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
         ),
         contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       ),

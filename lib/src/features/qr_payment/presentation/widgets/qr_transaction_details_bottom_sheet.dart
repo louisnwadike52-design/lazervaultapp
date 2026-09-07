@@ -196,12 +196,11 @@ class _QRTransactionDetailsBottomSheetState
               // Download Receipt Button
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed:
-                      _isDownloadingReceipt ? null : _downloadReceipt,
+                  onPressed: _isDownloadingReceipt ? null : _downloadReceipt,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side: const BorderSide(
-                        color: Color(0xFF60A5FA), width: 1.5),
+                    side:
+                        const BorderSide(color: Color(0xFF60A5FA), width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -228,8 +227,8 @@ class _QRTransactionDetailsBottomSheetState
                   onPressed: _isSharingReceipt ? null : _shareReceipt,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side: const BorderSide(
-                        color: Color(0xFF34D399), width: 1.5),
+                    side:
+                        const BorderSide(color: Color(0xFF34D399), width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),

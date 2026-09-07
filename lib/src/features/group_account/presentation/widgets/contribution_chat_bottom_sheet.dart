@@ -1344,7 +1344,7 @@ class _ContributionChatBottomSheetState
                   IconButton(
                     onPressed: _sending ? null : _sendText,
                     icon: Icon(Icons.send,
-                        color: const Color(0xFF6366F1), size: 22.sp),
+                        color: const Color(0xFF4E03D0), size: 22.sp),
                     tooltip: 'Send',
                   ),
               ],

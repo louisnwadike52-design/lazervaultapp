@@ -263,7 +263,7 @@ class _PastDetailsBody extends StatelessWidget {
                       text: summary.selfExit
                           ? 'Left at cycle ${summary.removedAtCycleIndex}'
                           : 'Removed at cycle ${summary.removedAtCycleIndex}',
-                      color: const Color(0xFF6366F1),
+                      color: const Color(0xFF4E03D0),
                       icon: summary.selfExit
                           ? Icons.logout
                           : Icons.person_remove_alt_1_outlined,

@@ -173,36 +173,36 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
         }
       },
       child: Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.back(),
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+        backgroundColor: const Color(0xFF0A0A0A),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            onPressed: () => Get.back(),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+          ),
+          title: const Text(
+            'Your QR Code',
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          centerTitle: true,
         ),
-        title: const Text(
-          'Your QR Code',
-          style: TextStyle(color: Colors.white, fontSize: 20),
-        ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              _buildQRCodeCard(),
-              const SizedBox(height: 20),
-              if (_qrCode != null) _buildDetailsCard(),
-              const SizedBox(height: 20),
-              _buildExpiryTimer(),
-              const SizedBox(height: 32),
-              _buildActions(),
-            ],
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                _buildQRCodeCard(),
+                const SizedBox(height: 20),
+                if (_qrCode != null) _buildDetailsCard(),
+                const SizedBox(height: 20),
+                _buildExpiryTimer(),
+                const SizedBox(height: 32),
+                _buildActions(),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -290,9 +290,8 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
         children: [
           Icon(
             isExpired ? Icons.timer_off : Icons.timer,
-            color: isExpired
-                ? const Color(0xFFEF4444)
-                : const Color(0xFFFB923C),
+            color:
+                isExpired ? const Color(0xFFEF4444) : const Color(0xFFFB923C),
             size: 18,
           ),
           const SizedBox(width: 8),
@@ -301,9 +300,8 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
                 ? 'QR code has expired'
                 : 'Expires in ${minutes}m ${seconds.toString().padLeft(2, '0')}s',
             style: TextStyle(
-              color: isExpired
-                  ? const Color(0xFFEF4444)
-                  : const Color(0xFFFB923C),
+              color:
+                  isExpired ? const Color(0xFFEF4444) : const Color(0xFFFB923C),
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -370,9 +368,10 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
           ? 'Pay me ${qr.currency} ${qr.amount.toStringAsFixed(2)} via QR Pay. Code: ${qr.qrCode}'
           : 'Pay me via QR Pay. Code: ${qr.qrCode}';
       SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: text));
+          // iOS: a non-zero popover anchor is required — CGRectZero throws
+          // PlatformException and the share silently fails on iPhone/iPad.
+          sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+          text: text));
     }
   }
 }

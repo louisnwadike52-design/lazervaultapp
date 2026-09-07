@@ -13,6 +13,9 @@ class PaymentConfirmationScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => ContactlessPaymentCubit(
         repository: GetIt.instance<ContactlessPaymentRepository>(),
+        // Realtime session updates — without this the cubit fell back to
+        // 1s polling because the DI-registered wsService was bypassed here.
+        wsService: GetIt.instance<ContactlessWebSocketService>(),
       )..acknowledgeSessionRead(session.id),
       child: _PaymentConfirmationView(session: session),
     );

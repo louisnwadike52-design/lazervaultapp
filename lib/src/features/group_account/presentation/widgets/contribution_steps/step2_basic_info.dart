@@ -213,7 +213,7 @@ class _Step2BasicInfoState extends State<Step2BasicInfo> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
         ),
         contentPadding: EdgeInsets.all(16.w),
       ),
@@ -253,7 +253,7 @@ class _Step2BasicInfoState extends State<Step2BasicInfo> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
         ),
         contentPadding: EdgeInsets.all(16.w),
       ),
@@ -313,7 +313,7 @@ class _Step2BasicInfoState extends State<Step2BasicInfo> {
             return Theme(
               data: Theme.of(context).copyWith(
                 colorScheme: const ColorScheme.dark(
-                  primary: Color(0xFF6366F1),
+                  primary: Color(0xFF4E03D0),
                   surface: Color(0xFF1F1F1F),
                 ),
               ),

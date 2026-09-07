@@ -322,8 +322,7 @@ class QRPayPdfService {
       children: [
         _buildDetailRow('Payer', _partyLabel(txn.payerName, txn.payerUsername)),
         _buildDetailRow(
-            'Recipient',
-            _partyLabel(txn.recipientName, txn.recipientUsername)),
+            'Recipient', _partyLabel(txn.recipientName, txn.recipientUsername)),
         _buildDetailRow('Reference', txn.referenceNumber),
         _buildDetailRow('Status', txn.status.displayName),
         if (txn.description.isNotEmpty)

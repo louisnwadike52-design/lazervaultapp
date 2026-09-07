@@ -147,9 +147,7 @@ class QRPaymentRemoteDataSourceImpl implements QRPaymentRemoteDataSource {
       request,
       options: options,
     );
-    return response.qrCodes
-        .map((qr) => QRPaymentModel.fromProto(qr))
-        .toList();
+    return response.qrCodes.map((qr) => QRPaymentModel.fromProto(qr)).toList();
   }
 
   @override

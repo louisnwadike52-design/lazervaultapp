@@ -191,12 +191,12 @@ class _Step3ScheduleState extends State<Step3Schedule> {
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             decoration: BoxDecoration(
               color: isSelected
-                  ? const Color(0xFF6366F1).withValues(alpha: 0.2)
+                  ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
                   : const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
                 color: isSelected
-                    ? const Color(0xFF6366F1)
+                    ? const Color(0xFF4E03D0)
                     : const Color(0xFF2D2D2D),
                 width: isSelected ? 2 : 1,
               ),
@@ -206,7 +206,7 @@ class _Step3ScheduleState extends State<Step3Schedule> {
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? const Color(0xFF6366F1) : Colors.white,
+                color: isSelected ? const Color(0xFF4E03D0) : Colors.white,
               ),
             ),
           ),
@@ -249,7 +249,7 @@ class _Step3ScheduleState extends State<Step3Schedule> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
         ),
         contentPadding: EdgeInsets.all(16.w),
       ),
@@ -290,7 +290,7 @@ class _Step3ScheduleState extends State<Step3Schedule> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
         ),
         contentPadding: EdgeInsets.all(16.w),
       ),
@@ -312,7 +312,7 @@ class _Step3ScheduleState extends State<Step3Schedule> {
             return Theme(
               data: Theme.of(context).copyWith(
                 colorScheme: const ColorScheme.dark(
-                  primary: Color(0xFF6366F1),
+                  primary: Color(0xFF4E03D0),
                   surface: Color(0xFF1F1F1F),
                 ),
               ),
@@ -403,7 +403,7 @@ class _Step3ScheduleState extends State<Step3Schedule> {
                   width: 24.w,
                   height: 24.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -412,7 +412,7 @@ class _Step3ScheduleState extends State<Step3Schedule> {
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF6366F1),
+                        color: const Color(0xFF4E03D0),
                       ),
                     ),
                   ),
@@ -420,7 +420,7 @@ class _Step3ScheduleState extends State<Step3Schedule> {
                 SizedBox(width: 12.w),
                 CircleAvatar(
                   radius: 16.r,
-                  backgroundColor: const Color(0xFF6366F1),
+                  backgroundColor: const Color(0xFF4E03D0),
                   child: Text(
                     member.userName.isNotEmpty
                         ? member.userName[0].toUpperCase()

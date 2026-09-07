@@ -5,7 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import 'package:lazervault/src/features/qr_payment/domain/entities/qr_payment_entity.dart';
 import 'package:lazervault/src/features/qr_payment/domain/entities/qr_transaction_entity.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
@@ -17,7 +18,6 @@ import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 part 'qr_pay_home_screen_widgets.dart';
-
 
 class QRPayHomeScreen extends StatefulWidget {
   const QRPayHomeScreen({super.key});
@@ -87,9 +87,9 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF1A1A3E),
-              Color(0xFF0A0E27),
-              Color(0xFF0F0F23),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
+              Color(0xFF0A0A0A),
             ],
           ),
         ),
@@ -100,31 +100,31 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
               Expanded(
                 child: ServiceEntranceAnimation(
                   child: SlideTransition(
-                  position: _slideAnimation,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 8.h),
-                          _buildHeroSection(),
-                          SizedBox(height: 32.h),
-                          _buildActionCards(),
-                          SizedBox(height: 32.h),
-                          _buildQuickStats(),
-                          SizedBox(height: 32.h),
-                          _buildHistorySection(),
-                          SizedBox(height: 32.h),
-                          _buildSecurityBanner(),
-                          SizedBox(height: 100.h),
-                        ],
+                    position: _slideAnimation,
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 8.h),
+                            _buildHeroSection(),
+                            SizedBox(height: 32.h),
+                            _buildActionCards(),
+                            SizedBox(height: 32.h),
+                            _buildQuickStats(),
+                            SizedBox(height: 32.h),
+                            _buildHistorySection(),
+                            SizedBox(height: 32.h),
+                            _buildSecurityBanner(),
+                            SizedBox(height: 100.h),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
                 ),
               ),
             ],
@@ -356,7 +356,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+            const Color(0xFF1F1F1F).withValues(alpha: 0.8),
             const Color(0xFF1F1F35).withValues(alpha: 0.9),
           ],
         ),
@@ -505,7 +505,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+              const Color(0xFF1F1F1F).withValues(alpha: 0.8),
               const Color(0xFF1F1F35).withValues(alpha: 0.9),
             ],
           ),
@@ -567,8 +567,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: _statusColor(qr.status).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8.r),
@@ -663,8 +662,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
           context: context,
           backgroundColor: Colors.transparent,
           isScrollControlled: true,
-          builder: (_) =>
-              QRTransactionDetailsBottomSheet(transaction: txn),
+          builder: (_) => QRTransactionDetailsBottomSheet(transaction: txn),
         );
       },
       child: Container(
@@ -675,7 +673,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+              const Color(0xFF1F1F1F).withValues(alpha: 0.8),
               const Color(0xFF1F1F35).withValues(alpha: 0.9),
             ],
           ),
@@ -700,9 +698,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
-                isCompleted
-                    ? Icons.check_circle_rounded
-                    : Icons.cancel_rounded,
+                isCompleted ? Icons.check_circle_rounded : Icons.cancel_rounded,
                 color: isCompleted
                     ? const Color(0xFF10B981)
                     : const Color(0xFFEF4444),
@@ -724,9 +720,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    txn.description.isNotEmpty
-                        ? txn.description
-                        : 'QR Payment',
+                    txn.description.isNotEmpty ? txn.description : 'QR Payment',
                     style: GoogleFonts.inter(
                       color: const Color(0xFF9CA3AF),
                       fontSize: 12.sp,

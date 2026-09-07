@@ -17,6 +17,7 @@ enum QrPayWsHealth { connecting, connected, failed }
 
 class QRPaymentCubit extends Cubit<QRPaymentState> {
   final QRPaymentRepository repository;
+
   /// Realtime WS overlay for the generator-side QR display screen. When
   /// set, `subscribeToGeneratedQR` connects and listens for the payer's
   /// completion event. Polling continues regardless so a WS failure is
@@ -27,6 +28,7 @@ class QRPaymentCubit extends Cubit<QRPaymentState> {
   Timer? _wsTimeoutTimer;
   bool _wsConnected = false;
   String? _activeQrCode;
+
   /// Publicly observable WS health. The display screen listens here:
   /// `connected` → keeps the relaxed 3 s poll; `failed` → tightens to 1 s
   /// so a permanently-dead WS still settles within ~1 s of the payer's

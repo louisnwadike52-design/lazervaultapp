@@ -8,6 +8,9 @@ class ContactlessPaymentHomeScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => ContactlessPaymentCubit(
         repository: GetIt.instance<ContactlessPaymentRepository>(),
+        // Realtime session updates — without this the cubit fell back to
+        // 1s polling because the DI-registered wsService was bypassed here.
+        wsService: GetIt.instance<ContactlessWebSocketService>(),
       )..getMyContactlessPayments(limit: 5),
       child: const _ContactlessPaymentHomeView(),
     );
@@ -48,7 +51,7 @@ class _ActionCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+              const Color(0xFF1F1F1F).withValues(alpha: 0.8),
               const Color(0xFF1F1F35).withValues(alpha: 0.9),
             ],
           ),

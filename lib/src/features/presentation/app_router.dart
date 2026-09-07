@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/contactless_payment/services/contactless_websocket_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' hide Transition;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
@@ -3310,6 +3311,9 @@ GetPage(
       page: () => BlocProvider(
         create: (_) => ContactlessPaymentCubit(
           repository: serviceLocator<ContactlessPaymentRepository>(),
+          // Realtime session updates — bypassing DI here previously forced
+          // permanent 1s degraded polling.
+          wsService: serviceLocator<ContactlessWebSocketService>(),
         ),
         child: const CreatePaymentSessionScreen(),
       ),
@@ -3325,6 +3329,9 @@ GetPage(
       page: () => BlocProvider(
         create: (_) => ContactlessPaymentCubit(
           repository: serviceLocator<ContactlessPaymentRepository>(),
+          // Realtime session updates — bypassing DI here previously forced
+          // permanent 1s degraded polling.
+          wsService: serviceLocator<ContactlessWebSocketService>(),
         ),
         child: const contactless_history.PaymentHistoryScreen(),
       ),

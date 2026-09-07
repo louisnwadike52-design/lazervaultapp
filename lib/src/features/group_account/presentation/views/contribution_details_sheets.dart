@@ -130,7 +130,7 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
                 '@$username',
                 style: GoogleFonts.inter(
                   fontSize: 13.sp,
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF4E03D0),
                 ),
               ),
             ),

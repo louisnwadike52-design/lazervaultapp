@@ -8,6 +8,9 @@ class PaymentHistoryScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => ContactlessPaymentCubit(
         repository: GetIt.instance<ContactlessPaymentRepository>(),
+        // Realtime session updates — without this the cubit fell back to
+        // 1s polling because the DI-registered wsService was bypassed here.
+        wsService: GetIt.instance<ContactlessWebSocketService>(),
       )..getMyContactlessPayments(),
       child: const _PaymentHistoryView(),
     );
@@ -59,7 +62,7 @@ class _PaymentHistoryViewState extends State<_PaymentHistoryView>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27), Color(0xFF0F0F23)],
+            colors: [Color(0xFF0A0A0A), Color(0xFF0A0A0A), Color(0xFF0A0A0A)],
           ),
         ),
         child: SafeArea(
@@ -115,7 +118,7 @@ class _PaymentHistoryViewState extends State<_PaymentHistoryView>
                     indicator: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [
-                          Color(0xFF6366F1),
+                          Color(0xFF4E03D0),
                           Color.fromARGB(255, 78, 3, 208)
                         ],
                       ),
@@ -161,7 +164,33 @@ class _PaymentHistoryViewState extends State<_PaymentHistoryView>
   }
 }
 
-class _TransactionsTab extends StatelessWidget {
+class _TransactionsTab extends StatefulWidget {
+  @override
+  State<_TransactionsTab> createState() => _TransactionsTabState();
+}
+
+class _TransactionsTabState extends State<_TransactionsTab> {
+  static const _filters = ['All', 'Completed', 'Failed', 'Reversed'];
+  String _selectedFilter = 'All';
+
+  List<ContactlessTransactionEntity> _applyFilter(
+      List<ContactlessTransactionEntity> txns) {
+    switch (_selectedFilter) {
+      case 'Completed':
+        return txns
+            .where((t) => t.status == TransactionStatus.completed)
+            .toList();
+      case 'Failed':
+        return txns.where((t) => t.status == TransactionStatus.failed).toList();
+      case 'Reversed':
+        return txns
+            .where((t) => t.status == TransactionStatus.reversed)
+            .toList();
+      default:
+        return txns;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ContactlessPaymentCubit, ContactlessPaymentState>(
@@ -180,25 +209,44 @@ class _TransactionsTab extends StatelessWidget {
             );
           }
 
-          return RefreshIndicator(
-            color: const Color(0xFF6366F1),
-            backgroundColor: const Color(0xFF2A2A3E),
-            onRefresh: () async {
-              context
-                  .read<ContactlessPaymentCubit>()
-                  .getMyContactlessPayments();
-            },
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              itemCount: state.transactions.length,
-              itemBuilder: (context, index) {
-                final transaction = state.transactions[index];
-                return _TransactionCard(
-                  transaction: transaction,
-                  index: index,
-                );
-              },
-            ),
+          final filtered = _applyFilter(state.transactions);
+          return Column(
+            children: [
+              StatusFilterChips(
+                filters: _filters,
+                selected: _selectedFilter,
+                onSelected: (f) => setState(() => _selectedFilter = f),
+              ),
+              Expanded(
+                child: filtered.isEmpty
+                    ? _EmptyState(
+                        icon: Icons.filter_alt_off_rounded,
+                        title: 'Nothing here',
+                        subtitle:
+                            'No $_selectedFilter transactions in your history',
+                      )
+                    : RefreshIndicator(
+                        color: const Color(0xFF4E03D0),
+                        backgroundColor: const Color(0xFF1F1F1F),
+                        onRefresh: () async {
+                          context
+                              .read<ContactlessPaymentCubit>()
+                              .getMyContactlessPayments();
+                        },
+                        child: ListView.builder(
+                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final transaction = filtered[index];
+                            return _TransactionCard(
+                              transaction: transaction,
+                              index: index,
+                            );
+                          },
+                        ),
+                      ),
+              ),
+            ],
           );
         }
 
@@ -255,8 +303,8 @@ class _SessionsTab extends StatelessWidget {
           }
 
           return RefreshIndicator(
-            color: const Color(0xFF6366F1),
-            backgroundColor: const Color(0xFF2A2A3E),
+            color: const Color(0xFF4E03D0),
+            backgroundColor: const Color(0xFF1F1F1F),
             onRefresh: () async {
               context.read<ContactlessPaymentCubit>().getMyPaymentSessions();
             },
@@ -385,7 +433,7 @@ class _SessionCard extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF2A2A3E), Color(0xFF1F1F35)],
+            colors: [Color(0xFF1F1F1F), Color(0xFF1F1F35)],
           ),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
@@ -547,13 +595,13 @@ class _EmptyState extends StatelessWidget {
               width: 80.w,
               height: 80.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
                 size: 36.sp,
-                color: const Color(0xFF6366F1).withValues(alpha: 0.5),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.5),
               ),
             ),
             SizedBox(height: 20.h),
@@ -633,7 +681,7 @@ class _ErrorState extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [
-                      Color(0xFF6366F1),
+                      Color(0xFF4E03D0),
                       Color.fromARGB(255, 78, 3, 208)
                     ],
                   ),

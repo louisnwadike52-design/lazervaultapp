@@ -10,6 +10,8 @@ import '../../domain/entities/contactless_payment_entity.dart';
 import '../../domain/repositories/contactless_payment_repository.dart';
 import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
+import 'package:lazervault/src/features/widgets/status_filter_chips.dart';
+import '../../services/contactless_websocket_service.dart';
 part 'payment_history_screen_widgets.dart';
 
 class _TransactionCard extends StatelessWidget {
@@ -51,7 +53,7 @@ class _TransactionCard extends StatelessWidget {
       case 'bills':
         return const Color(0xFFEF4444);
       default:
-        return const Color(0xFF6366F1);
+        return const Color(0xFF4E03D0);
     }
   }
 
@@ -98,7 +100,7 @@ class _TransactionCard extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF2A2A3E), Color(0xFF1F1F35)],
+              colors: [Color(0xFF1F1F1F), Color(0xFF1F1F35)],
             ),
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
@@ -217,7 +219,7 @@ class _TransactionCard extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF2A2A3E), Color(0xFF1A1A30)],
+              colors: [Color(0xFF1F1F1F), Color(0xFF1A1A30)],
             ),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
             border: Border.all(

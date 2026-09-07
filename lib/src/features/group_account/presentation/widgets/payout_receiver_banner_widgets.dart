@@ -168,7 +168,7 @@ class _AutoPayoutScheduledChipState extends State<AutoPayoutScheduledChip> {
         pb_enum.ScheduledPayoutStatus.SCHEDULED_PAYOUT_STATUS_SCHEDULED;
     if (!isScheduled) return const SizedBox.shrink();
 
-    const accent = Color(0xFF6366F1);
+    const accent = Color(0xFF4E03D0);
     return Material(
       color: const Color(0xFF1F1F1F),
       elevation: 3,
@@ -256,7 +256,7 @@ class AutoPayoutScheduledDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const accent = Color(0xFF6366F1);
+    const accent = Color(0xFF4E03D0);
     final recipient = _resolveRecipientName(state.receiver.recipientUserId);
     final amount = _formatAmount(contribution.currentAmount);
     final fireAt = state.scheduledPayout.hasScheduledFor()

@@ -740,7 +740,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                   gradient: LinearGradient(
                     colors: _currentPage == _totalPages - 1
                         ? [const Color(0xFF10B981), const Color(0xFF059669)]
-                        : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
+                        : [const Color(0xFF4E03D0), const Color.fromARGB(255, 78, 3, 208)],
                   ),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
@@ -760,7 +760,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                 margin: EdgeInsets.symmetric(horizontal: 4.w),
                 decoration: BoxDecoration(
                   color: index <= _currentPage
-                      ? const Color(0xFF6366F1)
+                      ? const Color(0xFF4E03D0)
                       : Colors.white.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4.r),
                 ),
@@ -1255,11 +1255,11 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF6366F1).withValues(alpha: 0.2)
+                    ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
                     : const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
-                  color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF2D2D2D),
+                  color: isSelected ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -1268,7 +1268,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? const Color(0xFF6366F1) : Colors.grey[300],
+                  color: isSelected ? const Color(0xFF4E03D0) : Colors.grey[300],
                 ),
               ),
             ),
@@ -1774,7 +1774,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: hasError ? errorColor : const Color(0xFF6366F1), width: 2),
+          borderSide: BorderSide(color: hasError ? errorColor : const Color(0xFF4E03D0), width: 2),
         ),
         contentPadding: EdgeInsets.all(16.w),
       ),
@@ -1964,7 +1964,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                       style: GoogleFonts.inter(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF6366F1),
+                        color: const Color(0xFF4E03D0),
                       ),
                     ),
                     SizedBox(width: 8.w),
@@ -1990,7 +1990,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: hasError ? errorColor : const Color(0xFF6366F1), width: 2),
+          borderSide: BorderSide(color: hasError ? errorColor : const Color(0xFF4E03D0), width: 2),
         ),
         contentPadding: EdgeInsets.all(16.w),
       ),
@@ -2021,7 +2021,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.r),
-          borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
         ),
         contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       ),
@@ -2051,7 +2051,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             return Theme(
               data: Theme.of(context).copyWith(
                 colorScheme: const ColorScheme.dark(
-                  primary: Color(0xFF6366F1),
+                  primary: Color(0xFF4E03D0),
                   surface: Color(0xFF1F1F1F),
                 ),
               ),
@@ -2081,7 +2081,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             return Theme(
               data: Theme.of(context).copyWith(
                 colorScheme: const ColorScheme.dark(
-                  primary: Color(0xFF6366F1),
+                  primary: Color(0xFF4E03D0),
                   surface: Color(0xFF1F1F1F),
                 ),
               ),
@@ -2149,13 +2149,13 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             height: 40.w,
             decoration: BoxDecoration(
               color: (enabled && value)
-                  ? const Color(0xFF6366F1).withValues(alpha: 0.2)
+                  ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
                   : Colors.grey.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(
               icon,
-              color: (enabled && value) ? const Color(0xFF6366F1) : Colors.grey[500],
+              color: (enabled && value) ? const Color(0xFF4E03D0) : Colors.grey[500],
               size: 20.sp,
             ),
           ),
@@ -2183,8 +2183,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           Switch(
             value: value,
             onChanged: enabled ? onChanged : null,
-            activeThumbColor: const Color(0xFF6366F1),
-            activeTrackColor: const Color(0xFF6366F1).withValues(alpha: 0.3),
+            activeThumbColor: const Color(0xFF4E03D0),
+            activeTrackColor: const Color(0xFF4E03D0).withValues(alpha: 0.3),
             inactiveThumbColor: Colors.grey[400],
             inactiveTrackColor: Colors.grey[800],
           ),
@@ -2290,14 +2290,14 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+        border: Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: iconColor ?? const Color(0xFF6366F1), size: 20.sp),
+              Icon(icon, color: iconColor ?? const Color(0xFF4E03D0), size: 20.sp),
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
@@ -2334,7 +2334,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         children: [
           Row(
             children: [
-              Icon(Icons.swap_vert, color: const Color(0xFF6366F1), size: 18.sp),
+              Icon(Icons.swap_vert, color: const Color(0xFF4E03D0), size: 18.sp),
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
@@ -2348,21 +2348,21 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.5)),
+                    border: Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.person_add_alt_1, color: const Color(0xFF6366F1), size: 16.sp),
+                      Icon(Icons.person_add_alt_1, color: const Color(0xFF4E03D0), size: 16.sp),
                       SizedBox(width: 6.w),
                       Text(
                         'Add',
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF6366F1),
+                          color: const Color(0xFF4E03D0),
                         ),
                       ),
                     ],
@@ -2456,7 +2456,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                               ),
                               child: Icon(
                                 Icons.drag_indicator,
-                                color: const Color(0xFF6366F1),
+                                color: const Color(0xFF4E03D0),
                                 size: 20.sp,
                               ),
                             ),
@@ -2469,7 +2469,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  const Color(0xFF6366F1),
+                                  const Color(0xFF4E03D0),
                                   const Color.fromARGB(255, 78, 3, 208),
                                 ],
                               ),
@@ -2560,7 +2560,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           Row(
             children: [
               Icon(Icons.group_outlined,
-                  color: const Color(0xFF6366F1), size: 18.sp),
+                  color: const Color(0xFF4E03D0), size: 18.sp),
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
@@ -2577,23 +2577,23 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                   padding:
                       EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                     border: Border.all(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.5)),
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.person_add_alt_1,
-                          color: const Color(0xFF6366F1), size: 16.sp),
+                          color: const Color(0xFF4E03D0), size: 16.sp),
                       SizedBox(width: 6.w),
                       Text(
                         'Add',
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF6366F1),
+                          color: const Color(0xFF4E03D0),
                         ),
                       ),
                     ],
@@ -2875,7 +2875,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                     gradient: isLoading
                         ? null
                         : const LinearGradient(
-                            colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                            colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
                           ),
                     color: isLoading ? Colors.grey : null,
                     borderRadius: BorderRadius.circular(12.r),
