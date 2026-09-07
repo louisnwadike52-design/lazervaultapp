@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:lazervault/core/services/endpoint_registry.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,7 +28,7 @@ import 'package:lazervault/src/features/authentication/presentation/widgets/phon
 ///  * this is a step-up SECURITY gate: no back button (showBack:false) and the
 ///    Android back gesture is blocked (PopScope canPop:false), so it cannot be
 ///    swiped away without a decision;
-///  * the ONLY exits are the labelled "Use a different account" / "Skip for now",
+///  * the ONLY exit is the labelled "Use a different account",
 ///    which `Get.offAllNamed(freshLoginEntry)` to a clean login. They replace the
 ///    stack rather than pop precisely because the PopScope vetoes pops;
 ///  * SUCCESS = `Get.offAllNamed(dashboard)` — clears login + OTP off the stack.
@@ -272,28 +271,10 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   /// already holds keeps working and the countdown simply restarts from the
   /// new lifetime it returns. Refusals (cooldown, resend cap) arrive as
   /// AuthenticationError with a stable code and are handled there.
-  /// Leaves the step-up without verifying.
-  ///
-  /// Deliberately does NOT claim to sign the user in: no session exists on this
-  /// screen to continue with, so the only truthful outcome is to abandon the
-  /// pending challenge and go back. Telling the user that plainly is better
-  /// than a button that appears to let them in and then dead-ends.
-  void _skipForNow() {
-    _ticker?.cancel();
-    Get.snackbar(
-      'Verification skipped',
-      "You'll need the code to finish signing in on this device.",
-      snackPosition: SnackPosition.BOTTOM,
-    );
-    // Get.offAllNamed, NOT maybePop: this screen blocks the back gesture with
-    // PopScope(canPop:false) (a step-up gate must not be swiped away), and a
-    // pop is exactly what canPop:false vetoes — which is why the labelled exits
-    // silently did nothing. Replacing the stack is not a pop, so it is not
-    // vetoed, and it lands the user on a clean login. No security loss: the
-    // device stays 'pending' server-side until an OTP is verified, so the next
-    // login re-challenges.
-    Get.offAllNamed(AppRoutes.freshLoginEntry);
-  }
+  // "Skip for now" was removed entirely (product decision 2026-09-07): a
+  // step-up gate offers exactly two honest paths — verify the code, or leave
+  // via "Use a different account". A third soft-exit read as an invitation to
+  // dodge verification, even though the device stayed 'pending' server-side.
 
   Future<void> _requestNewCode() async {
     if (_resending) return;
@@ -444,26 +425,6 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Admin-tunable (auth_otp_skip_button_visible, default ON).
-              //
-              // This screen holds a step-up token and NO session — tokens are
-              // issued only after the code is verified — so "skip" cannot mean
-              // "go in without verifying". It abandons the step-up and returns
-              // to login, which is the only thing the client can honestly do.
-              // Whether a code is demanded AT ALL is a backend decision
-              // (auth_adaptive_otp_enabled); the label says "for now" rather
-              // than "skip verification" so it does not promise otherwise.
-              if (endpointRegistry.otpSkipButtonVisible)
-                TextButton(
-                  onPressed: _skipForNow,
-                  child: Text(
-                    'Skip for now',
-                    style: TextStyle(
-                        color: _brandPurple,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700),
-                  ),
-                ),
               TextButton(
                 // Get.offAllNamed, NOT maybePop — the PopScope(canPop:false) on
                 // this step-up gate vetoes pops (that is why this button did
