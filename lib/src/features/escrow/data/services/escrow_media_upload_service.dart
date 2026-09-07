@@ -177,8 +177,9 @@ class EscrowMediaUploadService {
         contentType = 'video/mp4';
         filename = _basename(outFile.path, 'escrow-video.mp4');
         final durMs = out?.duration;
-        if (durMs != null && durMs > 0)
+        if (durMs != null && durMs > 0) {
           durationSeconds = (durMs / 1000).round();
+        }
       }
     } catch (_) {
       // Compression is best effort; fall back to the original pick.

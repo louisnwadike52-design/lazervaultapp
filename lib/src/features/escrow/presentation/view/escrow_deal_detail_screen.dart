@@ -871,8 +871,12 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   Widget _evidenceThumb(EscrowAttachmentEntity a) {
     final box = 104.w;
     // Shared Hero tag between this thumb and the full-screen viewer so tapping a
-    // preview expands it and collapses back. Keyed on the url (unique per item).
-    final heroTag = 'escrow-evidence-${a.url}';
+    // preview expands it and collapses back. Keyed on the attachment ID, NOT the
+    // url: the same photo can legitimately appear under two purposes (e.g. reused
+    // as deal_item and dispute_evidence), and two Heroes with the same tag on one
+    // screen crash the route. IDs are unique per attachment (incl. the legacy
+    // 'legacy-item'/'legacy-proof' synthetics).
+    final heroTag = 'escrow-evidence-${a.id}';
     void open() => showEscrowMediaViewer(
           context,
           url: a.url,
