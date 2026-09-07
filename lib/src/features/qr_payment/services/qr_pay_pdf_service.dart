@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
@@ -12,6 +13,7 @@ class QRPayPdfService {
     required QRTransactionEntity transaction,
   }) async {
     final pdf = pw.Document();
+    final logo = await _loadLogo();
 
     pdf.addPage(
       pw.Page(
@@ -21,7 +23,7 @@ class QRPayPdfService {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              _buildHeader(logo),
               pw.SizedBox(height: 30),
               _buildAmountSection(transaction),
               pw.SizedBox(height: 20),
@@ -223,28 +225,49 @@ class QRPayPdfService {
     );
   }
 
-  static pw.Widget _buildHeader() {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.center,
+  /// Brand logo — same asset + fallback as the contactless receipt so every
+  /// payment PDF carries the same identity.
+  static Future<pw.MemoryImage?> _loadLogo() async {
+    try {
+      final data = await rootBundle.load('assets/images/logo.png');
+      return pw.MemoryImage(data.buffer.asUint8List());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static pw.Widget _buildHeader(pw.MemoryImage? logo) {
+    return pw.Row(
+      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Center(
-          child: pw.Text(
-            'Lazervault',
-            style: pw.TextStyle(
-              fontSize: 24,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColors.blue800,
+        pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            if (logo != null)
+              pw.Image(logo, width: 120)
+            else
+              pw.Text(
+                'Lazervault',
+                style: pw.TextStyle(
+                  fontSize: 28,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColor.fromInt(0xFF4E03D0),
+                ),
+              ),
+            pw.SizedBox(height: 8),
+            pw.Text(
+              'QR Payment',
+              style: pw.TextStyle(fontSize: 12, color: PdfColors.grey700),
             ),
-          ),
+          ],
         ),
-        pw.SizedBox(height: 8),
-        pw.Center(
-          child: pw.Text(
-            'QR Payment Receipt',
-            style: pw.TextStyle(
-              fontSize: 16,
-              color: PdfColors.grey600,
-            ),
+        pw.Text(
+          'Payment Receipt',
+          style: pw.TextStyle(
+            fontSize: 20,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColors.grey800,
           ),
         ),
       ],
@@ -283,12 +306,24 @@ class QRPayPdfService {
     );
   }
 
+  /// Renders "Name (@user)", degrading gracefully — an empty name or
+  /// username must never print as "(@)".
+  static String _partyLabel(String name, String username) {
+    final n = name.trim();
+    final u = username.trim();
+    if (n.isEmpty && u.isEmpty) return 'Lazervault user';
+    if (u.isEmpty) return n;
+    if (n.isEmpty) return '@$u';
+    return '$n (@$u)';
+  }
+
   static pw.Widget _buildDetailsSection(QRTransactionEntity txn) {
     return pw.Column(
       children: [
-        _buildDetailRow('Payer', '${txn.payerName} (@${txn.payerUsername})'),
+        _buildDetailRow('Payer', _partyLabel(txn.payerName, txn.payerUsername)),
         _buildDetailRow(
-            'Recipient', '${txn.recipientName} (@${txn.recipientUsername})'),
+            'Recipient',
+            _partyLabel(txn.recipientName, txn.recipientUsername)),
         _buildDetailRow('Reference', txn.referenceNumber),
         _buildDetailRow('Status', txn.status.displayName),
         if (txn.description.isNotEmpty)

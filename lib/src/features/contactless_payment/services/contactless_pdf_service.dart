@@ -47,6 +47,19 @@ class ContactlessPdfService {
   }
 
   /// Get display currency name
+  /// Real transaction status — receipts must never claim 'Completed' for a
+  /// failed or reversed payment.
+  static String _statusLabel(TransactionStatus status) {
+    switch (status) {
+      case TransactionStatus.completed:
+        return 'Completed';
+      case TransactionStatus.failed:
+        return 'Failed';
+      case TransactionStatus.reversed:
+        return 'Reversed';
+    }
+  }
+
   static String _currencyNameFor(String code) {
     switch (code.toUpperCase()) {
       case 'NGN':
@@ -137,7 +150,7 @@ class ContactlessPdfService {
                     flex: 1,
                     child: _buildSummaryTable(
                       transactionDate: transactionDate,
-                      status: 'Completed',
+                      status: _statusLabel(transaction.status),
                       type: 'Contactless Payment',
                     ),
                   ),
@@ -221,7 +234,7 @@ class ContactlessPdfService {
                     flex: 1,
                     child: _buildSummaryTable(
                       transactionDate: transactionDate,
-                      status: 'Completed',
+                      status: _statusLabel(transaction.status),
                       type: 'Contactless Payment',
                     ),
                   ),
@@ -433,7 +446,6 @@ class ContactlessPdfService {
             children: [
               _buildDetailRow('Amount', '$currencySymbol$amount', isBold: true),
               _buildDetailRow('Currency', _currencyNameFor(transaction.currency)),
-              _buildDetailRow('Fee', '${currencySymbol}0.00'),
               if (transaction.description != null &&
                   transaction.description!.isNotEmpty)
                 _buildDetailRow('Description', transaction.description!),

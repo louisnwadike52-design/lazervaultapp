@@ -284,7 +284,9 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                 () => ContributionPaymentConfirmationScreen(
                   contribution: contribution,
                   payment: state.payment,
-                  paymentMethod: 'bank_transfer', // Default for now
+                  // Contributions are debited from the member's Lazervault wallet —
+                  // the receipt must not claim 'Bank Transfer'.
+                  paymentMethod: 'wallet',
                 ),
               );
             } else {

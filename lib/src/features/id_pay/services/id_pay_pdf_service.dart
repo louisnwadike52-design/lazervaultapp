@@ -354,7 +354,6 @@ class IDPayPdfService {
           child: pw.Column(
             children: [
               _buildDetailRow('Amount', '$currencySymbol$amount', isBold: true),
-              _buildDetailRow('Fee', '${currencySymbol}0.00'),
               _buildDetailRow('PayID', payId),
               _buildDetailRow('Reference', idPayReference),
               _buildDetailRow('Description', reference),
@@ -400,7 +399,6 @@ class IDPayPdfService {
               _buildDetailRow('Currency', _currencyNameFor(idPay.currency)),
               _buildDetailRow('Type', idPay.type.displayName),
               _buildDetailRow('Amount Mode', idPay.amountMode.displayName),
-              _buildDetailRow('Fee', '${currencySymbol}0.00'),
               if (idPay.description.isNotEmpty)
                 _buildDetailRow('Description', idPay.description),
               _buildDetailRow(

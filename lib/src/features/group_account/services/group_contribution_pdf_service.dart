@@ -20,6 +20,27 @@ class GroupContributionPdfService {
   static pw.Font? _boldFont;
 
   /// Get currency symbol - using ASCII-safe alternatives for PDF compatibility
+  /// Real payment status — a receipt for a pending/refunding payment must
+  /// say so, never 'Completed'.
+  static String _paymentStatusLabel(PaymentStatus status) {
+    switch (status) {
+      case PaymentStatus.completed:
+        return 'Completed';
+      case PaymentStatus.pending:
+        return 'Pending';
+      case PaymentStatus.processing:
+        return 'Processing';
+      case PaymentStatus.awaitingVerification:
+        return 'Verifying';
+      case PaymentStatus.failed:
+        return 'Failed';
+      default:
+        // Refunding / manual-review / any future value: show the raw name
+        // capitalised rather than lying.
+        return status.name[0].toUpperCase() + status.name.substring(1);
+    }
+  }
+
   static String _currencySymbolFor(String code) {
     switch (code.toUpperCase()) {
       case 'NGN':
@@ -141,7 +162,7 @@ class GroupContributionPdfService {
                     flex: 1,
                     child: _buildSummaryTable(
                       paymentDate: paymentDate,
-                      status: 'Completed',
+                      status: _paymentStatusLabel(payment.status),
                       type: 'Group Contribution',
                       paymentMethod: _formatPaymentMethod(paymentMethod),
                     ),
@@ -187,6 +208,8 @@ class GroupContributionPdfService {
 
   static String _formatPaymentMethod(String method) {
     switch (method.toLowerCase()) {
+      case 'wallet':
+        return 'Lazervault Wallet';
       case 'bank_transfer':
         return 'Bank Transfer';
       case 'card':
