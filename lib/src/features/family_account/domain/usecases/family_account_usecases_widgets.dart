@@ -446,6 +446,7 @@ class SetupFamilyAccountUseCase
   @override
   Future<Either<Failure, FamilyAccount>> call(SetupFamilyAccountParams params) {
     return repository.setupFamilyAccount(
+      accountName: params.accountName,
       familyId: params.familyId,
       fundDistributionMode: params.fundDistributionMode,
       spendingVisibilityEnabled: params.spendingVisibilityEnabled,
@@ -465,6 +466,8 @@ class SetupFamilyAccountParams {
   final String fundingPolicy;
   // Member ids allowed to fund when fundingPolicy == specific_members.
   final List<String> specificMemberIds;
+  // Optional display name applied during activation (empty = keep current).
+  final String accountName;
 
   SetupFamilyAccountParams({
     required this.familyId,
@@ -473,6 +476,7 @@ class SetupFamilyAccountParams {
     this.allocations = const [],
     this.fundingPolicy = 'any_member',
     this.specificMemberIds = const [],
+    this.accountName = '',
   });
 }
 

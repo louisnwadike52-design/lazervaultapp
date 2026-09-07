@@ -6,30 +6,30 @@ class BottomSheetHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     return Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(10.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(
-              Icons.credit_card_rounded,
-              color: Colors.white,
-              size: 24.sp,
-            ),
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(10.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12.r),
           ),
-          SizedBox(width: 16.w),
-          Text(
-            'Card Details',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24.sp,
-              fontWeight: FontWeight.w600,
-            ),
+          child: Icon(
+            Icons.credit_card_rounded,
+            color: Colors.white,
+            size: 24.sp,
           ),
-        ],
-      );
+        ),
+        SizedBox(width: 16.w),
+        Text(
+          'Card Details',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
   }
-} 
+}

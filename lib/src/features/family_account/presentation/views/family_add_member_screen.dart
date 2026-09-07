@@ -30,7 +30,8 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
 
   // Invitation method
   String _invitationMethod = 'email';
-  final TextEditingController _invitationDestinationController = TextEditingController();
+  final TextEditingController _invitationDestinationController =
+      TextEditingController();
 
   // Optional display name — used when the invitee isn't already a platform
   // user (email/phone invites). Once they accept, auth-service enrichment
@@ -38,19 +39,24 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
   final TextEditingController _displayNameController = TextEditingController();
 
   // Initial allocation
-  final TextEditingController _initialAllocationController = TextEditingController(text: '0');
+  final TextEditingController _initialAllocationController =
+      TextEditingController(text: '0');
 
   // Spending limits
-  final TextEditingController _dailyLimitController = TextEditingController(text: '0');
-  final TextEditingController _monthlyLimitController = TextEditingController(text: '0');
-  final TextEditingController _perTransactionLimitController = TextEditingController(text: '0');
+  final TextEditingController _dailyLimitController =
+      TextEditingController(text: '0');
+  final TextEditingController _monthlyLimitController =
+      TextEditingController(text: '0');
+  final TextEditingController _perTransactionLimitController =
+      TextEditingController(text: '0');
   double _allocationPercentageCap = 100.0;
 
   // Member role
   String _role = 'member';
 
   // Personal message
-  final TextEditingController _personalMessageController = TextEditingController();
+  final TextEditingController _personalMessageController =
+      TextEditingController();
 
   @override
   void dispose() {
@@ -113,10 +119,12 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
         familyId: widget.familyId,
         invitationMethod: _invitationMethod,
         invitationDestination: _invitationDestinationController.text.trim(),
-        initialAllocation: double.tryParse(_initialAllocationController.text) ?? 0.0,
+        initialAllocation:
+            double.tryParse(_initialAllocationController.text) ?? 0.0,
         dailyLimit: double.tryParse(_dailyLimitController.text) ?? 0.0,
         monthlyLimit: double.tryParse(_monthlyLimitController.text) ?? 0.0,
-        perTransactionLimit: double.tryParse(_perTransactionLimitController.text) ?? 0.0,
+        perTransactionLimit:
+            double.tryParse(_perTransactionLimitController.text) ?? 0.0,
         allocationPercentageCap: _allocationPercentageCap,
         role: _role,
         personalMessage: _personalMessageController.text.trim().isEmpty
@@ -246,7 +254,8 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                     return 'Please enter ${_invitationMethod == 'email' ? 'email' : 'phone number'}';
                   }
                   if (_invitationMethod == 'email') {
-                    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                    final emailRegex =
+                        RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
                     if (!emailRegex.hasMatch(value)) {
                       return 'Please enter a valid email address';
                     }
@@ -284,7 +293,8 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                     borderRadius: BorderRadius.circular(12.r),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                 ),
               ),
               SizedBox(height: 24.h),
@@ -538,14 +548,18 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF4E03D0).withValues(alpha: 0.2) : Colors.transparent,
+          color: isSelected
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withValues(alpha: 0.6),
+              color: isSelected
+                  ? const Color(0xFF4E03D0)
+                  : Colors.white.withValues(alpha: 0.6),
               size: 20.sp,
             ),
             SizedBox(width: 12.w),
@@ -754,7 +768,8 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
             height: 1.h,
             color: Colors.white.withValues(alpha: 0.1),
           ),
-          _buildRoleOption('admin', 'Admin', 'Full control + can manage members'),
+          _buildRoleOption(
+              'admin', 'Admin', 'Full control + can manage members'),
         ],
       ),
     );
@@ -772,14 +787,18 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF4E03D0).withValues(alpha: 0.2) : Colors.transparent,
+          color: isSelected
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
           children: [
             Icon(
               isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withValues(alpha: 0.6),
+              color: isSelected
+                  ? const Color(0xFF4E03D0)
+                  : Colors.white.withValues(alpha: 0.6),
               size: 20.sp,
             ),
             SizedBox(width: 12.w),
@@ -790,7 +809,8 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                   Text(
                     title,
                     style: TextStyle(
-                      color: isSelected ? const Color(0xFF4E03D0) : Colors.white,
+                      color:
+                          isSelected ? const Color(0xFF4E03D0) : Colors.white,
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
                     ),

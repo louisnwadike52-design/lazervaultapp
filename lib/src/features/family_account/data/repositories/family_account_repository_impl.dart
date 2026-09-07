@@ -428,6 +428,7 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
     List<MemberAllocationEntry> allocations = const [],
     String fundingPolicy = 'any_member',
     List<String> specificMemberIds = const [],
+    String accountName = '',
   }) async {
     try {
       final protoAllocations = allocations
@@ -438,6 +439,7 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
           .toList();
 
       final account = await remoteDataSource.setupFamilyAccount(
+        accountName: accountName,
         familyId: familyId,
         fundDistributionMode: fundDistributionMode,
         spendingVisibilityEnabled: spendingVisibilityEnabled,

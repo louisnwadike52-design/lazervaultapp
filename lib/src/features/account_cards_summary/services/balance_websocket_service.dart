@@ -13,7 +13,6 @@ import 'package:lazervault/core/services/remote_log_sink.dart';
 import 'package:lazervault/core/utils/api_headers.dart';
 part 'balance_websocket_service_widgets.dart';
 
-
 /// WebSocket service for real-time balance updates
 /// Supports both WebSocket and SSE (Server-Sent Events) for broad compatibility
 class BalanceWebSocketService {
@@ -30,7 +29,8 @@ class BalanceWebSocketService {
       StreamController<InsurancePurchaseEvent>.broadcast();
   final _insuranceClaimEventController =
       StreamController<InsuranceClaimEvent>.broadcast();
-  final _connectionController = StreamController<WebSocketConnectionState>.broadcast();
+  final _connectionController =
+      StreamController<WebSocketConnectionState>.broadcast();
   Timer? _pingTimer;
   bool _isConnected = false;
   bool _useSSE = false; // Flag to track if using SSE instead of WebSocket
@@ -52,7 +52,8 @@ class BalanceWebSocketService {
   int _reconnectAttempts = 0;
   bool _shouldReconnect = true;
   bool _connecting = false;
-  static const int _maxReconnectAttempts = 12; // ~ caps backoff, not a hard stop
+  static const int _maxReconnectAttempts =
+      12; // ~ caps backoff, not a hard stop
   static const Duration _maxReconnectDelay = Duration(seconds: 30);
 
   /// Emits once each time the socket (re)establishes a live connection, so
@@ -88,7 +89,8 @@ class BalanceWebSocketService {
       _insuranceClaimEventController.stream;
 
   /// Stream of connection state changes
-  Stream<WebSocketConnectionState> get connectionState => _connectionController.stream;
+  Stream<WebSocketConnectionState> get connectionState =>
+      _connectionController.stream;
 
   /// Check if currently connected
   bool get isConnected => _isConnected;
@@ -155,7 +157,9 @@ class BalanceWebSocketService {
     RemoteLogSink.instance.log(
       level: 'info',
       flow: 'balance_ws',
-      message: _useSSE ? 'balance stream connected (SSE)' : 'balance socket connected',
+      message: _useSSE
+          ? 'balance stream connected (SSE)'
+          : 'balance socket connected',
     );
     if (!_reconnectedController.isClosed) _reconnectedController.add(null);
   }
@@ -195,11 +199,15 @@ class BalanceWebSocketService {
     final delayMs = (seconds * 1000) +
         (DateTime.now().microsecond % (jitterMs == 0 ? 1 : (jitterMs * 2))) -
         jitterMs;
-    print('BalanceWebSocketService: scheduling reconnect #$_reconnectAttempts in ${delayMs}ms');
-    _reconnectTimer = Timer(Duration(milliseconds: delayMs.clamp(500, 60000)), () {
+    print(
+        'BalanceWebSocketService: scheduling reconnect #$_reconnectAttempts in ${delayMs}ms');
+    _reconnectTimer =
+        Timer(Duration(milliseconds: delayMs.clamp(500, 60000)), () {
       _reconnectTimer = null;
       if (_isConnected || _connecting || !_shouldReconnect) return;
-      final uid = _lastUserId, cc = _lastCountryCode ?? 'NG', tok = _lastAccessToken;
+      final uid = _lastUserId,
+          cc = _lastCountryCode ?? 'NG',
+          tok = _lastAccessToken;
       if (uid == null || tok == null) return;
       connect(userId: uid, countryCode: cc, accessToken: tok);
     });
@@ -226,9 +234,8 @@ class BalanceWebSocketService {
       // Cloudflare's edge speaks TLS on 443 — `ws://host:443` returns HTTP
       // 400 ("not upgraded to websocket"). Promote to the secure scheme
       // when the override port is 443.
-      final effective = port == 443
-          ? (scheme == 'ws' ? 'wss' : 'https')
-          : scheme;
+      final effective =
+          port == 443 ? (scheme == 'ws' ? 'wss' : 'https') : scheme;
       return Uri(
         scheme: effective,
         host: overrideHost,
@@ -251,7 +258,8 @@ class BalanceWebSocketService {
     );
   }
 
-  Future<void> _connectWebSocket(String userId, String countryCode, String accessToken) async {
+  Future<void> _connectWebSocket(
+      String userId, String countryCode, String accessToken) async {
     // The balance WS URL now comes from the EndpointRegistry (cached on
     // first launch, refreshed in the background on every launch). dotenv
     // overrides still win when set so local dev pointing at
@@ -299,7 +307,8 @@ class BalanceWebSocketService {
 
   /// Connect using Server-Sent Events (SSE) - fallback for when WebSocket is not available
   /// SECURITY: Token is passed in Authorization header, not query string
-  Future<void> _connectSSE(String userId, String countryCode, String accessToken) async {
+  Future<void> _connectSSE(
+      String userId, String countryCode, String accessToken) async {
     // SSE shares the WS endpoint host; only the scheme differs (http vs ws/wss).
     // The EndpointRegistry's wsBalance URL is converted to its http(s) sibling
     // by [_resolveBalanceWsUri] so a single source of truth covers both
@@ -328,7 +337,8 @@ class BalanceWebSocketService {
     final response = await _httpClient!.send(request);
 
     if (response.statusCode != 200) {
-      throw Exception('SSE connection failed with status ${response.statusCode}');
+      throw Exception(
+          'SSE connection failed with status ${response.statusCode}');
     }
 
     _isConnected = true;
@@ -339,11 +349,11 @@ class BalanceWebSocketService {
         .transform(utf8.decoder)
         .transform(const LineSplitter())
         .listen(
-      _handleSSELine,
-      onError: _handleError,
-      onDone: _handleDone,
-      cancelOnError: false,
-    );
+          _handleSSELine,
+          onError: _handleError,
+          onDone: _handleDone,
+          cancelOnError: false,
+        );
 
     print('BalanceWebSocketService: SSE connected successfully');
   }
@@ -457,7 +467,8 @@ class BalanceWebSocketService {
       if (messageType == 'transaction_status') {
         final payload = data['payload'] as Map<String, dynamic>?;
         if (payload != null) {
-          print('BalanceWebSocketService: Transaction status update - ${payload['transaction_id']}: ${payload['new_status']}');
+          print(
+              'BalanceWebSocketService: Transaction status update - ${payload['transaction_id']}: ${payload['new_status']}');
           // Could add a separate stream for transaction status updates if needed
         }
         return;
@@ -494,7 +505,8 @@ class BalanceWebSocketService {
           eventType == 'giftcard_refund' ||
           eventType == 'giftcard_sell') {
         final event = BalanceUpdateEvent.fromJson(data);
-        print('BalanceWebSocketService: Received balance update (legacy) - $event');
+        print(
+            'BalanceWebSocketService: Received balance update (legacy) - $event');
         _eventController.add(event);
       }
     } catch (e) {

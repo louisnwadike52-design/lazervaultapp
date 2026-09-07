@@ -130,7 +130,18 @@ class _IciclePainter extends CustomPainter {
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
     // Deterministic varied lengths (no RNG — keeps rebuilds stable).
-    const pattern = <double>[1.0, 0.55, 0.8, 0.4, 0.9, 0.5, 0.7, 0.45, 0.85, 0.6];
+    const pattern = <double>[
+      1.0,
+      0.55,
+      0.8,
+      0.4,
+      0.9,
+      0.5,
+      0.7,
+      0.45,
+      0.85,
+      0.6
+    ];
     final count = pattern.length;
     final slot = size.width / count;
     final halfBase = slot * 0.42;

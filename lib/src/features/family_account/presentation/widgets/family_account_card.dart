@@ -315,7 +315,8 @@ class FamilyAccountCard extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(String label, IconData icon, {required VoidCallback? onTap}) {
+  Widget _buildActionButton(String label, IconData icon,
+      {required VoidCallback? onTap}) {
     return Material(
       color: Colors.transparent,
       child: InkWell(

@@ -44,8 +44,10 @@ class AnimatedBalanceCounter extends StatefulWidget {
     required this.balance,
     required this.currencySymbol,
     this.style,
-    this.duration = const Duration(seconds: 3), // 3 seconds for visible animation
-    this.startDelay = const Duration(milliseconds: 500), // Small delay so user sees dashboard first
+    this.duration =
+        const Duration(seconds: 3), // 3 seconds for visible animation
+    this.startDelay = const Duration(
+        milliseconds: 500), // Small delay so user sees dashboard first
     this.curve = Curves.easeOutCubic,
     this.enableSound = false,
   });
@@ -220,8 +222,10 @@ class CompactAnimatedBalance extends StatefulWidget {
     required this.currencySymbol,
     this.fontSize = 28,
     this.color,
-    this.duration = const Duration(seconds: 3), // 3 seconds for visible animation
-    this.startDelay = const Duration(milliseconds: 500), // Small delay so user sees dashboard first
+    this.duration =
+        const Duration(seconds: 3), // 3 seconds for visible animation
+    this.startDelay = const Duration(
+        milliseconds: 500), // Small delay so user sees dashboard first
     this.enableSound = false,
     this.enableVibration = false,
     this.animate = true,

@@ -47,7 +47,8 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
 
     final dailyLimit = widget.formData['dailyLimit'] as double? ?? 0.0;
     final monthlyLimit = widget.formData['monthlyLimit'] as double? ?? 0.0;
-    final perTxnLimit = widget.formData['perTransactionLimit'] as double? ?? 0.0;
+    final perTxnLimit =
+        widget.formData['perTransactionLimit'] as double? ?? 0.0;
 
     _dailyLimitController = TextEditingController(
       text: dailyLimit > 0 ? dailyLimit.toStringAsFixed(2) : '',
@@ -74,8 +75,7 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
   void _submitStep() {
     if (_formKey.currentState!.validate()) {
       widget.onNext({
-        'initialAllocation':
-            double.tryParse(_allocationController.text) ?? 0.0,
+        'initialAllocation': double.tryParse(_allocationController.text) ?? 0.0,
         'role': _selectedRole,
         'noLimits': _noLimits,
         'dailyLimit': _noLimits
@@ -87,8 +87,7 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
         'perTransactionLimit': _noLimits
             ? 0.0
             : (double.tryParse(_perTransactionLimitController.text) ?? 0.0),
-        'allocationPercentageCap':
-            _noLimits ? 100.0 : _allocationPercentageCap,
+        'allocationPercentageCap': _noLimits ? 100.0 : _allocationPercentageCap,
       });
     }
   }
@@ -320,11 +319,9 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
                   activeTrackColor: const Color(0xFF4E03D0),
                   inactiveTrackColor: const Color(0xFF2D2D2D),
                   thumbColor: const Color(0xFF4E03D0),
-                  overlayColor:
-                      const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                  overlayColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                   trackHeight: 6.h,
-                  thumbShape:
-                      RoundSliderThumbShape(enabledThumbRadius: 10.r),
+                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10.r),
                 ),
                 child: Slider(
                   value: _allocationPercentageCap,
@@ -377,9 +374,8 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
               : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF4E03D0)
-                : const Color(0xFF2D2D2D),
+            color:
+                isSelected ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -406,9 +402,7 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
             Text(
               title,
               style: TextStyle(
-                color: isSelected
-                    ? const Color(0xFF4E03D0)
-                    : Colors.white,
+                color: isSelected ? const Color(0xFF4E03D0) : Colors.white,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),

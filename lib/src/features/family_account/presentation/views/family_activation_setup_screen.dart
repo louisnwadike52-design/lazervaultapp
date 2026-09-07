@@ -54,8 +54,13 @@ class _FamilyActivationSetupScreenState
   // Invite members data
   final List<FamilyMember> _invitedMembers = [];
   final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _inviteDailyLimitController = TextEditingController();
-  final TextEditingController _inviteMonthlyLimitController = TextEditingController();
+  // Account display name — every family account is named (user request
+  // 2026-09-07). Prefilled with the stored name; editable during setup.
+  final TextEditingController _accountNameController = TextEditingController();
+  final TextEditingController _inviteDailyLimitController =
+      TextEditingController();
+  final TextEditingController _inviteMonthlyLimitController =
+      TextEditingController();
   bool _isInviting = false;
   UserSearchResultEntity? _selectedUser;
 
@@ -98,6 +103,7 @@ class _FamilyActivationSetupScreenState
       c.dispose();
     }
     _usernameController.dispose();
+    _accountNameController.dispose();
     _inviteDailyLimitController.dispose();
     _inviteMonthlyLimitController.dispose();
     super.dispose();
@@ -150,6 +156,7 @@ class _FamilyActivationSetupScreenState
       allocations: allocations,
       fundingPolicy: _fundingPolicy,
       specificMemberIds: specificMemberIds,
+      accountName: _accountNameController.text.trim(),
     );
   }
 
@@ -163,9 +170,18 @@ class _FamilyActivationSetupScreenState
       // Apply spending limits for members that have them set
       final members = _familyAccount?.members.where((m) => m.isActive) ?? [];
       for (final member in members) {
-        final daily = (double.tryParse(_dailyLimitControllers[member.id]?.text ?? '') ?? 0.0).clamp(0.0, double.infinity);
-        final monthly = (double.tryParse(_monthlyLimitControllers[member.id]?.text ?? '') ?? 0.0).clamp(0.0, double.infinity);
-        final perTx = (double.tryParse(_perTxLimitControllers[member.id]?.text ?? '') ?? 0.0).clamp(0.0, double.infinity);
+        final daily =
+            (double.tryParse(_dailyLimitControllers[member.id]?.text ?? '') ??
+                    0.0)
+                .clamp(0.0, double.infinity);
+        final monthly =
+            (double.tryParse(_monthlyLimitControllers[member.id]?.text ?? '') ??
+                    0.0)
+                .clamp(0.0, double.infinity);
+        final perTx =
+            (double.tryParse(_perTxLimitControllers[member.id]?.text ?? '') ??
+                    0.0)
+                .clamp(0.0, double.infinity);
 
         if (daily > 0 || monthly > 0 || perTx > 0) {
           try {
@@ -193,7 +209,8 @@ class _FamilyActivationSetupScreenState
     try {
       final accountsCubit = context.read<AccountCardsSummaryCubit>();
       if (accountsCubit.currentUserId != null) {
-        accountsCubit.fetchAccountSummaries(userId: accountsCubit.currentUserId!);
+        accountsCubit.fetchAccountSummaries(
+            userId: accountsCubit.currentUserId!);
       }
     } catch (_) {}
     Get.snackbar(
@@ -281,18 +298,21 @@ class _FamilyActivationSetupScreenState
             if (state is FamilyAccountLoaded) {
               setState(() {
                 _familyAccount = state.familyAccount;
+                // Prefill the name field with the stored name once (don't
+                // clobber what the user is typing on refreshes).
+                if (_accountNameController.text.isEmpty) {
+                  _accountNameController.text = state.familyAccount.name;
+                }
                 // Initialize allocation and spending limit controllers for active members
                 for (final member in state.familyAccount.members) {
                   if (member.isActive &&
                       !_allocationControllers.containsKey(member.id)) {
                     _allocationControllers[member.id] =
                         TextEditingController(text: '0');
-                    _dailyLimitControllers[member.id] =
-                        TextEditingController();
+                    _dailyLimitControllers[member.id] = TextEditingController();
                     _monthlyLimitControllers[member.id] =
                         TextEditingController();
-                    _perTxLimitControllers[member.id] =
-                        TextEditingController();
+                    _perTxLimitControllers[member.id] = TextEditingController();
                   }
                 }
               });
@@ -421,7 +441,8 @@ class _FamilyActivationSetupScreenState
                             colors: [Color(0xFF4E03D0), Color(0xFF7C3AED)],
                           )
                         : null,
-                    color: index <= _currentStep ? null : const Color(0xFF2D2D2D),
+                    color:
+                        index <= _currentStep ? null : const Color(0xFF2D2D2D),
                     borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
@@ -450,6 +471,45 @@ class _FamilyActivationSetupScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: 8.h),
+          Text(
+            'Name this account',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Give your Family & Friends account a name everyone will recognise.',
+            style: TextStyle(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 13.sp,
+              height: 1.4,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          TextField(
+            controller: _accountNameController,
+            maxLength: 50,
+            style: TextStyle(color: Colors.white, fontSize: 15.sp),
+            decoration: InputDecoration(
+              hintText: 'e.g. The Nwadikes, Weekend Crew…',
+              hintStyle:
+                  TextStyle(color: const Color(0xFF6B7280), fontSize: 14.sp),
+              counterStyle:
+                  TextStyle(color: const Color(0xFF6B7280), fontSize: 11.sp),
+              filled: true,
+              fillColor: const Color(0xFF1F1F1F),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            ),
+          ),
+          SizedBox(height: 20.h),
           Text(
             'How should funds be distributed?',
             style: TextStyle(
@@ -500,7 +560,8 @@ class _FamilyActivationSetupScreenState
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: isSelected ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
+            color:
+                isSelected ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -517,7 +578,9 @@ class _FamilyActivationSetupScreenState
               ),
               child: Icon(
                 icon,
-                color: isSelected ? const Color(0xFF4E03D0) : const Color(0xFF9CA3AF),
+                color: isSelected
+                    ? const Color(0xFF4E03D0)
+                    : const Color(0xFF9CA3AF),
                 size: 24.sp,
               ),
             ),
@@ -664,7 +727,9 @@ class _FamilyActivationSetupScreenState
           Text(
             '${CurrencySymbols.currentSymbol}${remaining.toStringAsFixed(2)}',
             style: TextStyle(
-              color: isOverAllocated ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+              color: isOverAllocated
+                  ? const Color(0xFFEF4444)
+                  : const Color(0xFF10B981),
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,
             ),
@@ -674,8 +739,7 @@ class _FamilyActivationSetupScreenState
     );
   }
 
-  Widget _buildMemberAllocationRow(
-      FamilyMember member, String? fixedAmount,
+  Widget _buildMemberAllocationRow(FamilyMember member, String? fixedAmount,
       {required bool readOnly}) {
     final isExpanded = _expandedLimitMembers.contains(member.id);
 
@@ -695,7 +759,9 @@ class _FamilyActivationSetupScreenState
                 radius: 18.r,
                 backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                 child: Text(
-                  member.fullName.isNotEmpty ? member.fullName[0].toUpperCase() : '?',
+                  member.fullName.isNotEmpty
+                      ? member.fullName[0].toUpperCase()
+                      : '?',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14.sp,
@@ -949,21 +1015,28 @@ class _FamilyActivationSetupScreenState
           Text(
             'Who can fund the pool',
             style: TextStyle(
-                color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.bold),
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 4.h),
           Text(
             'Choose who is allowed to add money to the pool.',
-            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp, height: 1.4),
+            style: TextStyle(
+                color: const Color(0xFF9CA3AF), fontSize: 13.sp, height: 1.4),
           ),
           SizedBox(height: 16.h),
           _buildFundingPolicyCard('any_member', 'Any member',
               'Every member can add money to the pool.', Icons.groups),
-          _buildFundingPolicyCard('creator_only', 'Only me',
-              'Only you (the creator) can add money to the pool.', Icons.person),
+          _buildFundingPolicyCard(
+              'creator_only',
+              'Only me',
+              'Only you (the creator) can add money to the pool.',
+              Icons.person),
           _buildFundingPolicyCard('specific_members', 'Specific members',
               'Only members you pick can add money.', Icons.checklist),
-          if (_fundingPolicy == 'specific_members') _buildSpecificContributorsList(),
+          if (_fundingPolicy == 'specific_members')
+            _buildSpecificContributorsList(),
           SizedBox(height: 32.h),
           _buildContinueButton(onTap: _nextStep),
           SizedBox(height: 20.h),
@@ -994,11 +1067,14 @@ class _FamilyActivationSetupScreenState
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: selected ? accent.withValues(alpha: 0.25) : const Color(0xFF2D2D2D),
+                color: selected
+                    ? accent.withValues(alpha: 0.25)
+                    : const Color(0xFF2D2D2D),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon,
-                  color: selected ? Colors.white : const Color(0xFF9CA3AF), size: 22.sp),
+                  color: selected ? Colors.white : const Color(0xFF9CA3AF),
+                  size: 22.sp),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -1013,11 +1089,14 @@ class _FamilyActivationSetupScreenState
                   SizedBox(height: 3.h),
                   Text(desc,
                       style: TextStyle(
-                          color: const Color(0xFF9CA3AF), fontSize: 11.sp, height: 1.3)),
+                          color: const Color(0xFF9CA3AF),
+                          fontSize: 11.sp,
+                          height: 1.3)),
                 ],
               ),
             ),
-            if (selected) const Icon(Icons.check_circle, color: accent, size: 22),
+            if (selected)
+              const Icon(Icons.check_circle, color: accent, size: 22),
           ],
         ),
       ),
@@ -1040,7 +1119,8 @@ class _FamilyActivationSetupScreenState
         ),
         child: Text(
           'No other members yet. Until you add members, only you can fund the pool.',
-          style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp, height: 1.4),
+          style: TextStyle(
+              color: const Color(0xFF9CA3AF), fontSize: 12.sp, height: 1.4),
         ),
       );
     }
@@ -1161,7 +1241,8 @@ class _FamilyActivationSetupScreenState
                     Expanded(
                       child: TextFormField(
                         controller: _inviteDailyLimitController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         style: TextStyle(color: Colors.white, fontSize: 14.sp),
                         decoration: InputDecoration(
                           labelText: 'Daily limit (optional)',
@@ -1191,7 +1272,8 @@ class _FamilyActivationSetupScreenState
                     Expanded(
                       child: TextFormField(
                         controller: _inviteMonthlyLimitController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         style: TextStyle(color: Colors.white, fontSize: 14.sp),
                         decoration: InputDecoration(
                           labelText: 'Monthly limit (optional)',
@@ -1273,7 +1355,8 @@ class _FamilyActivationSetupScreenState
                     children: [
                       CircleAvatar(
                         radius: 18.r,
-                        backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.3),
+                        backgroundColor:
+                            const Color(0xFF4E03D0).withValues(alpha: 0.3),
                         child: Text(
                           member.fullName.isNotEmpty
                               ? member.fullName[0].toUpperCase()
@@ -1312,7 +1395,8 @@ class _FamilyActivationSetupScreenState
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 4.h),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFB923C).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8.r),
@@ -1370,7 +1454,8 @@ class _FamilyActivationSetupScreenState
       decoration: BoxDecoration(
         color: const Color(0xFF2D2D2D),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.4)),
+        border:
+            Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.4)),
       ),
       child: Row(
         children: [
@@ -1462,9 +1547,11 @@ class _FamilyActivationSetupScreenState
 
     // Also check existing members (active or pending)
     final alreadyMember = _familyAccount?.members.any(
-      (m) => m.username?.toLowerCase() == username.toLowerCase() &&
-             (m.isActive || m.isPending),
-    ) ?? false;
+          (m) =>
+              m.username?.toLowerCase() == username.toLowerCase() &&
+              (m.isActive || m.isPending),
+        ) ??
+        false;
     if (alreadyMember) {
       Get.snackbar(
         'Already a Member',
@@ -1476,8 +1563,12 @@ class _FamilyActivationSetupScreenState
       return;
     }
 
-    final dailyLimit = (double.tryParse(_inviteDailyLimitController.text) ?? 0.0).clamp(0.0, double.infinity);
-    final monthlyLimit = (double.tryParse(_inviteMonthlyLimitController.text) ?? 0.0).clamp(0.0, double.infinity);
+    final dailyLimit =
+        (double.tryParse(_inviteDailyLimitController.text) ?? 0.0)
+            .clamp(0.0, double.infinity);
+    final monthlyLimit =
+        (double.tryParse(_inviteMonthlyLimitController.text) ?? 0.0)
+            .clamp(0.0, double.infinity);
 
     _cubit.addMember(
       familyId: widget.familyId,

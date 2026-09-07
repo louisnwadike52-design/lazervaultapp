@@ -19,7 +19,6 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/username
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 part 'create_family_account_carousel_widgets.dart';
 
-
 /// Consolidated invoice-style flow that creates a Family & Friends account,
 /// funds the shared pool immediately, invites multiple members at once, and
 /// activates — all in a single submit pipeline.
@@ -31,10 +30,12 @@ class CreateFamilyAccountCarousel extends StatefulWidget {
   const CreateFamilyAccountCarousel({super.key});
 
   @override
-  State<CreateFamilyAccountCarousel> createState() => _CreateFamilyAccountCarouselState();
+  State<CreateFamilyAccountCarousel> createState() =>
+      _CreateFamilyAccountCarouselState();
 }
 
-class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarousel> {
+class _CreateFamilyAccountCarouselState
+    extends State<CreateFamilyAccountCarousel> {
   final FamilyAccountCubit _cubit = serviceLocator<FamilyAccountCubit>();
   final PageController _pageController = PageController();
 
@@ -47,7 +48,11 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
 
   int _currentPage = 0;
   final int _totalPages = 3;
-  final List<String> _pageNames = ['Details & Funding', 'Add Members', 'Review'];
+  final List<String> _pageNames = [
+    'Details & Funding',
+    'Add Members',
+    'Review'
+  ];
 
   // Step 1
   final TextEditingController _nameController = TextEditingController();
@@ -274,7 +279,8 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
           perTransactionLimit: 0,
           allocationPercentageCap: 100,
           role: 'member',
-          displayName: m.user.fullName.trim().isEmpty ? null : m.user.fullName.trim(),
+          displayName:
+              m.user.fullName.trim().isEmpty ? null : m.user.fullName.trim(),
         ),
         timeout: const Duration(seconds: 20),
       );
@@ -315,7 +321,8 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
     try {
       final accountsCubit = context.read<AccountCardsSummaryCubit>();
       if (accountsCubit.currentUserId != null) {
-        accountsCubit.fetchAccountSummaries(userId: accountsCubit.currentUserId!);
+        accountsCubit.fetchAccountSummaries(
+            userId: accountsCubit.currentUserId!);
       }
     } catch (_) {
       // Non-fatal: dashboard refreshes on return regardless.
@@ -343,11 +350,13 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
         : (warning ? const Color(0xFFFB923C) : const Color(0xFF10B981));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: TextStyle(fontSize: 14.sp, color: Colors.white)),
+        content: Text(message,
+            style: TextStyle(fontSize: 14.sp, color: Colors.white)),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
         duration: Duration(seconds: warning ? 5 : 3),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
         margin: EdgeInsets.all(16.w),
       ),
     );
@@ -540,7 +549,9 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
                         ],
                         Text(
                           isLast
-                              ? (_isSubmitting ? 'Creating...' : 'Create & Activate')
+                              ? (_isSubmitting
+                                  ? 'Creating...'
+                                  : 'Create & Activate')
                               : 'Continue',
                           style: TextStyle(
                             fontSize: 16.sp,
@@ -550,7 +561,8 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
                         ),
                         if (!isLast) ...[
                           SizedBox(width: 8.w),
-                          Icon(Icons.arrow_forward, color: Colors.white, size: 20.sp),
+                          Icon(Icons.arrow_forward,
+                              color: Colors.white, size: 20.sp),
                         ],
                       ],
                     ),
@@ -572,7 +584,8 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle('Account details', 'Name your shared account and fund it to get started.'),
+          _sectionTitle('Account details',
+              'Name your shared account and fund it to get started.'),
           SizedBox(height: 20.h),
           _fieldLabel('Account name'),
           SizedBox(height: 8.h),
@@ -597,7 +610,9 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
             hint: '0.00',
             prefix: '${CurrencySymbols.currentSymbol} ',
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+            ],
             onChanged: (_) => setState(() {}),
           ),
           SizedBox(height: 6.h),
@@ -631,7 +646,10 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
           if (_draftMembers.isEmpty)
             _emptyMembersCard()
           else
-            ..._draftMembers.asMap().entries.map((e) => _memberCard(e.key, e.value)),
+            ..._draftMembers
+                .asMap()
+                .entries
+                .map((e) => _memberCard(e.key, e.value)),
           SizedBox(height: 12.h),
           _addMemberButton(),
           if (_draftMembers.isNotEmpty) ...[
@@ -657,7 +675,10 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
           Icon(Icons.group_add_outlined, color: _muted, size: 36.sp),
           SizedBox(height: 10.h),
           Text('No members yet',
-              style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600)),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600)),
           SizedBox(height: 4.h),
           Text(
             'You can add members now or invite them later.',
@@ -683,13 +704,16 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
           CircleAvatar(
             radius: 20.r,
             backgroundColor: _blue.withValues(alpha: 0.2),
-            backgroundImage:
-                m.user.profilePicture.isNotEmpty ? NetworkImage(m.user.profilePicture) : null,
+            backgroundImage: m.user.profilePicture.isNotEmpty
+                ? NetworkImage(m.user.profilePicture)
+                : null,
             child: m.user.profilePicture.isEmpty
                 ? Text(
                     m.user.initials,
                     style: TextStyle(
-                        color: _blue, fontSize: 14.sp, fontWeight: FontWeight.bold),
+                        color: _blue,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold),
                   )
                 : null,
           ),
@@ -699,9 +723,13 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  m.user.fullName.trim().isEmpty ? m.user.username : m.user.fullName,
+                  m.user.fullName.trim().isEmpty
+                      ? m.user.username
+                      : m.user.fullName,
                   style: TextStyle(
-                      color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600),
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -749,7 +777,9 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
             SizedBox(width: 8.w),
             Text('Add member',
                 style: TextStyle(
-                    color: _blue, fontSize: 15.sp, fontWeight: FontWeight.w700)),
+                    color: _blue,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700)),
           ],
         ),
       ),
@@ -763,7 +793,10 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
       decoration: BoxDecoration(
         color: _card,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: over ? const Color(0xFFEF4444).withValues(alpha: 0.5) : _border),
+        border: Border.all(
+            color: over
+                ? const Color(0xFFEF4444).withValues(alpha: 0.5)
+                : _border),
       ),
       child: Column(
         children: [
@@ -775,7 +808,8 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
             SizedBox(height: 8.h),
             Text(
               'Allocated amount exceeds the pool — top up funding or lower allocations.',
-              style: const TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.w500)
+              style: const TextStyle(
+                      color: Color(0xFFEF4444), fontWeight: FontWeight.w500)
                   .copyWith(fontSize: 11.sp),
             ),
           ],
@@ -788,14 +822,16 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
     final user = await UsernameSearchBottomSheet.show(context);
     if (user == null) return;
     if (!user.isLazervaultUser) {
-      _snack('Only Lazervault users can be invited', isError: false, warning: true);
+      _snack('Only Lazervault users can be invited',
+          isError: false, warning: true);
       return;
     }
     final dup = _draftMembers.any((m) =>
         (m.user.userId.isNotEmpty && m.user.userId == user.userId) ||
         m.user.username.toLowerCase() == user.username.toLowerCase());
     if (dup) {
-      _snack('${user.username} is already added', isError: false, warning: true);
+      _snack('${user.username} is already added',
+          isError: false, warning: true);
       return;
     }
     final draft = _DraftMember(user);
@@ -807,11 +843,17 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
   /// Bottom-sheet editor for a queued member's optional allocation + limits.
   void _showMemberEditor({required _DraftMember existing}) {
     final allocationCtrl = TextEditingController(
-        text: existing.allocation > 0 ? existing.allocation.toStringAsFixed(2) : '');
+        text: existing.allocation > 0
+            ? existing.allocation.toStringAsFixed(2)
+            : '');
     final dailyCtrl = TextEditingController(
-        text: existing.dailyLimit > 0 ? existing.dailyLimit.toStringAsFixed(2) : '');
+        text: existing.dailyLimit > 0
+            ? existing.dailyLimit.toStringAsFixed(2)
+            : '');
     final monthlyCtrl = TextEditingController(
-        text: existing.monthlyLimit > 0 ? existing.monthlyLimit.toStringAsFixed(2) : '');
+        text: existing.monthlyLimit > 0
+            ? existing.monthlyLimit.toStringAsFixed(2)
+            : '');
 
     showModalBottomSheet(
       context: context,
@@ -845,7 +887,9 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
                     ? '@${existing.user.username}'
                     : existing.user.fullName,
                 style: TextStyle(
-                    color: Colors.white, fontSize: 17.sp, fontWeight: FontWeight.w700),
+                    color: Colors.white,
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w700),
               ),
               SizedBox(height: 4.h),
               Text('Optional — applied when they accept the invite',
@@ -857,8 +901,11 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
                 controller: allocationCtrl,
                 hint: '0.00',
                 prefix: '${CurrencySymbols.currentSymbol} ',
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+                ],
               ),
               SizedBox(height: 16.h),
               Row(
@@ -873,7 +920,8 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
                           controller: dailyCtrl,
                           hint: '0 = none',
                           prefix: '${CurrencySymbols.currentSymbol} ',
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
                           ],
@@ -892,7 +940,8 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
                           controller: monthlyCtrl,
                           hint: '0 = none',
                           prefix: '${CurrencySymbols.currentSymbol} ',
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
                           ],
@@ -910,21 +959,27 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
                   onPressed: () {
                     setState(() {
                       existing.allocation =
-                          (double.tryParse(allocationCtrl.text.trim()) ?? 0).clamp(0, double.infinity);
+                          (double.tryParse(allocationCtrl.text.trim()) ?? 0)
+                              .clamp(0, double.infinity);
                       existing.dailyLimit =
-                          (double.tryParse(dailyCtrl.text.trim()) ?? 0).clamp(0, double.infinity);
+                          (double.tryParse(dailyCtrl.text.trim()) ?? 0)
+                              .clamp(0, double.infinity);
                       existing.monthlyLimit =
-                          (double.tryParse(monthlyCtrl.text.trim()) ?? 0).clamp(0, double.infinity);
+                          (double.tryParse(monthlyCtrl.text.trim()) ?? 0)
+                              .clamp(0, double.infinity);
                     });
                     Navigator.of(ctx).pop();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _blue,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
                   ),
                   child: Text('Save',
                       style: TextStyle(
-                          color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
+                          color: Colors.white,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w700)),
                 ),
               ),
             ],
@@ -946,22 +1001,28 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle('Distribution', 'How should the pool be shared among members?'),
+          _sectionTitle(
+              'Distribution', 'How should the pool be shared among members?'),
           SizedBox(height: 16.h),
           ...FundDistributionMode.values.map(_modeCard),
           // Who-can-fund selector. Only meaningful when member contributions are
           // allowed — otherwise only the creator can fund regardless of policy.
           if (_allowMemberContributions) ...[
             SizedBox(height: 24.h),
-            _sectionTitle('Who can fund the pool', 'Choose who is allowed to add money.'),
+            _sectionTitle(
+                'Who can fund the pool', 'Choose who is allowed to add money.'),
             SizedBox(height: 16.h),
             _fundingPolicyCard('any_member', 'Any member',
                 'Every member can add money to the pool.', Icons.groups),
-            _fundingPolicyCard('creator_only', 'Only me',
-                'Only you (the creator) can add money to the pool.', Icons.person),
+            _fundingPolicyCard(
+                'creator_only',
+                'Only me',
+                'Only you (the creator) can add money to the pool.',
+                Icons.person),
             _fundingPolicyCard('specific_members', 'Specific members',
                 'Only members you pick can add money.', Icons.checklist),
-            if (_fundingPolicy == 'specific_members') _specificContributorsPicker(),
+            if (_fundingPolicy == 'specific_members')
+              _specificContributorsPicker(),
           ],
           SizedBox(height: 24.h),
           _sectionTitle('Review', 'Confirm and create your account.'),
@@ -976,9 +1037,11 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
             ),
             child: Column(
               children: [
-                _summaryRow('Name', _nameController.text.trim().isEmpty
-                    ? '—'
-                    : _nameController.text.trim()),
+                _summaryRow(
+                    'Name',
+                    _nameController.text.trim().isEmpty
+                        ? '—'
+                        : _nameController.text.trim()),
                 SizedBox(height: 10.h),
                 _summaryRow('Initial funding',
                     '${CurrencySymbols.currentSymbol}${_funding.toStringAsFixed(2)}'),
@@ -1016,7 +1079,8 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
         decoration: BoxDecoration(
           color: _card,
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: selected ? _blue : _border, width: selected ? 2 : 1),
+          border: Border.all(
+              color: selected ? _blue : _border, width: selected ? 2 : 1),
         ),
         child: Row(
           children: [
@@ -1041,7 +1105,8 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
                           fontWeight: FontWeight.w600)),
                   SizedBox(height: 3.h),
                   Text(mode.description,
-                      style: TextStyle(color: _muted, fontSize: 11.sp, height: 1.3)),
+                      style: TextStyle(
+                          color: _muted, fontSize: 11.sp, height: 1.3)),
                 ],
               ),
             ),
@@ -1075,7 +1140,8 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
         decoration: BoxDecoration(
           color: _card,
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: selected ? _blue : _border, width: selected ? 2 : 1),
+          border: Border.all(
+              color: selected ? _blue : _border, width: selected ? 2 : 1),
         ),
         child: Row(
           children: [
@@ -1100,7 +1166,8 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
                           fontWeight: FontWeight.w600)),
                   SizedBox(height: 3.h),
                   Text(desc,
-                      style: TextStyle(color: _muted, fontSize: 11.sp, height: 1.3)),
+                      style: TextStyle(
+                          color: _muted, fontSize: 11.sp, height: 1.3)),
                 ],
               ),
             ),
@@ -1139,8 +1206,7 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
       ),
       child: Column(
         children: [
-          for (final m in _draftMembers)
-            _contributorCheckTile(m),
+          for (final m in _draftMembers) _contributorCheckTile(m),
         ],
       ),
     );
@@ -1149,7 +1215,8 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
   Widget _contributorCheckTile(_DraftMember m) {
     final username = m.user.username;
     final checked = _specificContributorUsernames.contains(username);
-    final name = m.user.fullName.trim().isEmpty ? '@$username' : m.user.fullName.trim();
+    final name =
+        m.user.fullName.trim().isEmpty ? '@$username' : m.user.fullName.trim();
     return InkWell(
       onTap: () => setState(() {
         if (checked) {
@@ -1187,16 +1254,20 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
       children: [
         Text(title,
             style: TextStyle(
-                color: Colors.white, fontSize: 22.sp, fontWeight: FontWeight.bold)),
+                color: Colors.white,
+                fontSize: 22.sp,
+                fontWeight: FontWeight.bold)),
         SizedBox(height: 6.h),
-        Text(subtitle, style: TextStyle(color: _muted, fontSize: 13.sp, height: 1.4)),
+        Text(subtitle,
+            style: TextStyle(color: _muted, fontSize: 13.sp, height: 1.4)),
       ],
     );
   }
 
   Widget _fieldLabel(String label) => Text(
         label,
-        style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600),
+        style: TextStyle(
+            color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600),
       );
 
   Widget _summaryRow(String label, String value) {
@@ -1209,7 +1280,9 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
             value,
             textAlign: TextAlign.right,
             style: TextStyle(
-                color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600),
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -1243,7 +1316,8 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600)),
                 SizedBox(height: 3.h),
-                Text(subtitle, style: TextStyle(color: _muted, fontSize: 12.sp)),
+                Text(subtitle,
+                    style: TextStyle(color: _muted, fontSize: 12.sp)),
               ],
             ),
           ),
@@ -1277,9 +1351,11 @@ class _CreateFamilyAccountCarouselState extends State<CreateFamilyAccountCarouse
       style: TextStyle(color: Colors.white, fontSize: 15.sp),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: _muted.withValues(alpha: 0.7), fontSize: 14.sp),
+        hintStyle:
+            TextStyle(color: _muted.withValues(alpha: 0.7), fontSize: 14.sp),
         prefixText: prefix,
-        prefixStyle: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600),
+        prefixStyle: TextStyle(
+            color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600),
         counterText: '',
         filled: true,
         fillColor: _bg,

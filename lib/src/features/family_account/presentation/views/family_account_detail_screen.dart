@@ -37,13 +37,15 @@ class FamilyAccountDetailScreen extends StatefulWidget {
   final String familyId;
 
   @override
-  State<FamilyAccountDetailScreen> createState() => _FamilyAccountDetailScreenState();
+  State<FamilyAccountDetailScreen> createState() =>
+      _FamilyAccountDetailScreenState();
 }
 
 class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     with SingleTickerProviderStateMixin {
   final FamilyAccountCubit _cubit = serviceLocator<FamilyAccountCubit>();
-  final FamilyAccountCubit _transactionsCubit = serviceLocator<FamilyAccountCubit>();
+  final FamilyAccountCubit _transactionsCubit =
+      serviceLocator<FamilyAccountCubit>();
   late TabController _tabController;
   FamilyTransactionType? _transactionFilter;
   String? _memberFilter; // memberId to filter by
@@ -121,7 +123,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     try {
       final accountsCubit = context.read<AccountCardsSummaryCubit>();
       if (accountsCubit.currentUserId != null) {
-        accountsCubit.fetchAccountSummaries(userId: accountsCubit.currentUserId!);
+        accountsCubit.fetchAccountSummaries(
+            userId: accountsCubit.currentUserId!);
       }
     } catch (_) {
       // Non-fatal: the dashboard refreshes on its own pull-to-refresh regardless.
@@ -301,7 +304,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             _buildOption(
               Icons.info_outline,
               'View Details',
-                'See member activity',
+              'See member activity',
               () {
                 Get.back();
                 _showMemberDetailSheet(account, member);
@@ -354,7 +357,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               style: TextStyle(color: Colors.white, fontSize: 16.sp),
               decoration: InputDecoration(
                 labelText: 'Amount',
-                labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+                labelStyle:
+                    TextStyle(color: Colors.white.withValues(alpha: 0.6)),
                 prefixText: '${CurrencySymbols.currentSymbol} ',
                 prefixStyle: TextStyle(
                   color: _kFamilyPurple,
@@ -374,7 +378,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               style: TextStyle(color: Colors.white, fontSize: 16.sp),
               decoration: InputDecoration(
                 labelText: 'Description (Optional)',
-                labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+                labelStyle:
+                    TextStyle(color: Colors.white.withValues(alpha: 0.6)),
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.05),
                 border: OutlineInputBorder(
@@ -429,7 +434,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
   /// admins can additionally allocate to members.
   Widget _buildFundActions(FamilyAccount account) {
     if (!account.isActive) return const SizedBox.shrink();
-    if (!account.isCurrentUserMember(_currentUserId)) return const SizedBox.shrink();
+    if (!account.isCurrentUserMember(_currentUserId))
+      return const SizedBox.shrink();
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
       child: SizedBox(
@@ -440,13 +446,15 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           icon: Icon(Icons.savings_outlined, size: 20.sp),
           label: Text(
             'Fund',
-            style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w700),
+            style:
+                GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w700),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: _kFamilyPurple,
             foregroundColor: Colors.white,
             elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r)),
           ),
         ),
       ),
@@ -485,10 +493,14 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             SizedBox(height: 16.h),
             Text('Fund the account',
                 style: GoogleFonts.inter(
-                    color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700)),
             SizedBox(height: 4.h),
-            Text('Pool balance: $symbol${account.totalPoolBalance.toStringAsFixed(2)}',
-                style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp)),
+            Text(
+                'Pool balance: $symbol${account.totalPoolBalance.toStringAsFixed(2)}',
+                style: GoogleFonts.inter(
+                    color: Colors.grey[400], fontSize: 13.sp)),
             SizedBox(height: 16.h),
             _fundOptionTile(
               icon: Icons.volunteer_activism,
@@ -565,7 +577,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                             fontWeight: FontWeight.w600)),
                     SizedBox(height: 3.h),
                     Text(subtitle,
-                        style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 12.sp)),
+                        style: GoogleFonts.inter(
+                            color: Colors.grey[400], fontSize: 12.sp)),
                   ],
                 ),
               ),
@@ -587,8 +600,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     };
     bool submitting = false;
 
-    double sumOf() => controllers.values.fold<double>(
-        0, (s, c) => s + (double.tryParse(c.text.trim()) ?? 0));
+    double sumOf() => controllers.values
+        .fold<double>(0, (s, c) => s + (double.tryParse(c.text.trim()) ?? 0));
 
     showModalBottomSheet(
       context: context,
@@ -600,7 +613,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           final remaining = account.totalPoolBalance - allocated;
           final over = remaining < 0;
           return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            padding:
+                EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
             child: Container(
               constraints: BoxConstraints(maxHeight: 0.85.sh),
               padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
@@ -629,8 +643,10 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w700)),
                   SizedBox(height: 4.h),
-                  Text('Pool balance: $symbol${account.totalPoolBalance.toStringAsFixed(2)}',
-                      style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp)),
+                  Text(
+                      'Pool balance: $symbol${account.totalPoolBalance.toStringAsFixed(2)}',
+                      style: GoogleFonts.inter(
+                          color: Colors.grey[400], fontSize: 13.sp)),
                   SizedBox(height: 16.h),
                   Flexible(
                     child: SingleChildScrollView(
@@ -642,13 +658,15 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                             decoration: BoxDecoration(
                               color: const Color(0xFF0A0A0A),
                               borderRadius: BorderRadius.circular(12.r),
-                              border: Border.all(color: const Color(0xFF2D2D2D)),
+                              border:
+                                  Border.all(color: const Color(0xFF2D2D2D)),
                             ),
                             child: Row(
                               children: [
                                 CircleAvatar(
                                   radius: 18.r,
-                                  backgroundColor: _kFamilyPurple.withValues(alpha: 0.2),
+                                  backgroundColor:
+                                      _kFamilyPurple.withValues(alpha: 0.2),
                                   child: Text(
                                     m.fullName.isNotEmpty
                                         ? m.fullName[0].toUpperCase()
@@ -679,7 +697,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                                   child: TextField(
                                     controller: controllers[m.id],
                                     keyboardType:
-                                        const TextInputType.numberWithOptions(decimal: true),
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
                                     textAlign: TextAlign.right,
                                     onChanged: (_) => setSheetState(() {}),
                                     style: GoogleFonts.inter(
@@ -688,18 +707,21 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                                         fontWeight: FontWeight.w700),
                                     decoration: InputDecoration(
                                       hintText: '0.00',
-                                      hintStyle:
-                                          TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                                      hintStyle: TextStyle(
+                                          color: const Color(0xFF9CA3AF),
+                                          fontSize: 14.sp),
                                       prefixText: '$symbol ',
                                       prefixStyle: TextStyle(
-                                          color: Colors.grey[400], fontSize: 14.sp),
+                                          color: Colors.grey[400],
+                                          fontSize: 14.sp),
                                       isDense: true,
                                       filled: true,
                                       fillColor: const Color(0xFF1F1F1F),
                                       contentPadding: EdgeInsets.symmetric(
                                           horizontal: 10.w, vertical: 10.h),
                                       border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8.r),
+                                        borderRadius:
+                                            BorderRadius.circular(8.r),
                                         borderSide: BorderSide.none,
                                       ),
                                     ),
@@ -717,10 +739,13 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Remaining in pool',
-                          style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp)),
+                          style: GoogleFonts.inter(
+                              color: Colors.grey[400], fontSize: 13.sp)),
                       Text('$symbol${remaining.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
-                              color: over ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+                              color: over
+                                  ? const Color(0xFFEF4444)
+                                  : const Color(0xFF10B981),
                               fontSize: 15.sp,
                               fontWeight: FontWeight.bold)),
                     ],
@@ -740,7 +765,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                             child: Text(
                               'Your pool is empty. Close this and tap "Top up pool" to add funds before allocating.',
                               style: GoogleFonts.inter(
-                                  color: const Color(0xFFFB923C), fontSize: 12.sp),
+                                  color: const Color(0xFFFB923C),
+                                  fontSize: 12.sp),
                             ),
                           ),
                         ],
@@ -781,13 +807,15 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                             },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _kFamilyPurple,
-                        disabledBackgroundColor: _kFamilyPurple.withValues(alpha: 0.4),
-                        shape:
-                            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        disabledBackgroundColor:
+                            _kFamilyPurple.withValues(alpha: 0.4),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r)),
                       ),
                       child: submitting
                           ? LazerVaultLoader.small()
-                          : Text('Allocate $symbol${allocated.toStringAsFixed(2)}',
+                          : Text(
+                              'Allocate $symbol${allocated.toStringAsFixed(2)}',
                               style: GoogleFonts.inter(
                                   color: Colors.white,
                                   fontSize: 15.sp,
@@ -875,7 +903,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 ? 'Allocated $symbol${total.toStringAsFixed(2)} to $ok member${ok == 1 ? '' : 's'}'
                 : 'Allocated to $ok member${ok == 1 ? '' : 's'}; ${failed.length} failed',
           ),
-          backgroundColor: failed.isEmpty ? const Color(0xFF10B981) : const Color(0xFFFB923C),
+          backgroundColor: failed.isEmpty
+              ? const Color(0xFF10B981)
+              : const Color(0xFFFB923C),
         ),
       );
     }
@@ -936,7 +966,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   ),
                   child: (member.avatarUrl?.isNotEmpty ?? false)
                       ? ClipOval(
-                          child: Image.network(member.avatarUrl!, fit: BoxFit.cover),
+                          child: Image.network(member.avatarUrl!,
+                              fit: BoxFit.cover),
                         )
                       : Center(
                           child: Text(
@@ -964,7 +995,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               SizedBox(height: 4.h),
               Center(
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: member.isAdmin
                         ? Colors.orange.withValues(alpha: 0.2)
@@ -984,7 +1016,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               SizedBox(height: 8.h),
 
               // Contact info
-              if (member.email != null || member.phone != null || member.username != null) ...[
+              if (member.email != null ||
+                  member.phone != null ||
+                  member.username != null) ...[
                 Center(
                   child: Text(
                     member.username ?? member.email ?? member.phone ?? '',
@@ -1067,7 +1101,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   child: Row(
                     children: [
                       Icon(Icons.visibility_off_outlined,
-                          size: 18.sp, color: Colors.white.withValues(alpha: 0.5)),
+                          size: 18.sp,
+                          color: Colors.white.withValues(alpha: 0.5)),
                       SizedBox(width: 10.w),
                       Expanded(
                         child: Text(
@@ -1128,7 +1163,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   '${CurrencySymbols.currentSymbol}${member.perTransactionLimit.toStringAsFixed(2)}',
                 ),
               ],
-              if (!member.hasDailyLimit && !member.hasMonthlyLimit && !member.hasPerTransactionLimit)
+              if (!member.hasDailyLimit &&
+                  !member.hasMonthlyLimit &&
+                  !member.hasPerTransactionLimit)
                 Text(
                   'No spending limits set',
                   style: TextStyle(
@@ -1177,8 +1214,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                       );
                     },
                     icon: Icon(Icons.add_card, size: 18.sp),
-                    label: Text('Issue Card',
-                        style: TextStyle(fontSize: 13.sp)),
+                    label:
+                        Text('Issue Card', style: TextStyle(fontSize: 13.sp)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF10B981),
                       foregroundColor: Colors.white,
@@ -1209,7 +1246,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                           );
                         },
                         icon: Icon(Icons.edit, size: 18.sp),
-                        label: Text('Edit Limits', style: TextStyle(fontSize: 13.sp)),
+                        label: Text('Edit Limits',
+                            style: TextStyle(fontSize: 13.sp)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white.withValues(alpha: 0.1),
                           foregroundColor: Colors.white,
@@ -1228,7 +1266,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                           _showAllocateFundsDialog(member);
                         },
                         icon: Icon(Icons.account_balance_wallet, size: 18.sp),
-                        label: Text('Allocate', style: TextStyle(fontSize: 13.sp)),
+                        label:
+                            Text('Allocate', style: TextStyle(fontSize: 13.sp)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _kFamilyPurple,
                           foregroundColor: Colors.white,
@@ -1344,7 +1383,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         ),
         content: Text(
           'This will remove ${member.fullName} from the family account. Their remaining balance will be returned to the pool.',
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
+          style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
         ),
         actions: [
           TextButton(
@@ -1470,8 +1510,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           children: [
             Text(
               'Move money from your personal account into the shared pool for everyone to use.',
-              style: GoogleFonts.inter(
-                  color: Colors.grey[400], fontSize: 13.sp),
+              style:
+                  GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
             ),
             SizedBox(height: 16.h),
             // From → To money path so the source is unambiguous.
@@ -1506,7 +1546,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             SizedBox(height: 16.h),
             TextField(
               controller: amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp),
               decoration: InputDecoration(
                 labelText: 'Amount',
@@ -1678,7 +1719,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           padding: EdgeInsets.symmetric(vertical: 6.h),
           child: Row(
             children: [
-              Icon(icon, size: 16.sp, color: Colors.white.withValues(alpha: 0.5)),
+              Icon(icon,
+                  size: 16.sp, color: Colors.white.withValues(alpha: 0.5)),
               SizedBox(width: 10.w),
               Text(label,
                   style: TextStyle(
@@ -1826,7 +1868,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ),
               SizedBox(height: 12.h),
             ],
-            if (viewerIsAdmin && account.status == FamilyAccountStatus.active) ...[
+            if (viewerIsAdmin &&
+                account.status == FamilyAccountStatus.active) ...[
               _buildOption(
                 Icons.swap_horiz,
                 'Change Distribution Mode',
@@ -1843,7 +1886,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 account.status == FamilyAccountStatus.active
                     ? Icons.ac_unit
                     : Icons.wb_sunny,
-                account.status == FamilyAccountStatus.active ? 'Freeze Account' : 'Unfreeze Account',
+                account.status == FamilyAccountStatus.active
+                    ? 'Freeze Account'
+                    : 'Unfreeze Account',
                 account.status == FamilyAccountStatus.active
                     ? 'Temporarily freeze all spending'
                     : 'Reactivate account',
@@ -1941,7 +1986,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               SizedBox(height: 8.h),
               Text(
                 'Current: ${account.fundDistributionMode.displayName}',
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 13.sp),
+                style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 13.sp),
               ),
               SizedBox(height: 20.h),
               ...FundDistributionMode.values.map((mode) {
@@ -1969,8 +2016,12 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                       child: Row(
                         children: [
                           Icon(
-                            isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                            color: isSelected ? const Color(0xFFA78BFA) : Colors.white.withValues(alpha: 0.4),
+                            isSelected
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_off,
+                            color: isSelected
+                                ? const Color(0xFFA78BFA)
+                                : Colors.white.withValues(alpha: 0.4),
                             size: 20.sp,
                           ),
                           SizedBox(width: 12.w),
@@ -1991,10 +2042,13 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                                     if (isCurrent) ...[
                                       SizedBox(width: 8.w),
                                       Container(
-                                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 6.w, vertical: 2.h),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFA78BFA).withValues(alpha: 0.2),
-                                          borderRadius: BorderRadius.circular(4.r),
+                                          color: const Color(0xFFA78BFA)
+                                              .withValues(alpha: 0.2),
+                                          borderRadius:
+                                              BorderRadius.circular(4.r),
                                         ),
                                         child: Text(
                                           'Current',
@@ -2040,7 +2094,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _kFamilyPurple,
-                    disabledBackgroundColor: _kFamilyPurple.withValues(alpha: 0.3),
+                    disabledBackgroundColor:
+                        _kFamilyPurple.withValues(alpha: 0.3),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -2081,7 +2136,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         ),
         content: Text(
           'This will temporarily freeze all spending on this family account. You can unfreeze it at any time.',
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
+          style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
         ),
         actions: [
           TextButton(
@@ -2129,7 +2185,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         ),
         content: Text(
           'This will reactivate the account and allow spending again.',
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
+          style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
         ),
         actions: [
           TextButton(
@@ -2164,10 +2221,14 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     Get.dialog(
       AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text(
           'Leave ${account.name}?',
-          style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold),
         ),
         content: Text(
           'You will be removed from this family account. Any funds allocated to you will return to the shared pool.',
@@ -2176,7 +2237,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey[400])),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: Colors.grey[400])),
           ),
           ElevatedButton(
             onPressed: () {
@@ -2186,7 +2248,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r)),
             ),
             child: Text('Leave', style: GoogleFonts.inter(fontSize: 14.sp)),
           ),
@@ -2217,7 +2280,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           children: [
             Text(
               'This action cannot be undone. All remaining funds will be returned to your account.',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
             ),
             SizedBox(height: 16.h),
             TextField(
@@ -2227,7 +2291,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 // The backend requires the confirmation code to match the family
                 // account NAME (case-insensitive), so prompt for exactly that.
                 hintText: 'Type "${account.name}" to confirm',
-                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+                hintStyle:
+                    TextStyle(color: Colors.white.withValues(alpha: 0.4)),
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.05),
                 border: OutlineInputBorder(
@@ -2284,187 +2349,191 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         backgroundColor: const Color(0xFF0A0A0A),
         body: SafeArea(
           child: BlocConsumer<FamilyAccountCubit, FamilyAccountState>(
-          bloc: _cubit,
-          listener: (context, state) {
-            if (state is FamilyAccountLoaded) {
-              _loadedAccount = state.familyAccount;
-            } else if (state is FamilyAccountError) {
-              // Money/action errors surface as a modal dialog (not a primitive
-              // snackbar) — with a tailored message for the funding-policy block.
-              _showFamilyErrorDialog(state.message);
-            } else if (state is FamilyMemberAdded) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Member added successfully'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              _loadFamilyAccount();
-            } else if (state is FamilyMemberRemoved) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Member removed. ${CurrencySymbols.currentSymbol}${state.returnedBalance.toStringAsFixed(2)} returned to pool'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              _loadFamilyAccount();
-              _refreshDashboardSummaries();
-            } else if (state is FundsAllocated) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Funds allocated successfully'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              _loadFamilyAccount();
-              _refreshDashboardSummaries();
-            } else if (state is MemberCardGenerated) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                      'Card issued for ${state.member.fullName.isNotEmpty ? state.member.fullName : 'member'}'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              _loadFamilyAccount();
-            } else if (state is FamilyAccountFrozen) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Account frozen successfully'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              _loadFamilyAccount();
-              _refreshDashboardSummaries();
-            } else if (state is FamilyAccountUnfrozen) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Account unfrozen successfully'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              _loadFamilyAccount();
-              _refreshDashboardSummaries();
-            } else if (state is MemberContributionProcessed) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Contribution processed successfully'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              _loadFamilyAccount();
-              _refreshDashboardSummaries();
-            } else if (state is FundDistributionModeUpdated) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Distribution mode updated successfully'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              _loadFamilyAccount();
-              _refreshDashboardSummaries();
-            } else if (state is FamilyAccountDeleted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Account deleted. ${CurrencySymbols.currentSymbol}${state.returnedBalance.toStringAsFixed(2)} returned'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              Get.back(); // Go back to previous screen
-            } else if (state is FamilyAccountLeft) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('You have left the family account'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              Get.back(); // Pop back to the list
-            }
-          },
-          builder: (context, state) {
-            if (state is FamilyAccountLoading && _loadedAccount == null) {
+            bloc: _cubit,
+            listener: (context, state) {
+              if (state is FamilyAccountLoaded) {
+                _loadedAccount = state.familyAccount;
+              } else if (state is FamilyAccountError) {
+                // Money/action errors surface as a modal dialog (not a primitive
+                // snackbar) — with a tailored message for the funding-policy block.
+                _showFamilyErrorDialog(state.message);
+              } else if (state is FamilyMemberAdded) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Member added successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                _loadFamilyAccount();
+              } else if (state is FamilyMemberRemoved) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        'Member removed. ${CurrencySymbols.currentSymbol}${state.returnedBalance.toStringAsFixed(2)} returned to pool'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                _loadFamilyAccount();
+                _refreshDashboardSummaries();
+              } else if (state is FundsAllocated) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Funds allocated successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                _loadFamilyAccount();
+                _refreshDashboardSummaries();
+              } else if (state is MemberCardGenerated) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        'Card issued for ${state.member.fullName.isNotEmpty ? state.member.fullName : 'member'}'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                _loadFamilyAccount();
+              } else if (state is FamilyAccountFrozen) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Account frozen successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                _loadFamilyAccount();
+                _refreshDashboardSummaries();
+              } else if (state is FamilyAccountUnfrozen) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Account unfrozen successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                _loadFamilyAccount();
+                _refreshDashboardSummaries();
+              } else if (state is MemberContributionProcessed) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Contribution processed successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                _loadFamilyAccount();
+                _refreshDashboardSummaries();
+              } else if (state is FundDistributionModeUpdated) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Distribution mode updated successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                _loadFamilyAccount();
+                _refreshDashboardSummaries();
+              } else if (state is FamilyAccountDeleted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        'Account deleted. ${CurrencySymbols.currentSymbol}${state.returnedBalance.toStringAsFixed(2)} returned'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                Get.back(); // Go back to previous screen
+              } else if (state is FamilyAccountLeft) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('You have left the family account'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                Get.back(); // Pop back to the list
+              }
+            },
+            builder: (context, state) {
+              if (state is FamilyAccountLoading && _loadedAccount == null) {
+                return Column(
+                  children: [
+                    _buildBackHeader('Family Account'),
+                    Expanded(
+                      child: Center(
+                        child: LazerVaultLoader.small(),
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              // Render the loaded account from the current state OR the cached
+              // copy — so a transient action error (which emits FamilyAccountError)
+              // keeps the screen instead of blanking it (the error shows as a
+              // snackbar via the listener). Only fall through to the "Unable to
+              // load" view when nothing was ever loaded.
+              final account = state is FamilyAccountLoaded
+                  ? state.familyAccount
+                  : _loadedAccount;
+              if (account != null) {
+                return Column(
+                  children: [
+                    // Group-funds-style header: back + name + settings
+                    _buildFamilyHeader(account),
+                    // Purple hero with the family balance + key stats
+                    _buildFamilyHero(account),
+                    // Prominent Fund action: top up the pool + allocate to members
+                    _buildFundActions(account),
+                    SizedBox(height: 4.h),
+                    // Purple pill tab bar (matches group details)
+                    _buildFamilyTabBar(),
+                    // Tab Content
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _buildOverviewTab(account),
+                          _buildMembersTab(account),
+                          _buildActivityTab(account),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              }
+
               return Column(
                 children: [
                   _buildBackHeader('Family Account'),
                   Expanded(
                     child: Center(
-                      child: LazerVaultLoader.small(),
-                    ),
-                  ),
-                ],
-              );
-            }
-
-            // Render the loaded account from the current state OR the cached
-            // copy — so a transient action error (which emits FamilyAccountError)
-            // keeps the screen instead of blanking it (the error shows as a
-            // snackbar via the listener). Only fall through to the "Unable to
-            // load" view when nothing was ever loaded.
-            final account = state is FamilyAccountLoaded
-                ? state.familyAccount
-                : _loadedAccount;
-            if (account != null) {
-              return Column(
-                children: [
-                  // Group-funds-style header: back + name + settings
-                  _buildFamilyHeader(account),
-                  // Purple hero with the family balance + key stats
-                  _buildFamilyHero(account),
-                  // Prominent Fund action: top up the pool + allocate to members
-                  _buildFundActions(account),
-                  SizedBox(height: 4.h),
-                  // Purple pill tab bar (matches group details)
-                  _buildFamilyTabBar(),
-                  // Tab Content
-                  Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        _buildOverviewTab(account),
-                        _buildMembersTab(account),
-                        _buildActivityTab(account),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            }
-
-            return Column(
-              children: [
-                _buildBackHeader('Family Account'),
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.error_outline,
-                            color: Colors.white.withValues(alpha: 0.6), size: 40.sp),
-                        SizedBox(height: 12.h),
-                        Text(
-                          'Unable to load account',
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp),
-                        ),
-                        SizedBox(height: 16.h),
-                        ElevatedButton.icon(
-                          onPressed: _loadFamilyAccount,
-                          icon: Icon(Icons.refresh, size: 18.sp),
-                          label: const Text('Retry'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _kFamilyPurple,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.r),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.error_outline,
+                              color: Colors.white.withValues(alpha: 0.6),
+                              size: 40.sp),
+                          SizedBox(height: 12.h),
+                          Text(
+                            'Unable to load account',
+                            style: GoogleFonts.inter(
+                                color: Colors.white, fontSize: 16.sp),
+                          ),
+                          SizedBox(height: 16.h),
+                          ElevatedButton.icon(
+                            onPressed: _loadFamilyAccount,
+                            icon: Icon(Icons.refresh, size: 18.sp),
+                            label: const Text('Retry'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _kFamilyPurple,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -2563,7 +2632,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 color: Colors.grey[900],
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(Icons.settings_outlined, color: Colors.white, size: 20.sp),
+              child: Icon(Icons.settings_outlined,
+                  color: Colors.white, size: 20.sp),
             ),
           ),
         ],
@@ -2637,7 +2707,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           SizedBox(height: 14.h),
           Row(
             children: [
-              _buildHeroStat('Members', '${account.activeMemberCount}', Icons.people),
+              _buildHeroStat(
+                  'Members', '${account.activeMemberCount}', Icons.people),
               Container(
                 width: 1,
                 height: 30.h,
@@ -2691,7 +2762,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.white.withValues(alpha: 0.85), size: 14.sp),
+              Icon(icon,
+                  color: Colors.white.withValues(alpha: 0.85), size: 14.sp),
               SizedBox(width: 4.w),
               Flexible(
                 child: Text(
@@ -2737,7 +2809,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         dividerColor: Colors.transparent,
         labelColor: Colors.white,
         unselectedLabelColor: Colors.grey[400],
-        labelStyle: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600),
+        labelStyle:
+            GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600),
         unselectedLabelStyle: GoogleFonts.inter(fontSize: 13.sp),
         tabs: const [
           Tab(text: 'Overview'),
@@ -2784,7 +2857,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               SizedBox(height: 2.h),
               Text(label,
                   style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5), fontSize: 10.sp)),
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 10.sp)),
             ],
           ),
         ),
@@ -2796,7 +2870,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
       children: [
         Text('This month',
             style: TextStyle(
-                color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold)),
         SizedBox(height: 12.h),
         Row(
           children: [
@@ -2819,13 +2895,16 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           SizedBox(height: 20.h),
           _breakdownHeader('Contributors', 'Who funded the pool this month'),
           SizedBox(height: 10.h),
-          ...s.topFunders.map((m) => _buildBreakdownRow(m, money, isFunder: true)),
+          ...s.topFunders
+              .map((m) => _buildBreakdownRow(m, money, isFunder: true)),
         ],
         if (canSeeSpenders && s.topSpenders.isNotEmpty) ...[
           SizedBox(height: 20.h),
-          _breakdownHeader('Top spenders', 'Who spent from the pool this month'),
+          _breakdownHeader(
+              'Top spenders', 'Who spent from the pool this month'),
           SizedBox(height: 10.h),
-          ...s.topSpenders.map((m) => _buildBreakdownRow(m, money, isFunder: false)),
+          ...s.topSpenders
+              .map((m) => _buildBreakdownRow(m, money, isFunder: false)),
         ],
         SizedBox(height: 20.h),
       ],
@@ -2838,7 +2917,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
       children: [
         Text(title,
             style: TextStyle(
-                color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold)),
         SizedBox(height: 2.h),
         Text(subtitle,
             style: TextStyle(
@@ -2860,13 +2941,16 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           CircleAvatar(
             radius: 16.r,
             backgroundColor: accent.withValues(alpha: 0.18),
-            backgroundImage: (m.memberAvatar != null && m.memberAvatar!.isNotEmpty)
-                ? NetworkImage(m.memberAvatar!)
-                : null,
+            backgroundImage:
+                (m.memberAvatar != null && m.memberAvatar!.isNotEmpty)
+                    ? NetworkImage(m.memberAvatar!)
+                    : null,
             child: (m.memberAvatar == null || m.memberAvatar!.isEmpty)
                 ? Text(initial,
                     style: TextStyle(
-                        color: accent, fontSize: 13.sp, fontWeight: FontWeight.w700))
+                        color: accent,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700))
                 : null,
           ),
           SizedBox(width: 12.w),
@@ -2881,7 +2965,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 Text(
                     '${m.transactionCount} ${isFunder ? (m.transactionCount == 1 ? 'contribution' : 'contributions') : (m.transactionCount == 1 ? 'transaction' : 'transactions')}',
                     style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.45), fontSize: 10.sp)),
+                        color: Colors.white.withValues(alpha: 0.45),
+                        fontSize: 10.sp)),
               ],
             ),
           ),
@@ -2903,11 +2988,28 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
 
           // Account Status
           Builder(builder: (context) {
-            final (statusColor, statusIcon, statusLabel) = switch (account.status) {
-              FamilyAccountStatus.active => (Colors.green, Icons.check_circle, 'Account Active'),
-              FamilyAccountStatus.frozen => (Colors.blue, Icons.ac_unit, 'Account Frozen'),
-              FamilyAccountStatus.pendingSetup => (const Color(0xFFFB923C), Icons.settings, 'Pending Setup'),
-              FamilyAccountStatus.closed => (Colors.red, Icons.cancel, 'Account Closed'),
+            final (statusColor, statusIcon, statusLabel) =
+                switch (account.status) {
+              FamilyAccountStatus.active => (
+                  Colors.green,
+                  Icons.check_circle,
+                  'Account Active'
+                ),
+              FamilyAccountStatus.frozen => (
+                  Colors.blue,
+                  Icons.ac_unit,
+                  'Account Frozen'
+                ),
+              FamilyAccountStatus.pendingSetup => (
+                  const Color(0xFFFB923C),
+                  Icons.settings,
+                  'Pending Setup'
+                ),
+              FamilyAccountStatus.closed => (
+                  Colors.red,
+                  Icons.cancel,
+                  'Account Closed'
+                ),
             };
             return Container(
               padding: EdgeInsets.all(16.w),
@@ -2989,7 +3091,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 icon: Icon(Icons.volunteer_activism, size: 20.sp),
                 label: Text(
                   'Contribute to Pool',
-                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                  style:
+                      TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
@@ -3010,8 +3113,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
   Widget _buildMembersTab(FamilyAccount account) {
     // Mirrors the backend AddFamilyMember admin-only check — non-admins
     // see the members list read-only without the Add Member CTA.
-    final canInvite = account.isCurrentUserAdmin(_currentUserId) &&
-        account.canAcceptMembers;
+    final canInvite =
+        account.isCurrentUserAdmin(_currentUserId) && account.canAcceptMembers;
     return RefreshIndicator(
       onRefresh: () async => _loadFamilyAccount(),
       color: _kFamilyPurple,
@@ -3046,7 +3149,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                         backgroundColor: _kFamilyPurple,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12.w, vertical: 8.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.r),
                         ),
@@ -3156,7 +3260,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 final visibleTxns = canSeeAll
                     ? state.transactions
                     : state.transactions
-                        .where((t) => myMemberId != null && t.memberId == myMemberId)
+                        .where((t) =>
+                            myMemberId != null && t.memberId == myMemberId)
                         .toList();
                 if (visibleTxns.isEmpty) {
                   // Keep pull-to-refresh available even when empty so a member
@@ -3290,7 +3395,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           },
         ),
         ...members.map((m) => _filterSheetTile(
-              label: m.fullName.isNotEmpty ? m.fullName : (m.username ?? 'Member'),
+              label:
+                  m.fullName.isNotEmpty ? m.fullName : (m.username ?? 'Member'),
               icon: Icons.person,
               selected: _memberFilter == m.id,
               onTap: () {
@@ -3367,7 +3473,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     if (r == null) return false;
     final now = DateTime.now();
     return r.end.difference(now).inDays.abs() <= 1 &&
-        r.start.difference(now.subtract(Duration(days: days))).inDays.abs() <= 1;
+        r.start.difference(now.subtract(Duration(days: days))).inDays.abs() <=
+            1;
   }
 
   void _applyPresetRange(int days) {
@@ -3401,7 +3508,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
       // backend's `created_at <= end` filter.
       final normalized = DateTimeRange(
         start: picked.start,
-        end: DateTime(picked.end.year, picked.end.month, picked.end.day, 23, 59, 59),
+        end: DateTime(
+            picked.end.year, picked.end.month, picked.end.day, 23, 59, 59),
       );
       setState(() => _dateFilter = normalized);
       _loadTransactions();
@@ -3470,7 +3578,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
       title: Text(
         label,
         style: TextStyle(
-          color: selected ? _kFamilyPurple : Colors.white.withValues(alpha: 0.85),
+          color:
+              selected ? _kFamilyPurple : Colors.white.withValues(alpha: 0.85),
           fontSize: 14.sp,
           fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
         ),
@@ -3489,7 +3598,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     final isCredit = transaction.type == FamilyTransactionType.allocation ||
         transaction.type == FamilyTransactionType.refund ||
         transaction.type == FamilyTransactionType.contribution;
-    final amountColor = isCredit ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    final amountColor =
+        isCredit ? const Color(0xFF10B981) : const Color(0xFFEF4444);
     final amountPrefix = isCredit ? '+' : '-';
 
     IconData typeIcon;
@@ -3638,8 +3748,18 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
 
   String _shortDate(DateTime d) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     final m = (d.month >= 1 && d.month <= 12) ? months[d.month - 1] : '';
     return '$m ${d.day}';
@@ -3759,7 +3879,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: _kFamilyPurple,
-                  side: BorderSide(color: _kFamilyPurple.withValues(alpha: 0.6)),
+                  side:
+                      BorderSide(color: _kFamilyPurple.withValues(alpha: 0.6)),
                   padding: EdgeInsets.symmetric(vertical: 12.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
@@ -3823,8 +3944,12 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             child: pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text(k, style: const pw.TextStyle(fontSize: 11, color: PdfColors.grey700)),
-                pw.Text(v, style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+                pw.Text(k,
+                    style: const pw.TextStyle(
+                        fontSize: 11, color: PdfColors.grey700)),
+                pw.Text(v,
+                    style: pw.TextStyle(
+                        fontSize: 11, fontWeight: pw.FontWeight.bold)),
               ],
             ),
           );
@@ -3836,14 +3961,18 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               pw.Text('Family & Friends Receipt',
-                  style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                  style: pw.TextStyle(
+                      fontSize: 18, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 4),
               if (familyName.isNotEmpty)
-                pw.Text(familyName, style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey700)),
+                pw.Text(familyName,
+                    style: const pw.TextStyle(
+                        fontSize: 12, color: PdfColors.grey700)),
               pw.SizedBox(height: 16),
               pw.Center(
                 child: pw.Text(amountStr,
-                    style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold)),
+                    style: pw.TextStyle(
+                        fontSize: 26, fontWeight: pw.FontWeight.bold)),
               ),
               pw.SizedBox(height: 16),
               pw.Divider(),
@@ -3860,7 +3989,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               row('Reference', reference),
               pw.SizedBox(height: 24),
               pw.Text('Generated by Lazervault',
-                  style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600)),
+                  style: const pw.TextStyle(
+                      fontSize: 9, color: PdfColors.grey600)),
             ],
           ),
         ),
@@ -3869,7 +3999,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
       final bytes = await doc.save();
       await Printing.sharePdf(
         bytes: bytes,
-        filename: 'family-receipt-${reference.replaceAll(RegExp(r'[^A-Za-z0-9]'), '')}.pdf',
+        filename:
+            'family-receipt-${reference.replaceAll(RegExp(r'[^A-Za-z0-9]'), '')}.pdf',
       );
     } catch (e) {
       if (!mounted) return;
@@ -4046,7 +4177,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ),
               child: (member.avatarUrl?.isNotEmpty ?? false)
                   ? ClipOval(
-                      child: Image.network(member.avatarUrl!, fit: BoxFit.cover),
+                      child:
+                          Image.network(member.avatarUrl!, fit: BoxFit.cover),
                     )
                   : Center(
                       child: Text(
@@ -4094,7 +4226,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   Row(
                     children: [
                       _buildMemberBadge(
-                        member.role == FamilyMemberRole.admin ? 'Admin' : 'Member',
+                        member.role == FamilyMemberRole.admin
+                            ? 'Admin'
+                            : 'Member',
                         member.role == FamilyMemberRole.admin
                             ? const Color(0xFFF59E0B)
                             : const Color(0xFF10B981),
@@ -4273,7 +4407,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                     Text(
                       description,
                       style: TextStyle(
-                        color: color?.withValues(alpha: 0.7) ?? Colors.white.withValues(alpha: 0.5),
+                        color: color?.withValues(alpha: 0.7) ??
+                            Colors.white.withValues(alpha: 0.5),
                         fontSize: 11.sp,
                       ),
                     ),

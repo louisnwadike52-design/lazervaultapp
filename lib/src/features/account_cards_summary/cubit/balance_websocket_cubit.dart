@@ -33,7 +33,8 @@ class BalanceWebSocketCubit extends Cubit<BalanceWebSocketState> {
   StreamSubscription? _balanceUpdateSubscription;
   StreamSubscription? _connectionStateSubscription;
 
-  BalanceWebSocketCubit(this._wsService) : super(const BalanceWebSocketState()) {
+  BalanceWebSocketCubit(this._wsService)
+      : super(const BalanceWebSocketState()) {
     _initializeListeners();
   }
 
@@ -48,7 +49,8 @@ class BalanceWebSocketCubit extends Cubit<BalanceWebSocketState> {
     });
 
     // Listen to connection state changes
-    _connectionStateSubscription = _wsService.connectionState.listen((connectionState) {
+    _connectionStateSubscription =
+        _wsService.connectionState.listen((connectionState) {
       emit(state.copyWith(connectionState: connectionState));
     });
   }

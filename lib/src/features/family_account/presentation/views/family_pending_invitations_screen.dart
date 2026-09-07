@@ -207,7 +207,8 @@ class _FamilyPendingInvitationsScreenState
                   backgroundColor: const Color(0xFF1F1F1F),
                   child: ListView.separated(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                     itemCount: state.entries.length,
                     separatorBuilder: (_, __) => SizedBox(height: 12.h),
                     itemBuilder: (context, i) =>
@@ -221,7 +222,8 @@ class _FamilyPendingInvitationsScreenState
                     padding: EdgeInsets.all(24.w),
                     child: Text(
                       state.message,
-                      style: TextStyle(color: const Color(0xFFEF4444), fontSize: 13.sp),
+                      style: TextStyle(
+                          color: const Color(0xFFEF4444), fontSize: 13.sp),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -251,9 +253,7 @@ class _FamilyPendingInvitationsScreenState
           fontWeight: FontWeight.w600,
         ),
         side: BorderSide(
-          color: selected
-              ? const Color(0xFF4E03D0)
-              : const Color(0xFF2D2D2D),
+          color: selected ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
         ),
       ),
     );
@@ -279,7 +279,8 @@ class _FamilyPendingInvitationsScreenState
         Text(
           'Past invitations will appear here\nonce you accept, decline, or they expire.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp, height: 1.5),
+          style: TextStyle(
+              color: const Color(0xFF9CA3AF), fontSize: 14.sp, height: 1.5),
         ),
       ],
     );
@@ -593,7 +594,8 @@ class _FamilyPendingInvitationsScreenState
                   onPressed: invitation.isExpired
                       ? null
                       : () {
-                          _pendingCubit.declineInvitation(invitation.invitationToken);
+                          _pendingCubit
+                              .declineInvitation(invitation.invitationToken);
                         },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(
@@ -626,7 +628,8 @@ class _FamilyPendingInvitationsScreenState
                   onPressed: invitation.isExpired
                       ? null
                       : () {
-                          _pendingCubit.acceptInvitation(invitation.invitationToken);
+                          _pendingCubit
+                              .acceptInvitation(invitation.invitationToken);
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4E03D0),

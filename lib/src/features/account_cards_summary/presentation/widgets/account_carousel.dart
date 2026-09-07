@@ -1286,14 +1286,24 @@ class _AccountCarouselState extends State<AccountCarousel> {
                                   size: 18.sp,
                                 ),
                                 SizedBox(width: 6.w),
-                                Text(
-                                  // Category label — the specific account name is
-                                  // shown as the subtitle below the balance.
-                                  'Family & Friends',
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.9),
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w600,
+                                Flexible(
+                                  child: Text(
+                                    // The STORED account name leads (every
+                                    // family account is named — user request
+                                    // 2026-09-07); the generic category label
+                                    // is only the legacy-unnamed fallback.
+                                    (account.accountLabel?.trim().isNotEmpty ??
+                                            false)
+                                        ? account.accountLabel!.trim()
+                                        : 'Family & Friends',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.9),
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -1402,11 +1412,9 @@ class _AccountCarouselState extends State<AccountCarousel> {
                             )
                           else
                             Text(
-                              // The account's actual name (falls back to the
-                              // generic label only when the account is unnamed).
-                              (account.accountLabel?.trim().isNotEmpty ?? false)
-                                  ? account.accountLabel!.trim()
-                                  : 'Family Balance',
+                              // Category subtitle — the stored name now leads
+                              // in the card title above.
+                              'Family & Friends',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(

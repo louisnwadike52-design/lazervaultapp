@@ -10,7 +10,6 @@ import '../domain/usecases/get_account_summaries_usecase.dart';
 import '../services/balance_websocket_service.dart';
 import 'account_cards_summary_state.dart';
 
-
 @injectable
 class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
   final GetAccountSummariesUseCase _getAccountSummariesUseCase;
@@ -150,7 +149,8 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
       reference: event.reference,
     ));
 
-    print('AccountCardsSummaryCubit: Balance update tracked for account ${event.accountId} - ${event.eventType}: $previousBalance -> ${event.newBalance}');
+    print(
+        'AccountCardsSummaryCubit: Balance update tracked for account ${event.accountId} - ${event.eventType}: $previousBalance -> ${event.newBalance}');
   }
 
   /// Coalesces balance-event-driven refetches into a single silent fetch.
@@ -199,7 +199,8 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
 
     // If it's a different user, reset first
     if (_currentUserId != null && _currentUserId != userId) {
-      print('AccountCardsSummaryCubit: User changed from $_currentUserId to $userId, resetting state');
+      print(
+          'AccountCardsSummaryCubit: User changed from $_currentUserId to $userId, resetting state');
       reset();
     }
 
@@ -274,8 +275,10 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
         // Sort: family accounts go last in the carousel
         final sorted = List<AccountSummaryEntity>.from(summaries)
           ..sort((a, b) {
-            final aIsFamily = a.accountTypeEnum == VirtualAccountType.family ? 1 : 0;
-            final bIsFamily = b.accountTypeEnum == VirtualAccountType.family ? 1 : 0;
+            final aIsFamily =
+                a.accountTypeEnum == VirtualAccountType.family ? 1 : 0;
+            final bIsFamily =
+                b.accountTypeEnum == VirtualAccountType.family ? 1 : 0;
             return aIsFamily.compareTo(bIsFamily);
           });
         _currentSummaries = sorted;
@@ -304,7 +307,8 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
   }
 
   /// Read the last-known summaries for [userId], or null when none/corrupt.
-  Future<List<AccountSummaryEntity>?> _loadCachedSummaries(String userId) async {
+  Future<List<AccountSummaryEntity>?> _loadCachedSummaries(
+      String userId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_cacheKey(userId));
@@ -331,7 +335,8 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     if (currentActive != null &&
         currentActive.isNotEmpty &&
         summaries.any((acc) =>
-            acc.id == currentActive || acc.spendingAccountId == currentActive)) {
+            acc.id == currentActive ||
+            acc.spendingAccountId == currentActive)) {
       return; // keep the user's current selection
     }
 
@@ -341,12 +346,16 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
 
     // Find personal account with matching currency
     final personalAccount = summaries.firstWhere(
-      (acc) => acc.accountType.toLowerCase() == 'personal' && acc.currency == expectedCurrency,
-      orElse: () => summaries.first, // Fallback to first account if no personal match
+      (acc) =>
+          acc.accountType.toLowerCase() == 'personal' &&
+          acc.currency == expectedCurrency,
+      orElse: () =>
+          summaries.first, // Fallback to first account if no personal match
     );
 
     _accountManager.setActiveAccount(personalAccount.id);
-    print('AccountCardsSummaryCubit: Auto-selected account ${personalAccount.accountNumber} (${personalAccount.accountType}) for locale $currentLocale ($expectedCurrency)');
+    print(
+        'AccountCardsSummaryCubit: Auto-selected account ${personalAccount.accountNumber} (${personalAccount.accountType}) for locale $currentLocale ($expectedCurrency)');
   }
 
   /// Get currency code for locale (e.g., en-NG -> NGN, en-US -> USD)
@@ -380,7 +389,8 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     if (accountId.isEmpty) return;
     final exists = _currentSummaries.any((s) => s.id == accountId);
     if (!exists) {
-      print('AccountCardsSummaryCubit.setActiveAccount: account $accountId not in loaded summaries; ignored');
+      print(
+          'AccountCardsSummaryCubit.setActiveAccount: account $accountId not in loaded summaries; ignored');
       return;
     }
     _accountManager.setActiveAccount(accountId);
@@ -415,7 +425,8 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
       final idx = _currentSummaries.indexWhere((s) => s.id == entry.key);
       if (idx != -1) {
         final prev = _currentSummaries[idx];
-        final trendPercentage = _calculateTrendPercentage(prev.balance, entry.value);
+        final trendPercentage =
+            _calculateTrendPercentage(prev.balance, entry.value);
         _currentSummaries = List.from(_currentSummaries);
         _currentSummaries[idx] = prev.copyWith(
           balance: entry.value,
@@ -428,7 +439,8 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     _latestWebSocketBalances.clear();
 
     emit(AccountCardsSummaryLoaded(_currentSummaries));
-    print('AccountCardsSummaryCubit: Balance updates consumed, entities updated');
+    print(
+        'AccountCardsSummaryCubit: Balance updates consumed, entities updated');
   }
 
   /// Connect WebSocket for real-time updates
@@ -444,7 +456,8 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
           countryCode: countryCode,
           accessToken: accessToken,
         );
-        print('AccountCardsSummaryCubit: WebSocket connected for real-time updates');
+        print(
+            'AccountCardsSummaryCubit: WebSocket connected for real-time updates');
       } catch (e) {
         print('AccountCardsSummaryCubit: Failed to connect WebSocket - $e');
       }
@@ -465,4 +478,4 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     _wsSubscription?.cancel();
     return super.close();
   }
-} 
+}

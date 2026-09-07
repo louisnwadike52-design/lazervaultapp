@@ -61,6 +61,7 @@ abstract class FamilyAccountRemoteDataSource {
     List<MemberAllocationProto> allocations = const [],
     String fundingPolicy = 'any_member',
     List<String> specificMemberIds = const [],
+    String accountName = '',
   });
   Future<FamilyAccountProto> updateFundDistributionMode({
     required String familyId,
@@ -910,6 +911,7 @@ class FamilyAccountRemoteDataSourceImpl
     List<MemberAllocationProto> allocations = const [],
     String fundingPolicy = 'any_member',
     List<String> specificMemberIds = const [],
+    String accountName = '',
   }) async {
     await Future.delayed(const Duration(milliseconds: 500));
 

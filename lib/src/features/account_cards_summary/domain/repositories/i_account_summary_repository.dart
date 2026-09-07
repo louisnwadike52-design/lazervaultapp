@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/error/failure.dart';
 import '../entities/account_summary_entity.dart';
- 
+
 abstract class IAccountSummaryRepository {
   Future<Either<Failure, List<AccountSummaryEntity>>> getAccountSummaries({
     required String userId, // User ID needed to fetch specific accounts
@@ -9,4 +9,4 @@ abstract class IAccountSummaryRepository {
     String? country, // Country code to filter accounts by country
     String? period, // Trend window for %-change: day | week | month | year
   });
-} 
+}

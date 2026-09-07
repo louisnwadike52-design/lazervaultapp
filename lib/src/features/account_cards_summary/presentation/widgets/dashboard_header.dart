@@ -111,32 +111,32 @@ class _DashboardHeaderState extends State<DashboardHeader>
               body:
                   'Tap your photo to open your profile — update your picture, reach settings and support.',
               child: GestureDetector(
-              onTap: () {
-                Scaffold.of(context).openDrawer();
-              },
-              child: Container(
-                // Frosted circle to match the notification / mic / settings
-                // icon buttons on this purple top bar — a subtle white ring +
-                // frosted fill, not a heavy drop-shadow "sticker".
-                padding: EdgeInsets.all(2.w),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.25),
-                    width: 1.2,
+                onTap: () {
+                  Scaffold.of(context).openDrawer();
+                },
+                child: Container(
+                  // Frosted circle to match the notification / mic / settings
+                  // icon buttons on this purple top bar — a subtle white ring +
+                  // frosted fill, not a heavy drop-shadow "sticker".
+                  padding: EdgeInsets.all(2.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: UserAvatar(
+                    size: 28.w,
+                    imageUrl: user?.profilePicture,
+                    firstName: user?.firstName,
+                    lastName: user?.lastName,
+                    fallbackMode: UserAvatarFallback.initials,
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
                   ),
                 ),
-                child: UserAvatar(
-                  size: 28.w,
-                  imageUrl: user?.profilePicture,
-                  firstName: user?.firstName,
-                  lastName: user?.lastName,
-                  fallbackMode: UserAvatarFallback.initials,
-                  backgroundColor: Colors.white.withValues(alpha: 0.1),
-                ),
               ),
-            ),
             ),
             Spacer(),
             // Country Selector (the locale dropdown — single source for the
@@ -195,14 +195,14 @@ class _DashboardHeaderState extends State<DashboardHeader>
 
               // Update preferences in ProfileCubit
               await context.read<ProfileCubit>().setActiveCountry(
-                selectedCountry.countryCode,
-              );
+                    selectedCountry.countryCode,
+                  );
 
               // Update active locale on the server via MultiCountryCubit
               if (context.mounted) {
                 context.read<MultiCountryCubit>().setActiveLocale(
-                  selectedCountry.locale,
-                );
+                      selectedCountry.locale,
+                    );
               }
 
               if (!context.mounted) return;
@@ -218,18 +218,22 @@ class _DashboardHeaderState extends State<DashboardHeader>
                 // until the new-locale balances arrive lets the CompactAnimatedBalance
                 // flip-counter roll to the updated values instead of flashing a
                 // loader — the same auto-refresh+animate behaviour as on login.
-                await context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-                  userId: userId,
-                  accessToken: accessToken,
-                  country: selectedCountry.countryCode,
-                  silent: true,
-                );
+                await context
+                    .read<AccountCardsSummaryCubit>()
+                    .fetchAccountSummaries(
+                      userId: userId,
+                      accessToken: accessToken,
+                      country: selectedCountry.countryCode,
+                      silent: true,
+                    );
 
                 // Check if we got any accounts
-                final currentState = context.read<AccountCardsSummaryCubit>().state;
+                final currentState =
+                    context.read<AccountCardsSummaryCubit>().state;
                 if (currentState is AccountCardsSummaryLoaded &&
                     currentState.accountSummaries.isEmpty) {
-                  print('No accounts found for country: ${selectedCountry.countryCode}');
+                  print(
+                      'No accounts found for country: ${selectedCountry.countryCode}');
                 }
               }
             }
@@ -352,7 +356,8 @@ class _DashboardHeaderState extends State<DashboardHeader>
                   decoration: BoxDecoration(
                     color: const Color(0xFFEF4444),
                     borderRadius: BorderRadius.circular(10.r),
-                    border: Border.all(color: const Color(0xFF4E03D0), width: 1.5),
+                    border:
+                        Border.all(color: const Color(0xFF4E03D0), width: 1.5),
                   ),
                   alignment: Alignment.center,
                   child: Text(
@@ -398,7 +403,8 @@ class _DashboardHeaderState extends State<DashboardHeader>
               boxShadow: [
                 // Wide soft halo — far brighter at the peak than before.
                 BoxShadow(
-                  color: glowColor.withValues(alpha: 0.30 + (0.70 * t)), // 0.30 → 1.0
+                  color: glowColor.withValues(
+                      alpha: 0.30 + (0.70 * t)), // 0.30 → 1.0
                   blurRadius: blur,
                   spreadRadius: spread,
                 ),
@@ -419,7 +425,7 @@ class _DashboardHeaderState extends State<DashboardHeader>
   }
 
   void _showNotifications(BuildContext context) {
-     Get.bottomSheet(
+    Get.bottomSheet(
       FractionallySizedBox(
         heightFactor: 0.9,
         child: Container(
@@ -543,4 +549,4 @@ class _DashboardHeaderState extends State<DashboardHeader>
       exitBottomSheetDuration: const Duration(milliseconds: 200),
     );
   }
-} 
+}

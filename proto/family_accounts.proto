@@ -692,6 +692,8 @@ message SetupFamilyAccountRequest {
   repeated MemberAllocation allocations = 4;
   string funding_policy = 5; // any_member | creator_only | specific_members
   repeated string specific_member_ids = 6;
+  // Optional display name applied during activation (empty = keep current).
+  string account_name = 7;
 }
 
 message MemberAllocation {

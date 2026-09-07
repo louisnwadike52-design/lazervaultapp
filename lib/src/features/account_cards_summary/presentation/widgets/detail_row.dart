@@ -43,4 +43,4 @@ class DetailRow extends StatelessWidget {
       ),
     );
   }
-} 
+}

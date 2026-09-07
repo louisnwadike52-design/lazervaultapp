@@ -38,7 +38,8 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
   void initState() {
     super.initState();
     // Restore previously selected user if going back
-    final destination = widget.formData['invitationDestination'] as String? ?? '';
+    final destination =
+        widget.formData['invitationDestination'] as String? ?? '';
     if (destination.isNotEmpty) {
       _searchController.text = destination;
     }

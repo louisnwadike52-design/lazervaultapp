@@ -11,7 +11,7 @@ class SwitchDetailRow extends StatelessWidget {
     super.key,
     required this.label,
     required this.isEnabled,
-    required this.isCardActive, 
+    required this.isCardActive,
     required this.onChanged,
   });
 
@@ -27,12 +27,12 @@ class SwitchDetailRow extends StatelessWidget {
             style: TextStyle(
               color: isCardActive
                   ? Colors.white.withValues(alpha: 0.7)
-                  : Colors.white.withValues(alpha: 0.3), 
+                  : Colors.white.withValues(alpha: 0.3),
               fontSize: 14.sp,
             ),
           ),
           GestureDetector(
-            onTap: isCardActive ? () => onChanged(!isEnabled) : null, 
+            onTap: isCardActive ? () => onChanged(!isEnabled) : null,
             child: Container(
               width: 44.w,
               height: 24.h,
@@ -46,9 +46,7 @@ class SwitchDetailRow extends StatelessWidget {
                 children: [
                   AnimatedPositioned(
                     duration: const Duration(milliseconds: 200),
-                    left: (isCardActive && isEnabled)
-                        ? 20.w
-                        : 2.w,
+                    left: (isCardActive && isEnabled) ? 20.w : 2.w,
                     top: 2.h,
                     child: Container(
                       width: 20.w,
@@ -69,4 +67,4 @@ class SwitchDetailRow extends StatelessWidget {
       ),
     );
   }
-} 
+}

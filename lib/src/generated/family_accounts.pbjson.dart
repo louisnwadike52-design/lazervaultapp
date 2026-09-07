@@ -1472,6 +1472,7 @@ const SetupFamilyAccountRequest$json = {
       '5': 9,
       '10': 'specificMemberIds'
     },
+    {'1': 'account_name', '3': 7, '4': 1, '5': 9, '10': 'accountName'},
   ],
 };
 
@@ -1483,7 +1484,8 @@ final $typed_data.Uint8List setupFamilyAccountRequestDescriptor = $convert.base6
     'R5X2VuYWJsZWQYAyABKAhSGXNwZW5kaW5nVmlzaWJpbGl0eUVuYWJsZWQSPwoLYWxsb2NhdGlv'
     'bnMYBCADKAsyHS5hY2NvdW50cy52MS5NZW1iZXJBbGxvY2F0aW9uUgthbGxvY2F0aW9ucxIlCg'
     '5mdW5kaW5nX3BvbGljeRgFIAEoCVINZnVuZGluZ1BvbGljeRIuChNzcGVjaWZpY19tZW1iZXJf'
-    'aWRzGAYgAygJUhFzcGVjaWZpY01lbWJlcklkcw==');
+    'aWRzGAYgAygJUhFzcGVjaWZpY01lbWJlcklkcxIhCgxhY2NvdW50X25hbWUYByABKAlSC2FjY2'
+    '91bnROYW1l');
 
 @$core.Deprecated('Use memberAllocationDescriptor instead')
 const MemberAllocation$json = {

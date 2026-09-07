@@ -5366,6 +5366,7 @@ class SetupFamilyAccountRequest extends $pb.GeneratedMessage {
     $core.Iterable<MemberAllocation>? allocations,
     $core.String? fundingPolicy,
     $core.Iterable<$core.String>? specificMemberIds,
+    $core.String? accountName,
   }) {
     final result = create();
     if (familyId != null) result.familyId = familyId;
@@ -5377,6 +5378,7 @@ class SetupFamilyAccountRequest extends $pb.GeneratedMessage {
     if (fundingPolicy != null) result.fundingPolicy = fundingPolicy;
     if (specificMemberIds != null)
       result.specificMemberIds.addAll(specificMemberIds);
+    if (accountName != null) result.accountName = accountName;
     return result;
   }
 
@@ -5405,6 +5407,7 @@ class SetupFamilyAccountRequest extends $pb.GeneratedMessage {
         subBuilder: MemberAllocation.create)
     ..aOS(5, _omitFieldNames ? '' : 'fundingPolicy')
     ..pPS(6, _omitFieldNames ? '' : 'specificMemberIds')
+    ..aOS(7, _omitFieldNames ? '' : 'accountName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -5471,6 +5474,16 @@ class SetupFamilyAccountRequest extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(6)
   $pb.PbList<$core.String> get specificMemberIds => $_getList(5);
+
+  /// Optional display name applied during activation (empty = keep current).
+  @$pb.TagNumber(7)
+  $core.String get accountName => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set accountName($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasAccountName() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearAccountName() => $_clearField(7);
 }
 
 class MemberAllocation extends $pb.GeneratedMessage {

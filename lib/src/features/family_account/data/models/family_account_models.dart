@@ -50,7 +50,8 @@ extension FamilyAccountProtoExtension on FamilyAccountProto {
       members: members.map((m) => m.toDomain()).toList(),
       memberCount: memberCount,
       activeMemberCount: activeMemberCount,
-      fundDistributionMode: FundDistributionModeExtension.fromString(fundDistributionMode),
+      fundDistributionMode:
+          FundDistributionModeExtension.fromString(fundDistributionMode),
       setupCompleted: setupCompleted,
       spendingVisibilityEnabled: spendingVisibilityEnabled,
       fundingPolicy: fundingPolicy,

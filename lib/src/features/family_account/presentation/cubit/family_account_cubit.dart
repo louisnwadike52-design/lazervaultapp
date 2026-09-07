@@ -453,6 +453,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     List<MemberAllocationEntry> allocations = const [],
     String fundingPolicy = 'any_member',
     List<String> specificMemberIds = const [],
+    String accountName = '',
   }) async {
     emit(const FamilyAccountSettingUp());
     final result = await setupFamilyAccount(SetupFamilyAccountParams(
@@ -460,6 +461,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       fundDistributionMode: fundDistributionMode,
       spendingVisibilityEnabled: spendingVisibilityEnabled,
       allocations: allocations,
+      accountName: accountName,
       fundingPolicy: fundingPolicy,
       specificMemberIds: specificMemberIds,
     ));

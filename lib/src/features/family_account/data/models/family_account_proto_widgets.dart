@@ -71,7 +71,8 @@ class CreateFamilyAccountRequest {
       description: json['description'] as String?,
       initialCurrency: json['initial_currency'] as String? ?? 'NGN',
       initialFunding: (json['initial_funding'] as num?)?.toDouble() ?? 0.0,
-      allowMemberContributions: json['allow_member_contributions'] as bool? ?? true,
+      allowMemberContributions:
+          json['allow_member_contributions'] as bool? ?? true,
       creatorId: json['creator_id'] as String? ?? '',
       creatorName: json['creator_name'] as String? ?? '',
       creatorEmail: json['creator_email'] as String?,
@@ -91,7 +92,8 @@ class CreateFamilyAccountResponse {
   factory CreateFamilyAccountResponse.fromJson(Map<String, dynamic> json) {
     return CreateFamilyAccountResponse(
       familyAccount: json['family_account'] != null
-          ? FamilyAccountProto.fromJson(json['family_account'] as Map<String, dynamic>)
+          ? FamilyAccountProto.fromJson(
+              json['family_account'] as Map<String, dynamic>)
           : null,
       message: json['message'] as String,
     );
@@ -191,10 +193,14 @@ class UpdateFamilyMemberRequest {
       'member_id': memberId,
     };
     if (allocatedBalance != null) json['allocated_balance'] = allocatedBalance;
-    if (dailySpendingLimit != null) json['daily_spending_limit'] = dailySpendingLimit;
-    if (monthlySpendingLimit != null) json['monthly_spending_limit'] = monthlySpendingLimit;
-    if (perTransactionLimit != null) json['per_transaction_limit'] = perTransactionLimit;
-    if (allocationPercentageCap != null) json['allocation_percentage_cap'] = allocationPercentageCap;
+    if (dailySpendingLimit != null)
+      json['daily_spending_limit'] = dailySpendingLimit;
+    if (monthlySpendingLimit != null)
+      json['monthly_spending_limit'] = monthlySpendingLimit;
+    if (perTransactionLimit != null)
+      json['per_transaction_limit'] = perTransactionLimit;
+    if (allocationPercentageCap != null)
+      json['allocation_percentage_cap'] = allocationPercentageCap;
     if (role != null) json['role'] = role;
     return json;
   }
@@ -281,21 +287,27 @@ class FamilyAccountProto {
       creatorName: json['creator_name'] as String? ?? '',
       name: json['name'] as String,
       description: json['description'] as String?,
-      totalAllocatedBalance: (json['total_allocated_balance'] as num?)?.toDouble() ?? 0.0,
+      totalAllocatedBalance:
+          (json['total_allocated_balance'] as num?)?.toDouble() ?? 0.0,
       totalPoolBalance: (json['total_pool_balance'] as num?)?.toDouble() ?? 0.0,
-      allowMemberContributions: json['allow_member_contributions'] as bool? ?? true,
+      allowMemberContributions:
+          json['allow_member_contributions'] as bool? ?? true,
       totalBalance: (json['total_balance'] as num?)?.toDouble() ?? 0.0,
       status: json['status'] as String? ?? 'active',
       createdAt: json['created_at'] as String? ?? '',
       updatedAt: json['updated_at'] as String? ?? '',
       members: (json['members'] as List?)
-              ?.map((e) => FamilyMemberProto.fromJson(e as Map<String, dynamic>))
-              .toList() ?? [],
+              ?.map(
+                  (e) => FamilyMemberProto.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
       memberCount: json['member_count'] as int? ?? 0,
       activeMemberCount: json['active_member_count'] as int? ?? 0,
-      fundDistributionMode: json['fund_distribution_mode'] as String? ?? 'custom_allocation',
+      fundDistributionMode:
+          json['fund_distribution_mode'] as String? ?? 'custom_allocation',
       setupCompleted: json['setup_completed'] as bool? ?? false,
-      spendingVisibilityEnabled: json['spending_visibility_enabled'] as bool? ?? true,
+      spendingVisibilityEnabled:
+          json['spending_visibility_enabled'] as bool? ?? true,
       fundingPolicy: json['funding_policy'] as String? ?? 'any_member',
       accountNumber: json['account_number'] as String?,
       bankName: json['bank_name'] as String?,
@@ -423,11 +435,14 @@ class PendingInvitationProto {
       familyName: json['family_name'] as String,
       creatorName: json['creator_name'] as String? ?? '',
       creatorAvatar: json['creator_avatar'] as String?,
-      initialAllocation: (json['initial_allocation'] as num?)?.toDouble() ?? 0.0,
+      initialAllocation:
+          (json['initial_allocation'] as num?)?.toDouble() ?? 0.0,
       dailyLimit: (json['daily_limit'] as num?)?.toDouble() ?? 0.0,
       monthlyLimit: (json['monthly_limit'] as num?)?.toDouble() ?? 0.0,
-      perTransactionLimit: (json['per_transaction_limit'] as num?)?.toDouble() ?? 0.0,
-      allocationPercentageCap: (json['allocation_percentage_cap'] as num?)?.toDouble() ?? 100.0,
+      perTransactionLimit:
+          (json['per_transaction_limit'] as num?)?.toDouble() ?? 0.0,
+      allocationPercentageCap:
+          (json['allocation_percentage_cap'] as num?)?.toDouble() ?? 100.0,
       invitedBy: json['invited_by'] as String? ?? '',
       invitedEmail: json['invited_email'] as String?,
       invitedPhone: json['invited_phone'] as String?,

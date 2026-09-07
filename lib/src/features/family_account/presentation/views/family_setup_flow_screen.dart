@@ -11,7 +11,6 @@ import 'package:lazervault/src/features/family_account/presentation/cubit/family
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'family_setup_flow_screen_widgets.dart';
 
-
 // Step 2: Account Details
 class FamilyAccountDetailsStep extends StatefulWidget {
   final Map<String, dynamic> initialData;
@@ -24,7 +23,8 @@ class FamilyAccountDetailsStep extends StatefulWidget {
   });
 
   @override
-  State<FamilyAccountDetailsStep> createState() => _FamilyAccountDetailsStepState();
+  State<FamilyAccountDetailsStep> createState() =>
+      _FamilyAccountDetailsStepState();
 }
 
 class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
@@ -37,14 +37,17 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.initialData['name'] as String? ?? '');
-    _descriptionController = TextEditingController(text: widget.initialData['description'] as String? ?? '');
+    _nameController = TextEditingController(
+        text: widget.initialData['name'] as String? ?? '');
+    _descriptionController = TextEditingController(
+        text: widget.initialData['description'] as String? ?? '');
     _fundingController = TextEditingController(
       text: widget.initialData['initialFunding'] > 0
           ? widget.initialData['initialFunding'].toString()
           : '',
     );
-    _allowMemberContributions = widget.initialData['allowMemberContributions'] as bool? ?? true;
+    _allowMemberContributions =
+        widget.initialData['allowMemberContributions'] as bool? ?? true;
   }
 
   @override
@@ -211,7 +214,8 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
             SizedBox(height: 8.h),
             TextFormField(
               controller: _fundingController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16.sp,

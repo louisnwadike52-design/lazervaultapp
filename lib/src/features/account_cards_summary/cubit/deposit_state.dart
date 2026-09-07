@@ -24,4 +24,4 @@ class DepositFailure extends DepositState {
   const DepositFailure(this.message, {this.statusCode});
   @override
   List<Object?> get props => [message, statusCode];
-} 
+}

@@ -423,6 +423,7 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
     List<MemberAllocationProto> allocations = const [],
     String fundingPolicy = 'any_member',
     List<String> specificMemberIds = const [],
+    String accountName = '',
   }) async {
     try {
       final protoAllocations = allocations
@@ -441,6 +442,7 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
         allocations: protoAllocations,
         fundingPolicy: fundingPolicy,
         specificMemberIds: specificMemberIds,
+        accountName: accountName,
       );
 
       final callOptions = await _callOptionsHelper.withAuth();

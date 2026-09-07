@@ -15,7 +15,7 @@ class CopyableDetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     return Padding(
+    return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,13 +34,12 @@ class CopyableDetailRow extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.03),
               borderRadius: BorderRadius.circular(8.r),
               boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               children: [
@@ -80,4 +79,4 @@ class CopyableDetailRow extends StatelessWidget {
       ),
     );
   }
-} 
+}

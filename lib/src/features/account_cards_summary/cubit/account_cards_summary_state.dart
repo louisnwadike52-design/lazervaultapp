@@ -50,7 +50,8 @@ class AccountBalanceUpdated extends AccountCardsSummaryState {
   final double previousBalance;
   final double newBalance;
   final double amount;
-  final String eventType; // "deposit", "withdrawal", "transfer_in", "transfer_out"
+  final String
+      eventType; // "deposit", "withdrawal", "transfer_in", "transfer_out"
   final String status;
   final String? reference;
 
@@ -76,4 +77,4 @@ class AccountBalanceUpdated extends AccountCardsSummaryState {
         status,
         reference,
       ];
-} 
+}

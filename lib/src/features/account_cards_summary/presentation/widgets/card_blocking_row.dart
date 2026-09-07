@@ -23,7 +23,7 @@ class CardBlockingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      return Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -42,13 +42,13 @@ class CardBlockingRow extends StatelessWidget {
                 vertical: 6.h,
               ),
               decoration: BoxDecoration(
-                color: statusColor.withValues(alpha: 0.2), 
+                color: statusColor.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Text(
-                cardStatus, 
+                cardStatus,
                 style: TextStyle(
-                  color: statusColor, 
+                  color: statusColor,
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -56,51 +56,50 @@ class CardBlockingRow extends StatelessWidget {
             ),
           ],
         ),
-        if (isCardActive)
-          ...[
-            SizedBox(height: 16.h),
-            _buildBlockButton(
-              'Report Stolen Card',
-              'Immediately block card and request replacement',
-              Icons.gpp_bad_outlined,
-              Colors.red,
-              onTap: onReportStolen,
-            ),
-            SizedBox(height: 12.h),
-             _buildBlockButton(
-              'Temporarily Block Card',
-              'Block your card temporarily. You can unblock it anytime.',
-              Icons.pause_circle_outline_rounded,
-              Colors.orange,
-              onTap: onTemporarilyBlock,
-            ),
-            SizedBox(height: 12.h),
-            _buildBlockButton(
-              'Permanently Block Card',
-              'Block your card permanently. This action cannot be undone.',
-              Icons.block_rounded,
-              Colors.red,
-              onTap: onPermanentlyBlock,
-            ),
-          ] 
-        else if (cardStatus == 'Temporarily Blocked') 
-            ...[
-              SizedBox(height: 16.h),
-              _buildBlockButton(
-                'Unblock Card',
-                'Restore all card functionalities.',
-                Icons.lock_open_rounded,
-                Colors.green,
-                onTap: onUnblock,
-              ),
-            ],
+        if (isCardActive) ...[
+          SizedBox(height: 16.h),
+          _buildBlockButton(
+            'Report Stolen Card',
+            'Immediately block card and request replacement',
+            Icons.gpp_bad_outlined,
+            Colors.red,
+            onTap: onReportStolen,
+          ),
+          SizedBox(height: 12.h),
+          _buildBlockButton(
+            'Temporarily Block Card',
+            'Block your card temporarily. You can unblock it anytime.',
+            Icons.pause_circle_outline_rounded,
+            Colors.orange,
+            onTap: onTemporarilyBlock,
+          ),
+          SizedBox(height: 12.h),
+          _buildBlockButton(
+            'Permanently Block Card',
+            'Block your card permanently. This action cannot be undone.',
+            Icons.block_rounded,
+            Colors.red,
+            onTap: onPermanentlyBlock,
+          ),
+        ] else if (cardStatus == 'Temporarily Blocked') ...[
+          SizedBox(height: 16.h),
+          _buildBlockButton(
+            'Unblock Card',
+            'Restore all card functionalities.',
+            Icons.lock_open_rounded,
+            Colors.green,
+            onTap: onUnblock,
+          ),
+        ],
       ],
     );
   }
 
-   // Internal helper for block buttons
-  Widget _buildBlockButton(String title, String subtitle, IconData icon, Color color, { required VoidCallback onTap }) {
-     return Material(
+  // Internal helper for block buttons
+  Widget _buildBlockButton(
+      String title, String subtitle, IconData icon, Color color,
+      {required VoidCallback onTap}) {
+    return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
@@ -111,13 +110,12 @@ class CardBlockingRow extends StatelessWidget {
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -161,4 +159,4 @@ class CardBlockingRow extends StatelessWidget {
       ),
     );
   }
-} 
+}

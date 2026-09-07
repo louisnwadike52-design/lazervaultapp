@@ -48,7 +48,8 @@ class BalanceUpdateEvent {
       eventType: json['event_type'] as String? ?? '',
       transactionId: json['transaction_id'] as String?,
       reference: json['reference'] as String?,
-      amount: json['amount'] != null ? (json['amount'] as num).toDouble() : null,
+      amount:
+          json['amount'] != null ? (json['amount'] as num).toDouble() : null,
       narration: json['narration'] as String?,
       status: json['status'] as String? ?? 'completed',
       timestamp: (json['timestamp'] as num?)?.toInt() ?? 0,
@@ -70,10 +71,12 @@ class BalanceUpdateEvent {
 class InsurancePurchaseEvent {
   final String userId;
   final String purchaseId; // transaction_id on the wire
-  final String eventType;  // insurance_purchase_completed | ... | insurance_policy_renewed
-  final String status;     // pending | processing | completed | failed | renewed
-  final String reference;  // policy number for renewals, purchase ref otherwise
-  final String narration;  // free-form: new expiry ISO for renewals, error msg for failures
+  final String
+      eventType; // insurance_purchase_completed | ... | insurance_policy_renewed
+  final String status; // pending | processing | completed | failed | renewed
+  final String reference; // policy number for renewals, purchase ref otherwise
+  final String
+      narration; // free-form: new expiry ISO for renewals, error msg for failures
   final double amount;
   final String currency;
   final int timestamp;
@@ -122,7 +125,7 @@ class InsurancePurchaseEvent {
 class InsuranceClaimEvent {
   final String userId;
   final String claimId;
-  final String status;    // approved | rejected | settled | etc.
+  final String status; // approved | rejected | settled | etc.
   final String narration; // upstream label / reason text
   final int timestamp;
 
@@ -145,8 +148,7 @@ class InsuranceClaimEvent {
   }
 
   @override
-  String toString() =>
-      'InsuranceClaimEvent(claim=$claimId status=$status)';
+  String toString() => 'InsuranceClaimEvent(claim=$claimId status=$status)';
 }
 
 /// Connection states for WebSocket
@@ -165,7 +167,8 @@ class LockFundLifecycleEvent {
   final String userId;
   final String lockFundId;
   final String accountId;
-  final String eventType; // lock_fund.created | .matured | .renewed | .renewal_skipped
+  final String
+      eventType; // lock_fund.created | .matured | .renewed | .renewal_skipped
   final String name;
   final double amount;
   final String currency;

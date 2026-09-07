@@ -124,7 +124,8 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
   void _fetchData() {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) {
-      print("_DashboardCardSummaryView: User not authenticated, cannot fetch summaries.");
+      print(
+          "_DashboardCardSummaryView: User not authenticated, cannot fetch summaries.");
       return;
     }
 
@@ -177,7 +178,8 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
                 : 'NG');
       }
 
-      debugPrint('_setupWebSocketConnection: Connecting with userId=$userId, country=$activeCountry');
+      debugPrint(
+          '_setupWebSocketConnection: Connecting with userId=$userId, country=$activeCountry');
 
       // Connect to WebSocket for real-time balance updates
       context.read<BalanceWebSocketCubit>().connect(
@@ -319,17 +321,20 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
         // via animated counters - NO server refresh needed, WebSocket is the source of truth
         BlocListener<BalanceWebSocketCubit, BalanceWebSocketState>(
           listenWhen: (previous, current) =>
-              current.lastUpdate != null && current.lastUpdate != previous.lastUpdate,
+              current.lastUpdate != null &&
+              current.lastUpdate != previous.lastUpdate,
           listener: (context, wsState) {
             final event = wsState.lastUpdate!;
-            debugPrint('_DashboardCardSummaryView: WebSocket balance update - ${event.eventType}: ${event.newBalance} ${event.currency}');
+            debugPrint(
+                '_DashboardCardSummaryView: WebSocket balance update - ${event.eventType}: ${event.newBalance} ${event.currency}');
             // Suppress duplicate banners for the SAME settled event re-broadcast
             // by multiple banking settlement paths (webhook + poll + reconciler).
             // Guard only the user-facing banner here; the carousel's count-up
             // animation is a SEPARATE listener and must still see every event.
             if (_wsSnackbarAlreadyShown(event)) return;
             // Show snackbar for transfer events when user is on dashboard
-            if (event.eventType == 'transfer_out' || event.eventType == 'transfer') {
+            if (event.eventType == 'transfer_out' ||
+                event.eventType == 'transfer') {
               if (event.status == 'completed') {
                 LVSnackbar.showSuccess(
                   title: 'Transfer Completed',
@@ -340,11 +345,13 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
               } else if (event.status == 'failed') {
                 LVSnackbar.showError(
                   title: 'Transfer Failed',
-                  message: 'Transfer could not be completed. Funds returned to your account.',
+                  message:
+                      'Transfer could not be completed. Funds returned to your account.',
                   duration: const Duration(seconds: 5),
                 );
               }
-            } else if (event.eventType == 'transfer_in' || event.eventType == 'deposit') {
+            } else if (event.eventType == 'transfer_in' ||
+                event.eventType == 'deposit') {
               // The deposit receipt IS the confirmation — while it's on screen
               // (pushed over the dashboard, whose listener stays alive), don't
               // pop the deposit text as a snackbar over it.
@@ -453,7 +460,8 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
                               style: const TextStyle(color: Colors.red))),
                     );
                   }
-                  if (state is AccountCardsSummaryLoaded || state is AccountBalanceUpdated) {
+                  if (state is AccountCardsSummaryLoaded ||
+                      state is AccountBalanceUpdated) {
                     final accountSummaries = state is AccountCardsSummaryLoaded
                         ? state.accountSummaries
                         : (state as AccountBalanceUpdated).accountSummaries;
@@ -466,7 +474,8 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
                         state.isRefreshing;
                     // Check if user has no accounts (non-Nigeria or accounts not yet created)
                     if (accountSummaries.isEmpty) {
-                      final isSupported = EmptyAccountState.isCountrySupported(countryCode);
+                      final isSupported =
+                          EmptyAccountState.isCountrySupported(countryCode);
                       return Padding(
                         padding: EdgeInsets.symmetric(horizontal: 4.w),
                         child: SizedBox(
@@ -483,7 +492,8 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
                                     'We\'ll notify you when virtual accounts become available in your region!',
                                   ),
                                   duration: Duration(seconds: 3),
-                                  backgroundColor: Color.fromARGB(255, 78, 3, 208),
+                                  backgroundColor:
+                                      Color.fromARGB(255, 78, 3, 208),
                                 ),
                               );
                             },
@@ -545,5 +555,4 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView>
       ),
     );
   }
-
 }

@@ -6,7 +6,6 @@ import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
-
 /// Empty state widget displayed when a user has no accounts for the selected locale.
 /// Shows a "Create Account" button that triggers multi-country account creation.
 class EmptyAccountState extends StatelessWidget {
@@ -40,7 +39,8 @@ class EmptyAccountState extends StatelessWidget {
   /// Convert country code to locale string (e.g., "NG" -> "en-NG")
   /// Get currency for country code using CountryLocales as the single source of truth.
   static String _currencyForCountry(String countryCode) {
-    return CountryLocales.findByCountryCode(countryCode)?.currency ?? countryCode;
+    return CountryLocales.findByCountryCode(countryCode)?.currency ??
+        countryCode;
   }
 
   @override

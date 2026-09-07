@@ -1,9 +1,9 @@
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
 import '../entities/family_account_entities.dart';
-import '../repositories/family_account_repository.dart' show FamilyAccountRepository, MemberAllocationEntry;
+import '../repositories/family_account_repository.dart'
+    show FamilyAccountRepository, MemberAllocationEntry;
 part 'family_account_usecases_widgets.dart';
-
 
 class AddFamilyMemberParams {
   final String familyId;

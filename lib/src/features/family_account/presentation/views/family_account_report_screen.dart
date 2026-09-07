@@ -27,7 +27,8 @@ class FamilyAccountReportScreen extends StatefulWidget {
   const FamilyAccountReportScreen({super.key, required this.account});
 
   @override
-  State<FamilyAccountReportScreen> createState() => _FamilyAccountReportScreenState();
+  State<FamilyAccountReportScreen> createState() =>
+      _FamilyAccountReportScreenState();
 }
 
 class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
@@ -79,7 +80,8 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
     final bytes = await _buildPdf(txns);
     await Printing.sharePdf(
       bytes: bytes,
-      filename: 'family-statement-${widget.account.name.replaceAll(' ', '-')}.pdf',
+      filename:
+          'family-statement-${widget.account.name.replaceAll(' ', '-')}.pdf',
     );
   }
 
@@ -98,17 +100,23 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
         build: (ctx) => [
           pw.Header(
             level: 0,
-            child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-              pw.Text('Family & Friends Statement',
-                  style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 2),
-              pw.Text(a.name, style: const pw.TextStyle(fontSize: 14)),
-              pw.Text('Generated ${df.format(DateTime.now())}',
-                  style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600)),
-            ]),
+            child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('Family & Friends Statement',
+                      style: pw.TextStyle(
+                          fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                  pw.SizedBox(height: 2),
+                  pw.Text(a.name, style: const pw.TextStyle(fontSize: 14)),
+                  pw.Text('Generated ${df.format(DateTime.now())}',
+                      style: const pw.TextStyle(
+                          fontSize: 9, color: PdfColors.grey600)),
+                ]),
           ),
           pw.SizedBox(height: 12),
-          pw.Text('Summary', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
+          pw.Text('Summary',
+              style:
+                  pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 6),
           pw.Table(
             border: pw.TableBorder.all(color: PdfColors.grey300),
@@ -121,7 +129,9 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
             ],
           ),
           pw.SizedBox(height: 16),
-          pw.Text('Members', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
+          pw.Text('Members',
+              style:
+                  pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 6),
           pw.Table(
             border: pw.TableBorder.all(color: PdfColors.grey300),
@@ -142,18 +152,26 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
                 ],
               ),
               ...a.members.map((mem) => pw.TableRow(children: [
-                    _cell(mem.fullName.isNotEmpty ? mem.fullName : (mem.username ?? 'Member')),
+                    _cell(mem.fullName.isNotEmpty
+                        ? mem.fullName
+                        : (mem.username ?? 'Member')),
                     _cell(m(mem.allocatedBalance)),
                     _cell(m(mem.spentThisMonth)),
-                    _cell(mem.role == FamilyMemberRole.admin ? 'Admin' : 'Member'),
+                    _cell(mem.role == FamilyMemberRole.admin
+                        ? 'Admin'
+                        : 'Member'),
                   ])),
             ],
           ),
           pw.SizedBox(height: 16),
-          pw.Text('Activity', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
+          pw.Text('Activity',
+              style:
+                  pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 6),
           if (txns.isEmpty)
-            pw.Text('No transactions for this account.', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey600))
+            pw.Text('No transactions for this account.',
+                style:
+                    const pw.TextStyle(fontSize: 10, color: PdfColors.grey600))
           else
             pw.Table(
               border: pw.TableBorder.all(color: PdfColors.grey300),
@@ -177,7 +195,8 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
                       _cell(df.format(t.createdAt)),
                       _cell(t.type.displayName),
                       _cell(m(t.amount.abs())),
-                      _cell('${t.memberName.isNotEmpty ? t.memberName : 'Member'}'
+                      _cell(
+                          '${t.memberName.isNotEmpty ? t.memberName : 'Member'}'
                           '${t.description != null && t.description!.isNotEmpty ? ' — ${t.description}' : ''}'),
                     ])),
               ],
@@ -196,7 +215,9 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
   pw.Widget _cell(String s, {bool bold = false}) => pw.Padding(
         padding: const pw.EdgeInsets.all(5),
         child: pw.Text(s,
-            style: pw.TextStyle(fontSize: 9, fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal)),
+            style: pw.TextStyle(
+                fontSize: 9,
+                fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal)),
       );
 
   @override
@@ -213,12 +234,17 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
             onPressed: () => Get.back(),
           ),
           title: Text('Account Statement',
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.bold)),
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold)),
         ),
         body: BlocBuilder<FamilyAccountCubit, FamilyAccountState>(
           bloc: _cubit,
           builder: (context, state) {
-            final txns = state is FamilyTransactionsLoaded ? state.transactions : <FamilyTransaction>[];
+            final txns = state is FamilyTransactionsLoaded
+                ? state.transactions
+                : <FamilyTransaction>[];
             final loading = state is FamilyAccountLoading;
             return ListView(
               padding: EdgeInsets.all(20.w),
@@ -226,7 +252,10 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
                 _summaryCard(),
                 SizedBox(height: 16.h),
                 Text('Activity (${txns.length})',
-                    style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600)),
                 SizedBox(height: 8.h),
                 if (loading)
                   Padding(
@@ -237,7 +266,8 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     child: Text('No transactions yet.',
-                        style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 13.sp)),
+                        style: GoogleFonts.inter(
+                            color: Colors.grey[500], fontSize: 13.sp)),
                   )
                 else
                   ...txns.take(50).map(_txnRow),
@@ -249,11 +279,13 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
                     onPressed: loading ? null : () => _share(txns),
                     icon: Icon(Icons.ios_share, size: 18.sp),
                     label: Text('Share statement (PDF)',
-                        style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                        style: GoogleFonts.inter(
+                            fontSize: 14.sp, fontWeight: FontWeight.w600)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _purple,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r)),
                     ),
                   ),
                 ),
@@ -277,7 +309,11 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(a.name, style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
+          Text(a.name,
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700)),
           SizedBox(height: 12.h),
           _kv('Total pool', _money(a.totalPoolBalance)),
           _kv('Total allocated', _money(a.totalAllocatedBalance)),
@@ -294,8 +330,14 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(k, style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 13.sp)),
-            Text(v, style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+            Text(k,
+                style: GoogleFonts.inter(
+                    color: Colors.grey[500], fontSize: 13.sp)),
+            Text(v,
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600)),
           ],
         ),
       );
@@ -319,16 +361,22 @@ class _FamilyAccountReportScreenState extends State<FamilyAccountReportScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(t.memberName.isNotEmpty ? t.memberName : 'Member',
-                    style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600)),
                 SizedBox(height: 2.h),
                 Text(t.description ?? t.type.displayName,
-                    maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 11.sp)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        color: Colors.grey[500], fontSize: 11.sp)),
               ],
             ),
           ),
           Text('${isCredit ? '+' : '-'}${_money(t.amount.abs())}',
-              style: GoogleFonts.inter(color: color, fontSize: 13.sp, fontWeight: FontWeight.w700)),
+              style: GoogleFonts.inter(
+                  color: color, fontSize: 13.sp, fontWeight: FontWeight.w700)),
         ],
       ),
     );

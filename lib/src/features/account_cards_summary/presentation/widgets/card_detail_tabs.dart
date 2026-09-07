@@ -24,10 +24,14 @@ class CardDetailTabs extends StatelessWidget {
         children: [
           AnimatedPositioned(
             duration: const Duration(milliseconds: 200),
-             // Adjusted width calculation carefully
-            left: showLocalDetails ? 0 : (Get.width * 0.9 - 40.w) / 2, // Use context width if possible, else Get.width
+            // Adjusted width calculation carefully
+            left: showLocalDetails
+                ? 0
+                : (Get.width * 0.9 - 40.w) /
+                    2, // Use context width if possible, else Get.width
             child: Container(
-               width: (Get.width * 0.9 - 40.w) / 2, // Width based on container padding (20.w * 2)
+              width: (Get.width * 0.9 - 40.w) /
+                  2, // Width based on container padding (20.w * 2)
               height: 56.h,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -38,13 +42,12 @@ class CardDetailTabs extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(16.r),
                 boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
             ),
           ),
@@ -71,7 +74,8 @@ class CardDetailTabs extends StatelessWidget {
     );
   }
 
-  Widget _buildTabItem(BuildContext context, {
+  Widget _buildTabItem(
+    BuildContext context, {
     required IconData icon,
     required String label,
     required bool isSelected,
@@ -88,14 +92,18 @@ class CardDetailTabs extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.5),
+                color: isSelected
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.5),
                 size: 20.sp,
               ),
               SizedBox(height: 4.h),
               Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.5),
+                  color: isSelected
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.5),
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -106,4 +114,4 @@ class CardDetailTabs extends StatelessWidget {
       ),
     );
   }
-} 
+}

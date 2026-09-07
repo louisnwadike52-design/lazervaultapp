@@ -34,4 +34,4 @@ class DepositCubit extends Cubit<DepositState> {
       (depositDetails) => emit(DepositSuccess(depositDetails)),
     );
   }
-} 
+}

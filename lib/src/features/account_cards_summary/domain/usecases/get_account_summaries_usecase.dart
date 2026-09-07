@@ -3,7 +3,6 @@ import 'package:lazervault/core/error/failure.dart';
 import '../entities/account_summary_entity.dart';
 import '../repositories/i_account_summary_repository.dart';
 
-
 class GetAccountSummariesUseCase {
   final IAccountSummaryRepository _repository;
 
@@ -22,4 +21,4 @@ class GetAccountSummariesUseCase {
       period: period,
     );
   }
-} 
+}

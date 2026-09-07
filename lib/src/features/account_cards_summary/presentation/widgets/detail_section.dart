@@ -32,4 +32,4 @@ class DetailSection extends StatelessWidget {
       ),
     );
   }
-} 
+}

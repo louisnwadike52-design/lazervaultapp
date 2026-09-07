@@ -79,7 +79,8 @@ class _FamilySetupFlowScreenState extends State<FamilySetupFlowScreen> {
             Expanded(
               child: PageView(
                 controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(), // Disable manual swipe
+                physics:
+                    const NeverScrollableScrollPhysics(), // Disable manual swipe
                 children: [
                   _buildWelcomeStep(),
                   _buildAccountDetailsStep(),
@@ -515,10 +516,13 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSummaryRow('Account Name', formData['name'] as String? ?? ''),
+                _buildSummaryRow(
+                    'Account Name', formData['name'] as String? ?? ''),
                 SizedBox(height: 16.h),
-                if (formData['description'] != null && (formData['description'] as String).isNotEmpty) ...[
-                  _buildSummaryRow('Description', formData['description'] as String? ?? ''),
+                if (formData['description'] != null &&
+                    (formData['description'] as String).isNotEmpty) ...[
+                  _buildSummaryRow(
+                      'Description', formData['description'] as String? ?? ''),
                   SizedBox(height: 16.h),
                 ],
                 _buildSummaryRow(
@@ -528,7 +532,9 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
                 SizedBox(height: 16.h),
                 _buildSummaryRow(
                   'Member Contributions',
-                  (formData['allowMemberContributions'] as bool? ?? true) ? 'Enabled' : 'Disabled',
+                  (formData['allowMemberContributions'] as bool? ?? true)
+                      ? 'Enabled'
+                      : 'Disabled',
                 ),
               ],
             ),
@@ -596,9 +602,14 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
                             cubit.createAccount(
                               name: formData['name'] as String,
                               description: formData['description'] as String?,
-                              initialCurrency: serviceLocator<LocaleManager>().currentCurrency,
-                              initialFunding: formData['initialFunding'] as double,
-                              allowMemberContributions: formData['allowMemberContributions'] as bool? ?? true,
+                              initialCurrency: serviceLocator<LocaleManager>()
+                                  .currentCurrency,
+                              initialFunding:
+                                  formData['initialFunding'] as double,
+                              allowMemberContributions:
+                                  formData['allowMemberContributions']
+                                          as bool? ??
+                                      true,
                             );
                           },
                     borderRadius: BorderRadius.circular(28.r),
@@ -774,7 +785,8 @@ class FamilyInviteMembersStep extends StatelessWidget {
                 onTap: () {
                   // Navigate to activation setup to configure distribution, invite members, etc.
                   if (familyId.isNotEmpty) {
-                    Get.offNamed(AppRoutes.familyActivationSetup, arguments: {'familyId': familyId});
+                    Get.offNamed(AppRoutes.familyActivationSetup,
+                        arguments: {'familyId': familyId});
                   } else {
                     onComplete();
                   }

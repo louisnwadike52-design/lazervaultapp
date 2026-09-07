@@ -1,7 +1,8 @@
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
-import 'package:lazervault/src/core/errors/failures.dart' show friendlyGrpcError;
+import 'package:lazervault/src/core/errors/failures.dart'
+    show friendlyGrpcError;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
@@ -10,8 +11,8 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import 'package:lazervault/src/features/account_cards_summary/domain/repositories/i_account_summary_repository.dart';
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as req_resp;
-import 'package:lazervault/src/generated/family_accounts.pbgrpc.dart' as family_pb;
-
+import 'package:lazervault/src/generated/family_accounts.pbgrpc.dart'
+    as family_pb;
 
 class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
   final AccountsServiceClient _accountsServiceClient;
@@ -33,14 +34,16 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
   }) async {
     try {
       // Use executeWithTokenRotation for automatic token refresh on auth errors
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
         final request = req_resp.GetUserAccountsRequest();
         // Trend window for the dashboard %-change chip (day/week/month/year).
         if (period != null && period.isNotEmpty) {
           request.period = period;
         }
 
-        print('Sending gRPC GetUserAccounts Request for user: $userId${country != null ? ', country: $country' : ''}');
+        print(
+            'Sending gRPC GetUserAccounts Request for user: $userId${country != null ? ', country: $country' : ''}');
 
         // Use helper to get call options with authorization header from secure storage
         CallOptions callOptions = await _callOptionsHelper.withAuth();
@@ -62,11 +65,23 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
         );
       });
 
-      print('gRPC GetUserAccounts Response received with ${response.accounts.length} items');
+      print(
+          'gRPC GetUserAccounts Response received with ${response.accounts.length} items');
 
       final List<AccountSummaryEntity> allAccounts = response.accounts
-          .map((proto) => AccountSummaryModel.fromProto(proto) as AccountSummaryEntity)
+          .map((proto) =>
+              AccountSummaryModel.fromProto(proto) as AccountSummaryEntity)
           .toList();
+
+      // Investment sunset (2026-09-07): the server already withholds EMPTY
+      // legacy investment wallets; this client-side mirror keeps the carousel
+      // clean even against an older backend. A wallet still holding money is
+      // NEVER hidden — it stays visible until the admin sweep moves the funds
+      // into Savings.
+      allAccounts.removeWhere((a) =>
+          a.accountTypeEnum == VirtualAccountType.investment &&
+          a.balance == 0 &&
+          a.availableBalance == 0);
 
       // Separate generic family accounts (from regular accounts) from non-family accounts
       final genericFamilyAccounts = allAccounts
@@ -107,10 +122,12 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
         // Note: familyAccountId is intentionally NOT set here — g.familyAccountId
         // is already null (generic accounts never have it). The carousel resolves
         // the real family ID via GetFamilyAccounts when the user taps Setup.
-        final converted = genericFamilyAccounts.map((g) => g.copyWith(
-          isFamilyAccount: true,
-          familyStatus: 'pending_setup',
-        )).toList();
+        final converted = genericFamilyAccounts
+            .map((g) => g.copyWith(
+                  isFamilyAccount: true,
+                  familyStatus: 'pending_setup',
+                ))
+            .toList();
         accountSummaries.addAll(converted);
       }
 
@@ -127,7 +144,8 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
     } catch (e) {
       print('Unexpected error during getAccountSummaries: $e');
       return Left(ServerFailure(
-        message: 'An unexpected error occurred while fetching account summaries.',
+        message:
+            'An unexpected error occurred while fetching account summaries.',
         statusCode: 500,
       ));
     }
@@ -144,15 +162,15 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
         options: callOptions,
       );
 
-      print('gRPC GetFamilyAccounts Response received with ${response.familyAccounts.length} items');
+      print(
+          'gRPC GetFamilyAccounts Response received with ${response.familyAccounts.length} items');
 
       // Family accounts are created in the user's locale currency
       // (family_setup_flow uses LocaleManager.currentCurrency). The proto does
       // not yet carry a currency field, so resolve it from the active locale
       // rather than hardcoding USD — otherwise an NGN user sees a "$" card.
       final localeCurrency = serviceLocator<LocaleManager>().currentCurrency;
-      final familyCurrency =
-          localeCurrency.isNotEmpty ? localeCurrency : 'NGN';
+      final familyCurrency = localeCurrency.isNotEmpty ? localeCurrency : 'NGN';
       return response.familyAccounts.map((proto) {
         final status = proto.status.isNotEmpty ? proto.status : 'active';
         return AccountSummaryEntity.familyAccount(
@@ -170,7 +188,8 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
           familyAccountId: proto.id,
           virtualAccountId: proto.virtualAccountId,
           familyStatus: status,
-          fundDistributionMode: _mapDistributionMode(proto.fundDistributionMode),
+          fundDistributionMode:
+              _mapDistributionMode(proto.fundDistributionMode),
         );
       }).toList();
     } catch (e) {
@@ -197,7 +216,8 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
   /// 2. Investment
   /// 3. Savings
   /// 4. Others (main, business, usd, gbp, eur) in their original order
-  List<AccountSummaryEntity> _sortAccountSummaries(List<AccountSummaryEntity> summaries) {
+  List<AccountSummaryEntity> _sortAccountSummaries(
+      List<AccountSummaryEntity> summaries) {
     // Define the priority order for account types
     const priorityOrder = {
       'Personal': 0,
@@ -239,4 +259,4 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
 
     return sortedList;
   }
-} 
+}

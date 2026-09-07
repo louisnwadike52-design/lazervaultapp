@@ -1,6 +1,7 @@
 import 'dart:developer' as developer;
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
-import 'package:lazervault/src/generated/accounts.pb.dart' as pb; // Use accounts.proto from backend
+import 'package:lazervault/src/generated/accounts.pb.dart'
+    as pb; // Use accounts.proto from backend
 
 class AccountSummaryModel extends AccountSummaryEntity {
   const AccountSummaryModel({
@@ -61,7 +62,8 @@ class AccountSummaryModel extends AccountSummaryEntity {
     // (backward compat for accounts without clearing/holds)
     final availBal = proto.availableBalance.toDouble() / 100.0;
     final reservedBal = proto.reservedBalance.toDouble() / 100.0;
-    final effectiveAvailable = (availBal == 0 && totalBalance > 0) ? totalBalance : availBal;
+    final effectiveAvailable =
+        (availBal == 0 && totalBalance > 0) ? totalBalance : availBal;
 
     return AccountSummaryModel(
       id: accountId,
@@ -72,10 +74,12 @@ class AccountSummaryModel extends AccountSummaryEntity {
       balance: totalBalance,
       availableBalance: effectiveAvailable,
       reservedBalance: reservedBal,
-      accountNumberLast4: extractLast4(proto.maskedAccountNumber), // Use maskedAccountNumber
+      accountNumberLast4:
+          extractLast4(proto.maskedAccountNumber), // Use maskedAccountNumber
       // Full virtual account details for deposits (Pay by Transfer) — exactly the
       // provider values surfaced by the backend (empty until a real NUBAN mints).
-      accountNumber: proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
+      accountNumber:
+          proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
       accountName: proto.accountName.isNotEmpty ? proto.accountName : null,
       accountLabel: proto.accountName.isNotEmpty ? proto.accountName : null,
       bankName: proto.bankName.isNotEmpty ? proto.bankName : null,
@@ -89,4 +93,4 @@ class AccountSummaryModel extends AccountSummaryEntity {
       // clearingEstimate: null — will be populated when backend adds clearing time fields
     );
   }
-} 
+}

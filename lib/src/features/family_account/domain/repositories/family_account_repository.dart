@@ -135,6 +135,7 @@ abstract class FamilyAccountRepository {
     List<MemberAllocationEntry> allocations = const [],
     String fundingPolicy = 'any_member',
     List<String> specificMemberIds = const [],
+    String accountName = '',
   });
 
   // Update fund distribution mode for an active account

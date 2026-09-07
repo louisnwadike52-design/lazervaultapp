@@ -102,7 +102,8 @@ class _FamilyInviteMemberFlowScreenState
   void _submitInvitation() {
     final noLimits = _formData['noLimits'] as bool? ?? true;
 
-    final selectedUserName = (_formData['selectedUserName'] as String? ?? '').trim();
+    final selectedUserName =
+        (_formData['selectedUserName'] as String? ?? '').trim();
     _cubit.addMember(
       familyId: widget.familyId,
       invitationMethod: _formData['invitationMethod'] as String,
@@ -283,8 +284,7 @@ class _FamilyInviteMemberFlowScreenState
                           colors: [Color(0xFF4E03D0), Color(0xFFA78BFA)],
                         )
                       : null,
-                  color:
-                      index <= _currentStep ? null : const Color(0xFF2D2D2D),
+                  color: index <= _currentStep ? null : const Color(0xFF2D2D2D),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),

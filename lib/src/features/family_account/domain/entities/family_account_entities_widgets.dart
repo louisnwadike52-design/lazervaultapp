@@ -162,7 +162,8 @@ class FamilyMember extends Equatable {
       dailySpendingLimit: dailySpendingLimit ?? this.dailySpendingLimit,
       monthlySpendingLimit: monthlySpendingLimit ?? this.monthlySpendingLimit,
       perTransactionLimit: perTransactionLimit ?? this.perTransactionLimit,
-      allocationPercentageCap: allocationPercentageCap ?? this.allocationPercentageCap,
+      allocationPercentageCap:
+          allocationPercentageCap ?? this.allocationPercentageCap,
       spentToday: spentToday ?? this.spentToday,
       spentThisMonth: spentThisMonth ?? this.spentThisMonth,
       remainingBalance: remainingBalance ?? this.remainingBalance,
@@ -180,13 +181,16 @@ class FamilyMember extends Equatable {
   // Computed properties
   bool get isActive => invitationStatus == InvitationStatus.accepted;
   bool get isPending => invitationStatus == InvitationStatus.pending;
-  bool get isExpired => invitationStatus == InvitationStatus.expired || DateTime.now().isAfter(invitationExpiresAt);
+  bool get isExpired =>
+      invitationStatus == InvitationStatus.expired ||
+      DateTime.now().isAfter(invitationExpiresAt);
   bool get isAdmin => role == FamilyMemberRole.admin;
   bool get hasDailyLimit => dailySpendingLimit > 0;
   bool get hasMonthlyLimit => monthlySpendingLimit > 0;
   bool get hasPerTransactionLimit => perTransactionLimit > 0;
   bool get hasAllocationPercentageCap => allocationPercentageCap < 100.0;
-  double get utilizationPercentage => allocatedBalance > 0 ? (spentToday / allocatedBalance) * 100 : 0;
+  double get utilizationPercentage =>
+      allocatedBalance > 0 ? (spentToday / allocatedBalance) * 100 : 0;
 }
 
 class FamilyTransaction extends Equatable {

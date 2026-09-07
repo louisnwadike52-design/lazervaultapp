@@ -55,7 +55,8 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
     final destination = widget.formData['invitationDestination'] as String;
     final userName = widget.formData['selectedUserName'] as String? ?? '';
     final userEmail = widget.formData['selectedUserEmail'] as String? ?? '';
-    final userPic = widget.formData['selectedUserProfilePicture'] as String? ?? '';
+    final userPic =
+        widget.formData['selectedUserProfilePicture'] as String? ?? '';
     final allocation = widget.formData['initialAllocation'] as double;
     final role = widget.formData['role'] as String;
     final noLimits = widget.formData['noLimits'] as bool? ?? true;
@@ -72,7 +73,9 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
           ? '${parts[0][0]}${parts[1][0]}'.toUpperCase()
           : userName.substring(0, userName.length >= 2 ? 2 : 1).toUpperCase();
     } else if (destination.isNotEmpty) {
-      initials = destination.substring(0, destination.length >= 2 ? 2 : 1).toUpperCase();
+      initials = destination
+          .substring(0, destination.length >= 2 ? 2 : 1)
+          .toUpperCase();
     }
 
     return SingleChildScrollView(
@@ -114,7 +117,8 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
               children: [
                 CircleAvatar(
                   radius: 24.r,
-                  backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                  backgroundColor:
+                      const Color(0xFF4E03D0).withValues(alpha: 0.2),
                   backgroundImage:
                       userPic.isNotEmpty ? NetworkImage(userPic) : null,
                   child: userPic.isEmpty
@@ -189,8 +193,7 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
                 _buildDetailRow(
                   'Role',
                   role == 'admin' ? 'Admin' : 'Member',
-                  valueColor:
-                      role == 'admin' ? const Color(0xFF4E03D0) : null,
+                  valueColor: role == 'admin' ? const Color(0xFF4E03D0) : null,
                 ),
                 SizedBox(height: 20.h),
 
@@ -198,16 +201,14 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
                 SizedBox(height: 20.h),
 
                 // Spending Limits
-                _buildSectionHeader(
-                    'Spending Limits', Icons.shield_outlined),
+                _buildSectionHeader('Spending Limits', Icons.shield_outlined),
                 SizedBox(height: 12.h),
                 if (noLimits)
                   Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 12.w, vertical: 8.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                     decoration: BoxDecoration(
-                      color:
-                          const Color(0xFF4E03D0).withValues(alpha: 0.1),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Row(
@@ -231,14 +232,11 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
                     ),
                   )
                 else ...[
-                  _buildDetailRow(
-                      'Daily Limit', _formatLimit(dailyLimit)),
+                  _buildDetailRow('Daily Limit', _formatLimit(dailyLimit)),
                   SizedBox(height: 8.h),
-                  _buildDetailRow(
-                      'Monthly Limit', _formatLimit(monthlyLimit)),
+                  _buildDetailRow('Monthly Limit', _formatLimit(monthlyLimit)),
                   SizedBox(height: 8.h),
-                  _buildDetailRow(
-                      'Per-Transaction', _formatLimit(perTxnLimit)),
+                  _buildDetailRow('Per-Transaction', _formatLimit(perTxnLimit)),
                   SizedBox(height: 8.h),
                   _buildDetailRow('Allocation Cap',
                       '${allocCap.toStringAsFixed(0)}% of pool'),
@@ -268,8 +266,7 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
               fontSize: 14.sp,
             ),
             decoration: InputDecoration(
-              hintText:
-                  'Hey! I\'d love to have you join our family account...',
+              hintText: 'Hey! I\'d love to have you join our family account...',
               hintStyle: TextStyle(
                 color: const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
@@ -314,8 +311,7 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
                   borderRadius: BorderRadius.circular(28.r),
                   boxShadow: [
                     BoxShadow(
-                      color:
-                          const Color(0xFF4E03D0).withValues(alpha: 0.4),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),

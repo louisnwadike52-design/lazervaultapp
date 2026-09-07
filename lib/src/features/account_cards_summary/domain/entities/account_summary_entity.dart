@@ -51,7 +51,8 @@ class AccountSummaryEntity extends Equatable {
   final String accountType;
   final String currency;
   final double balance;
-  final double availableBalance; // Available for spending (balance - reserved - clearing)
+  final double
+      availableBalance; // Available for spending (balance - reserved - clearing)
   final double reservedBalance; // Funds in holds or clearing
   final String accountNumberLast4; // e.g., "7890"
   final String? accountNumber; // Full NUBAN account number for deposits
@@ -61,7 +62,8 @@ class AccountSummaryEntity extends Equatable {
   final bool isUp; // Derived from trendPercentage > 0
   final bool isPrimary; // Whether this is the user's primary account
   final String? accountLabel; // Custom label for the account
-  final String status; // active | frozen | suspended | closed (from accounts-service)
+  final String
+      status; // active | frozen | suspended | closed (from accounts-service)
 
   // Family account specific fields
   final bool isFamilyAccount;
@@ -71,9 +73,12 @@ class AccountSummaryEntity extends Equatable {
   final int? memberCount; // Total member count
   final bool? allowMemberContributions; // Can members contribute
   final String? familyAccountId; // Family account ID (for setup navigation)
-  final String? virtualAccountId; // Family VIRTUAL account id (real-money pool) — spend FROM this
-  final String? familyStatus; // Family account status (active, pending_setup, frozen, closed)
-  final String? fundDistributionMode; // Fund distribution mode (shared_pool, equal_split, custom_allocation)
+  final String?
+      virtualAccountId; // Family VIRTUAL account id (real-money pool) — spend FROM this
+  final String?
+      familyStatus; // Family account status (active, pending_setup, frozen, closed)
+  final String?
+      fundDistributionMode; // Fund distribution mode (shared_pool, equal_split, custom_allocation)
 
   /// The account id money is actually spent FROM. For a family account this is
   /// the family virtual account (the real-money pool) so the payments path can
@@ -172,8 +177,10 @@ class AccountSummaryEntity extends Equatable {
         status: j['status'] as String? ?? 'active',
         isFamilyAccount: j['isFamilyAccount'] as bool? ?? false,
         familyTotalBalance: (j['familyTotalBalance'] as num?)?.toDouble(),
-        memberAllocatedBalance: (j['memberAllocatedBalance'] as num?)?.toDouble(),
-        memberRemainingBalance: (j['memberRemainingBalance'] as num?)?.toDouble(),
+        memberAllocatedBalance:
+            (j['memberAllocatedBalance'] as num?)?.toDouble(),
+        memberRemainingBalance:
+            (j['memberRemainingBalance'] as num?)?.toDouble(),
         memberCount: j['memberCount'] as int?,
         allowMemberContributions: j['allowMemberContributions'] as bool?,
         familyAccountId: j['familyAccountId'] as String?,
@@ -184,7 +191,8 @@ class AccountSummaryEntity extends Equatable {
       );
 
   /// Pending balance (funds in clearing or holds, not yet available)
-  double get pendingBalance => (balance - availableBalance).clamp(0.0, double.infinity);
+  double get pendingBalance =>
+      (balance - availableBalance).clamp(0.0, double.infinity);
 
   /// Whether there are pending funds
   bool get hasPendingBalance => pendingBalance > 0.01;
@@ -212,7 +220,8 @@ class AccountSummaryEntity extends Equatable {
   String get displayName => accountType;
 
   /// Get the account type enum
-  VirtualAccountType get accountTypeEnum => VirtualAccountType.fromString(accountType);
+  VirtualAccountType get accountTypeEnum =>
+      VirtualAccountType.fromString(accountType);
 
   /// Check if this is a personal account
   bool get isPersonalAccount => accountTypeEnum == VirtualAccountType.personal;
@@ -221,7 +230,8 @@ class AccountSummaryEntity extends Equatable {
   bool get isSavingsAccount => accountTypeEnum == VirtualAccountType.savings;
 
   /// Check if this is an investment account
-  bool get isInvestmentAccount => accountTypeEnum == VirtualAccountType.investment;
+  bool get isInvestmentAccount =>
+      accountTypeEnum == VirtualAccountType.investment;
 
   @override
   List<Object?> get props => [
@@ -271,7 +281,8 @@ class AccountSummaryEntity extends Equatable {
     required int memberCount,
     required bool allowMemberContributions,
     required double trendPercentage,
-    String? name, // the family account's actual name (shown as the card subtitle)
+    String?
+        name, // the family account's actual name (shown as the card subtitle)
     String? accountNumberLast4,
     String? familyAccountId,
     String? virtualAccountId,
@@ -300,7 +311,8 @@ class AccountSummaryEntity extends Equatable {
       trendPercentage: trendPercentage,
       // The account's real name — surfaced as the card subtitle. Null/blank
       // falls back to the generic "Family Balance" label in the UI.
-      accountLabel: (name != null && name.trim().isNotEmpty) ? name.trim() : null,
+      accountLabel:
+          (name != null && name.trim().isNotEmpty) ? name.trim() : null,
       isFamilyAccount: true,
       familyTotalBalance: totalBalance,
       memberAllocatedBalance: memberAllocatedBalance,
@@ -358,10 +370,13 @@ class AccountSummaryEntity extends Equatable {
       status: status ?? this.status,
       isFamilyAccount: isFamilyAccount ?? this.isFamilyAccount,
       familyTotalBalance: familyTotalBalance ?? this.familyTotalBalance,
-      memberAllocatedBalance: memberAllocatedBalance ?? this.memberAllocatedBalance,
-      memberRemainingBalance: memberRemainingBalance ?? this.memberRemainingBalance,
+      memberAllocatedBalance:
+          memberAllocatedBalance ?? this.memberAllocatedBalance,
+      memberRemainingBalance:
+          memberRemainingBalance ?? this.memberRemainingBalance,
       memberCount: memberCount ?? this.memberCount,
-      allowMemberContributions: allowMemberContributions ?? this.allowMemberContributions,
+      allowMemberContributions:
+          allowMemberContributions ?? this.allowMemberContributions,
       familyAccountId: familyAccountId ?? this.familyAccountId,
       virtualAccountId: virtualAccountId ?? this.virtualAccountId,
       familyStatus: familyStatus ?? this.familyStatus,
@@ -394,4 +409,4 @@ class AccountSummaryEntity extends Equatable {
       accountLabel: accountLabel,
     );
   }
-} 
+}
