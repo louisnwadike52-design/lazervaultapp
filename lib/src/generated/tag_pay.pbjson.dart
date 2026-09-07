@@ -486,6 +486,7 @@ const SendMoneyTagPayRequest$json = {
     {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
     {'1': 'source_account_id', '3': 5, '4': 1, '5': 9, '10': 'sourceAccountId'},
     {'1': 'transaction_pin', '3': 6, '4': 1, '5': 9, '10': 'transactionPin'},
+    {'1': 'idempotency_key', '3': 7, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
 
@@ -495,7 +496,8 @@ final $typed_data.Uint8List sendMoneyTagPayRequestDescriptor = $convert.base64De
     'VpdmVyVGFnUGF5EhYKBmFtb3VudBgCIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5GAMgASgJUghj'
     'dXJyZW5jeRIgCgtkZXNjcmlwdGlvbhgEIAEoCVILZGVzY3JpcHRpb24SKgoRc291cmNlX2FjY2'
     '91bnRfaWQYBSABKAlSD3NvdXJjZUFjY291bnRJZBInCg90cmFuc2FjdGlvbl9waW4YBiABKAlS'
-    'DnRyYW5zYWN0aW9uUGlu');
+    'DnRyYW5zYWN0aW9uUGluEicKD2lkZW1wb3RlbmN5X2tleRgHIAEoCVIOaWRlbXBvdGVuY3lLZX'
+    'k=');
 
 @$core.Deprecated('Use sendMoneyTagPayResponseDescriptor instead')
 const SendMoneyTagPayResponse$json = {

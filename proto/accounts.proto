@@ -910,6 +910,20 @@ service AccountsService {
   // =========================================================================
 
   // Admin: Search accounts by email, phone, user_id, or account_number
+  // Admin: Investment-wallet sunset sweep. Moves each legacy investment
+  // wallet's remaining funds into the SAME user's savings wallet (same
+  // currency) through the normal ledgered TransferBalance path with the
+  // deterministic idempotency key INVSWEEP-{investment_account_id} — a
+  // re-run or double-click can never move money twice. dry_run returns the
+  // full plan without moving anything. Wallets with holds/reserves or no
+  // savings destination are skipped and reported for manual review.
+  rpc AdminInvestmentSweep(AdminInvestmentSweepRequest) returns (AdminInvestmentSweepResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/accounts/investment-sweep"
+      body: "*"
+    };
+  }
+
   rpc AdminSearchAccounts(AdminSearchAccountsRequest) returns (AdminSearchAccountsResponse) {
     option (google.api.http) = {
       get: "/api/v1/admin/accounts/search"
@@ -2426,6 +2440,29 @@ message ReverseClearingDepositResponse {
 // =============================================================================
 // ADMIN OPERATION Messages
 // =============================================================================
+
+message AdminInvestmentSweepRequest {
+  bool dry_run = 1;      // true = plan only, move nothing
+  string user_id = 2;    // optional: restrict the sweep to one user
+}
+
+message AdminInvestmentSweepItem {
+  string account_id = 1;          // the investment wallet
+  string user_id = 2;
+  string currency = 3;
+  double amount = 4;              // major units to move
+  string savings_account_id = 5;  // destination (empty when skipped)
+  string action = 6;              // "sweep" | "skipped" | "swept" | "failed"
+  string detail = 7;              // skip/failure reason, or the transfer reference
+}
+
+message AdminInvestmentSweepResponse {
+  repeated AdminInvestmentSweepItem items = 1;
+  bool dry_run = 2;
+  int32 sweep_count = 3;    // planned or executed moves
+  int32 skipped_count = 4;  // wallets needing manual review
+  int32 failed_count = 5;   // execute-mode transfer failures (safe to re-run)
+}
 
 message AdminSearchAccountsRequest {
   string query = 1;                     // Search value

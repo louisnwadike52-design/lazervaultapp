@@ -1760,10 +1760,14 @@ class GetFamilyAccountsResponse extends $pb.GeneratedMessage {
   factory GetFamilyAccountsResponse({
     $core.Iterable<FamilyAccount>? familyAccounts,
     $core.int? totalCount,
+    $core.int? maxFamilyAccounts,
+    $core.int? createdCount,
   }) {
     final result = create();
     if (familyAccounts != null) result.familyAccounts.addAll(familyAccounts);
     if (totalCount != null) result.totalCount = totalCount;
+    if (maxFamilyAccounts != null) result.maxFamilyAccounts = maxFamilyAccounts;
+    if (createdCount != null) result.createdCount = createdCount;
     return result;
   }
 
@@ -1784,6 +1788,9 @@ class GetFamilyAccountsResponse extends $pb.GeneratedMessage {
         1, _omitFieldNames ? '' : 'familyAccounts', $pb.PbFieldType.PM,
         subBuilder: FamilyAccount.create)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(
+        3, _omitFieldNames ? '' : 'maxFamilyAccounts', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'createdCount', $pb.PbFieldType.O3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1820,6 +1827,29 @@ class GetFamilyAccountsResponse extends $pb.GeneratedMessage {
   $core.bool hasTotalCount() => $_has(1);
   @$pb.TagNumber(2)
   void clearTotalCount() => $_clearField(2);
+
+  /// Admin-tunable per-creator creation cap (system_settings
+  /// accounts.family_accounts.max_per_creator; default 3) and how many of the
+  /// listed accounts THIS user created. The app gates its "create another
+  /// family account" CTA on created_count < max_family_accounts instead of a
+  /// hardcoded client-side number.
+  @$pb.TagNumber(3)
+  $core.int get maxFamilyAccounts => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set maxFamilyAccounts($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMaxFamilyAccounts() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMaxFamilyAccounts() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get createdCount => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set createdCount($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasCreatedCount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCreatedCount() => $_clearField(4);
 }
 
 /// Get Family Account

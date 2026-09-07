@@ -489,6 +489,14 @@ const GetFamilyAccountsResponse$json = {
       '10': 'familyAccounts'
     },
     {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
+    {
+      '1': 'max_family_accounts',
+      '3': 3,
+      '4': 1,
+      '5': 5,
+      '10': 'maxFamilyAccounts'
+    },
+    {'1': 'created_count', '3': 4, '4': 1, '5': 5, '10': 'createdCount'},
   ],
 };
 
@@ -496,7 +504,8 @@ const GetFamilyAccountsResponse$json = {
 final $typed_data.Uint8List getFamilyAccountsResponseDescriptor = $convert.base64Decode(
     'ChlHZXRGYW1pbHlBY2NvdW50c1Jlc3BvbnNlEkMKD2ZhbWlseV9hY2NvdW50cxgBIAMoCzIaLm'
     'FjY291bnRzLnYxLkZhbWlseUFjY291bnRSDmZhbWlseUFjY291bnRzEh8KC3RvdGFsX2NvdW50'
-    'GAIgASgFUgp0b3RhbENvdW50');
+    'GAIgASgFUgp0b3RhbENvdW50Ei4KE21heF9mYW1pbHlfYWNjb3VudHMYAyABKAVSEW1heEZhbW'
+    'lseUFjY291bnRzEiMKDWNyZWF0ZWRfY291bnQYBCABKAVSDGNyZWF0ZWRDb3VudA==');
 
 @$core.Deprecated('Use getFamilyAccountRequestDescriptor instead')
 const GetFamilyAccountRequest$json = {

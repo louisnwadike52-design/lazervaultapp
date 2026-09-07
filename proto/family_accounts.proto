@@ -404,6 +404,13 @@ message GetFamilyAccountsRequest {
 message GetFamilyAccountsResponse {
   repeated FamilyAccount family_accounts = 1;
   int32 total_count = 2;
+  // Admin-tunable per-creator creation cap (system_settings
+  // accounts.family_accounts.max_per_creator; default 3) and how many of the
+  // listed accounts THIS user created. The app gates its "create another
+  // family account" CTA on created_count < max_family_accounts instead of a
+  // hardcoded client-side number.
+  int32 max_family_accounts = 3;
+  int32 created_count = 4;
 }
 
 // Get Family Account

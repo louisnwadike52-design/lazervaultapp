@@ -322,6 +322,11 @@ message SendMoneyTagPayRequest {
   string description = 4;
   string source_account_id = 5;
   string transaction_pin = 6;
+  // Client-generated idempotency key: one user tap = one key, so a retry
+  // (timeout, connection drop, double-tap) replays the SAME payment instead
+  // of creating a second one. Optional for old builds — when absent the
+  // server derives a key as before.
+  string idempotency_key = 7;
 }
 
 message SendMoneyTagPayResponse {

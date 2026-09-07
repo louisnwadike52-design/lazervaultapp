@@ -1453,6 +1453,7 @@ class SendMoneyTagPayRequest extends $pb.GeneratedMessage {
     $core.String? description,
     $core.String? sourceAccountId,
     $core.String? transactionPin,
+    $core.String? idempotencyKey,
   }) {
     final result = create();
     if (receiverTagPay != null) result.receiverTagPay = receiverTagPay;
@@ -1461,6 +1462,7 @@ class SendMoneyTagPayRequest extends $pb.GeneratedMessage {
     if (description != null) result.description = description;
     if (sourceAccountId != null) result.sourceAccountId = sourceAccountId;
     if (transactionPin != null) result.transactionPin = transactionPin;
+    if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
     return result;
   }
 
@@ -1483,6 +1485,7 @@ class SendMoneyTagPayRequest extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'description')
     ..aOS(5, _omitFieldNames ? '' : 'sourceAccountId')
     ..aOS(6, _omitFieldNames ? '' : 'transactionPin')
+    ..aOS(7, _omitFieldNames ? '' : 'idempotencyKey')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1561,6 +1564,19 @@ class SendMoneyTagPayRequest extends $pb.GeneratedMessage {
   $core.bool hasTransactionPin() => $_has(5);
   @$pb.TagNumber(6)
   void clearTransactionPin() => $_clearField(6);
+
+  /// Client-generated idempotency key: one user tap = one key, so a retry
+  /// (timeout, connection drop, double-tap) replays the SAME payment instead
+  /// of creating a second one. Optional for old builds — when absent the
+  /// server derives a key as before.
+  @$pb.TagNumber(7)
+  $core.String get idempotencyKey => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set idempotencyKey($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasIdempotencyKey() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearIdempotencyKey() => $_clearField(7);
 }
 
 class SendMoneyTagPayResponse extends $pb.GeneratedMessage {
