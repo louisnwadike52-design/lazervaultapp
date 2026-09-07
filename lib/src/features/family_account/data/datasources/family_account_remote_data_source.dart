@@ -2,11 +2,13 @@ import 'dart:math';
 import '../models/family_account_proto.dart';
 
 abstract class FamilyAccountRemoteDataSource {
-  Future<List<FamilyAccountProto>> getFamilyAccounts({String? statusFilter});
+  Future<FamilyAccountsPageProto> getFamilyAccounts({String? statusFilter});
   Future<FamilyAccountProto> getFamilyAccount(String familyId);
-  Future<FamilyAccountProto> createFamilyAccount(CreateFamilyAccountRequest request);
+  Future<FamilyAccountProto> createFamilyAccount(
+      CreateFamilyAccountRequest request);
   Future<FamilyMemberProto> addFamilyMember(AddFamilyMemberRequest request);
-  Future<FamilyMemberProto> updateFamilyMember(UpdateFamilyMemberRequest request);
+  Future<FamilyMemberProto> updateFamilyMember(
+      UpdateFamilyMemberRequest request);
   Future<double> removeFamilyMember({
     required String familyId,
     required String memberId,
@@ -84,7 +86,8 @@ abstract class FamilyAccountRemoteDataSource {
   });
 }
 
-class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource {
+class FamilyAccountRemoteDataSourceImpl
+    implements FamilyAccountRemoteDataSource {
   final dynamic dio;
   final dynamic secureStorage;
 
@@ -96,26 +99,31 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
   // Mock data storage
   static final Map<String, FamilyAccountProto> _familyAccounts = {};
   static final Map<String, List<FamilyMemberProto>> _familyMembers = {};
-  static final Map<String, List<FamilyTransactionProto>> _familyTransactions = {};
+  static final Map<String, List<FamilyTransactionProto>> _familyTransactions =
+      {};
   static final Map<String, PendingInvitationProto> _pendingInvitations = {};
 
   final Random _random = Random();
 
-  String _generateId() => DateTime.now().millisecondsSinceEpoch.toString() + _random.nextInt(1000).toString();
+  String _generateId() =>
+      DateTime.now().millisecondsSinceEpoch.toString() +
+      _random.nextInt(1000).toString();
 
   @override
-  Future<List<FamilyAccountProto>> getFamilyAccounts({String? statusFilter}) async {
+  Future<FamilyAccountsPageProto> getFamilyAccounts(
+      {String? statusFilter}) async {
     await Future.delayed(const Duration(milliseconds: 500));
 
     var accounts = _familyAccounts.values.toList();
 
     // Apply status filter if provided
     if (statusFilter != null) {
-      accounts = accounts.where((account) => account.status == statusFilter).toList();
+      accounts =
+          accounts.where((account) => account.status == statusFilter).toList();
     }
 
     // Include members for each account
-    return accounts.map((account) {
+    final withMembers = accounts.map((account) {
       final members = _familyMembers[account.id] ?? [];
       return FamilyAccountProto(
         id: account.id,
@@ -135,6 +143,12 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
         activeMemberCount: account.activeMemberCount,
       );
     }).toList();
+    return FamilyAccountsPageProto(
+      accounts: withMembers,
+      // Mock defaults mirror the server default cap.
+      maxFamilyAccounts: 3,
+      createdCount: withMembers.length,
+    );
   }
 
   @override
@@ -169,7 +183,8 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
   }
 
   @override
-  Future<FamilyAccountProto> createFamilyAccount(CreateFamilyAccountRequest request) async {
+  Future<FamilyAccountProto> createFamilyAccount(
+      CreateFamilyAccountRequest request) async {
     await Future.delayed(const Duration(milliseconds: 800));
 
     final familyId = _generateId();
@@ -244,7 +259,8 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
   }
 
   @override
-  Future<FamilyMemberProto> addFamilyMember(AddFamilyMemberRequest request) async {
+  Future<FamilyMemberProto> addFamilyMember(
+      AddFamilyMemberRequest request) async {
     await Future.delayed(const Duration(milliseconds: 500));
 
     final memberId = _generateId();
@@ -253,15 +269,20 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
 
     // Create invitation token
     final invitationToken = 'INV_${_generateId()}';
-    final invitationExpiresAt = now.add(const Duration(days: 7)).toIso8601String();
+    final invitationExpiresAt =
+        now.add(const Duration(days: 7)).toIso8601String();
 
     final member = FamilyMemberProto(
       id: memberId,
       familyId: request.familyId,
       userId: '', // Will be filled when invitation is accepted
       fullName: request.fullName,
-      email: request.invitationMethod == 'email' ? request.invitationDestination : null,
-      phone: request.invitationMethod == 'phone' ? request.invitationDestination : null,
+      email: request.invitationMethod == 'email'
+          ? request.invitationDestination
+          : null,
+      phone: request.invitationMethod == 'phone'
+          ? request.invitationDestination
+          : null,
       username: null,
       avatarUrl: null,
       role: request.role,
@@ -308,22 +329,27 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
     _familyMembers.putIfAbsent(request.familyId, () => []).add(member);
 
     // Add transaction
-    _familyTransactions.putIfAbsent(request.familyId, () => []).add(FamilyTransactionProto(
-      id: _generateId(),
-      familyId: request.familyId,
-      memberId: memberId,
-      memberName: member.fullName.isNotEmpty ? member.fullName : (member.email ?? member.phone ?? 'Pending Member'),
-      amount: request.initialAllocation,
-      type: 'allocation',
-      description: 'Initial allocation for pending member',
-      createdAt: nowIso,
-    ));
+    _familyTransactions
+        .putIfAbsent(request.familyId, () => [])
+        .add(FamilyTransactionProto(
+          id: _generateId(),
+          familyId: request.familyId,
+          memberId: memberId,
+          memberName: member.fullName.isNotEmpty
+              ? member.fullName
+              : (member.email ?? member.phone ?? 'Pending Member'),
+          amount: request.initialAllocation,
+          type: 'allocation',
+          description: 'Initial allocation for pending member',
+          createdAt: nowIso,
+        ));
 
     return member;
   }
 
   @override
-  Future<FamilyMemberProto> updateFamilyMember(UpdateFamilyMemberRequest request) async {
+  Future<FamilyMemberProto> updateFamilyMember(
+      UpdateFamilyMemberRequest request) async {
     await Future.delayed(const Duration(milliseconds: 300));
 
     final members = _familyMembers[request.familyId] ?? [];
@@ -347,11 +373,16 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
       username: existingMember.username,
       avatarUrl: existingMember.avatarUrl,
       role: request.role ?? existingMember.role,
-      allocatedBalance: request.allocatedBalance ?? existingMember.allocatedBalance,
-      dailySpendingLimit: request.dailySpendingLimit ?? existingMember.dailySpendingLimit,
-      monthlySpendingLimit: request.monthlySpendingLimit ?? existingMember.monthlySpendingLimit,
-      perTransactionLimit: request.perTransactionLimit ?? existingMember.perTransactionLimit,
-      allocationPercentageCap: request.allocationPercentageCap ?? existingMember.allocationPercentageCap,
+      allocatedBalance:
+          request.allocatedBalance ?? existingMember.allocatedBalance,
+      dailySpendingLimit:
+          request.dailySpendingLimit ?? existingMember.dailySpendingLimit,
+      monthlySpendingLimit:
+          request.monthlySpendingLimit ?? existingMember.monthlySpendingLimit,
+      perTransactionLimit:
+          request.perTransactionLimit ?? existingMember.perTransactionLimit,
+      allocationPercentageCap: request.allocationPercentageCap ??
+          existingMember.allocationPercentageCap,
       spentToday: existingMember.spentToday,
       spentThisMonth: existingMember.spentThisMonth,
       remainingBalance: existingMember.remainingBalance,
@@ -406,7 +437,8 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
           creatorName: account.creatorName,
           name: account.name,
           description: account.description,
-          totalAllocatedBalance: account.totalAllocatedBalance - returnedBalance,
+          totalAllocatedBalance:
+              account.totalAllocatedBalance - returnedBalance,
           totalPoolBalance: account.totalPoolBalance + returnedBalance,
           allowMemberContributions: account.allowMemberContributions,
           totalBalance: account.totalBalance,
@@ -422,22 +454,25 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
 
     // Add transaction
     final nowIso = DateTime.now().toIso8601String();
-    _familyTransactions.putIfAbsent(familyId, () => []).add(FamilyTransactionProto(
-      id: _generateId(),
-      familyId: familyId,
-      memberId: memberId,
-      memberName: member.fullName,
-      amount: returnedBalance,
-      type: 'refund',
-      description: 'Member removed${reason != null ? ': $reason' : ''}',
-      createdAt: nowIso,
-    ));
+    _familyTransactions
+        .putIfAbsent(familyId, () => [])
+        .add(FamilyTransactionProto(
+          id: _generateId(),
+          familyId: familyId,
+          memberId: memberId,
+          memberName: member.fullName,
+          amount: returnedBalance,
+          type: 'refund',
+          description: 'Member removed${reason != null ? ': $reason' : ''}',
+          createdAt: nowIso,
+        ));
 
     return returnedBalance;
   }
 
   @override
-  Future<FamilyAccountProto> acceptFamilyInvitation(String invitationToken) async {
+  Future<FamilyAccountProto> acceptFamilyInvitation(
+      String invitationToken) async {
     await Future.delayed(const Duration(milliseconds: 800));
 
     final invitation = _pendingInvitations[invitationToken];
@@ -447,7 +482,8 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
 
     final members = _familyMembers[invitation.familyId] ?? [];
     final memberIndex = members.indexWhere((m) =>
-        m.email == invitation.invitedEmail || m.phone == invitation.invitedPhone);
+        m.email == invitation.invitedEmail ||
+        m.phone == invitation.invitedPhone);
 
     if (memberIndex == -1) {
       throw Exception('Member not found');
@@ -509,7 +545,8 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
     // Remove the pending member
     final members = _familyMembers[invitation.familyId] ?? [];
     members.removeWhere((m) =>
-        m.email == invitation.invitedEmail || m.phone == invitation.invitedPhone);
+        m.email == invitation.invitedEmail ||
+        m.phone == invitation.invitedPhone);
 
     return true;
   }
@@ -632,16 +669,18 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
     );
 
     // Add transaction
-    _familyTransactions.putIfAbsent(familyId, () => []).add(FamilyTransactionProto(
-      id: _generateId(),
-      familyId: familyId,
-      memberId: memberId,
-      memberName: member.fullName,
-      amount: amount,
-      type: 'allocation',
-      description: description ?? 'Funds allocated',
-      createdAt: nowIso,
-    ));
+    _familyTransactions
+        .putIfAbsent(familyId, () => [])
+        .add(FamilyTransactionProto(
+          id: _generateId(),
+          familyId: familyId,
+          memberId: memberId,
+          memberName: member.fullName,
+          amount: amount,
+          type: 'allocation',
+          description: description ?? 'Funds allocated',
+          createdAt: nowIso,
+        ));
 
     return updatedMember;
   }
@@ -785,7 +824,8 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
     }
 
     // Calculate total balance to return
-    final totalBalance = account.totalAllocatedBalance + account.totalPoolBalance;
+    final totalBalance =
+        account.totalAllocatedBalance + account.totalPoolBalance;
 
     // Remove account
     _familyAccounts.remove(familyId);
@@ -846,16 +886,18 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
     _familyAccounts[familyId] = updatedAccount;
 
     // Add transaction
-    _familyTransactions.putIfAbsent(familyId, () => []).add(FamilyTransactionProto(
-      id: _generateId(),
-      familyId: familyId,
-      memberId: memberId,
-      memberName: member.fullName,
-      amount: amount,
-      type: 'contribution',
-      description: description ?? 'Member contribution',
-      createdAt: nowIso,
-    ));
+    _familyTransactions
+        .putIfAbsent(familyId, () => [])
+        .add(FamilyTransactionProto(
+          id: _generateId(),
+          familyId: familyId,
+          memberId: memberId,
+          memberName: member.fullName,
+          amount: amount,
+          type: 'contribution',
+          description: description ?? 'Member contribution',
+          createdAt: nowIso,
+        ));
 
     return updatedAccount;
   }
@@ -976,7 +1018,8 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
     String statusFilter = '',
     int page = 1,
     int pageSize = 25,
-  }) async => [];
+  }) async =>
+      [];
 
   @override
   Future<List<SentInvitationEntryProto>> getSentInvitations({
@@ -984,5 +1027,6 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
     String statusFilter = '',
     int page = 1,
     int pageSize = 25,
-  }) async => [];
+  }) async =>
+      [];
 }

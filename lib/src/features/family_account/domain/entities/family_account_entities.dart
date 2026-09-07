@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 part 'family_account_entities_widgets.dart';
 
-
 // Main Entities
 
 class FamilyAccount extends Equatable {
@@ -120,17 +119,20 @@ class FamilyAccount extends Equatable {
       creatorName: creatorName ?? this.creatorName,
       name: name ?? this.name,
       description: description ?? this.description,
-      totalAllocatedBalance: totalAllocatedBalance ?? this.totalAllocatedBalance,
+      totalAllocatedBalance:
+          totalAllocatedBalance ?? this.totalAllocatedBalance,
       totalPoolBalance: totalPoolBalance ?? this.totalPoolBalance,
       totalBalance: totalBalance ?? this.totalBalance,
-      allowMemberContributions: allowMemberContributions ?? this.allowMemberContributions,
+      allowMemberContributions:
+          allowMemberContributions ?? this.allowMemberContributions,
       status: status ?? this.status,
       members: members ?? this.members,
       memberCount: memberCount ?? this.memberCount,
       activeMemberCount: activeMemberCount ?? this.activeMemberCount,
       fundDistributionMode: fundDistributionMode ?? this.fundDistributionMode,
       setupCompleted: setupCompleted ?? this.setupCompleted,
-      spendingVisibilityEnabled: spendingVisibilityEnabled ?? this.spendingVisibilityEnabled,
+      spendingVisibilityEnabled:
+          spendingVisibilityEnabled ?? this.spendingVisibilityEnabled,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       fundingPolicy: fundingPolicy ?? this.fundingPolicy,
@@ -185,4 +187,20 @@ class FamilyAccount extends Equatable {
     final m = memberForUser(userId);
     return m != null && m.invitationStatus == InvitationStatus.accepted;
   }
+}
+
+/// Family accounts plus the server-truth creation quota. The cap is
+/// admin-tunable — the UI must display/gate from these numbers, never a
+/// client-side constant. maxFamilyAccounts == 0 means the server didn't
+/// send quota (old build) — treat as unknown, don't gate.
+class FamilyAccountsOverview {
+  final List<FamilyAccount> accounts;
+  final int maxFamilyAccounts;
+  final int createdCount;
+
+  const FamilyAccountsOverview({
+    required this.accounts,
+    required this.maxFamilyAccounts,
+    required this.createdCount,
+  });
 }

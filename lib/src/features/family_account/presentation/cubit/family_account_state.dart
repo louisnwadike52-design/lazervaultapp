@@ -44,10 +44,21 @@ class FamilyAccountsLoaded extends FamilyAccountState {
   final List<FamilyAccount> familyAccounts;
   final int totalCount;
 
-  const FamilyAccountsLoaded(this.familyAccounts, {this.totalCount = 0});
+  /// Server-truth creation quota (admin-tunable). 0 = server didn't send it
+  /// (old backend) — treat as unknown and don't gate.
+  final int maxFamilyAccounts;
+  final int createdCount;
+
+  const FamilyAccountsLoaded(
+    this.familyAccounts, {
+    this.totalCount = 0,
+    this.maxFamilyAccounts = 0,
+    this.createdCount = 0,
+  });
 
   @override
-  List<Object?> get props => [familyAccounts, totalCount];
+  List<Object?> get props =>
+      [familyAccounts, totalCount, maxFamilyAccounts, createdCount];
 }
 
 class FamilyAccountLoaded extends FamilyAccountState {
@@ -119,7 +130,8 @@ class FamilyTransactionsLoaded extends FamilyAccountState {
   });
 
   @override
-  List<Object?> get props => [transactions, totalCount, currentPage, totalPages];
+  List<Object?> get props =>
+      [transactions, totalCount, currentPage, totalPages];
 }
 
 class PendingInvitationsLoaded extends FamilyAccountState {

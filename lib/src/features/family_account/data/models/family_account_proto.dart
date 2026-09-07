@@ -4,7 +4,6 @@ import 'package:lazervault/src/features/family_account/domain/entities/family_ac
     show FamilyAccountSummary;
 part 'family_account_proto_widgets.dart';
 
-
 class FamilyMemberProto {
   final String id;
   final String familyId;
@@ -72,10 +71,14 @@ class FamilyMemberProto {
       avatarUrl: json['avatar_url'] as String?,
       role: json['role'] as String? ?? 'member',
       allocatedBalance: (json['allocated_balance'] as num?)?.toDouble() ?? 0.0,
-      dailySpendingLimit: (json['daily_spending_limit'] as num?)?.toDouble() ?? 0.0,
-      monthlySpendingLimit: (json['monthly_spending_limit'] as num?)?.toDouble() ?? 0.0,
-      perTransactionLimit: (json['per_transaction_limit'] as num?)?.toDouble() ?? 0.0,
-      allocationPercentageCap: (json['allocation_percentage_cap'] as num?)?.toDouble() ?? 100.0,
+      dailySpendingLimit:
+          (json['daily_spending_limit'] as num?)?.toDouble() ?? 0.0,
+      monthlySpendingLimit:
+          (json['monthly_spending_limit'] as num?)?.toDouble() ?? 0.0,
+      perTransactionLimit:
+          (json['per_transaction_limit'] as num?)?.toDouble() ?? 0.0,
+      allocationPercentageCap:
+          (json['allocation_percentage_cap'] as num?)?.toDouble() ?? 100.0,
       spentToday: (json['spent_today'] as num?)?.toDouble() ?? 0.0,
       spentThisMonth: (json['spent_this_month'] as num?)?.toDouble() ?? 0.0,
       remainingBalance: (json['remaining_balance'] as num?)?.toDouble() ?? 0.0,
@@ -119,4 +122,20 @@ class FamilyMemberProto {
       'updated_at': updatedAt,
     };
   }
+}
+
+/// One GetFamilyAccounts response page: the accounts PLUS the server-truth
+/// creation quota (admin-tunable max + how many this user has created).
+/// Carrying the quota with the list keeps it one RPC — the UI must never
+/// hardcode the cap client-side.
+class FamilyAccountsPageProto {
+  final List<FamilyAccountProto> accounts;
+  final int maxFamilyAccounts;
+  final int createdCount;
+
+  const FamilyAccountsPageProto({
+    required this.accounts,
+    required this.maxFamilyAccounts,
+    required this.createdCount,
+  });
 }

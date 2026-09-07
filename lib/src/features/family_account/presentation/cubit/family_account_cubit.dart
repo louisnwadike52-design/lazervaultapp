@@ -1,7 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/family_account_entities.dart';
-import '../../domain/repositories/family_account_repository.dart' show MemberAllocationEntry;
+import '../../domain/repositories/family_account_repository.dart'
+    show MemberAllocationEntry;
 import '../../domain/usecases/family_account_usecases.dart';
 import 'family_account_state.dart';
 
@@ -57,10 +58,16 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
   // Get all family accounts
   Future<void> loadFamilyAccounts({String? statusFilter}) async {
     emit(FamilyAccountLoading());
-    final result = await getFamilyAccounts(GetFamilyAccountsParams(statusFilter: statusFilter));
+    final result = await getFamilyAccounts(
+        GetFamilyAccountsParams(statusFilter: statusFilter));
     result.fold(
       (failure) => emit(FamilyAccountError(failure.message)),
-      (accounts) => emit(FamilyAccountsLoaded(accounts)),
+      (overview) => emit(FamilyAccountsLoaded(
+        overview.accounts,
+        totalCount: overview.accounts.length,
+        maxFamilyAccounts: overview.maxFamilyAccounts,
+        createdCount: overview.createdCount,
+      )),
     );
   }
 
@@ -120,9 +127,10 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       // legacy virtual NUBAN), then any pending one, then the first account.
       final pending =
           loaded.familyAccounts.where((a) => a.isPendingSetup).toList();
-      final target = pending.where((a) => a.name == 'Family & Friends').firstOrNull ??
-          pending.firstOrNull ??
-          loaded.familyAccounts.first;
+      final target =
+          pending.where((a) => a.name == 'Family & Friends').firstOrNull ??
+              pending.firstOrNull ??
+              loaded.familyAccounts.first;
       return target.id;
     }
     if (loaded is FamilyAccountsLoaded) {
@@ -262,7 +270,8 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     );
     result.fold(
       (failure) => emit(FamilyAccountError(failure.message)),
-      (entries) => emit(InvitationHistoryLoaded(entries, statusFilter: statusFilter)),
+      (entries) =>
+          emit(InvitationHistoryLoaded(entries, statusFilter: statusFilter)),
     );
   }
 
@@ -402,7 +411,8 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
   // Leave family account (self-serve, non-creator member)
   Future<void> leaveFamily({required String familyId}) async {
     emit(FamilyAccountLoading());
-    final result = await leaveFamilyAccount(LeaveFamilyAccountParams(familyId: familyId));
+    final result =
+        await leaveFamilyAccount(LeaveFamilyAccountParams(familyId: familyId));
     result.fold(
       (failure) => emit(FamilyAccountError(failure.message)),
       (returnedBalance) => emit(FamilyAccountLeft(returnedBalance)),
@@ -421,7 +431,8 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     // Money-safety (audit H2): a stable per-contribution key so a retry after a
     // network error never double-debits the contributor. Generated once here.
     final key = idempotencyKey ?? const Uuid().v4();
-    final result = await processMemberContribution(ProcessMemberContributionParams(
+    final result =
+        await processMemberContribution(ProcessMemberContributionParams(
       familyId: familyId,
       memberId: memberId,
       amount: amount,
@@ -465,7 +476,8 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     List<MemberAllocationEntry> allocations = const [],
   }) async {
     emit(FamilyAccountLoading());
-    final result = await updateFundDistributionMode(UpdateFundDistributionModeParams(
+    final result =
+        await updateFundDistributionMode(UpdateFundDistributionModeParams(
       familyId: familyId,
       fundDistributionMode: fundDistributionMode,
       allocations: allocations,

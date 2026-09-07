@@ -18,16 +18,26 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
         _callOptionsHelper = callOptionsHelper;
 
   @override
-  Future<List<FamilyAccountProto>> getFamilyAccounts({String? statusFilter}) async {
+  Future<FamilyAccountsPageProto> getFamilyAccounts(
+      {String? statusFilter}) async {
     try {
       final request = family_pb.GetFamilyAccountsRequest(
         status: statusFilter ?? '',
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getFamilyAccounts(request, options: callOptions);
+      final response =
+          await _client.getFamilyAccounts(request, options: callOptions);
 
-      return response.familyAccounts.map((account) => _mapFamilyAccountFromProto(account)).toList();
+      return FamilyAccountsPageProto(
+        accounts: response.familyAccounts
+            .map((account) => _mapFamilyAccountFromProto(account))
+            .toList(),
+        // Server-truth creation quota (admin-tunable; 0 on old servers that
+        // don't send the fields yet — the UI treats 0 as "unknown").
+        maxFamilyAccounts: response.maxFamilyAccounts,
+        createdCount: response.createdCount,
+      );
     } on GrpcError catch (e) {
       throw mapGrpcError(e);
     }
@@ -41,7 +51,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getFamilyAccount(request, options: callOptions);
+      final response =
+          await _client.getFamilyAccount(request, options: callOptions);
 
       final dto = _mapFamilyAccountFromProto(response.familyAccount);
       // Attach the funders/spenders breakdown + monthly stats (only present on
@@ -55,7 +66,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
     }
   }
 
-  FamilyAccountSummary _mapFamilyAccountSummary(family_pb.FamilyAccountSummary s) {
+  FamilyAccountSummary _mapFamilyAccountSummary(
+      family_pb.FamilyAccountSummary s) {
     FamilyMemberSpending mapSpend(family_pb.FamilyMemberSpending m) =>
         FamilyMemberSpending(
           memberId: m.memberId,
@@ -76,7 +88,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
   }
 
   @override
-  Future<FamilyAccountProto> createFamilyAccount(CreateFamilyAccountRequest req) async {
+  Future<FamilyAccountProto> createFamilyAccount(
+      CreateFamilyAccountRequest req) async {
     try {
       final request = family_pb.CreateFamilyAccountRequest(
         name: req.name,
@@ -87,7 +100,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.createFamilyAccount(request, options: callOptions);
+      final response =
+          await _client.createFamilyAccount(request, options: callOptions);
 
       return _mapFamilyAccountFromProto(response.familyAccount);
     } on GrpcError catch (e) {
@@ -112,7 +126,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.addFamilyMember(request, options: callOptions);
+      final response =
+          await _client.addFamilyMember(request, options: callOptions);
 
       return _mapFamilyMemberFromProto(response.member);
     } on GrpcError catch (e) {
@@ -121,7 +136,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
   }
 
   @override
-  Future<FamilyMemberProto> updateFamilyMember(UpdateFamilyMemberRequest req) async {
+  Future<FamilyMemberProto> updateFamilyMember(
+      UpdateFamilyMemberRequest req) async {
     try {
       final request = family_pb.UpdateFamilyMemberRequest(
         familyId: req.familyId,
@@ -135,7 +151,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.updateFamilyMember(request, options: callOptions);
+      final response =
+          await _client.updateFamilyMember(request, options: callOptions);
 
       return _mapFamilyMemberFromProto(response.member);
     } on GrpcError catch (e) {
@@ -158,7 +175,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.removeFamilyMember(request, options: callOptions);
+      final response =
+          await _client.removeFamilyMember(request, options: callOptions);
 
       return response.returnedBalance;
     } on GrpcError catch (e) {
@@ -167,14 +185,16 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
   }
 
   @override
-  Future<FamilyAccountProto> acceptFamilyInvitation(String invitationToken) async {
+  Future<FamilyAccountProto> acceptFamilyInvitation(
+      String invitationToken) async {
     try {
       final request = family_pb.AcceptFamilyInvitationRequest(
         invitationToken: invitationToken,
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.acceptFamilyInvitation(request, options: callOptions);
+      final response =
+          await _client.acceptFamilyInvitation(request, options: callOptions);
 
       return _mapFamilyAccountFromProto(response.familyAccount);
     } on GrpcError catch (e) {
@@ -191,7 +211,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.declineFamilyInvitation(request, options: callOptions);
+      final response =
+          await _client.declineFamilyInvitation(request, options: callOptions);
 
       return response.success;
     } on GrpcError catch (e) {
@@ -205,9 +226,12 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       final request = family_pb.GetPendingInvitationsRequest();
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getPendingInvitations(request, options: callOptions);
+      final response =
+          await _client.getPendingInvitations(request, options: callOptions);
 
-      return response.invitations.map((invitation) => _mapPendingInvitationFromProto(invitation)).toList();
+      return response.invitations
+          .map((invitation) => _mapPendingInvitationFromProto(invitation))
+          .toList();
     } on GrpcError catch (e) {
       throw mapGrpcError(e);
     }
@@ -231,9 +255,12 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getFamilyTransactions(request, options: callOptions);
+      final response =
+          await _client.getFamilyTransactions(request, options: callOptions);
 
-      return response.transactions.map((txn) => _mapFamilyTransactionFromProto(txn)).toList();
+      return response.transactions
+          .map((txn) => _mapFamilyTransactionFromProto(txn))
+          .toList();
     } on GrpcError catch (e) {
       throw mapGrpcError(e);
     }
@@ -257,7 +284,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.allocateFunds(request, options: callOptions);
+      final response =
+          await _client.allocateFunds(request, options: callOptions);
 
       return _mapFamilyMemberFromProto(response.member);
     } on GrpcError catch (e) {
@@ -279,7 +307,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.generateMemberCard(request, options: callOptions);
+      final response =
+          await _client.generateMemberCard(request, options: callOptions);
 
       return _mapFamilyMemberFromProto(response.member);
     } on GrpcError catch (e) {
@@ -299,7 +328,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.freezeFamilyAccount(request, options: callOptions);
+      final response =
+          await _client.freezeFamilyAccount(request, options: callOptions);
 
       return _mapFamilyAccountFromProto(response.familyAccount);
     } on GrpcError catch (e) {
@@ -315,7 +345,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.unfreezeFamilyAccount(request, options: callOptions);
+      final response =
+          await _client.unfreezeFamilyAccount(request, options: callOptions);
 
       return _mapFamilyAccountFromProto(response.familyAccount);
     } on GrpcError catch (e) {
@@ -335,7 +366,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.deleteFamilyAccount(request, options: callOptions);
+      final response =
+          await _client.deleteFamilyAccount(request, options: callOptions);
 
       return response.returnedBalance;
     } on GrpcError catch (e) {
@@ -348,7 +380,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
     try {
       final request = family_pb.LeaveFamilyAccountRequest(familyId: familyId);
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.leaveFamilyAccount(request, options: callOptions);
+      final response =
+          await _client.leaveFamilyAccount(request, options: callOptions);
       return response.returnedBalance;
     } on GrpcError catch (e) {
       throw mapGrpcError(e);
@@ -373,7 +406,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.processMemberContribution(request, options: callOptions);
+      final response = await _client.processMemberContribution(request,
+          options: callOptions);
 
       return _mapFamilyAccountFromProto(response.familyAccount);
     } on GrpcError catch (e) {
@@ -391,10 +425,12 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
     List<String> specificMemberIds = const [],
   }) async {
     try {
-      final protoAllocations = allocations.map((a) => family_pb.MemberAllocation(
-        memberId: a.memberId,
-        amount: a.amount,
-      )).toList();
+      final protoAllocations = allocations
+          .map((a) => family_pb.MemberAllocation(
+                memberId: a.memberId,
+                amount: a.amount,
+              ))
+          .toList();
 
       final protoMode = _mapDistributionMode(fundDistributionMode);
 
@@ -408,7 +444,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.setupFamilyAccount(request, options: callOptions);
+      final response =
+          await _client.setupFamilyAccount(request, options: callOptions);
 
       return _mapFamilyAccountFromProto(response.familyAccount);
     } on GrpcError catch (e) {
@@ -423,10 +460,12 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
     List<MemberAllocationProto> allocations = const [],
   }) async {
     try {
-      final protoAllocations = allocations.map((a) => family_pb.MemberAllocation(
-        memberId: a.memberId,
-        amount: a.amount,
-      )).toList();
+      final protoAllocations = allocations
+          .map((a) => family_pb.MemberAllocation(
+                memberId: a.memberId,
+                amount: a.amount,
+              ))
+          .toList();
 
       final request = family_pb.UpdateFundDistributionModeRequest(
         familyId: familyId,
@@ -435,7 +474,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       );
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.updateFundDistributionMode(request, options: callOptions);
+      final response = await _client.updateFundDistributionMode(request,
+          options: callOptions);
 
       return _mapFamilyAccountFromProto(response.familyAccount);
     } on GrpcError catch (e) {
@@ -488,14 +528,18 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       members: proto.members.map((m) => _mapFamilyMemberFromProto(m)).toList(),
       memberCount: proto.memberCount,
       activeMemberCount: proto.activeMemberCount,
-      fundDistributionMode: _mapDistributionModeToString(proto.fundDistributionMode),
+      fundDistributionMode:
+          _mapDistributionModeToString(proto.fundDistributionMode),
       setupCompleted: proto.setupCompleted,
       spendingVisibilityEnabled: proto.spendingVisibilityEnabled,
-      fundingPolicy: proto.fundingPolicy.isNotEmpty ? proto.fundingPolicy : 'any_member',
-      accountNumber: proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
+      fundingPolicy:
+          proto.fundingPolicy.isNotEmpty ? proto.fundingPolicy : 'any_member',
+      accountNumber:
+          proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
       bankName: proto.bankName.isNotEmpty ? proto.bankName : null,
-      virtualAccountStatus:
-          proto.virtualAccountStatus.isNotEmpty ? proto.virtualAccountStatus : null,
+      virtualAccountStatus: proto.virtualAccountStatus.isNotEmpty
+          ? proto.virtualAccountStatus
+          : null,
     );
   }
 
@@ -529,25 +573,31 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
     );
   }
 
-  FamilyTransactionProto _mapFamilyTransactionFromProto(family_pb.FamilyTransaction proto) {
+  FamilyTransactionProto _mapFamilyTransactionFromProto(
+      family_pb.FamilyTransaction proto) {
     return FamilyTransactionProto(
       id: proto.id,
       familyId: proto.familyId,
       memberId: proto.memberId,
       memberName: proto.memberName,
       memberAvatar: proto.memberAvatar.isNotEmpty ? proto.memberAvatar : null,
-      transactionId: proto.transactionId.isNotEmpty ? proto.transactionId : null,
+      transactionId:
+          proto.transactionId.isNotEmpty ? proto.transactionId : null,
       amount: proto.amount,
       type: proto.type,
       description: proto.description,
       merchantName: proto.merchantName.isNotEmpty ? proto.merchantName : null,
-      merchantCategory: proto.merchantCategory.isNotEmpty ? proto.merchantCategory : null,
-      metadata: proto.metadata.isNotEmpty ? Map<String, dynamic>.from(proto.metadata) : null,
+      merchantCategory:
+          proto.merchantCategory.isNotEmpty ? proto.merchantCategory : null,
+      metadata: proto.metadata.isNotEmpty
+          ? Map<String, dynamic>.from(proto.metadata)
+          : null,
       createdAt: proto.createdAt,
     );
   }
 
-  PendingInvitationProto _mapPendingInvitationFromProto(family_pb.PendingInvitation proto) {
+  PendingInvitationProto _mapPendingInvitationFromProto(
+      family_pb.PendingInvitation proto) {
     return PendingInvitationProto(
       invitationToken: proto.invitationToken,
       familyId: proto.familyId,
@@ -582,7 +632,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
         pageSize: pageSize,
       );
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getMyInvitationHistory(request, options: callOptions);
+      final response =
+          await _client.getMyInvitationHistory(request, options: callOptions);
       return response.entries.map(_mapInvitationHistoryFromProto).toList();
     } on GrpcError catch (e) {
       throw mapGrpcError(e);
@@ -604,14 +655,16 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
         pageSize: pageSize,
       );
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getSentInvitations(request, options: callOptions);
+      final response =
+          await _client.getSentInvitations(request, options: callOptions);
       return response.entries.map(_mapSentInvitationFromProto).toList();
     } on GrpcError catch (e) {
       throw mapGrpcError(e);
     }
   }
 
-  InvitationHistoryEntryProto _mapInvitationHistoryFromProto(family_pb.InvitationHistoryEntry p) {
+  InvitationHistoryEntryProto _mapInvitationHistoryFromProto(
+      family_pb.InvitationHistoryEntry p) {
     return InvitationHistoryEntryProto(
       invitationToken: p.invitationToken,
       familyId: p.familyId,
@@ -631,7 +684,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
     );
   }
 
-  SentInvitationEntryProto _mapSentInvitationFromProto(family_pb.SentInvitationEntry p) {
+  SentInvitationEntryProto _mapSentInvitationFromProto(
+      family_pb.SentInvitationEntry p) {
     return SentInvitationEntryProto(
       memberId: p.memberId,
       familyId: p.familyId,
@@ -641,7 +695,8 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       invitationStatus: p.invitationStatus,
       invitedUserId: p.invitedUserId.isNotEmpty ? p.invitedUserId : null,
       invitedUserName: p.invitedUserName,
-      invitedUserAvatar: p.invitedUserAvatar.isNotEmpty ? p.invitedUserAvatar : null,
+      invitedUserAvatar:
+          p.invitedUserAvatar.isNotEmpty ? p.invitedUserAvatar : null,
       initialAllocation: p.initialAllocation,
       dailyLimit: p.dailyLimit,
       monthlyLimit: p.monthlyLimit,

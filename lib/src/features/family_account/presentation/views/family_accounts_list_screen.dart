@@ -29,6 +29,10 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
   int _selectedTabIndex = 0;
 
   List<FamilyAccount> _allAccounts = [];
+
+  // Server-truth creation quota (admin-tunable; 0 = unknown → don't gate).
+  int _maxFamilyAccounts = 0;
+  int _createdCount = 0;
   List<PendingInvitation> _pendingInvitations = [];
 
   @override
@@ -100,6 +104,21 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
+          // Gate on the SERVER-sent quota (admin-tunable). 0 max = server
+          // didn't send it — let the server be the judge on create.
+          if (_maxFamilyAccounts > 0 && _createdCount >= _maxFamilyAccounts) {
+            Get.snackbar(
+              'Limit reached',
+              'You\'ve created $_createdCount of $_maxFamilyAccounts '
+                  'Family & Friends account${_maxFamilyAccounts == 1 ? '' : 's'} — '
+                  'that\'s the current maximum.',
+              backgroundColor: const Color(0xFF1F1F1F),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.BOTTOM,
+              margin: EdgeInsets.all(16.w),
+            );
+            return;
+          }
           final result = await Get.toNamed(AppRoutes.familyCreate);
           if (result == true) _onRefresh();
         },
@@ -110,6 +129,27 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
         child: Column(
           children: [
             _buildFilterTabs(),
+            // Creation-quota line (server truth, admin-tunable): visible as
+            // soon as the list loads so users know how many pools they can
+            // still set up. Hidden while unknown (old backend / not loaded).
+            if (_maxFamilyAccounts > 0)
+              Padding(
+                padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 0),
+                child: Row(
+                  children: [
+                    Icon(Icons.group_add_outlined,
+                        size: 14.sp, color: const Color(0xFF9CA3AF)),
+                    SizedBox(width: 6.w),
+                    Text(
+                      _createdCount >= _maxFamilyAccounts
+                          ? 'You\'ve created $_createdCount of $_maxFamilyAccounts accounts — limit reached'
+                          : 'You\'ve created $_createdCount of $_maxFamilyAccounts accounts you can set up',
+                      style: TextStyle(
+                          color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                    ),
+                  ],
+                ),
+              ),
             Expanded(
               child: MultiBlocListener(
                 listeners: [
@@ -119,6 +159,8 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
                       if (state is FamilyAccountsLoaded) {
                         setState(() {
                           _allAccounts = state.familyAccounts;
+                          _maxFamilyAccounts = state.maxFamilyAccounts;
+                          _createdCount = state.createdCount;
                         });
                       } else if (state is FamilyAccountError) {
                         Get.snackbar(
@@ -176,8 +218,7 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
                 child: BlocBuilder<FamilyAccountCubit, FamilyAccountState>(
                   bloc: _accountsCubit,
                   builder: (context, state) {
-                    if (state is FamilyAccountLoading &&
-                        _allAccounts.isEmpty) {
+                    if (state is FamilyAccountLoading && _allAccounts.isEmpty) {
                       return const Center(
                         child: LazerVaultLoader.small(),
                       );

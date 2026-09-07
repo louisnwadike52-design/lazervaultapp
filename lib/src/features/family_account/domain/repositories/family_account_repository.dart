@@ -4,7 +4,7 @@ import '../entities/family_account_entities.dart';
 
 abstract class FamilyAccountRepository {
   // Get all family accounts for the authenticated user
-  Future<Either<Failure, List<FamilyAccount>>> getFamilyAccounts({
+  Future<Either<Failure, FamilyAccountsOverview>> getFamilyAccounts({
     String? statusFilter,
   });
 

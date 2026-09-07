@@ -18,14 +18,18 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
   }) : _secureStorage = secureStorage;
 
   @override
-  Future<Either<Failure, List<FamilyAccount>>> getFamilyAccounts({
+  Future<Either<Failure, FamilyAccountsOverview>> getFamilyAccounts({
     String? statusFilter,
   }) async {
     try {
-      final accounts = await remoteDataSource.getFamilyAccounts(
+      final page = await remoteDataSource.getFamilyAccounts(
         statusFilter: statusFilter,
       );
-      return Right(accounts.map((proto) => proto.toDomain()).toList());
+      return Right(FamilyAccountsOverview(
+        accounts: page.accounts.map((proto) => proto.toDomain()).toList(),
+        maxFamilyAccounts: page.maxFamilyAccounts,
+        createdCount: page.createdCount,
+      ));
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, statusCode: e.code ?? 500));
     } on NetworkException catch (e) {
@@ -36,7 +40,8 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
   }
 
   @override
-  Future<Either<Failure, FamilyAccount>> getFamilyAccount(String familyId) async {
+  Future<Either<Failure, FamilyAccount>> getFamilyAccount(
+      String familyId) async {
     try {
       final account = await remoteDataSource.getFamilyAccount(familyId);
       return Right(account.toDomain());
@@ -195,7 +200,8 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
     required String invitationToken,
   }) async {
     try {
-      final account = await remoteDataSource.acceptFamilyInvitation(invitationToken);
+      final account =
+          await remoteDataSource.acceptFamilyInvitation(invitationToken);
       return Right(account.toDomain());
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, statusCode: e.code ?? 500));
@@ -212,7 +218,8 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
     String? reason,
   }) async {
     try {
-      final success = await remoteDataSource.declineFamilyInvitation(invitationToken);
+      final success =
+          await remoteDataSource.declineFamilyInvitation(invitationToken);
       return Right(success);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, statusCode: e.code ?? 500));
@@ -224,7 +231,8 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
   }
 
   @override
-  Future<Either<Failure, List<PendingInvitation>>> getPendingInvitations() async {
+  Future<Either<Failure, List<PendingInvitation>>>
+      getPendingInvitations() async {
     try {
       final invitations = await remoteDataSource.getPendingInvitations();
       return Right(invitations.map((proto) => proto.toDomain()).toList());
@@ -374,7 +382,8 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
     required String familyId,
   }) async {
     try {
-      final returned = await remoteDataSource.leaveFamilyAccount(familyId: familyId);
+      final returned =
+          await remoteDataSource.leaveFamilyAccount(familyId: familyId);
       return Right(returned);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, statusCode: e.code ?? 500));
@@ -421,10 +430,12 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
     List<String> specificMemberIds = const [],
   }) async {
     try {
-      final protoAllocations = allocations.map((a) => MemberAllocationProto(
-        memberId: a.memberId,
-        amount: a.amount,
-      )).toList();
+      final protoAllocations = allocations
+          .map((a) => MemberAllocationProto(
+                memberId: a.memberId,
+                amount: a.amount,
+              ))
+          .toList();
 
       final account = await remoteDataSource.setupFamilyAccount(
         familyId: familyId,
@@ -451,10 +462,12 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
     List<MemberAllocationEntry> allocations = const [],
   }) async {
     try {
-      final protoAllocations = allocations.map((a) => MemberAllocationProto(
-        memberId: a.memberId,
-        amount: a.amount,
-      )).toList();
+      final protoAllocations = allocations
+          .map((a) => MemberAllocationProto(
+                memberId: a.memberId,
+                amount: a.amount,
+              ))
+          .toList();
 
       final account = await remoteDataSource.updateFundDistributionMode(
         familyId: familyId,

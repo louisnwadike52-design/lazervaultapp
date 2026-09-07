@@ -8,13 +8,15 @@ abstract class UseCase<T, Params> {
 class NoParams {}
 
 // Get Family Accounts Use Case
-class GetFamilyAccountsUseCase extends UseCase<List<FamilyAccount>, GetFamilyAccountsParams> {
+class GetFamilyAccountsUseCase
+    extends UseCase<FamilyAccountsOverview, GetFamilyAccountsParams> {
   final FamilyAccountRepository repository;
 
   GetFamilyAccountsUseCase(this.repository);
 
   @override
-  Future<Either<Failure, List<FamilyAccount>>> call(GetFamilyAccountsParams params) {
+  Future<Either<Failure, FamilyAccountsOverview>> call(
+      GetFamilyAccountsParams params) {
     return repository.getFamilyAccounts(statusFilter: params.statusFilter);
   }
 }
@@ -37,13 +39,15 @@ class GetFamilyAccountUseCase extends UseCase<FamilyAccount, String> {
 }
 
 // Create Family Account Use Case
-class CreateFamilyAccountUseCase extends UseCase<FamilyAccount, CreateFamilyAccountParams> {
+class CreateFamilyAccountUseCase
+    extends UseCase<FamilyAccount, CreateFamilyAccountParams> {
   final FamilyAccountRepository repository;
 
   CreateFamilyAccountUseCase(this.repository);
 
   @override
-  Future<Either<Failure, FamilyAccount>> call(CreateFamilyAccountParams params) {
+  Future<Either<Failure, FamilyAccount>> call(
+      CreateFamilyAccountParams params) {
     return repository.createFamilyAccount(
       name: params.name,
       description: params.description,
@@ -71,7 +75,8 @@ class CreateFamilyAccountParams {
 }
 
 // Add Family Member Use Case
-class AddFamilyMemberUseCase extends UseCase<FamilyMember, AddFamilyMemberParams> {
+class AddFamilyMemberUseCase
+    extends UseCase<FamilyMember, AddFamilyMemberParams> {
   final FamilyAccountRepository repository;
 
   AddFamilyMemberUseCase(this.repository);
@@ -95,7 +100,8 @@ class AddFamilyMemberUseCase extends UseCase<FamilyMember, AddFamilyMemberParams
 }
 
 // Update Family Member Use Case
-class UpdateFamilyMemberUseCase extends UseCase<FamilyMember, UpdateFamilyMemberParams> {
+class UpdateFamilyMemberUseCase
+    extends UseCase<FamilyMember, UpdateFamilyMemberParams> {
   final FamilyAccountRepository repository;
 
   UpdateFamilyMemberUseCase(this.repository);
@@ -138,7 +144,8 @@ class UpdateFamilyMemberParams {
 }
 
 // Remove Family Member Use Case
-class RemoveFamilyMemberUseCase extends UseCase<double, RemoveFamilyMemberParams> {
+class RemoveFamilyMemberUseCase
+    extends UseCase<double, RemoveFamilyMemberParams> {
   final FamilyAccountRepository repository;
 
   RemoveFamilyMemberUseCase(this.repository);
@@ -193,7 +200,8 @@ class DeclineFamilyInvitationUseCase extends UseCase<bool, String> {
 }
 
 // Get Pending Invitations Use Case
-class GetPendingInvitationsUseCase extends UseCase<List<PendingInvitation>, NoParams> {
+class GetPendingInvitationsUseCase
+    extends UseCase<List<PendingInvitation>, NoParams> {
   final FamilyAccountRepository repository;
 
   GetPendingInvitationsUseCase(this.repository);
@@ -205,13 +213,15 @@ class GetPendingInvitationsUseCase extends UseCase<List<PendingInvitation>, NoPa
 }
 
 // Get Family Transactions Use Case
-class GetFamilyTransactionsUseCase extends UseCase<List<FamilyTransaction>, GetFamilyTransactionsParams> {
+class GetFamilyTransactionsUseCase
+    extends UseCase<List<FamilyTransaction>, GetFamilyTransactionsParams> {
   final FamilyAccountRepository repository;
 
   GetFamilyTransactionsUseCase(this.repository);
 
   @override
-  Future<Either<Failure, List<FamilyTransaction>>> call(GetFamilyTransactionsParams params) {
+  Future<Either<Failure, List<FamilyTransaction>>> call(
+      GetFamilyTransactionsParams params) {
     return repository.getFamilyTransactions(
       familyId: params.familyId,
       memberId: params.memberId,
@@ -279,7 +289,8 @@ class AllocateFundsParams {
 }
 
 // Generate Member Card Use Case
-class GenerateMemberCardUseCase extends UseCase<FamilyMember, GenerateMemberCardParams> {
+class GenerateMemberCardUseCase
+    extends UseCase<FamilyMember, GenerateMemberCardParams> {
   final FamilyAccountRepository repository;
 
   GenerateMemberCardUseCase(this.repository);
@@ -307,13 +318,15 @@ class GenerateMemberCardParams {
 }
 
 // Freeze Family Account Use Case
-class FreezeFamilyAccountUseCase extends UseCase<FamilyAccount, FreezeFamilyAccountParams> {
+class FreezeFamilyAccountUseCase
+    extends UseCase<FamilyAccount, FreezeFamilyAccountParams> {
   final FamilyAccountRepository repository;
 
   FreezeFamilyAccountUseCase(this.repository);
 
   @override
-  Future<Either<Failure, FamilyAccount>> call(FreezeFamilyAccountParams params) {
+  Future<Either<Failure, FamilyAccount>> call(
+      FreezeFamilyAccountParams params) {
     return repository.freezeFamilyAccount(
       familyId: params.familyId,
       reason: params.reason,
@@ -344,7 +357,8 @@ class UnfreezeFamilyAccountUseCase extends UseCase<FamilyAccount, String> {
 }
 
 // Delete Family Account Use Case
-class DeleteFamilyAccountUseCase extends UseCase<double, DeleteFamilyAccountParams> {
+class DeleteFamilyAccountUseCase
+    extends UseCase<double, DeleteFamilyAccountParams> {
   final FamilyAccountRepository repository;
 
   DeleteFamilyAccountUseCase(this.repository);
@@ -369,7 +383,8 @@ class DeleteFamilyAccountParams {
 }
 
 // Leave Family Account Use Case (self-serve member leave)
-class LeaveFamilyAccountUseCase extends UseCase<double, LeaveFamilyAccountParams> {
+class LeaveFamilyAccountUseCase
+    extends UseCase<double, LeaveFamilyAccountParams> {
   final FamilyAccountRepository repository;
 
   LeaveFamilyAccountUseCase(this.repository);
@@ -386,13 +401,15 @@ class LeaveFamilyAccountParams {
 }
 
 // Process Member Contribution Use Case (Hybrid Funding)
-class ProcessMemberContributionUseCase extends UseCase<FamilyAccount, ProcessMemberContributionParams> {
+class ProcessMemberContributionUseCase
+    extends UseCase<FamilyAccount, ProcessMemberContributionParams> {
   final FamilyAccountRepository repository;
 
   ProcessMemberContributionUseCase(this.repository);
 
   @override
-  Future<Either<Failure, FamilyAccount>> call(ProcessMemberContributionParams params) {
+  Future<Either<Failure, FamilyAccount>> call(
+      ProcessMemberContributionParams params) {
     return repository.processMemberContribution(
       familyId: params.familyId,
       memberId: params.memberId,
@@ -420,7 +437,8 @@ class ProcessMemberContributionParams {
 }
 
 // Setup Family Account Use Case
-class SetupFamilyAccountUseCase extends UseCase<FamilyAccount, SetupFamilyAccountParams> {
+class SetupFamilyAccountUseCase
+    extends UseCase<FamilyAccount, SetupFamilyAccountParams> {
   final FamilyAccountRepository repository;
 
   SetupFamilyAccountUseCase(this.repository);
@@ -459,13 +477,15 @@ class SetupFamilyAccountParams {
 }
 
 // Update Fund Distribution Mode Use Case
-class UpdateFundDistributionModeUseCase extends UseCase<FamilyAccount, UpdateFundDistributionModeParams> {
+class UpdateFundDistributionModeUseCase
+    extends UseCase<FamilyAccount, UpdateFundDistributionModeParams> {
   final FamilyAccountRepository repository;
 
   UpdateFundDistributionModeUseCase(this.repository);
 
   @override
-  Future<Either<Failure, FamilyAccount>> call(UpdateFundDistributionModeParams params) {
+  Future<Either<Failure, FamilyAccount>> call(
+      UpdateFundDistributionModeParams params) {
     return repository.updateFundDistributionMode(
       familyId: params.familyId,
       fundDistributionMode: params.fundDistributionMode,
@@ -488,8 +508,8 @@ class UpdateFundDistributionModeParams {
 
 // ─── Invitation history use cases ──────────────────────────────────────
 
-class GetMyInvitationHistoryUseCase
-    extends UseCase<List<InvitationHistoryEntry>, GetMyInvitationHistoryParams> {
+class GetMyInvitationHistoryUseCase extends UseCase<
+    List<InvitationHistoryEntry>, GetMyInvitationHistoryParams> {
   final FamilyAccountRepository repository;
   GetMyInvitationHistoryUseCase(this.repository);
 
