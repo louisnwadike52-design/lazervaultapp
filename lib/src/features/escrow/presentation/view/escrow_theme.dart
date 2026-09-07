@@ -41,6 +41,39 @@ class EscrowTheme {
     }
   }
 
+  /// Human-friendly label + colour for an OFFER status (money-free phase).
+  static (String, Color) offerStatusMeta(String status) {
+    switch (status) {
+      case 'OPEN':
+        return ('Awaiting response', warning);
+      case 'AWAITING_FUNDING':
+        return ('Ready to fund', primary);
+      case 'CONVERTED':
+        return ('Deal created', success);
+      case 'DECLINED':
+        return ('Declined', error);
+      case 'CANCELLED':
+        return ('Withdrawn', textSecondary);
+      case 'EXPIRED':
+        return ('Expired', textSecondary);
+      default:
+        return (status, textSecondary);
+    }
+  }
+
+  static Widget offerStatusChip(String status) {
+    final (label, color) = offerStatusMeta(status);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6.r),
+      ),
+      child: Text(label,
+          style: GoogleFonts.inter(color: color, fontSize: 10.5.sp, fontWeight: FontWeight.w700)),
+    );
+  }
+
   static Widget statusChip(String status) {
     final (label, color) = statusMeta(status);
     return Container(

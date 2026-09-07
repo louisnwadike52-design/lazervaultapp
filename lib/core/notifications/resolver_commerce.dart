@@ -49,6 +49,18 @@ NotificationTarget? _resolveCommerce(String type, Map<String, String> data) {
     return _landing(AppRoutes.myGiftCards);
   }
 
+  // ---- Escrow OFFERS (must precede the general escrow branch — every
+  // escrow_offer_* type also contains "escrow" and would otherwise land on the
+  // deal-detail route with an OFFER id, a guaranteed dead end) ---------------
+  if (type.contains('escrow_offer')) {
+    final offerId = _first(data, const ['offer_id', 'entity_id']);
+    if (offerId != null) {
+      return _record(AppRoutes.escrowOfferView,
+          arguments: {'offerId': offerId});
+    }
+    return _landing(AppRoutes.escrow);
+  }
+
   // ---- Escrow --------------------------------------------------------------
   // Reuses the `/escrow/detail/:reference` path-param route already wired for
   // the chat receipt deep link.

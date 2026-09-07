@@ -17,6 +17,7 @@ import 'package:lazervault/core/services/login_flow_resolver.dart';
 // import + the clearIfBuildChanged() call together if a stale-state regression returns.
 // import 'package:lazervault/core/services/fresh_install_guard.dart';
 import 'package:lazervault/core/notifications/notification_navigator.dart';
+import 'package:lazervault/core/notifications/notification_target.dart';
 import 'package:lazervault/core/services/pending_chat_navigation.dart';
 import 'package:lazervault/core/services/chat_sound_settings.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -777,6 +778,21 @@ class _MyAppState extends State<MyApp> {
             },
           );
         });
+        break;
+      case DeepLinkType.escrowOffer:
+        // Share link (https://lazervault.app/escrow/offer/<token>, or the
+        // lazervault:// form). Routed through PendingDeepLink rather than a
+        // bare Get.toNamed so the LOGGED-OUT case works: the target is
+        // stashed, survives the login gate, and replays onto the offer page
+        // once the session exists — instead of dumping a fresh sign-in on
+        // the dashboard with the link silently dropped.
+        if (data.escrowOfferToken != null &&
+            data.escrowOfferToken!.isNotEmpty) {
+          PendingDeepLink.instance.push(NotificationTarget(
+            route: AppRoutes.escrowOfferView,
+            arguments: {'shareToken': data.escrowOfferToken},
+          ));
+        }
         break;
       case DeepLinkType.depositCallback:
       case DeepLinkType.paymentCallback:

@@ -103,6 +103,16 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
             iconSize: 17.sp,
           ),
           SizedBox(width: 8.w),
+          // Offers inbox: listings I published + offers/requests sent to me.
+          IconButton(
+            onPressed: () async {
+              await Get.toNamed(AppRoutes.escrowOffers);
+              _reload();
+            },
+            icon: Icon(Icons.local_offer_outlined,
+                color: EscrowTheme.primary, size: 20.sp),
+            tooltip: 'Offers',
+          ),
           MicroserviceChatIcon(
             serviceName: 'Escrow Pay',
             sourceContext: 'escrow',
@@ -115,12 +125,9 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: EscrowTheme.primary,
-        onPressed: () async {
-          await Get.toNamed(AppRoutes.escrowCreate);
-          _reload();
-        },
+        onPressed: _newOfferChooser,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: Text('New deal',
+        label: Text('New',
             style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
       ),
       body: ServiceEntranceAnimation(
@@ -171,6 +178,65 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
     );
   }
 
+  /// The two honest entry points of a standard two-sided escrow. The old FAB
+  /// dropped BOTH sides into a buyer-pays create flow — a seller tapping
+  /// "Create a Deal" on their own tab was asked to fund a purchase.
+  Future<void> _newOfferChooser() async {
+    final direction = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: EscrowTheme.card,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 14.h),
+            Text('What would you like to do?',
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700)),
+            SizedBox(height: 6.h),
+            ListTile(
+              leading: Icon(Icons.storefront_outlined,
+                  color: EscrowTheme.primary, size: 24.sp),
+              title: Text('Sell something',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600)),
+              subtitle: Text(
+                  'List the item with photos and price. Share it or offer it to a buyer.',
+                  style: GoogleFonts.inter(
+                      color: EscrowTheme.textSecondary, fontSize: 11.5.sp)),
+              onTap: () => Navigator.pop(ctx, 'sell_offer'),
+            ),
+            ListTile(
+              leading: Icon(Icons.shopping_bag_outlined,
+                  color: EscrowTheme.primary, size: 24.sp),
+              title: Text('Request to buy',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600)),
+              subtitle: Text(
+                  'Ask a seller for something. You pay only after they accept.',
+                  style: GoogleFonts.inter(
+                      color: EscrowTheme.textSecondary, fontSize: 11.5.sp)),
+              onTap: () => Navigator.pop(ctx, 'buy_request'),
+            ),
+            SizedBox(height: 10.h),
+          ],
+        ),
+      ),
+    );
+    if (direction == null) return;
+    await Get.toNamed(AppRoutes.escrowOfferCreate,
+        arguments: {'direction': direction});
+    _reload();
+  }
+
   Widget _header() {
     return Container(
       margin: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 12.h),
@@ -199,11 +265,12 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Safe deals, held in escrow',
+                Text('Buy & sell safely with escrow',
                     style: GoogleFonts.inter(
                         color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
                 SizedBox(height: 4.h),
-                Text('We hold the buyer\'s funds until delivery is confirmed.',
+                Text(
+                    'Agree first, pay into escrow, release after delivery is confirmed.',
                     style: GoogleFonts.inter(
                         color: Colors.white.withValues(alpha: 0.9), fontSize: 11.5.sp)),
               ],
@@ -281,10 +348,9 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
     );
   }
 
-  Future<void> _goCreate() async {
-    await Get.toNamed(AppRoutes.escrowCreate);
-    _reload();
-  }
+  // Empty-state CTAs open the direction chooser — a seller's CTA must never
+  // drop them into a flow that asks THEM to pay.
+  Future<void> _goCreate() => _newOfferChooser();
 
   Widget _empty() {
     // When a status filter narrows everything out, keep it honest rather than

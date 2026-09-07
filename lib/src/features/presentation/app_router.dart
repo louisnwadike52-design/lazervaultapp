@@ -328,6 +328,9 @@ import 'package:lazervault/src/features/escrow/presentation/view/create_escrow_d
 import 'package:lazervault/src/features/escrow/presentation/view/escrow_deal_detail_screen.dart';
 import 'package:lazervault/src/features/escrow/presentation/view/escrow_receipt_screen.dart';
 import 'package:lazervault/src/features/escrow/presentation/view/escrow_invoice_screen.dart';
+import 'package:lazervault/src/features/escrow/presentation/view/escrow_offer_view_screen.dart';
+import 'package:lazervault/src/features/escrow/presentation/view/create_escrow_offer_screen.dart';
+import 'package:lazervault/src/features/escrow/presentation/view/escrow_offers_list_screen.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 
 // QR Pay imports
@@ -3010,6 +3013,43 @@ GetPage(
     GetPage(
       name: AppRoutes.escrowInvoice,
       page: () => const EscrowInvoiceScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    // Two-sided offers: listing page. Arguments {'offerId'|'shareToken'}, and
+    // a path-param variant for web/universal-link handoffs
+    // (https://lazervault.app/escrow/offer/{token} → /escrow/offer/:shareToken).
+    GetPage(
+      name: AppRoutes.escrowOfferView,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<EscrowCubit>(),
+        child: const EscrowOfferViewScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: '${AppRoutes.escrowOfferView}/:shareToken',
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<EscrowCubit>(),
+        child: const EscrowOfferViewScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // Publish an offer (args {'direction': sell_offer|buy_request}).
+    GetPage(
+      name: AppRoutes.escrowOfferCreate,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<EscrowCubit>(),
+        child: const CreateEscrowOfferScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // Offers inbox (created + received listings/requests).
+    GetPage(
+      name: AppRoutes.escrowOffers,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<EscrowCubit>(),
+        child: const EscrowOffersListScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(

@@ -4,6 +4,7 @@ import 'package:lazervault/src/core/network/retry_helper.dart';
 import 'package:lazervault/src/generated/escrow.pb.dart' as pb;
 import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as ts;
 import '../../domain/entities/escrow_deal_entity.dart';
+import '../../domain/entities/escrow_offer_entity.dart';
 import '../../domain/repositories/escrow_repository.dart';
 
 class EscrowRepositoryGrpcImpl implements EscrowRepository {
@@ -206,6 +207,177 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
       return _dealFromProto(resp.deal);
     });
   }
+
+  // ── Two-sided offers (money-free agreement phase) ──
+
+  @override
+  Future<EscrowOfferEntity> createOffer({
+    required String direction,
+    String counterpartyQuery = '',
+    required String title,
+    String description = '',
+    required double amount,
+    String currency = 'NGN',
+    String feePayerPreference = '',
+    int deliveryDeadlineDays = 0,
+  }) async {
+    return retryWithBackoff(operation: () async {
+      final req = pb.CreateOfferRequest()
+        ..direction = direction
+        ..counterpartyQuery = counterpartyQuery
+        ..title = title
+        ..description = description
+        ..amount = amount
+        ..currency = currency
+        ..feePayerPreference = feePayerPreference
+        ..deliveryDeadlineDays = deliveryDeadlineDays;
+      final options = await grpcClient.callOptions;
+      final resp = await grpcClient.escrowClient.createOffer(req, options: options);
+      // The share token rides the response envelope exactly once — attach it
+      // to the entity so the success screen can build the share link.
+      return _offerFromProto(resp.offer).copyWith(shareToken: resp.shareUrlToken);
+    });
+  }
+
+  @override
+  Future<EscrowOfferEntity> getOffer(String offerId) async {
+    return retryWithBackoff(operation: () async {
+      final req = pb.GetOfferRequest()..offerId = offerId;
+      final options = await grpcClient.callOptions;
+      final resp = await grpcClient.escrowClient.getOffer(req, options: options);
+      return _offerFromProto(resp.offer).copyWith(shareToken: resp.shareUrlToken);
+    });
+  }
+
+  @override
+  Future<EscrowOfferEntity> getOfferByShareToken(String shareToken) async {
+    return retryWithBackoff(operation: () async {
+      final req = pb.GetOfferByShareTokenRequest()..shareToken = shareToken;
+      final options = await grpcClient.callOptions;
+      final resp =
+          await grpcClient.escrowClient.getOfferByShareToken(req, options: options);
+      return _offerFromProto(resp.offer);
+    });
+  }
+
+  @override
+  Future<List<EscrowOfferEntity>> listMyOffers({
+    String role = '',
+    String status = '',
+    int page = 1,
+    int limit = 50,
+  }) async {
+    return retryWithBackoff(operation: () async {
+      final req = pb.ListMyOffersRequest()
+        ..role = role
+        ..status = status
+        ..page = page
+        ..limit = limit;
+      final options = await grpcClient.callOptions;
+      final resp = await grpcClient.escrowClient.listMyOffers(req, options: options);
+      return resp.offers.map(_offerFromProto).toList();
+    });
+  }
+
+  @override
+  Future<EscrowOfferEntity> respondOffer({
+    required String offerId,
+    required bool accept,
+    String note = '',
+  }) async {
+    return retryWithBackoff(operation: () async {
+      final req = pb.RespondOfferRequest()
+        ..offerId = offerId
+        ..accept = accept
+        ..note = note;
+      final options = await grpcClient.callOptions;
+      final resp = await grpcClient.escrowClient.respondOffer(req, options: options);
+      return _offerFromProto(resp.offer);
+    });
+  }
+
+  @override
+  Future<EscrowDealEntity> fundOffer({
+    required String offerId,
+    required String buyerAccountId,
+    required String transactionId,
+    required String verificationToken,
+    required String idempotencyKey,
+  }) async {
+    // NO retry wrapper on the money RPC itself would be ideal, but FundOffer is
+    // server-side idempotent end-to-end: the deal idempotency key reserves the
+    // outcome before money moves, so a network-level retry can only replay into
+    // the cached result — matching how createDeal is wired.
+    return retryWithBackoff(operation: () async {
+      final req = pb.FundOfferRequest()
+        ..offerId = offerId
+        ..buyerAccountId = buyerAccountId
+        ..transactionId = transactionId
+        ..verificationToken = verificationToken
+        ..idempotencyKey = idempotencyKey;
+      final options = await grpcClient.callOptions;
+      final resp = await grpcClient.escrowClient.fundOffer(req, options: options);
+      return _dealFromProto(resp.deal);
+    });
+  }
+
+  @override
+  Future<EscrowOfferEntity> cancelOffer(String offerId) async {
+    return retryWithBackoff(operation: () async {
+      final req = pb.CancelOfferRequest()..offerId = offerId;
+      final options = await grpcClient.callOptions;
+      final resp = await grpcClient.escrowClient.cancelOffer(req, options: options);
+      return _offerFromProto(resp.offer);
+    });
+  }
+
+  @override
+  Future<void> addOfferAttachment({
+    required String offerId,
+    required String mediaKind,
+    required String url,
+    String contentType = '',
+    int sizeBytes = 0,
+    int durationSeconds = 0,
+  }) async {
+    return retryWithBackoff(operation: () async {
+      final req = pb.AddOfferAttachmentRequest()
+        ..offerId = offerId
+        ..mediaKind = mediaKind
+        ..url = url
+        ..contentType = contentType
+        ..sizeBytes = Int64(sizeBytes)
+        ..durationSeconds = durationSeconds;
+      final options = await grpcClient.callOptions;
+      await grpcClient.escrowClient.addOfferAttachment(req, options: options);
+    });
+  }
+
+  EscrowOfferEntity _offerFromProto(pb.Offer o) => EscrowOfferEntity(
+        id: o.id,
+        reference: o.reference,
+        direction: o.direction,
+        creatorUserId: o.creatorUserId,
+        creatorName: o.creatorName,
+        counterpartyUserId: o.counterpartyUserId,
+        counterpartyName: o.counterpartyName,
+        title: o.title,
+        description: o.description,
+        amount: o.amount,
+        currency: o.currency,
+        feePayerMode: o.feePayerMode,
+        deliveryDeadlineDays: o.deliveryDeadlineDays,
+        status: o.status,
+        declineReason: o.declineReason,
+        expiresAt: o.hasExpiresAt() ? _toDate(o.expiresAt) : null,
+        fundingDeadlineAt:
+            o.hasFundingDeadlineAt() ? _toDate(o.fundingDeadlineAt) : null,
+        dealId: o.dealId,
+        acceptedAt: o.hasAcceptedAt() ? _toDate(o.acceptedAt) : null,
+        createdAt: o.hasCreatedAt() ? _toDate(o.createdAt) : null,
+        attachments: o.attachments.map(_attachmentFromProto).toList(),
+        viewerIsCreator: o.viewerIsCreator,
+      );
 
   // ---- proto → entity mapping ----
 

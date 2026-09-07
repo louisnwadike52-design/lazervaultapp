@@ -8,6 +8,7 @@ enum DeepLinkType {
   paymentCallback,
   quickAction,
   familyInvite,
+  escrowOffer,
   unknown,
 }
 
@@ -23,12 +24,18 @@ class DeepLinkData {
   /// other types.
   final String? familyInviteToken;
 
+  /// For [DeepLinkType.escrowOffer], the share token from
+  /// `https://lazervault.app/escrow/offer/<token>` (or the
+  /// `lazervault://escrow/offer/<token>` custom-scheme form). Null otherwise.
+  final String? escrowOfferToken;
+
   const DeepLinkData({
     required this.type,
     required this.rawUri,
     required this.queryParams,
     this.path,
     this.familyInviteToken,
+    this.escrowOfferToken,
   });
 
   /// Get a query parameter value
@@ -159,6 +166,22 @@ class DeepLinkService {
         queryParams: queryParams,
         path: path,
         familyInviteToken: token,
+      );
+    }
+
+    // Escrow offer share link: custom scheme puts host=='escrow' with
+    // segments [offer, <token>]; universal link yields [escrow, offer, <token>].
+    final isEscrowOffer =
+        (uri.host == 'escrow' && segments.length >= 2 && segments[0] == 'offer') ||
+        (segments.length >= 3 && segments[0] == 'escrow' && segments[1] == 'offer');
+    if (isEscrowOffer) {
+      final token = uri.host == 'escrow' ? segments[1] : segments[2];
+      return DeepLinkData(
+        type: DeepLinkType.escrowOffer,
+        rawUri: uri.toString(),
+        queryParams: queryParams,
+        path: path,
+        escrowOfferToken: token,
       );
     }
 

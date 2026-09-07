@@ -554,6 +554,13 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String escrowDetail = '/escrow/detail';
   static const String escrowReceipt = '/escrow/receipt';
   static const String escrowInvoice = '/escrow/invoice';
+  // Two-sided offers: the listing page (args offerId/shareToken; the
+  // '/:shareToken' variant serves web/universal-link handoffs).
+  static const String escrowOfferView = '/escrow/offer';
+  // NOT '/escrow/offer/create' — that would be captured by the
+  // '/escrow/offer/:shareToken' param route as a bogus token.
+  static const String escrowOfferCreate = '/escrow/create-offer';
+  static const String escrowOffers = '/escrow/offers';
 
   // QR Pay Routes
   static const String qrPayHome = '/qr-pay';

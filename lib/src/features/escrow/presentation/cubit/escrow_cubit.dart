@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/core/network/grpc_client.dart';
 import '../../domain/entities/escrow_deal_entity.dart';
+import '../../domain/entities/escrow_offer_entity.dart';
 import '../../domain/repositories/escrow_repository.dart';
 
 part 'escrow_state.dart';
@@ -208,6 +209,147 @@ class EscrowCubit extends Cubit<EscrowState> {
       ));
     } catch (e) {
       emit(EscrowError(_clean(e)));
+    }
+  }
+
+  // ── Two-sided offers (money-free agreement phase before funding) ──
+
+  Future<void> loadOffers({String role = '', String status = ''}) async {
+    emit(const EscrowLoading());
+    try {
+      final uid = await _userId();
+      final offers = await repository.listMyOffers(role: role, status: status);
+      emit(EscrowOffersLoaded(offers, uid));
+    } catch (e) {
+      emit(EscrowError(_clean(e)));
+    }
+  }
+
+  Future<void> loadOffer(String offerId) async {
+    emit(const EscrowLoading());
+    try {
+      final uid = await _userId();
+      final offer = await repository.getOffer(offerId);
+      emit(EscrowOfferLoaded(offer, uid));
+    } catch (e) {
+      emit(EscrowError(_clean(e)));
+    }
+  }
+
+  /// Resolve a share link (deep link entry — any signed-in user).
+  Future<void> loadOfferByShareToken(String shareToken) async {
+    emit(const EscrowLoading());
+    try {
+      final uid = await _userId();
+      final offer = await repository.getOfferByShareToken(shareToken);
+      emit(EscrowOfferLoaded(offer, uid));
+    } catch (e) {
+      emit(EscrowError(_clean(e)));
+    }
+  }
+
+  /// Publish an offer. NO PIN — money-free; returns the offer (with its share
+  /// token) so the success screen can offer the link, or null on failure.
+  Future<EscrowOfferEntity?> createOffer({
+    required String direction,
+    String counterpartyQuery = '',
+    required String title,
+    String description = '',
+    required double amount,
+    String currency = 'NGN',
+    String feePayerPreference = '',
+    int deliveryDeadlineDays = 0,
+  }) async {
+    emit(const EscrowActionInProgress());
+    try {
+      final offer = await repository.createOffer(
+        direction: direction,
+        counterpartyQuery: counterpartyQuery,
+        title: title,
+        description: description,
+        amount: amount,
+        currency: currency,
+        feePayerPreference: feePayerPreference,
+        deliveryDeadlineDays: deliveryDeadlineDays,
+      );
+      emit(EscrowOfferActionSuccess('Offer published', offer));
+      return offer;
+    } catch (e) {
+      emit(EscrowError(_clean(e)));
+      return null;
+    }
+  }
+
+  Future<void> respondOffer({required String offerId, required bool accept, String note = ''}) async {
+    emit(const EscrowActionInProgress());
+    try {
+      final offer = await repository.respondOffer(offerId: offerId, accept: accept, note: note);
+      emit(EscrowOfferActionSuccess(
+        accept ? 'Accepted — waiting for the buyer to fund' : 'Offer declined',
+        offer,
+      ));
+    } catch (e) {
+      emit(EscrowError(_clean(e)));
+    }
+  }
+
+  Future<void> cancelOffer(String offerId) async {
+    emit(const EscrowActionInProgress());
+    try {
+      final offer = await repository.cancelOffer(offerId);
+      emit(EscrowOfferActionSuccess('Offer withdrawn', offer));
+    } catch (e) {
+      emit(EscrowError(_clean(e)));
+    }
+  }
+
+  /// Fund an agreed offer — THE money movement. Produces a funded DEAL, so it
+  /// emits [EscrowActionSuccess] and rides the existing receipt routing.
+  Future<EscrowDealEntity?> fundOffer({
+    required String offerId,
+    required String buyerAccountId,
+    required String transactionId,
+    required String verificationToken,
+    required String idempotencyKey,
+  }) async {
+    emit(const EscrowActionInProgress());
+    try {
+      final deal = await repository.fundOffer(
+        offerId: offerId,
+        buyerAccountId: buyerAccountId,
+        transactionId: transactionId,
+        verificationToken: verificationToken,
+        idempotencyKey: idempotencyKey,
+      );
+      emit(EscrowActionSuccess('Deal funded and created', deal));
+      return deal;
+    } catch (e) {
+      emit(EscrowError(_clean(e)));
+      return null;
+    }
+  }
+
+  /// Attach listing media to an offer. Best effort, mirrors addAttachment.
+  Future<bool> addOfferAttachment({
+    required String offerId,
+    required String mediaKind,
+    required String url,
+    String contentType = '',
+    int sizeBytes = 0,
+    int durationSeconds = 0,
+  }) async {
+    try {
+      await repository.addOfferAttachment(
+        offerId: offerId,
+        mediaKind: mediaKind,
+        url: url,
+        contentType: contentType,
+        sizeBytes: sizeBytes,
+        durationSeconds: durationSeconds,
+      );
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 }

@@ -1,4 +1,5 @@
 import '../entities/escrow_deal_entity.dart';
+import '../entities/escrow_offer_entity.dart';
 
 /// Abstract repository for the Escrow feature. The data layer implements this
 /// over gRPC to commerce-gateway (EscrowService).
@@ -82,5 +83,62 @@ abstract class EscrowRepository {
     required String dealId,
     required bool accept,
     String note = '',
+  });
+
+  // ── Two-sided offers (money-free agreement phase before funding) ──
+
+  /// Publish an offer (seller listing or buyer request). No PIN — no money.
+  Future<EscrowOfferEntity> createOffer({
+    required String direction,
+    String counterpartyQuery = '',
+    required String title,
+    String description = '',
+    required double amount,
+    String currency = 'NGN',
+    String feePayerPreference = '',
+    int deliveryDeadlineDays = 0,
+  });
+
+  /// Read an offer as one of its parties.
+  Future<EscrowOfferEntity> getOffer(String offerId);
+
+  /// Resolve a share link (any signed-in user).
+  Future<EscrowOfferEntity> getOfferByShareToken(String shareToken);
+
+  /// List offers I created / that are addressed to me.
+  Future<List<EscrowOfferEntity>> listMyOffers({
+    String role = '',
+    String status = '',
+    int page = 1,
+    int limit = 50,
+  });
+
+  /// Addressed counterparty accepts (buy_request) or declines an OPEN offer.
+  Future<EscrowOfferEntity> respondOffer({
+    required String offerId,
+    required bool accept,
+    String note = '',
+  });
+
+  /// Fund an agreed offer — THE money movement. PIN-gated; returns the deal.
+  Future<EscrowDealEntity> fundOffer({
+    required String offerId,
+    required String buyerAccountId,
+    required String transactionId,
+    required String verificationToken,
+    required String idempotencyKey,
+  });
+
+  /// Creator withdraws a not-yet-converted offer.
+  Future<EscrowOfferEntity> cancelOffer(String offerId);
+
+  /// Attach listing media (already uploaded to storage) to a live offer.
+  Future<void> addOfferAttachment({
+    required String offerId,
+    required String mediaKind,
+    required String url,
+    String contentType = '',
+    int sizeBytes = 0,
+    int durationSeconds = 0,
   });
 }
