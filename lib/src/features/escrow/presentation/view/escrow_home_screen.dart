@@ -415,12 +415,12 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: (isBuyer ? EscrowTheme.primary : EscrowTheme.success).withValues(alpha: 0.15),
+                    color: EscrowTheme.primaryLight.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: Text(roleLabel,
                       style: GoogleFonts.inter(
-                          color: isBuyer ? EscrowTheme.primary : EscrowTheme.success,
+                          color: EscrowTheme.primaryLight,
                           fontSize: 10.5.sp,
                           fontWeight: FontWeight.w600)),
                 ),

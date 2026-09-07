@@ -56,6 +56,7 @@ class Deal extends $pb.GeneratedMessage {
     RefundRequest? refundRequest,
     $core.String? offerId,
     $core.String? offerDirection,
+    $core.String? condition,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -94,6 +95,7 @@ class Deal extends $pb.GeneratedMessage {
     if (refundRequest != null) result.refundRequest = refundRequest;
     if (offerId != null) result.offerId = offerId;
     if (offerDirection != null) result.offerDirection = offerDirection;
+    if (condition != null) result.condition = condition;
     return result;
   }
 
@@ -156,6 +158,7 @@ class Deal extends $pb.GeneratedMessage {
         subBuilder: RefundRequest.create)
     ..aOS(33, _omitFieldNames ? '' : 'offerId')
     ..aOS(34, _omitFieldNames ? '' : 'offerDirection')
+    ..aOS(35, _omitFieldNames ? '' : 'condition')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -489,6 +492,17 @@ class Deal extends $pb.GeneratedMessage {
   $core.bool hasOfferDirection() => $_has(33);
   @$pb.TagNumber(34)
   void clearOfferDirection() => $_clearField(34);
+
+  /// Item condition grade carried over from the offer at funding
+  /// (brand_new|excellent|good|fair, "" for legacy/unspecified).
+  @$pb.TagNumber(35)
+  $core.String get condition => $_getSZ(34);
+  @$pb.TagNumber(35)
+  set condition($core.String value) => $_setString(34, value);
+  @$pb.TagNumber(35)
+  $core.bool hasCondition() => $_has(34);
+  @$pb.TagNumber(35)
+  void clearCondition() => $_clearField(35);
 }
 
 /// A single piece of media (image or video) attached to a deal.
@@ -2297,6 +2311,7 @@ class Offer extends $pb.GeneratedMessage {
     $1.Timestamp? createdAt,
     $core.Iterable<Attachment>? attachments,
     $core.bool? viewerIsCreator,
+    $core.String? condition,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -2323,6 +2338,7 @@ class Offer extends $pb.GeneratedMessage {
     if (createdAt != null) result.createdAt = createdAt;
     if (attachments != null) result.attachments.addAll(attachments);
     if (viewerIsCreator != null) result.viewerIsCreator = viewerIsCreator;
+    if (condition != null) result.condition = condition;
     return result;
   }
 
@@ -2368,6 +2384,7 @@ class Offer extends $pb.GeneratedMessage {
         21, _omitFieldNames ? '' : 'attachments', $pb.PbFieldType.PM,
         subBuilder: Attachment.create)
     ..aOB(22, _omitFieldNames ? '' : 'viewerIsCreator')
+    ..aOS(23, _omitFieldNames ? '' : 'condition')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2589,6 +2606,18 @@ class Offer extends $pb.GeneratedMessage {
   $core.bool hasViewerIsCreator() => $_has(21);
   @$pb.TagNumber(22)
   void clearViewerIsCreator() => $_clearField(22);
+
+  /// Item condition grade declared at listing (Back-Market-style):
+  /// brand_new|excellent|good|fair, or "" when unspecified (legacy offers,
+  /// and buy_requests where the buyer accepts any condition).
+  @$pb.TagNumber(23)
+  $core.String get condition => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set condition($core.String value) => $_setString(22, value);
+  @$pb.TagNumber(23)
+  $core.bool hasCondition() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearCondition() => $_clearField(23);
 }
 
 class CreateOfferRequest extends $pb.GeneratedMessage {
@@ -2601,6 +2630,7 @@ class CreateOfferRequest extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? feePayerPreference,
     $core.int? deliveryDeadlineDays,
+    $core.String? condition,
   }) {
     final result = create();
     if (direction != null) result.direction = direction;
@@ -2613,6 +2643,7 @@ class CreateOfferRequest extends $pb.GeneratedMessage {
       result.feePayerPreference = feePayerPreference;
     if (deliveryDeadlineDays != null)
       result.deliveryDeadlineDays = deliveryDeadlineDays;
+    if (condition != null) result.condition = condition;
     return result;
   }
 
@@ -2638,6 +2669,7 @@ class CreateOfferRequest extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'feePayerPreference')
     ..a<$core.int>(
         8, _omitFieldNames ? '' : 'deliveryDeadlineDays', $pb.PbFieldType.O3)
+    ..aOS(9, _omitFieldNames ? '' : 'condition')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2732,6 +2764,15 @@ class CreateOfferRequest extends $pb.GeneratedMessage {
   $core.bool hasDeliveryDeadlineDays() => $_has(7);
   @$pb.TagNumber(8)
   void clearDeliveryDeadlineDays() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get condition => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set condition($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasCondition() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearCondition() => $_clearField(9);
 }
 
 /// share_url_token is returned ONLY here, once, to the creator.

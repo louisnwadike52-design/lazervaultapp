@@ -15,6 +15,11 @@ class EscrowOfferEntity {
   final String counterpartyName;
   final String title;
   final String description;
+
+  /// Item condition grade (Back-Market-style):
+  /// brand_new|excellent|good|fair, or '' when unspecified (legacy offers and
+  /// buy requests where the buyer accepts any condition).
+  final String condition;
   final double amount;
   final String currency;
   final String feePayerMode;
@@ -43,6 +48,7 @@ class EscrowOfferEntity {
     this.counterpartyName = '',
     required this.title,
     this.description = '',
+    this.condition = '',
     required this.amount,
     this.currency = 'NGN',
     this.feePayerMode = '',
@@ -108,6 +114,7 @@ class EscrowOfferEntity {
         counterpartyName: counterpartyName,
         title: title,
         description: description,
+        condition: condition,
         amount: amount,
         currency: currency,
         feePayerMode: feePayerMode,

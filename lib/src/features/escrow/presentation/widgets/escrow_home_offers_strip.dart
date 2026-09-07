@@ -137,7 +137,10 @@ class EscrowHomeOffersStrip extends StatelessWidget {
               EscrowTheme.offerStatusChip(o.status),
             ]),
             SizedBox(height: 5.h),
-            Text(subtitle,
+            Text(
+                EscrowTheme.conditionLabel(o.condition).isEmpty
+                    ? subtitle
+                    : '$subtitle · ${EscrowTheme.conditionLabel(o.condition)}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.inter(

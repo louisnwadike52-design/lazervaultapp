@@ -133,6 +133,7 @@ const Deal$json = {
     },
     {'1': 'offer_id', '3': 33, '4': 1, '5': 9, '10': 'offerId'},
     {'1': 'offer_direction', '3': 34, '4': 1, '5': 9, '10': 'offerDirection'},
+    {'1': 'condition', '3': 35, '4': 1, '5': 9, '10': 'condition'},
   ],
 };
 
@@ -162,7 +163,8 @@ final $typed_data.Uint8List dealDescriptor = $convert.base64Decode(
     'JQcm9vZkltYWdlVXJsEjQKC2F0dGFjaG1lbnRzGB8gAygLMhIuZXNjcm93LkF0dGFjaG1lbnRS'
     'C2F0dGFjaG1lbnRzEjwKDnJlZnVuZF9yZXF1ZXN0GCAgASgLMhUuZXNjcm93LlJlZnVuZFJlcX'
     'Vlc3RSDXJlZnVuZFJlcXVlc3QSGQoIb2ZmZXJfaWQYISABKAlSB29mZmVySWQSJwoPb2ZmZXJf'
-    'ZGlyZWN0aW9uGCIgASgJUg5vZmZlckRpcmVjdGlvbg==');
+    'ZGlyZWN0aW9uGCIgASgJUg5vZmZlckRpcmVjdGlvbhIcCgljb25kaXRpb24YIyABKAlSCWNvbm'
+    'RpdGlvbg==');
 
 @$core.Deprecated('Use attachmentDescriptor instead')
 const Attachment$json = {
@@ -644,6 +646,7 @@ const Offer$json = {
       '5': 8,
       '10': 'viewerIsCreator'
     },
+    {'1': 'condition', '3': 23, '4': 1, '5': 9, '10': 'condition'},
   ],
 };
 
@@ -665,7 +668,7 @@ final $typed_data.Uint8List offerDescriptor = $convert.base64Decode(
     'RhbXBSCmFjY2VwdGVkQXQSOQoKY3JlYXRlZF9hdBgUIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5U'
     'aW1lc3RhbXBSCWNyZWF0ZWRBdBI0CgthdHRhY2htZW50cxgVIAMoCzISLmVzY3Jvdy5BdHRhY2'
     'htZW50UgthdHRhY2htZW50cxIqChF2aWV3ZXJfaXNfY3JlYXRvchgWIAEoCFIPdmlld2VySXND'
-    'cmVhdG9y');
+    'cmVhdG9yEhwKCWNvbmRpdGlvbhgXIAEoCVIJY29uZGl0aW9u');
 
 @$core.Deprecated('Use createOfferRequestDescriptor instead')
 const CreateOfferRequest$json = {
@@ -697,6 +700,7 @@ const CreateOfferRequest$json = {
       '5': 5,
       '10': 'deliveryDeadlineDays'
     },
+    {'1': 'condition', '3': 9, '4': 1, '5': 9, '10': 'condition'},
   ],
 };
 
@@ -707,7 +711,8 @@ final $typed_data.Uint8List createOfferRequestDescriptor = $convert.base64Decode
     'CVIFdGl0bGUSIAoLZGVzY3JpcHRpb24YBCABKAlSC2Rlc2NyaXB0aW9uEhYKBmFtb3VudBgFIA'
     'EoAVIGYW1vdW50EhoKCGN1cnJlbmN5GAYgASgJUghjdXJyZW5jeRIwChRmZWVfcGF5ZXJfcHJl'
     'ZmVyZW5jZRgHIAEoCVISZmVlUGF5ZXJQcmVmZXJlbmNlEjQKFmRlbGl2ZXJ5X2RlYWRsaW5lX2'
-    'RheXMYCCABKAVSFGRlbGl2ZXJ5RGVhZGxpbmVEYXlz');
+    'RheXMYCCABKAVSFGRlbGl2ZXJ5RGVhZGxpbmVEYXlzEhwKCWNvbmRpdGlvbhgJIAEoCVIJY29u'
+    'ZGl0aW9u');
 
 @$core.Deprecated('Use offerResponseDescriptor instead')
 const OfferResponse$json = {

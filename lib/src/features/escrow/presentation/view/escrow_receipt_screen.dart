@@ -417,6 +417,8 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
       _DetailEntry('Seller',
           _partyName(deal.sellerName, viewerIsThisParty: _viewerIsSeller)),
       _DetailEntry('Item', deal.title),
+      if (deal.condition.isNotEmpty)
+        _DetailEntry('Condition', EscrowTheme.conditionLabel(deal.condition)),
       _DetailEntry('Item price', _money(deal.amount)),
       // The fee is shown to the party who actually BEARS it (feePayer), so the
       // other side isn't invited to reconcile a charge that was never theirs.

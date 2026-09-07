@@ -50,6 +50,10 @@ class _CreateEscrowOfferScreenState extends State<CreateEscrowOfferScreen> {
 
   UnifiedSearchResult? _counterparty;
   String _counterpartyQuery = '';
+  // Item condition grade. Required for a sell listing (a marketplace listing
+  // without a grade is what condition disputes are made of); optional for a
+  // buy request ('' = any condition is acceptable).
+  String _condition = '';
   int _deliveryDays = 0;
   List<EscrowMediaUploadResult> _media = const [];
   bool _submitting = false;
@@ -87,6 +91,7 @@ class _CreateEscrowOfferScreenState extends State<CreateEscrowOfferScreen> {
     if (_titleCtrl.text.trim().isEmpty) return false;
     // A buy request must name its seller; a sell offer may stay open.
     if (!_isSell && _counterparty == null) return false;
+    if (_isSell && _condition.isEmpty) return false;
     return true;
   }
 
@@ -100,7 +105,9 @@ class _CreateEscrowOfferScreenState extends State<CreateEscrowOfferScreen> {
               ? (_isSell
                   ? 'Give your listing a title.'
                   : 'Describe what you want to buy.')
-              : 'Search for and select the seller.',
+              : (_isSell && _condition.isEmpty
+                  ? 'Pick the item\'s condition.'
+                  : 'Search for and select the seller.'),
           type: AppSnackbarType.error);
       return;
     }
@@ -155,6 +162,7 @@ class _CreateEscrowOfferScreenState extends State<CreateEscrowOfferScreen> {
         description: _descCtrl.text.trim(),
         amount: _amount,
         deliveryDeadlineDays: _deliveryDays,
+        condition: _condition,
       );
       if (offer == null) return; // listener surfaced the error
 

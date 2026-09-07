@@ -12,6 +12,10 @@ class EscrowDealEntity {
   final String sellerName;
   final String title;
   final String description;
+
+  /// Item condition carried over from the offer at funding
+  /// (brand_new|excellent|good|fair, '' for legacy deals).
+  final String condition;
   final String currency;
   final double amount;
   final double fee;
@@ -50,6 +54,7 @@ class EscrowDealEntity {
     required this.sellerName,
     required this.title,
     required this.description,
+    this.condition = '',
     required this.currency,
     required this.amount,
     required this.fee,

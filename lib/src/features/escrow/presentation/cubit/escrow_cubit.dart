@@ -259,6 +259,7 @@ class EscrowCubit extends Cubit<EscrowState> {
     String currency = 'NGN',
     String feePayerPreference = '',
     int deliveryDeadlineDays = 0,
+    String condition = '',
   }) async {
     emit(const EscrowActionInProgress());
     try {
@@ -271,6 +272,7 @@ class EscrowCubit extends Cubit<EscrowState> {
         currency: currency,
         feePayerPreference: feePayerPreference,
         deliveryDeadlineDays: deliveryDeadlineDays,
+        condition: condition,
       );
       emit(EscrowOfferActionSuccess('Offer published', offer));
       return offer;

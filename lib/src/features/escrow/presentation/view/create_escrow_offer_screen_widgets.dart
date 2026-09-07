@@ -87,6 +87,9 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
                     : 'Exactly what you expect: condition, specs, colour…',
                 maxLines: 3),
             SizedBox(height: 14.h),
+            _label(_isSell ? 'Condition' : 'Condition you\'ll accept'),
+            _conditionPicker(),
+            SizedBox(height: 14.h),
             _label(_isSell
                 ? 'Photos or a short video of the item'
                 : 'Photos of what you want (optional)'),
@@ -108,6 +111,76 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
           ],
         ),
       );
+
+  /// Back-Market-style grade tiles. Sell: exactly one grade required. Buy
+  /// request: tap the selected grade again to clear it back to "any".
+  Widget _conditionPicker() {
+    return Column(
+      children: [
+        for (final (value, label, hint) in EscrowTheme.conditionGrades)
+          Padding(
+            padding: EdgeInsets.only(bottom: 8.h),
+            child: InkWell(
+              onTap: () => _refresh(() {
+                _condition = (!_isSell && _condition == value) ? '' : value;
+              }),
+              borderRadius: BorderRadius.circular(12.r),
+              child: Container(
+                padding:
+                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: EscrowTheme.card,
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                      color: _condition == value
+                          ? EscrowTheme.primary
+                          : EscrowTheme.border),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                        _condition == value
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_off,
+                        color: _condition == value
+                            ? EscrowTheme.primary
+                            : EscrowTheme.textSecondary,
+                        size: 18.sp),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(label,
+                              style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 13.5.sp,
+                                  fontWeight: FontWeight.w600)),
+                          Text(hint,
+                              style: GoogleFonts.inter(
+                                  color: EscrowTheme.textSecondary,
+                                  fontSize: 11.sp)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        if (!_isSell)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+                _condition.isEmpty
+                    ? 'Any condition is fine — tap a grade to require one.'
+                    : 'Tap the selected grade again to accept any condition.',
+                style: GoogleFonts.inter(
+                    color: EscrowTheme.textSecondary, fontSize: 11.sp)),
+          ),
+      ],
+    );
+  }
 
   Widget _counterpartyTile() {
     final cp = _counterparty;
@@ -271,6 +344,11 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
               _isSell ? 'Offered to' : 'Seller',
               _counterparty?.displayName ??
                   (_isSell ? 'Anyone with the link' : '—')),
+          _reviewRow(
+              'Condition',
+              _condition.isEmpty
+                  ? (_isSell ? '—' : 'Any condition')
+                  : EscrowTheme.conditionLabel(_condition)),
           _reviewRow('Delivery window',
               _deliveryDays == 0 ? 'None' : '$_deliveryDays days'),
           _reviewRow('Photos & video',

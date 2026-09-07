@@ -605,8 +605,15 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
               ],
             ),
             SizedBox(height: 4.h),
-            Text('Ref ${deal.reference}',
-                style: GoogleFonts.inter(color: EscrowTheme.textSecondary, fontSize: 11.sp)),
+            Row(children: [
+              Expanded(
+                child: Text('Ref ${deal.reference}',
+                    style: GoogleFonts.inter(
+                        color: EscrowTheme.textSecondary, fontSize: 11.sp)),
+              ),
+              if (EscrowTheme.conditionChip(deal.condition) != null)
+                EscrowTheme.conditionChip(deal.condition)!,
+            ]),
             if (!deal.requiresAdminReview) ...[
               SizedBox(height: 12.h),
               _waitingBanner(deal, uid),

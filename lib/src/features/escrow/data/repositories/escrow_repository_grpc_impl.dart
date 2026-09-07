@@ -220,6 +220,7 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
     String currency = 'NGN',
     String feePayerPreference = '',
     int deliveryDeadlineDays = 0,
+    String condition = '',
   }) async {
     return retryWithBackoff(operation: () async {
       final req = pb.CreateOfferRequest()
@@ -230,7 +231,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
         ..amount = amount
         ..currency = currency
         ..feePayerPreference = feePayerPreference
-        ..deliveryDeadlineDays = deliveryDeadlineDays;
+        ..deliveryDeadlineDays = deliveryDeadlineDays
+        ..condition = condition;
       final options = await grpcClient.callOptions;
       final resp = await grpcClient.escrowClient.createOffer(req, options: options);
       // The share token rides the response envelope exactly once — attach it
@@ -363,6 +365,7 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
         counterpartyName: o.counterpartyName,
         title: o.title,
         description: o.description,
+        condition: o.condition,
         amount: o.amount,
         currency: o.currency,
         feePayerMode: o.feePayerMode,
@@ -421,6 +424,7 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
       sellerName: d.sellerName,
       title: d.title,
       description: d.description,
+      condition: d.condition,
       currency: d.currency,
       amount: d.amount,
       fee: d.fee,

@@ -415,6 +415,10 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
             Text('Held in escrow until you confirm delivery',
                 style: GoogleFonts.inter(
                     color: EscrowTheme.textSecondary, fontSize: 11.5.sp)),
+            if (EscrowTheme.conditionChip(offer.condition) != null) ...[
+              SizedBox(height: 8.h),
+              EscrowTheme.conditionChip(offer.condition)!,
+            ],
           ],
         ),
       );
@@ -485,6 +489,9 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
       ),
       child: Column(children: [
         _metaRow('Reference', offer.reference),
+        if (offer.condition.isNotEmpty)
+          _metaRow(offer.isSellOffer ? 'Condition' : 'Condition wanted',
+              EscrowTheme.conditionLabel(offer.condition)),
         if (offer.counterpartyName.isNotEmpty)
           _metaRow(offer.isSellOffer ? 'Offered to' : 'Seller',
               offer.counterpartyName),

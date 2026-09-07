@@ -231,6 +231,10 @@ class _EscrowOffersListScreenState extends State<EscrowOffersListScreen> {
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600)),
               ),
+              if (EscrowTheme.conditionChip(o.condition) != null) ...[
+                EscrowTheme.conditionChip(o.condition)!,
+                SizedBox(width: 6.w),
+              ],
               EscrowTheme.offerStatusChip(o.status),
             ]),
             SizedBox(height: 6.h),

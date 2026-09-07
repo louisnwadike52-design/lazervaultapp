@@ -97,6 +97,7 @@ abstract class EscrowRepository {
     String currency = 'NGN',
     String feePayerPreference = '',
     int deliveryDeadlineDays = 0,
+    String condition = '',
   });
 
   /// Read an offer as one of its parties.
