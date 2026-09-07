@@ -123,7 +123,11 @@ extension AppServiceNameExtension on AppServiceName {
       case AppServiceName.whatsappIntegration:
         return 'WhatsApp Banking';
       case AppServiceName.phoneBanking:
-        return 'Phone Banking';
+        // Consolidated entry (2026-09-07): ONE tile covers both channels — it
+        // opens the Banking Channels hub, which manages WhatsApp AND
+        // Phone/SMS registration + channel PINs. The separate
+        // whatsappIntegration tile is hidden (route + deep links intact).
+        return 'WhatsApp/Phone Banking';
       case AppServiceName.idPay:
         return 'PayID';
       case AppServiceName.payroll:

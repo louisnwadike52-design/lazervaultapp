@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import '../../cubit/channel_management_cubit.dart';
 import '../../cubit/channel_management_state.dart';
@@ -17,8 +18,7 @@ class ChannelManagementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          serviceLocator<ChannelManagementCubit>()..loadChannels(),
+      create: (_) => serviceLocator<ChannelManagementCubit>()..loadChannels(),
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
         appBar: AppBar(
@@ -29,69 +29,70 @@ class ChannelManagementScreen extends StatelessWidget {
             icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
           title: const Text(
-            'Banking Channels',
+            'WhatsApp/Phone Banking',
             style: TextStyle(color: Colors.white, fontSize: 18),
           ),
           centerTitle: true,
         ),
         body: ServiceEntranceAnimation(
           child: BlocConsumer<ChannelManagementCubit, ChannelManagementState>(
-          listener: (context, state) {
-            if (state is ChannelDeactivated) {
-              Get.snackbar(
-                'Channel Deactivated',
-                '${state.channelType == "whatsapp" ? "WhatsApp" : "Phone & SMS"} banking has been deactivated.',
-                backgroundColor: const Color(0xFF1F1F1F),
-                colorText: Colors.white,
-              );
-              context.read<ChannelManagementCubit>().loadChannels();
-            } else if (state is ChannelManagementError) {
-              Get.snackbar(
-                'Error',
-                state.message,
-                backgroundColor: const Color(0xFFEF4444),
-                colorText: Colors.white,
-              );
-            }
-          },
-          builder: (context, state) {
-            if (state is ChannelManagementLoading) {
-              return const Center(
-                child: LazerVaultLoader.small(),
-              );
-            }
+            listener: (context, state) {
+              if (state is ChannelDeactivated) {
+                Get.snackbar(
+                  'Channel Deactivated',
+                  '${state.channelType == "whatsapp" ? "WhatsApp" : "Phone & SMS"} banking has been deactivated.',
+                  backgroundColor: const Color(0xFF1F1F1F),
+                  colorText: Colors.white,
+                );
+                context.read<ChannelManagementCubit>().loadChannels();
+              } else if (state is ChannelManagementError) {
+                Get.snackbar(
+                  'Error',
+                  state.message,
+                  backgroundColor: const Color(0xFFEF4444),
+                  colorText: Colors.white,
+                );
+              }
+            },
+            builder: (context, state) {
+              if (state is ChannelManagementLoading) {
+                return const Center(
+                  child: LazerVaultLoader.small(),
+                );
+              }
 
-            if (state is ChannelManagementLoaded) {
-              return _buildChannelList(context, state);
-            }
+              if (state is ChannelManagementLoaded) {
+                return _buildChannelList(context, state);
+              }
 
-            if (state is ChannelManagementError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline,
-                        color: Color(0xFFEF4444), size: 48),
-                    const SizedBox(height: 16),
-                    Text(state.message,
-                        style: const TextStyle(color: Color(0xFF9CA3AF))),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () =>
-                          context.read<ChannelManagementCubit>().loadChannels(),
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B82F6)),
-                      child: const Text('Retry',
-                          style: TextStyle(color: Colors.white)),
-                    ),
-                  ],
-                ),
-              );
-            }
+              if (state is ChannelManagementError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline,
+                          color: Color(0xFFEF4444), size: 48),
+                      const SizedBox(height: 16),
+                      Text(state.message,
+                          style: const TextStyle(color: Color(0xFF9CA3AF))),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => context
+                            .read<ChannelManagementCubit>()
+                            .loadChannels(),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF3B82F6)),
+                        child: const Text('Retry',
+                            style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  ),
+                );
+              }
 
-            return const SizedBox.shrink();
-          },
-        ),
+              return const SizedBox.shrink();
+            },
+          ),
         ),
       ),
     );
@@ -100,8 +101,7 @@ class ChannelManagementScreen extends StatelessWidget {
   Widget _buildChannelList(
       BuildContext context, ChannelManagementLoaded state) {
     return RefreshIndicator(
-      onRefresh: () =>
-          context.read<ChannelManagementCubit>().loadChannels(),
+      onRefresh: () => context.read<ChannelManagementCubit>().loadChannels(),
       color: const Color(0xFF3B82F6),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(
@@ -160,9 +160,8 @@ class ChannelManagementScreen extends StatelessWidget {
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isActive
-              ? color.withValues(alpha: 0.3)
-              : const Color(0xFF2D2D2D),
+          color:
+              isActive ? color.withValues(alpha: 0.3) : const Color(0xFF2D2D2D),
         ),
       ),
       padding: const EdgeInsets.all(16),
@@ -225,6 +224,40 @@ class ChannelManagementScreen extends StatelessWidget {
               ),
             ],
           ),
+          // WhatsApp additionally needs the ACCOUNT LINK (whatsapp-service):
+          // channel registration/PIN above governs access, the link ties the
+          // user's WhatsApp number to their vault. Bridge to the full
+          // link/unlink flow so both integrations live behind ONE entry.
+          if (channelType == 'whatsapp') ...[
+            const SizedBox(height: 12),
+            const Divider(color: Color(0xFF2D2D2D)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Expanded(
+                  child: Row(
+                    children: [
+                      Icon(Icons.link, color: Color(0xFF9CA3AF), size: 16),
+                      SizedBox(width: 6),
+                      Text(
+                        'WhatsApp account link',
+                        style:
+                            TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+                _buildActionButton(
+                  'Manage',
+                  () {
+                    final cubit = context.read<ChannelManagementCubit>();
+                    Get.toNamed(AppRoutes.whatsappBanking)
+                        ?.then((_) => cubit.loadChannels());
+                  },
+                ),
+              ],
+            ),
+          ],
           // When active, show PIN setup/management for the channel.
           if (isActive) ...[
             const SizedBox(height: 12),
@@ -318,8 +351,8 @@ class ChannelManagementScreen extends StatelessWidget {
                   appPin?.hasPin == true
                       ? 'PIN is active'
                       : 'Set up your app PIN in Transaction PIN settings',
-                  style: const TextStyle(
-                      color: Color(0xFF9CA3AF), fontSize: 13),
+                  style:
+                      const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
                 ),
               ],
             ),
@@ -336,8 +369,7 @@ class ChannelManagementScreen extends StatelessWidget {
   }
 
   void _confirmDeactivation(BuildContext context, String channelType) {
-    final channelName =
-        channelType == 'whatsapp' ? 'WhatsApp' : 'Phone & SMS';
+    final channelName = channelType == 'whatsapp' ? 'WhatsApp' : 'Phone & SMS';
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(

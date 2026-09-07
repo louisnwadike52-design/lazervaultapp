@@ -48,7 +48,8 @@ class AppServicesBuilder extends StatefulWidget {
 
 class _AppServicesBuilderState extends State<AppServicesBuilder> {
   late int _currentIndex;
-  final DashboardStateManager _stateManager = serviceLocator<DashboardStateManager>();
+  final DashboardStateManager _stateManager =
+      serviceLocator<DashboardStateManager>();
   final AccountManager _accountManager = serviceLocator<AccountManager>();
   StreamSubscription<String?>? _accountSubscription;
   VirtualAccountType? _activeAccountType;
@@ -63,11 +64,14 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   // an order the user set by hand must not be re-sorted by a later usage tally.
   final CarouselSliderController _carouselController =
       CarouselSliderController();
+
   /// Global index (across pages) of the tile currently being dragged.
   int? _draggingIndex;
+
   /// Page count of the last build — needed by the edge auto-advance, which runs
   /// from a drag callback rather than inside build().
   int _pageCount = 1;
+
   /// Debounces edge auto-advance so a slow drag near the edge doesn't flip
   /// through every page at once.
   DateTime _lastEdgeFlip = DateTime.fromMillisecondsSinceEpoch(0);
@@ -90,8 +94,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.batchTransfer,
         serviceImg: AppServiceImg.batchTransfer),
     AppService(
-        serviceName: AppServiceName.tagPay,
-        serviceImg: AppServiceImg.tagPay),
+        serviceName: AppServiceName.tagPay, serviceImg: AppServiceImg.tagPay),
     // Split Bills used to be reachable only from inside the Move Money hub,
     // which buried a service people use constantly. It sits beside Tag Pay
     // because they're the same idea — asking other people for money.
@@ -99,26 +102,20 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.splitBills,
         serviceImg: AppServiceImg.splitBills),
     AppService(
-        serviceName: AppServiceName.escrow,
-        serviceImg: AppServiceImg.escrow),
+        serviceName: AppServiceName.escrow, serviceImg: AppServiceImg.escrow),
     AppService(
-        serviceName: AppServiceName.invoice,
-        serviceImg: AppServiceImg.invoice),
+        serviceName: AppServiceName.invoice, serviceImg: AppServiceImg.invoice),
     AppService(
         serviceName: AppServiceName.payBills,
         serviceImg: AppServiceImg.payBills),
     AppService(
-        serviceName: AppServiceName.invest,
-        serviceImg: AppServiceImg.invest),
+        serviceName: AppServiceName.invest, serviceImg: AppServiceImg.invest),
     AppService(
         serviceName: AppServiceName.exchange,
         serviceImg: AppServiceImg.exchange),
     AppService(
-        serviceName: AppServiceName.crypto,
-        serviceImg: AppServiceImg.crypto),
-    AppService(
-        serviceName: AppServiceName.rmb,
-        serviceImg: AppServiceImg.rmb),
+        serviceName: AppServiceName.crypto, serviceImg: AppServiceImg.crypto),
+    AppService(serviceName: AppServiceName.rmb, serviceImg: AppServiceImg.rmb),
     AppService(
         serviceName: AppServiceName.giftCards,
         serviceImg: AppServiceImg.giftCards),
@@ -126,8 +123,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.aiScanToPay,
         serviceImg: AppServiceImg.aiScanToPay),
     AppService(
-        serviceName: AppServiceName.qrPay,
-        serviceImg: AppServiceImg.qrPay),
+        serviceName: AppServiceName.qrPay, serviceImg: AppServiceImg.qrPay),
     AppService(
         serviceName: AppServiceName.contactlessPay,
         serviceImg: AppServiceImg.contactlessPay),
@@ -138,8 +134,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.insurance,
         serviceImg: AppServiceImg.insurance),
     AppService(
-        serviceName: AppServiceName.airtime,
-        serviceImg: AppServiceImg.airtime),
+        serviceName: AppServiceName.airtime, serviceImg: AppServiceImg.airtime),
     AppService(
         serviceName: AppServiceName.autoSave,
         serviceImg: AppServiceImg.autoSave),
@@ -147,8 +142,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.crowdfund,
         serviceImg: AppServiceImg.crowdfund),
     AppService(
-        serviceName: AppServiceName.uplift,
-        serviceImg: AppServiceImg.uplift),
+        serviceName: AppServiceName.uplift, serviceImg: AppServiceImg.uplift),
     AppService(
         serviceName: AppServiceName.lockFunds,
         serviceImg: AppServiceImg.lockFunds),
@@ -159,11 +153,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.phoneBanking,
         serviceImg: AppServiceImg.phoneBanking),
     AppService(
-        serviceName: AppServiceName.idPay,
-        serviceImg: AppServiceImg.idPay),
+        serviceName: AppServiceName.idPay, serviceImg: AppServiceImg.idPay),
     AppService(
-        serviceName: AppServiceName.bulkSms,
-        serviceImg: AppServiceImg.bulkSms),
+        serviceName: AppServiceName.bulkSms, serviceImg: AppServiceImg.bulkSms),
   ];
 
   // Business services (shown when Business card is active).
@@ -180,11 +172,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     AppService(
         serviceName: AppServiceName.sales, serviceImg: AppServiceImg.sales),
     AppService(
-        serviceName: AppServiceName.payroll,
-        serviceImg: AppServiceImg.payroll),
+        serviceName: AppServiceName.payroll, serviceImg: AppServiceImg.payroll),
     AppService(
-        serviceName: AppServiceName.invoice,
-        serviceImg: AppServiceImg.invoice),
+        serviceName: AppServiceName.invoice, serviceImg: AppServiceImg.invoice),
     AppService(
         serviceName: AppServiceName.customers,
         serviceImg: AppServiceImg.customers),
@@ -194,9 +184,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     AppService(
         serviceName: AppServiceName.inventory,
         serviceImg: AppServiceImg.inventory),
-    AppService(
-        serviceName: AppServiceName.tax,
-        serviceImg: AppServiceImg.tax),
+    AppService(serviceName: AppServiceName.tax, serviceImg: AppServiceImg.tax),
     AppService(
         serviceName: AppServiceName.batchTransfer,
         serviceImg: AppServiceImg.batchTransfer),
@@ -229,24 +217,18 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.crowdfund,
         serviceImg: AppServiceImg.crowdfund),
     AppService(
-        serviceName: AppServiceName.airtime,
-        serviceImg: AppServiceImg.airtime),
+        serviceName: AppServiceName.airtime, serviceImg: AppServiceImg.airtime),
   ];
 
   // Investment account services (7 services — 1 page)
   static const List<AppService> _investmentServices = [
     AppService(
-        serviceName: AppServiceName.invest,
-        serviceImg: AppServiceImg.invest),
+        serviceName: AppServiceName.invest, serviceImg: AppServiceImg.invest),
     AppService(
-        serviceName: AppServiceName.stocks,
-        serviceImg: AppServiceImg.stocks),
+        serviceName: AppServiceName.stocks, serviceImg: AppServiceImg.stocks),
     AppService(
-        serviceName: AppServiceName.crypto,
-        serviceImg: AppServiceImg.crypto),
-    AppService(
-        serviceName: AppServiceName.rmb,
-        serviceImg: AppServiceImg.rmb),
+        serviceName: AppServiceName.crypto, serviceImg: AppServiceImg.crypto),
+    AppService(serviceName: AppServiceName.rmb, serviceImg: AppServiceImg.rmb),
     AppService(
         serviceName: AppServiceName.exchange,
         serviceImg: AppServiceImg.exchange),
@@ -276,17 +258,14 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.payBills,
         serviceImg: AppServiceImg.payBills),
     AppService(
-        serviceName: AppServiceName.invoice,
-        serviceImg: AppServiceImg.invoice),
+        serviceName: AppServiceName.invoice, serviceImg: AppServiceImg.invoice),
     AppService(
-        serviceName: AppServiceName.qrPay,
-        serviceImg: AppServiceImg.qrPay),
+        serviceName: AppServiceName.qrPay, serviceImg: AppServiceImg.qrPay),
     AppService(
         serviceName: AppServiceName.giftCards,
         serviceImg: AppServiceImg.giftCards),
     AppService(
-        serviceName: AppServiceName.tagPay,
-        serviceImg: AppServiceImg.tagPay),
+        serviceName: AppServiceName.tagPay, serviceImg: AppServiceImg.tagPay),
   ];
 
   // Family account services — a household-spending pool. Only surfaces the
@@ -303,8 +282,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.sendFunds,
         serviceImg: AppServiceImg.sendFunds),
     AppService(
-        serviceName: AppServiceName.tagPay,
-        serviceImg: AppServiceImg.tagPay),
+        serviceName: AppServiceName.tagPay, serviceImg: AppServiceImg.tagPay),
     AppService(
         serviceName: AppServiceName.payBills,
         serviceImg: AppServiceImg.payBills),
@@ -320,6 +298,10 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     // Airtime lives inside the Utilities hub now; the standalone Quick
     // Services tile is duplicate surface area.
     AppServiceName.airtime,
+    // Consolidated into the "WhatsApp/Phone Banking" tile (2026-09-07): the
+    // Banking Channels hub manages BOTH channels and links out to the
+    // WhatsApp account-linking flow. Route + deep links stay registered.
+    AppServiceName.whatsappIntegration,
   };
 
   /// Hidden set for the CURRENT environment. Stocks (DriveWealth US equities) is
@@ -507,8 +489,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
   List<AppService> get _activeServices {
     final raw = _rawServicesForActiveAccount();
     final hidden = _effectiveHiddenServices;
-    final filtered =
-        raw.where((s) => !hidden.contains(s.serviceName)).toList();
+    final filtered = raw.where((s) => !hidden.contains(s.serviceName)).toList();
     // Only the crowded personal grid is re-ordered; the curated per-type lists
     // (business/savings/investment/multi-currency/family) keep their hand-picked
     // order. `_getServicePages` inherits whatever order we return here.
@@ -563,7 +544,8 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         if (au != bu) return bu.compareTo(au);
       }
       // 3) Revenue priority (unique per service → deterministic order).
-      return a.serviceName.revenuePriority.compareTo(b.serviceName.revenuePriority);
+      return a.serviceName.revenuePriority
+          .compareTo(b.serviceName.revenuePriority);
     });
     return ordered;
   }
@@ -689,7 +671,8 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         final accountType = activeAccount.accountTypeEnum;
         final isFamily = accountType == VirtualAccountType.family;
         final isFamilyPending = isFamily &&
-            (activeAccount.isFamilyPendingSetup || !activeAccount.isFamilyAccount);
+            (activeAccount.isFamilyPendingSetup ||
+                !activeAccount.isFamilyAccount);
         // Pool VA still minting its NUBAN → spend tiles must not be offered.
         final isFamilyProcessing = isFamily && activeAccount.isFamilyProcessing;
         final familyId = isFamily ? activeAccount.familyAccountId : null;
@@ -711,7 +694,8 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
             _isFamilyProcessing = isFamilyProcessing;
             _activeFamilyAccountId = familyId;
             if (!isInitialResolution) {
-              _currentIndex = 0; // Reset carousel position on account type switch
+              _currentIndex =
+                  0; // Reset carousel position on account type switch
               _stateManager.setServicesCarouselIndex(0);
             }
           });
@@ -746,27 +730,34 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     const mainAxisSpacing = 8.0;
     final childAspectRatio = widget.tileAspectRatio;
 
-    final itemWidth = (availableWidth - (crossAxisSpacing.w * (_itemsPerRow - 1))) / _itemsPerRow;
+    final itemWidth =
+        (availableWidth - (crossAxisSpacing.w * (_itemsPerRow - 1))) /
+            _itemsPerRow;
     final itemHeight = itemWidth / childAspectRatio;
 
     // Calculate actual rows needed (may be less than _maxRows for business services)
-    final itemsOnFirstPage = services.length > _itemsPerPage ? _itemsPerPage : services.length;
-    final actualRows = (itemsOnFirstPage / _itemsPerRow).ceil().clamp(1, _maxRows);
+    final itemsOnFirstPage =
+        services.length > _itemsPerPage ? _itemsPerPage : services.length;
+    final actualRows =
+        (itemsOnFirstPage / _itemsPerRow).ceil().clamp(1, _maxRows);
 
-    final totalHeight = (itemHeight * actualRows) + (mainAxisSpacing.h * (actualRows - 1));
+    final totalHeight =
+        (itemHeight * actualRows) + (mainAxisSpacing.h * (actualRows - 1));
     return totalHeight;
   }
 
   @override
   Widget build(BuildContext context) {
     // Show family setup CTA when active account is a pending family account
-    if (_activeAccountType == VirtualAccountType.family && _isFamilyPendingSetup) {
+    if (_activeAccountType == VirtualAccountType.family &&
+        _isFamilyPendingSetup) {
       return _buildFamilySetupCTA();
     }
 
     // Pool VA still provisioning its NUBAN → don't offer spend tiles (the debit is
     // blocked server-side until active). Show a clear "setting up" notice instead.
-    if (_activeAccountType == VirtualAccountType.family && _isFamilyProcessing) {
+    if (_activeAccountType == VirtualAccountType.family &&
+        _isFamilyProcessing) {
       return _buildFamilyProcessingNotice();
     }
 
@@ -820,7 +811,8 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                   if (_activeAccountType == VirtualAccountType.business) ...[
                     SizedBox(width: 6.w),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                       decoration: BoxDecoration(
                         color: accentColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8.r),
@@ -839,7 +831,8 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
               ),
               if (_activeAccountType != VirtualAccountType.business)
                 GestureDetector(
-                  onTap: () => showAllServicesBottomSheet(context, activeServices),
+                  onTap: () =>
+                      showAllServicesBottomSheet(context, activeServices),
                   child: Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: 10.w,
@@ -1007,7 +1000,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                 Text(
                   'We\'re creating your account details. You\'ll be able to send money and pay bills once it\'s ready.',
                   style: TextStyle(
-                      color: const Color(0xFF9CA3AF), fontSize: 12.sp, height: 1.4),
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 12.sp,
+                      height: 1.4),
                 ),
               ],
             ),
@@ -1068,53 +1063,58 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
             width: double.infinity,
             height: 48.h,
             child: ElevatedButton(
-              onPressed: _isResolvingFamilyId ? null : () async {
-                if (_activeFamilyAccountId != null) {
-                  Get.toNamed(AppRoutes.familyActivationSetup,
-                      arguments: {'familyId': _activeFamilyAccountId});
-                } else {
-                  // familyAccountId unknown — resolve-or-create through the SAME
-                  // canonical path the account-card "Get Started" uses, so this
-                  // "Setup Now" card converges on the same activation-setup screen
-                  // instead of dead-ending into the separate "create another"
-                  // carousel (the flow/backend divergence this consolidates).
-                  setState(() => _isResolvingFamilyId = true);
-                  try {
-                    final familyCubit = serviceLocator<FamilyAccountCubit>();
-                    final familyId =
-                        await familyCubit.resolveOrCreatePendingFamilyId(
-                      currency: _activeFamilyCurrency(),
-                    );
-                    if (familyId != null) {
-                      Get.toNamed(AppRoutes.familyActivationSetup,
-                          arguments: {'familyId': familyId});
-                    } else {
-                      final s = familyCubit.state;
-                      Get.snackbar(
-                        'Error',
-                        s is FamilyAccountError
-                            ? s.message
-                            : 'Could not set up your family account. Please try again.',
-                        backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
-                        colorText: Colors.white,
-                        snackPosition: SnackPosition.TOP,
-                      );
-                    }
-                  } catch (_) {
-                    Get.snackbar(
-                      'Error',
-                      'Failed to load family account. Please try again.',
-                      backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
-                      colorText: Colors.white,
-                      snackPosition: SnackPosition.TOP,
-                    );
-                  } finally {
-                    if (mounted) {
-                      setState(() => _isResolvingFamilyId = false);
-                    }
-                  }
-                }
-              },
+              onPressed: _isResolvingFamilyId
+                  ? null
+                  : () async {
+                      if (_activeFamilyAccountId != null) {
+                        Get.toNamed(AppRoutes.familyActivationSetup,
+                            arguments: {'familyId': _activeFamilyAccountId});
+                      } else {
+                        // familyAccountId unknown — resolve-or-create through the SAME
+                        // canonical path the account-card "Get Started" uses, so this
+                        // "Setup Now" card converges on the same activation-setup screen
+                        // instead of dead-ending into the separate "create another"
+                        // carousel (the flow/backend divergence this consolidates).
+                        setState(() => _isResolvingFamilyId = true);
+                        try {
+                          final familyCubit =
+                              serviceLocator<FamilyAccountCubit>();
+                          final familyId =
+                              await familyCubit.resolveOrCreatePendingFamilyId(
+                            currency: _activeFamilyCurrency(),
+                          );
+                          if (familyId != null) {
+                            Get.toNamed(AppRoutes.familyActivationSetup,
+                                arguments: {'familyId': familyId});
+                          } else {
+                            final s = familyCubit.state;
+                            Get.snackbar(
+                              'Error',
+                              s is FamilyAccountError
+                                  ? s.message
+                                  : 'Could not set up your family account. Please try again.',
+                              backgroundColor: const Color(0xFFEF4444)
+                                  .withValues(alpha: 0.9),
+                              colorText: Colors.white,
+                              snackPosition: SnackPosition.TOP,
+                            );
+                          }
+                        } catch (_) {
+                          Get.snackbar(
+                            'Error',
+                            'Failed to load family account. Please try again.',
+                            backgroundColor:
+                                const Color(0xFFEF4444).withValues(alpha: 0.9),
+                            colorText: Colors.white,
+                            snackPosition: SnackPosition.TOP,
+                          );
+                        } finally {
+                          if (mounted) {
+                            setState(() => _isResolvingFamilyId = false);
+                          }
+                        }
+                      }
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: const Color(0xFF1A1A3E),
