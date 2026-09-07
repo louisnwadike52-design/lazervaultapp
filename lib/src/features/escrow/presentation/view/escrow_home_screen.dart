@@ -9,7 +9,10 @@ import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 import '../cubit/escrow_cubit.dart';
 import '../widgets/escrow_shimmer.dart';
 import '../widgets/escrow_empty_state.dart';
+import '../widgets/escrow_direction_chooser.dart';
+import '../widgets/escrow_home_offers_strip.dart';
 import '../../domain/entities/escrow_deal_entity.dart';
+import '../../domain/entities/escrow_offer_entity.dart';
 import 'escrow_theme.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
@@ -39,13 +42,40 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
     ('refunded', 'Refunded'),
   ];
 
+  // Active offers (OPEN / AWAITING_FUNDING) surfaced on home. Fetched OUTSIDE
+  // the cubit state machine: loadOffers() would emit EscrowOffersLoaded and
+  // clobber the deals list this screen is built around.
+  List<EscrowOfferEntity> _activeOffers = const [];
+  bool _offersFetchFailed = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _reload());
   }
 
-  void _reload() => context.read<EscrowCubit>().loadDeals(role: _role);
+  void _reload() {
+    context.read<EscrowCubit>().loadDeals(role: _role);
+    _loadActiveOffers();
+  }
+
+  Future<void> _loadActiveOffers() async {
+    try {
+      final offers = await context
+          .read<EscrowCubit>()
+          .repository
+          .listMyOffers(status: '', role: '');
+      if (!mounted) return;
+      setState(() {
+        _activeOffers =
+            offers.where((o) => o.isOpen || o.isAwaitingFunding).toList();
+        _offersFetchFailed = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _offersFetchFailed = true);
+    }
+  }
 
   void _setRole(String role) {
     setState(() => _role = role);
@@ -109,8 +139,13 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
               await Get.toNamed(AppRoutes.escrowOffers);
               _reload();
             },
-            icon: Icon(Icons.local_offer_outlined,
-                color: EscrowTheme.primary, size: 20.sp),
+            icon: Badge.count(
+              count: _activeOffers.length,
+              isLabelVisible: _activeOffers.isNotEmpty,
+              backgroundColor: EscrowTheme.primary,
+              child: Icon(Icons.local_offer_outlined,
+                  color: EscrowTheme.primary, size: 20.sp),
+            ),
             tooltip: 'Offers',
           ),
           MicroserviceChatIcon(
@@ -135,6 +170,20 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
         child: Column(
           children: [
             _header(),
+            EscrowHomeOffersStrip(
+              offers: _activeOffers,
+              fetchFailed: _offersFetchFailed,
+              onOpenOffer: (o) async {
+                await Get.toNamed(AppRoutes.escrowOfferView,
+                    arguments: {'offerId': o.id});
+                _reload();
+              },
+              onSeeAll: () async {
+                await Get.toNamed(AppRoutes.escrowOffers);
+                _reload();
+              },
+              onRetry: _loadActiveOffers,
+            ),
             _roleTabs(),
             _statusFilterRow(),
             Expanded(
@@ -178,59 +227,8 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
     );
   }
 
-  /// The two honest entry points of a standard two-sided escrow. The old FAB
-  /// dropped BOTH sides into a buyer-pays create flow — a seller tapping
-  /// "Create a Deal" on their own tab was asked to fund a purchase.
   Future<void> _newOfferChooser() async {
-    final direction = await showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: EscrowTheme.card,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(height: 14.h),
-            Text('What would you like to do?',
-                style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w700)),
-            SizedBox(height: 6.h),
-            ListTile(
-              leading: Icon(Icons.storefront_outlined,
-                  color: EscrowTheme.primary, size: 24.sp),
-              title: Text('Sell something',
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600)),
-              subtitle: Text(
-                  'List the item with photos and price. Share it or offer it to a buyer.',
-                  style: GoogleFonts.inter(
-                      color: EscrowTheme.textSecondary, fontSize: 11.5.sp)),
-              onTap: () => Navigator.pop(ctx, 'sell_offer'),
-            ),
-            ListTile(
-              leading: Icon(Icons.shopping_bag_outlined,
-                  color: EscrowTheme.primary, size: 24.sp),
-              title: Text('Request to buy',
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600)),
-              subtitle: Text(
-                  'Ask a seller for something. You pay only after they accept.',
-                  style: GoogleFonts.inter(
-                      color: EscrowTheme.textSecondary, fontSize: 11.5.sp)),
-              onTap: () => Navigator.pop(ctx, 'buy_request'),
-            ),
-            SizedBox(height: 10.h),
-          ],
-        ),
-      ),
-    );
+    final direction = await showEscrowDirectionChooser(context);
     if (direction == null) return;
     await Get.toNamed(AppRoutes.escrowOfferCreate,
         arguments: {'direction': direction});
