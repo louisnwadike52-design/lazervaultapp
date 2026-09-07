@@ -373,6 +373,64 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       return;
     }
 
+    // Per-method allocation validation BEFORE the totals check, so the user
+    // gets a specific, actionable message instead of a confusing sum mismatch
+    // (or a late server rejection). Previously a co-payer with NO allocation
+    // slipped through whenever "include myself" was on: _myShare absorbed the
+    // remainder, the totals balanced, and the backend rejected the 0-amount
+    // participant only at submit.
+    if (_splitMethod == _SplitMethod.custom) {
+      final unallocated = _selectedParticipants
+          .where((p) => (_customAmounts[p.key] ?? 0.0) <= 0.0)
+          .map((p) => p.displayName.isNotEmpty ? p.displayName : '@${p.username}')
+          .toList();
+      if (unallocated.isNotEmpty) {
+        showAppSnackbar(
+          'Missing Amounts',
+          'Enter an amount for ${unallocated.join(', ')} before creating the split.',
+          type: AppSnackbarType.error,
+          duration: const Duration(seconds: 4),
+        );
+        return;
+      }
+    } else if (_splitMethod == _SplitMethod.percentage) {
+      final unallocated = _selectedParticipants
+          .where((p) => (_percentages[p.key] ?? 0.0) <= 0.0)
+          .map((p) => p.displayName.isNotEmpty ? p.displayName : '@${p.username}')
+          .toList();
+      if (unallocated.isNotEmpty) {
+        showAppSnackbar(
+          'Missing Percentages',
+          'Set a percentage for ${unallocated.join(', ')} before creating the split.',
+          type: AppSnackbarType.error,
+          duration: const Duration(seconds: 4),
+        );
+        return;
+      }
+      final pctSum = _selectedParticipants.fold<double>(
+          0.0, (sum, p) => sum + (_percentages[p.key] ?? 0.0));
+      if (pctSum > 100.0 + 0.01) {
+        showAppSnackbar(
+          'Over 100%',
+          'Percentages add up to ${pctSum.toStringAsFixed(1)}%. They can\'t exceed 100%.',
+          type: AppSnackbarType.error,
+          duration: const Duration(seconds: 4),
+        );
+        return;
+      }
+      // Without the organizer as a co-payer there is nobody to absorb the
+      // remainder — the shares must account for the whole bill.
+      if (!_includeMyself && (100.0 - pctSum).abs() > 0.01) {
+        showAppSnackbar(
+          'Percentages Incomplete',
+          'Percentages add up to ${pctSum.toStringAsFixed(1)}%. They must total 100% (or include yourself to cover the rest).',
+          type: AppSnackbarType.error,
+          duration: const Duration(seconds: 4),
+        );
+        return;
+      }
+    }
+
     // Verify total splits equal total amount
     double totalSplits =
         _customAmounts.values.fold(0.0, (sum, amt) => sum + amt) + _myShare;
@@ -736,13 +794,14 @@ class _CreateSplitBillScreenState extends State<CreateSplitBillScreen> {
       return name;
     }
     if (_bankReceiverActive && _isBankReceiverReady) {
-      // Prefer the verified holder name; fall back to "<bank> ••••<last4>".
+      // Prefer the verified holder name; fall back to "<bank> <full account>".
+      // Full number, unmasked (product decision 2026-09-07): co-payers need
+      // the complete destination account, and the "•" bullets also broke the
+      // shared PDF's font.
       if (_receiverBankAccountName?.isNotEmpty ?? false) {
         return _receiverBankAccountName!;
       }
-      final acct = _receiverAccountNumber!;
-      final last4 = acct.length >= 4 ? acct.substring(acct.length - 4) : acct;
-      return '${_receiverBankName ?? 'Bank'} ••••$last4';
+      return '${_receiverBankName ?? 'Bank'} ${_receiverAccountNumber!}';
     }
     return 'You';
   }

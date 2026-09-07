@@ -986,12 +986,16 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         senderAmountNullable != null && _senderCurrency != _recipientCurrency;
     final total = senderAmountNullable ?? amount;
 
-    // Fee breakdown: flat service fee only (no percentage markup)
-    final flatFee = _brand.senderFee;
-    double subtotal = 0;
-    if (hasSenderPrice && total > 0 && flatFee > 0) {
-      subtotal = total - flatFee;
-    }
+    // No fee breakdown on the user surface (product decision 2026-09-07):
+    // the provider/service fee is settlement detail that belongs to the admin
+    // dashboard, and the previous rows were WRONG anyway — _brand.senderFee is
+    // the provider's RAW flat fee in ITS OWN currency (Reloadly: USD 1.00),
+    // which was rendered with the sender-currency label ("Service Fee
+    // NGN 1.00") and subtracted across currencies to fake a "Subtotal". The
+    // user sees the honest all-in Total (verified against live Reloadly:
+    // GBP 1 → base $1.41 + $1 flat + 1% ≈ ₦3,232 — real cost, the flat
+    // provider fee simply dominates tiny denominations) plus the effective
+    // rate, which already exposes the true per-unit price.
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
@@ -1025,18 +1029,6 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
             'Gift Card Value',
             '$_recipientCurrency ${_formatAmount(amount)}',
           ),
-          if (hasSenderPrice && subtotal > 0 && flatFee > 0) ...[
-            SizedBox(height: 6.h),
-            _buildPriceRow(
-              'Subtotal',
-              '$_senderCurrency ${_formatAmount(subtotal)}',
-            ),
-            SizedBox(height: 6.h),
-            _buildPriceRow(
-              'Service Fee',
-              '$_senderCurrency ${_formatAmount(flatFee)}',
-            ),
-          ],
           // Effective rate: total / face value. Includes everything baked
           // into the user's price — Reloadly wholesale + platform margin +
           // any fees — not the raw inter-bank FX. Labelled "Effective rate"

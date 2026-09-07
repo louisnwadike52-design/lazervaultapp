@@ -535,6 +535,15 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // above; provider ids stay in the admin dashboard's raw metadata view.
       'flw_id', 'flwref', 'flw_ref', 'nomba_id', 'nomba_ref',
       'tx_ref', 'session_id',
+      // PARTY IDs. A customer receipt identifies people by name/tag; raw
+      // user/account UUIDs are admin-dashboard material only. (The shared
+      // humanizer also hides any *_id party key and any bare-UUID value —
+      // this list is belt-and-braces for the common spellings.)
+      'user_id', 'sender_id', 'recipient_id', 'receiver_id', 'payer_id',
+      'payee_id', 'beneficiary_id', 'counterparty_id', 'initiator_id',
+      'sender_user_id', 'recipient_user_id', 'receiver_user_id',
+      'from_user_id', 'to_user_id', 'account_id', 'source_account_id',
+      'destination_account_id', 'recipient_account_id', 'wallet_id',
       // FEE ACCOUNTING. gross / charged / discount are the platform's own
       // revenue split — a three-way breakdown of OUR margin, not something the
       // customer is party to. They are kept in metadata deliberately as an

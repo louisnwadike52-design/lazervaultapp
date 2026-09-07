@@ -799,6 +799,21 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       counterpartyName = null;
     }
 
+    // Never surface a raw UUID as a counterparty. Older rows (and some
+    // producers) stamp the counterparty USER ID where a name belongs; a bare
+    // uuid on a customer receipt identifies nobody and leaks an internal id
+    // that is admin-dashboard material only. Null it so the receipt simply
+    // omits the row instead.
+    final bareUuid = RegExp(
+        r'^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$');
+    if (counterpartyName != null && bareUuid.hasMatch(counterpartyName.trim())) {
+      counterpartyName = null;
+    }
+    if (counterpartyAccount != null &&
+        bareUuid.hasMatch(counterpartyAccount.trim())) {
+      counterpartyAccount = null;
+    }
+
     // Client-side fallback: if the backend didn't stamp counterparty_name on
     // this row (older rows, or providers that don't populate the field), try
     // to recover the human-readable name from the narration. The send-funds

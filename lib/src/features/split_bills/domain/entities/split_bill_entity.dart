@@ -85,8 +85,9 @@ class SplitBillEntity extends Equatable {
   /// Human label for who collects the money ("the receiver").
   String get receiverDisplay {
     if (receiverName.isNotEmpty) return receiverName;
-    if (!hasReceiver)
+    if (!hasReceiver) {
       return creatorName.isNotEmpty ? creatorName : '@$creatorUsername';
+    }
     return receiverAccountMasked;
   }
 

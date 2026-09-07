@@ -3,7 +3,7 @@
 // Visual model: matches the electricity bill PaymentReceiptScreen
 // (lib/src/features/electricity_bill/presentation/view/payment_receipt_screen.dart)
 // 1:1 — circular check icon, "Payment Successful!" hero, single
-// Transaction Details card (Amount/Service Fee/Total → divider →
+// Transaction Details card (Amount/Total → divider →
 // brand/recipient → divider → Reference/Date/Time/Status), then the
 // shared BillReceiptQrBlock and the Share + Download Outlined-button
 // pair.
