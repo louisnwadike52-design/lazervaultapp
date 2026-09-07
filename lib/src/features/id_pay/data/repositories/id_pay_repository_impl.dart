@@ -44,8 +44,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to create PayID'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -61,8 +60,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to lookup PayID'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -88,8 +86,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to process PayID payment'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -111,8 +108,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to get PayIDs'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -134,8 +130,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to get PayID transactions'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -151,8 +146,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to cancel PayID'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -168,8 +162,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to get PayID details'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -193,8 +186,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to create organization'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -217,8 +209,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to get organizations'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -242,8 +233,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to update organization'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -259,8 +249,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to delete organization'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -277,8 +266,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to get organization details'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 
@@ -295,8 +283,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
           message: friendlyGrpcError(e, 'Failed to lookup PayID'),
           statusCode: e.codeName));
     } catch (e) {
-      return Left(
-          ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
 }

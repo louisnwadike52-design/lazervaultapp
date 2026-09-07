@@ -74,82 +74,35 @@ class _SearchUsersViewState extends State<_SearchUsersView> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-            Text(
-              'What do you want to do?',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(height: 24.h),
-            _buildActionButton(
-              icon: Icons.send,
-              label: 'Send Money',
-              color: const Color(0xFF10B981),
-              onTap: () {
-                Get.back();
-                Get.toNamed('/cash-tag/send', arguments: tagPay);
-              },
-            ),
-            SizedBox(height: 12.h),
-            _buildActionButton(
-              icon: Icons.request_page,
-              label: 'Request Money',
-              color: const Color(0xFFF59E0B),
-              onTap: () {
-                Get.back();
-                Get.toNamed('/cash-tag/request', arguments: tagPay);
-              },
-            ),
-            SizedBox(height: 12.h),
-            TextButton(
-              onPressed: () => Get.back(),
-              child: Text(
-                'Cancel',
+              Text(
+                'What do you want to do?',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-            ),
+              SizedBox(height: 24.h),
+              // "Send Money" / "Request Money" buttons REMOVED (2026-09-07):
+              // /cash-tag/send and /cash-tag/request were never registered
+              // routes — both buttons dead-ended. Send-money duplicates the
+              // Send Funds flow and requests live in P2P chat; the dormant
+              // cubit methods + backend RPCs remain for future use.
+              SizedBox(height: 12.h),
+              TextButton(
+                onPressed: () => Get.back(),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return ElevatedButton(
-      onPressed: onTap,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        padding: EdgeInsets.symmetric(vertical: 16.h),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.white, size: 20.sp),
-          SizedBox(width: 8.w),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
       ),
     );
   }

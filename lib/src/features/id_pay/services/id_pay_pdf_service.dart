@@ -136,7 +136,9 @@ class IDPayPdfService {
                     child: _buildSummaryTable(
                       createdDate: transactionDate,
                       completedDate: transactionDate,
-                      status: transaction.isCompleted ? 'Completed' : transaction.status,
+                      status: transaction.isCompleted
+                          ? 'Completed'
+                          : transaction.status,
                       type: 'PayID Transfer',
                     ),
                   ),
@@ -466,8 +468,7 @@ class IDPayPdfService {
     );
   }
 
-  static pw.Widget _buildFooter(
-      {String transactionType = 'PayID transfer'}) {
+  static pw.Widget _buildFooter({String transactionType = 'PayID transfer'}) {
     return pw.Column(
       children: [
         pw.Divider(color: PdfColors.grey300),
@@ -529,8 +530,8 @@ class IDPayPdfService {
     required IDPayEntity idPay,
   }) async {
     try {
-      final file = await generatePaymentReceipt(
-          transaction: transaction, idPay: idPay);
+      final file =
+          await generatePaymentReceipt(transaction: transaction, idPay: idPay);
       final safeRef =
           transaction.reference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
       return await ReceiptDownload.saveAndOpen(
@@ -548,8 +549,8 @@ class IDPayPdfService {
     required IDPayEntity idPay,
   }) async {
     try {
-      final file = await generatePaymentReceipt(
-          transaction: transaction, idPay: idPay);
+      final file =
+          await generatePaymentReceipt(transaction: transaction, idPay: idPay);
 
       final currencySymbol = _currencySymbolFor(transaction.currency);
       final amount = transaction.amount.toStringAsFixed(2);

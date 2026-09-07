@@ -103,11 +103,15 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
   }
 
   Widget _buildOverviewStats() {
-    final totalTarget = widget.contributions.fold<double>(0, (sum, c) => sum + c.targetAmount);
-    final totalCurrent = widget.contributions.fold<double>(0, (sum, c) => sum + c.currentAmount);
-    final activeContributions =
-        widget.contributions.where((c) => c.status == ContributionStatus.active).length;
-    final currencyFormat = NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
+    final totalTarget =
+        widget.contributions.fold<double>(0, (sum, c) => sum + c.targetAmount);
+    final totalCurrent =
+        widget.contributions.fold<double>(0, (sum, c) => sum + c.currentAmount);
+    final activeContributions = widget.contributions
+        .where((c) => c.status == ContributionStatus.active)
+        .length;
+    final currencyFormat =
+        NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -244,14 +248,21 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
   }
 
   Widget _buildPendingActionsCard() {
-    final overdueContributions =
-        widget.contributions.where((c) => c.deadline.isBefore(DateTime.now()) && c.status == ContributionStatus.active).length;
-    final pendingPayouts = widget.contributions
-        .where((c) => c.type == ContributionType.rotatingSavings && c.currentAmount > 0)
+    final overdueContributions = widget.contributions
+        .where((c) =>
+            c.deadline.isBefore(DateTime.now()) &&
+            c.status == ContributionStatus.active)
         .length;
-    final pendingMembers = widget.members.where((m) => m.status == GroupMemberStatus.pending).length;
+    final pendingPayouts = widget.contributions
+        .where((c) =>
+            c.type == ContributionType.rotatingSavings && c.currentAmount > 0)
+        .length;
+    final pendingMembers = widget.members
+        .where((m) => m.status == GroupMemberStatus.pending)
+        .length;
 
-    final hasPendingActions = overdueContributions > 0 || pendingPayouts > 0 || pendingMembers > 0;
+    final hasPendingActions =
+        overdueContributions > 0 || pendingPayouts > 0 || pendingMembers > 0;
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -266,7 +277,9 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
             children: [
               Icon(
                 Icons.notifications_active,
-                color: hasPendingActions ? const Color(0xFFFB923C) : Colors.grey[400],
+                color: hasPendingActions
+                    ? const Color(0xFFFB923C)
+                    : Colors.grey[400],
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
@@ -287,11 +300,13 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 child: Column(
                   children: [
-                    Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 32.sp),
+                    Icon(Icons.check_circle,
+                        color: const Color(0xFF10B981), size: 32.sp),
                     SizedBox(height: 8.h),
                     Text(
                       'All caught up!',
-                      style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14.sp),
+                      style: GoogleFonts.inter(
+                          color: Colors.grey[400], fontSize: 14.sp),
                     ),
                   ],
                 ),
@@ -525,12 +540,15 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
               if (state is GroupActivityLogsLoaded && state.logs.isNotEmpty) {
                 final recentLogs = state.logs.take(3).toList();
                 return Column(
-                  children: recentLogs.map((log) => _buildActivityItem(
-                    icon: _getActivityIcon(log.actionType),
-                    title: _formatActivityTitle(log.actionType),
-                    subtitle: '${log.actorName} - ${log.actionType.replaceAll('_', ' ')}',
-                    time: _formatTimeAgo(log.createdAt),
-                  )).toList(),
+                  children: recentLogs
+                      .map((log) => _buildActivityItem(
+                            icon: _getActivityIcon(log.actionType),
+                            title: _formatActivityTitle(log.actionType),
+                            subtitle:
+                                '${log.actorName} - ${log.actionType.replaceAll('_', ' ')}',
+                            time: _formatTimeAgo(log.createdAt),
+                          ))
+                      .toList(),
                 );
               }
               return Center(
@@ -538,7 +556,8 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   child: Text(
                     'No recent activity',
-                    style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
+                    style: GoogleFonts.inter(
+                        color: Colors.grey[400], fontSize: 13.sp),
                   ),
                 ),
               );
@@ -552,20 +571,27 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
   IconData _getActivityIcon(String actionType) {
     final type = actionType.toLowerCase();
     if (type.contains('payment') || type.contains('paid')) return Icons.payment;
-    if (type.contains('member') || type.contains('join')) return Icons.person_add;
-    if (type.contains('contribution') || type.contains('goal') || type.contains('create')) return Icons.add_chart;
+    if (type.contains('member') || type.contains('join'))
+      return Icons.person_add;
+    if (type.contains('contribution') ||
+        type.contains('goal') ||
+        type.contains('create')) return Icons.add_chart;
     if (type.contains('payout')) return Icons.account_balance_wallet;
     if (type.contains('update') || type.contains('edit')) return Icons.edit;
-    if (type.contains('remove') || type.contains('delete')) return Icons.remove_circle;
+    if (type.contains('remove') || type.contains('delete'))
+      return Icons.remove_circle;
     return Icons.history;
   }
 
   String _formatActivityTitle(String actionType) {
     final type = actionType.toLowerCase();
-    if (type.contains('payment') || type.contains('paid')) return 'Payment received';
-    if (type.contains('member_added') || type.contains('join')) return 'New member';
+    if (type.contains('payment') || type.contains('paid'))
+      return 'Payment received';
+    if (type.contains('member_added') || type.contains('join'))
+      return 'New member';
     if (type.contains('member_removed')) return 'Member removed';
-    if (type.contains('contribution_created') || type.contains('goal')) return 'Goal created';
+    if (type.contains('contribution_created') || type.contains('goal'))
+      return 'Goal created';
     if (type.contains('payout')) return 'Payout processed';
     if (type.contains('role_updated')) return 'Role updated';
     if (type.contains('update')) return 'Update';
@@ -658,11 +684,16 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
         children: [
           CircleAvatar(
             radius: 24.r,
-            backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-            backgroundImage: member.profileImage != null ? NetworkImage(member.profileImage!) : null,
+            backgroundColor:
+                const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+            backgroundImage: member.profileImage != null
+                ? NetworkImage(member.profileImage!)
+                : null,
             child: member.profileImage == null
                 ? Text(
-                    member.userName.isNotEmpty ? member.userName[0].toUpperCase() : '?',
+                    member.userName.isNotEmpty
+                        ? member.userName[0].toUpperCase()
+                        : '?',
                     style: GoogleFonts.inter(
                       color: const Color.fromARGB(255, 78, 3, 208),
                       fontSize: 18.sp,
@@ -688,9 +719,11 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
                     ),
                     SizedBox(width: 8.w),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                       decoration: BoxDecoration(
-                        color: _getRoleColor(member.role).withValues(alpha: 0.2),
+                        color:
+                            _getRoleColor(member.role).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                       child: Text(
@@ -719,9 +752,15 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
             icon: Icon(Icons.more_vert, color: Colors.grey[400], size: 20.sp),
             color: const Color(0xFF2D2D2D),
             itemBuilder: (context) => [
-              const PopupMenuItem(value: 'role', child: Text('Change Role', style: TextStyle(color: Colors.white))),
+              const PopupMenuItem(
+                  value: 'role',
+                  child: Text('Change Role',
+                      style: TextStyle(color: Colors.white))),
               if (member.role != GroupMemberRole.admin)
-                const PopupMenuItem(value: 'remove', child: Text('Remove Member', style: TextStyle(color: Colors.red))),
+                const PopupMenuItem(
+                    value: 'remove',
+                    child: Text('Remove Member',
+                        style: TextStyle(color: Colors.red))),
             ],
             onSelected: (value) => _handleMemberAction(value, member),
           ),
@@ -742,9 +781,11 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
   }
 
   Widget _buildContributionManagementCard(Contribution contribution) {
-    final currencyFormat = NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
+    final currencyFormat =
+        NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
     final progress = contribution.targetAmount > 0
-        ? (contribution.currentAmount / contribution.targetAmount).clamp(0.0, 1.0)
+        ? (contribution.currentAmount / contribution.targetAmount)
+            .clamp(0.0, 1.0)
         : 0.0;
 
     return Container(
@@ -775,9 +816,11 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
                     Row(
                       children: [
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
                           decoration: BoxDecoration(
-                            color: _getStatusColor(contribution.status).withValues(alpha: 0.2),
+                            color: _getStatusColor(contribution.status)
+                                .withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Text(
@@ -803,18 +846,35 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
                 ),
               ),
               PopupMenuButton<String>(
-                icon: Icon(Icons.more_vert, color: Colors.grey[400], size: 20.sp),
+                icon:
+                    Icon(Icons.more_vert, color: Colors.grey[400], size: 20.sp),
                 color: const Color(0xFF2D2D2D),
                 itemBuilder: (context) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Edit', style: TextStyle(color: Colors.white))),
-                  const PopupMenuItem(value: 'share', child: Text('Share', style: TextStyle(color: Colors.white))),
+                  const PopupMenuItem(
+                      value: 'edit',
+                      child:
+                          Text('Edit', style: TextStyle(color: Colors.white))),
+                  const PopupMenuItem(
+                      value: 'share',
+                      child:
+                          Text('Share', style: TextStyle(color: Colors.white))),
                   if (contribution.type == ContributionType.rotatingSavings)
-                    const PopupMenuItem(value: 'payout', child: Text('Process Payout', style: TextStyle(color: Colors.white))),
+                    const PopupMenuItem(
+                        value: 'payout',
+                        child: Text('Export transcript',
+                            style: TextStyle(color: Colors.white))),
                   if (contribution.status == ContributionStatus.active)
-                    const PopupMenuItem(value: 'pause', child: Text('Pause', style: TextStyle(color: Colors.orange))),
-                  const PopupMenuItem(value: 'delete', child: Text('Delete', style: TextStyle(color: Colors.red))),
+                    const PopupMenuItem(
+                        value: 'pause',
+                        child: Text('Pause',
+                            style: TextStyle(color: Colors.orange))),
+                  const PopupMenuItem(
+                      value: 'delete',
+                      child:
+                          Text('Delete', style: TextStyle(color: Colors.red))),
                 ],
-                onSelected: (value) => _handleContributionAction(value, contribution),
+                onSelected: (value) =>
+                    _handleContributionAction(value, contribution),
               ),
             ],
           ),
@@ -1012,11 +1072,14 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
                       group: widget.group,
                       members: widget.members,
                     );
-                    await GroupExportHelper.shareCSV(file, subject: '${widget.group.name} - Members');
+                    await GroupExportHelper.shareCSV(file,
+                        subject: '${widget.group.name} - Members');
                   } catch (e) {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Export failed: $e'), backgroundColor: const Color(0xFFEF4444)),
+                        SnackBar(
+                            content: Text('Export failed: $e'),
+                            backgroundColor: const Color(0xFFEF4444)),
                       );
                     }
                   }
@@ -1028,15 +1091,19 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
                 onTap: () async {
                   Navigator.pop(context);
                   try {
-                    final file = await GroupExportHelper.exportContributionsSummaryCSV(
+                    final file =
+                        await GroupExportHelper.exportContributionsSummaryCSV(
                       group: widget.group,
                       contributions: widget.contributions,
                     );
-                    await GroupExportHelper.shareCSV(file, subject: '${widget.group.name} - Contributions');
+                    await GroupExportHelper.shareCSV(file,
+                        subject: '${widget.group.name} - Contributions');
                   } catch (e) {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Export failed: $e'), backgroundColor: const Color(0xFFEF4444)),
+                        SnackBar(
+                            content: Text('Export failed: $e'),
+                            backgroundColor: const Color(0xFFEF4444)),
                       );
                     }
                   }
@@ -1055,8 +1122,10 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(icon, color: const Color.fromARGB(255, 78, 3, 208), size: 24.sp),
-      title: Text(title, style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp)),
+      leading:
+          Icon(icon, color: const Color.fromARGB(255, 78, 3, 208), size: 24.sp),
+      title: Text(title,
+          style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp)),
       onTap: onTap,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
     );
@@ -1144,29 +1213,40 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
         ));
   }
 
+  // HONEST LABELING (2026-09-07): this used to be a "Process Payout" dialog
+  // claiming "this will distribute funds to the next member in the rotation" —
+  // while the confirm button only called generateTranscriptForContribution.
+  // No money moved, no PIN, no server payout call. Payouts run server-side on
+  // their own schedule/supervisor; this action only EXPORTS the contribution
+  // transcript, so that is exactly what it now says.
   void _showProcessPayoutDialog(Contribution contribution) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        title: Text('Process Payout', style: GoogleFonts.inter(color: Colors.white)),
+        title: Text('Export transcript',
+            style: GoogleFonts.inter(color: Colors.white)),
         content: Text(
-          'Process the next payout for "${contribution.title}"? '
-          'This will distribute funds to the next member in the rotation.',
+          'Generate the contribution transcript for "${contribution.title}"? '
+          'This exports the payment history document — it does not move any money.',
           style: GoogleFonts.inter(color: Colors.grey[300]),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey[400])),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: Colors.grey[400])),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              context.read<GroupAccountCubit>().generateTranscriptForContribution(contribution.id);
+              context
+                  .read<GroupAccountCubit>()
+                  .generateTranscriptForContribution(contribution.id);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Processing payout for ${contribution.title}...'),
+                  content: Text(
+                      'Generating transcript for ${contribution.title}...'),
                   backgroundColor: const Color(0xFF3B82F6),
                 ),
               );
@@ -1174,7 +1254,8 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color.fromARGB(255, 78, 3, 208),
             ),
-            child: Text('Process', style: GoogleFonts.inter(color: Colors.white)),
+            child:
+                Text('Export', style: GoogleFonts.inter(color: Colors.white)),
           ),
         ],
       ),
@@ -1186,7 +1267,8 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        title: Text('Pause Contribution', style: GoogleFonts.inter(color: Colors.white)),
+        title: Text('Pause Contribution',
+            style: GoogleFonts.inter(color: Colors.white)),
         content: Text(
           'Are you sure you want to pause "${contribution.title}"? '
           'Members will not be able to make payments while paused.',
@@ -1195,15 +1277,20 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey[400])),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: Colors.grey[400])),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              final paused = contribution.copyWith(status: ContributionStatus.paused);
-              context.read<GroupAccountCubit>().updateContributionDetails(paused);
+              final paused =
+                  contribution.copyWith(status: ContributionStatus.paused);
+              context
+                  .read<GroupAccountCubit>()
+                  .updateContributionDetails(paused);
             },
-            child: Text('Pause', style: GoogleFonts.inter(color: Colors.orange)),
+            child:
+                Text('Pause', style: GoogleFonts.inter(color: Colors.orange)),
           ),
         ],
       ),
@@ -1215,7 +1302,8 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        title: Text('Change Role', style: GoogleFonts.inter(color: Colors.white)),
+        title:
+            Text('Change Role', style: GoogleFonts.inter(color: Colors.white)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: GroupMemberRole.values.map((role) {
@@ -1249,7 +1337,8 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        title: Text('Remove Member', style: GoogleFonts.inter(color: Colors.white)),
+        title: Text('Remove Member',
+            style: GoogleFonts.inter(color: Colors.white)),
         content: Text(
           'Are you sure you want to remove ${member.userName} from this group?',
           style: GoogleFonts.inter(color: Colors.grey[300]),
@@ -1257,7 +1346,8 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey[400])),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: Colors.grey[400])),
           ),
           TextButton(
             onPressed: () {
@@ -1279,7 +1369,8 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        title: Text('Delete Contribution', style: GoogleFonts.inter(color: Colors.white)),
+        title: Text('Delete Contribution',
+            style: GoogleFonts.inter(color: Colors.white)),
         content: Text(
           'Are you sure you want to delete "${contribution.title}"? This action cannot be undone.',
           style: GoogleFonts.inter(color: Colors.grey[300]),
@@ -1287,12 +1378,15 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey[400])),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: Colors.grey[400])),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              context.read<GroupAccountCubit>().deleteContribution(contribution.id);
+              context
+                  .read<GroupAccountCubit>()
+                  .deleteContribution(contribution.id);
             },
             child: Text('Delete', style: GoogleFonts.inter(color: Colors.red)),
           ),

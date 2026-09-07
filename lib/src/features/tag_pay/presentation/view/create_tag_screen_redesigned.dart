@@ -314,68 +314,69 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(12.r),
               border: alreadySelected
-                  ? Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.4), width: 1)
+                  ? Border.all(
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
+                      width: 1)
                   : null,
             ),
             child: ListTile(
               onTap: () => _toggleUser(user),
               leading: Container(
-                  width: 40.w,
-                  height: 40.w,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20.r),
-                  ),
-                  child: Icon(
-                    Icons.person,
-                    color: const Color(0xFF4E03D0),
-                    size: 20.sp,
-                  ),
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
-                title: Text(
-                  user.fullName,
-                  style: GoogleFonts.inter(
-                    color: alreadySelected
-                        ? const Color(0xFF9CA3AF)
-                        : Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: Icon(
+                  Icons.person,
+                  color: const Color(0xFF4E03D0),
+                  size: 20.sp,
                 ),
-                subtitle: Text(
-                  '@${user.username}',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF4E03D0),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                trailing: alreadySelected
-                    ? Container(
-                        width: 32.w,
-                        height: 32.w,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Icons.check,
-                            color: const Color(0xFF10B981), size: 20.sp),
-                      )
-                    : Container(
-                        width: 32.w,
-                        height: 32.w,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Icons.add,
-                            color: const Color(0xFF4E03D0), size: 20.sp),
-                      ),
               ),
-            );
-          },
-        ),
-      );
+              title: Text(
+                user.fullName,
+                style: GoogleFonts.inter(
+                  color:
+                      alreadySelected ? const Color(0xFF9CA3AF) : Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                '@${user.username}',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF4E03D0),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              trailing: alreadySelected
+                  ? Container(
+                      width: 32.w,
+                      height: 32.w,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.check,
+                          color: const Color(0xFF10B981), size: 20.sp),
+                    )
+                  : Container(
+                      width: 32.w,
+                      height: 32.w,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.add,
+                          color: const Color(0xFF4E03D0), size: 20.sp),
+                    ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildEmptyState() {
@@ -384,7 +385,8 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.person_search, color: const Color(0xFF9CA3AF), size: 48.sp),
+            Icon(Icons.person_search,
+                color: const Color(0xFF9CA3AF), size: 48.sp),
             SizedBox(height: 16.h),
             Text(
               'Search for users to tag',

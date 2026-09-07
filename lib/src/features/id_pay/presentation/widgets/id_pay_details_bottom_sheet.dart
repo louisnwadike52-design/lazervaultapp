@@ -176,8 +176,9 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
             _buildDetailRow(
               'Amount',
               '${_currencySymbol(idPay.currency)}${idPay.amount.toStringAsFixed(2)}',
-              valueColor:
-                  idPay.isPaid ? const Color(0xFF10B981) : const Color(0xFF3B82F6),
+              valueColor: idPay.isPaid
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFF3B82F6),
               isBold: true,
             ),
           ] else ...[
@@ -244,8 +245,7 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    Clipboard.setData(
-                        ClipboardData(text: idPay.displayPayId));
+                    Clipboard.setData(ClipboardData(text: idPay.displayPayId));
                     Get.snackbar(
                       'Copied',
                       'PayID copied to clipboard',
@@ -257,15 +257,15 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side: const BorderSide(
-                        color: Color(0xFF3B82F6), width: 1.5),
+                    side:
+                        const BorderSide(color: Color(0xFF3B82F6), width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
-                  icon: Icon(Icons.copy, size: 18.sp,
-                      color: const Color(0xFF3B82F6)),
+                  icon: Icon(Icons.copy,
+                      size: 18.sp, color: const Color(0xFF3B82F6)),
                   label: Text(
                     'Copy ID',
                     style: GoogleFonts.inter(
@@ -282,8 +282,8 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
                   onPressed: _isDownloadingInvoice ? null : _downloadInvoice,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side: const BorderSide(
-                        color: Color(0xFF60A5FA), width: 1.5),
+                    side:
+                        const BorderSide(color: Color(0xFF60A5FA), width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),

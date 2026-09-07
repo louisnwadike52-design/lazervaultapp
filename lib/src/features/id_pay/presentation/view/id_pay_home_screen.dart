@@ -86,12 +86,12 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
             Expanded(
               child: ServiceEntranceAnimation(
                 child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildMyPayIDsTab(),
-                  _buildPayTab(),
-                ],
-              ),
+                  controller: _tabController,
+                  children: [
+                    _buildMyPayIDsTab(),
+                    _buildPayTab(),
+                  ],
+                ),
               ),
             ),
           ],

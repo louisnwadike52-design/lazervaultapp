@@ -134,7 +134,8 @@ class _SetUsernameSheetState extends State<_SetUsernameSheet> {
                   borderRadius: BorderRadius.circular(14.r),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
               ),
               onSubmitted: (_) => _handleSave(),
             ),
@@ -146,7 +147,8 @@ class _SetUsernameSheetState extends State<_SetUsernameSheet> {
                 onPressed: _isLoading ? null : _handleSave,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4E03D0),
-                  disabledBackgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.5),
+                  disabledBackgroundColor:
+                      const Color(0xFF4E03D0).withValues(alpha: 0.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14.r),
                   ),

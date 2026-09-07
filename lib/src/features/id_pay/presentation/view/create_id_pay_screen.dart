@@ -77,9 +77,12 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
         );
         if (activeAccount.accountTypeEnum == VirtualAccountType.business) {
           _isBusinessAccount = true;
-          context.read<IDPayCubit>().loadOrganizationsQuietly(
-            accountId: activeId,
-          ).then((orgs) {
+          context
+              .read<IDPayCubit>()
+              .loadOrganizationsQuietly(
+                accountId: activeId,
+              )
+              .then((orgs) {
             if (mounted) setState(() => _organizations = orgs);
           });
         }
@@ -161,7 +164,8 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
     return BlocListener<IDPayCubit, IDPayState>(
       listener: (context, state) {
         if (state is IDPayCreated) {
-          Get.offNamed(AppRoutes.idPayCreated, arguments: {'idPay': state.idPay});
+          Get.offNamed(AppRoutes.idPayCreated,
+              arguments: {'idPay': state.idPay});
         } else if (state is IDPayError) {
           Get.snackbar(
             'Error',
@@ -274,7 +278,8 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
             type: IDPayType.oneTime,
             icon: Icons.looks_one_outlined,
             title: 'One-Time',
-            subtitle: 'Can only be paid once. Ideal for single invoices or requests.',
+            subtitle:
+                'Can only be paid once. Ideal for single invoices or requests.',
           ),
           SizedBox(height: 12.h),
           _buildTypeCard(
@@ -304,9 +309,8 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF3B82F6)
-                : const Color(0xFF2D2D2D),
+            color:
+                isSelected ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -470,9 +474,8 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF3B82F6)
-                : const Color(0xFF2D2D2D),
+            color:
+                isSelected ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -566,8 +569,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
           borderRadius: BorderRadius.circular(14.r),
           borderSide: BorderSide.none,
         ),
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       ),
     );
   }
@@ -868,8 +870,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
               children: [
                 _buildReviewRow('Type', _selectedType.displayName),
                 SizedBox(height: 16.h),
-                _buildReviewRow(
-                    'Amount Mode', _selectedAmountMode.displayName),
+                _buildReviewRow('Amount Mode', _selectedAmountMode.displayName),
                 SizedBox(height: 16.h),
                 if (_selectedAmountMode == IDPayAmountMode.fixed) ...[
                   _buildReviewRow(
@@ -912,9 +913,10 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
                   _buildReviewRow(
                     'Organization',
                     _organizations
-                        .where((o) => o.id == _selectedOrganizationId)
-                        .map((o) => o.name)
-                        .firstOrNull ?? 'Unknown',
+                            .where((o) => o.id == _selectedOrganizationId)
+                            .map((o) => o.name)
+                            .firstOrNull ??
+                        'Unknown',
                   ),
                 ],
               ],

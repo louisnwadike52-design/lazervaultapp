@@ -142,7 +142,6 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(

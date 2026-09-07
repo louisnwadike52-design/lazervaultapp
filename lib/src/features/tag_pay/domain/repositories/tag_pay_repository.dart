@@ -27,6 +27,7 @@ abstract class TagPayRepository {
     String? description,
     required String sourceAccountId,
     required String transactionPin,
+    String? idempotencyKey,
   });
 
   /// Request money using tag pay

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utilities/safe_args.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,10 +15,12 @@ class TagCreationProcessingScreen extends StatefulWidget {
   const TagCreationProcessingScreen({super.key});
 
   @override
-  State<TagCreationProcessingScreen> createState() => _TagCreationProcessingScreenState();
+  State<TagCreationProcessingScreen> createState() =>
+      _TagCreationProcessingScreenState();
 }
 
-class _TagCreationProcessingScreenState extends State<TagCreationProcessingScreen>
+class _TagCreationProcessingScreenState
+    extends State<TagCreationProcessingScreen>
     with SingleTickerProviderStateMixin {
   /// Grouped for READING — the batch total shown here is the same figure the
   /// receipt screen prints, and both must group their digits the same way.
@@ -36,16 +39,39 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
   late final String _currency;
   late final String _description;
   late final bool _isBatch;
+  bool _argsOk = true;
 
   @override
   void initState() {
     super.initState();
 
-    _args = Get.arguments as Map<String, dynamic>;
+    // Guarded — see safe_args.dart: no args must never grey-screen.
+    final argsOrNull = safeArgs<Map<String, dynamic>>();
+    if (argsOrNull == null ||
+        argsOrNull['recipientName'] is! String ||
+        argsOrNull['recipientTag'] is! String ||
+        argsOrNull['amount'] is! double ||
+        argsOrNull['currency'] is! String) {
+      _argsOk = false;
+      popMissingArgs('this payment tag');
+      _args = const {};
+      _recipientName = '';
+      _recipientTag = '';
+      _recipientNames = const [];
+      _recipientTags = const [];
+      _amount = 0;
+      _currency = '';
+      _description = '';
+      _isBatch = false;
+      return;
+    }
+    _args = argsOrNull;
     _recipientName = _args['recipientName'] as String;
     _recipientTag = _args['recipientTag'] as String;
-    _recipientNames = (_args['recipientNames'] as List<String>?) ?? [_recipientName];
-    _recipientTags = (_args['recipientTags'] as List<String>?) ?? [_recipientTag];
+    _recipientNames =
+        (_args['recipientNames'] as List<String>?) ?? [_recipientName];
+    _recipientTags =
+        (_args['recipientTags'] as List<String>?) ?? [_recipientTag];
     _amount = _args['amount'] as double;
     _currency = _args['currency'] as String;
     _description = (_args['description'] as String?) ?? '';
@@ -99,6 +125,9 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
 
   @override
   Widget build(BuildContext context) {
+    if (!_argsOk) {
+      return const Scaffold(backgroundColor: Color(0xFF0A0A0A));
+    }
     final count = _recipientNames.length;
 
     return BlocListener<TagPayCubit, TagPayState>(
@@ -245,16 +274,19 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
       child: Column(
         children: [
           if (_isBatch)
-            _buildDetailRow('Total', '${UserTagEntity.currencySymbol(_currency)}${_amountFormat.format(_amount * _recipientNames.length)}')
+            _buildDetailRow('Total',
+                '${UserTagEntity.currencySymbol(_currency)}${_amountFormat.format(_amount * _recipientNames.length)}')
           else
-            _buildDetailRow('Amount', '${UserTagEntity.currencySymbol(_currency)}${_amountFormat.format(_amount)}'),
+            _buildDetailRow('Amount',
+                '${UserTagEntity.currencySymbol(_currency)}${_amountFormat.format(_amount)}'),
           SizedBox(height: 12.h),
           Divider(color: const Color(0xFF2D2D2D)),
           SizedBox(height: 12.h),
           if (_isBatch) ...[
             _buildDetailRow('Users', '${_recipientNames.length} recipients'),
             SizedBox(height: 12.h),
-            _buildDetailRow('Each', '${UserTagEntity.currencySymbol(_currency)}${_amountFormat.format(_amount)}'),
+            _buildDetailRow('Each',
+                '${UserTagEntity.currencySymbol(_currency)}${_amountFormat.format(_amount)}'),
           ] else ...[
             _buildDetailRow('For', _recipientNames.first),
             SizedBox(height: 12.h),

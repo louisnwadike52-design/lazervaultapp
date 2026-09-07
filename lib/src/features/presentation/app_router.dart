@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' hide Transition;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/utilities/safe_args.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/fcy_account/presentation/fcy_activation_screen.dart';
@@ -2105,9 +2106,15 @@ class AppRouter {
     GetPage(
       name: AppRoutes.makePayment,
       page: () {
-        final args = Get.arguments as Map<String, dynamic>;
-        final contributionId = args['contributionId'] as String;
+        // Guarded: entering this MONEY route without arguments (deep link /
+        // notification resolver) used to throw the cast and grey-screen.
+        final args = safeArgs<Map<String, dynamic>>() ?? const {};
+        final contributionId = args['contributionId'] as String? ?? '';
         final contribution = args['contribution'] as Contribution?;
+        if (contributionId.isEmpty) {
+          popMissingArgs('this payment');
+          return const Scaffold(backgroundColor: Color(0xFF0A0A0A));
+        }
         return BlocProvider.value(
           value: serviceLocator<GroupAccountCubit>(),
           child: MakePaymentScreen(
@@ -3126,7 +3133,12 @@ GetPage(
     ),
     GetPage(
       name: AppRoutes.qrDisplay,
-      page: () => const QRDisplayScreen(),
+      // The display screen reads QRPaymentCubit (status stream / cancel) —
+      // without this provider the route threw ProviderNotFoundException.
+      page: () => BlocProvider.value(
+        value: serviceLocator<QRPaymentCubit>(),
+        child: const QRDisplayScreen(),
+      ),
       transition: Transition.zoom,
     ),
     GetPage(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utilities/safe_args.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -12,8 +13,14 @@ class IDPayCreatedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
-    final idPay = args['idPay'] as IDPayEntity;
+    // Guarded: opening this route without arguments used to throw the cast
+    // and grey-screen in release.
+    final args = safeArgs<Map<String, dynamic>>();
+    final idPay = args?['idPay'];
+    if (idPay is! IDPayEntity) {
+      popMissingArgs('your new PayID');
+      return const Scaffold(backgroundColor: Color(0xFF0A0A0A));
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),

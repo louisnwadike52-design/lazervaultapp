@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:uuid/uuid.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grpc/grpc.dart';
@@ -166,10 +167,14 @@ class TagPayCubit extends Cubit<TagPayState> {
     String? description,
     required String sourceAccountId,
     required String transactionPin,
+    String? idempotencyKey,
   }) async {
     try {
       if (isClosed) return;
       emit(TagPayLoading());
+      // Generate a key when the caller hasn't supplied one so a retry after
+      // a network blip becomes a server-side replay, never a second debit.
+      final effectiveKey = idempotencyKey ?? const Uuid().v4();
       final transaction = await repository.sendMoney(
         receiverTagPay: receiverTagPay,
         amount: amount,
@@ -177,6 +182,7 @@ class TagPayCubit extends Cubit<TagPayState> {
         description: description,
         sourceAccountId: sourceAccountId,
         transactionPin: transactionPin,
+        idempotencyKey: effectiveKey,
       );
       if (isClosed) return;
       emit(MoneyTransferSuccess(

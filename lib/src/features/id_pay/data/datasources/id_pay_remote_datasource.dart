@@ -192,9 +192,7 @@ class IDPayRemoteDataSourceImpl implements IDPayRemoteDataSource {
       request,
       options: options,
     );
-    return response.idPays
-        .map((ip) => IDPayModel.fromProto(ip))
-        .toList();
+    return response.idPays.map((ip) => IDPayModel.fromProto(ip)).toList();
   }
 
   @override

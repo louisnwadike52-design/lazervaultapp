@@ -8,12 +8,16 @@ class UserSearchResultEntity extends Equatable {
   final String email;
   final String phoneNumber;
   final String profilePicture;
-  final String searchType; // 'username', 'name', 'phone', 'email', or '' for unified
-  final String? primaryAccountId; // Primary account ID for transfers (from auth service)
+  final String
+      searchType; // 'username', 'name', 'phone', 'email', or '' for unified
+  final String?
+      primaryAccountId; // Primary account ID for transfers (from auth service)
   /// Auth SearchUsers: true when this row is an exact email match for the query (do not infer from [email], which is masked).
   final bool emailMatchesSearchQuery;
+
   /// Auth SearchUsers: true when digit-normalized phone equals the query digits.
   final bool phoneMatchesSearchQueryExact;
+
   /// The authoritative "this row is a registered Lazervault user" flag
   /// (backend `is_lazervault_user`). This is the correct signal to gate on —
   /// NOT [username], which is empty for users matched by name/phone/email or

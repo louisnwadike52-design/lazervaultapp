@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utilities/safe_args.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -80,7 +81,13 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
+    // Guarded — see safe_args.dart: no args must never grey-screen.
+    final argsOrNull = safeArgs<Map<String, dynamic>>();
+    if (argsOrNull == null || argsOrNull['tag'] is! UserTagEntity) {
+      popMissingArgs('this receipt');
+      return const Scaffold(backgroundColor: Color(0xFF0A0A0A));
+    }
+    final args = argsOrNull;
     final UserTagEntity tag = args['tag'];
     final List<UserTagEntity> tags =
         args['tags'] as List<UserTagEntity>? ?? [tag];

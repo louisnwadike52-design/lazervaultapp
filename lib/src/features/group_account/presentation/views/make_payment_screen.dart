@@ -75,7 +75,8 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
 
   String _resolveIdempotencyKey(double amount, String accountId) {
     final fp = _idempotencyFingerprint(amount, accountId);
-    if (_pendingIdempotencyKey == null || _pendingIdempotencyKeyFingerprint != fp) {
+    if (_pendingIdempotencyKey == null ||
+        _pendingIdempotencyKeyFingerprint != fp) {
       _pendingIdempotencyKey = const Uuid().v4();
       _pendingIdempotencyKeyFingerprint = fp;
     }
@@ -182,7 +183,32 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
   }
 
   void _processPayment() async {
-    final amount = double.parse(_amountController.text);
+    // Re-entrancy guard at the METHOD entry, not just on the button. A fast
+    // double tap in the async gap before the PIN sheet renders can enter here
+    // twice and stack two PIN sheets — each firing its own
+    // makePaymentToContribution call, so the backend idempotency key can't
+    // dedupe and the member risks a DOUBLE DEBIT. Setting the flag before the
+    // first await makes the second tap a no-op; every early return below
+    // clears it so a corrected mistake can be retried.
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+    void abort() {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+
+    // tryParse, never parse: a stray character must not throw mid-flow.
+    final amount = double.tryParse(_amountController.text) ?? 0;
+    if (amount <= 0) {
+      Get.snackbar(
+        'Invalid Amount',
+        'Please enter a valid amount',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      abort();
+      return;
+    }
 
     HapticFeedback.mediumImpact();
 
@@ -200,19 +226,20 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
       transactionId: transactionId,
       transactionType: 'group_contribution_payment',
       amount: amount,
-      currency: widget.contribution?.currency ?? serviceLocator<LocaleManager>().currentCurrency,
+      currency: widget.contribution?.currency ??
+          serviceLocator<LocaleManager>().currentCurrency,
       title: 'Confirm Payment',
-      message: 'Confirm group contribution payment of ${widget.contribution?.currency ?? serviceLocator<LocaleManager>().currentCurrency} ${amount.toStringAsFixed(2)}',
+      message:
+          'Confirm group contribution payment of ${widget.contribution?.currency ?? serviceLocator<LocaleManager>().currentCurrency} ${amount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
     );
 
-    if (!success || verificationToken == null) return;
-
-    setState(() {
-      _isProcessing = true;
-    });
+    if (!success || verificationToken == null) {
+      abort();
+      return;
+    }
 
     if (!mounted) return;
 
@@ -227,7 +254,8 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
           contributionId: widget.contributionId,
           groupId: widget.contribution?.groupId ?? '',
           amount: amount,
-          currency: widget.contribution?.currency ?? serviceLocator<LocaleManager>().currentCurrency,
+          currency: widget.contribution?.currency ??
+              serviceLocator<LocaleManager>().currentCurrency,
           notes: notes.isEmpty ? null : notes,
           transactionPin: verificationToken!,
           sourceAccountId: _selectedAccountId,
@@ -245,14 +273,30 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             setState(() {
               _isProcessing = false;
             });
-            // Navigate to confirmation screen
-            Get.off(
-              () => ContributionPaymentConfirmationScreen(
-                contribution: widget.contribution!,
-                payment: state.payment,
-                paymentMethod: 'bank_transfer', // Default for now
-              ),
-            );
+            // POST-DEBIT path: the money has MOVED. Never crash here — a
+            // null contribution (screen opened without one, e.g. via a deep
+            // link) used to hit `widget.contribution!` and throw AFTER the
+            // debit, showing a crash instead of the confirmation. Fall back
+            // to a success snackbar + pop so the user always sees success.
+            final contribution = widget.contribution;
+            if (contribution != null) {
+              Get.off(
+                () => ContributionPaymentConfirmationScreen(
+                  contribution: contribution,
+                  payment: state.payment,
+                  paymentMethod: 'bank_transfer', // Default for now
+                ),
+              );
+            } else {
+              Get.back(result: true);
+              Get.snackbar(
+                'Payment Successful',
+                'Your contribution has been received.',
+                backgroundColor: const Color(0xFF10B981),
+                colorText: Colors.white,
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            }
           } else if (state is ContributionPaymentFailed) {
             setState(() {
               _isProcessing = false;
@@ -547,7 +591,8 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             fontWeight: FontWeight.w700,
             color: Colors.white,
           ),
-          onChanged: (_) => setState(() {}), // Trigger rebuild for balance check
+          onChanged: (_) =>
+              setState(() {}), // Trigger rebuild for balance check
           decoration: InputDecoration(
             hintText: '0.00',
             hintStyle: GoogleFonts.inter(
@@ -558,7 +603,8 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             prefixIcon: Container(
               padding: EdgeInsets.all(16.w),
               child: Text(
-                widget.contribution?.currency ?? serviceLocator<LocaleManager>().currentCurrency,
+                widget.contribution?.currency ??
+                    serviceLocator<LocaleManager>().currentCurrency,
                 style: GoogleFonts.inter(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w600,
@@ -652,8 +698,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
           SizedBox(height: 8.h),
           Row(
             children: [
-              Icon(Icons.info_outline,
-                  color: Colors.grey[500], size: 14.sp),
+              Icon(Icons.info_outline, color: Colors.grey[500], size: 14.sp),
               SizedBox(width: 6.w),
               Expanded(
                 child: Text(
@@ -718,8 +763,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
       }
     }
     final remaining = (expected - paid).clamp(0.0, double.infinity);
-    final progress =
-        expected > 0 ? (paid / expected).clamp(0.0, 1.0) : 0.0;
+    final progress = expected > 0 ? (paid / expected).clamp(0.0, 1.0) : 0.0;
     final fullyPaid = expected > 0 && paid >= expected;
     final currency = c.currency;
 
@@ -785,9 +829,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                 minHeight: 4.h,
                 backgroundColor: const Color(0xFF2D2D2D),
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  fullyPaid
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFFB923C),
+                  fullyPaid ? const Color(0xFF10B981) : const Color(0xFFFB923C),
                 ),
               ),
             ),
@@ -1012,9 +1054,8 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
           // non-tappable in the bottom sheet — silent lockout. Show a
           // dedicated empty state instead so the user knows to set up
           // a personal account before retrying.
-          final personalAccounts = filteredAccounts
-              .where((a) => a.isPersonalAccount)
-              .toList();
+          final personalAccounts =
+              filteredAccounts.where((a) => a.isPersonalAccount).toList();
           if (personalAccounts.isEmpty) {
             return Container(
               padding: EdgeInsets.all(20.w),
@@ -1110,8 +1151,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             selected = fallback;
           }
           final selectedAcc = selected;
-          final amount =
-              double.tryParse(_amountController.text) ?? 0;
+          final amount = double.tryParse(_amountController.text) ?? 0;
           final hasEnough = amount <= selectedAcc.balance;
 
           return Column(
@@ -1294,8 +1334,11 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                 SizedBox(height: 8.h),
                 TextButton(
                   onPressed: () {
-                    final userId = context.read<AuthenticationCubit>().userId ?? '';
-                    context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+                    final userId =
+                        context.read<AuthenticationCubit>().userId ?? '';
+                    context
+                        .read<AccountCardsSummaryCubit>()
+                        .fetchAccountSummaries(
                           userId: userId,
                         );
                   },
@@ -1377,8 +1420,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                     itemCount: accounts.length,
                     itemBuilder: (_, i) {
                       final a = accounts[i];
-                      final isSelected =
-                          _selectedAccountId == a.id.toString();
+                      final isSelected = _selectedAccountId == a.id.toString();
                       final ok = amount <= a.balance;
                       // Contribution payments are restricted to the
                       // user's personal account. Non-personal accounts
@@ -1420,18 +1462,16 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                                   width: 36.w,
                                   height: 36.w,
                                   decoration: BoxDecoration(
-                                    color: const Color.fromARGB(
-                                            255, 78, 3, 208)
+                                    color: const Color.fromARGB(255, 78, 3, 208)
                                         .withValues(alpha: 0.2),
-                                    borderRadius:
-                                        BorderRadius.circular(18.r),
+                                    borderRadius: BorderRadius.circular(18.r),
                                   ),
                                   child: Icon(
                                     isPersonal
                                         ? Icons.account_balance_wallet
                                         : Icons.lock_outline,
-                                    color: const Color.fromARGB(
-                                        255, 78, 3, 208),
+                                    color:
+                                        const Color.fromARGB(255, 78, 3, 208),
                                     size: 18.sp,
                                   ),
                                 ),
@@ -1451,8 +1491,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                                                 fontWeight: FontWeight.w600,
                                                 color: Colors.white,
                                               ),
-                                              overflow:
-                                                  TextOverflow.ellipsis,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
                                           if (a.isPrimary) ...[
@@ -1463,22 +1502,18 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                                                 vertical: 1.h,
                                               ),
                                               decoration: BoxDecoration(
-                                                color:
-                                                    const Color(0xFF10B981)
-                                                        .withValues(
-                                                            alpha: 0.2),
+                                                color: const Color(0xFF10B981)
+                                                    .withValues(alpha: 0.2),
                                                 borderRadius:
-                                                    BorderRadius.circular(
-                                                        3.r),
+                                                    BorderRadius.circular(3.r),
                                               ),
                                               child: Text(
                                                 'Primary',
                                                 style: GoogleFonts.inter(
                                                   fontSize: 9.sp,
-                                                  fontWeight:
-                                                      FontWeight.w600,
-                                                  color: const Color(
-                                                      0xFF10B981),
+                                                  fontWeight: FontWeight.w600,
+                                                  color:
+                                                      const Color(0xFF10B981),
                                                 ),
                                               ),
                                             ),
@@ -1505,8 +1540,8 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                                 if (isSelected && isPersonal)
                                   Icon(
                                     Icons.check_circle,
-                                    color: const Color.fromARGB(
-                                        255, 78, 3, 208),
+                                    color:
+                                        const Color.fromARGB(255, 78, 3, 208),
                                     size: 22.sp,
                                   ),
                               ],
@@ -1569,7 +1604,8 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color.fromARGB(255, 78, 3, 208)),
+              borderSide:
+                  const BorderSide(color: Color.fromARGB(255, 78, 3, 208)),
             ),
             contentPadding: EdgeInsets.all(16.w),
           ),
@@ -1584,8 +1620,9 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
       child: ElevatedButton(
         onPressed: _isProcessing ? null : _validateAndProcessPayment,
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              _isProcessing ? const Color(0xFF3D3D3D) : const Color.fromARGB(255, 78, 3, 208),
+          backgroundColor: _isProcessing
+              ? const Color(0xFF3D3D3D)
+              : const Color.fromARGB(255, 78, 3, 208),
           foregroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 16.h),
           shape: RoundedRectangleBorder(

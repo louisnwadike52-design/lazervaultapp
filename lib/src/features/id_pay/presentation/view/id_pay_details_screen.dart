@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utilities/safe_args.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,14 +25,23 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
   late IDPayEntity _idPay;
   List<IDPayTransactionEntity> _transactions = [];
   bool _transactionsLoaded = false;
+  bool _argsOk = true;
 
   @override
   void initState() {
     super.initState();
-    final args = Get.arguments as Map<String, dynamic>;
-    _idPay = args['idPay'] as IDPayEntity;
+    // Guarded — see safe_args.dart: no args must never grey-screen.
+    final args = safeArgs<Map<String, dynamic>>();
+    final idPay = args?['idPay'];
+    if (idPay is! IDPayEntity) {
+      _argsOk = false;
+      popMissingArgs('this PayID');
+      return;
+    }
+    _idPay = idPay;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<IDPayCubit>().getIDPayTransactions(payId: _idPay.payId);
     });
   }
@@ -94,6 +104,9 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_argsOk) {
+      return const Scaffold(backgroundColor: Color(0xFF0A0A0A));
+    }
     return BlocConsumer<IDPayCubit, IDPayState>(
       listener: (context, state) {
         if (state is IDPayTransactionsLoaded) {
@@ -361,9 +374,7 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
           SizedBox(height: 12.h),
           _buildInfoRow(
             'Expires',
-            _idPay.neverExpires
-                ? 'Never'
-                : _formatDateTime(_idPay.expiresAt),
+            _idPay.neverExpires ? 'Never' : _formatDateTime(_idPay.expiresAt),
           ),
           if (_idPay.description.isNotEmpty) ...[
             SizedBox(height: 12.h),

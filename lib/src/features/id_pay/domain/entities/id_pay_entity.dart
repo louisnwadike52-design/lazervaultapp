@@ -114,7 +114,8 @@ class IDPayEntity extends Equatable {
     this.organizationName = '',
   });
 
-  bool get isExpired => neverExpires ? false : DateTime.now().isAfter(expiresAt);
+  bool get isExpired =>
+      neverExpires ? false : DateTime.now().isAfter(expiresAt);
   bool get isActive => status == IDPayStatus.active && !isExpired;
   bool get isPaid => status == IDPayStatus.paid;
   bool get isOneTime => type == IDPayType.oneTime;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utilities/safe_args.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,14 +20,23 @@ class _IDPayReceiptScreenState extends State<IDPayReceiptScreen> {
   late final IDPayTransactionEntity transaction;
   late final IDPayEntity idPay;
   bool _isDownloading = false;
+  bool _argsOk = true;
   bool _isSharing = false;
 
   @override
   void initState() {
     super.initState();
-    final args = Get.arguments as Map<String, dynamic>;
-    transaction = args['transaction'] as IDPayTransactionEntity;
-    idPay = args['idPay'] as IDPayEntity;
+    // Guarded — see safe_args.dart: no args must never grey-screen.
+    final args = safeArgs<Map<String, dynamic>>();
+    final txn = args?['transaction'];
+    final pay = args?['idPay'];
+    if (txn is! IDPayTransactionEntity || pay is! IDPayEntity) {
+      _argsOk = false;
+      popMissingArgs('this receipt');
+      return;
+    }
+    transaction = txn;
+    idPay = pay;
   }
 
   Future<void> _downloadReceipt() async {
@@ -85,6 +95,9 @@ class _IDPayReceiptScreenState extends State<IDPayReceiptScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_argsOk) {
+      return const Scaffold(backgroundColor: Color(0xFF0A0A0A));
+    }
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(

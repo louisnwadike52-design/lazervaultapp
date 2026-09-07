@@ -95,6 +95,20 @@ class _QRPaymentConfirmationScreenState
   }
 
   void _processPayment() async {
+    // Re-entrancy guard at the METHOD entry, not just on the button. The
+    // button's disabled state reflects _isProcessing, but a fast double tap in
+    // the async gap before the PIN sheet renders can enter here twice and
+    // stack two PIN sheets — each producing its own processQRPayment call, so
+    // the backend idempotency key can't dedupe and the payer risks a DOUBLE
+    // DEBIT. Setting the flag before the first await makes the second tap a
+    // no-op; every early return below clears it so a corrected mistake
+    // (wrong account, bad amount, cancelled PIN) can be retried.
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+    void abort() {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+
     if (_selectedAccountId == null) {
       Get.snackbar(
         'No Account Selected',
@@ -103,6 +117,7 @@ class _QRPaymentConfirmationScreenState
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
       );
+      abort();
       return;
     }
 
@@ -118,6 +133,7 @@ class _QRPaymentConfirmationScreenState
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
       );
+      abort();
       return;
     }
 
@@ -139,6 +155,7 @@ class _QRPaymentConfirmationScreenState
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,
         );
+        abort();
         return;
       }
 
@@ -151,6 +168,7 @@ class _QRPaymentConfirmationScreenState
           snackPosition: SnackPosition.TOP,
           duration: const Duration(seconds: 4),
         );
+        abort();
         return;
       }
     }
@@ -176,11 +194,10 @@ class _QRPaymentConfirmationScreenState
       },
     );
 
-    if (!success || verificationToken == null) return;
-
-    setState(() {
-      _isProcessing = true;
-    });
+    if (!success || verificationToken == null) {
+      abort();
+      return;
+    }
 
     if (!mounted) return;
     context.read<QRPaymentCubit>().processQRPayment(
@@ -259,9 +276,8 @@ class _QRPaymentConfirmationScreenState
                 'recipient_id': qr.userId,
                 'amount': qr.amount,
                 'currency': qr.currency,
-                'qr_type': qr.qrType == QRPaymentType.static
-                    ? 'static'
-                    : 'dynamic',
+                'qr_type':
+                    qr.qrType == QRPaymentType.static ? 'static' : 'dynamic',
                 'description': qr.description,
               };
               _payerEntersAmount = qr.qrType == QRPaymentType.dynamic;
@@ -282,12 +298,25 @@ class _QRPaymentConfirmationScreenState
               },
             );
           } else if (state is QRPaymentError) {
+            // Two very different failures share this state:
+            // 1) the DETAILS fetch failed — _qrData was never hydrated, so
+            //    falling through to the form used to render a payable card
+            //    with literal 'Recipient', amount 0.00 and an ENABLED Pay
+            //    button. That must become the unavailable state instead.
+            // 2) the PAYMENT failed after details loaded — keep the form so
+            //    the user can correct and retry, and surface the error.
+            final detailsNeverLoaded = _isLoadingDetails;
             setState(() {
               _isProcessing = false;
               _isLoadingDetails = false;
+              if (detailsNeverLoaded) {
+                _isExpiredOrUnavailable = true;
+                _unavailableReason =
+                    'We couldn\'t load this QR code. Please scan it again.';
+              }
             });
             Get.snackbar(
-              'Payment Failed',
+              detailsNeverLoaded ? 'QR Unavailable' : 'Payment Failed',
               state.message,
               backgroundColor: const Color(0xFFEF4444),
               colorText: Colors.white,
@@ -315,23 +344,23 @@ class _QRPaymentConfirmationScreenState
               : _isExpiredOrUnavailable
                   ? _buildUnavailableState()
                   : SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildRecipientCard(),
-                      const SizedBox(height: 24),
-                      if (_payerEntersAmount) ...[
-                        _buildAmountInput(),
-                        const SizedBox(height: 24),
-                      ] else
-                        _buildAmountDisplay(),
-                      _buildAccountSelector(),
-                      const SizedBox(height: 32),
-                      _buildPayButton(),
-                    ],
-                  ),
-                ),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildRecipientCard(),
+                          const SizedBox(height: 24),
+                          if (_payerEntersAmount) ...[
+                            _buildAmountInput(),
+                            const SizedBox(height: 24),
+                          ] else
+                            _buildAmountDisplay(),
+                          _buildAccountSelector(),
+                          const SizedBox(height: 32),
+                          _buildPayButton(),
+                        ],
+                      ),
+                    ),
         ),
       ),
     );
@@ -483,8 +512,7 @@ class _QRPaymentConfirmationScreenState
           ),
           child: TextField(
             controller: _amountController,
-            keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 24,
@@ -596,8 +624,7 @@ class _QRPaymentConfirmationScreenState
               ),
               const SizedBox(height: 12),
               ...matchingAccounts.map((account) {
-                final isSelected =
-                    _selectedAccountId == account.id.toString();
+                final isSelected = _selectedAccountId == account.id.toString();
                 final amount = _payerEntersAmount
                     ? (double.tryParse(_amountController.text) ?? 0)
                     : (double.tryParse(_qrData['amount'].toString()) ?? 0);
@@ -626,8 +653,7 @@ class _QRPaymentConfirmationScreenState
                       color: !hasSufficientBalance
                           ? const Color(0xFF1F1F1F).withValues(alpha: 0.5)
                           : isSelected
-                              ? const Color(0xFF3B82F6)
-                                  .withValues(alpha: 0.1)
+                              ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
                               : const Color(0xFF1F1F1F),
                       border: Border.all(
                         color: !hasSufficientBalance
@@ -646,8 +672,7 @@ class _QRPaymentConfirmationScreenState
                           height: 40,
                           decoration: BoxDecoration(
                             color: !hasSufficientBalance
-                                ? const Color(0xFFEF4444)
-                                    .withValues(alpha: 0.2)
+                                ? const Color(0xFFEF4444).withValues(alpha: 0.2)
                                 : const Color(0xFF3B82F6)
                                     .withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
@@ -689,8 +714,7 @@ class _QRPaymentConfirmationScreenState
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFEF4444)
                                             .withValues(alpha: 0.2),
-                                        borderRadius:
-                                            BorderRadius.circular(4),
+                                        borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: const Text(
                                         'Insufficient',

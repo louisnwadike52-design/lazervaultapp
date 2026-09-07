@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utilities/safe_args.dart';
+import 'package:uuid/uuid.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,12 +35,38 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
   final TextEditingController _amountController = TextEditingController();
   String? _selectedAccountId;
   bool _isProcessing = false;
+  bool _argsOk = true;
+
+  // Stable idempotency key per payment INTENT (group make_payment pattern):
+  // the same (amount, account) tuple keeps the same key across retries so the
+  // backend replays instead of double-debiting; changing either mints a new
+  // key because it IS a new intent.
+  String? _pendingIdempotencyKey;
+  String? _pendingIdempotencyKeyFingerprint;
+
+  String _resolveIdempotencyKey(double amount, String accountId) {
+    final fp = '$accountId:${amount.toStringAsFixed(2)}';
+    if (_pendingIdempotencyKey == null ||
+        _pendingIdempotencyKeyFingerprint != fp) {
+      _pendingIdempotencyKey = const Uuid().v4();
+      _pendingIdempotencyKeyFingerprint = fp;
+    }
+    return _pendingIdempotencyKey!;
+  }
 
   @override
   void initState() {
     super.initState();
-    final args = Get.arguments as Map<String, dynamic>;
-    _idPay = args['idPay'] as IDPayEntity;
+    // Guarded: a route entry without arguments used to throw here and
+    // grey-screen. Bail back gracefully instead.
+    final args = safeArgs<Map<String, dynamic>>();
+    final idPay = args?['idPay'];
+    if (idPay is! IDPayEntity) {
+      _argsOk = false;
+      popMissingArgs('this PayID payment');
+      return;
+    }
+    _idPay = idPay;
 
     if (_idPay.isFixed) {
       _amountController.text = _idPay.amount.toStringAsFixed(2);
@@ -101,6 +129,19 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
   }
 
   void _processPayment() async {
+    // Re-entrancy guard at the METHOD entry, not just on the button. A fast
+    // double tap in the async gap before the PIN sheet renders can enter here
+    // twice and stack two PIN sheets — each firing its own payIDPay call, so
+    // the backend idempotency key can't dedupe and the payer risks a DOUBLE
+    // DEBIT. Setting the flag before the first await makes the second tap a
+    // no-op; every early return below clears it so a corrected mistake can
+    // be retried.
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+    void abort() {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+
     if (!_isValidAmount) {
       Get.snackbar(
         'Invalid Amount',
@@ -110,6 +151,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
         snackPosition: SnackPosition.BOTTOM,
         margin: EdgeInsets.all(16.w),
       );
+      abort();
       return;
     }
 
@@ -122,6 +164,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
         snackPosition: SnackPosition.BOTTOM,
         margin: EdgeInsets.all(16.w),
       );
+      abort();
       return;
     }
 
@@ -143,6 +186,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
           snackPosition: SnackPosition.BOTTOM,
           margin: EdgeInsets.all(16.w),
         );
+        abort();
         return;
       }
 
@@ -156,6 +200,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
           margin: EdgeInsets.all(16.w),
           duration: const Duration(seconds: 4),
         );
+        abort();
         return;
       }
     }
@@ -175,17 +220,17 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
       amount: _paymentAmount,
       currency: _idPay.currency,
       title: 'Confirm Payment',
-      message: 'Confirm PayID payment of ${_currencySymbol(_idPay.currency)}${_paymentAmount.toStringAsFixed(2)}',
+      message:
+          'Confirm PayID payment of ${_currencySymbol(_idPay.currency)}${_paymentAmount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
     );
 
-    if (!success || verificationToken == null) return;
-
-    setState(() {
-      _isProcessing = true;
-    });
+    if (!success || verificationToken == null) {
+      abort();
+      return;
+    }
 
     if (!mounted) return;
     context.read<IDPayCubit>().payIDPay(
@@ -193,6 +238,8 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
           amount: _paymentAmount,
           transactionPin: verificationToken!,
           sourceAccountId: _selectedAccountId!,
+          idempotencyKey:
+              _resolveIdempotencyKey(_paymentAmount, _selectedAccountId!),
         );
   }
 
@@ -217,6 +264,9 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (!_argsOk) {
+      return const Scaffold(backgroundColor: Color(0xFF0A0A0A));
+    }
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: BlocListener<IDPayCubit, IDPayState>(
@@ -230,6 +280,24 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
               'idPay': _idPay,
               'newBalance': state.newBalance,
             });
+          } else if (state is IDPayInsufficientFunds) {
+            // Previously unhandled: the cubit emitted this and the screen
+            // just sat on the spinner forever. Clear the flag and tell the
+            // user exactly what's wrong so they can top up or switch account.
+            setState(() {
+              _isProcessing = false;
+            });
+            Get.snackbar(
+              'Insufficient Balance',
+              state.message.isNotEmpty
+                  ? state.message
+                  : 'Your selected account doesn\'t have enough funds for this payment.',
+              backgroundColor: const Color(0xFFEF4444),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.BOTTOM,
+              margin: EdgeInsets.all(16.w),
+              duration: const Duration(seconds: 4),
+            );
           } else if (state is IDPayError) {
             setState(() {
               _isProcessing = false;
@@ -574,8 +642,8 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => _showAccountPickerSheet(
-                        state.accountSummaries),
+                    onTap: () =>
+                        _showAccountPickerSheet(state.accountSummaries),
                     child: Text(
                       'Change',
                       style: GoogleFonts.inter(
@@ -592,8 +660,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                 _buildSelectedAccountCard(selectedAccount)
               else
                 GestureDetector(
-                  onTap: () => _showAccountPickerSheet(
-                      state.accountSummaries),
+                  onTap: () => _showAccountPickerSheet(state.accountSummaries),
                   child: Container(
                     padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
@@ -683,8 +750,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                           vertical: 2.h,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444)
-                              .withValues(alpha: 0.2),
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
@@ -721,13 +787,11 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
 
   void _showAccountPickerSheet(List<dynamic> allAccounts) {
     final matchingAccounts = allAccounts
-        .where((a) =>
-            a.currency.toUpperCase() == _idPay.currency.toUpperCase())
+        .where((a) => a.currency.toUpperCase() == _idPay.currency.toUpperCase())
         .toList();
 
     final otherAccounts = allAccounts
-        .where((a) =>
-            a.currency.toUpperCase() != _idPay.currency.toUpperCase())
+        .where((a) => a.currency.toUpperCase() != _idPay.currency.toUpperCase())
         .toList();
 
     showModalBottomSheet(
@@ -798,14 +862,12 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                   ...matchingAccounts.map((account) {
                     final isSelected =
                         _selectedAccountId == account.id.toString();
-                    final hasSufficientBalance =
-                        _hasSufficientBalance(account);
+                    final hasSufficientBalance = _hasSufficientBalance(account);
                     return GestureDetector(
                       onTap: hasSufficientBalance
                           ? () {
                               setState(() {
-                                _selectedAccountId =
-                                    account.id.toString();
+                                _selectedAccountId = account.id.toString();
                               });
                               Navigator.pop(context);
                             }
@@ -813,8 +875,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                               Get.snackbar(
                                 'Insufficient Balance',
                                 'This account does not have enough funds. You need ${_idPay.currency} ${_paymentAmount.toStringAsFixed(2)}',
-                                backgroundColor:
-                                    const Color(0xFFFB923C),
+                                backgroundColor: const Color(0xFFFB923C),
                                 colorText: Colors.white,
                                 snackPosition: SnackPosition.TOP,
                               );
@@ -824,16 +885,14 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                         padding: EdgeInsets.all(14.w),
                         decoration: BoxDecoration(
                           color: !hasSufficientBalance
-                              ? const Color(0xFF1F1F1F)
-                                  .withValues(alpha: 0.5)
+                              ? const Color(0xFF1F1F1F).withValues(alpha: 0.5)
                               : isSelected
                                   ? const Color(0xFF3B82F6)
                                       .withValues(alpha: 0.1)
                                   : const Color(0xFF0A0A0A),
                           border: Border.all(
                             color: !hasSufficientBalance
-                                ? const Color(0xFFEF4444)
-                                    .withValues(alpha: 0.3)
+                                ? const Color(0xFFEF4444).withValues(alpha: 0.3)
                                 : isSelected
                                     ? const Color(0xFF3B82F6)
                                     : const Color(0xFF2D2D2D),
@@ -852,8 +911,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                                         .withValues(alpha: 0.2)
                                     : const Color(0xFF3B82F6)
                                         .withValues(alpha: 0.2),
-                                borderRadius:
-                                    BorderRadius.circular(20.r),
+                                borderRadius: BorderRadius.circular(20.r),
                               ),
                               child: Icon(
                                 Icons.account_balance_wallet,
@@ -866,15 +924,13 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                             SizedBox(width: 12.w),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     account.accountType,
                                     style: GoogleFonts.inter(
                                       color: !hasSufficientBalance
-                                          ? Colors.white
-                                              .withValues(alpha: 0.5)
+                                          ? Colors.white.withValues(alpha: 0.5)
                                           : Colors.white,
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w600,
@@ -902,8 +958,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFEF4444)
                                       .withValues(alpha: 0.2),
-                                  borderRadius:
-                                      BorderRadius.circular(4.r),
+                                  borderRadius: BorderRadius.circular(4.r),
                                 ),
                                 child: Text(
                                   'Insufficient',
@@ -930,8 +985,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                     Text(
                       'Other Currencies (not available)',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF)
-                            .withValues(alpha: 0.6),
+                        color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w500,
                       ),
@@ -942,11 +996,10 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                         margin: EdgeInsets.only(bottom: 10.h),
                         padding: EdgeInsets.all(14.w),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1F1F1F)
-                              .withValues(alpha: 0.3),
+                          color: const Color(0xFF1F1F1F).withValues(alpha: 0.3),
                           border: Border.all(
-                            color: const Color(0xFF2D2D2D)
-                                .withValues(alpha: 0.5),
+                            color:
+                                const Color(0xFF2D2D2D).withValues(alpha: 0.5),
                             width: 1,
                           ),
                           borderRadius: BorderRadius.circular(12.r),
@@ -959,8 +1012,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                               decoration: BoxDecoration(
                                 color: const Color(0xFF2D2D2D)
                                     .withValues(alpha: 0.5),
-                                borderRadius:
-                                    BorderRadius.circular(20.r),
+                                borderRadius: BorderRadius.circular(20.r),
                               ),
                               child: Icon(
                                 Icons.account_balance_wallet,
@@ -972,14 +1024,13 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                             SizedBox(width: 12.w),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     account.accountType,
                                     style: GoogleFonts.inter(
-                                      color: Colors.white
-                                          .withValues(alpha: 0.4),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.4),
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -1002,8 +1053,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
                               ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF2D2D2D),
-                                borderRadius:
-                                    BorderRadius.circular(4.r),
+                                borderRadius: BorderRadius.circular(4.r),
                               ),
                               child: Text(
                                 'Wrong Currency',

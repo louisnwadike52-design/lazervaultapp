@@ -20,8 +20,7 @@ class TagPayStatsShimmer extends StatelessWidget {
             (index) => Expanded(
               child: Container(
                 margin: EdgeInsets.only(right: index < 2 ? 12.w : 0),
-                padding:
-                    EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
+                padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 12.w),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(14.r),

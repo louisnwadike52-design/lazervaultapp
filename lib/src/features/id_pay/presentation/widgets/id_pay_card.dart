@@ -47,7 +47,8 @@ class IDPayCard extends StatelessWidget {
                       ),
                     ),
                     SizedBox(width: 8.w),
-                    Icon(Icons.copy, size: 14.sp, color: const Color(0xFF9CA3AF)),
+                    Icon(Icons.copy,
+                        size: 14.sp, color: const Color(0xFF9CA3AF)),
                   ],
                 ),
                 IDPayStatusBadge(status: idPay.status),
@@ -83,7 +84,8 @@ class IDPayCard extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    if (idPay.isFlexible && (idPay.minAmount > 0 || idPay.maxAmount > 0))
+                    if (idPay.isFlexible &&
+                        (idPay.minAmount > 0 || idPay.maxAmount > 0))
                       Text(
                         '${idPay.minAmount > 0 ? "Min: ${idPay.currency} ${idPay.minAmount.toStringAsFixed(2)}" : ""}'
                         '${idPay.minAmount > 0 && idPay.maxAmount > 0 ? " - " : ""}'

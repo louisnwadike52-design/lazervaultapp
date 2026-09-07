@@ -77,6 +77,19 @@ class _TagPaymentConfirmationScreenState
   }
 
   void _processPayment() async {
+    // Re-entrancy guard at the METHOD entry, not just on the button. A fast
+    // double tap in the async gap before the PIN sheet renders can enter here
+    // twice and stack two PIN sheets — each firing its own payTag call, so the
+    // backend idempotency key can't dedupe and the payer risks a DOUBLE
+    // DEBIT. Setting the flag before the first await makes the second tap a
+    // no-op; every early return below clears it so a corrected mistake can
+    // be retried.
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+    void abort() {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+
     if (_selectedAccountId == null) {
       Get.snackbar(
         'No Account Selected',
@@ -85,6 +98,7 @@ class _TagPaymentConfirmationScreenState
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
       );
+      abort();
       return;
     }
 
@@ -105,6 +119,7 @@ class _TagPaymentConfirmationScreenState
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,
         );
+        abort();
         return;
       }
 
@@ -117,6 +132,7 @@ class _TagPaymentConfirmationScreenState
           snackPosition: SnackPosition.TOP,
           duration: const Duration(seconds: 4),
         );
+        abort();
         return;
       }
     }
@@ -144,11 +160,10 @@ class _TagPaymentConfirmationScreenState
       },
     );
 
-    if (!success || verificationToken == null) return;
-
-    setState(() {
-      _isProcessing = true;
-    });
+    if (!success || verificationToken == null) {
+      abort();
+      return;
+    }
 
     if (!mounted) return;
     context.read<TagPayCubit>().payTag(

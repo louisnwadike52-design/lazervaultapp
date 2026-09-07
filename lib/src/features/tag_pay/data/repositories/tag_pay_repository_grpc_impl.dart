@@ -122,11 +122,12 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
     String? description,
     required String sourceAccountId,
     required String transactionPin,
+    String? idempotencyKey,
   }) async {
-    // maxRetries: 0 — this MOVES MONEY. SendMoneyTagPayRequest carries no
-    // client idempotency key, so a retry after a timeout is a second, distinct
-    // debit request racing a first attempt that may already be settling. The
-    // retry cannot even succeed: the transaction PIN is single-use, so every
+    // maxRetries: 0 — this MOVES MONEY. The client idempotency key (added
+    // 2026-09-07) lets the SERVER replay the same payment, but the
+    // transaction PIN is single-use, so an automatic client retry would still
+    // die at the PIN gate; every
     // attempt after the first dies at the PIN gate and only replaces the real
     // outcome with a confusing error. Let the user decide, from history.
     return retryWithBackoff(
@@ -141,6 +142,11 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
 
         if (description != null) {
           request.description = description;
+        }
+        // One user intent = one key: the server scopes it per sender and
+        // replays the SAME payment on retry instead of debiting twice.
+        if (idempotencyKey != null && idempotencyKey.isNotEmpty) {
+          request.idempotencyKey = idempotencyKey;
         }
 
         final options = await grpcClient.callOptions;

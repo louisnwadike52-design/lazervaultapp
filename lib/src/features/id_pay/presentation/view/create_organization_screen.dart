@@ -160,9 +160,9 @@ class _CreateOrganizationScreenState extends State<CreateOrganizationScreen> {
                                 fontSize: 15.sp,
                               ),
                               maxLines: 3,
-                              decoration: _inputDecoration(
-                                      'Describe your organization')
-                                  .copyWith(counterText: ''),
+                              decoration:
+                                  _inputDecoration('Describe your organization')
+                                      .copyWith(counterText: ''),
                             ),
                             SizedBox(height: 20.h),
                             Text(

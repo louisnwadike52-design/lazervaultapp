@@ -48,8 +48,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
     // empty) and made a successful action look like it did nothing.
     // Routes that don't pass anything keep the Received default.
     final args = Get.arguments;
-    final initialIndex =
-        (args is Map && args['tab'] == 'created') ? 1 : 0;
+    final initialIndex = (args is Map && args['tab'] == 'created') ? 1 : 0;
     _tabController =
         TabController(length: 2, initialIndex: initialIndex, vsync: this);
     _tabController.addListener(_onTabChanged);
@@ -58,7 +57,9 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
       // for that tab would never be requested — the tab would open empty.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          context.read<TagPayCubit>().loadOutgoingTagsPage(page: 1, status: null);
+          context
+              .read<TagPayCubit>()
+              .loadOutgoingTagsPage(page: 1, status: null);
         }
       });
     }

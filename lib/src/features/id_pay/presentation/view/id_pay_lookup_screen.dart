@@ -226,8 +226,8 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
                           width: 44.w,
                           height: 44.w,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6)
-                                .withValues(alpha: 0.15),
+                            color:
+                                const Color(0xFF3B82F6).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Center(
@@ -392,7 +392,8 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
               height: 52.h,
               child: ElevatedButton(
                 onPressed: () {
-                  Get.toNamed(AppRoutes.idPayPayment, arguments: {'idPay': idPay});
+                  Get.toNamed(AppRoutes.idPayPayment,
+                      arguments: {'idPay': idPay});
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3B82F6),
@@ -491,8 +492,10 @@ class _IDPayLookupScreenState extends State<IDPayLookupScreen> {
     final diff = expiresAt.difference(now);
 
     if (diff.isNegative) return 'Expired';
-    if (diff.inDays > 0) return '${diff.inDays}d ${diff.inHours % 24}h remaining';
-    if (diff.inHours > 0) return '${diff.inHours}h ${diff.inMinutes % 60}m remaining';
+    if (diff.inDays > 0)
+      return '${diff.inDays}d ${diff.inHours % 24}h remaining';
+    if (diff.inHours > 0)
+      return '${diff.inHours}h ${diff.inMinutes % 60}m remaining';
     return '${diff.inMinutes}m remaining';
   }
 

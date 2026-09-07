@@ -64,8 +64,7 @@ class IDPayCubit extends Cubit<IDPayState> {
         }
       });
       _wsEvents = wsService!.updates.listen(onEvent);
-      await wsService!.connect(
-          userId: creatorUserId, accessToken: accessToken);
+      await wsService!.connect(userId: creatorUserId, accessToken: accessToken);
       // Connect resolves quickly; rely on the connectionState listener
       // above to confirm `connected` (or flip to failed on timeout).
       _wsTimeoutTimer = Timer(_wsConnectTimeout, () {
