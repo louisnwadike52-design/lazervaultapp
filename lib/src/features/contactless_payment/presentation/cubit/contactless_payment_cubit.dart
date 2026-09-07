@@ -25,6 +25,7 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
   Timer? _wsTimeoutTimer;
   bool _wsConnected = false;
   String? _activeSessionId;
+
   /// Publicly observable WS health. The broadcast screen listens here:
   /// `connected` → keeps the relaxed 3s poll; `failed` → tightens to 1s
   /// so a permanently-dead WS still settles within ~1s of the payer's
@@ -185,11 +186,13 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
     }
 
     // Session not found - only for actual session lookup failures
-    if (errorMessage.contains('session not found') || errorMessage.contains('404')) {
+    if (errorMessage.contains('session not found') ||
+        errorMessage.contains('404')) {
       return (ContactlessErrorType.sessionNotFound, false);
     }
 
-    if (errorMessage.contains('insufficient') || errorMessage.contains('balance')) {
+    if (errorMessage.contains('insufficient') ||
+        errorMessage.contains('balance')) {
       return (ContactlessErrorType.insufficientBalance, false);
     }
 
@@ -205,7 +208,8 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
   }
 
   /// Get user-friendly error message
-  String _getUserFriendlyErrorMessage(ContactlessErrorType errorType, String originalMessage) {
+  String _getUserFriendlyErrorMessage(
+      ContactlessErrorType errorType, String originalMessage) {
     switch (errorType) {
       case ContactlessErrorType.nfcNotAvailable:
         return 'NFC is not supported on this device';
@@ -242,7 +246,9 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
       case ContactlessErrorType.accountLocked:
         return 'Account is locked due to too many failed attempts';
       case ContactlessErrorType.unknown:
-        return originalMessage.isNotEmpty ? originalMessage : 'An unexpected error occurred';
+        return originalMessage.isNotEmpty
+            ? originalMessage
+            : 'An unexpected error occurred';
     }
   }
 
@@ -296,13 +302,14 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
       if (isClosed) return;
       emit(ContactlessPaymentLoading());
 
-      final result = await _retryWithBackoff(() => repository.createPaymentSession(
-        amount: amount,
-        currency: currency,
-        category: category,
-        description: description,
-        validitySeconds: validitySeconds,
-      ));
+      final result =
+          await _retryWithBackoff(() => repository.createPaymentSession(
+                amount: amount,
+                currency: currency,
+                category: category,
+                description: description,
+                validitySeconds: validitySeconds,
+              ));
 
       if (isClosed) return;
       emit(PaymentSessionCreated(
@@ -321,7 +328,8 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
       if (isClosed) return;
       emit(ContactlessPaymentLoading());
 
-      final session = await _retryWithBackoff(() => repository.getPaymentSession(sessionId));
+      final session = await _retryWithBackoff(
+          () => repository.getPaymentSession(sessionId));
 
       if (isClosed) return;
 
@@ -371,7 +379,8 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
       if (isClosed) return;
       emit(ContactlessPaymentLoading());
 
-      final result = await _retryWithBackoff(() => repository.acknowledgeSessionRead(sessionId));
+      final result = await _retryWithBackoff(
+          () => repository.acknowledgeSessionRead(sessionId));
 
       if (isClosed) return;
       emit(SessionReadAcknowledged(
@@ -416,9 +425,12 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
       // Handle PIN validation failures specially
       if (errorType == ContactlessErrorType.pinValidationFailed) {
         // Parse attempts remaining if available in error message
-        final attemptsMatch = RegExp(r'(\d+)\s*attempts?\s*remaining', caseSensitive: false)
-            .firstMatch(e.toString());
-        final attempts = attemptsMatch != null ? int.tryParse(attemptsMatch.group(1) ?? '3') ?? 3 : 3;
+        final attemptsMatch =
+            RegExp(r'(\d+)\s*attempts?\s*remaining', caseSensitive: false)
+                .firstMatch(e.toString());
+        final attempts = attemptsMatch != null
+            ? int.tryParse(attemptsMatch.group(1) ?? '3') ?? 3
+            : 3;
 
         emit(PinValidationFailed(
           message: 'Invalid PIN. Please try again.',
@@ -431,7 +443,8 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
       // Handle account locked
       if (errorType == ContactlessErrorType.accountLocked) {
         emit(const PinValidationFailed(
-          message: 'Account locked due to too many failed PIN attempts. Please contact support.',
+          message:
+              'Account locked due to too many failed PIN attempts. Please contact support.',
           attemptsRemaining: 0,
           accountLocked: true,
         ));
@@ -467,11 +480,12 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
       if (isClosed) return;
       emit(ContactlessPaymentLoading());
 
-      final result = await _retryWithBackoff(() => repository.getMyPaymentSessions(
-        limit: limit,
-        offset: offset,
-        statusFilter: statusFilter,
-      ));
+      final result =
+          await _retryWithBackoff(() => repository.getMyPaymentSessions(
+                limit: limit,
+                offset: offset,
+                statusFilter: statusFilter,
+              ));
 
       if (isClosed) return;
       emit(PaymentSessionsLoaded(
@@ -493,11 +507,12 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
       if (isClosed) return;
       emit(ContactlessPaymentLoading());
 
-      final result = await _retryWithBackoff(() => repository.getMyContactlessPayments(
-        limit: limit,
-        offset: offset,
-        roleFilter: roleFilter,
-      ));
+      final result =
+          await _retryWithBackoff(() => repository.getMyContactlessPayments(
+                limit: limit,
+                offset: offset,
+                roleFilter: roleFilter,
+              ));
 
       if (isClosed) return;
       emit(ContactlessPaymentsLoaded(
@@ -533,11 +548,12 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
       if (result.status == 'completed') {
         try {
           // Get the transactions for this session
-          final transactionsResult = await _retryWithBackoff(() => repository.getMyContactlessPayments(
-            limit: 1,
-            offset: 0,
-            roleFilter: 'receiver',
-          ));
+          final transactionsResult =
+              await _retryWithBackoff(() => repository.getMyContactlessPayments(
+                    limit: 1,
+                    offset: 0,
+                    roleFilter: 'receiver',
+                  ));
 
           // Find the transaction for this session
           final transaction = transactionsResult.transactions.firstWhere(
@@ -583,11 +599,12 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
       if (isClosed) return;
       emit(ContactlessPaymentLoading());
 
-      final transactionsResult = await _retryWithBackoff(() => repository.getMyContactlessPayments(
-        limit: 10,
-        offset: 0,
-        roleFilter: 'receiver',
-      ));
+      final transactionsResult =
+          await _retryWithBackoff(() => repository.getMyContactlessPayments(
+                limit: 10,
+                offset: 0,
+                roleFilter: 'receiver',
+              ));
 
       // Find the transaction for this session
       final transaction = transactionsResult.transactions.firstWhere(

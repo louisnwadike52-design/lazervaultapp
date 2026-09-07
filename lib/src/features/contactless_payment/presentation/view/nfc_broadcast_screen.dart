@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../services/hce_broadcaster.dart';
 import '../../domain/entities/contactless_payment_entity.dart';
 import '../../domain/repositories/contactless_payment_repository.dart';
@@ -17,7 +18,6 @@ import '../cubit/contactless_payment_state.dart';
 import 'payment_success_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'nfc_broadcast_screen_widgets.dart';
-
 
 class _NfcBroadcastViewState extends State<_NfcBroadcastView>
     with TickerProviderStateMixin {
@@ -216,9 +216,7 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
     // so a cancel tapped in the 1s before the success screen pushes cannot fire.
     if (_isCancelling || _isCompleted) return;
     setState(() => _isCancelling = true);
-    context
-        .read<ContactlessPaymentCubit>()
-        .cancelSession(widget.session.id);
+    context.read<ContactlessPaymentCubit>().cancelSession(widget.session.id);
   }
 
   @override
@@ -304,7 +302,9 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                 _fetchingTransactionDetails = true;
                 _transactionFetchRetries++;
                 if (_transactionFetchRetries <= 3) {
-                  context.read<ContactlessPaymentCubit>().getTransactionForSession(widget.session.id);
+                  context
+                      .read<ContactlessPaymentCubit>()
+                      .getTransactionForSession(widget.session.id);
                 } else {
                   // Can't fetch details — navigate to success with minimal info
                   _isCompleted = true;
@@ -377,7 +377,9 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (_sessionIdMode && !_isCompleted && !_isExpired) ...[
+                            if (_sessionIdMode &&
+                                !_isCompleted &&
+                                !_isExpired) ...[
                               _buildSessionIdAlert(),
                               SizedBox(height: 20.h),
                             ],
@@ -387,6 +389,10 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                             SizedBox(height: 32.h),
                             _buildStatusSection(),
                             SizedBox(height: 32.h),
+                            if (!_isCompleted && !_isExpired) ...[
+                              _buildSessionQrSection(),
+                              SizedBox(height: 32.h),
+                            ],
                             if (_payerName != null) _buildPayerInfo(),
                           ],
                         ),
@@ -400,6 +406,38 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
           ),
         ),
       ),
+    );
+  }
+
+  /// QR fallback for payers without NFC: the SAME session payload the NFC
+  /// tag broadcasts, rendered as a scannable code. The payer's reader screen
+  /// has a matching "Scan QR code instead" option — together they close
+  /// contactless QR pay for non-NFC phones.
+  Widget _buildSessionQrSection() {
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          child: QrImageView(
+            data: widget.nfcPayload,
+            version: QrVersions.auto,
+            size: 180.w,
+            backgroundColor: Colors.white,
+          ),
+        ),
+        SizedBox(height: 10.h),
+        Text(
+          "No NFC? They can scan this code instead",
+          style: GoogleFonts.inter(
+            color: Colors.white.withValues(alpha: 0.6),
+            fontSize: 12.5.sp,
+          ),
+        ),
+      ],
     );
   }
 
@@ -475,7 +513,10 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                     ? [const Color(0xFF10B981), const Color(0xFF059669)]
                     : _isExpired
                         ? [const Color(0xFFEF4444), const Color(0xFFDC2626)]
-                        : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
+                        : [
+                            const Color(0xFF6366F1),
+                            const Color.fromARGB(255, 78, 3, 208)
+                          ],
               ),
               borderRadius: BorderRadius.circular(24.r),
               boxShadow: [
@@ -683,7 +724,8 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.45)),
+        border:
+            Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.45)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -775,7 +817,8 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                   gradient: LinearGradient(
                     colors: [
                       const Color(0xFF6366F1).withValues(alpha: 0.2),
-                      const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                      const Color.fromARGB(255, 78, 3, 208)
+                          .withValues(alpha: 0.2),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(14.r),
@@ -786,7 +829,8 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.copy_rounded, color: const Color(0xFF6366F1), size: 18.sp),
+                    Icon(Icons.copy_rounded,
+                        color: const Color(0xFF6366F1), size: 18.sp),
                     SizedBox(width: 8.w),
                     Text(
                       'Copy Session ID',
@@ -837,7 +881,10 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                    colors: [
+                      Color(0xFF6366F1),
+                      Color.fromARGB(255, 78, 3, 208)
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(14.r),
                 ),

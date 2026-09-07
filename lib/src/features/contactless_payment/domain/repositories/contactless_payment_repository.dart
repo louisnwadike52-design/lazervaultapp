@@ -15,8 +15,12 @@ abstract class ContactlessPaymentRepository {
   Future<PaymentSessionEntity> getPaymentSession(String sessionId);
 
   /// Process payment after payer confirms (with PIN verification)
-  Future<({ContactlessTransactionEntity transaction, double newBalance, String message})>
-      processContactlessPayment({
+  Future<
+      ({
+        ContactlessTransactionEntity transaction,
+        double newBalance,
+        String message
+      })> processContactlessPayment({
     required String sessionId,
     required String sourceAccountId,
     required String transactionId,

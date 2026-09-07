@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:nfc_manager/nfc_manager.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,7 +9,8 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import '../../domain/repositories/contactless_payment_repository.dart';
 import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
@@ -17,10 +21,8 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 part 'contactless_payment_home_screen_widgets.dart';
 
-
 class _ContactlessPaymentHomeViewState
-    extends State<_ContactlessPaymentHomeView>
-    with TickerProviderStateMixin {
+    extends State<_ContactlessPaymentHomeView> with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
@@ -28,9 +30,25 @@ class _ContactlessPaymentHomeViewState
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
+  // NFC capability, checked once on entry. null = probing; false surfaces a
+  // banner and honest copy on the NFC action instead of a dead-end tap.
+  bool? _nfcAvailable;
+
+  Future<void> _checkNfcAvailability() async {
+    try {
+      final availability = await NfcManager.instance.checkAvailability();
+      if (!mounted) return;
+      setState(() => _nfcAvailable = availability == NfcAvailability.enabled);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _nfcAvailable = false);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _checkNfcAvailability();
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -93,31 +111,31 @@ class _ContactlessPaymentHomeViewState
               Expanded(
                 child: ServiceEntranceAnimation(
                   child: SlideTransition(
-                  position: _slideAnimation,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 4.h),
-                          _buildHeroSection(),
-                          SizedBox(height: 24.h),
-                          _buildActionCards(),
-                          SizedBox(height: 24.h),
-                          _buildQuickStats(),
-                          SizedBox(height: 24.h),
-                          _buildSecurityBanner(),
-                          SizedBox(height: 24.h),
-                          _buildRecentActivity(),
-                          SizedBox(height: 40.h),
-                        ],
+                    position: _slideAnimation,
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 4.h),
+                            _buildHeroSection(),
+                            SizedBox(height: 24.h),
+                            _buildActionCards(),
+                            SizedBox(height: 24.h),
+                            _buildQuickStats(),
+                            SizedBox(height: 24.h),
+                            _buildSecurityBanner(),
+                            SizedBox(height: 24.h),
+                            _buildRecentActivity(),
+                            SizedBox(height: 40.h),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
                 ),
               ),
             ],
@@ -270,6 +288,35 @@ class _ContactlessPaymentHomeViewState
   Widget _buildActionCards() {
     return Column(
       children: [
+        if (_nfcAvailable == false) ...[
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(12.w),
+            margin: EdgeInsets.only(bottom: 12.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFB923C).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                  color: const Color(0xFFFB923C).withValues(alpha: 0.35)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.nfc_rounded,
+                    color: Color(0xFFFB923C), size: 20),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Text(
+                    Platform.isIOS
+                        ? 'NFC is unavailable on this device — you can still receive payments; payers can use another phone.'
+                        : 'NFC is off or unavailable. Enable it in device settings to tap-to-pay; receiving still works.',
+                    style: TextStyle(
+                        color: const Color(0xFFFB923C), fontSize: 12.sp),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
         _ActionCard(
           icon: Icons.call_received_rounded,
           iconGradient: const [Color(0xFF10B981), Color(0xFF059669)],
@@ -287,7 +334,10 @@ class _ContactlessPaymentHomeViewState
         SizedBox(height: 12.h),
         _ActionCard(
           icon: Icons.nfc_rounded,
-          iconGradient: const [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+          iconGradient: const [
+            Color(0xFF6366F1),
+            Color.fromARGB(255, 78, 3, 208)
+          ],
           title: 'Pay with NFC',
           subtitle: 'Tap another device to read their payment request',
           onTap: () {
@@ -409,8 +459,7 @@ class _ContactlessPaymentHomeViewState
   Widget _buildRecentActivity() {
     return BlocBuilder<ContactlessPaymentCubit, ContactlessPaymentState>(
       builder: (context, state) {
-        final loaded =
-            state is ContactlessPaymentsLoaded ? state : null;
+        final loaded = state is ContactlessPaymentsLoaded ? state : null;
         final recentTransactions =
             (loaded != null && loaded.transactions.isNotEmpty)
                 ? loaded.transactions.take(3).toList()
@@ -448,8 +497,8 @@ class _ContactlessPaymentHomeViewState
                         color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(
-                            color: const Color(0xFF6366F1)
-                                .withValues(alpha: 0.3)),
+                            color:
+                                const Color(0xFF6366F1).withValues(alpha: 0.3)),
                       ),
                       child: Text(
                         'View all',
@@ -537,9 +586,8 @@ class _ContactlessPaymentHomeViewState
       'shopping': Icons.shopping_bag_rounded,
       'services': Icons.build_rounded,
     };
-    final icon =
-        categoryIcons[transaction.category?.toLowerCase()] ??
-            Icons.contactless_rounded;
+    final icon = categoryIcons[transaction.category?.toLowerCase()] ??
+        Icons.contactless_rounded;
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -600,7 +648,8 @@ class _ContactlessPaymentHomeViewState
             ),
           ),
           Text(
-            currency_formatter.CurrencySymbols.formatAmountWithCurrency(transaction.amount, transaction.currency),
+            currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+                transaction.amount, transaction.currency),
             style: GoogleFonts.inter(
               color: const Color(0xFF10B981),
               fontSize: 14.sp,

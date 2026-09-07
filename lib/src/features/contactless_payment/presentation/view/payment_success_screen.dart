@@ -7,12 +7,12 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import '../../services/contactless_pdf_service.dart';
 import '../../domain/entities/contactless_payment_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'payment_success_screen_widgets.dart';
-
 
 class PaymentSuccessScreen extends StatefulWidget {
   final double amount;
@@ -159,7 +159,8 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
   }
 
   String get _formattedAmount {
-    return currency_formatter.CurrencySymbols.formatAmountWithCurrency(widget.amount, widget.currency);
+    return currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+        widget.amount, widget.currency);
   }
 
   String get _formattedDate {
@@ -221,8 +222,8 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
       buffer.writeln('Lazervault Payment Receipt');
       buffer.writeln('─────────────────────────');
       buffer.writeln('Amount: $_formattedAmount');
-      buffer.writeln(
-          '${widget.isReceiver ? "From" : "To"}: ${widget.payerName}');
+      buffer
+          .writeln('${widget.isReceiver ? "From" : "To"}: ${widget.payerName}');
       if (widget.description != null && widget.description!.isNotEmpty) {
         buffer.writeln('Description: ${widget.description}');
       }
@@ -237,11 +238,12 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
       buffer.writeln('─────────────────────────');
       buffer.writeln('Powered by Lazervault');
 
-      await SharePlus.instance.share(
-          ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: buffer.toString(), subject: 'Payment Receipt'));
+      await SharePlus.instance.share(ShareParams(
+          // iOS: a non-zero popover anchor is required — CGRectZero throws
+          // PlatformException and the share silently fails on iPhone/iPad.
+          sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+          text: buffer.toString(),
+          subject: 'Payment Receipt'));
     }
   }
 
@@ -365,7 +367,8 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                                           color: const Color(0xFF10B981)
                                               .withValues(
                                                   alpha: 1.0 -
-                                                      (_ringExpand.value - 0.5) /
+                                                      (_ringExpand.value -
+                                                              0.5) /
                                                           0.9),
                                           width: 2.w,
                                         ),
@@ -471,19 +474,24 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                                 width: double.infinity,
                                 height: 52.h,
                                 child: OutlinedButton.icon(
-                                  onPressed: _isDownloading ? null : _downloadReceipt,
+                                  onPressed:
+                                      _isDownloading ? null : _downloadReceipt,
                                   icon: _isDownloading
                                       ? LazerVaultLoader(size: 18)
-                                      : Icon(Icons.download_rounded, size: 18.sp),
+                                      : Icon(Icons.download_rounded,
+                                          size: 18.sp),
                                   label: Text(
-                                    _isDownloading ? 'Downloading...' : 'Download Receipt',
+                                    _isDownloading
+                                        ? 'Downloading...'
+                                        : 'Download Receipt',
                                     style: GoogleFonts.inter(
                                       fontSize: 15.sp,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: const Color.fromARGB(255, 78, 3, 208),
+                                    foregroundColor:
+                                        const Color.fromARGB(255, 78, 3, 208),
                                     side: const BorderSide(
                                       color: Color.fromARGB(255, 78, 3, 208),
                                       width: 1.5,
@@ -501,19 +509,23 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                               width: double.infinity,
                               height: 52.h,
                               child: OutlinedButton.icon(
-                                onPressed: _isGeneratingPdf ? null : _shareReceipt,
+                                onPressed:
+                                    _isGeneratingPdf ? null : _shareReceipt,
                                 icon: _isGeneratingPdf
                                     ? LazerVaultLoader(size: 18)
                                     : Icon(Icons.share_rounded, size: 18.sp),
                                 label: Text(
-                                  _isGeneratingPdf ? 'Generating PDF...' : 'Share Receipt',
+                                  _isGeneratingPdf
+                                      ? 'Generating PDF...'
+                                      : 'Share Receipt',
                                   style: GoogleFonts.inter(
                                     fontSize: 15.sp,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: const Color.fromARGB(255, 78, 3, 208),
+                                  foregroundColor:
+                                      const Color.fromARGB(255, 78, 3, 208),
                                   side: const BorderSide(
                                     color: Color.fromARGB(255, 78, 3, 208),
                                     width: 1.5,
@@ -558,8 +570,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                                     backgroundColor: Colors.transparent,
                                     shadowColor: Colors.transparent,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(14.r),
+                                      borderRadius: BorderRadius.circular(14.r),
                                     ),
                                   ),
                                   child: Text(
@@ -733,7 +744,8 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
               color: const Color(0xFF6366F1).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(icon, size: 18.sp, color: const Color.fromARGB(255, 78, 3, 208)),
+            child: Icon(icon,
+                size: 18.sp, color: const Color.fromARGB(255, 78, 3, 208)),
           ),
           SizedBox(width: 12.w),
         ],

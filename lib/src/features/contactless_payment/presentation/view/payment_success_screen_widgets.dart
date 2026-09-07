@@ -44,7 +44,8 @@ class _ConfettiPainter extends CustomPainter {
       canvas.rotate(p.rotation + p.rotationSpeed * progress);
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset.zero, width: p.size, height: p.size * 0.5),
+          Rect.fromCenter(
+              center: Offset.zero, width: p.size, height: p.size * 0.5),
           const Radius.circular(1),
         ),
         paint,

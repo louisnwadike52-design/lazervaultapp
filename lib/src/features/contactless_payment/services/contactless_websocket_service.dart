@@ -224,8 +224,7 @@ class ContactlessWebSocketService {
 
   void _handleDone() {
     print('ContactlessWebSocketService: stream closed');
-    _connectionController
-        .add(ContactlessWebSocketConnectionState.disconnected);
+    _connectionController.add(ContactlessWebSocketConnectionState.disconnected);
     _isConnected = false;
     _pingTimer?.cancel();
   }
@@ -235,8 +234,7 @@ class ContactlessWebSocketService {
     await _channel?.sink.close();
     _channel = null;
     _isConnected = false;
-    _connectionController
-        .add(ContactlessWebSocketConnectionState.disconnected);
+    _connectionController.add(ContactlessWebSocketConnectionState.disconnected);
   }
 
   void dispose() {

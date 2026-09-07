@@ -12,7 +12,6 @@ import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
 part 'payment_history_screen_widgets.dart';
 
-
 class _TransactionCard extends StatelessWidget {
   final ContactlessTransactionEntity transaction;
   final int index;
@@ -266,7 +265,8 @@ class _TransactionCard extends StatelessWidget {
                     if (transaction.category != null)
                       _detailRow('Category', transaction.category!),
                     _detailRow('Reference', transaction.referenceNumber),
-                    _detailRow('Date', dateFormat.format(transaction.createdAt)),
+                    _detailRow(
+                        'Date', dateFormat.format(transaction.createdAt)),
                     _detailRow('Status', transaction.status.name),
                     _detailRow('Type', 'Contactless (NFC)'),
                   ],

@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';
 import '../../domain/repositories/contactless_payment_repository.dart';
@@ -14,7 +15,6 @@ import '../cubit/contactless_payment_state.dart';
 import 'payment_confirmation_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'nfc_reader_screen_widgets.dart';
-
 
 class _NfcReaderViewState extends State<_NfcReaderView>
     with TickerProviderStateMixin {
@@ -143,49 +143,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
           final payloadString = String.fromCharCodes(
             record.payload.sublist(record.payload[0] + 1),
           );
-
-          Map<String, dynamic> payloadData;
-          try {
-            // Payload may be base64-encoded JSON or raw JSON
-            String jsonString;
-            try {
-              jsonString = utf8.decode(base64Decode(payloadString));
-            } catch (_) {
-              // If base64 decode fails, try raw JSON
-              jsonString = payloadString;
-            }
-            payloadData = jsonDecode(jsonString) as Map<String, dynamic>;
-          } catch (_) {
-            _handleScanError('Invalid payment data format');
-            return;
-          }
-
-          if (payloadData['type'] != 'lazervault_contactless_payment') {
-            _handleScanError('This is not a Lazervault payment tag');
-            return;
-          }
-
-          final expiresAt = payloadData['expiresAt'] as int? ?? 0;
-          if (DateTime.now().millisecondsSinceEpoch > expiresAt * 1000) {
-            _handleScanError('This payment request has expired');
-            return;
-          }
-
-          final sessionId = payloadData['sessionId'] as String?;
-          if (sessionId == null || sessionId.isEmpty) {
-            _handleScanError('Invalid session data');
-            return;
-          }
-
-          _tagHandled = true;
-          _stopNfcScan();
-
-          if (!mounted) return;
-          setState(() {
-            _statusMessage = 'Payment found! Loading details...';
-          });
-
-          context.read<ContactlessPaymentCubit>().getPaymentSession(sessionId);
+          _handlePayloadString(payloadString);
         } catch (e) {
           _handleScanError('Failed to read payment data');
         }
@@ -194,6 +152,71 @@ class _NfcReaderViewState extends State<_NfcReaderView>
         _handleScanError('NFC read failed. Please try again.');
       },
     );
+  }
+
+  /// Shared payload path for BOTH transports: an NFC NDEF read and a scanned
+  /// session QR carry the SAME payload (base64/raw JSON), so validation and
+  /// the session load are transport-agnostic — this is what closes
+  /// "contactless QR pay" for phones without NFC.
+  void _handlePayloadString(String payloadString) {
+    if (_tagHandled) return;
+    Map<String, dynamic> payloadData;
+    try {
+      String jsonString;
+      try {
+        jsonString = utf8.decode(base64Decode(payloadString));
+      } catch (_) {
+        jsonString = payloadString;
+      }
+      payloadData = jsonDecode(jsonString) as Map<String, dynamic>;
+    } catch (_) {
+      _handleScanError('Invalid payment data format');
+      return;
+    }
+
+    if (payloadData['type'] != 'lazervault_contactless_payment') {
+      _handleScanError('This is not a Lazervault payment code');
+      return;
+    }
+
+    final expiresAt = payloadData['expiresAt'] as int? ?? 0;
+    if (DateTime.now().millisecondsSinceEpoch > expiresAt * 1000) {
+      _handleScanError('This payment request has expired');
+      return;
+    }
+
+    final sessionId = payloadData['sessionId'] as String?;
+    if (sessionId == null || sessionId.isEmpty) {
+      _handleScanError('Invalid session data');
+      return;
+    }
+
+    _tagHandled = true;
+    _stopNfcScan();
+
+    if (!mounted) return;
+    setState(() {
+      _statusMessage = 'Payment found! Loading details...';
+    });
+
+    context.read<ContactlessPaymentCubit>().getPaymentSession(sessionId);
+  }
+
+  /// QR fallback: scan the receiver's on-screen session QR when NFC is
+  /// unavailable/disabled. The scanned string feeds the same payload path.
+  Future<void> _scanQrInstead() async {
+    _stopNfcScan();
+    final raw = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const _ContactlessQrScanScreen()),
+    );
+    if (!mounted) return;
+    if (raw == null || raw.isEmpty) {
+      // User backed out — resume NFC scanning where possible.
+      if (!_tagHandled && _nfcAvailable) _startNfcScan();
+      return;
+    }
+    _handlePayloadString(raw);
   }
 
   void _handleScanError(String message) {
@@ -309,6 +332,8 @@ class _NfcReaderViewState extends State<_NfcReaderView>
                             if (!_nfcAvailable && Platform.isAndroid)
                               _buildOpenSettingsButton(),
                             SizedBox(height: 16.h),
+                            _buildScanQrButton(),
+                            SizedBox(height: 8.h),
                             _buildManualEntryToggle(),
                           ] else ...[
                             _buildManualEntryForm(),
@@ -430,8 +455,8 @@ class _NfcReaderViewState extends State<_NfcReaderView>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: indicatorColor
-                          .withValues(alpha: 0.2 * (1 - delayedValue)),
+                      color: indicatorColor.withValues(
+                          alpha: 0.2 * (1 - delayedValue)),
                       width: 2,
                     ),
                   ),
@@ -459,7 +484,8 @@ class _NfcReaderViewState extends State<_NfcReaderView>
                             ]
                           : [
                               const Color(0xFF6366F1).withValues(alpha: 0.2),
-                              const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                              const Color.fromARGB(255, 78, 3, 208)
+                                  .withValues(alpha: 0.1),
                             ],
                     ),
                     boxShadow: [
@@ -471,9 +497,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
                     ],
                   ),
                   child: Icon(
-                    _hasError
-                        ? Icons.error_outline_rounded
-                        : Icons.nfc_rounded,
+                    _hasError ? Icons.error_outline_rounded : Icons.nfc_rounded,
                     size: 56.sp,
                     color: indicatorColor,
                   ),
@@ -597,7 +621,8 @@ class _NfcReaderViewState extends State<_NfcReaderView>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.keyboard_rounded, color: const Color(0xFF9CA3AF), size: 18.sp),
+            Icon(Icons.keyboard_rounded,
+                color: const Color(0xFF9CA3AF), size: 18.sp),
             SizedBox(width: 8.w),
             Text(
               'Enter Session ID Manually',
@@ -665,14 +690,17 @@ class _NfcReaderViewState extends State<_NfcReaderView>
                   color: const Color(0xFF6B7280),
                   fontSize: 15.sp,
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
                 border: InputBorder.none,
                 suffixIcon: IconButton(
-                  icon: Icon(Icons.content_paste_rounded, color: const Color(0xFF9CA3AF), size: 20.sp),
+                  icon: Icon(Icons.content_paste_rounded,
+                      color: const Color(0xFF9CA3AF), size: 20.sp),
                   onPressed: _isLoadingManual
                       ? null
                       : () async {
-                          final data = await Clipboard.getData(Clipboard.kTextPlain);
+                          final data =
+                              await Clipboard.getData(Clipboard.kTextPlain);
                           if (data?.text != null) {
                             _sessionIdController.text = data!.text!;
                             setState(() => _manualEntryError = null);
@@ -710,9 +738,14 @@ class _NfcReaderViewState extends State<_NfcReaderView>
                 gradient: _isLoadingManual
                     ? null
                     : const LinearGradient(
-                        colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                        colors: [
+                          Color(0xFF6366F1),
+                          Color.fromARGB(255, 78, 3, 208)
+                        ],
                       ),
-                color: _isLoadingManual ? Colors.white.withValues(alpha: 0.1) : null,
+                color: _isLoadingManual
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : null,
                 borderRadius: BorderRadius.circular(14.r),
                 boxShadow: _isLoadingManual
                     ? null
@@ -817,6 +850,112 @@ class _NfcReaderViewState extends State<_NfcReaderView>
           ),
         ),
       ],
+    );
+  }
+}
+
+extension _QrFallbackUi on _NfcReaderViewState {
+  /// "Scan QR code" — the no-NFC path. The receiver's Waiting-for-Payment
+  /// screen shows the session as a QR; scanning it feeds the exact same
+  /// payload pipeline as an NFC tap.
+  Widget _buildScanQrButton() {
+    return GestureDetector(
+      onTap: _scanQrInstead,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(24.r),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.qr_code_scanner_rounded,
+                color: Colors.white, size: 18.sp),
+            SizedBox(width: 8.w),
+            Text(
+              'Scan QR code instead',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Minimal full-screen scanner for the contactless session QR. Pops with the
+/// RAW scanned string; validation happens in the caller's shared payload
+/// path so QR and NFC can never drift.
+class _ContactlessQrScanScreen extends StatefulWidget {
+  const _ContactlessQrScanScreen();
+
+  @override
+  State<_ContactlessQrScanScreen> createState() =>
+      _ContactlessQrScanScreenState();
+}
+
+class _ContactlessQrScanScreenState extends State<_ContactlessQrScanScreen> {
+  final MobileScannerController _controller = MobileScannerController(
+    detectionSpeed: DetectionSpeed.normal,
+    facing: CameraFacing.back,
+  );
+  bool _handled = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onDetect(BarcodeCapture capture) {
+    if (_handled) return;
+    final raw = capture.barcodes.isNotEmpty
+        ? (capture.barcodes.first.rawValue ?? '')
+        : '';
+    if (raw.isEmpty) return;
+    _handled = true;
+    HapticFeedback.mediumImpact();
+    Navigator.of(context).pop(raw);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text('Scan payment QR',
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600)),
+        centerTitle: true,
+      ),
+      body: Stack(
+        children: [
+          MobileScanner(controller: _controller, onDetect: _onDetect),
+          Center(
+            child: Container(
+              width: 240.w,
+              height: 240.w,
+              decoration: BoxDecoration(
+                border: Border.all(
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.9),
+                    width: 3),
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

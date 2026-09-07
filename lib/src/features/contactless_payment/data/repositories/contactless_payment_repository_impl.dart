@@ -103,8 +103,7 @@ class ContactlessPaymentRepositoryImpl implements ContactlessPaymentRepository {
   Future<String> cancelPaymentSession(String sessionId) async {
     return retryWithBackoff(
       operation: () async {
-        final request = pb.CancelPaymentSessionRequest()
-          ..sessionId = sessionId;
+        final request = pb.CancelPaymentSessionRequest()..sessionId = sessionId;
 
         final options = await grpcClient.callOptions;
         final response =
@@ -202,8 +201,7 @@ class ContactlessPaymentRepositoryImpl implements ContactlessPaymentRepository {
 
         return (
           status: response.status,
-          payerName:
-              response.payerName.isNotEmpty ? response.payerName : null,
+          payerName: response.payerName.isNotEmpty ? response.payerName : null,
           updatedAt: response.updatedAt.toDateTime(),
         );
       },

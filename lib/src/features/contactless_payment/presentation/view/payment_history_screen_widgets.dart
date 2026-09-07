@@ -114,7 +114,10 @@ class _PaymentHistoryViewState extends State<_PaymentHistoryView>
                     controller: _tabController,
                     indicator: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                        colors: [
+                          Color(0xFF6366F1),
+                          Color.fromARGB(255, 78, 3, 208)
+                        ],
                       ),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
@@ -255,9 +258,7 @@ class _SessionsTab extends StatelessWidget {
             color: const Color(0xFF6366F1),
             backgroundColor: const Color(0xFF2A2A3E),
             onRefresh: () async {
-              context
-                  .read<ContactlessPaymentCubit>()
-                  .getMyPaymentSessions();
+              context.read<ContactlessPaymentCubit>().getMyPaymentSessions();
             },
             child: ListView.builder(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -274,9 +275,7 @@ class _SessionsTab extends StatelessWidget {
           return _ErrorState(
             message: state.message,
             onRetry: () {
-              context
-                  .read<ContactlessPaymentCubit>()
-                  .getMyPaymentSessions();
+              context.read<ContactlessPaymentCubit>().getMyPaymentSessions();
             },
           );
         }
@@ -633,7 +632,10 @@ class _ErrorState extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                    colors: [
+                      Color(0xFF6366F1),
+                      Color.fromARGB(255, 78, 3, 208)
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(12.r),
                 ),

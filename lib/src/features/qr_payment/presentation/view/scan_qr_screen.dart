@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -23,6 +24,81 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
   );
   bool _isProcessing = false;
 
+  // Camera permission state (recipients/qr_scanner_screen pattern): a silent
+  // denial otherwise leaves a black, never-scanning preview with no way out.
+  String? _cameraError;
+  bool _permanentlyDenied = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initCamera();
+  }
+
+  /// Request camera permission, then explicitly start the camera.
+  /// mobile_scanner 7.x does NOT reliably auto-start the controller.
+  Future<void> _initCamera() async {
+    if (mounted) {
+      setState(() {
+        _cameraError = null;
+        _permanentlyDenied = false;
+      });
+    }
+    final status = await Permission.camera.request();
+    if (!mounted) return;
+    if (!status.isGranted) {
+      setState(() {
+        _permanentlyDenied = status.isPermanentlyDenied || status.isRestricted;
+        _cameraError = _permanentlyDenied
+            ? 'Camera access is blocked. Enable it in Settings to scan QR codes.'
+            : 'Camera permission is needed to scan a QR code.';
+      });
+      return;
+    }
+    try {
+      await _scannerController.start();
+    } catch (_) {/* benign: already started */}
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  Widget _buildPermissionError() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 36),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.no_photography_outlined,
+                color: Colors.white54, size: 44),
+            const SizedBox(height: 14),
+            Text(
+              _cameraError ?? '',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () async {
+                if (_permanentlyDenied) {
+                  await openAppSettings();
+                } else {
+                  await _initCamera();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4E03D0),
+                foregroundColor: Colors.white,
+              ),
+              child:
+                  Text(_permanentlyDenied ? 'Open Settings' : 'Allow camera'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _scannerController.dispose();
@@ -35,13 +111,16 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          MobileScanner(
-            controller: _scannerController,
-            onDetect: _onDetect,
-          ),
-          _buildOverlay(),
+          if (_cameraError == null)
+            MobileScanner(
+              controller: _scannerController,
+              onDetect: _onDetect,
+            )
+          else
+            _buildPermissionError(),
+          if (_cameraError == null) _buildOverlay(),
           _buildTopBar(),
-          _buildBottomBar(),
+          if (_cameraError == null) _buildBottomBar(),
         ],
       ),
     );
@@ -164,7 +243,8 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
       case RecipientQr(:final recipientId, :final username, :final name):
         // A "pay this person" code (no amount) belongs in the send-funds
         // flow, where the payer enters the amount.
-        _openSendFunds(recipientId: recipientId, username: username, name: name);
+        _openSendFunds(
+            recipientId: recipientId, username: username, name: name);
         return;
       case LegacyTokenQr(:final recipientId, :final username, :final name):
         if (recipientId.isEmpty) {
@@ -272,20 +352,28 @@ class ScannerOverlayPainter extends CustomPainter {
     final bottom = scanArea.bottom;
 
     // Top-left corner
-    canvas.drawLine(Offset(left, top + cornerLength), Offset(left, top), cornerPaint);
-    canvas.drawLine(Offset(left, top), Offset(left + cornerLength, top), cornerPaint);
+    canvas.drawLine(
+        Offset(left, top + cornerLength), Offset(left, top), cornerPaint);
+    canvas.drawLine(
+        Offset(left, top), Offset(left + cornerLength, top), cornerPaint);
 
     // Top-right corner
-    canvas.drawLine(Offset(right - cornerLength, top), Offset(right, top), cornerPaint);
-    canvas.drawLine(Offset(right, top), Offset(right, top + cornerLength), cornerPaint);
+    canvas.drawLine(
+        Offset(right - cornerLength, top), Offset(right, top), cornerPaint);
+    canvas.drawLine(
+        Offset(right, top), Offset(right, top + cornerLength), cornerPaint);
 
     // Bottom-left corner
-    canvas.drawLine(Offset(left, bottom - cornerLength), Offset(left, bottom), cornerPaint);
-    canvas.drawLine(Offset(left, bottom), Offset(left + cornerLength, bottom), cornerPaint);
+    canvas.drawLine(
+        Offset(left, bottom - cornerLength), Offset(left, bottom), cornerPaint);
+    canvas.drawLine(
+        Offset(left, bottom), Offset(left + cornerLength, bottom), cornerPaint);
 
     // Bottom-right corner
-    canvas.drawLine(Offset(right - cornerLength, bottom), Offset(right, bottom), cornerPaint);
-    canvas.drawLine(Offset(right, bottom), Offset(right, bottom - cornerLength), cornerPaint);
+    canvas.drawLine(Offset(right - cornerLength, bottom), Offset(right, bottom),
+        cornerPaint);
+    canvas.drawLine(Offset(right, bottom), Offset(right, bottom - cornerLength),
+        cornerPaint);
   }
 
   @override

@@ -7,7 +7,8 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
@@ -19,7 +20,6 @@ import '../cubit/contactless_payment_state.dart';
 import 'payment_success_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'payment_confirmation_screen_widgets.dart';
-
 
 class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
     with SingleTickerProviderStateMixin, TransactionPinMixin {
@@ -57,7 +57,8 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
         timer.cancel();
         return;
       }
-      if (widget.session.expiresAt.isBefore(DateTime.now()) && !_isSessionExpired) {
+      if (widget.session.expiresAt.isBefore(DateTime.now()) &&
+          !_isSessionExpired) {
         timer.cancel();
         setState(() => _isSessionExpired = true);
         Get.snackbar(
@@ -164,7 +165,8 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
       amount: widget.session.amount,
       currency: widget.session.currency,
       title: 'Confirm Payment',
-      message: 'Confirm contactless payment of ${widget.session.formattedAmount}',
+      message:
+          'Confirm contactless payment of ${widget.session.formattedAmount}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -274,11 +276,13 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
               // Session is no longer payable — show message and go back
               if (state.errorType == ContactlessErrorType.sessionAlreadyPaid ||
                   state.errorType == ContactlessErrorType.sessionCancelled ||
-                  state.errorType == ContactlessErrorType.sessionAlreadyProcessing) {
+                  state.errorType ==
+                      ContactlessErrorType.sessionAlreadyProcessing) {
                 final title = switch (state.errorType) {
                   ContactlessErrorType.sessionAlreadyPaid => 'Already Paid',
                   ContactlessErrorType.sessionCancelled => 'Cancelled',
-                  ContactlessErrorType.sessionAlreadyProcessing => 'In Progress',
+                  ContactlessErrorType.sessionAlreadyProcessing =>
+                    'In Progress',
                   _ => 'Unavailable',
                 };
                 Get.snackbar(
@@ -630,8 +634,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                       gradient: isSelected
                           ? LinearGradient(
                               colors: [
-                                const Color(0xFF6366F1)
-                                    .withValues(alpha: 0.15),
+                                const Color(0xFF6366F1).withValues(alpha: 0.15),
                                 const Color.fromARGB(255, 78, 3, 208)
                                     .withValues(alpha: 0.1),
                               ],
@@ -644,8 +647,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                         color: isSelected
                             ? const Color(0xFF6366F1)
                             : hasInsufficientBalance
-                                ? const Color(0xFFEF4444)
-                                    .withValues(alpha: 0.4)
+                                ? const Color(0xFFEF4444).withValues(alpha: 0.4)
                                 : Colors.white.withValues(alpha: 0.1),
                         width: isSelected ? 2 : 1,
                       ),
@@ -657,8 +659,8 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                           width: 44.w,
                           height: 44.w,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF6366F1)
-                                .withValues(alpha: 0.2),
+                            color:
+                                const Color(0xFF6366F1).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Icon(
@@ -684,7 +686,9 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                               Row(
                                 children: [
                                   Text(
-                                    currency_formatter.CurrencySymbols.formatAmountWithCurrency(account.balance, account.currency),
+                                    currency_formatter.CurrencySymbols
+                                        .formatAmountWithCurrency(
+                                            account.balance, account.currency),
                                     style: GoogleFonts.inter(
                                       color: hasInsufficientBalance
                                           ? const Color(0xFFEF4444)

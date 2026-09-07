@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 
 /// Payment session entity representing a pending NFC payment request
 class PaymentSessionEntity extends Equatable {
@@ -67,10 +68,13 @@ class PaymentSessionEntity extends Equatable {
   bool get isCancelled => status == PaymentSessionStatus.cancelled;
 
   // Formatted amount with currency symbol (e.g., "₦1,000.00")
-  String get formattedAmount => currency_formatter.CurrencySymbols.formatAmountWithCurrency(amount, currency);
+  String get formattedAmount =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          amount, currency);
 
   // Formatted amount with currency code (e.g., "₦1,000.00")
-  String get formattedAmountWithCode => '$currency ${amount.toStringAsFixed(2)}';
+  String get formattedAmountWithCode =>
+      '$currency ${amount.toStringAsFixed(2)}';
 }
 
 enum PaymentSessionStatus {
@@ -144,10 +148,13 @@ class ContactlessTransactionEntity extends Equatable {
       ];
 
   // Formatted amount with currency symbol (e.g., "₦1,000.00")
-  String get formattedAmount => currency_formatter.CurrencySymbols.formatAmountWithCurrency(amount, currency);
+  String get formattedAmount =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          amount, currency);
 
   // Formatted amount with currency code (e.g., "₦1,000.00")
-  String get formattedAmountWithCode => '$currency ${amount.toStringAsFixed(2)}';
+  String get formattedAmountWithCode =>
+      '$currency ${amount.toStringAsFixed(2)}';
 }
 
 enum TransactionStatus {
@@ -203,8 +210,11 @@ class NfcPayloadDataEntity extends Equatable {
       DateTime.now().millisecondsSinceEpoch > expiresAt * 1000;
 
   // Formatted amount with currency symbol (e.g., "₦1,000.00")
-  String get formattedAmount => currency_formatter.CurrencySymbols.formatAmountWithCurrency(amount, currency);
+  String get formattedAmount =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          amount, currency);
 
   // Formatted amount with currency code (e.g., "₦1,000.00")
-  String get formattedAmountWithCode => '$currency ${amount.toStringAsFixed(2)}';
+  String get formattedAmountWithCode =>
+      '$currency ${amount.toStringAsFixed(2)}';
 }

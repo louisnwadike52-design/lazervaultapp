@@ -14,7 +14,6 @@ import 'nfc_broadcast_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'create_payment_session_screen_widgets.dart';
 
-
 class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
     with SingleTickerProviderStateMixin {
   final _amountController = TextEditingController();
@@ -383,14 +382,12 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
             return GestureDetector(
               onTap: () {
                 setState(() {
-                  _selectedCategory =
-                      isSelected ? null : name.toLowerCase();
+                  _selectedCategory = isSelected ? null : name.toLowerCase();
                 });
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding:
-                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? color.withValues(alpha: 0.2)
@@ -406,15 +403,13 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(icon,
-                        color:
-                            isSelected ? color : const Color(0xFF9CA3AF),
+                        color: isSelected ? color : const Color(0xFF9CA3AF),
                         size: 18.sp),
                     SizedBox(width: 6.w),
                     Text(
                       name,
                       style: GoogleFonts.inter(
-                        color:
-                            isSelected ? color : const Color(0xFF9CA3AF),
+                        color: isSelected ? color : const Color(0xFF9CA3AF),
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w500,
                       ),
@@ -551,7 +546,10 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
                   decoration: BoxDecoration(
                     gradient: isSelected
                         ? const LinearGradient(
-                            colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                            colors: [
+                              Color(0xFF6366F1),
+                              Color.fromARGB(255, 78, 3, 208)
+                            ],
                           )
                         : null,
                     color: isSelected
@@ -568,9 +566,8 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
                     child: Text(
                       label,
                       style: GoogleFonts.inter(
-                        color: isSelected
-                            ? Colors.white
-                            : const Color(0xFF9CA3AF),
+                        color:
+                            isSelected ? Colors.white : const Color(0xFF9CA3AF),
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -604,8 +601,7 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
             boxShadow: _isValid
                 ? [
                     BoxShadow(
-                      color:
-                          const Color(0xFF10B981).withValues(alpha: 0.4),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -620,18 +616,16 @@ class _CreatePaymentSessionViewState extends State<_CreatePaymentSessionView>
                     children: [
                       Icon(
                         Icons.contactless_rounded,
-                        color: _isValid
-                            ? Colors.white
-                            : const Color(0xFF9CA3AF),
+                        color:
+                            _isValid ? Colors.white : const Color(0xFF9CA3AF),
                         size: 22.sp,
                       ),
                       SizedBox(width: 10.w),
                       Text(
                         'Generate Payment Request',
                         style: GoogleFonts.inter(
-                          color: _isValid
-                              ? Colors.white
-                              : const Color(0xFF9CA3AF),
+                          color:
+                              _isValid ? Colors.white : const Color(0xFF9CA3AF),
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
                         ),

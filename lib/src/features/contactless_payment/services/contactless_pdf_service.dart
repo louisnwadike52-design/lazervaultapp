@@ -251,7 +251,8 @@ class ContactlessPdfService {
               pw.SizedBox(height: 32),
 
               // Your Account Details
-              if (receiverAccountNumber != null && receiverAccountNumber.isNotEmpty)
+              if (receiverAccountNumber != null &&
+                  receiverAccountNumber.isNotEmpty)
                 _buildAccountDetails(
                   accountNumber: receiverAccountNumber,
                 ),
@@ -445,7 +446,8 @@ class ContactlessPdfService {
           child: pw.Column(
             children: [
               _buildDetailRow('Amount', '$currencySymbol$amount', isBold: true),
-              _buildDetailRow('Currency', _currencyNameFor(transaction.currency)),
+              _buildDetailRow(
+                  'Currency', _currencyNameFor(transaction.currency)),
               if (transaction.description != null &&
                   transaction.description!.isNotEmpty)
                 _buildDetailRow('Description', transaction.description!),
@@ -453,10 +455,10 @@ class ContactlessPdfService {
                   transaction.category!.isNotEmpty)
                 _buildDetailRow('Category', transaction.category!),
               _buildDetailRow('Reference', transaction.referenceNumber),
-              _buildDetailRow(
-                  'Transaction ID', transaction.id.substring(0, 8).toUpperCase()),
-              _buildDetailRow(
-                  'Date/Time', _fullDateTimeFormat.format(transaction.createdAt)),
+              _buildDetailRow('Transaction ID',
+                  transaction.id.substring(0, 8).toUpperCase()),
+              _buildDetailRow('Date/Time',
+                  _fullDateTimeFormat.format(transaction.createdAt)),
               _buildDetailRow('Method', 'NFC Contactless'),
             ],
           ),
