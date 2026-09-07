@@ -24,11 +24,17 @@ import 'package:lazervault/src/features/authentication/presentation/widgets/phon
 /// dashboard itself (a step-up user is an existing user who already has a
 /// passcode/PIN, so the dashboard is the correct destination).
 ///
-/// Navigation contract (matches 2FA):
-///  * launched via `Get.to` (push) so the originating login screen stays beneath;
-///  * BACK ("Use a different account") = `maybePop` back to that login screen —
-///    never a dead-end;
+/// Navigation contract:
+///  * launched via `Get.to` (push) over the originating login screen;
+///  * this is a step-up SECURITY gate: no back button (showBack:false) and the
+///    Android back gesture is blocked (PopScope canPop:false), so it cannot be
+///    swiped away without a decision;
+///  * the ONLY exits are the labelled "Use a different account" / "Skip for now",
+///    which `Get.offAllNamed(freshLoginEntry)` to a clean login. They replace the
+///    stack rather than pop precisely because the PopScope vetoes pops;
 ///  * SUCCESS = `Get.offAllNamed(dashboard)` — clears login + OTP off the stack.
+/// Leaving is not a bypass: the device stays 'pending' server-side until an OTP
+/// is verified, so the next login re-issues the challenge.
 class LoginOtpScreen extends StatelessWidget {
   final String stepUpToken;
   final String method; // "email" | "sms"
@@ -279,7 +285,14 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
       "You'll need the code to finish signing in on this device.",
       snackPosition: SnackPosition.BOTTOM,
     );
-    Navigator.of(context).maybePop();
+    // Get.offAllNamed, NOT maybePop: this screen blocks the back gesture with
+    // PopScope(canPop:false) (a step-up gate must not be swiped away), and a
+    // pop is exactly what canPop:false vetoes — which is why the labelled exits
+    // silently did nothing. Replacing the stack is not a pop, so it is not
+    // vetoed, and it lands the user on a clean login. No security loss: the
+    // device stays 'pending' server-side until an OTP is verified, so the next
+    // login re-challenges.
+    Get.offAllNamed(AppRoutes.freshLoginEntry);
   }
 
   Future<void> _requestNewCode() async {
@@ -452,7 +465,13 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
                   ),
                 ),
               TextButton(
-                onPressed: () => Navigator.of(context).maybePop(),
+                // Get.offAllNamed, NOT maybePop — the PopScope(canPop:false) on
+                // this step-up gate vetoes pops (that is why this button did
+                // nothing), so leave by replacing the stack with a fresh login.
+                onPressed: () {
+                  _ticker?.cancel();
+                  Get.offAllNamed(AppRoutes.freshLoginEntry);
+                },
                 child: Text(
                   'Use a different account',
                   style: TextStyle(
