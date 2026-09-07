@@ -10,12 +10,12 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/core/shared_widgets/app_loading_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
-import 'package:lazervault/src/features/sprayme/presentation/widgets/spray_replay_player.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import '../../data/services/escrow_media_upload_service.dart';
 import '../cubit/escrow_cubit.dart';
 import '../widgets/escrow_attachment_picker.dart';
+import '../widgets/escrow_media_viewer.dart';
 import '../widgets/escrow_shimmer.dart';
 import '../widgets/escrow_empty_state.dart';
 import '../../domain/entities/escrow_deal_entity.dart';
@@ -250,8 +250,22 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
 
   Future<void> _acceptRefund(EscrowDealEntity deal) async {
     final cubit = context.read<EscrowCubit>();
+    // Accepting a refund moves money — it returns the full held amount to the
+    // buyer and closes the deal for the seller — so it must confirm first, like
+    // every other money action here. Previously a single tap fired it instantly.
+    final note = await _promptSheet(
+      title: 'Accept & refund',
+      subtitle:
+          'This returns ${deal.currency} ${deal.buyerTotal.toStringAsFixed(2)} to the buyer and closes the deal. This can\'t be undone.',
+      hint: 'Add a note (optional)',
+      confirmLabel: 'Accept & refund',
+      icon: Icons.undo_rounded,
+      accent: EscrowTheme.primary,
+      required: false,
+    );
+    if (note == null) return;
     HapticFeedback.mediumImpact();
-    await cubit.respondRefund(dealId: deal.id, accept: true);
+    await cubit.respondRefund(dealId: deal.id, accept: true, note: note);
   }
 
   Future<void> _declineRefund(EscrowDealEntity deal) async {
@@ -856,90 +870,85 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
 
   Widget _evidenceThumb(EscrowAttachmentEntity a) {
     final box = 104.w;
+    // Shared Hero tag between this thumb and the full-screen viewer so tapping a
+    // preview expands it and collapses back. Keyed on the url (unique per item).
+    final heroTag = 'escrow-evidence-${a.url}';
+    void open() => showEscrowMediaViewer(
+          context,
+          url: a.url,
+          isVideo: a.isVideo,
+          heroTag: heroTag,
+        );
+
     if (a.isVideo) {
       return GestureDetector(
-        onTap: () => SprayReplayPlayer.open(context,
-            url: a.url, title: 'Evidence video'),
-        child: Container(
-          width: box,
-          height: box,
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: EscrowTheme.border),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Icon(Icons.play_circle_fill,
-                  color: Colors.white.withValues(alpha: 0.9), size: 32.sp),
-              if (a.durationSeconds > 0)
-                Positioned(
-                  bottom: 6.h,
-                  right: 6.w,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                    decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.circular(6.r),
+        onTap: open,
+        child: Hero(
+          tag: heroTag,
+          child: Container(
+            width: box,
+            height: box,
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: EscrowTheme.border),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(Icons.play_circle_fill,
+                    color: Colors.white.withValues(alpha: 0.9), size: 32.sp),
+                if (a.durationSeconds > 0)
+                  Positioned(
+                    bottom: 6.h,
+                    right: 6.w,
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Text('${a.durationSeconds}s',
+                          style: GoogleFonts.inter(
+                              color: Colors.white, fontSize: 9.5.sp)),
                     ),
-                    child: Text('${a.durationSeconds}s',
-                        style: GoogleFonts.inter(
-                            color: Colors.white, fontSize: 9.5.sp)),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       );
     }
     return GestureDetector(
-      onTap: () => _openImageViewer(a.url),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12.r),
-        child: Image.network(
-          a.url,
-          width: box,
-          height: box,
-          fit: BoxFit.cover,
-          loadingBuilder: (c, child, progress) => progress == null
-              ? child
-              : Container(
-                  width: box,
-                  height: box,
-                  color: EscrowTheme.card,
-                  alignment: Alignment.center,
-                  child: const CircularProgressIndicator(
-                      color: EscrowTheme.primary, strokeWidth: 2),
-                ),
-          errorBuilder: (c, e, s) => Container(
+      onTap: open,
+      child: Hero(
+        tag: heroTag,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12.r),
+          child: Image.network(
+            a.url,
             width: box,
             height: box,
-            color: EscrowTheme.card,
-            alignment: Alignment.center,
-            child: Icon(Icons.broken_image_outlined,
-                color: EscrowTheme.textSecondary, size: 24.sp),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _openImageViewer(String url) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => Scaffold(
-          backgroundColor: Colors.black,
-          appBar: AppBar(
-            backgroundColor: Colors.black,
-            iconTheme: const IconThemeData(color: Colors.white),
-          ),
-          body: Center(
-            child: InteractiveViewer(
-              child: Image.network(url,
-                  errorBuilder: (c, e, s) => Icon(Icons.broken_image_outlined,
-                      color: Colors.white54, size: 48.sp)),
+            fit: BoxFit.cover,
+            loadingBuilder: (c, child, progress) => progress == null
+                ? child
+                : Container(
+                    width: box,
+                    height: box,
+                    color: EscrowTheme.card,
+                    alignment: Alignment.center,
+                    child: const CircularProgressIndicator(
+                        color: EscrowTheme.primary, strokeWidth: 2),
+                  ),
+            errorBuilder: (c, e, s) => Container(
+              width: box,
+              height: box,
+              color: EscrowTheme.card,
+              alignment: Alignment.center,
+              child: Icon(Icons.broken_image_outlined,
+                  color: EscrowTheme.textSecondary, size: 24.sp),
             ),
           ),
         ),
@@ -1042,35 +1051,47 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   }
 
   List<Widget> _actions(EscrowDealEntity deal, String uid) {
-    final widgets = <Widget>[];
+    // Grouped by weight so the action area reads as a hierarchy, not a wall of
+    // identical full-width bars: the ONE thing to do now (primary), the
+    // exceptions (secondary/destructive), then the always-available documents
+    // (utility) collapsed into a single compact row instead of two more bars.
+    final primary = <Widget>[];
+    final secondary = <Widget>[];
+
     if (deal.canMarkDelivered(uid)) {
-      widgets.add(_primaryBtn('Mark as delivered', () => _markDelivered(deal)));
+      primary.add(_primaryBtn('Mark as delivered', () => _markDelivered(deal)));
     }
     if (deal.canRelease(uid)) {
-      widgets.add(_primaryBtn('Confirm delivery & release funds', () => _release(deal)));
+      primary.add(
+          _primaryBtn('Confirm delivery & release funds', () => _release(deal)));
     }
     // Seller responds to a pending refund request.
     if (deal.canRespondRefund(uid)) {
-      widgets.add(_primaryBtn('Accept and refund', () => _acceptRefund(deal)));
-      widgets.add(_secondaryBtn('Decline', EscrowTheme.warning, () => _declineRefund(deal)));
+      primary.add(_primaryBtn('Accept and refund', () => _acceptRefund(deal)));
+      secondary
+          .add(_secondaryBtn('Decline', EscrowTheme.warning, () => _declineRefund(deal)));
     }
     // Buyer asks for a refund after delivery.
     if (deal.canRequestRefund(uid)) {
-      widgets.add(_secondaryBtn('Request a refund', EscrowTheme.amber, () => _requestRefund(deal)));
+      secondary.add(
+          _secondaryBtn('Request a refund', EscrowTheme.amber, () => _requestRefund(deal)));
     }
     if (deal.canDispute(uid)) {
-      widgets.add(_secondaryBtn('Open a dispute', EscrowTheme.warning, () => _dispute(deal)));
+      secondary.add(
+          _secondaryBtn('Open a dispute', EscrowTheme.warning, () => _dispute(deal)));
     }
     if (deal.canCancel(uid)) {
-      widgets.add(_secondaryBtn('Cancel & refund', EscrowTheme.error, () => _cancel(deal)));
+      secondary.add(
+          _secondaryBtn('Cancel & refund', EscrowTheme.error, () => _cancel(deal)));
     }
 
-    // Always available: view the escrow agreement (invoice).
-    widgets.add(_ghostBtn('View agreement', Icons.description_outlined, () {
-      Get.toNamed(AppRoutes.escrowInvoice, arguments: {'deal': deal});
-    }));
-
-    // Receipt shortcut once money has moved (funded / released / refunded).
+    // Always available: the escrow agreement, and (once money has moved) the
+    // receipt. Short labels + icons in a 2-up row so two documents cost one row.
+    final utility = <Widget>[
+      _utilityBtn('Agreement', Icons.description_outlined, () {
+        Get.toNamed(AppRoutes.escrowInvoice, arguments: {'deal': deal});
+      }),
+    ];
     final receiptKind = deal.isReleased
         ? 'released'
         : deal.isRefunded
@@ -1079,34 +1100,50 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
                 ? 'funded'
                 : null;
     if (receiptKind != null) {
-      widgets.add(_ghostBtn('View receipt', Icons.receipt_long_outlined, () {
+      utility.add(_utilityBtn('Receipt', Icons.receipt_long_outlined, () {
         Get.toNamed(AppRoutes.escrowReceipt,
             arguments: {'deal': deal, 'kind': receiptKind});
       }));
     }
-    return widgets;
+
+    return [
+      ...primary,
+      ...secondary,
+      _utilityRow(utility),
+    ];
   }
 
-  Widget _ghostBtn(String label, IconData icon, VoidCallback onTap) => Padding(
+  /// Lays a small set of utility buttons side by side (equal width) so two
+  /// documents occupy one row rather than two stacked full-width bars.
+  Widget _utilityRow(List<Widget> buttons) => Padding(
         padding: EdgeInsets.only(bottom: 12.h),
-        child: SizedBox(
-          width: double.infinity,
-          child: TextButton.icon(
-            onPressed: onTap,
-            icon: Icon(icon, color: EscrowTheme.textSecondary, size: 18.sp),
-            label: Text(label,
-                style: GoogleFonts.inter(
-                    color: EscrowTheme.textSecondary,
-                    fontSize: 13.5.sp,
-                    fontWeight: FontWeight.w600)),
-            style: TextButton.styleFrom(
-              backgroundColor: EscrowTheme.card,
-              padding: EdgeInsets.symmetric(vertical: 14.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                side: const BorderSide(color: EscrowTheme.border),
-              ),
-            ),
+        child: Row(
+          children: [
+            for (var i = 0; i < buttons.length; i++) ...[
+              if (i > 0) SizedBox(width: 12.w),
+              Expanded(child: buttons[i]),
+            ],
+          ],
+        ),
+      );
+
+  Widget _utilityBtn(String label, IconData icon, VoidCallback onTap) =>
+      TextButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, color: EscrowTheme.textSecondary, size: 18.sp),
+        label: Text(label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+                color: EscrowTheme.textSecondary,
+                fontSize: 13.5.sp,
+                fontWeight: FontWeight.w600)),
+        style: TextButton.styleFrom(
+          backgroundColor: EscrowTheme.card,
+          padding: EdgeInsets.symmetric(vertical: 14.h),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            side: const BorderSide(color: EscrowTheme.border),
           ),
         ),
       );

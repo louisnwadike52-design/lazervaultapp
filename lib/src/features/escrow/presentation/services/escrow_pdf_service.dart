@@ -176,18 +176,18 @@ class EscrowPdfService {
                             style: _ts(fontSize: 10, color: PdfColors.grey600)),
                         pw.SizedBox(height: 4),
                         pw.Text(
-                            deal.buyerName.isNotEmpty
+                            deal.buyerName.trim().isNotEmpty
                                 ? deal.buyerName.toUpperCase()
-                                : 'LAZERVAULT USER',
+                                : '—',
                             style: _ts(fontSize: 13, isBold: true)),
                         pw.SizedBox(height: 12),
                         pw.Text('SELLER',
                             style: _ts(fontSize: 10, color: PdfColors.grey600)),
                         pw.SizedBox(height: 4),
                         pw.Text(
-                            deal.sellerName.isNotEmpty
+                            deal.sellerName.trim().isNotEmpty
                                 ? deal.sellerName.toUpperCase()
-                                : 'LAZERVAULT USER',
+                                : '—',
                             style: _ts(fontSize: 13, isBold: true)),
                       ],
                     ),
@@ -303,12 +303,10 @@ class EscrowPdfService {
               // Parties
               _detailsBlock('Parties', [
                 _detailRow('Buyer / Payer',
-                    deal.buyerName.isNotEmpty ? deal.buyerName : 'Lazervault User'),
+                    deal.buyerName.trim().isNotEmpty ? deal.buyerName : '—'),
                 _detailRow(
                     'Seller / Payee',
-                    deal.sellerName.isNotEmpty
-                        ? deal.sellerName
-                        : 'Lazervault User'),
+                    deal.sellerName.trim().isNotEmpty ? deal.sellerName : '—'),
               ]),
               pw.SizedBox(height: 20),
 

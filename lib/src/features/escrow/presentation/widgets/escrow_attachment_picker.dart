@@ -6,6 +6,7 @@ import 'package:lazervault/core/services/endpoint_registry.dart';
 import '../../data/services/escrow_media_upload_service.dart';
 import '../cubit/escrow_cubit.dart';
 import '../view/escrow_theme.dart';
+import 'escrow_media_viewer.dart';
 
 /// Attaches already-uploaded evidence [items] to [dealId] under [purpose], and
 /// returns HOW MANY FAILED to attach (0 means everything landed).
@@ -278,6 +279,10 @@ class _EscrowAttachmentPickerState extends State<EscrowAttachmentPicker> {
                   color: EscrowTheme.textSecondary, size: 20.sp),
             ),
           );
+    // Shared Hero tag between this tile and the full-screen viewer so tapping a
+    // preview expands it out of the grid and collapses back on dismiss. Keyed on
+    // publicUrl, which is unique per uploaded item.
+    final heroTag = 'escrow-media-${m.publicUrl}';
     return Stack(
       children: [
         // NOT Positioned.fill here. _tileBox is a Container, so a Positioned
@@ -287,7 +292,17 @@ class _EscrowAttachmentPickerState extends State<EscrowAttachmentPicker> {
         // the whole form — which is what broke the page the instant the first
         // photo or video thumbnail appeared. The Container already gives the
         // media a tight 84x84 box and clips it, so it just fills it directly.
-        _tileBox(child: media),
+        _tileBox(
+          child: GestureDetector(
+            onTap: () => showEscrowMediaViewer(
+              context,
+              url: m.publicUrl,
+              isVideo: m.isVideo,
+              heroTag: heroTag,
+            ),
+            child: Hero(tag: heroTag, child: media),
+          ),
+        ),
         Positioned(
           top: 2.h,
           right: 2.w,

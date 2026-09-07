@@ -153,6 +153,17 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
   String _money(double v) =>
       '$_currencySymbol${NumberFormat('#,##0.00').format(v)}';
 
+  /// A party's display name for the receipt. Prefers the name stamped on the
+  /// deal; if it is somehow empty (older deals created before the buyer name was
+  /// stamped), it falls back to "You" for the viewer's own side and a neutral
+  /// dash otherwise — never the misleading "Lazervault user".
+  String _partyName(String raw, {required bool viewerIsThisParty}) {
+    final n = raw.trim();
+    if (n.isNotEmpty) return n;
+    if (viewerIsThisParty) return 'You';
+    return '—';
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_deal == null) {
@@ -221,32 +232,68 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            onPressed: () => Get.offNamedUntil(
-              AppRoutes.escrow,
-              (route) => route.settings.name == AppRoutes.dashboard,
-            ),
-            icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-          TextButton(
-            onPressed: () => Get.offNamedUntil(
-              AppRoutes.escrow,
-              (route) => route.settings.name == AppRoutes.dashboard,
-            ),
-            child: Text(
-              'Done',
-              style: TextStyle(
-                color: EscrowTheme.primary,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Inter',
+          // Circular filled back button (generous tap target), matching the
+          // transfer receipt. Exits the receipt back to the escrow home.
+          Material(
+            color: _cardColor,
+            shape: const CircleBorder(side: BorderSide(color: _borderColor)),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => Get.offNamedUntil(
+                AppRoutes.escrow,
+                (route) => route.settings.name == AppRoutes.dashboard,
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(10.w),
+                child: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
               ),
             ),
           ),
+          // Brand lockup top-right — logo + wordmark, same as the transfer
+          // receipt page so every receipt carries a consistent identity.
+          _buildBrandLockup(),
         ],
       ),
+    );
+  }
+
+  /// Logo + "Lazervault" wordmark, used top-right on the receipt (matches the
+  /// transfer receipt). Kept small and self-contained so it can sit in the
+  /// header row without crowding the back button.
+  Widget _buildBrandLockup() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 30.w,
+          height: 30.w,
+          padding: EdgeInsets.all(4.w),
+          decoration: BoxDecoration(
+            color: _cardColor,
+            shape: BoxShape.circle,
+            border: Border.all(color: _borderColor),
+          ),
+          child: Image.asset(
+            'assets/images/logo.png',
+            errorBuilder: (_, __, ___) => Icon(
+              Icons.shield_outlined,
+              color: EscrowTheme.primary,
+              size: 16.sp,
+            ),
+          ),
+        ),
+        SizedBox(width: 7.w),
+        Text(
+          'Lazervault',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.2,
+            fontFamily: 'Inter',
+          ),
+        ),
+      ],
     );
   }
 
@@ -362,9 +409,13 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
     final deal = _deal!;
     final rows = <_DetailEntry>[
       _DetailEntry('Reference', deal.reference, copyable: true),
-      if (deal.buyerName.isNotEmpty) _DetailEntry('Buyer', '@${deal.buyerName}'),
-      if (deal.sellerName.isNotEmpty)
-        _DetailEntry('Seller', '@${deal.sellerName}'),
+      // Both parties are ALWAYS shown so a receipt names who paid and who was
+      // paid — the buyer name is stamped at deal creation now, so this no longer
+      // silently drops the buyer row (which read as "Lazervault user" on the PDF).
+      _DetailEntry('Buyer',
+          _partyName(deal.buyerName, viewerIsThisParty: _viewerIsBuyer)),
+      _DetailEntry('Seller',
+          _partyName(deal.sellerName, viewerIsThisParty: _viewerIsSeller)),
       _DetailEntry('Item', deal.title),
       _DetailEntry('Item price', _money(deal.amount)),
       // The fee is shown to the party who actually BEARS it (feePayer), so the

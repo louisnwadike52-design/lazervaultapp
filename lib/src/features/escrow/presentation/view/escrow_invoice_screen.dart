@@ -67,6 +67,13 @@ class _EscrowInvoiceScreenState extends State<EscrowInvoiceScreen> {
   String _money(double v) =>
       '$_currencySymbol${NumberFormat('#,##0.00').format(v)}';
 
+  /// A party's display name for the agreement — the real name stamped on the
+  /// deal, or a neutral dash if it is somehow absent (never "Lazervault User").
+  String _partyName(String raw) {
+    final n = raw.trim();
+    return n.isEmpty ? '—' : n;
+  }
+
   String _feePayerLabel(String feePayer) {
     switch (feePayer.toUpperCase()) {
       case 'BUYER':
@@ -188,14 +195,9 @@ class _EscrowInvoiceScreenState extends State<EscrowInvoiceScreen> {
     return _section(
       'Parties',
       [
-        _partyRow('Buyer / Payer',
-            deal.buyerName.isNotEmpty ? '@${deal.buyerName}' : 'Lazervault User'),
+        _partyRow('Buyer / Payer', _partyName(deal.buyerName)),
         SizedBox(height: 12.h),
-        _partyRow(
-            'Seller / Payee',
-            deal.sellerName.isNotEmpty
-                ? '@${deal.sellerName}'
-                : 'Lazervault User'),
+        _partyRow('Seller / Payee', _partyName(deal.sellerName)),
       ],
     );
   }
