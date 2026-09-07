@@ -69,6 +69,8 @@ class EndpointRegistry {
     // admin knob; FeatureFlags.applyRemoteSnapshot reads them at boot.
     'dashboard_cards_section_visible',
     'voice_chat_assistant_section_visible',
+    // Bulk SMS service visibility (hidden by default; admin can restore).
+    'bulk_sms_visible',
     // African voice-language master gate (English-only when off). Cached so the
     // language picker can hide African languages even on the offline fallback path.
     'voice_african_languages_enabled',

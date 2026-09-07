@@ -154,6 +154,11 @@ class FeatureFlags {
   /// of true would show it every cold start until the network answered.
   static const String insuranceEnabled = 'insurance_enabled';
 
+  // Whether the Bulk SMS service tile is visible anywhere in the app.
+  // Hidden by default (product decision 2026-09-07); an admin can restore it
+  // from the dashboard Feature Flags tab without a release.
+  static const String bulkSmsVisibleKey = 'bulk_sms_visible';
+
   // ── Airtime landing tabs (admin-toggled) ─────────────────────────────────
   // Show/hide each of the three Airtime tabs (Buy / International / Sell) from
   // the admin dashboard. Buy + International default ON; Sell (airtime-to-cash)
@@ -250,6 +255,7 @@ class FeatureFlags {
       bvnSignupScreenEnabled,
       insuranceHostedEntrypointsEnabled,
       insuranceEnabled,
+      bulkSmsVisibleKey,
       airtimeTabBuyEnabled,
       airtimeTabInternationalEnabled,
       airtimeTabSellEnabled,
@@ -326,6 +332,17 @@ class FeatureFlags {
   /// the admin switch restores it without a release.
   static bool get insuranceVisible {
     return _prefs?.getBool(insuranceEnabled) ?? false;
+  }
+
+  // ── Bulk SMS visibility ──────────────────────────────────────────────────
+  /// Whether the Bulk SMS service is visible anywhere in the app.
+  ///
+  /// Defaults to FALSE (hidden) — including before the admin snapshot
+  /// resolves, offline, and on cold start. The screens and routes remain
+  /// compiled in; only the entry points are withheld, so flipping the admin
+  /// switch restores it without a release.
+  static bool get bulkSmsVisible {
+    return _prefs?.getBool(bulkSmsVisibleKey) ?? false;
   }
 
   // ── Voice & Chat Assistant section visibility ────────────────────────────

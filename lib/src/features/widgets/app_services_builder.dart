@@ -341,6 +341,12 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     if (!FeatureFlags.insuranceVisible) {
       hidden.add(AppServiceName.insurance);
     }
+    // Bulk SMS is admin-gated and hidden by DEFAULT (product decision
+    // 2026-09-07) — same mechanics as Insurance: routes/handlers stay
+    // compiled in, only the entry points are withheld.
+    if (!FeatureFlags.bulkSmsVisible) {
+      hidden.add(AppServiceName.bulkSms);
+    }
     return hidden;
   }
 
