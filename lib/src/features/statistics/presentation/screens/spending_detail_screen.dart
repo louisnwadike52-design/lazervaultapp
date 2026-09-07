@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/extensions/app_colors.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
+import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/statistics_source_sheet.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/error_state_widget.dart';
@@ -14,42 +15,67 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 /// Maps category names from backend to display-friendly names.
 String _friendlyCategoryName(String raw) => switch (raw.toLowerCase()) {
-  'p2p transfers' || 'bank transfers' || 'international transfers' ||
-  'gift cards' || 'bills & utilities' ||
-  'service fees' || 'tagpay' || 'invoices' || 'investments' ||
-  'payroll' || 'crowdfunding' || 'deposits' || 'withdrawals' ||
-  'reversals' || 'transfers' || 'banking' || 'payments' ||
-  'food & drinks' || 'shopping' || 'transportation' || 'entertainment' => raw,
-  'piggyvault' || 'piggy vault' || 'lock funds' || 'lock_funds' => 'Piggyvault',
-  'autosave' => 'AutoSave',
-  'savings & products' => 'Savings & Products',
-  'transfer' || 'c2c_transfer' => 'P2P Transfers',
-  'domestic_transfer' => 'Bank Transfers',
-  'international_transfer' => 'International Transfers',
-  'deposit' => 'Deposits',
-  'withdrawal' => 'Withdrawals',
-  'fee' => 'Service Fees',
-  'reversal' => 'Reversals',
-  'payment' || 'invoice_payment' => 'Payments',
-  'tag-pay' => 'TagPay',
-  'invoice' => 'Invoices',
-  'giftcards' || 'gift-cards' || 'gift_card' => 'Gift Cards',
-  'airtime' || 'bill_payment' => 'Bills & Utilities',
-  'investment' || 'investments' => 'Investments',
-  'core-payments-service' || 'core-payments' => 'Transfers',
-  'banking-service' => 'Banking',
-  'invoice-service' => 'Invoices',
-  'giftcards-service' => 'Gift Cards',
-  'utility-payments-service' => 'Bills & Utilities',
-  'tag-pay-service' => 'TagPay',
-  'financial-products-service' => 'Savings & Products',
-  'investments-service' => 'Investments',
-  'payroll-service' => 'Payroll',
-  'crowdfund-service' => 'Crowdfunding',
-  'accounts-service' => 'Other',
-  _ => raw.replaceAll('-', ' ').replaceAll('_', ' ').split(' ').map((w) =>
-      w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
-};
+      'p2p transfers' ||
+      'bank transfers' ||
+      'international transfers' ||
+      'gift cards' ||
+      'bills & utilities' ||
+      'service fees' ||
+      'tagpay' ||
+      'invoices' ||
+      'investments' ||
+      'payroll' ||
+      'crowdfunding' ||
+      'deposits' ||
+      'withdrawals' ||
+      'reversals' ||
+      'transfers' ||
+      'banking' ||
+      'payments' ||
+      'food & drinks' ||
+      'shopping' ||
+      'transportation' ||
+      'entertainment' =>
+        raw,
+      'piggyvault' ||
+      'piggy vault' ||
+      'lock funds' ||
+      'lock_funds' =>
+        'Piggyvault',
+      'autosave' => 'AutoSave',
+      'savings & products' => 'Savings & Products',
+      'transfer' || 'c2c_transfer' => 'P2P Transfers',
+      'domestic_transfer' => 'Bank Transfers',
+      'international_transfer' => 'International Transfers',
+      'deposit' => 'Deposits',
+      'withdrawal' => 'Withdrawals',
+      'fee' => 'Service Fees',
+      'reversal' => 'Reversals',
+      'payment' || 'invoice_payment' => 'Payments',
+      'tag-pay' => 'TagPay',
+      'invoice' => 'Invoices',
+      'giftcards' || 'gift-cards' || 'gift_card' => 'Gift Cards',
+      'airtime' || 'bill_payment' => 'Bills & Utilities',
+      'investment' || 'investments' => 'Investments',
+      'core-payments-service' || 'core-payments' => 'Transfers',
+      'banking-service' => 'Banking',
+      'invoice-service' => 'Invoices',
+      'giftcards-service' => 'Gift Cards',
+      'utility-payments-service' => 'Bills & Utilities',
+      'tag-pay-service' => 'TagPay',
+      'financial-products-service' => 'Savings & Products',
+      'investments-service' => 'Investments',
+      'payroll-service' => 'Payroll',
+      'crowdfund-service' => 'Crowdfunding',
+      'accounts-service' => 'Other',
+      _ => raw
+          .replaceAll('-', ' ')
+          .replaceAll('_', ' ')
+          .split(' ')
+          .map((w) =>
+              w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+          .join(' '),
+    };
 
 class SpendingDetailScreen extends StatefulWidget {
   const SpendingDetailScreen({super.key});
@@ -98,7 +124,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
     if (_aiLoading) return;
 
     final statsState = context.read<StatisticsCubit>().state;
-    if (statsState is! StatisticsLoaded || statsState.categoryAnalytics == null) return;
+    if (statsState is! StatisticsLoaded || statsState.categoryAnalytics == null)
+      return;
 
     final catAnalytics = statsState.categoryAnalytics!;
     // Nothing to analyze if no expense categories
@@ -118,17 +145,23 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
 
       final spendingData = <Map<String, dynamic>>[];
       for (final cat in catAnalytics.expenseCategories) {
-        final subCats = cat.subCategories.map((sub) => {
-          'name': sub.name,
-          'amount': sub.amount,
-          'transaction_count': sub.transactionCount,
-          'percentage': cat.amount > 0 ? (sub.amount / cat.amount * 100).round() : 0,
-        }).toList();
+        final subCats = cat.subCategories
+            .map((sub) => {
+                  'name': sub.name,
+                  'amount': sub.amount,
+                  'transaction_count': sub.transactionCount,
+                  'percentage': cat.amount > 0
+                      ? (sub.amount / cat.amount * 100).round()
+                      : 0,
+                })
+            .toList();
 
         spendingData.add({
           'category': cat.categoryName,
           'amount': cat.amount,
-          'percentage': totalExpenses > 0 ? (cat.amount / totalExpenses * 100).round() : 0,
+          'percentage': totalExpenses > 0
+              ? (cat.amount / totalExpenses * 100).round()
+              : 0,
           'transaction_count': cat.transactionCount,
           if (subCats.isNotEmpty) 'sub_categories': subCats,
         });
@@ -206,7 +239,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                 padding: EdgeInsets.all(24.r),
                 child: ErrorStateWidget(
                   message: state.message,
-                  onRetry: () => context.read<StatisticsCubit>().loadStatistics(),
+                  onRetry: () =>
+                      context.read<StatisticsCubit>().loadStatistics(),
                 ),
               ),
             );
@@ -300,7 +334,12 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
   }
 
   Widget _buildFullChart(StatisticsLoaded state) {
-    final dataPoints = state.expenseTimeSeries?.dataPoints ?? [];
+    // NOTE: the fallback MUST be typed. A bare `?? []` makes the static type
+    // List<dynamic>, so closures passed to list methods infer dynamic — and
+    // List<DailyExpensePoint>.reduce rejects a dynamic-returning closure AT
+    // RUNTIME (TypeError → grey screen in release). Seen live 2026-09-07.
+    final dataPoints = state.expenseTimeSeries?.dataPoints ??
+        <accounts_pb.DailyExpensePoint>[];
 
     if (dataPoints.isEmpty) {
       return Container(
@@ -318,7 +357,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
               SizedBox(height: 12.h),
               Text(
                 'No expense data for this period',
-                style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
               ),
             ],
           ),
@@ -371,7 +411,9 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      interval: (dataPoints.length / 5).ceilToDouble().clamp(1, double.infinity),
+                      interval: (dataPoints.length / 5)
+                          .ceilToDouble()
+                          .clamp(1, double.infinity),
                       getTitlesWidget: (value, meta) {
                         final index = value.toInt();
                         if (index < 0 || index >= dataPoints.length) {
@@ -379,7 +421,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                         }
                         return Text(
                           dataPoints[index].date,
-                          style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 10.sp),
+                          style: TextStyle(
+                              color: const Color(0xFF9CA3AF), fontSize: 10.sp),
                         );
                       },
                       reservedSize: 28,
@@ -391,12 +434,15 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                       reservedSize: 50,
                       getTitlesWidget: (value, meta) => Text(
                         '${CurrencySymbols.currentSymbol}${value.toInt()}',
-                        style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 10.sp),
+                        style: TextStyle(
+                            color: const Color(0xFF9CA3AF), fontSize: 10.sp),
                       ),
                     ),
                   ),
-                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles:
+                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles:
+                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
                 borderData: FlBorderData(show: false),
                 lineTouchData: LineTouchData(
@@ -404,7 +450,9 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                     getTooltipItems: (touchedSpots) {
                       return touchedSpots.map((spot) {
                         final index = spot.x.toInt();
-                        final label = index < dataPoints.length ? dataPoints[index].date : '';
+                        final label = index < dataPoints.length
+                            ? dataPoints[index].date
+                            : '';
                         return LineTooltipItem(
                           '$label\n${CurrencySymbols.formatAmount(spot.y)}',
                           TextStyle(color: Colors.white, fontSize: 12.sp),
@@ -418,7 +466,11 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                     spots: spots,
                     isCurved: true,
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF0D9668), Color(0xFF10B981), Color(0xFF34D399)],
+                      colors: [
+                        Color(0xFF0D9668),
+                        Color(0xFF10B981),
+                        Color(0xFF34D399)
+                      ],
                     ),
                     barWidth: 3,
                     dotData: FlDotData(
@@ -452,7 +504,12 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
   }
 
   Widget _buildSummaryCards(StatisticsLoaded state) {
-    final dataPoints = state.expenseTimeSeries?.dataPoints ?? [];
+    // NOTE: the fallback MUST be typed. A bare `?? []` makes the static type
+    // List<dynamic>, so closures passed to list methods infer dynamic — and
+    // List<DailyExpensePoint>.reduce rejects a dynamic-returning closure AT
+    // RUNTIME (TypeError → grey screen in release). Seen live 2026-09-07.
+    final dataPoints = state.expenseTimeSeries?.dataPoints ??
+        <accounts_pb.DailyExpensePoint>[];
     final total = dataPoints.fold<double>(0.0, (sum, p) => sum + p.amount);
     final dailyAvg = dataPoints.isNotEmpty ? total / dataPoints.length : 0.0;
     final maxDay = dataPoints.isNotEmpty
@@ -482,7 +539,9 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
         Expanded(
           child: _buildSummaryCard(
             'Peak Day',
-            maxDay != null ? '${CurrencySymbols.currentSymbol}${maxDay.amount.toStringAsFixed(0)}' : '--',
+            maxDay != null
+                ? '${CurrencySymbols.currentSymbol}${maxDay.amount.toStringAsFixed(0)}'
+                : '--',
             Icons.arrow_upward,
             Colors.purple[300]!,
           ),
@@ -491,7 +550,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
     );
   }
 
-  Widget _buildSummaryCard(String label, String value, IconData icon, Color color) {
+  Widget _buildSummaryCard(
+      String label, String value, IconData icon, Color color) {
     return Container(
       padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
@@ -523,7 +583,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
   /// Category breakdown section — pie chart style breakdown of expense categories
   Widget _buildCategoryBreakdown(StatisticsLoaded state) {
     final catAnalytics = state.categoryAnalytics;
-    final categories = catAnalytics?.expenseCategories ?? [];
+    final categories = catAnalytics?.expenseCategories ??
+        <accounts_pb.CategoryBreakdownItem>[];
     final total = catAnalytics?.totalExpenses ?? 0.0;
 
     if (categories.isEmpty) return const SizedBox.shrink();
@@ -599,13 +660,15 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                         Expanded(
                           child: Text(
                             _friendlyCategoryName(cat.categoryName),
-                            style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 14.sp),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         Text(
                           '${percentage.toStringAsFixed(1)}%',
-                          style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                          style: TextStyle(
+                              color: const Color(0xFF9CA3AF), fontSize: 12.sp),
                         ),
                         SizedBox(width: 8.w),
                         Text(
@@ -619,7 +682,9 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                         if (hasSubCats || hasAI) ...[
                           SizedBox(width: 4.w),
                           Icon(
-                            isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                            isExpanded
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
                             color: const Color(0xFF9CA3AF),
                             size: 18.sp,
                           ),
@@ -654,17 +719,23 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                         child: Column(
                           children: cat.subCategories.map((sub) {
                             final subPct = cat.amount > 0
-                                ? (sub.amount / cat.amount * 100).toStringAsFixed(1)
+                                ? (sub.amount / cat.amount * 100)
+                                    .toStringAsFixed(1)
                                 : '0.0';
                             final subBarValue = cat.amount > 0
                                 ? (sub.amount / cat.amount).clamp(0.0, 1.0)
                                 : 0.0;
 
                             // Find AI tip
-                            final aiCat = _categoryAIMap[cat.categoryName.toLowerCase()] ??
-                                _categoryAIMap[_friendlyCategoryName(cat.categoryName).toLowerCase()];
+                            final aiCat = _categoryAIMap[
+                                    cat.categoryName.toLowerCase()] ??
+                                _categoryAIMap[
+                                    _friendlyCategoryName(cat.categoryName)
+                                        .toLowerCase()];
                             final aiSub = aiCat?.subCategories
-                                .where((s) => s.name.toLowerCase() == sub.name.toLowerCase())
+                                .where((s) =>
+                                    s.name.toLowerCase() ==
+                                    sub.name.toLowerCase())
                                 .firstOrNull;
 
                             return Padding(
@@ -673,7 +744,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Row(
@@ -682,46 +754,64 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                                               width: 7.w,
                                               height: 7.w,
                                               decoration: BoxDecoration(
-                                                color: color.withValues(alpha: 0.6),
+                                                color: color.withValues(
+                                                    alpha: 0.6),
                                                 shape: BoxShape.circle,
                                               ),
                                             ),
                                             SizedBox(width: 6.w),
                                             Flexible(
                                               child: Text(
-                                                sub.name.isNotEmpty ? sub.name : 'Other',
-                                                style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                                                sub.name.isNotEmpty
+                                                    ? sub.name
+                                                    : 'Other',
+                                                style: TextStyle(
+                                                    color:
+                                                        const Color(0xFF9CA3AF),
+                                                    fontSize: 12.sp),
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                             SizedBox(width: 4.w),
                                             Text(
                                               '$subPct%',
-                                              style: TextStyle(color: const Color(0xFF6B7280), fontSize: 10.sp),
+                                              style: TextStyle(
+                                                  color:
+                                                      const Color(0xFF6B7280),
+                                                  fontSize: 10.sp),
                                             ),
                                           ],
                                         ),
                                       ),
                                       Text(
-                                        CurrencySymbols.formatAmount(sub.amount),
-                                        style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 12.sp),
+                                        CurrencySymbols.formatAmount(
+                                            sub.amount),
+                                        style: TextStyle(
+                                            color: const Color(0xFFD1D5DB),
+                                            fontSize: 12.sp),
                                       ),
                                     ],
                                   ),
                                   SizedBox(height: 3.h),
                                   LinearProgressIndicator(
                                     value: subBarValue,
-                                    backgroundColor: Colors.white.withValues(alpha: 0.05),
-                                    valueColor: AlwaysStoppedAnimation<Color>(color.withValues(alpha: 0.5)),
+                                    backgroundColor:
+                                        Colors.white.withValues(alpha: 0.05),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        color.withValues(alpha: 0.5)),
                                     minHeight: 3.h,
                                     borderRadius: BorderRadius.circular(2.r),
                                   ),
-                                  if (aiSub != null && aiSub.insight.isNotEmpty) ...[
+                                  if (aiSub != null &&
+                                      aiSub.insight.isNotEmpty) ...[
                                     SizedBox(height: 3.h),
                                     Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Icon(Icons.lightbulb_outline, color: const Color(0xFFFB923C), size: 11.sp),
+                                        Icon(Icons.lightbulb_outline,
+                                            color: const Color(0xFFFB923C),
+                                            size: 11.sp),
                                         SizedBox(width: 4.w),
                                         Expanded(
                                           child: Text(
@@ -775,7 +865,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.auto_awesome, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
+                Icon(Icons.auto_awesome,
+                    color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
@@ -789,7 +880,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                 ),
                 GestureDetector(
                   onTap: _loadAIAnalysis,
-                  child: Icon(Icons.refresh, color: const Color(0xFF9CA3AF), size: 18.sp),
+                  child: Icon(Icons.refresh,
+                      color: const Color(0xFF9CA3AF), size: 18.sp),
                 ),
               ],
             ),
@@ -797,7 +889,10 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
               SizedBox(height: 10.h),
               Text(
                 _aiInsights!.summary,
-                style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 13.sp, height: 1.5),
+                style: TextStyle(
+                    color: const Color(0xFFD1D5DB),
+                    fontSize: 13.sp,
+                    height: 1.5),
               ),
             ],
             if (_aiInsights!.savingsOpportunities.isNotEmpty) ...[
@@ -816,12 +911,16 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.lightbulb_outline, color: const Color(0xFFFB923C), size: 14.sp),
+                        Icon(Icons.lightbulb_outline,
+                            color: const Color(0xFFFB923C), size: 14.sp),
                         SizedBox(width: 6.w),
                         Expanded(
                           child: Text(
                             tip,
-                            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp, height: 1.4),
+                            style: TextStyle(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 12.sp,
+                                height: 1.4),
                           ),
                         ),
                       ],
@@ -863,14 +962,21 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
         ),
         child: Row(
           children: [
-            Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 18.sp),
+            Icon(Icons.error_outline,
+                color: const Color(0xFFEF4444), size: 18.sp),
             SizedBox(width: 8.w),
             Expanded(
-              child: Text(_aiError!, style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+              child: Text(_aiError!,
+                  style: TextStyle(
+                      color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
             ),
             GestureDetector(
               onTap: _loadAIAnalysis,
-              child: Text('Retry', style: TextStyle(color: const Color.fromARGB(255, 78, 3, 208), fontSize: 12.sp, fontWeight: FontWeight.w600)),
+              child: Text('Retry',
+                  style: TextStyle(
+                      color: const Color.fromARGB(255, 78, 3, 208),
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -896,7 +1002,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.auto_awesome, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
+            Icon(Icons.auto_awesome,
+                color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
             SizedBox(width: 10.w),
             Text(
               'Get AI Spending Analysis',
@@ -936,7 +1043,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.auto_awesome, color: const Color.fromARGB(255, 78, 3, 208), size: 13.sp),
+              Icon(Icons.auto_awesome,
+                  color: const Color.fromARGB(255, 78, 3, 208), size: 13.sp),
               SizedBox(width: 5.w),
               Text(
                 'AI Analysis',
@@ -951,7 +1059,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
           SizedBox(height: 4.h),
           Text(
             aiCat.analysis,
-            style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 11.sp, height: 1.4),
+            style: TextStyle(
+                color: const Color(0xFFD1D5DB), fontSize: 11.sp, height: 1.4),
           ),
           if (aiCat.subCategories.isNotEmpty) ...[
             SizedBox(height: 6.h),
@@ -975,7 +1084,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                           text: TextSpan(
                             children: [
                               TextSpan(
-                                text: '${sub.name.isNotEmpty ? sub.name : 'Other'}: ',
+                                text:
+                                    '${sub.name.isNotEmpty ? sub.name : 'Other'}: ',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 10.sp,
@@ -984,12 +1094,17 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                               ),
                               if (sub.amount > 0)
                                 TextSpan(
-                                  text: '${CurrencySymbols.formatAmount(sub.amount)} — ',
-                                  style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 10.sp),
+                                  text:
+                                      '${CurrencySymbols.formatAmount(sub.amount)} — ',
+                                  style: TextStyle(
+                                      color: const Color(0xFF9CA3AF),
+                                      fontSize: 10.sp),
                                 ),
                               TextSpan(
                                 text: sub.insight,
-                                style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 10.sp),
+                                style: TextStyle(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 10.sp),
                               ),
                             ],
                           ),
@@ -1006,12 +1121,16 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 12.sp),
+                      Icon(Icons.check_circle,
+                          color: const Color(0xFF10B981), size: 12.sp),
                       SizedBox(width: 5.w),
                       Expanded(
                         child: Text(
                           item,
-                          style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 10.sp, height: 1.3),
+                          style: TextStyle(
+                              color: const Color(0xFFD1D5DB),
+                              fontSize: 10.sp,
+                              height: 1.3),
                         ),
                       ),
                     ],
@@ -1024,7 +1143,12 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
   }
 
   Widget _buildDailyDataTable(StatisticsLoaded state) {
-    final dataPoints = state.expenseTimeSeries?.dataPoints ?? [];
+    // NOTE: the fallback MUST be typed. A bare `?? []` makes the static type
+    // List<dynamic>, so closures passed to list methods infer dynamic — and
+    // List<DailyExpensePoint>.reduce rejects a dynamic-returning closure AT
+    // RUNTIME (TypeError → grey screen in release). Seen live 2026-09-07.
+    final dataPoints = state.expenseTimeSeries?.dataPoints ??
+        <accounts_pb.DailyExpensePoint>[];
 
     if (dataPoints.isEmpty) {
       return const SizedBox.shrink();
@@ -1062,7 +1186,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                   children: [
                     Text(
                       point.date,
-                      style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 14.sp),
+                      style: TextStyle(
+                          color: const Color(0xFFD1D5DB), fontSize: 14.sp),
                     ),
                     Text(
                       CurrencySymbols.formatAmount(point.amount),

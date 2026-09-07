@@ -86,8 +86,8 @@ class _ScheduledTransfersListScreenState
       setState(() {
         if (reset) _items.clear();
         _items.addAll(resp.transfers);
-        _hasMore = resp.transfers.length >= _pageSize &&
-            _items.length < resp.total;
+        _hasMore =
+            resp.transfers.length >= _pageSize && _items.length < resp.total;
         _loading = false;
         _loadingMore = false;
         _loadFailed = false;
@@ -103,8 +103,9 @@ class _ScheduledTransfersListScreenState
   }
 
   String _money(payments_pb.TransferDetail t) {
-    final v = (t.amount.toInt() / 100).toStringAsFixed(2).replaceAllMapped(
-        RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},');
+    final v = (t.amount.toInt() / 100)
+        .toStringAsFixed(2)
+        .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},');
     final sym = t.currency.toUpperCase() == 'NGN' ? '₦' : '${t.currency} ';
     return '$sym$v';
   }
@@ -112,7 +113,20 @@ class _ScheduledTransfersListScreenState
   String _fireLabel(payments_pb.TransferDetail t) {
     final d = DateTime.tryParse(t.scheduledAt)?.toLocal();
     if (d == null) return 'Scheduled';
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     final h = d.hour % 12 == 0 ? 12 : d.hour % 12;
     final ap = d.hour >= 12 ? 'PM' : 'AM';
     final now = DateTime.now();
@@ -120,6 +134,137 @@ class _ScheduledTransfersListScreenState
         ? 'Today'
         : '${d.day} ${months[d.month - 1]} ${d.year}';
     return '$day · $h:${d.minute.toString().padLeft(2, '0')} $ap';
+  }
+
+  /// Full payload for one scheduled transfer. Everything shown is the row
+  /// core-payments holds — no client-side guesses. The user's own transfer
+  /// reference is shown (it already appears on receipts); internal ids are not.
+  Future<void> _showDetail(payments_pb.TransferDetail t) async {
+    Widget row(String label, String value) => Padding(
+          padding: EdgeInsets.symmetric(vertical: 6.h),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 110.w,
+                child: Text(label,
+                    style: GoogleFonts.inter(fontSize: 12.5.sp, color: _label)),
+              ),
+              Expanded(
+                child: Text(value,
+                    textAlign: TextAlign.right,
+                    style: GoogleFonts.inter(
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
+              ),
+            ],
+          ),
+        );
+
+    String created() {
+      final d = DateTime.tryParse(t.createdAt)?.toLocal();
+      if (d == null) return '—';
+      return '${d.day}/${d.month}/${d.year} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+    }
+
+    final dest = t.destinationName.isNotEmpty
+        ? t.destinationName
+        : (t.destinationAccount.isNotEmpty
+            ? t.destinationAccount
+            : 'Recipient');
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 28.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Center(
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: _accent.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(Icons.schedule_send_rounded,
+                    color: _accent, size: 24.sp),
+              ),
+            ),
+            SizedBox(height: 10.h),
+            Center(
+              child: Text(_money(t),
+                  style: GoogleFonts.inter(
+                      fontSize: 22.sp,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white)),
+            ),
+            SizedBox(height: 2.h),
+            Center(
+              child: Text('Scheduled · fires ${_fireLabel(t)}',
+                  style: GoogleFonts.inter(fontSize: 12.5.sp, color: _accent)),
+            ),
+            SizedBox(height: 14.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: _card,
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+              ),
+              child: Column(children: [
+                row('To', dest),
+                if (t.destinationBankName.isNotEmpty)
+                  row('Bank', t.destinationBankName),
+                if (t.destinationAccount.isNotEmpty &&
+                    t.destinationName.isNotEmpty)
+                  row('Account', t.destinationAccount),
+                if (t.narration.isNotEmpty) row('Note', t.narration),
+                if (t.fee > 0)
+                  row('Fee', '₦${(t.fee.toInt() / 100).toStringAsFixed(2)}'),
+                row('Fires', _fireLabel(t)),
+                row('Created', created()),
+                if (t.reference.isNotEmpty) row('Reference', t.reference),
+              ]),
+            ),
+            SizedBox(height: 18.h),
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                _confirmCancel(t);
+              },
+              icon: Icon(Icons.close_rounded, size: 18.sp, color: _error),
+              label: const Text('Cancel this transfer'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: _error,
+                side: BorderSide(color: _error.withValues(alpha: 0.5)),
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _confirmCancel(payments_pb.TransferDetail t) async {
@@ -152,8 +297,8 @@ class _ScheduledTransfersListScreenState
                   onPressed: () => Navigator.of(ctx).pop(false),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.2)),
+                    side:
+                        BorderSide(color: Colors.white.withValues(alpha: 0.2)),
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r)),
@@ -310,72 +455,75 @@ class _ScheduledTransfersListScreenState
           }
           final t = _items[i];
           final busy = _cancelling.contains(t.id);
-          return Container(
-            padding: EdgeInsets.all(14.w),
-            decoration: BoxDecoration(
-              color: _card,
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
-            ),
-            child: Row(children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: _accent.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.schedule_send_rounded,
-                    color: _accent, size: 20.sp),
+          return GestureDetector(
+            onTap: () => _showDetail(t),
+            child: Container(
+              padding: EdgeInsets.all(14.w),
+              decoration: BoxDecoration(
+                color: _card,
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
               ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      t.destinationAccount.isNotEmpty
-                          ? t.destinationAccount
-                          : (t.narration.isNotEmpty
-                              ? t.narration
-                              : 'Scheduled transfer'),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white),
-                    ),
-                    SizedBox(height: 3.h),
-                    Text('Fires ${_fireLabel(t)}',
+              child: Row(children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: _accent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.schedule_send_rounded,
+                      color: _accent, size: 20.sp),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        t.destinationAccount.isNotEmpty
+                            ? t.destinationAccount
+                            : (t.narration.isNotEmpty
+                                ? t.narration
+                                : 'Scheduled transfer'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
-                            fontSize: 11.5.sp, color: _label)),
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white),
+                      ),
+                      SizedBox(height: 3.h),
+                      Text('Fires ${_fireLabel(t)}',
+                          style: GoogleFonts.inter(
+                              fontSize: 11.5.sp, color: _label)),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(_money(t),
+                        style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white)),
+                    SizedBox(height: 4.h),
+                    busy
+                        ? const LazerVaultLoader(size: 14)
+                        : GestureDetector(
+                            onTap: () => _confirmCancel(t),
+                            child: Text('Cancel',
+                                style: GoogleFonts.inter(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: _error)),
+                          ),
                   ],
                 ),
-              ),
-              SizedBox(width: 8.w),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(_money(t),
-                      style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white)),
-                  SizedBox(height: 4.h),
-                  busy
-                      ? const LazerVaultLoader(size: 14)
-                      : GestureDetector(
-                          onTap: () => _confirmCancel(t),
-                          child: Text('Cancel',
-                              style: GoogleFonts.inter(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: _error)),
-                        ),
-                ],
-              ),
-            ]),
+              ]),
+            ),
           );
         },
       ),

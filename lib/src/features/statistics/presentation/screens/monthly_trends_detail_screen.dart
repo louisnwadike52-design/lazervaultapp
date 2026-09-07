@@ -4,9 +4,11 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/extensions/app_colors.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
+import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+
 class MonthlyTrendsDetailScreen extends StatelessWidget {
   const MonthlyTrendsDetailScreen({super.key});
 
@@ -60,7 +62,11 @@ class MonthlyTrendsDetailScreen extends StatelessWidget {
   }
 
   Widget _buildFullBarChart(StatisticsLoaded state) {
-    final monthlyPoints = state.monthlyTrends?.months.toList() ?? [];
+    // Typed fallback — see spending_detail_screen.dart: a bare `?? []` turns
+    // the static type into List<dynamic> and typed-list methods then reject
+    // dynamic closures at runtime in release builds.
+    final monthlyPoints = state.monthlyTrends?.months.toList() ??
+        <accounts_pb.MonthlyDataPoint>[];
 
     if (monthlyPoints.isEmpty) {
       return Container(
@@ -78,7 +84,8 @@ class MonthlyTrendsDetailScreen extends StatelessWidget {
               SizedBox(height: 12.h),
               Text(
                 'No monthly trend data available',
-                style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
               ),
             ],
           ),
@@ -87,7 +94,8 @@ class MonthlyTrendsDetailScreen extends StatelessWidget {
     }
 
     final maxY = monthlyPoints.fold<double>(0.0, (max, point) {
-      final bigger = point.income > point.expenses ? point.income : point.expenses;
+      final bigger =
+          point.income > point.expenses ? point.income : point.expenses;
       return bigger > max ? bigger : max;
     });
     final roundedMaxY = maxY > 0 ? (maxY * 1.2).ceilToDouble() : 10000.0;
@@ -139,7 +147,8 @@ class MonthlyTrendsDetailScreen extends StatelessWidget {
                         }
                         return Text(
                           monthlyPoints[index].monthLabel,
-                          style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                          style: TextStyle(
+                              color: const Color(0xFF9CA3AF), fontSize: 12.sp),
                         );
                       },
                       reservedSize: 28,
@@ -151,12 +160,15 @@ class MonthlyTrendsDetailScreen extends StatelessWidget {
                       reservedSize: 50,
                       getTitlesWidget: (value, meta) => Text(
                         '${CurrencySymbols.currentSymbol}${value.toInt()}',
-                        style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 10.sp),
+                        style: TextStyle(
+                            color: const Color(0xFF9CA3AF), fontSize: 10.sp),
                       ),
                     ),
                   ),
-                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles:
+                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles:
+                      AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
                 gridData: FlGridData(
                   show: true,
@@ -214,15 +226,22 @@ class MonthlyTrendsDetailScreen extends StatelessWidget {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         SizedBox(width: 8.w),
-        Text(label, style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 12.sp)),
+        Text(label,
+            style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 12.sp)),
       ],
     );
   }
 
   Widget _buildTotalSummary(StatisticsLoaded state) {
-    final monthlyPoints = state.monthlyTrends?.months.toList() ?? [];
-    final totalIncome = monthlyPoints.fold<double>(0.0, (sum, p) => sum + p.income);
-    final totalExpenses = monthlyPoints.fold<double>(0.0, (sum, p) => sum + p.expenses);
+    // Typed fallback — see spending_detail_screen.dart: a bare `?? []` turns
+    // the static type into List<dynamic> and typed-list methods then reject
+    // dynamic closures at runtime in release builds.
+    final monthlyPoints = state.monthlyTrends?.months.toList() ??
+        <accounts_pb.MonthlyDataPoint>[];
+    final totalIncome =
+        monthlyPoints.fold<double>(0.0, (sum, p) => sum + p.income);
+    final totalExpenses =
+        monthlyPoints.fold<double>(0.0, (sum, p) => sum + p.expenses);
     final netSavings = totalIncome - totalExpenses;
 
     return Row(
@@ -272,14 +291,20 @@ class MonthlyTrendsDetailScreen extends StatelessWidget {
             ),
           ),
           SizedBox(height: 4.h),
-          Text(label, style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+          Text(label,
+              style:
+                  TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
         ],
       ),
     );
   }
 
   Widget _buildMonthlyDataTable(StatisticsLoaded state) {
-    final monthlyPoints = state.monthlyTrends?.months.toList() ?? [];
+    // Typed fallback — see spending_detail_screen.dart: a bare `?? []` turns
+    // the static type into List<dynamic> and typed-list methods then reject
+    // dynamic closures at runtime in release builds.
+    final monthlyPoints = state.monthlyTrends?.months.toList() ??
+        <accounts_pb.MonthlyDataPoint>[];
 
     if (monthlyPoints.isEmpty) return const SizedBox.shrink();
 
@@ -306,16 +331,35 @@ class MonthlyTrendsDetailScreen extends StatelessWidget {
             children: [
               Expanded(
                 flex: 2,
-                child: Text('Month', style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                child: Text('Month',
+                    style: TextStyle(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600)),
               ),
               Expanded(
-                child: Text('Income', style: TextStyle(color: Colors.green[300], fontSize: 12.sp, fontWeight: FontWeight.w600), textAlign: TextAlign.right),
+                child: Text('Income',
+                    style: TextStyle(
+                        color: Colors.green[300],
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.right),
               ),
               Expanded(
-                child: Text('Expenses', style: TextStyle(color: Colors.red[300], fontSize: 12.sp, fontWeight: FontWeight.w600), textAlign: TextAlign.right),
+                child: Text('Expenses',
+                    style: TextStyle(
+                        color: Colors.red[300],
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.right),
               ),
               Expanded(
-                child: Text('Net', style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp, fontWeight: FontWeight.w600), textAlign: TextAlign.right),
+                child: Text('Net',
+                    style: TextStyle(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.right),
               ),
             ],
           ),
@@ -328,12 +372,15 @@ class MonthlyTrendsDetailScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     flex: 2,
-                    child: Text(point.monthLabel, style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 13.sp)),
+                    child: Text(point.monthLabel,
+                        style: TextStyle(
+                            color: const Color(0xFFD1D5DB), fontSize: 13.sp)),
                   ),
                   Expanded(
                     child: Text(
                       '${CurrencySymbols.currentSymbol}${point.income.toStringAsFixed(0)}',
-                      style: TextStyle(color: Colors.green[300], fontSize: 13.sp),
+                      style:
+                          TextStyle(color: Colors.green[300], fontSize: 13.sp),
                       textAlign: TextAlign.right,
                     ),
                   ),

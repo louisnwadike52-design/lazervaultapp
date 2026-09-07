@@ -15,7 +15,6 @@ import '../../../generated/accounts.pb.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'monthly_summary_widgets.dart';
 
-
 class MonthlySummary extends StatefulWidget {
   const MonthlySummary({super.key});
 
@@ -270,7 +269,8 @@ class _MonthlySummaryState extends State<MonthlySummary> {
 
     final dailyTrend = timeSeries.dataPoints;
     final totalSpent = timeSeries.totalExpenses;
-    final transactionCount = state.financialAnalytics?.currentPeriod.transactionCount ?? 0;
+    final transactionCount =
+        state.financialAnalytics?.currentPeriod.transactionCount ?? 0;
 
     // If no daily trend data, show empty state
     if (dailyTrend.isEmpty) {
@@ -367,7 +367,16 @@ class _MonthlySummaryState extends State<MonthlySummary> {
           SizedBox(height: 24.h),
 
           // Statistics Section
-          _buildStatisticsRow(totalSpent, transactionCount, state.categoryAnalytics?.expenseCategories ?? []),
+          // Typed fallback: `?? []` builds a List<dynamic>, and the implicit
+          // downcast to List<CategoryBreakdownItem> at this call boundary
+          // throws AT RUNTIME whenever categoryAnalytics is null (grey
+          // dashboard card in release). Same family as the Spending Details
+          // crash fixed 2026-09-07.
+          _buildStatisticsRow(
+              totalSpent,
+              transactionCount,
+              state.categoryAnalytics?.expenseCategories ??
+                  <CategoryBreakdownItem>[]),
         ],
       ),
     );
@@ -471,7 +480,9 @@ class _MonthlySummaryState extends State<MonthlySummary> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 10.h),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withValues(alpha: 0.2) : Colors.transparent,
+          color: isSelected
+              ? Colors.white.withValues(alpha: 0.2)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(10.r),
         ),
         child: Text(
@@ -480,7 +491,8 @@ class _MonthlySummaryState extends State<MonthlySummary> {
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
+            color:
+                isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
           ),
         ),
       ),
@@ -530,7 +542,9 @@ class _MonthlySummaryState extends State<MonthlySummary> {
                 return Padding(
                   padding: EdgeInsets.only(top: 8.h),
                   child: Text(
-                    _formatBottomLabel(DateTime.tryParse(dailyTrend[index].date) ?? DateTime.now()),
+                    _formatBottomLabel(
+                        DateTime.tryParse(dailyTrend[index].date) ??
+                            DateTime.now()),
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 10.sp,
@@ -632,8 +646,10 @@ class _MonthlySummaryState extends State<MonthlySummary> {
     int transactionCount,
     List<CategoryBreakdownItem> categoryBreakdown,
   ) {
-    final topCategory = categoryBreakdown.isNotEmpty ? categoryBreakdown.first : null;
-    final avgTransaction = transactionCount > 0 ? totalSpent / transactionCount : 0.0;
+    final topCategory =
+        categoryBreakdown.isNotEmpty ? categoryBreakdown.first : null;
+    final avgTransaction =
+        transactionCount > 0 ? totalSpent / transactionCount : 0.0;
 
     return Container(
       padding: EdgeInsets.all(16.w),

@@ -19,6 +19,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/pending_chat_transfers.dart';
 import 'package:lazervault/core/utilities/bank_sort.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/scheduled_entry_sheet.dart';
 import 'package:lazervault/src/features/recipients/data/repositories/bank_repository.dart';
 import 'package:lazervault/src/features/card_settings/domain/entities/account_details_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -84,6 +85,7 @@ class SelectRecipients extends StatefulWidget {
   /// recipient continues with amount → PIN → receipt on this screen (no
   /// separate add page or initiate-send-funds screen).
   final bool shortFlow;
+
   /// When set with [autoContinue], the screen immediately runs the send flow for
   /// this recipient (used when entering send-funds from a known peer, e.g. the
   /// P2P chat "send money" action) — reusing the same short/long routing + all
@@ -196,7 +198,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
   /// Get initials from name - capitalize first letter of each word
   String _getInitials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    final parts =
+        name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
     if (parts.length >= 2) {
       return '${parts[0][0].toUpperCase()}${parts[1][0].toUpperCase()}';
     } else if (parts.isNotEmpty) {
@@ -267,10 +270,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
     if (accessToken == null) return;
     final f = _activeFilter();
     context.read<RecipientCubit>().getRecipients(
-      accessToken: accessToken,
-      countryCode: f.countryCode,
-      currency: f.currency,
-    );
+          accessToken: accessToken,
+          countryCode: f.countryCode,
+          currency: f.currency,
+        );
   }
 
   /// Pull-to-refresh handler — reloads the recipient list for the active
@@ -284,12 +287,12 @@ class _SelectRecipientsState extends State<SelectRecipients>
     if (accessToken == null) return;
     final f = _activeFilter();
     await context.read<RecipientCubit>().getRecipients(
-      accessToken: accessToken,
-      countryCode: f.countryCode,
-      currency: f.currency,
-      // Keep the current list visible while reloading (no blank flicker).
-      forceRefresh: true,
-    );
+          accessToken: accessToken,
+          countryCode: f.countryCode,
+          currency: f.currency,
+          // Keep the current list visible while reloading (no blank flicker).
+          forceRefresh: true,
+        );
   }
 
   @override
@@ -308,10 +311,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
       // dashboard's active account + locale.
       final f = _activeFilter();
       context.read<RecipientCubit>().getRecipients(
-        accessToken: accessToken,
-        countryCode: f.countryCode,
-        currency: f.currency,
-      );
+            accessToken: accessToken,
+            countryCode: f.countryCode,
+            currency: f.currency,
+          );
     }
     // The listener below will handle cases where auth happens later.
 
@@ -400,7 +403,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
         final authState = context.read<AuthenticationCubit>().state;
         final accessToken = _getAccessTokenFromState(authState);
         if (accessToken != null) {
-          context.read<RecipientCubit>().loadMoreRecipients(accessToken: accessToken);
+          context
+              .read<RecipientCubit>()
+              .loadMoreRecipients(accessToken: accessToken);
         }
       }
     }
@@ -431,18 +436,18 @@ class _SelectRecipientsState extends State<SelectRecipients>
       case RecipientFilterType.all:
       case RecipientFilterType.recent:
         context.read<RecipientCubit>().getRecipients(
-          accessToken: accessToken,
-          countryCode: countryCode,
-          currency: currency,
-        );
+              accessToken: accessToken,
+              countryCode: countryCode,
+              currency: currency,
+            );
         break;
       case RecipientFilterType.favorites:
         context.read<RecipientCubit>().getRecipients(
-          accessToken: accessToken,
-          countryCode: countryCode,
-          currency: currency,
-          favoritesOnly: true,
-        );
+              accessToken: accessToken,
+              countryCode: countryCode,
+              currency: currency,
+              favoritesOnly: true,
+            );
         break;
       case RecipientFilterType.recurring:
         // Lazy-create the cubit on first tap so users who never visit the
@@ -493,10 +498,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
           if (recipientState is RecipientInitial) {
             final f = _activeFilter();
             context.read<RecipientCubit>().getRecipients(
-              accessToken: accessToken,
-              countryCode: f.countryCode,
-              currency: f.currency,
-            );
+                  accessToken: accessToken,
+                  countryCode: f.countryCode,
+                  currency: f.currency,
+                );
           }
         }
       },
@@ -594,17 +599,22 @@ class _SelectRecipientsState extends State<SelectRecipients>
                               ),
                             ),
                             // Financial Connections (P2P Chat) icon with unread badge
-                            BlocBuilder<P2PConversationsCubit, P2PConversationsState>(
+                            BlocBuilder<P2PConversationsCubit,
+                                P2PConversationsState>(
                               bloc: serviceLocator<P2PConversationsCubit>(),
                               builder: (context, p2pState) {
-                                final unreadCount = p2pState is P2PConversationsLoaded
-                                    ? p2pState.totalUnread + p2pState.requestCount
-                                    : 0;
+                                final unreadCount =
+                                    p2pState is P2PConversationsLoaded
+                                        ? p2pState.totalUnread +
+                                            p2pState.requestCount
+                                        : 0;
                                 return GestureDetector(
                                   onTap: () {
-                                    Get.toNamed(AppRoutes.financialConnections)?.then((_) {
+                                    Get.toNamed(AppRoutes.financialConnections)
+                                        ?.then((_) {
                                       // Refresh unread count after returning from connections
-                                      serviceLocator<P2PConversationsCubit>().loadConversations();
+                                      serviceLocator<P2PConversationsCubit>()
+                                          .loadConversations();
                                     });
                                   },
                                   child: Stack(
@@ -614,10 +624,12 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                         width: 38.w,
                                         height: 38.w,
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.15),
+                                          color: Colors.white
+                                              .withValues(alpha: 0.15),
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                            color: Colors.white.withValues(alpha: 0.3),
+                                            color: Colors.white
+                                                .withValues(alpha: 0.3),
                                             width: 1.5,
                                           ),
                                         ),
@@ -633,7 +645,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                           top: -4,
                                           child: Container(
                                             padding: EdgeInsets.symmetric(
-                                              horizontal: unreadCount > 9 ? 4.w : 0,
+                                              horizontal:
+                                                  unreadCount > 9 ? 4.w : 0,
                                             ),
                                             constraints: BoxConstraints(
                                               minWidth: 18.w,
@@ -641,11 +654,14 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                             ),
                                             decoration: BoxDecoration(
                                               color: const Color(0xFFEF4444),
-                                              borderRadius: BorderRadius.circular(9.r),
+                                              borderRadius:
+                                                  BorderRadius.circular(9.r),
                                             ),
                                             alignment: Alignment.center,
                                             child: Text(
-                                              unreadCount > 99 ? '99+' : '$unreadCount',
+                                              unreadCount > 99
+                                                  ? '99+'
+                                                  : '$unreadCount',
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 10.sp,
@@ -666,7 +682,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                               iconColor: Colors.white,
                               chatAccentColor: Color.fromARGB(255, 78, 3, 208),
                               isDirect: true,
-                              agentDescription: 'I can help you send money, set up recurring transfers, check transfer history, view fees, and more.',
+                              agentDescription:
+                                  'I can help you send money, set up recurring transfers, check transfer history, view fees, and more.',
                               size: 38,
                               iconSize: 18,
                               useDarkInner: true,
@@ -685,44 +702,46 @@ class _SelectRecipientsState extends State<SelectRecipients>
                         // flow hides this entirely; there the user picks from the
                         // inline saved list or the quick actions (scan / add user).
                         if (!widget.shortFlow) ...[
-                        SizedBox(height: 24.h),
-                        GestureDetector(
-                          onTap: () => _openSavedRecipientsSheet(savedOnly: true),
-                          child: Container(
-                            height: 48.h,
-                            padding: EdgeInsets.symmetric(horizontal: 16.w),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.08),
-                                  blurRadius: 6,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.search,
-                                  color: Colors.white.withValues(alpha: 0.7),
-                                  size: 20,
-                                ),
-                                SizedBox(width: 12.w),
-                                Expanded(
-                                  child: Text(
-                                    'Search saved recipients',
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.7),
-                                      fontSize: 14.sp,
+                          SizedBox(height: 24.h),
+                          GestureDetector(
+                            onTap: () =>
+                                _openSavedRecipientsSheet(savedOnly: true),
+                            child: Container(
+                              height: 48.h,
+                              padding: EdgeInsets.symmetric(horizontal: 16.w),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.08),
+                                    blurRadius: 6,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.search,
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 12.w),
+                                  Expanded(
+                                    child: Text(
+                                      'Search saved recipients',
+                                      style: TextStyle(
+                                        color:
+                                            Colors.white.withValues(alpha: 0.7),
+                                        fontSize: 14.sp,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
                         ],
                       ],
                     ),
@@ -735,134 +754,138 @@ class _SelectRecipientsState extends State<SelectRecipients>
                 // above stay static.
                 ServiceEntranceAnimation(
                   child: Container(
-                  margin: EdgeInsets.only(top: sheetTop),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(32)),
-                  ),
-                  child: Column(
-                    children: [
-                      // Short flow hides the search bar, so the white sheet sits
-                      // higher — add a little breathing room below its rounded
-                      // top so the content isn't crammed against the header.
-                      if (widget.shortFlow) SizedBox(height: 12.h),
-                      // Quick Actions Strip (Scan QR / Add User / Scan Bank
-                      // Details / Scan History / Split Bills) — shown in BOTH
-                      // flows. In short flow the scans feed the inline send.
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Colors.grey[100]!,
-                              width: 1,
+                    margin: EdgeInsets.only(top: sheetTop),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(32)),
+                    ),
+                    child: Column(
+                      children: [
+                        // Short flow hides the search bar, so the white sheet sits
+                        // higher — add a little breathing room below its rounded
+                        // top so the content isn't crammed against the header.
+                        if (widget.shortFlow) SizedBox(height: 12.h),
+                        // Quick Actions Strip (Scan QR / Add User / Scan Bank
+                        // Details / Scan History / Split Bills) — shown in BOTH
+                        // flows. In short flow the scans feed the inline send.
+                        Container(
+                          padding: EdgeInsets.symmetric(vertical: 16.h),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: Colors.grey[100]!,
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: Padding(
+                            // Page padding (16.w) on both edges; the actions are
+                            // distributed with spaceBetween so the last tile
+                            // (Split Bills) no longer overflows off the right edge
+                            // as it did inside the old horizontal scroller.
+                            // Transfer "History" moved to a filter chip beside
+                            // "Recurring" below.
+                            padding: EdgeInsets.symmetric(horizontal: 16.w),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildQuickAction(
+                                  icon: Icons.qr_code_scanner_outlined,
+                                  label: 'Scan QR',
+                                  onTap: _launchQRScanner,
+                                ),
+                                // "Add User" — long flow only. The short flow adds
+                                // recipients inline, so it's replaced by "History"
+                                // at the end of the strip.
+                                if (!widget.shortFlow)
+                                  _buildQuickAction(
+                                    icon: Icons.person_add_outlined,
+                                    label: 'Add User',
+                                    onTap: () =>
+                                        Get.toNamed(AppRoutes.addRecipient),
+                                  ),
+                                // "Scan Account" moved to a scan button at the
+                                // right edge of the account-number box (see the
+                                // embedded AddRecipient below / the long-flow
+                                // Add-Recipient screen) — cleaner top strip.
+                                if (FeatureFlags.scanAccountDetailsIsEnabled)
+                                  _buildQuickAction(
+                                    icon: Icons.manage_search_outlined,
+                                    label: 'Scan History',
+                                    onTap: showScanHistory,
+                                  ),
+                                // Split Bills quick action with pending co-payer
+                                // badge. Admin-hideable: when
+                                // splitbill_sendfunds_entry_visible is off the
+                                // tile is omitted here and Split Bills is reached
+                                // from quick services instead. Nothing else is
+                                // disabled — routes, deep links and existing bills
+                                // keep working, so a co-payer who was sent a link
+                                // can still pay.
+                                if (endpointRegistry
+                                    .splitBillSendFundsEntryVisible)
+                                  BlocBuilder<SplitBillCountCubit, int>(
+                                    bloc: serviceLocator<SplitBillCountCubit>(),
+                                    builder: (context, pendingCount) {
+                                      return _buildQuickAction(
+                                        icon: Icons.group_outlined,
+                                        label: 'Split Bills',
+                                        onTap: _launchSplitBills,
+                                        badgeCount: pendingCount,
+                                      );
+                                    },
+                                  ),
+                                // Scheduled / recurring transfers — surfaced here so
+                                // users can find their upcoming & repeating payments
+                                // at a glance (shown in both flows). Opens a chooser
+                                // first: one-time scheduled transfers and recurring
+                                // rules are different server objects with different
+                                // management screens.
+                                _buildQuickAction(
+                                  icon: Icons.event_repeat_outlined,
+                                  label: 'Scheduled',
+                                  onTap: () =>
+                                      ScheduledEntrySheet.show(context),
+                                ),
+                                // Transfer History — short flow only (replaces the
+                                // removed "Add User"); long flow uses the History
+                                // filter chip below.
+                                if (widget.shortFlow)
+                                  _buildQuickAction(
+                                    icon: Icons.history,
+                                    label: 'History',
+                                    onTap: _showTransferHistory,
+                                  ),
+                              ],
                             ),
                           ),
                         ),
-                        child: Padding(
-                          // Page padding (16.w) on both edges; the actions are
-                          // distributed with spaceBetween so the last tile
-                          // (Split Bills) no longer overflows off the right edge
-                          // as it did inside the old horizontal scroller.
-                          // Transfer "History" moved to a filter chip beside
-                          // "Recurring" below.
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildQuickAction(
-                                icon: Icons.qr_code_scanner_outlined,
-                                label: 'Scan QR',
-                                onTap: _launchQRScanner,
-                              ),
-                              // "Add User" — long flow only. The short flow adds
-                              // recipients inline, so it's replaced by "History"
-                              // at the end of the strip.
-                              if (!widget.shortFlow)
-                                _buildQuickAction(
-                                  icon: Icons.person_add_outlined,
-                                  label: 'Add User',
-                                  onTap: () =>
-                                      Get.toNamed(AppRoutes.addRecipient),
-                                ),
-                              // "Scan Account" moved to a scan button at the
-                              // right edge of the account-number box (see the
-                              // embedded AddRecipient below / the long-flow
-                              // Add-Recipient screen) — cleaner top strip.
-                              if (FeatureFlags.scanAccountDetailsIsEnabled)
-                                _buildQuickAction(
-                                  icon: Icons.manage_search_outlined,
-                                  label: 'Scan History',
-                                  onTap: showScanHistory,
-                                ),
-                              // Split Bills quick action with pending co-payer
-                              // badge. Admin-hideable: when
-                              // splitbill_sendfunds_entry_visible is off the
-                              // tile is omitted here and Split Bills is reached
-                              // from quick services instead. Nothing else is
-                              // disabled — routes, deep links and existing bills
-                              // keep working, so a co-payer who was sent a link
-                              // can still pay.
-                              if (endpointRegistry.splitBillSendFundsEntryVisible)
-                                BlocBuilder<SplitBillCountCubit, int>(
-                                  bloc: serviceLocator<SplitBillCountCubit>(),
-                                  builder: (context, pendingCount) {
-                                    return _buildQuickAction(
-                                      icon: Icons.group_outlined,
-                                      label: 'Split Bills',
-                                      onTap: _launchSplitBills,
-                                      badgeCount: pendingCount,
-                                    );
-                                  },
-                                ),
-                              // Scheduled / recurring transfers — surfaced here so
-                              // users can find their upcoming & repeating payments
-                              // at a glance (shown in both flows).
-                              _buildQuickAction(
-                                icon: Icons.event_repeat_outlined,
-                                label: 'Scheduled',
-                                onTap: () =>
-                                    Get.toNamed(AppRoutes.recurringTransfers),
-                              ),
-                              // Transfer History — short flow only (replaces the
-                              // removed "Add User"); long flow uses the History
-                              // filter chip below.
-                              if (widget.shortFlow)
-                                _buildQuickAction(
-                                  icon: Icons.history,
-                                  label: 'History',
-                                  onTap: _showTransferHistory,
-                                ),
-                            ],
+
+                        // Filter chips (All / Favorites / Recurring / History) —
+                        // long flow only. The short flow shows just the inline add
+                        // + a simple saved list, so these are hidden to declutter.
+                        if (!widget.shortFlow)
+                          Padding(
+                            padding: EdgeInsets.all(16.w),
+                            child: RecipientChipsBuilder(
+                              onFilterChanged: _onFilterChanged,
+                              selectedFilter: _currentFilter,
+                            ),
                           ),
-                        ),
-                      ),
 
-                      // Filter chips (All / Favorites / Recurring / History) —
-                      // long flow only. The short flow shows just the inline add
-                      // + a simple saved list, so these are hidden to declutter.
-                      if (!widget.shortFlow)
-                      Padding(
-                        padding: EdgeInsets.all(16.w),
-                        child: RecipientChipsBuilder(
-                          onFilterChanged: _onFilterChanged,
-                          selectedFilter: _currentFilter,
+                        // Recipients List Section. Short flow inlines the
+                        // AddRecipient widget (as a section under the filters)
+                        // above the saved list, all in one scroll.
+                        Expanded(
+                          child: widget.shortFlow
+                              ? _buildShortFlowBody(recipientState)
+                              : _buildRecipientsList(recipientState),
                         ),
-                      ),
-
-                      // Recipients List Section. Short flow inlines the
-                      // AddRecipient widget (as a section under the filters)
-                      // above the saved list, all in one scroll.
-                      Expanded(
-                        child: widget.shortFlow
-                            ? _buildShortFlowBody(recipientState)
-                            : _buildRecipientsList(recipientState),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
                 ),
               ]);
             },
@@ -947,7 +970,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                       ],
                     ),
                   ),
-                  Icon(Icons.chevron_right, color: Colors.grey[400], size: 20.sp),
+                  Icon(Icons.chevron_right,
+                      color: Colors.grey[400], size: 20.sp),
                 ],
               ),
             ),
@@ -1107,7 +1131,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
       {required bool saveRecipient, int? prefillAmountMinor}) async {
     if (_shortBusy) return;
     // Telemetry: short-flow send-funds entry.
-    AnalyticsService.instance.trackSendFundsScreen('select_recipients', 'short');
+    AnalyticsService.instance
+        .trackSendFundsScreen('select_recipients', 'short');
     final active = _shortActiveSummary;
     if (active == null) {
       Get.snackbar('Please wait', 'Your account is still loading.',
@@ -1115,7 +1140,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
       return;
     }
     final isInternal = r.canSendAsInternal;
-    if (isInternal && r.internalUserId != null && r.internalUserId == _shortUserId) {
+    if (isInternal &&
+        r.internalUserId != null &&
+        r.internalUserId == _shortUserId) {
       Get.snackbar('Not allowed', 'You can’t send funds to yourself.',
           snackPosition: SnackPosition.BOTTOM);
       return;
@@ -1148,10 +1175,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
         availableBalanceMajor: active.availableBalance,
         // Clean, compact source label — just the account name/type (no number or
         // mask); the header shows it beside the recipient with the balance below.
-        sourceAccountLabel: (active.accountName != null &&
-                active.accountName!.isNotEmpty)
-            ? active.accountName!
-            : active.accountType,
+        sourceAccountLabel:
+            (active.accountName != null && active.accountName!.isNotEmpty)
+                ? active.accountName!
+                : active.accountType,
         transferCubit: context.read<TransferCubit>(),
         initialAmountMinor: prefillAmountMinor,
       ),
@@ -1177,9 +1204,11 @@ class _SelectRecipientsState extends State<SelectRecipients>
     final transactionId = 'transfer_${const Uuid().v4()}';
     final amountMajor = minor / 100.0;
     // Narration reused for the (optional) recurring rule's description.
-    final shortSenderProfile = context.read<AuthenticationCubit>().currentProfile;
+    final shortSenderProfile =
+        context.read<AuthenticationCubit>().currentProfile;
     final shortSenderName = shortSenderProfile != null
-        ? '${shortSenderProfile.user.firstName} ${shortSenderProfile.user.lastName}'.trim()
+        ? '${shortSenderProfile.user.firstName} ${shortSenderProfile.user.lastName}'
+            .trim()
         : '';
     final shortDefaultNarration = shortSenderName.isNotEmpty
         ? 'Transfer from $shortSenderName'
@@ -1239,8 +1268,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
         // PIN sheet is closed now — safe to surface the recurring retry dialog
         // (parity with the long flow) before navigating to the receipt.
         if (recurring != null && mounted) {
-          await _setupRecurringShortWithRetry(
-              r, active, minor, shortNarration, recurring, transactionId, usedToken);
+          await _setupRecurringShortWithRetry(r, active, minor, shortNarration,
+              recurring, transactionId, usedToken);
         }
         _navShortReceipt();
       } else {
@@ -1258,8 +1287,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
         _navShortReceipt();
       }
     } catch (e) {
-      Get.snackbar('Transfer failed',
-          e.toString().replaceAll('Exception:', '').trim(),
+      Get.snackbar(
+          'Transfer failed', e.toString().replaceAll('Exception:', '').trim(),
           snackPosition: SnackPosition.BOTTOM);
     } finally {
       _shortBusy = false;
@@ -1279,7 +1308,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
       currency: currency,
     );
     if (!mounted) return false;
-    if (result == null) return true; // fail-open — never block on a down service
+    if (result == null) {
+      return true; // fail-open — never block on a down service
+    }
 
     if (result.shouldBlockTransaction) {
       // STRICT / fixed budget — block with an override choice.
@@ -1300,9 +1331,11 @@ class _SelectRecipientsState extends State<SelectRecipients>
         budgetId: budgetId,
       );
       if (action == null || action == BudgetOverrideAction.cancel) return false;
-      if (action == BudgetOverrideAction.increaseBudget && budgetId.isNotEmpty) {
+      if (action == BudgetOverrideAction.increaseBudget &&
+          budgetId.isNotEmpty) {
         final overage = result.currentSpent + amountMajor - result.budgetLimit;
-        final increase = overage > 0 ? overage * 1.2 : amountMajor; // 20% buffer
+        final increase =
+            overage > 0 ? overage * 1.2 : amountMajor; // 20% buffer
         await budgetCubit.updateBudget(
             budgetId: budgetId, amount: result.budgetLimit + increase);
         final retry = await budgetCubit.validateCategoryBudget(
@@ -1355,7 +1388,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
     final isInternal = r.canSendAsInternal;
     final senderProfile = context.read<AuthenticationCubit>().currentProfile;
     final senderName = senderProfile != null
-        ? '${senderProfile.user.firstName} ${senderProfile.user.lastName}'.trim()
+        ? '${senderProfile.user.firstName} ${senderProfile.user.lastName}'
+            .trim()
         : '';
     final defaultNarration = senderName.isNotEmpty
         ? 'Transfer from $senderName'
@@ -1461,7 +1495,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
     String transactionId,
     String verificationToken,
   ) async {
-    final cubit = _recurringTransferCubit ??= serviceLocator<RecurringTransferCubit>();
+    final cubit =
+        _recurringTransferCubit ??= serviceLocator<RecurringTransferCubit>();
     var attempt = 0;
     while (true) {
       cubit.createRecurringTransfer(
@@ -1521,7 +1556,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
         title: Text(
           'Recurring Setup Failed',
           style: TextStyle(
-              color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600),
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1569,8 +1606,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
               onPressed: () => Navigator.of(dialogContext).pop(true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF3B82F6),
-                shape:
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ),
               child: Text(
                 'Retry Setup',
@@ -1642,8 +1679,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
       // Present only for future-dated sends → drives the receipt's
       // "Transfer Scheduled" header (mirrors the long flow).
       if (res.scheduledAt != null) 'scheduledAt': res.scheduledAt,
-      'network':
-          isInternal ? 'Lazervault Internal Transfer' : 'External Bank Transfer',
+      'network': isInternal
+          ? 'Lazervault Internal Transfer'
+          : 'External Bank Transfer',
       'transferType': isInternal ? 'Internal Transfer' : 'Domestic Transfer',
     };
   }
@@ -1672,84 +1710,85 @@ class _SelectRecipientsState extends State<SelectRecipients>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          // Inline "add recipient" — the AddRecipient widget embedded as a
-          // section right under the header (reuses its forms + confirm sheets).
-          AddRecipient(
-            embedded: true,
-            onRecipientSelected: _onShortRecipientPicked,
-            onMethodChanged: (m) => setState(() => _shortMethod = m),
-            // Scan Account now lives at the right edge of the account-number
-            // box; tapping it runs the shared bank-scan → send pipeline.
-            onScanAccount: FeatureFlags.scanAccountDetailsIsEnabled
-                ? launchBankDetailsScan
-                : null,
-          ),
-          // Clear separation between the add-recipient / "Verify recipient" area
-          // above and the saved-recipients list below, so the two read as
-          // distinct sections and the saved list sits at the bottom.
-          SizedBox(height: 28.h),
-          Divider(color: Colors.grey[200], height: 1, thickness: 1),
-          SizedBox(height: 20.h),
-          // Header row: "Saved recipients" with the "View all" CTA on the RIGHT
-          // (opens the full list + search sheet). Only shown when there are any.
-          Row(
-            children: [
-              Text(
-                'Saved recipients',
-                style: TextStyle(
-                  color: Colors.grey[700],
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(width: 6.w),
-              // Filter icon → bottom sheet (Bank / Lazervault user / Favorites /
-              // Recurring). Shows a dot when a non-default filter is active.
-              InkWell(
-                borderRadius: BorderRadius.circular(20.r),
-                onTap: _showSavedFilterSheet,
-                child: Padding(
-                  padding: EdgeInsets.all(4.w),
-                  child: Icon(
-                    _savedFavoritesOnly
-                        ? Icons.filter_alt
-                        : Icons.filter_alt_outlined,
-                    size: 18.sp,
-                    color: _savedFavoritesOnly
-                        ? const Color.fromARGB(255, 78, 3, 208)
-                        : Colors.grey[600],
+            // Inline "add recipient" — the AddRecipient widget embedded as a
+            // section right under the header (reuses its forms + confirm sheets).
+            AddRecipient(
+              embedded: true,
+              onRecipientSelected: _onShortRecipientPicked,
+              onMethodChanged: (m) => setState(() => _shortMethod = m),
+              // Scan Account now lives at the right edge of the account-number
+              // box; tapping it runs the shared bank-scan → send pipeline.
+              onScanAccount: FeatureFlags.scanAccountDetailsIsEnabled
+                  ? launchBankDetailsScan
+                  : null,
+            ),
+            // Clear separation between the add-recipient / "Verify recipient" area
+            // above and the saved-recipients list below, so the two read as
+            // distinct sections and the saved list sits at the bottom.
+            SizedBox(height: 28.h),
+            Divider(color: Colors.grey[200], height: 1, thickness: 1),
+            SizedBox(height: 20.h),
+            // Header row: "Saved recipients" with the "View all" CTA on the RIGHT
+            // (opens the full list + search sheet). Only shown when there are any.
+            Row(
+              children: [
+                Text(
+                  'Saved recipients',
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-              const Spacer(),
-              if (saved.isNotEmpty)
+                SizedBox(width: 6.w),
+                // Filter icon → bottom sheet (Bank / Lazervault user / Favorites /
+                // Recurring). Shows a dot when a non-default filter is active.
                 InkWell(
-                  borderRadius: BorderRadius.circular(8.r),
-                  onTap: () => _openSavedRecipientsSheet(),
+                  borderRadius: BorderRadius.circular(20.r),
+                  onTap: _showSavedFilterSheet,
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
-                    child: Row(
-                      children: [
-                        Text(
-                          'View all',
-                          style: TextStyle(
-                            color: const Color.fromARGB(255, 78, 3, 208),
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(width: 2.w),
-                        Icon(Icons.chevron_right,
-                            size: 16.sp,
-                            color: const Color.fromARGB(255, 78, 3, 208)),
-                      ],
+                    padding: EdgeInsets.all(4.w),
+                    child: Icon(
+                      _savedFavoritesOnly
+                          ? Icons.filter_alt
+                          : Icons.filter_alt_outlined,
+                      size: 18.sp,
+                      color: _savedFavoritesOnly
+                          ? const Color.fromARGB(255, 78, 3, 208)
+                          : Colors.grey[600],
                     ),
                   ),
                 ),
-            ],
-          ),
-          SizedBox(height: 8.h),
-          _buildShortSavedList(state),
+                const Spacer(),
+                if (saved.isNotEmpty)
+                  InkWell(
+                    borderRadius: BorderRadius.circular(8.r),
+                    onTap: () => _openSavedRecipientsSheet(),
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+                      child: Row(
+                        children: [
+                          Text(
+                            'View all',
+                            style: TextStyle(
+                              color: const Color.fromARGB(255, 78, 3, 208),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(width: 2.w),
+                          Icon(Icons.chevron_right,
+                              size: 16.sp,
+                              color: const Color.fromARGB(255, 78, 3, 208)),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            SizedBox(height: 8.h),
+            _buildShortSavedList(state),
           ],
         ),
       ),
@@ -1791,9 +1830,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                 width: 40.w,
                 height: 40.w,
                 decoration: BoxDecoration(
-                  color: active
-                      ? brand.withValues(alpha: 0.10)
-                      : Colors.grey[100],
+                  color:
+                      active ? brand.withValues(alpha: 0.10) : Colors.grey[100],
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon,
@@ -2004,212 +2042,222 @@ class _SelectRecipientsState extends State<SelectRecipients>
               builder: (blocCtx, state) {
                 final all = _orderedSaved(state);
                 final q = query.trim().toLowerCase();
-            final byPill = switch (pill) {
-              'bank' => all.where((r) => !_isInternalRecipient(r)),
-              'lazervault' => all.where((r) => _isInternalRecipient(r)),
-              _ => all,
-            };
-            final filtered = (q.isEmpty
-                    ? byPill
-                    : byPill.where((r) {
-                        return r.name.toLowerCase().contains(q) ||
-                            r.accountNumber.toLowerCase().contains(q) ||
-                            r.bankName.toLowerCase().contains(q) ||
-                            (r.alias ?? '').toLowerCase().contains(q);
-                      }))
-                .toList();
-            Widget pillChip(String value, String label, {VoidCallback? onSelect}) {
-              final selected = pill == value;
-              return GestureDetector(
-                onTap: () {
-                  onSelect?.call();
-                  setSheetState(() => pill = value);
-                },
-                child: Container(
-                  margin: EdgeInsets.only(right: 8.w),
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
-                  decoration: BoxDecoration(
-                    color: selected ? purple : Colors.grey[100],
-                    borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(
-                        color: selected ? purple : Colors.grey[300]!),
-                  ),
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      color: selected ? Colors.white : Colors.grey[700],
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              );
-            }
-            return Container(
-              height: 0.85.sh,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-              ),
-              padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
-              child: Column(
-                children: [
-                  Center(
+                final byPill = switch (pill) {
+                  'bank' => all.where((r) => !_isInternalRecipient(r)),
+                  'lazervault' => all.where((r) => _isInternalRecipient(r)),
+                  _ => all,
+                };
+                final filtered = (q.isEmpty
+                        ? byPill
+                        : byPill.where((r) {
+                            return r.name.toLowerCase().contains(q) ||
+                                r.accountNumber.toLowerCase().contains(q) ||
+                                r.bankName.toLowerCase().contains(q) ||
+                                (r.alias ?? '').toLowerCase().contains(q);
+                          }))
+                    .toList();
+                Widget pillChip(String value, String label,
+                    {VoidCallback? onSelect}) {
+                  final selected = pill == value;
+                  return GestureDetector(
+                    onTap: () {
+                      onSelect?.call();
+                      setSheetState(() => pill = value);
+                    },
                     child: Container(
-                      width: 40.w,
-                      height: 4.h,
+                      margin: EdgeInsets.only(right: 8.w),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
                       decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
+                        color: selected ? purple : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(
+                            color: selected ? purple : Colors.grey[300]!),
+                      ),
+                      child: Text(
+                        label,
+                        style: TextStyle(
+                          color: selected ? Colors.white : Colors.grey[700],
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
+                  );
+                }
+
+                return Container(
+                  height: 0.85.sh,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(28)),
                   ),
-                  SizedBox(height: 12.h),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Saved recipients',
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
+                  padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+                  child: Column(
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40.w,
+                          height: 4.h,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
-                  // Search field
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 14.w),
-                    child: Row(
-                      children: [
-                        Icon(Icons.search, color: Colors.grey[500], size: 20.sp),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                          child: TextField(
-                            autofocus: false,
-                            onChanged: (v) => setSheetState(() => query = v),
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Search recipients...',
-                              hintStyle: TextStyle(
-                                  color: Colors.grey[500], fontSize: 14.sp),
+                      SizedBox(height: 12.h),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Saved recipients',
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 12.h),
+                      // Search field
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 14.w),
+                        child: Row(
+                          children: [
+                            Icon(Icons.search,
+                                color: Colors.grey[500], size: 20.sp),
+                            SizedBox(width: 10.w),
+                            Expanded(
+                              child: TextField(
+                                autofocus: false,
+                                onChanged: (v) =>
+                                    setSheetState(() => query = v),
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: 'Search recipients...',
+                                  hintStyle: TextStyle(
+                                      color: Colors.grey[500], fontSize: 14.sp),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 12.h),
+                      // Filter pills: All / Bank / Lazervault user / Recurring.
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              pillChip('all', 'All'),
+                              pillChip('bank', 'Bank'),
+                              pillChip('lazervault', 'Lazervault user'),
+                              // Recurring shows the user's active recurring
+                              // transfers instead of saved recipients. Load the
+                              // cubit lazily on first selection.
+                              pillChip('recurring', 'Recurring', onSelect: () {
+                                _recurringTransferCubit ??=
+                                    serviceLocator<RecurringTransferCubit>();
+                                _recurringTransferCubit!
+                                    .loadRecurringTransfers(status: 'active');
+                              }),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // "Search all Lazervault users" belongs to the Lazervault
+                      // users tab only — it escalates beyond saved recipients into
+                      // the full directory. Hidden on All/Bank/Recurring and for the
+                      // long-flow saved-only search.
+                      if (!savedOnly && pill == 'lazervault') ...[
+                        SizedBox(height: 12.h),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pop(sheetCtx);
+                            _openUnifiedRecipientSearch();
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 14.w, vertical: 12.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF4E03D0)
+                                  .withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                  color: const Color(0xFF4E03D0)
+                                      .withValues(alpha: 0.25)),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.person_search,
+                                    color: const Color(0xFF4E03D0),
+                                    size: 20.sp),
+                                SizedBox(width: 10.w),
+                                Expanded(
+                                  child: Text(
+                                    'Search all Lazervault users',
+                                    style: TextStyle(
+                                      color: const Color(0xFF4E03D0),
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                Icon(Icons.chevron_right,
+                                    color: const Color(0xFF4E03D0),
+                                    size: 18.sp),
+                              ],
                             ),
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
-                  // Filter pills: All / Bank / Lazervault user / Recurring.
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          pillChip('all', 'All'),
-                          pillChip('bank', 'Bank'),
-                          pillChip('lazervault', 'Lazervault user'),
-                          // Recurring shows the user's active recurring
-                          // transfers instead of saved recipients. Load the
-                          // cubit lazily on first selection.
-                          pillChip('recurring', 'Recurring', onSelect: () {
-                            _recurringTransferCubit ??=
-                                serviceLocator<RecurringTransferCubit>();
-                            _recurringTransferCubit!
-                                .loadRecurringTransfers(status: 'active');
-                          }),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // "Search all Lazervault users" belongs to the Lazervault
-                  // users tab only — it escalates beyond saved recipients into
-                  // the full directory. Hidden on All/Bank/Recurring and for the
-                  // long-flow saved-only search.
-                  if (!savedOnly && pill == 'lazervault') ...[
-                    SizedBox(height: 12.h),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(sheetCtx);
-                        _openUnifiedRecipientSearch();
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 14.w, vertical: 12.h),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                              color: const Color(0xFF4E03D0)
-                                  .withValues(alpha: 0.25)),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.person_search,
-                                color: const Color(0xFF4E03D0), size: 20.sp),
-                            SizedBox(width: 10.w),
-                            Expanded(
-                              child: Text(
-                                'Search all Lazervault users',
-                                style: TextStyle(
-                                  color: const Color(0xFF4E03D0),
-                                  fontSize: 13.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            Icon(Icons.chevron_right,
-                                color: const Color(0xFF4E03D0), size: 18.sp),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                  SizedBox(height: 8.h),
-                  Expanded(
-                    child: pill == 'recurring'
-                        ? _buildRecurringList()
-                        : filtered.isEmpty
-                            ? Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      q.isEmpty
-                                          ? 'No saved recipients yet'
-                                          : 'No saved recipients match "$query"',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          color: Colors.grey[500],
-                                          fontSize: 13.sp),
+                      SizedBox(height: 8.h),
+                      Expanded(
+                        child: pill == 'recurring'
+                            ? _buildRecurringList()
+                            : filtered.isEmpty
+                                ? Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          q.isEmpty
+                                              ? 'No saved recipients yet'
+                                              : 'No saved recipients match "$query"',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              color: Colors.grey[500],
+                                              fontSize: 13.sp),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              )
-                            : ListView.builder(
-                                padding: EdgeInsets.symmetric(vertical: 8.h),
-                                itemCount: filtered.length,
-                                itemBuilder: (_, i) {
-                                  final r = filtered[i];
-                                  return _buildRecipientItem(
-                                    r,
-                                    onTapOverride: () {
-                                      Navigator.pop(sheetCtx);
-                                      _onRecipientTapped(r);
+                                  )
+                                : ListView.builder(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 8.h),
+                                    itemCount: filtered.length,
+                                    itemBuilder: (_, i) {
+                                      final r = filtered[i];
+                                      return _buildRecipientItem(
+                                        r,
+                                        onTapOverride: () {
+                                          Navigator.pop(sheetCtx);
+                                          _onRecipientTapped(r);
+                                        },
+                                      );
                                     },
-                                  );
-                                },
-                              ),
+                                  ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
+                );
               },
             );
           },
@@ -2256,11 +2304,11 @@ class _SelectRecipientsState extends State<SelectRecipients>
           if (authState is AuthenticationSuccess) {
             final f = _activeFilter();
             await context.read<RecipientCubit>().getRecipients(
-              accessToken: authState.profile.session.accessToken,
-              countryCode: f.countryCode,
-              currency: f.currency,
-              forceRefresh: true,
-            );
+                  accessToken: authState.profile.session.accessToken,
+                  countryCode: f.countryCode,
+                  currency: f.currency,
+                  forceRefresh: true,
+                );
           }
         },
         child: CustomScrollView(
@@ -2287,7 +2335,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                     final recipient = allRecipients[index];
                     return _buildRecipientItem(recipient);
                   },
-                  childCount: allRecipients.length + 1, // +1 for loading indicator
+                  childCount:
+                      allRecipients.length + 1, // +1 for loading indicator
                 ),
               ),
             ),
@@ -2319,11 +2368,11 @@ class _SelectRecipientsState extends State<SelectRecipients>
             if (authState is AuthenticationSuccess) {
               final f = _activeFilter();
               await context.read<RecipientCubit>().getRecipients(
-                accessToken: authState.profile.session.accessToken,
-                countryCode: f.countryCode,
-                currency: f.currency,
-                forceRefresh: true,
-              );
+                    accessToken: authState.profile.session.accessToken,
+                    countryCode: f.countryCode,
+                    currency: f.currency,
+                    forceRefresh: true,
+                  );
             }
           },
           child: SingleChildScrollView(
@@ -2372,11 +2421,11 @@ class _SelectRecipientsState extends State<SelectRecipients>
             if (authState is AuthenticationSuccess) {
               final f = _activeFilter();
               await context.read<RecipientCubit>().getRecipients(
-                accessToken: authState.profile.session.accessToken,
-                countryCode: f.countryCode,
-                currency: f.currency,
-                forceRefresh: true,
-              );
+                    accessToken: authState.profile.session.accessToken,
+                    countryCode: f.countryCode,
+                    currency: f.currency,
+                    forceRefresh: true,
+                  );
             }
           },
           child: SingleChildScrollView(
@@ -2429,7 +2478,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color.fromARGB(255, 78, 3, 208),
                             foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 24.w, vertical: 12.h),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12.r),
                             ),
@@ -2453,11 +2503,11 @@ class _SelectRecipientsState extends State<SelectRecipients>
           if (authState is AuthenticationSuccess) {
             final f = _activeFilter();
             await context.read<RecipientCubit>().getRecipients(
-              accessToken: authState.profile.session.accessToken,
-              countryCode: f.countryCode,
-              currency: f.currency,
-              forceRefresh: true,
-            );
+                  accessToken: authState.profile.session.accessToken,
+                  countryCode: f.countryCode,
+                  currency: f.currency,
+                  forceRefresh: true,
+                );
           }
         },
         child: CustomScrollView(
@@ -2568,7 +2618,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                         overflow: TextOverflow.ellipsis,
                       ),
                       // Alias row if exists
-                      if (recipient.alias != null && recipient.alias!.isNotEmpty) ...[
+                      if (recipient.alias != null &&
+                          recipient.alias!.isNotEmpty) ...[
                         SizedBox(height: 2.h),
                         Row(
                           children: [
@@ -2853,8 +2904,11 @@ class _SelectRecipientsState extends State<SelectRecipients>
             ),
             _buildOptionTile(
               icon: Icons.favorite_border,
-              title: recipient.isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
-              color: recipient.isFavorite ? Colors.amber[700]! : Colors.grey[700]!,
+              title: recipient.isFavorite
+                  ? 'Remove from Favorites'
+                  : 'Add to Favorites',
+              color:
+                  recipient.isFavorite ? Colors.amber[700]! : Colors.grey[700]!,
               onTap: () {
                 Get.back();
                 _toggleFavorite(recipient);
@@ -2979,7 +3033,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
             // Scrollable content
             Flexible(
               child: SingleChildScrollView(
-                padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 24.h),
+                padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).padding.bottom + 24.h),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -3000,7 +3055,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                           borderRadius: BorderRadius.circular(16.r),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                              color: const Color(0xFF4E03D0)
+                                  .withValues(alpha: 0.2),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -3030,7 +3086,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                   child: Text(
                                     recipient.displayBankName,
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.9),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.9),
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -3088,7 +3145,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                             ),
 
                             // Alias
-                            if (recipient.alias != null && recipient.alias!.isNotEmpty) ...[
+                            if (recipient.alias != null &&
+                                recipient.alias!.isNotEmpty) ...[
                               SizedBox(height: 12.h),
                               Row(
                                 children: [
@@ -3101,7 +3159,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                   Text(
                                     'Alias: ${recipient.alias}',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.9),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.9),
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -3133,12 +3192,16 @@ class _SelectRecipientsState extends State<SelectRecipients>
                           children: [
                             if (recipient.sortCode.isNotEmpty)
                               _detailRow('Sort Code', recipient.sortCode),
-                            if (recipient.countryCode != null && recipient.countryCode!.isNotEmpty)
+                            if (recipient.countryCode != null &&
+                                recipient.countryCode!.isNotEmpty)
                               _detailRow('Country', recipient.countryCode!),
-                            if (recipient.currency != null && recipient.currency!.isNotEmpty)
+                            if (recipient.currency != null &&
+                                recipient.currency!.isNotEmpty)
                               _detailRow('Currency', recipient.currency!),
-                            if (recipient.type != null && recipient.type!.isNotEmpty)
-                              _detailRow('Type', _formatRecipientType(recipient.type)),
+                            if (recipient.type != null &&
+                                recipient.type!.isNotEmpty)
+                              _detailRow(
+                                  'Type', _formatRecipientType(recipient.type)),
                           ],
                         ),
                       ),
@@ -3164,7 +3227,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12.r),
                                 ),
-                                side: BorderSide(color: const Color(0xFF4E03D0)),
+                                side:
+                                    BorderSide(color: const Color(0xFF4E03D0)),
                                 foregroundColor: const Color(0xFF4E03D0),
                               ),
                             ),
@@ -3276,10 +3340,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
                 final trimmedValue = controller.text.trim();
                 if (accessToken != null) {
                   context.read<RecipientCubit>().updateAlias(
-                    recipientId: recipient.id,
-                    alias: trimmedValue.isEmpty ? null : trimmedValue,
-                    accessToken: accessToken,
-                  );
+                        recipientId: recipient.id,
+                        alias: trimmedValue.isEmpty ? null : trimmedValue,
+                        accessToken: accessToken,
+                      );
                   Get.snackbar(
                     'Success',
                     trimmedValue.isEmpty ? 'Alias removed' : 'Alias updated',
@@ -3315,7 +3379,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
     SharePlus.instance.share(ShareParams(
         // iOS: a non-zero popover anchor is required — CGRectZero throws
         // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),text: shareText));
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+        text: shareText));
   }
 
   /// Toggle favorite status
@@ -3327,10 +3392,10 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
     if (accessToken != null) {
       context.read<RecipientCubit>().toggleFavorite(
-        recipientId: recipient.id,
-        isFavorite: !recipient.isFavorite,
-        accessToken: accessToken,
-      );
+            recipientId: recipient.id,
+            isFavorite: !recipient.isFavorite,
+            accessToken: accessToken,
+          );
       Get.snackbar(
         'Success',
         recipient.isFavorite ? 'Removed from favorites' : 'Added to favorites',
@@ -3363,9 +3428,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
                     : null;
                 if (accessToken != null) {
                   context.read<RecipientCubit>().deleteRecipient(
-                    recipientId: recipient.id,
-                    accessToken: accessToken,
-                  );
+                        recipientId: recipient.id,
+                        accessToken: accessToken,
+                      );
                 }
               },
               child: Text('Remove', style: TextStyle(color: Colors.red[400])),
@@ -3487,7 +3552,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
 
     if (!mounted) return;
     if (confirmed) {
-      final currency = CountryConfigs.getByCode(_currentCountry)?.currency ?? 'NGN';
+      final currency =
+          CountryConfigs.getByCode(_currentCountry)?.currency ?? 'NGN';
       final recipient = RecipientModel(
         id: user.userId,
         name: user.fullName,
@@ -3536,9 +3602,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
   /// Remember a just-selected bank as most-recent (newest first, deduped, cap 8).
   Future<void> _recordRecentBank(String? code) async {
     if (code == null || code.isEmpty) return;
-    _recentBankCodes = [code, ..._recentBankCodes.where((c) => c != code)]
-        .take(8)
-        .toList();
+    _recentBankCodes =
+        [code, ..._recentBankCodes.where((c) => c != code)].take(8).toList();
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(await _recentBanksKey(), _recentBankCodes);
@@ -3777,19 +3842,33 @@ class _SelectRecipientsState extends State<SelectRecipients>
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
-                        _bankSortPill('Most used', BankSort.mostUsed, bankSort,
+                        _bankSortPill(
+                            'Most used',
+                            BankSort.mostUsed,
+                            bankSort,
                             () => setSheetState(
                                 () => bankSort = BankSort.mostUsed)),
                         SizedBox(width: 8.w),
-                        _bankSortPill('Most popular', BankSort.popular, bankSort,
-                            () => setSheetState(() => bankSort = BankSort.popular)),
+                        _bankSortPill(
+                            'Most popular',
+                            BankSort.popular,
+                            bankSort,
+                            () => setSheetState(
+                                () => bankSort = BankSort.popular)),
                         SizedBox(width: 8.w),
-                        _bankSortPill('A–Z', BankSort.alphabetical, bankSort,
+                        _bankSortPill(
+                            'A–Z',
+                            BankSort.alphabetical,
+                            bankSort,
                             () => setSheetState(
                                 () => bankSort = BankSort.alphabetical)),
                         SizedBox(width: 8.w),
-                        _bankSortPill('Recent', BankSort.recent, bankSort,
-                            () => setSheetState(() => bankSort = BankSort.recent)),
+                        _bankSortPill(
+                            'Recent',
+                            BankSort.recent,
+                            bankSort,
+                            () => setSheetState(
+                                () => bankSort = BankSort.recent)),
                       ],
                     ),
                   ),
@@ -3857,9 +3936,9 @@ class _SelectRecipientsState extends State<SelectRecipients>
                                     .toLowerCase()
                                     .contains(searchQuery))
                                 .toList();
-                        final filteredBanks =
-                            sortBanks(matched, bankSort, _recentBankCodes,
-                                mostUsedCodes: _mostUsedBankCodes);
+                        final filteredBanks = sortBanks(
+                            matched, bankSort, _recentBankCodes,
+                            mostUsedCodes: _mostUsedBankCodes);
 
                         if (filteredBanks.isEmpty) {
                           return Center(
@@ -4004,7 +4083,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                 height: MediaQuery.of(context).size.height * 0.55,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(32.r)),
                 ),
                 child: Padding(
                   padding: EdgeInsets.all(24.w),
@@ -4402,7 +4482,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                           child: ElevatedButton(
                             onPressed: () {
                               Navigator.pop(bottomSheetContext);
-                              _proceedToPaymentWithContact(contact, isFavorite, alias);
+                              _proceedToPaymentWithContact(
+                                  contact, isFavorite, alias);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color.fromARGB(255, 78, 3, 208),
@@ -4462,7 +4543,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
     );
   }
 
-  void _proceedToPaymentWithContact(DeviceContact contact, bool isFavorite, String? alias) {
+  void _proceedToPaymentWithContact(
+      DeviceContact contact, bool isFavorite, String? alias) {
     if (_contactVerificationResult == null) return;
 
     final temporaryRecipient = RecipientModel(
@@ -4760,7 +4842,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
     );
   }
 
-  void _showQrScanErrorSheet(String title, String message, {bool isWarning = false}) {
+  void _showQrScanErrorSheet(String title, String message,
+      {bool isWarning = false}) {
     final color = isWarning ? Colors.orange : Colors.red;
     final icon = isWarning ? Icons.warning_amber_rounded : Icons.error_outline;
 
@@ -4900,7 +4983,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                     SizedBox(height: 16.h),
                     Text(
                       _friendlyError(state.message),
-                      style: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
+                      style:
+                          TextStyle(color: Colors.grey[400], fontSize: 14.sp),
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 16.h),
@@ -4934,12 +5018,14 @@ class _SelectRecipientsState extends State<SelectRecipients>
                     SizedBox(height: 16.h),
                     Text(
                       'No transfer history yet',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 16.sp),
+                      style:
+                          TextStyle(color: Colors.grey[600], fontSize: 16.sp),
                     ),
                     SizedBox(height: 8.h),
                     Text(
                       'Your past transfers will show up here.',
-                      style: TextStyle(color: Colors.grey[500], fontSize: 13.sp),
+                      style:
+                          TextStyle(color: Colors.grey[500], fontSize: 13.sp),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -5017,13 +5103,14 @@ class _SelectRecipientsState extends State<SelectRecipients>
                     SizedBox(height: 16.h),
                     Text(
                       _friendlyError(state.message),
-                      style: TextStyle(
-                          color: Colors.grey[400], fontSize: 14.sp),
+                      style:
+                          TextStyle(color: Colors.grey[400], fontSize: 14.sp),
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 16.h),
                     TextButton(
-                      onPressed: () => cubit.loadRecurringTransfers(status: 'active'),
+                      onPressed: () =>
+                          cubit.loadRecurringTransfers(status: 'active'),
                       child: const Text('Retry'),
                     ),
                   ],
@@ -5045,14 +5132,14 @@ class _SelectRecipientsState extends State<SelectRecipients>
                       SizedBox(height: 16.h),
                       Text(
                         'No active recurring transfers',
-                        style: TextStyle(
-                            color: Colors.grey[600], fontSize: 16.sp),
+                        style:
+                            TextStyle(color: Colors.grey[600], fontSize: 16.sp),
                       ),
                       SizedBox(height: 8.h),
                       Text(
                         'Set one up from any transfer confirmation.',
-                        style: TextStyle(
-                            color: Colors.grey[500], fontSize: 13.sp),
+                        style:
+                            TextStyle(color: Colors.grey[500], fontSize: 13.sp),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -5169,8 +5256,8 @@ class _SelectRecipientsState extends State<SelectRecipients>
                     ),
                     SizedBox(height: 4.h),
                     Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 6.w, vertical: 2.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                       decoration: BoxDecoration(
                         color: t.status == RecurringTransferStatus.active
                             ? const Color(0xFFE6F8EE)
