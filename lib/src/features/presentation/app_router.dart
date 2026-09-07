@@ -316,7 +316,6 @@ import 'package:lazervault/src/features/open_banking/presentation/screens/link_b
 // Tag Pay imports
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/tag_pay_home_screen.dart';
-import 'package:lazervault/src/features/tag_pay/presentation/view/search_users_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/create_tag_screen_redesigned.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/tag_amount_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/tag_payment_confirmation_screen.dart';
@@ -2967,14 +2966,6 @@ GetPage(
       page: () => BlocProvider(
         create: (context) => serviceLocator<TagPayCubit>(),
         child: const TagPayHomeScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.searchUsers,
-      page: () => BlocProvider(
-        create: (context) => serviceLocator<TagPayCubit>(),
-        child: const SearchUsersScreen(),
       ),
       transition: Transition.rightToLeft,
     ),

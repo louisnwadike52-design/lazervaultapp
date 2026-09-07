@@ -540,7 +540,6 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
 
   // Tag Pay Routes
   static const String tagPay = '/tag-pay';
-  static const String searchUsers = '/tag-pay/search';
   static const String createTag = '/tag-pay/create-tag';
   static const String tagAmount = '/tag-pay/tag-amount';
   static const String tagPaymentConfirmation = '/tag-pay/payment-confirmation';
