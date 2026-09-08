@@ -65,6 +65,11 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
       cubit.loadOffer(_offerId);
     } else if (_shareToken.isNotEmpty) {
       cubit.loadOfferByShareToken(_shareToken);
+    } else {
+      // Neither identifier arrived — a malformed link, or a deep link whose
+      // arguments were lost. Surface the same "not available" state the error
+      // path uses rather than sitting on a blank spinner forever.
+      cubit.failOfferLoad('This link is missing its offer reference.');
     }
   }
 

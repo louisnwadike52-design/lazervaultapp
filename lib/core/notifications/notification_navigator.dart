@@ -40,6 +40,12 @@ class PendingDeepLink {
 
   NotificationTarget? _pending;
   DateTime? _stashedAt;
+  // Whether a user was authenticated at the MOMENT this target was stashed.
+  // A target captured with no session (a share link opened on a cold, logged-
+  // out start) belongs to the person opening it now, NOT to any outgoing user,
+  // so the sign-out/auto-login teardown must not wipe it. Only targets captured
+  // under a live session are account-specific and cleared on teardown.
+  bool _stashedUnderSession = false;
 
   /// How long a stashed target stays valid.
   ///
@@ -98,6 +104,7 @@ class PendingDeepLink {
   void push(NotificationTarget target) {
     _pending = target;
     _stashedAt = DateTime.now();
+    _stashedUnderSession = _isAuthenticated();
     consumeAndNavigate();
   }
 
@@ -141,12 +148,25 @@ class PendingDeepLink {
     });
   }
 
-  /// Discards anything stashed. Called on sign-out so a target captured by one
-  /// user is never replayed into the next user's session — the stash outlives
-  /// a logout otherwise, and these targets are account-specific.
+  /// Called on sign-out / rejected auto-login. Drops a target captured UNDER a
+  /// session (account-specific — must never replay into the next user), but
+  /// KEEPS one captured with no session: that is a fresh share/deep link opened
+  /// on a cold logged-out start, and the cold-start auto-login teardown races
+  /// its ingestion. Clearing it there silently dropped the link the user just
+  /// tapped — they logged in and landed on the dashboard instead of the offer.
   void clear() {
+    if (!_stashedUnderSession) return; // fresh pre-auth intent — preserve it
     _pending = null;
     _stashedAt = null;
+    _stashedUnderSession = false;
+  }
+
+  /// Unconditional wipe (used by tests / a hard reset). Prefer [clear] for
+  /// sign-out so pre-auth deep links survive the login gate.
+  void clearAll() {
+    _pending = null;
+    _stashedAt = null;
+    _stashedUnderSession = false;
   }
 
   /// Side effects that must happen before landing on certain destinations.
@@ -180,6 +200,7 @@ class PendingDeepLink {
     if (!peek) {
       _pending = null;
       _stashedAt = null;
+      _stashedUnderSession = false;
     }
     return target;
   }

@@ -248,6 +248,10 @@ class EscrowCubit extends Cubit<EscrowState> {
     }
   }
 
+  /// Surface a load failure for a malformed/empty deep link — the view then
+  /// shows its "not available" state instead of an endless spinner.
+  void failOfferLoad(String message) => emit(EscrowError(message));
+
   /// Publish an offer. NO PIN — money-free; returns the offer (with its share
   /// token) so the success screen can offer the link, or null on failure.
   Future<EscrowOfferEntity?> createOffer({
