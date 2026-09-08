@@ -336,7 +336,13 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
               _showBulkAmountDialog(newRecipients.length);
             }
           },
-          alreadySelectedIds: _selectedRecipients.map((r) => r.recipient.id).toList(),
+          // Match saved rows by id AND account number — a recipient added via
+          // Users search or manual bank entry carries a different id than its
+          // saved-beneficiary row, and id-only matching let them be added twice.
+          alreadySelectedIds: _selectedRecipients
+              .expand((r) => [r.recipient.id, r.recipient.accountNumber])
+              .where((v) => v.isNotEmpty)
+              .toList(),
         ),
       ),
     );
@@ -621,9 +627,15 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
     });
   }
 
+  /// Per-recipient minimum: bank (external) legs get the payout-provider floor
+  /// of 100.00 — providers reject smaller NGN payouts, so catching it here
+  /// beats a failed batch later. Internal wallet legs keep the 1.00 minimum.
+  double _minAmountFor(dynamic r) =>
+      r.recipient.type == 'external' ? 100.0 : 1.0;
+
   bool get _canProceed {
     return _selectedRecipients.isNotEmpty &&
-        _selectedRecipients.every((r) => r.isValid && r.amount >= 1.0);
+        _selectedRecipients.every((r) => r.isValid && r.amount >= _minAmountFor(r));
   }
 
   void _proceedToBatchTransfer() {
@@ -1600,8 +1612,9 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                   borderSide: const BorderSide(color: btRed, width: 1.5),
                 ),
                 contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-                errorText: recipientItem.amount > 0 && recipientItem.amount < 1.0
-                    ? 'Minimum amount is ${_currencySymbol}1.00'
+                errorText: recipientItem.amount > 0 &&
+                        recipientItem.amount < _minAmountFor(recipientItem)
+                    ? 'Minimum amount is $_currencySymbol${_minAmountFor(recipientItem).toStringAsFixed(2)}${recipientItem.recipient.type == 'external' ? ' for bank transfers' : ''}'
                     : null,
                 errorStyle: GoogleFonts.inter(color: btRed, fontSize: 11.sp),
               ),

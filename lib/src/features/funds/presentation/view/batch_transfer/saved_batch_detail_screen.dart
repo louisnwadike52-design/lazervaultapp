@@ -168,6 +168,8 @@ class _SavedBatchDetailScreenState extends State<SavedBatchDetailScreen>
     final added = await AddRecipientSheet.show(
       context: context,
       currency: batch.currency,
+      existingAccountNumbers:
+          batch.items.map((i) => i.accountNumber).toList(),
     );
     if (added == null || !mounted) return;
     await context.read<SavedBatchDetailCubit>().addItem(added);

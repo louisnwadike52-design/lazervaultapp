@@ -13,6 +13,7 @@ class AddRecipientSheet {
   static Future<SavedBatchItemInputEntity?> show({
     required BuildContext context,
     required String currency,
+    List<String> existingAccountNumbers = const [],
   }) {
     return showModalBottomSheet<SavedBatchItemInputEntity>(
       context: context,
@@ -36,7 +37,9 @@ class AddRecipientSheet {
           }();
           return cubit;
         },
-        child: _AddRecipientSheetBody(currency: currency),
+        child: _AddRecipientSheetBody(
+            currency: currency,
+            existingAccountNumbers: existingAccountNumbers),
       ),
     );
   }
@@ -44,7 +47,13 @@ class AddRecipientSheet {
 
 class _AddRecipientSheetBody extends StatefulWidget {
   final String currency;
-  const _AddRecipientSheetBody({required this.currency});
+
+  /// Account numbers (and tags) already in the batch being edited — rendered
+  /// pre-checked in the Saved tab and refused on every entry path so the same
+  /// recipient can't be added twice.
+  final List<String> existingAccountNumbers;
+  const _AddRecipientSheetBody(
+      {required this.currency, this.existingAccountNumbers = const []});
 
   @override
   State<_AddRecipientSheetBody> createState() => _AddRecipientSheetBodyState();

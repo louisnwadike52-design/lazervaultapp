@@ -56,6 +56,9 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
 
   String get _symbol => CurrencyUtils.getSymbol(widget.currency);
 
+  bool _alreadyInBatch(String accountNumber) =>
+      widget.existingAccountNumbers.contains(accountNumber);
+
   void _showError(String message) {
     Get.snackbar('Error', message,
         backgroundColor: btRed,
@@ -215,20 +218,26 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
             separatorBuilder: (_, __) => SizedBox(height: 8.h),
             itemBuilder: (ctx, i) {
               final r = state.recipients[i];
+              final already = _alreadyInBatch(r.accountNumber);
               return GestureDetector(
-                onTap: () => _confirmSavedAmount(
-                  beneficiaryName: r.name,
-                  accountNumber: r.accountNumber,
-                  bankCode: r.sortCode,
-                  bankName: r.bankName,
-                  recipientType:
-                      r.type == 'internal' ? 'internal_lazervault' : 'external_bank',
-                ),
+                onTap: already
+                    ? () => _showError('${r.name} is already in this batch.')
+                    : () => _confirmSavedAmount(
+                          beneficiaryName: r.name,
+                          accountNumber: r.accountNumber,
+                          bankCode: r.sortCode,
+                          bankName: r.bankName,
+                          recipientType: r.type == 'internal'
+                              ? 'internal_lazervault'
+                              : 'external_bank',
+                        ),
                 child: Container(
                   padding:
                       EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
                   decoration: BoxDecoration(
-                    color: btBackground,
+                    color: already
+                        ? btBorder.withValues(alpha: 0.3)
+                        : btBackground,
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Row(
@@ -237,19 +246,23 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
                         width: 36.w,
                         height: 36.w,
                         decoration: BoxDecoration(
-                          color: btBlue.withValues(alpha: 0.12),
+                          color: already
+                              ? btBorder
+                              : btBlue.withValues(alpha: 0.12),
                           shape: BoxShape.circle,
                         ),
                         child: Center(
-                          child: Text(
-                            r.name.isNotEmpty
-                                ? r.name[0].toUpperCase()
-                                : '?',
-                            style: GoogleFonts.inter(
-                                color: btBlue,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14.sp),
-                          ),
+                          child: already
+                              ? Icon(Icons.done, color: btTextSecondary, size: 16.sp)
+                              : Text(
+                                  r.name.isNotEmpty
+                                      ? r.name[0].toUpperCase()
+                                      : '?',
+                                  style: GoogleFonts.inter(
+                                      color: btBlue,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14.sp),
+                                ),
                         ),
                       ),
                       SizedBox(width: 12.w),
@@ -294,6 +307,10 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
     required String bankName,
     required String recipientType,
   }) async {
+    if (_alreadyInBatch(accountNumber)) {
+      _showError('$beneficiaryName is already in this batch.');
+      return;
+    }
     final ctrl = TextEditingController();
     final amount = await showDialog<double>(
       context: context,
@@ -332,6 +349,11 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
               final v = double.tryParse(ctrl.text);
               if (v == null || v <= 0) {
                 _showError('Enter a positive amount.');
+                return;
+              }
+              if (recipientType == 'external_bank' && v < 100) {
+                _showError(
+                    'Minimum for a bank transfer is ${_symbol}100.00 — payout providers reject smaller amounts.');
                 return;
               }
               Navigator.of(ctx).pop(v);
@@ -512,9 +534,18 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
                     _showError('Verify the account first.');
                     return;
                   }
+                  if (_alreadyInBatch(_bankAccountCtrl.text)) {
+                    _showError('That account is already in this batch.');
+                    return;
+                  }
                   final v = double.tryParse(_bankAmountCtrl.text);
                   if (v == null || v <= 0) {
                     _showError('Enter an amount.');
+                    return;
+                  }
+                  if (v < 100) {
+                    _showError(
+                        'Minimum for a bank transfer is ${_symbol}100.00 — payout providers reject smaller amounts.');
                     return;
                   }
                   Navigator.of(context).pop(
@@ -717,6 +748,11 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
                 final v = double.tryParse(_tagAmountCtrl.text);
                 if (v == null || v <= 0) {
                   _showError('Enter an amount.');
+                  return;
+                }
+                if (_alreadyInBatch(
+                    tag.startsWith('@') ? tag.substring(1) : tag)) {
+                  _showError('$tag is already in this batch.');
                   return;
                 }
                 final displayName = _tagDisplayNameCtrl.text.trim().isEmpty
