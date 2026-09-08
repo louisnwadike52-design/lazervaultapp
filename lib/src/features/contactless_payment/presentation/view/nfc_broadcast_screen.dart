@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:lazervault/core/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -103,6 +104,10 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
     }
 
     final started = await HceBroadcaster.startBroadcast(widget.nfcPayload);
+    AppLogger.event('contactless_pay', 'broadcast mode resolved', fields: {
+      'hce_started': started,
+      'session_id': widget.session.id,
+    });
     if (!mounted) return;
     if (started) {
       setState(() {

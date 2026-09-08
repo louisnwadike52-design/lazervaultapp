@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:lazervault/core/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -180,13 +181,24 @@ class _NfcReaderViewState extends State<_NfcReaderView>
       return;
     }
 
-    final expiresAt = payloadData['expiresAt'] as int? ?? 0;
-    if (DateTime.now().millisecondsSinceEpoch > expiresAt * 1000) {
+    // The backend payload uses snake_case keys (expires_at/session_id, unix
+    // SECONDS); older builds emitted camelCase. Reading only camelCase made
+    // expiresAt resolve to 0 — so EVERY scanned QR (and NFC tap) was declared
+    // "expired" instantly, before any backend call. Accept both shapes, and
+    // when the payload carries no expiry at all defer to the server's own
+    // session-status check instead of guessing.
+    final rawExpires = payloadData['expires_at'] ?? payloadData['expiresAt'];
+    final expiresAt = rawExpires is num
+        ? rawExpires.toInt()
+        : int.tryParse('${rawExpires ?? ''}') ?? 0;
+    if (expiresAt > 0 &&
+        DateTime.now().millisecondsSinceEpoch > expiresAt * 1000) {
       _handleScanError('This payment request has expired');
       return;
     }
 
-    final sessionId = payloadData['sessionId'] as String?;
+    final sessionId =
+        (payloadData['session_id'] ?? payloadData['sessionId'])?.toString();
     if (sessionId == null || sessionId.isEmpty) {
       _handleScanError('Invalid session data');
       return;
@@ -194,6 +206,10 @@ class _NfcReaderViewState extends State<_NfcReaderView>
 
     _tagHandled = true;
     _stopNfcScan();
+    AppLogger.event('contactless_pay', 'payload accepted', fields: {
+      'session_id': sessionId,
+      'has_expiry': expiresAt > 0,
+    });
 
     if (!mounted) return;
     setState(() {
@@ -221,6 +237,10 @@ class _NfcReaderViewState extends State<_NfcReaderView>
   }
 
   void _handleScanError(String message) {
+    // Ships to Loki (feature label) so field failures like "session expired
+    // on every scan" are diagnosable without a device in hand.
+    AppLogger.error('contactless: scan rejected',
+        fields: {'feature': 'contactless_pay', 'reason': message});
     if (!mounted) return;
     setState(() {
       _statusMessage = message;
