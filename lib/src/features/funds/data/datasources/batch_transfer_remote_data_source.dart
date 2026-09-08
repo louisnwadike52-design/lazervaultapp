@@ -50,6 +50,8 @@ class BatchTransferRemoteDataSourceImpl
         final protoTransfers = recipients.map((recipient) {
           return payments.BatchTransferItem(
             toAccountNumber: recipient.toAccountNumber,
+            toAccountId: recipient.toAccountId ?? '',
+            transferType: recipient.transferType ?? '',
             amount: recipient.amount.toDouble() / 100,
             description: recipient.description ?? '',
             reference: recipient.reference ?? '',

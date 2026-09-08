@@ -138,18 +138,19 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
     for (final participant in participants) {
       final recipientModel = participant as RecipientModel;
       final amountMinorUnits = amounts[recipientModel.id] ?? 0;
-      // Internal participants route by USER ID (SendFunds precedent).
+      // SendFunds parity: split-bill participants are LazerVault users —
+      // explicit internal type, USER ID in to_account_id, display value in
+      // the number field.
       final internalId = recipientModel.internalUserId ?? '';
-      final identifier =
-          (recipientModel.type == 'internal' && internalId.isNotEmpty)
-              ? internalId
-              : recipientModel.accountNumber;
       recipients.add(BatchTransferRecipient(
-        toAccountNumber: identifier,
+        toAccountNumber: recipientModel.accountNumber,
+        toAccountId:
+            internalId.isNotEmpty ? internalId : recipientModel.accountNumber,
+        transferType: 'internal',
         amount: Int64(amountMinorUnits),
         reference: description,
       ));
-      recipientNames[identifier] = recipientModel.name;
+      recipientNames[recipientModel.accountNumber] = recipientModel.name;
     }
 
     final accountManager = GetIt.I<AccountManager>();

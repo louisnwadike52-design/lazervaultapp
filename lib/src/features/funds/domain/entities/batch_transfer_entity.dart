@@ -3,6 +3,13 @@ import 'package:fixnum/fixnum.dart';
 
 class BatchTransferRecipient extends Equatable {
   final String toAccountNumber;
+
+  /// SendFunds parity: the recipient's user/account UUID for internal legs —
+  /// the stable routing identifier, resolved before any string fallback.
+  final String? toAccountId;
+
+  /// 'internal' | 'external' | null (legacy: server infers from bank code).
+  final String? transferType;
   final Int64 amount; // Minor units
   final String? description;
   final String? reference;
@@ -13,6 +20,8 @@ class BatchTransferRecipient extends Equatable {
 
   const BatchTransferRecipient({
     required this.toAccountNumber,
+    this.toAccountId,
+    this.transferType,
     required this.amount,
     this.description,
     this.reference,
@@ -22,12 +31,16 @@ class BatchTransferRecipient extends Equatable {
     this.destinationBankName,
   });
 
-  bool get isExternal =>
-      destinationBankCode != null && destinationBankCode!.isNotEmpty;
+  bool get isExternal => transferType == 'external' ||
+      (transferType == null &&
+          destinationBankCode != null &&
+          destinationBankCode!.isNotEmpty);
 
   @override
   List<Object?> get props => [
         toAccountNumber,
+        toAccountId,
+        transferType,
         amount,
         description,
         reference,

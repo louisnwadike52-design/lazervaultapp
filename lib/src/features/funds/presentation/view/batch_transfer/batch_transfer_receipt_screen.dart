@@ -1545,12 +1545,22 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
       final name = (t['recipientName'] as String?) ??
           (t['beneficiaryName'] as String?) ??
           '';
+      final bankCode = (t['destinationBankCode'] as String?) ?? '';
+      final storedType = (t['transferType'] as String?) ?? '';
+      final storedUserId = (t['recipientUserId'] as String?) ?? '';
       recipients.add(BatchTransferRecipient(
         toAccountNumber: accountNumber,
+        // SendFunds parity on repeats: reuse the stored recipient user id and
+        // explicit type when the receipt carries them; legacy receipts fall
+        // back to bank-code inference server-side.
+        toAccountId: storedUserId.isNotEmpty ? storedUserId : null,
+        transferType: storedType.isNotEmpty
+            ? storedType
+            : (bankCode.isNotEmpty ? 'external' : null),
         amount: amtMinor,
         reference: (t['reference'] as String?) ?? '',
         beneficiaryName: name,
-        destinationBankCode: (t['destinationBankCode'] as String?) ?? '',
+        destinationBankCode: bankCode,
         destinationBankName: (t['destinationBankName'] as String?) ?? '',
       ));
       if (name.isNotEmpty) recipientNames[accountNumber] = name;

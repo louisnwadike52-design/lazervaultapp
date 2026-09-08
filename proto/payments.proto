@@ -179,6 +179,21 @@ service PaymentsService {
     };
   }
 
+  // Get the user's most-used destination banks (for the "Most used" bank-picker
+  // pill). Derived read-only aggregation over the existing transfer_recipients
+  // rows — no new write path, no money movement.
+  rpc GetFrequentBanks(GetFrequentBanksRequest) returns (GetFrequentBanksResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/payments/frequent-banks"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Frequent Banks";
+      description: "Get the user's most-used destination banks";
+      tags: ["Payments"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
   // Get bill providers
   rpc GetBillProviders(GetBillProvidersRequest) returns (GetBillProvidersResponse) {
     option (google.api.http) = {
@@ -243,7 +258,10 @@ service PaymentsService {
     };
   }
 
-  // Suggest matching bank(s) for a bare account number (account-number-first UX).
+  // Suggest matching bank(s) for a bare account number. The backend runs a
+  // CBN NUBAN check-digit pass to narrow candidate banks, then resolves the
+  // holder name against each via the admin-selected provider. Powers the
+  // send-funds "type account number → bank auto-suggests" UX.
   rpc SuggestBankAccounts(SuggestBankAccountsRequest) returns (SuggestBankAccountsResponse) {
     option (google.api.http) = {
       post: "/api/v1/recipients/suggest-account"
@@ -259,7 +277,8 @@ service PaymentsService {
 
   // Informational, READ-ONLY transfer success prediction for an EXTERNAL
   // (other-bank) transfer. Shown on the confirmation screen before PIN entry.
-  // NEVER moves money, blocks, or alters a transfer.
+  // NEVER moves money, blocks, or alters a transfer. Computed internally from
+  // our own historical data (no provider exposes a bank-availability API).
   rpc GetTransferSuccessPrediction(GetTransferSuccessPredictionRequest) returns (GetTransferSuccessPredictionResponse) {
     option (google.api.http) = {
       post: "/api/v1/transfers/success-prediction"
@@ -359,6 +378,23 @@ service PaymentsService {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Get User Transfers";
       description: "Get transfer history for the authenticated user";
+      tags: ["Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Cancel a transfer that is still in "scheduled" status (before its asynq
+  // fire time). Pure DB CAS — the fire task's status-guard makes the queued
+  // task a no-op. The worker-side method existed but was never exposed, so
+  // users could schedule transfers they could never cancel.
+  rpc CancelScheduledTransfer(CancelScheduledTransferRequest) returns (CancelScheduledTransferResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/transfers/scheduled/cancel"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Cancel Scheduled Transfer";
+      description: "Cancel a pending scheduled transfer before it executes";
       tags: ["Transfers"];
       security: { security_requirement: { key: "bearer"; } };
     };
@@ -611,12 +647,259 @@ service PaymentsService {
     };
   }
 
+  // =========================================================================
+  // ADMIN OPERATIONS - Called by admin-gateway for dashboard
+  // =========================================================================
+
+  // Admin: Run reconciliation
+  rpc AdminRunReconciliation(AdminRunReconciliationRequest) returns (AdminReconciliationResult) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/reconciliation/run"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Run Reconciliation";
+      description: "Trigger a reconciliation run (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Get reconciliation history
+  rpc AdminGetReconciliationHistory(AdminReconciliationHistoryRequest) returns (AdminReconciliationHistoryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/reconciliation/history"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Reconciliation History";
+      description: "Get recent reconciliation run results (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Get last reconciliation result
+  rpc AdminGetLastReconciliation(AdminGetLastReconciliationRequest) returns (AdminReconciliationResult) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/reconciliation/last"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Last Reconciliation";
+      description: "Get the most recent reconciliation result (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: per-currency summary of active withdrawal-typed fund
+  // holds. Slice 10i — consumed by accounts-service's
+  // WalletReconWorker to derive the expected WITHDRAWAL_PENDING
+  // platform-wallet balance from this service's authoritative
+  // fund_holds table without DB-coupling.
+  rpc AdminGetWithdrawalHoldsSummary(AdminGetWithdrawalHoldsSummaryRequest) returns (AdminGetWithdrawalHoldsSummaryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/withdrawal-holds-summary"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Withdrawal Holds Summary by Currency";
+      description: "Active withdrawal-typed fund_holds summed per currency. Source of truth for accounts-service WITHDRAWAL_PENDING reconciliation.";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Auto-resolve stale holds by checking provider status
+  rpc AdminAutoResolveStaleHolds(AdminAutoResolveRequest) returns (AdminAutoResolveResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/holds/auto-resolve"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Auto Resolve Stale Holds";
+      description: "Auto-resolve stale holds by checking provider status (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Check a specific hold's provider status
+  rpc AdminCheckHoldProviderStatus(AdminCheckHoldProviderRequest) returns (AdminProviderStatusResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/holds/{hold_reference}/provider-status"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Check Hold Provider Status";
+      description: "Check a hold's transfer status with payment provider (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Get failed operations
+  rpc AdminGetFailedOperations(AdminGetFailedOperationsRequest) returns (AdminGetFailedOperationsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/operations/failed"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Failed Operations";
+      description: "Get failed payment operations for review (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: List all transfers with filtering
+  rpc AdminListTransfers(ListTransfersRequest) returns (ListTransfersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/transfers"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin List Transfers";
+      description: "List all transfers with filtering and pagination (admin only)";
+      tags: ["Admin", "Transfers"];
+    };
+  }
+
+  // Admin: Get transfer by reference
+  rpc AdminGetTransferByReference(GetTransferByReferenceRequest) returns (AdminTransferDetail) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/transfers/{reference}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Transfer by Reference";
+      description: "Get detailed transfer information by reference (admin only)";
+      tags: ["Admin", "Transfers"];
+    };
+  }
+
+  // Admin: full audit detail for an INTERNAL C2C transfer — the payments row +
+  // the double-entry ledger legs (debit + credit) from accounts-service +
+  // family-spend records when the source is a family account. Powers the admin
+  // internal-transfer lifecycle flowchart.
+  rpc AdminGetInternalTransferDetail(GetTransferByReferenceRequest) returns (InternalTransferDetail) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/transfers/{reference}/detail"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Internal Transfer Detail";
+      description: "Full double-entry audit + lifecycle for an internal C2C transfer (admin only)";
+      tags: ["Admin", "Transfers"];
+    };
+  }
+
+  // Admin: List all payments with filtering
+  rpc AdminListPayments(ListPaymentsRequest) returns (ListPaymentsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/payments"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin List Payments";
+      description: "List all payments with filtering and pagination (admin only)";
+      tags: ["Admin", "Payments"];
+    };
+  }
+
+  // Admin: Get daily usage/spendings statistics
+  rpc AdminGetDailyUsage(AdminGetDailyUsageRequest) returns (AdminGetDailyUsageResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/daily-usage"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Daily Usage";
+      description: "Get daily spendings/usage statistics (admin only)";
+      tags: ["Admin", "Analytics"];
+    };
+  }
+
+  // Admin: Get provider balances for settlement reconciliation
+  rpc AdminGetProviderBalances(GetProviderBalancesRequest) returns (ProviderBalances) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/provider-balances"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Provider Balances";
+      description: "Get current balances from payment providers for settlement reconciliation (admin only)";
+      tags: ["Admin", "Settlements"];
+    };
+  }
+
+  // Admin: Get webhook audit trail
+  rpc AdminGetWebhookAuditTrail(GetWebhookAuditTrailRequest) returns (WebhookAuditTrailResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/webhook-audit"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Webhook Audit Trail";
+      description: "Get webhook events for provider reconciliation (admin only)";
+      tags: ["Admin", "Webhooks"];
+    };
+  }
+
+  // Admin: Get transfer async/sync configuration. Reads from system_settings.
+  // Returns the current sync vs async mode for external + batch transfers
+  // plus the Flutterwave webhook URL that's the source of truth for the
+  // (stable Cloudflare tunnel) URL operators paste into the Flutterwave dashboard.
+  rpc GetTransferAsyncConfig(GetTransferAsyncConfigRequest) returns (TransferAsyncConfig) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/transfers/config/async"
+    };
+  }
+
+  // Admin: Update transfer async/sync configuration. Persists changes to
+  // system_settings — picked up by the next request via the 60s config cache.
+  rpc UpdateTransferAsyncConfig(UpdateTransferAsyncConfigRequest) returns (TransferAsyncConfig) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/transfers/config/async"
+      body: "*"
+    };
+  }
+
+  // Admin: Force-refund a transfer the scheduled reconciler couldn't
+  // recover automatically (e.g. a row left at status=completed from a
+  // pre-fix webhook routing bug, or a stuck verification escalated to
+  // manual_review). Inserts a transfer_rollback_records row with
+  // status="refunding" and provider_verification_status="manual_admin_verified"
+  // so the existing TransferRollbackProcessor (3-phase pipeline) skips
+  // re-verification and proceeds straight to CreditBalance(REV-...) on
+  // accounts-service, then settlement reversal. Audit trail: rollback record
+  // carries admin_user_id + reason.
+  rpc AdminForceRefundTransfer(AdminForceRefundTransferRequest) returns (AdminForceRefundTransferResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/transfers/{reference}/force-refund"
+      body: "*"
+    };
+  }
+
+  // Admin: Manually trigger the stale-transfer reconciler for a single
+  // payment, bypassing the 5-minute schedule. Calls Flutterwave
+  // GET /v3/transfers/{provider_ref} for authoritative state and drives the
+  // CAS terminal-state update. Mirrors the electricity-bill ManualReconcile.
+  rpc AdminManualReconcileTransfer(AdminManualReconcileTransferRequest) returns (AdminManualReconcileTransferResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/transfers/{reference}/manual-reconcile"
+      body: "*"
+    };
+  }
+
+  // Admin: estimate-vs-actual provider (Flutterwave) fee audit for completed
+  // external transfers over a date range. Compares the up-front estimated FW
+  // fee (metadata.provider_fee_minor_estimate) against the ACTUAL fee captured
+  // from the transfer submit response (metadata.provider_fee_minor_actual).
+  // delta = estimate - actual: +ve means we over-collected on the fee leg,
+  // -ve means we absorbed cost. Rows with no captured actual (legacy transfers
+  // submitted before capture shipped) report has_actual=false.
+  rpc AdminGetExternalTransferFeeAudit(AdminGetExternalTransferFeeAuditRequest) returns (AdminGetExternalTransferFeeAuditResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/external-transfers/fee-audit"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin External Transfer Fee Audit";
+      description: "Estimate-vs-actual Flutterwave fee audit for completed external transfers (admin only)";
+      tags: ["Admin", "Transfers"];
+    };
+  }
+
   // === SAVED BATCH DRAFTS ===
   //
   // Drafts are user-owned templates of recipients + amounts. They NEVER
-  // move money or place holds. Execution (ExecuteFromSavedBatch) delegates
-  // to the already CAS-hardened BatchTransfer money path, leaving the draft
-  // untouched so the user can re-execute or keep editing.
+  // move money or place holds — the act of saving a draft is pure intent.
+  // Execution (ExecuteFromSavedBatch) delegates to the already CAS-hardened
+  // BatchTransfer money path, leaving the draft untouched so the user can
+  // re-execute or keep editing.
 
   rpc SaveBatchDraft(SaveBatchDraftRequest) returns (SavedBatch) {
     option (google.api.http) = {
@@ -752,7 +1035,7 @@ service PaymentsService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Get Batch Receipt";
-      description: "Receipt for an executed batch.";
+      description: "Receipt for an executed batch — summary + per-item status, amount, reference, timestamps, provider status.";
       tags: ["Batch Receipts"];
       security: { security_requirement: { key: "bearer"; } };
     };
@@ -764,22 +1047,28 @@ service PaymentsService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Get Batch Item Receipt";
-      description: "Receipt for a single batch item.";
+      description: "Receipt for a single batch item — drilldown view for one recipient.";
       tags: ["Batch Receipts"];
       security: { security_requirement: { key: "bearer"; } };
     };
   }
 
   // ===== Behavioural fraud detection (per-user) =====
+  // Read the user's fraud-detection opt-out setting (default ON).
   rpc GetFraudDetectionSetting(GetFraudDetectionSettingRequest) returns (FraudDetectionSetting) {
     option (google.api.http) = { get: "/api/v1/fraud-detection/setting" };
   }
+  // Turn the user's fraud detection on/off.
   rpc SetFraudDetectionSetting(SetFraudDetectionSettingRequest) returns (FraudDetectionSetting) {
     option (google.api.http) = { put: "/api/v1/fraud-detection/setting" body: "*" };
   }
+  // Is the user's account currently frozen for suspicious activity? Drives the
+  // in-app fraud modal + the chatbot's guided unfreeze.
   rpc GetFraudFreezeStatus(GetFraudFreezeStatusRequest) returns (FraudFreezeStatus) {
     option (google.api.http) = { get: "/api/v1/fraud-detection/freeze-status" };
   }
+  // Self-unfreeze a fraud freeze after re-proving identity with the transaction
+  // PIN. Clears the money-movement freeze.
   rpc RequestFraudUnfreeze(RequestFraudUnfreezeRequest) returns (RequestFraudUnfreezeResponse) {
     option (google.api.http) = { post: "/api/v1/fraud-detection/unfreeze" body: "*" };
   }
@@ -791,14 +1080,16 @@ message FraudDetectionSetting { bool enabled = 1; }
 message GetFraudFreezeStatusRequest {}
 message FraudFreezeStatus {
   bool frozen = 1;
-  string reason = 2;
-  int64 amount_minor = 3;
-  int64 limit_minor = 4;
-  string blocked_at = 5;
+  string reason = 2;          // user-safe copy
+  int64 amount_minor = 3;     // the transfer that tripped the freeze
+  int64 limit_minor = 4;      // the learned limit it exceeded
+  string blocked_at = 5;      // RFC3339
   string reference = 6;
-  string blocked_id = 7;
+  string blocked_id = 7;      // id of the blocked-transaction record
 }
 message RequestFraudUnfreezeRequest {
+  // Transaction-PIN verification token (the SAME token the send-funds flow uses,
+  // minted after the tx-PIN bottomsheet) + the transaction id it is bound to.
   string verification_token = 1;
   string transaction_id = 2;
 }
@@ -848,9 +1139,9 @@ message AirtimeProvider {
 // NOTE: user_id extracted from JWT token, not from request
 message SendFundsRequest {
   string from_account_id = 1;
-  string to_account_number = 2;
+  string to_account_number = 2;       // Bank account number (for external transfers)
   string to_account_id = 9;           // Account UUID (for internal transfers)
-  string type = 10;                    // "internal" or "external"
+  string type = 10;                    // "internal" or "external" - tells backend how to interpret the recipient identifiers
   double amount = 3;
   string description = 4;
 
@@ -864,6 +1155,17 @@ message SendFundsRequest {
 
   // Budget tracking
   int32 expense_category = 11;         // ExpenseCategory enum value selected by user (0 = unset)
+
+  // Idempotency key — OPTIONAL, decoupled from transaction_id. transaction_id is
+  // dual-purpose: it binds the PIN verification_token (PreValidate) AND, when this
+  // field is empty, it is ALSO used as the idempotency reference. That conflation
+  // is a money-safety hazard for fan-out payers who share one token-binding id
+  // (e.g. every co-payer of a split bill pays with transaction_id=SPLIT-PAY-{bill}):
+  // the 2nd payer's SendFunds would dedupe against the 1st's cached payment and be
+  // marked paid WITHOUT a debit. When set, the service derives the idempotency
+  // reference from THIS key instead of transaction_id, so each payer dedups
+  // independently while the token still validates against the shared transaction_id.
+  string idempotency_key = 12;
 }
 
 message SendFundsResponse {
@@ -884,6 +1186,13 @@ message BatchTransferItem {
   string destination_bank_code = 6;   // Bank code for external transfers (empty = internal)
   string beneficiary_name = 7;        // Verified beneficiary name
   string destination_bank_name = 8;   // Human-readable bank name
+  // SendFunds parity: the recipient's account/user UUID for internal legs —
+  // the stable routing identifier, resolved exactly like SendFunds'
+  // to_account_id (GetAccountByID → user-UUID → primary account).
+  string to_account_id = 9;
+  // "internal" | "external" | "" (legacy: inferred from bank code). Explicit
+  // like SendFunds' type field — an external leg skips internal lookups.
+  string transfer_type = 10;
 }
 
 // NOTE: user_id extracted from JWT token, not from request
@@ -1121,6 +1430,20 @@ message GetPaymentHistoryResponse {
   int32 total = 2;
 }
 
+message GetFrequentBanksRequest {
+  int32 limit = 1; // optional; server caps to a sane default
+}
+
+message FrequentBank {
+  string bank_code = 1;
+  string bank_name = 2;
+  int64 count = 3;
+}
+
+message GetFrequentBanksResponse {
+  repeated FrequentBank banks = 1;
+}
+
 // ===== BILL PROVIDERS =====
 
 message GetBillProvidersRequest {
@@ -1234,28 +1557,6 @@ message SuggestBankAccountsResponse {
   string error_message = 4;
 }
 
-// ===== TRANSFER SUCCESS PREDICTION (informational, read-only) =====
-
-message GetTransferSuccessPredictionRequest {
-  string bank_code      = 1;   // destination bank code (external transfer)
-  string account_number = 2;   // destination account number
-}
-
-message GetTransferSuccessPredictionResponse {
-  // Bank availability: rolling-window success rate to this destination bank.
-  int32  bank_availability_pct = 1;   // 0-100; 0 when band is "unknown"
-  string bank_band             = 2;   // good | fair | poor | unknown
-  int32  bank_sample_size      = 3;   // resolved transfers in the window
-
-  // Recipient trust: prior successful transfers to this (bank, account).
-  string recipient_trust_band       = 4;   // verified | new | caution | unknown
-  int32  prior_transfer_count       = 5;   // by THIS user to the recipient
-  int64  recipient_known_since_unix = 6;   // earliest platform-wide success (unix secs); 0 if none
-
-  // Fraud signal.
-  bool   blocklisted = 7;   // true if destination is on the fraud blocklist
-}
-
 // ===== TRANSFER CONSOLIDATION MESSAGES =====
 
 message InitiateDomesticTransferRequest {
@@ -1340,6 +1641,34 @@ message InitiateTransferResponse {
   string error_code = 2;
   string error_message = 3;
   TransferDetail transfer = 4;
+
+  // ---- Post-transfer balance snapshot (INTERNAL account-to-account transfers)
+  // All amounts are in MINOR units (kobo/cents), matching TransferDetail.amount
+  // and accounts-service's TransferBalanceResponse.
+  //
+  // These exist so a caller can push a live balance to the app without a second
+  // round-trip to accounts-service. They are populated by
+  // InitiateInternalTransfer and InitiateUserTransfer; EXTERNAL/provider
+  // transfer paths leave them zero, so treat zero as "no snapshot available"
+  // rather than "balance is zero" (see balances_available).
+  int64 sender_new_balance = 5;
+  int64 sender_available_balance = 6;
+  int64 recipient_new_balance = 7;
+  int64 recipient_available_balance = 8;
+
+  // True when the four balance fields above carry a real snapshot. Needed
+  // because a genuinely-zero balance is indistinguishable from "not populated"
+  // on the numbers alone — an account drained to exactly 0 is a real outcome.
+  bool balances_available = 9;
+
+  // RESOLVED LazerVault account UUIDs for the two sides of an internal
+  // transfer. The request's to_account_id may be an account ID, a user ID or a
+  // tag — callers therefore cannot derive the destination account themselves,
+  // and TransferDetail.destination_account echoes back whatever was sent in.
+  // recipient_account_id is the account the money actually landed in.
+  string sender_account_id = 10;
+  string recipient_account_id = 11;
+  string recipient_user_id = 12;
 }
 
 message TransferDetail {
@@ -1363,6 +1692,8 @@ message TransferDetail {
   string failure_reason = 18;
   string created_at = 19;
   string completed_at = 20;
+  // Fire time for status=="scheduled" rows (RFC3339); empty otherwise.
+  string scheduled_at = 21;
 }
 
 message GetTransferStatusRequest {
@@ -1374,6 +1705,15 @@ message GetTransferStatusResponse {
   string error_code = 2;
   string error_message = 3;
   TransferDetail transfer = 4;
+}
+
+message CancelScheduledTransferRequest {
+  string payment_id = 1;
+}
+
+message CancelScheduledTransferResponse {
+  bool success = 1;
+  string error_message = 2;
 }
 
 message GetUserTransfersRequest {
@@ -1460,6 +1800,8 @@ message PayPlatformFeeRequest {
   string verification_token = 9;        // PIN verification token
   string transaction_id = 10;           // Transaction ID for PIN verification
   string wallet_code = 11;              // Platform wallet code (default: "REVENUE")
+  string metadata = 12;                 // JSON, e.g. {"invoice_id":"...","fee_type":"invoice_creation"}
+  string service_name = 13;             // Origin service (stamped on the ledger row); default "core-payments-service"
 }
 
 message PayPlatformFeeResponse {
@@ -1762,23 +2104,567 @@ message GetRecurringTransfersByRecipientResponse {
   repeated RecurringTransferDetail recurring_transfers = 1;
 }
 
+// =========================================================================
+// ADMIN MESSAGE TYPES
+// =========================================================================
+
+message AdminRunReconciliationRequest {
+  // Optional: specify date to reconcile (defaults to today)
+  string date = 1; // Format: YYYY-MM-DD, empty = today
+}
+
+message AdminReconciliationResult {
+  string reconciliation_id = 1;
+  string date = 2;
+  int64 total_ledger_balance = 3;
+  int64 pooled_account_balance = 4;
+  int64 discrepancy = 5;
+  double discrepancy_percent = 6;
+  string status = 7; // matched, discrepancy, failed
+  int32 expired_holds_released = 8;
+  int32 stuck_transfers_fixed = 9;
+  int32 stuck_deposits_fixed = 10;
+  repeated string errors = 11;
+  repeated string warnings = 12;
+}
+
+message AdminReconciliationHistoryRequest {
+  int32 days = 1; // Number of days of history to retrieve (default 30)
+}
+
+message AdminReconciliationHistoryResponse {
+  repeated AdminReconciliationResult results = 1;
+  int32 total = 2;
+}
+
+message AdminGetLastReconciliationRequest {
+  // Empty - retrieves the most recent reconciliation
+}
+
+// Slice 10i: per-currency withdrawal-hold rollup.
+message AdminGetWithdrawalHoldsSummaryRequest {}
+
+message AdminGetWithdrawalHoldsSummaryResponse {
+  repeated WithdrawalHoldsByCurrency holds = 1;
+}
+
+message WithdrawalHoldsByCurrency {
+  string currency   = 1;  // ISO-4217, e.g. "NGN"
+  double total      = 2;  // sum of fund_holds.amount for active withdrawal-typed rows
+  int32  hold_count = 3;
+}
+
+message AdminAutoResolveRequest {
+  int32 stale_threshold_minutes = 1; // Override stale threshold (default 15 min)
+  bool dry_run = 2; // If true, only report what would be done without executing
+}
+
+message AdminAutoResolveResponse {
+  int32 total_stale_holds = 1;
+  int32 resolved_count = 2;
+  int32 skipped_count = 3;
+  int32 error_count = 4;
+  repeated AdminHoldResolution resolutions = 5;
+  string summary = 6;
+}
+
+message AdminHoldResolution {
+  string hold_id = 1;
+  string account_id = 2;
+  int64 amount = 3;
+  string currency = 4;
+  string transfer_reference = 5;
+  string provider_status = 6; // Status from Flutterwave: SUCCESSFUL, FAILED, PENDING, etc.
+  string action_taken = 7; // captured, released, skipped, error
+  string reason = 8;
+  string error_message = 9;
+  string created_at = 10; // When the hold was created
+  string expires_at = 11; // When the hold expires
+}
+
+message AdminCheckHoldProviderRequest {
+  string hold_reference = 1; // Fund hold ID or transfer reference
+}
+
+message AdminProviderStatusResponse {
+  string hold_id = 1;
+  string transfer_reference = 2;
+  string hold_status = 3; // active, captured, released, expired
+  int64 hold_amount = 4;
+  string hold_currency = 5;
+  string hold_created_at = 6;
+  string hold_expires_at = 7;
+  // Provider details
+  string provider_name = 8; // flutterwave
+  string provider_status = 9; // SUCCESSFUL, FAILED, PENDING, NEW
+  string provider_message = 10;
+  string mapped_status = 11; // Our internal mapping: completed, failed, processing
+  // Transfer details
+  string transfer_id = 12;
+  string transfer_status = 13;
+  string account_id = 14;
+  string user_id = 15;
+}
+
+message AdminGetFailedOperationsRequest {
+  int32 hours = 1; // Look back N hours (default 24)
+  string operation_type = 2; // Filter: transfer, withdrawal, deposit, all (default all)
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message AdminGetFailedOperationsResponse {
+  repeated AdminFailedOperation operations = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message AdminFailedOperation {
+  string id = 1;
+  string type = 2; // transfer, withdrawal, deposit
+  string reference = 3;
+  string user_id = 4;
+  string account_id = 5;
+  int64 amount = 6;
+  string currency = 7;
+  string status = 8;
+  string failure_code = 9;
+  string failure_reason = 10;
+  string provider = 11;
+  string provider_ref = 12;
+  bool has_fund_hold = 13;
+  string fund_hold_status = 14;
+  bool has_rollback_record = 15;
+  string rollback_status = 16;
+  string created_at = 17;
+  string failed_at = 18;
+  string metadata = 19; // JSON string
+}
+
+// ===== ADMIN TRANSFERS/PAYMENTS MONITORING =====
+
+message ListTransfersRequest {
+  string status = 1;     // pending, completed, failed, reversed
+  string type = 2;       // internal, external
+  string user_id = 3;
+  string reference = 4;
+  string start_date = 5; // YYYY-MM-DD
+  string end_date = 6;   // YYYY-MM-DD
+  double min_amount = 7;
+  double max_amount = 8;
+  int32 page = 9;
+  int32 limit = 10;
+}
+
+message ListTransfersResponse {
+  repeated AdminTransferDetail transfers = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+message AdminTransferDetail {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string reference = 4;
+  double amount = 5;
+  string currency = 6;
+  string status = 7;
+  string type = 8; // internal, external
+  string recipient_account = 9;
+  string recipient_name = 10;
+  string bank_code = 11;
+  string bank_name = 12;
+  string description = 13;
+  string fee_code = 14;
+  double fee_amount = 15;
+  string provider = 16; // flutterwave, paystack
+  string provider_ref = 17;
+  string created_at = 18;
+  string updated_at = 19;
+  string scheduled_at = 20;
+  string metadata = 21;
+}
+
+message GetTransferByReferenceRequest {
+  string reference = 1;
+}
+
+// One leg of the double-entry ledger for an internal transfer, sourced from
+// accounts-service (the balance source of truth).
+message LedgerEntry {
+  string id = 1;
+  string account_id = 2;
+  string reference = 3;
+  string type = 4;                  // debit | credit
+  string category = 5;              // transfer_out | transfer_in
+  double amount = 6;
+  double balance_before = 7;
+  double balance_after = 8;
+  string counterparty_name = 9;
+  string counterparty_account = 10;
+  string status = 11;
+  string description = 12;
+  string created_at = 13;
+}
+
+// A family-pool spend record (reserve/capture/release/refund) for transfers
+// whose source is a family account. Empty for ordinary transfers.
+message FamilySpendRecord {
+  string reference = 1;
+  double amount = 2;
+  string phase = 3;                 // reserved | captured | released | refunded
+  string created_at = 4;
+}
+
+// Full admin audit for an internal C2C transfer: the payments audit row + the
+// double-entry ledger + optional family-spend records.
+message InternalTransferDetail {
+  string payment_id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string reference = 4;             // TRF-{txnId}
+  string idempotency_key = 5;       // == reference for internal transfers
+  double amount = 6;
+  string currency = 7;
+  string status = 8;                // completed | failed | scheduled
+  string payment_type = 9;          // transfer
+  string recipient = 10;            // recipient account number / tag
+  string description = 11;
+  string metadata = 12;             // JSON string
+  string created_at = 13;
+  string updated_at = 14;
+  repeated LedgerEntry ledger = 15; // debit (transfer_out) + credit (transfer_in)
+  repeated FamilySpendRecord family_spend = 16;
+}
+
+message ListPaymentsRequest {
+  string payment_type = 1; // transfer, withdraw, deposit, tag_pay
+  string status = 2;
+  string user_id = 3;
+  string account_id = 4;
+  string reference = 5;
+  string start_date = 6;
+  string end_date = 7;
+  int32 page = 8;
+  int32 limit = 9;
+}
+
+message ListPaymentsResponse {
+  repeated PaymentDetail payments = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+message PaymentDetail {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string payment_type = 4;
+  string reference = 5;
+  double amount = 6;
+  string currency = 7;
+  string status = 8;
+  string recipient = 9;
+  string description = 10;
+  string metadata = 11;
+  string created_at = 12;
+  string updated_at = 13;
+  string scheduled_at = 14;
+}
+
+// ===== ADMIN DAILY USAGE/SPENDINGS =====
+
+message AdminGetDailyUsageRequest {
+  string user_id = 1;
+  string start_date = 2; // YYYY-MM-DD
+  string end_date = 3;   // YYYY-MM-DD
+  int32 page = 4;
+  int32 limit = 5;
+}
+
+message AdminGetDailyUsageResponse {
+  repeated DailyUsageRecord records = 1;
+  int32 total = 2;
+  DailyUsageSummary summary = 3;
+}
+
+message DailyUsageRecord {
+  string id = 1;
+  string user_id = 2;
+  string usage_date = 3; // YYYY-MM-DD
+  int64 total_transferred = 4;
+  int32 transfer_count = 5;
+  int32 internal_transfer_count = 6;
+  int32 external_transfer_count = 7;
+  int64 total_withdrawn = 8;
+  int32 withdrawal_count = 9;
+  int64 total_international = 10;
+  int32 international_count = 11;
+  string created_at = 12;
+  string updated_at = 13;
+}
+
+message DailyUsageSummary {
+  int64 total_amount_transferred = 1;
+  int32 total_transfers = 2;
+  int64 total_withdrawn = 3;
+  int32 total_withdrawals = 4;
+  int64 total_international = 5;
+  int32 total_international_transfers = 6;
+  int32 unique_users = 7;
+  string period_start = 8;
+  string period_end = 9;
+}
+
+// ===== ADMIN PROVIDER SETTLEMENTS =====
+
+message GetProviderBalancesRequest {
+  // Empty - fetches all provider balances
+}
+
+message ProviderBalances {
+  repeated ProviderBalance balances = 1;
+  string last_checked_at = 2;
+}
+
+message ProviderBalance {
+  string provider = 1; // flutterwave, paystack
+  string balance_type = 2; // ledger_balance, available_balance
+  double amount = 3;
+  string currency = 4;
+  string status = 5; // ok, low, critical, error
+  string last_updated = 6;
+  string error_message = 7;
+}
+
+message ProviderSettlementReport {
+  string provider = 1;
+  string period_start = 2;
+  string period_end = 3;
+  double total_debits = 4;
+  double total_credits = 5;
+  double net_settlement = 6;
+  int32 transaction_count = 7;
+  double our_ledger_balance = 8;
+  double provider_ledger_balance = 9;
+  double discrepancy = 10;
+  string status = 11; // matched, discrepancy
+  repeated string discrepancies = 12;
+  string generated_at = 13;
+}
+
+// ===== ADMIN WEBHOOK AUDIT TRAIL =====
+
+message GetWebhookAuditTrailRequest {
+  string provider = 1; // flutterwave, paystack
+  string reference = 2;
+  string status = 3; // success, failed, pending
+  string start_date = 4;
+  string end_date = 5;
+  int32 page = 6;
+  int32 limit = 7;
+}
+
+message WebhookAuditTrailResponse {
+  repeated WebhookAuditEntry entries = 1;
+  int32 total = 2;
+  WebhookAuditSummary summary = 3;
+}
+
+message WebhookAuditEntry {
+  string id = 1;
+  string provider = 2;
+  string event_type = 3; // transfer.successful, transfer.failed, charge.successful
+  string reference = 4;
+  string provider_ref = 5;
+  string status = 6;
+  int32 http_status_code = 7;
+  string request_payload = 8;
+  string response_body = 9;
+  string error_message = 10;
+  string processed_at = 11;
+  string created_at = 12;
+  string ip_address = 13;
+  string signature = 14;
+  bool signature_valid = 15;
+}
+
+message WebhookAuditSummary {
+  int32 total_webhooks = 1;
+  int32 successful_webhooks = 2;
+  int32 failed_webhooks = 3;
+  int32 pending_webhooks = 4;
+  map<string, int32> by_provider = 5;
+  map<string, int32> by_event_type = 6;
+}
+
+// ===== TRANSFER ASYNC CONFIGURATION =====
+//
+// Admin-tunable knobs for the SendFunds / batch transfer flow. Mirrors the
+// utility-payments AsyncPaymentConfig pattern (system_settings rows read
+// per-request via a 60s in-memory cache). The Flutterwave webhook URL is
+// stored here so it's the single source of truth: it's served on the stable
+// Cloudflare tunnel host and operators paste this same URL into the
+// Flutterwave dashboard. No code reads a hardcoded URL.
+
+message GetTransferAsyncConfigRequest {}
+
+message UpdateTransferAsyncConfigRequest {
+  // Each field is optional. Omit to leave the corresponding system_setting
+  // row untouched (proto3 doesn't distinguish unset bool from false, so we
+  // use HasField semantics via the optional keyword).
+  optional bool   async_external_transfer_enabled = 1;
+  optional bool   async_batch_transfer_enabled = 2;
+  optional string flutterwave_webhook_url = 3;
+
+  // Worker tick intervals (seconds). All default to 3600 (1 h) to keep DB
+  // pressure low. Admin can shorten in prod for faster recovery — the UI
+  // surfaces these as sliders. The thresholds (stale_threshold,
+  // rollback_max_attempts, etc.) are intentionally NOT exposed here as
+  // they govern WHEN a row qualifies for pickup, not HOW OFTEN we look.
+  optional int32 stale_reconciler_interval_seconds   = 10; // reconciler.transfer_stale.interval_seconds
+  optional int32 rollback_processor_interval_seconds = 11; // reconciler.transfer_rollback.interval_seconds
+  optional int32 hold_extension_interval_seconds     = 12; // reconciler.transfer_hold_extension.interval_seconds
+  optional int32 batch_supervisor_interval_seconds   = 13; // reconciler.batch_supervisor.interval_seconds
+  optional int32 batch_settlement_interval_seconds   = 14; // reconciler.batch_settlement.interval_seconds
+  optional int32 batch_rollback_interval_seconds     = 15; // reconciler.batch_rollback.interval_seconds
+  optional int32 batch_hold_expiry_interval_seconds  = 16; // reconciler.batch_hold_expiry.interval_seconds
+}
+
+message TransferAsyncConfig {
+  // Current configured values from system_settings.
+  bool   async_external_transfer_enabled = 1;
+  bool   async_batch_transfer_enabled = 2;
+  string flutterwave_webhook_url = 3;
+
+  // Display-only: when an operator last saved the URL. Helps ops
+  // see whether the URL in the Flutterwave dashboard is still aligned with
+  // the live tunnel.
+  string flutterwave_webhook_url_updated_at = 4;
+
+  // Worker tick intervals (seconds). All default to 3600 if no DB override.
+  int32 stale_reconciler_interval_seconds   = 10;
+  int32 rollback_processor_interval_seconds = 11;
+  int32 hold_extension_interval_seconds     = 12;
+  int32 batch_supervisor_interval_seconds   = 13;
+  int32 batch_settlement_interval_seconds   = 14;
+  int32 batch_rollback_interval_seconds     = 15;
+  int32 batch_hold_expiry_interval_seconds  = 16;
+}
+
+// ===== ADMIN TRANSFER RECOVERY (force-refund + manual-reconcile) =====
+
+message AdminForceRefundTransferRequest {
+  string reference = 1;   // payments.reference (TRF-tx-...)
+  string reason    = 2;   // admin-supplied note recorded on rollback record
+}
+
+message AdminForceRefundTransferResponse {
+  bool   success                = 1;
+  string rollback_record_id     = 2;
+  string payment_id             = 3;
+  string status                 = 4;  // expected: "refunding"
+  string message                = 5;
+}
+
+message AdminManualReconcileTransferRequest {
+  string reference = 1;
+  string reason    = 2;   // recorded in admin audit trail
+}
+
+message AdminManualReconcileTransferResponse {
+  bool   success           = 1;
+  string payment_id        = 2;
+  string old_status        = 3;
+  string new_status        = 4;
+  string provider_status   = 5;
+  string complete_message  = 6;
+  string message           = 7;
+}
+
+// ===== EXTERNAL TRANSFER FEE AUDIT (estimate vs actual FW fee) =====
+
+message AdminGetExternalTransferFeeAuditRequest {
+  string start_date = 1;  // YYYY-MM-DD (UTC, inclusive)
+  string end_date   = 2;  // YYYY-MM-DD (UTC, inclusive)
+  int32  limit      = 3;  // default 100, max 500
+  int32  offset     = 4;
+}
+
+message ExternalTransferFeeAuditRow {
+  string reference     = 1;
+  int64  amount_minor  = 2;
+  int64  estimate_minor = 3;  // metadata.provider_fee_minor_estimate
+  int64  actual_minor  = 4;   // metadata.provider_fee_minor_actual (0 if !has_actual)
+  int64  delta_minor   = 5;   // estimate - actual (+ve = over-collected)
+  string status        = 6;
+  string created_at    = 7;   // RFC3339
+  bool   has_actual    = 8;   // false for legacy rows with no captured actual
+}
+
+message ExternalTransferFeeAuditSummary {
+  int64 count                     = 1;
+  int64 with_actual_count         = 2;
+  int64 total_estimate_minor      = 3;
+  int64 total_actual_minor        = 4;
+  int64 total_overcollected_minor = 5;  // sum of +ve deltas (has_actual rows)
+  int64 total_undercollected_minor = 6; // sum of -ve deltas magnitude (has_actual rows)
+  int64 net_minor                 = 7;  // total_estimate - total_actual over has_actual rows
+}
+
+message AdminGetExternalTransferFeeAuditResponse {
+  repeated ExternalTransferFeeAuditRow rows = 1;
+  ExternalTransferFeeAuditSummary summary   = 2;
+}
+
+// ===== TRANSFER SUCCESS PREDICTION (informational, read-only) =====
+
+message GetTransferSuccessPredictionRequest {
+  string bank_code      = 1;   // destination bank code (external transfer)
+  string account_number = 2;   // destination account number
+}
+
+message GetTransferSuccessPredictionResponse {
+  // Bank availability: rolling-window success rate to this destination bank.
+  int32  bank_availability_pct = 1;   // 0-100; 0 when band is "unknown"
+  string bank_band             = 2;   // good | fair | poor | unknown
+  int32  bank_sample_size      = 3;   // resolved transfers in the window
+
+  // Recipient trust: prior successful transfers to this (bank, account).
+  string recipient_trust_band       = 4;   // verified | new | caution | unknown
+  int32  prior_transfer_count       = 5;   // by THIS user to the recipient
+  int64  recipient_known_since_unix = 6;   // earliest platform-wide success (unix secs); 0 if none
+
+  // Fraud signal.
+  bool   blocklisted = 7;   // true if destination is on the fraud blocklist
+}
+
 // ===== SAVED BATCH DRAFTS =====
 //
 // A SavedBatch is a user-owned, named TEMPLATE of recipients + amounts.
 // Drafts NEVER move money. ExecuteFromSavedBatch is the only path that
-// turns a draft into a real transfer.
+// turns a draft into a real transfer, and it does so by building a
+// BatchTransferRequest from the draft and delegating to the existing
+// (already CAS-hardened) BatchTransfer money path. The draft itself is
+// left intact so the user can re-execute or keep editing.
 
 message SavedBatchItemInput {
-  // Free-form recipient category: "internal_lazervault" | "external_bank"
-  // | "tagpay" | "contact". Defaults to "external_bank" if blank.
+  // Free-form recipient category. Mirrors models.SavedBatchRecipient*:
+  // "internal_lazervault" | "external_bank" | "tagpay" | "contact".
+  // Used by the executor to route each item correctly. Defaults to
+  // "external_bank" if blank.
   string recipient_type    = 1;
-  string recipient_user_id = 2;
-  string bank_code         = 3;
-  string account_number    = 4;
-  string beneficiary_name  = 5;
-  double amount            = 6;
+  string recipient_user_id = 2;  // populated for internal_lazervault
+  string bank_code         = 3;  // populated for external_bank
+  string account_number    = 4;  // bank account number or tag
+  string beneficiary_name  = 5;  // resolved/verified recipient name
+  double amount            = 6;  // major units (e.g. NGN)
   string narration         = 7;
-  int32  sort_order        = 8;
+  int32  sort_order        = 8;  // optional; auto-appended if 0
 }
 
 message SavedBatchItem {
@@ -1806,18 +2692,19 @@ message SavedBatch {
   int32  item_count        = 7;
   string created_at        = 8;
   string updated_at        = 9;
-  repeated SavedBatchItem items = 10;
+  repeated SavedBatchItem items = 10;  // populated by Get / mutating ops; empty in list
 }
 
 message SaveBatchDraftRequest {
+  // Name is optional — most clients fill this with a friendly label.
   string name              = 1;
-  string currency          = 2;
+  string currency          = 2;   // defaults to "NGN" if blank
   string source_account_id = 3;
   repeated SavedBatchItemInput items = 4;
 }
 
 message ListSavedBatchesRequest {
-  int32 limit  = 1;
+  int32 limit  = 1;   // bounded server-side (max 100, default 20)
   int32 offset = 2;
 }
 
@@ -1864,6 +2751,8 @@ message UpdateSavedBatchItemAmountRequest {
 message ApplyCollectiveAmountRequest {
   string saved_batch_id = 1;
   // Exactly one of multiplier or amount_per_item must be set.
+  // multiplier > 0 scales every item by the factor; amount_per_item
+  // rewrites every item to that absolute value.
   oneof mode {
     double multiplier      = 2;
     double amount_per_item = 3;
@@ -1872,10 +2761,17 @@ message ApplyCollectiveAmountRequest {
 
 message ExecuteFromSavedBatchRequest {
   string saved_batch_id  = 1;
+  // Required: idempotency_key is forwarded into the BatchTransfer path so a
+  // double-tap on the Execute button can never charge twice.
   string idempotency_key = 2;
+  // Transaction-PIN verification, same shape as BatchTransferRequest.
   string transaction_id     = 3;
   string verification_token = 4;
+  // Optional: override per-item amounts at execute time (keyed by item_id).
+  // Items not in the map use the saved amount. Unknown ids are ignored.
   map<string, double> per_item_overrides = 5;
+  // Optional: override the source account. If unset, the active account
+  // from context (x-account-id) is used — same convention as BatchTransfer.
   string source_account_id = 6;
 }
 
@@ -1899,6 +2795,7 @@ message BatchReceiptItem {
   string provider_name     = 15;
   string provider_ref      = 16;
   string provider_status   = 17;
+  // Payment row (when item produced a payments row via the executor).
   string payment_id          = 18;
   string payment_status      = 19;
   string payment_reference   = 20;
@@ -1910,6 +2807,7 @@ message BatchReceiptItem {
 }
 
 message BatchReceipt {
+  // Collective summary
   string batch_id              = 1;
   string user_id               = 2;
   string status                = 3;
@@ -1925,6 +2823,7 @@ message BatchReceipt {
   string source_account_id     = 13;
   string source_account_number = 14;
   string source_account_name   = 15;
+  // Per-item rows
   repeated BatchReceiptItem items = 20;
 }
 
@@ -1937,6 +2836,7 @@ message GetBatchItemReceiptRequest {
 }
 
 message BatchItemReceipt {
+  // The single item + parent batch identity for navigation.
   string batch_id              = 1;
   string batch_status          = 2;
   string source_account_id     = 3;

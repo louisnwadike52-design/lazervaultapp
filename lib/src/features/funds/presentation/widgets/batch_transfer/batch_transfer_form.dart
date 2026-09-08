@@ -694,14 +694,19 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
           ?? (item.isExternal
               ? 'Lazervault/$recipientName'
               : 'Transfer to $recipientName');
-      // Internal legs route by recipient USER ID when known (SendFunds
-      // precedent) — the account-number field may hold a username from older
-      // saved rows, which is slower to resolve and can go stale.
+      // SendFunds parity: the account-number field carries the display
+      // identifier, the recipient USER ID rides to_account_id (resolved
+      // first server-side), and the type is explicit — identical to
+      // initiate_send_funds.
       final internalId = item.recipient.internalUserId ?? '';
       return BatchTransferRecipient(
-        toAccountNumber: (!item.isExternal && internalId.isNotEmpty)
-            ? internalId
-            : item.recipient.accountNumber,
+        toAccountNumber: item.recipient.accountNumber,
+        toAccountId: item.isExternal
+            ? null
+            : (internalId.isNotEmpty
+                ? internalId
+                : item.recipient.accountNumber),
+        transferType: item.isExternal ? 'external' : 'internal',
         amount: Int64((item.amount * 100).round()),
         description: narration,
         reference: userNarration,
