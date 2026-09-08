@@ -355,7 +355,12 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
       ),
     );
     if (code == null || code.isEmpty || !mounted) return;
-    if (code.startsWith('@')) {
+    // References are stored uppercase ('QR-…') but people type freely —
+    // normalise the prefix so 'qr-abc…' scans the same as 'QR-ABC…'.
+    final normalized = code.toLowerCase().startsWith('qr-')
+        ? 'QR-${code.substring(3)}'
+        : code;
+    if (normalized.startsWith('@')) {
       // A handle isn't a QR payload — steer to the flow that resolves people.
       _rejectInvalid(
           message:
@@ -364,7 +369,7 @@ class _ScanQRScreenState extends State<ScanQRScreen> {
     }
     _isProcessing = true;
     _scannerController.stop();
-    _handleRawValue(code);
+    _handleRawValue(normalized);
   }
 
   void _handleRawValue(String raw) {
