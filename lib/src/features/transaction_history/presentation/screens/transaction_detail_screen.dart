@@ -84,6 +84,12 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
           if (state is TransactionDetailsLoaded) {
             _latest = state.transaction;
             _maybeScheduleNextPoll(state.transaction);
+          } else if (state is TransactionDetailsError) {
+            // A transient fetch failure must not kill live updates for a
+            // pending transaction — keep polling on the last-known status
+            // (same backoff and 10-minute cap bound the retries).
+            final tx = _latest ?? widget.transaction;
+            _maybeScheduleNextPoll(tx);
           }
         },
         builder: (context, state) {
