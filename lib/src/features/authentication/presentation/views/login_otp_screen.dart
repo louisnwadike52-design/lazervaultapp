@@ -141,21 +141,9 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
   DateTime? _deadline;
 
   void _startTicker() {
-    _ticker?.cancel();
-    final ttl = widget.expiresInSeconds > 0
+    _restartTicker(widget.expiresInSeconds > 0
         ? widget.expiresInSeconds
-        : _fallbackTtlSeconds;
-    _deadline = DateTime.now().add(Duration(seconds: ttl));
-    _remaining = ttl;
-    _ticker = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) {
-        t.cancel();
-        return;
-      }
-      final left = _secondsLeft();
-      if (left <= 0) t.cancel();
-      setState(() => _remaining = left);
-    });
+        : _fallbackTtlSeconds);
   }
 
   void _restartTicker(int seconds) {
@@ -168,7 +156,17 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
         return;
       }
       final left = _secondsLeft();
-      if (left <= 0) t.cancel();
+      if (left <= 0) {
+        t.cancel();
+        // Transition INTO the expired state cleanly: dead digits and stale
+        // errors would otherwise sit on top of the "get a new code" prompt.
+        _clearBoxes(refocus: false);
+        setState(() {
+          _remaining = 0;
+          _errorText = null;
+        });
+        return;
+      }
       setState(() => _remaining = left);
     });
   }
@@ -241,9 +239,10 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
       return;
     }
     if (_expired) {
+      // NOT terminal: the same session can mint a fresh code. The primary
+      // button has already flipped to "Send me a new code".
       setState(() {
-        _terminal = true;
-        _errorText = 'This code has expired. Sign in again to get a fresh one.';
+        _errorText = 'That code has expired — tap "Send me a new code" below.';
       });
       return;
     }
@@ -341,12 +340,31 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
     // Branch on the server's stable code, never on its prose.
     switch (code) {
       case 'OTP_EXPIRED':
-      case 'OTP_USED':
+        // The CODE died but the SESSION is alive — flip straight into the
+        // expired state so the resend affordance is the next tap. Passing the
+        // server prose through here used to read as "session expired".
+        _ticker?.cancel();
+        _clearBoxes(refocus: false);
+        setState(() {
+          _submitting = false;
+          _remaining = 0;
+          _errorText = 'That code has expired — tap "Send me a new code" below.';
+        });
+        return;
       case 'OTP_ATTEMPTS_EXCEEDED':
-      case 'STEP_UP_SESSION_EXPIRED':
+        // Attempts are per-code; a fresh code gets a fresh budget. Same
+        // resolution as an expired code: get a new one.
+        _ticker?.cancel();
+        _clearBoxes(refocus: false);
+        setState(() {
+          _submitting = false;
+          _remaining = 0;
+          _errorText =
+              'Too many wrong tries for that code — tap "Send me a new code" below.';
+        });
+        return;
       case 'RESEND_TOO_SOON':
-        // Not terminal: the code on screen is still good and they may resend
-        // shortly. Saying "sign in again" here would be wrong and alarming.
+        // The current code is still the live one; just relay the wait.
         setState(() {
           _submitting = false;
           _errorText = message.isNotEmpty
@@ -354,6 +372,8 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
               : 'Please wait a moment before asking for another code.';
         });
         return;
+      case 'OTP_USED':
+      case 'STEP_UP_SESSION_EXPIRED':
       case 'RESEND_LIMIT_REACHED':
       case 'STEP_UP_UNAVAILABLE':
         _ticker?.cancel();
@@ -606,6 +626,10 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
         ],
       );
     }
+    // While the code is live there is no resend affordance — the countdown
+    // is the whole story. Resend appears the moment the timer ends (the
+    // expired row above), which also stops mid-window resends from burning
+    // the resend cap while a perfectly good code is in flight.
     return Row(
       children: [
         Icon(Icons.timer_outlined, color: _textSecondary, size: 15.sp),
@@ -613,7 +637,8 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
         Text('Expires in $_countdownLabel',
             style: TextStyle(color: _textSecondary, fontSize: 12.5.sp)),
         const Spacer(),
-        _linkButton('Resend', _requestNewCode),
+        Text('Resend available when the timer ends',
+            style: TextStyle(color: _textSecondary, fontSize: 11.5.sp)),
       ],
     );
   }
