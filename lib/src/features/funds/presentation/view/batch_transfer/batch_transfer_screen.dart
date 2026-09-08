@@ -229,8 +229,10 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      _buildBeneficiariesSection(),
-                                      SizedBox(height: 14.h),
+                                      // Beneficiaries strip removed: saved
+                                      // recipients live in the Add-Recipients
+                                      // sheet's Saved tab — one surface, no
+                                      // duplicate mental model.
                                       BatchTransferForm(
                                         key: _formKey,
                                         preSelectedRecipients:
@@ -563,6 +565,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
     return s is AuthenticationSuccess ? s.profile.session.accessToken : null;
   }
 
+  // ignore: unused_element
   Widget _buildBeneficiariesSection() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -638,6 +641,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
     );
   }
 
+  // ignore: unused_element
   Widget _buildBeneficiariesEmpty() {
     return Container(
       width: double.infinity,
@@ -666,6 +670,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
     );
   }
 
+  // ignore: unused_element
   Widget _buildBeneficiaryChip(RecipientModel r) {
     final isInternal = r.type == 'internal' ||
         r.bankName.toLowerCase() == 'lazervault';
@@ -746,6 +751,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
     );
   }
 
+  // ignore: unused_element
   void _showBeneficiaryOptions(RecipientModel r) {
     final isInternal = r.type == 'internal' ||
         r.bankName.toLowerCase() == 'lazervault';
@@ -983,6 +989,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
     );
   }
 
+  // ignore: unused_element
   void _openAddBeneficiarySheet() {
     showModalBottomSheet(
       context: context,

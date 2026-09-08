@@ -182,6 +182,7 @@ const LazerVaultUserMatch$json = {
     {'1': 'profile_photo_url', '3': 5, '4': 1, '5': 9, '10': 'profilePhotoUrl'},
     {'1': 'is_verified', '3': 6, '4': 1, '5': 8, '10': 'isVerified'},
     {'1': 'matched_by', '3': 7, '4': 1, '5': 9, '10': 'matchedBy'},
+    {'1': 'matched_value', '3': 8, '4': 1, '5': 9, '10': 'matchedValue'},
   ],
 };
 
@@ -191,7 +192,7 @@ final $typed_data.Uint8List lazerVaultUserMatchDescriptor = $convert.base64Decod
     'd1c2VyX2lkGAIgASgJUgZ1c2VySWQSGgoIdXNlcm5hbWUYAyABKAlSCHVzZXJuYW1lEhIKBG5h'
     'bWUYBCABKAlSBG5hbWUSKgoRcHJvZmlsZV9waG90b191cmwYBSABKAlSD3Byb2ZpbGVQaG90b1'
     'VybBIfCgtpc192ZXJpZmllZBgGIAEoCFIKaXNWZXJpZmllZBIdCgptYXRjaGVkX2J5GAcgASgJ'
-    'UgltYXRjaGVkQnk=');
+    'UgltYXRjaGVkQnkSIwoNbWF0Y2hlZF92YWx1ZRgIIAEoCVIMbWF0Y2hlZFZhbHVl');
 
 @$core.Deprecated('Use getSyncedContactsRequestDescriptor instead')
 const GetSyncedContactsRequest$json = {

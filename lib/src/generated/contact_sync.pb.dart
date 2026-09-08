@@ -448,6 +448,7 @@ class LazerVaultUserMatch extends $pb.GeneratedMessage {
     $core.String? profilePhotoUrl,
     $core.bool? isVerified,
     $core.String? matchedBy,
+    $core.String? matchedValue,
   }) {
     final result = create();
     if (contactId != null) result.contactId = contactId;
@@ -457,6 +458,7 @@ class LazerVaultUserMatch extends $pb.GeneratedMessage {
     if (profilePhotoUrl != null) result.profilePhotoUrl = profilePhotoUrl;
     if (isVerified != null) result.isVerified = isVerified;
     if (matchedBy != null) result.matchedBy = matchedBy;
+    if (matchedValue != null) result.matchedValue = matchedValue;
     return result;
   }
 
@@ -480,6 +482,7 @@ class LazerVaultUserMatch extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'profilePhotoUrl')
     ..aOB(6, _omitFieldNames ? '' : 'isVerified')
     ..aOS(7, _omitFieldNames ? '' : 'matchedBy')
+    ..aOS(8, _omitFieldNames ? '' : 'matchedValue')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -565,6 +568,19 @@ class LazerVaultUserMatch extends $pb.GeneratedMessage {
   $core.bool hasMatchedBy() => $_has(6);
   @$pb.TagNumber(7)
   void clearMatchedBy() => $_clearField(7);
+
+  /// The EXACT identifier from the request that matched (phone as the caller
+  /// sent it, or lowercased email). This is what lets the client correlate a
+  /// match back to the device contact — correlating by display name never
+  /// worked ("Mum" != the profile name).
+  @$pb.TagNumber(8)
+  $core.String get matchedValue => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set matchedValue($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasMatchedValue() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearMatchedValue() => $_clearField(8);
 }
 
 /// Request to get synced contacts

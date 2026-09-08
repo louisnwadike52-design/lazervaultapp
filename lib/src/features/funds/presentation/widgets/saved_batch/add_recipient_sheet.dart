@@ -146,11 +146,11 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
                 controller: _tabController,
                 indicatorSize: TabBarIndicatorSize.tab,
                 indicator: BoxDecoration(
-                  color: btBlue,
+                color: const Color(0xFF9B6DFF),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 indicatorPadding: EdgeInsets.all(3.w),
-                labelColor: btTextPrimary,
+                labelColor: Colors.white,
                 unselectedLabelColor: btTextSecondary,
                 labelStyle: GoogleFonts.inter(
                     fontSize: 12.sp, fontWeight: FontWeight.w600),

@@ -9,6 +9,9 @@ class LazerVaultUserMatchModel {
   final String? profilePhotoUrl;
   final bool isVerified;
   final String matchedBy; // 'phone' or 'email'
+  /// The EXACT identifier from the request that matched — the key that lets
+  /// the UI attach this match to the right device contact.
+  final String matchedValue;
 
   const LazerVaultUserMatchModel({
     required this.contactId,
@@ -18,6 +21,7 @@ class LazerVaultUserMatchModel {
     this.profilePhotoUrl,
     required this.isVerified,
     required this.matchedBy,
+    this.matchedValue = '',
   });
 
   /// Creates model from proto message
@@ -32,6 +36,7 @@ class LazerVaultUserMatchModel {
           : null,
       isVerified: proto.isVerified,
       matchedBy: proto.matchedBy,
+      matchedValue: proto.matchedValue,
     );
   }
 

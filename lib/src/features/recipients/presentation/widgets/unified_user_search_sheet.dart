@@ -765,15 +765,33 @@ class _UnifiedUserSearchSheetState extends State<UnifiedUserSearchSheet>
         ).timeout(const Duration(seconds: 15));
       } catch (_) {/* best-effort; unmatched contacts simply show "Invite" */}
 
-      // The match doesn't echo the phone/email it hit, so correlate back to a
-      // device contact by normalized name (best-effort). Unmatched → Invite.
+      // Correlate by the ECHOED identifier (matched_value): the backend
+      // returns exactly which phone/email hit, so "Mum" attaches to her
+      // profile even though the names differ. Name correlation remains only
+      // as a legacy fallback for a stale backend that doesn't echo yet.
+      final byIdentifier = <String, LazerVaultUserMatchModel>{};
       final byName = <String, LazerVaultUserMatchModel>{};
       for (final m in matches) {
+        if (m.matchedValue.isNotEmpty) {
+          byIdentifier[m.matchedValue.trim().toLowerCase()] = m;
+        }
         final k = m.name.trim().toLowerCase();
         if (k.isNotEmpty) byName[k] = m;
       }
+      LazerVaultUserMatchModel? matchFor(DeviceContact c) {
+        for (final p in c.phoneNumbers) {
+          final hit = byIdentifier[p.trim().toLowerCase()];
+          if (hit != null) return hit;
+        }
+        final email = (c.email ?? '').trim().toLowerCase();
+        if (email.isNotEmpty && byIdentifier[email] != null) {
+          return byIdentifier[email];
+        }
+        return byName[c.name.trim().toLowerCase()];
+      }
+
       final rows = contacts
-          .map((c) => _ContactRow(c, byName[c.name.trim().toLowerCase()]))
+          .map((c) => _ContactRow(c, matchFor(c)))
           .toList()
         // On-Lazervault contacts first, then alphabetical.
         ..sort((a, b) {

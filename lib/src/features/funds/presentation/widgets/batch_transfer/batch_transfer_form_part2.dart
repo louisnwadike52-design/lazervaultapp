@@ -253,13 +253,16 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
             ),
             child: TabBar(
               controller: _tabController,
+              // Selected tab: light purple pill + white label (design note
+              // from field testing — blue read as a generic link, purple is
+              // the platform accent).
               indicator: BoxDecoration(
-                color: btBlue,
+                color: const Color(0xFF9B6DFF),
                 borderRadius: BorderRadius.circular(10.r),
               ),
               indicatorSize: TabBarIndicatorSize.tab,
               dividerColor: Colors.transparent,
-              labelColor: btTextPrimary,
+              labelColor: Colors.white,
               unselectedLabelColor: const Color(0xFF9CA3AF),
               labelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
               unselectedLabelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w500),
