@@ -49,7 +49,11 @@ class EscrowHomeOffersStrip extends StatelessWidget {
               Icon(Icons.local_offer_outlined,
                   color: EscrowTheme.primary, size: 16.sp),
               SizedBox(width: 6.w),
-              Text('Offers & listings',
+              // Named to make the tabs/strip split self-explanatory: the
+              // All/Buying/Selling tabs hold DEALS (money already in escrow);
+              // this strip holds what hasn't been funded yet — published
+              // listings waiting for a buyer and requests awaiting action.
+              Text('Not yet funded',
                   style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 13.5.sp,
@@ -78,6 +82,15 @@ class EscrowHomeOffersStrip extends StatelessWidget {
               ),
             ],
           ),
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 8.h),
+          child: Text(
+              'Listings and requests waiting for payment — they move into the tabs below once the money is in escrow.',
+              style: GoogleFonts.inter(
+                  color: EscrowTheme.textSecondary,
+                  fontSize: 11.sp,
+                  height: 1.4)),
         ),
         SizedBox(
           height: 92.h,
