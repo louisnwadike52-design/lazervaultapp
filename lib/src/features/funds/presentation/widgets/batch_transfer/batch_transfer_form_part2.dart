@@ -21,6 +21,14 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   String? _verifiedBankCode;
   String? _verifiedBankName;
   bool _isBankSelected = false;
+
+  // SendFunds-parity auto bank detection: type the NUBAN, the system resolves
+  // candidate banks (each with the holder name); one match auto-applies, many
+  // offer a tappable list, none/failure reveals the manual bank picker.
+  List<AccountSuggestion> _bankSuggestions = [];
+  bool _loadingBankSuggestions = false;
+  bool _manualBankMode = false;
+  Timer? _suggestDebounce;
   final TextEditingController _bankAmountController = TextEditingController();
 
   // Current user info for self-transfer prevention
@@ -496,11 +504,33 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
     // one seamless search over saved contacts, the global directory, AND
     // members of your organizations (group accounts). Tapping the bar opens it;
     // each pick is added to the batch, so you can add several in a row.
+    // Picked users are LISTED here too (field feedback: adds felt like they
+    // vanished) — checked rows that accumulate and can be tapped off, and all
+    // of them land in the batch when the Add Recipients CTA is pressed.
+    final pickedUsers = _tempSelectedRecipients
+        .where((r) => r.type != 'external')
+        .toList();
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (pickedUsers.isNotEmpty) ...[
+            SizedBox(height: 4.h),
+            Text('Selected (${pickedUsers.length})',
+                style: GoogleFonts.inter(
+                    color: btTextSecondary,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600)),
+            SizedBox(height: 8.h),
+            ...pickedUsers.map((r) => _buildRecipientItem(
+                  recipient: r,
+                  isSelected: true,
+                  isAlreadyAdded: false,
+                  onTap: () => _toggleRecipientSelection(r),
+                )),
+            SizedBox(height: 8.h),
+          ],
           SizedBox(height: 4.h),
           GestureDetector(
             onTap: _openUnifiedSearch,
@@ -732,18 +762,101 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
               onChanged: (value) {
                 if (value.length == 10 && _isBankSelected) {
                   _verifyBankAccount();
-                } else {
-                  setState(() {
-                    _verifiedBeneficiaryName = null;
-                    _verifiedBankCode = null;
-                    _verifiedBankName = null;
+                  return;
+                }
+                setState(() {
+                  _verifiedBeneficiaryName = null;
+                  _verifiedBankCode = null;
+                  _verifiedBankName = null;
+                  _bankSuggestions = [];
+                });
+                // SendFunds pattern: a full NUBAN with no bank picked triggers
+                // auto-detection across banks (debounced).
+                _suggestDebounce?.cancel();
+                if (value.length == 10 && !_isBankSelected) {
+                  setState(() => _loadingBankSuggestions = true);
+                  _suggestDebounce =
+                      Timer(const Duration(milliseconds: 350), () {
+                    _fetchBatchBankSuggestions(value);
                   });
+                } else {
+                  setState(() => _loadingBankSuggestions = false);
                 }
               },
             ),
           ),
 
           SizedBox(height: 12.h),
+
+          // Auto-detect results: resolving spinner, then candidate banks (each
+          // already carries the resolved holder name — tap to apply).
+          if (_loadingBankSuggestions)
+            Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: Row(
+                children: [
+                  LazerVaultLoader.tiny(),
+                  SizedBox(width: 10.w),
+                  Text('Finding the bank…',
+                      style: GoogleFonts.inter(
+                          color: btTextSecondary, fontSize: 12.5.sp)),
+                ],
+              ),
+            ),
+          if (_bankSuggestions.isNotEmpty) ...[
+            Text('Select the account',
+                style: GoogleFonts.inter(
+                    color: btTextSecondary,
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w600)),
+            SizedBox(height: 8.h),
+            ..._bankSuggestions.map((sug) => Container(
+                  margin: EdgeInsets.only(bottom: 8.h),
+                  child: InkWell(
+                    onTap: () => _applyBankSuggestion(sug),
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Container(
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: btCardElevated,
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: btBorder),
+                      ),
+                      child: Row(
+                        children: [
+                          BankLogo(
+                              bankName: sug.bankName,
+                              bankCode: sug.bankCode,
+                              size: 28,
+                              borderRadius: 8),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(sug.accountName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                        color: btTextPrimary,
+                                        fontSize: 13.5.sp,
+                                        fontWeight: FontWeight.w600)),
+                                Text(sug.bankName,
+                                    style: GoogleFonts.inter(
+                                        color: btTextSecondary,
+                                        fontSize: 11.5.sp)),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.chevron_right_rounded,
+                              color: btTextTertiary, size: 18.sp),
+                        ],
+                      ),
+                    ),
+                  ),
+                )),
+            SizedBox(height: 4.h),
+          ],
 
           // Verify button
           if (_isBankSelected && _bankAccountController.text.length == 10)
@@ -1078,6 +1191,53 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
         ],
       ),
     );
+  }
+
+  /// Resolve candidate banks for a typed NUBAN (SendFunds parity). One match →
+  /// auto-apply; several → the tappable list; none/failure → the manual bank
+  /// picker stays available exactly as before.
+  Future<void> _fetchBatchBankSuggestions(String accountNumber) async {
+    if (!mounted) return;
+    try {
+      final suggestions = await context
+          .read<AccountVerificationCubit>()
+          .suggestBanks(accountNumber: accountNumber);
+      if (!mounted || _bankAccountController.text != accountNumber) return;
+      setState(() {
+        _loadingBankSuggestions = false;
+        _bankSuggestions = suggestions;
+      });
+      if (suggestions.length == 1) {
+        // The submit path would auto-apply a lone match anyway — do it now and
+        // save the tap. Multi-match stays a human choice: same number at
+        // different banks is a DIFFERENT holder each time.
+        _applyBankSuggestion(suggestions.first);
+      } else if (suggestions.isEmpty) {
+        setState(() => _manualBankMode = true);
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loadingBankSuggestions = false;
+        _manualBankMode = true;
+      });
+    }
+  }
+
+  /// Apply a resolved candidate: bank + code + holder name land in the SAME
+  /// verified-state fields the manual verify path fills, so the existing Add
+  /// button and the sheet's Add-Recipients CTA work unchanged.
+  void _applyBankSuggestion(AccountSuggestion sug) {
+    setState(() {
+      _selectedBankName = sug.bankName;
+      _selectedBankCode = sug.bankCode;
+      _isBankSelected = true;
+      _verifiedBeneficiaryName = sug.accountName;
+      _verifiedBankCode = sug.bankCode;
+      _verifiedBankName = sug.bankName;
+      _bankSuggestions = [];
+      _loadingBankSuggestions = false;
+    });
   }
 
   Widget _buildRecipientItem({
