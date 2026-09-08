@@ -27,7 +27,6 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   // offer a tappable list, none/failure reveals the manual bank picker.
   List<AccountSuggestion> _bankSuggestions = [];
   bool _loadingBankSuggestions = false;
-  bool _manualBankMode = false;
   Timer? _suggestDebounce;
   final TextEditingController _bankAmountController = TextEditingController();
 
@@ -70,6 +69,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
 
   @override
   void dispose() {
+    _suggestDebounce?.cancel();
     _searchController.dispose();
     _tabController.dispose();
     _bankAccountController.dispose();
@@ -905,60 +905,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                 // the backend, not the locally-picked static code.
                 _verifiedBankCode = state.bankCode;
                 _verifiedBankName = state.bankName;
-                return Column(
-                  children: [
-                    // Verified beneficiary name
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(16.w),
-                      decoration: BoxDecoration(
-                        color: btGreen.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(color: btGreen.withValues(alpha: 0.3)),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.check_circle, color: btGreen, size: 20.sp),
-                          SizedBox(width: 12.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Account Verified',
-                                    style: GoogleFonts.inter(
-                                        color: btGreen, fontSize: 12.sp, fontWeight: FontWeight.w600)),
-                                SizedBox(height: 2.h),
-                                Text(state.accountName,
-                                    style: GoogleFonts.inter(
-                                        color: btTextPrimary, fontSize: 15.sp, fontWeight: FontWeight.w700)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(height: 16.h),
-
-                    // Add as recipient button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _addBankAccountRecipient,
-                        icon: Icon(Icons.person_add, size: 18.sp),
-                        label: Text('Add Recipient',
-                            style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: btBlue,
-                          foregroundColor: btTextPrimary,
-                          elevation: 0,
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
+                return _verifiedPanel(state.accountName);
               }
 
               if (state is AccountVerificationFailure) {
@@ -983,6 +930,15 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                 );
               }
 
+              // Auto-detected suggestion applied locally: the Bloc never emits
+              // Success for it, but the account IS verified (the suggestion
+              // carried the resolved holder name) — without this branch the
+              // bank filled in and then NO Add button appeared: a dead end.
+              if (_verifiedBeneficiaryName != null &&
+                  _verifiedBeneficiaryName!.isNotEmpty) {
+                return _verifiedPanel(_verifiedBeneficiaryName!);
+              }
+
               return const SizedBox.shrink();
             },
           ),
@@ -994,10 +950,71 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
             _buildEmptySearchState(
               icon: Icons.account_balance_outlined,
               title: 'Add Bank Account',
-              subtitle: 'Select a bank and enter an account number\nto add an external recipient',
+              subtitle: 'Enter a 10-digit account number — we\'ll detect the bank\nand verify the account holder automatically',
             ),
         ],
       ),
+    );
+  }
+
+  /// Shared "Account Verified" panel + Add button — rendered identically for a
+  /// manual verify (Bloc state) and an auto-detected suggestion (local state).
+  Widget _verifiedPanel(String accountName) {
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: btGreen.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: btGreen.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.check_circle, color: btGreen, size: 20.sp),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Account Verified',
+                        style: GoogleFonts.inter(
+                            color: btGreen,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600)),
+                    SizedBox(height: 2.h),
+                    Text(accountName,
+                        style: GoogleFonts.inter(
+                            color: btTextPrimary,
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w700)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 16.h),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _addBankAccountRecipient,
+            icon: Icon(Icons.person_add, size: 18.sp),
+            label: Text('Add Recipient',
+                style: GoogleFonts.inter(
+                    fontSize: 14.sp, fontWeight: FontWeight.w600)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: btBlue,
+              foregroundColor: btTextPrimary,
+              elevation: 0,
+              padding: EdgeInsets.symmetric(vertical: 14.h),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r)),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1212,15 +1229,11 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
         // save the tap. Multi-match stays a human choice: same number at
         // different banks is a DIFFERENT holder each time.
         _applyBankSuggestion(suggestions.first);
-      } else if (suggestions.isEmpty) {
-        setState(() => _manualBankMode = true);
       }
+      // No candidates → the always-visible bank selector is the fallback.
     } catch (_) {
       if (!mounted) return;
-      setState(() {
-        _loadingBankSuggestions = false;
-        _manualBankMode = true;
-      });
+      setState(() => _loadingBankSuggestions = false);
     }
   }
 
