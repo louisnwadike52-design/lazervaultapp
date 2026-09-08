@@ -1,4 +1,9 @@
+import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,6 +31,9 @@ class QRCodeDetailsBottomSheet extends StatefulWidget {
 class _QRCodeDetailsBottomSheetState extends State<QRCodeDetailsBottomSheet> {
   bool _isDownloadingSummary = false;
   bool _isSharingSummary = false;
+  // RepaintBoundary key over the white QR card: Share sends the scannable
+  // image with the summary text below it (not just a PDF attachment).
+  final GlobalKey _qrShareKey = GlobalKey();
 
   Future<void> _downloadSummary() async {
     if (_isDownloadingSummary) return;
@@ -61,7 +69,24 @@ class _QRCodeDetailsBottomSheetState extends State<QRCodeDetailsBottomSheet> {
     setState(() => _isSharingSummary = true);
 
     try {
-      await QRPayPdfService.shareQRCodeSummary(qrCode: widget.qrCode);
+      final qr = widget.qrCode;
+      final caption = qr.amount > 0
+          ? 'Scan this Lazervault QR to pay ${qr.currency} ${qr.amount.toStringAsFixed(2)} via QR Pay.'
+          : 'Scan this Lazervault QR to pay via QR Pay.';
+      final file = await _captureQrPng();
+      if (file != null) {
+        await SharePlus.instance.share(ShareParams(
+          // iOS: a non-zero popover anchor is required — CGRectZero throws
+          // PlatformException and the share silently fails on iPhone/iPad.
+          sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+          files: [XFile(file.path)],
+          text: caption,
+          subject: 'Lazervault QR Pay',
+        ));
+      } else {
+        // Capture unavailable — fall back to the PDF summary share.
+        await QRPayPdfService.shareQRCodeSummary(qrCode: widget.qrCode);
+      }
 
       Get.snackbar(
         'Success',
@@ -80,6 +105,25 @@ class _QRCodeDetailsBottomSheetState extends State<QRCodeDetailsBottomSheet> {
       );
     } finally {
       if (mounted) setState(() => _isSharingSummary = false);
+    }
+  }
+
+  /// Render the QR RepaintBoundary to a PNG on disk; null on any failure.
+  Future<File?> _captureQrPng() async {
+    try {
+      final boundary = _qrShareKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
+      if (boundary == null) return null;
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return null;
+      final dir = await getTemporaryDirectory();
+      final file = File(
+          '${dir.path}/lazervault_qr_${DateTime.now().millisecondsSinceEpoch}.png');
+      await file.writeAsBytes(byteData.buffer.asUint8List());
+      return file;
+    } catch (_) {
+      return null;
     }
   }
 
@@ -186,7 +230,9 @@ class _QRCodeDetailsBottomSheetState extends State<QRCodeDetailsBottomSheet> {
 
           // QR Code Display
           Center(
-            child: Container(
+            child: RepaintBoundary(
+              key: _qrShareKey,
+              child: Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -210,6 +256,7 @@ class _QRCodeDetailsBottomSheetState extends State<QRCodeDetailsBottomSheet> {
                     ),
                   );
                 },
+              ),
               ),
             ),
           ),

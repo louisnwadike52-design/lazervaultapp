@@ -1,6 +1,10 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -210,7 +214,9 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
   Widget _buildQRCodeCard() {
     return ScaleTransition(
       scale: _pulseAnimation,
-      child: Container(
+      child: RepaintBoundary(
+        key: _qrShareKey,
+        child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -226,6 +232,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
               child: Text('Failed to generate QR code'),
             );
           },
+        ),
         ),
       ),
     );
@@ -349,6 +356,29 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
     );
   }
 
+  // Captures the white QR card (RepaintBoundary) so Share sends a scannable
+  // image with the caption below it — not just the raw code text.
+  final GlobalKey _qrShareKey = GlobalKey();
+  bool _sharing = false;
+
+  Future<File?> _captureQrPng() async {
+    try {
+      final boundary = _qrShareKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
+      if (boundary == null) return null;
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return null;
+      final dir = await getTemporaryDirectory();
+      final file = File(
+          '${dir.path}/lazervault_qr_${DateTime.now().millisecondsSinceEpoch}.png');
+      await file.writeAsBytes(byteData.buffer.asUint8List());
+      return file;
+    } catch (_) {
+      return null;
+    }
+  }
+
   void _copyQRCode() {
     if (_qrCode != null) {
       Clipboard.setData(ClipboardData(text: _qrCode!.qrCode));
@@ -361,17 +391,27 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
     }
   }
 
-  void _shareQRCode() {
-    if (_qrCode != null) {
+  Future<void> _shareQRCode() async {
+    if (_qrCode == null || _sharing) return;
+    setState(() => _sharing = true);
+    try {
       final qr = _qrCode!;
       final text = qr.amount > 0
-          ? 'Pay me ${qr.currency} ${qr.amount.toStringAsFixed(2)} via QR Pay. Code: ${qr.qrCode}'
-          : 'Pay me via QR Pay. Code: ${qr.qrCode}';
-      SharePlus.instance.share(ShareParams(
-          // iOS: a non-zero popover anchor is required — CGRectZero throws
-          // PlatformException and the share silently fails on iPhone/iPad.
-          sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
-          text: text));
+          ? 'Scan this Lazervault QR to pay me ${qr.currency} ${qr.amount.toStringAsFixed(2)} via QR Pay.'
+          : 'Scan this Lazervault QR to pay me via QR Pay.';
+      final file = await _captureQrPng();
+      await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+        // The scannable image, with the caption text below it. Falls back to
+        // caption + code text only if the capture fails.
+        files: file != null ? [XFile(file.path)] : null,
+        text: file != null ? text : '$text Code: ${qr.qrCode}',
+        subject: 'Lazervault QR Pay',
+      ));
+    } finally {
+      if (mounted) setState(() => _sharing = false);
     }
   }
 }
