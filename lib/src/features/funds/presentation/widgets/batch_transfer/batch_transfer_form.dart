@@ -155,8 +155,11 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
     // account is rendered disabled. Fall back to the personal account with the
     // matching currency, then to the first account.
     final activeId = GetIt.I<AccountManager>().activeAccountId;
+    // Match on spendingAccountId too: for a Family & Friends card the
+    // dashboard stores the family VIRTUAL account id, not the group id.
     var index = (activeId != null && activeId.isNotEmpty)
-        ? _accounts.indexWhere((acc) => acc.id == activeId)
+        ? _accounts.indexWhere(
+            (acc) => acc.spendingAccountId == activeId || acc.id == activeId)
         : -1;
     if (index < 0) {
       index = _accounts.indexWhere(
@@ -693,11 +696,31 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
       );
     }).toList();
 
+    // Send the SPENDING account id: for a Family & Friends card the group id
+    // is not debitable — the family virtual account is (send-funds precedent).
     String fromAccountId;
     if (_accounts.isNotEmpty && _selectedAccountIndex < _accounts.length) {
-      fromAccountId = _accounts[_selectedAccountIndex].id;
+      final src = _accounts[_selectedAccountIndex];
+      if (src.isFamilyWalletProvisioning) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'This family wallet is still being set up. Try again shortly.',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: btRed,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r)),
+          ),
+        );
+        return;
+      }
+      fromAccountId = src.spendingAccountId;
     } else {
-      fromAccountId = accountManager.activeAccountDetails?.id ?? '0';
+      fromAccountId = accountManager.activeAccountId ??
+          accountManager.activeAccountDetails?.id ??
+          '0';
     }
 
     final arguments = <String, dynamic>{
@@ -1115,7 +1138,9 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                   // Lock the batch source to the active dashboard account; all
                   // other accounts are disabled (dimmed + tap shows a hint).
                   final lockedId = _lockedAccountId;
-                  final isLocked = lockedId != null && account.id != lockedId;
+                  final isLocked = lockedId != null &&
+                      account.id != lockedId &&
+                      account.spendingAccountId != lockedId;
 
                   return GestureDetector(
                     onTap: () {

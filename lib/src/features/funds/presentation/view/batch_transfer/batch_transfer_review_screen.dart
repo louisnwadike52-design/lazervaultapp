@@ -8,6 +8,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:flutter/services.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/domain/entities/saved_batch_entity.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_saved_batch_repository.dart';
@@ -45,6 +46,39 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
   DateTime? _scheduledDate;
   TimeOfDay? _scheduledTime;
 
+  // Real service fee quoted from the backend (external items only —
+  // internal LazerVault transfers are free). null = quote unavailable;
+  // rendered as an em-dash, never as a fake zero.
+  double? _totalFee;
+  bool _feeLoading = false;
+
+  Future<void> _loadFees() async {
+    final recipients =
+        transferData['recipients'] as List<BatchTransferRecipient>? ?? [];
+    final external = recipients.where((r) => r.isExternal).toList();
+    if (external.isEmpty) {
+      setState(() => _totalFee = 0.0);
+      return;
+    }
+    setState(() => _feeLoading = true);
+    try {
+      final ds = serviceLocator<IPaymentsTransferDataSource>();
+      var feeMinor = 0;
+      for (final r in external) {
+        feeMinor += await ds.getTransferFee(
+          amountMinorUnits: r.amount.toInt(),
+          currency: _currency,
+          transferType: 'batch_external',
+        );
+      }
+      if (mounted) setState(() => _totalFee = feeMinor / 100.0);
+    } catch (_) {
+      if (mounted) setState(() => _totalFee = null); // unknown, not zero
+    } finally {
+      if (mounted) setState(() => _feeLoading = false);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -77,6 +111,11 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
 
     _animationController.forward();
+
+    // Quote the real service fee (external items) as soon as the screen opens.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadFees();
+    });
   }
 
   @override
@@ -184,12 +223,15 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
       return;
     }
 
-    // Client-side balance check
+    // Client-side balance check — against amount + quoted fees (the backend
+    // holds amount+fee per external item, so checking the bare amount lets a
+    // just-enough balance pass here and fail at the hold).
     final accountManager = GetIt.I<AccountManager>();
     final selectedAccount = transferData['selectedAccount'] as AccountSummaryEntity?;
     final availableBalance = selectedAccount?.availableBalance ?? accountManager.activeAccountDetails?.balance ?? 0.0;
+    final chargeTotal = totalAmount + (_totalFee ?? 0.0);
 
-    if (totalAmount > availableBalance) {
+    if (chargeTotal > availableBalance) {
       setState(() => _isProcessing = false);
       _showError('Insufficient balance. Available: $_currencySymbol${availableBalance.toStringAsFixed(2)}');
       return;
@@ -220,10 +262,11 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
       context: context,
       transactionId: transactionId,
       transactionType: 'batch_transfer',
-      amount: totalAmount,
+      amount: chargeTotal,
       currency: _currency,
       title: 'Confirm Batch Transfer',
-      message: 'Confirm batch transfer of $_currency ${totalAmount.toStringAsFixed(2)}',
+      message: 'Confirm batch transfer of $_currency ${chargeTotal.toStringAsFixed(2)}'
+          '${_totalFee != null && _totalFee! > 0 ? ' (incl. ${_currencySymbol}${_totalFee!.toStringAsFixed(2)} fees)' : ''}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -356,8 +399,8 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     final reference = transferData['batchReference'] as String?;
     final selectedAccount = transferData['selectedAccount'] as AccountSummaryEntity?;
 
-    const fee = 0.0;
-    final grandTotal = totalAmount + fee;
+    final fee = _totalFee;
+    final grandTotal = totalAmount + (fee ?? 0.0);
 
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -893,7 +936,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     );
   }
 
-  Widget _buildPaymentBreakdownCard(double totalAmount, double fee, double grandTotal) {
+  Widget _buildPaymentBreakdownCard(double totalAmount, double? fee, double grandTotal) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -914,7 +957,14 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           SizedBox(height: 16.h),
           _buildBreakdownRow('Transfer Amount', totalAmount),
           SizedBox(height: 8.h),
-          _buildBreakdownRow('Service Fee', fee),
+          // Fee is quoted live from the backend; while unknown it is shown as
+          // unknown — a fake ₦0.00 here is how users get surprise debits.
+          _feeLoading
+              ? _buildBreakdownRowText('Service Fee', 'Calculating…')
+              : (fee == null
+                  ? _buildBreakdownRowText('Service Fee', 'Shown at receipt',
+                      valueColor: btOrange)
+                  : _buildBreakdownRow('Service Fee', fee)),
           if (_isScheduled && _scheduledDateTime != null) ...[
             SizedBox(height: 8.h),
             _buildBreakdownRowText(
@@ -926,7 +976,10 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           SizedBox(height: 12.h),
           Divider(color: btBorder),
           SizedBox(height: 12.h),
-          _buildBreakdownRow('Total Amount', grandTotal, isTotal: true),
+          fee == null && !_feeLoading
+              ? _buildBreakdownRowText('Total Amount', 'Amount + fees',
+                  valueColor: btTextPrimary)
+              : _buildBreakdownRow('Total Amount', grandTotal, isTotal: true),
         ],
       ),
     );
