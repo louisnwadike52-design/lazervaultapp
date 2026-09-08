@@ -10,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';
+import 'package:nfc_manager/nfc_manager_ios.dart';
 import '../../domain/repositories/contactless_payment_repository.dart';
 import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
@@ -130,23 +131,35 @@ class _NfcReaderViewState extends State<_NfcReaderView>
         if (_tagHandled) return;
         try {
           final ndef = Ndef.from(tag);
-          if (ndef == null) {
+          if (ndef != null) {
+            // Android reader path: the platform exposes the emulated Type 4
+            // tag as plain NDEF.
+            final message = await ndef.read();
+            if (message == null || message.records.isEmpty) {
+              _handleScanError('No payment data found on this device');
+              return;
+            }
+            final record = message.records.first;
+            final payloadString = String.fromCharCodes(
+              record.payload.sublist(record.payload[0] + 1),
+            );
+            _handlePayloadString(payloadString);
+            return;
+          }
+
+          // iOS reader path: CoreNFC surfaces the Android HCE receiver as an
+          // ISO 7816 tag with NO NDEF interface, so we speak the NFC Forum
+          // Type 4 APDU sequence ourselves (select NDEF file → read NLEN →
+          // read the message) and feed the same shared payload pipeline.
+          final payloadString = await _readPayloadViaIso7816(tag);
+          if (payloadString == null) {
             _handleScanError('Device does not support NDEF format');
             return;
           }
-
-          final message = await ndef.read();
-          if (message == null || message.records.isEmpty) {
-            _handleScanError('No payment data found on this device');
-            return;
-          }
-
-          final record = message.records.first;
-          final payloadString = String.fromCharCodes(
-            record.payload.sublist(record.payload[0] + 1),
-          );
           _handlePayloadString(payloadString);
         } catch (e) {
+          AppLogger.error('contactless: NFC read failed',
+              fields: {'feature': 'contactless_pay', 'error': '$e'});
           _handleScanError('Failed to read payment data');
         }
       },
@@ -154,6 +167,79 @@ class _NfcReaderViewState extends State<_NfcReaderView>
         _handleScanError('NFC read failed. Please try again.');
       },
     );
+  }
+
+  /// NFC Forum Type 4 read over raw ISO 7816 APDUs — the iOS leg of the tap.
+  /// The AID (declared in Info.plist select-identifiers) is auto-selected by
+  /// CoreNFC before the tag is delivered, so this goes straight to the NDEF
+  /// file: SELECT E104 → READ NLEN → READ message, then unwrap the single
+  /// text record the Android broadcaster writes (status byte + "en" + text).
+  Future<String?> _readPayloadViaIso7816(NfcTag tag) async {
+    final iso = Iso7816Ios.from(tag);
+    if (iso == null) return null;
+
+    Future<Uint8List?> selectFile(int hi, int lo) async {
+      final r = await iso.sendCommand(
+        instructionClass: 0x00,
+        instructionCode: 0xA4,
+        p1Parameter: 0x00,
+        p2Parameter: 0x0C,
+        data: Uint8List.fromList([hi, lo]),
+        expectedResponseLength: -1,
+      );
+      return (r.statusWord1 == 0x90 && r.statusWord2 == 0x00)
+          ? r.payload
+          : null;
+    }
+
+    Future<Uint8List?> readBinary(int offset, int length) async {
+      final r = await iso.sendCommand(
+        instructionClass: 0x00,
+        instructionCode: 0xB0,
+        p1Parameter: (offset >> 8) & 0xFF,
+        p2Parameter: offset & 0xFF,
+        data: Uint8List(0),
+        expectedResponseLength: length,
+      );
+      return (r.statusWord1 == 0x90 && r.statusWord2 == 0x00)
+          ? r.payload
+          : null;
+    }
+
+    // SELECT the NDEF file (E104) and read its 2-byte length prefix.
+    if (await selectFile(0xE1, 0x04) == null) return null;
+    final nlenBytes = await readBinary(0, 2);
+    if (nlenBytes == null || nlenBytes.length < 2) return null;
+    final nlen = (nlenBytes[0] << 8) | nlenBytes[1];
+    if (nlen <= 0 || nlen > 32 * 1024) return null;
+
+    // Read the NDEF message in chunks bounded by the tag's MLe (our CC
+    // advertises 59; stay under it).
+    final buf = <int>[];
+    var offset = 2;
+    while (buf.length < nlen) {
+      final want = (nlen - buf.length) < 48 ? (nlen - buf.length) : 48;
+      final chunk = await readBinary(offset, want);
+      if (chunk == null || chunk.isEmpty) return null;
+      buf.addAll(chunk);
+      offset += chunk.length;
+    }
+
+    // Minimal NDEF text-record unwrap: find the 'T' (0x54) type byte after
+    // the record header, then skip the status byte + language code. Tolerant
+    // of short/long record headers without a full NDEF parser.
+    final bytes = Uint8List.fromList(buf);
+    for (var i = 0; i < bytes.length - 1; i++) {
+      if (bytes[i] == 0x54) {
+        final status = bytes[i + 1];
+        final langLen = status & 0x3F;
+        final start = i + 2 + langLen;
+        if (start < bytes.length) {
+          return utf8.decode(bytes.sublist(start), allowMalformed: true);
+        }
+      }
+    }
+    return null;
   }
 
   /// Shared payload path for BOTH transports: an NFC NDEF read and a scanned

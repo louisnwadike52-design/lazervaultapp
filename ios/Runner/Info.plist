@@ -85,6 +85,17 @@
 		     Paired with the NFC entitlement in Runner.entitlements. -->
 		<key>NFCReaderUsageDescription</key>
 		<string>Lazervault uses NFC to send and receive money by tapping your phone against another Lazervault user's phone.</string>
+		<!-- An Android receiver presents the payment session as an HCE-emulated
+		     ISO-DEP smart card (NFC Forum Type 4 tag). CoreNFC only DELIVERS an
+		     ISO 7816 tag to the app when its AID is declared here — without
+		     this array the iPhone polls, sees the Android phone, matches no
+		     AID, and never fires onDiscovered: the sheet sits at "Ready to
+		     Scan" forever. D2760000850101 is the NFC Forum Type 4 NDEF
+		     application AID our HostApduService registers. -->
+		<key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
+		<array>
+			<string>D2760000850101</string>
+		</array>
 		<key>UIBackgroundModes</key>
 		<array>
 			<string>audio</string>

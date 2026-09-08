@@ -77,6 +77,14 @@ class RemoteLogSink {
       final rawRate = double.tryParse(
           endpointRegistry.raw('client_logs_sample_rate')?.trim() ?? '');
       if (rawRate != null && rawRate >= 0 && rawRate <= 1) _sampleRate = rawRate;
+      final forceFlows = endpointRegistry.raw('client_logs_force_flows')?.trim();
+      if (forceFlows != null && forceFlows.isNotEmpty) {
+        _forceShipFlows = forceFlows
+            .split(',')
+            .map((f) => f.trim())
+            .where((f) => f.isNotEmpty)
+            .toSet();
+      }
 
       final prefs = await SharedPreferences.getInstance();
       _deviceId = prefs.getString(_deviceIdKey) ?? '';
@@ -118,8 +126,10 @@ class RemoteLogSink {
       if (kIsWeb) return;
       final lvl = _normalizeLevel(level);
       if (!_enabled && lvl != 'error') return;
-      // Errors + warnings always ship; info/debug are sampled.
-      if (lvl == 'info' || lvl == 'debug') {
+      // Errors + warnings always ship; info/debug are sampled — EXCEPT flows
+      // under active field debugging, which must capture every event or the
+      // one tap that reproduces the bug is the one the sampler drops.
+      if ((lvl == 'info' || lvl == 'debug') && !_forceShipFlows.contains(flow)) {
         if (!_passesSample()) return;
       }
 
@@ -206,6 +216,11 @@ class RemoteLogSink {
   // Deterministic-enough sampling without Math.random dependencies at call
   // sites: hash the session id + queue length. Cheap and good enough for a
   // "ship ~X% of info logs" gate.
+  /// Flows whose info/debug events bypass sampling. Defaults cover the flows
+  /// being field-debugged; ops can override remotely via the
+  /// `client_logs_force_flows` setting (comma-separated flow names).
+  Set<String> _forceShipFlows = {'contactless_pay'};
+
   int _sampleCounter = 0;
   bool _passesSample() {
     if (_sampleRate >= 1.0) return true;
