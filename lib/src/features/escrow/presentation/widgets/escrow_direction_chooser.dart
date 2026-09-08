@@ -48,7 +48,7 @@ Future<String?> showEscrowDirectionChooser(BuildContext context) {
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600)),
             subtitle: Text(
-                'Ask a seller for something. You pay only after they accept.',
+                'Ask a seller for something. You pay into escrow now; refunded if they decline or don\'t deliver.',
                 style: GoogleFonts.inter(
                     color: EscrowTheme.textSecondary, fontSize: 11.5.sp)),
             onTap: () => Navigator.pop(ctx, 'buy_request'),

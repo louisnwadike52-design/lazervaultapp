@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import '../widgets/escrow_offer_fund_sheet.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/unified_search_result.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 
@@ -192,7 +193,20 @@ class _CreateEscrowOfferScreenState extends State<CreateEscrowOfferScreen> {
         }
       }
 
-      // Land on the offer page (creator view: share link + QR + status).
+      // A buyer-created escrow holds the money AT CREATION — no separate
+      // funding stage later. Open the funding sheet right here so publish →
+      // PIN → funded deal is one continuous flow. A sell listing stays money-
+      // free and just lands on its shareable offer page.
+      if (!_isSell && mounted) {
+        final deal = await showEscrowOfferFundSheet(context, offer: offer);
+        if (deal != null && mounted) {
+          Get.offNamed(AppRoutes.escrowReceipt,
+              arguments: {'deal': deal, 'kind': 'funded'});
+          return;
+        }
+        // Dismissed without funding: the request is created but unpaid. Land on
+        // the offer page where the "Fund the escrow now" button still finishes it.
+      }
       Get.offNamed(AppRoutes.escrowOfferView, arguments: {'offerId': offer.id});
     } finally {
       if (mounted) setState(() => _submitting = false);

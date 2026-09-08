@@ -81,28 +81,61 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
     }
   }
 
+  // Show the "not addressed to you" dialog exactly once per screen when a
+  // share link meant for a specific person is opened by someone else.
+  bool _foreignPrompted = false;
+  void _maybeWarnForeignViewer(EscrowOfferEntity offer, String userId) {
+    if (_foreignPrompted) return;
+    if (!offer.isForeignViewer(userId)) return;
+    _foreignPrompted = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final who =
+          offer.counterpartyName.isNotEmpty ? offer.counterpartyName : 'someone else';
+      showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: EscrowTheme.card,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.r)),
+          title: Text('This escrow isn\'t for you',
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700)),
+          content: Text(
+              'This ${offer.isSellOffer ? 'listing' : 'request'} is addressed to $who. '
+              'You can see the details, but only they can confirm or decline it.',
+              style: GoogleFonts.inter(
+                  color: EscrowTheme.textSecondary, fontSize: 13.5.sp, height: 1.5)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Got it',
+                  style: GoogleFonts.inter(
+                      color: EscrowTheme.primary,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  // Decline only — there is no separate acceptance stage. Confirming an offer
+  // is funding it; declining marks it declined and notifies the creator.
   Future<void> _respond(EscrowOfferEntity offer, bool accept) async {
     final cubit = context.read<EscrowCubit>();
-    if (!accept) {
-      final note = await _noteSheet(
-        title: 'Decline this request?',
-        subtitle: 'The buyer will be notified. You can add a short reason.',
-        confirmLabel: 'Decline',
-        accent: EscrowTheme.error,
-      );
-      if (note == null) return;
-      await cubit.respondOffer(offerId: offer.id, accept: false, note: note);
-      return;
-    }
     final note = await _noteSheet(
-      title: 'Accept this request?',
+      title: offer.isSellOffer ? 'Decline this offer?' : 'Decline this request?',
       subtitle:
-          'You agree to sell "${offer.title}" for ${_money(offer)}. The buyer will then fund the escrow — money only moves after they pay in.',
-      confirmLabel: 'Accept request',
-      accent: EscrowTheme.primary,
+          'The ${offer.isSellOffer ? 'seller' : 'buyer'} will be notified. You can add a short reason.',
+      confirmLabel: 'Decline',
+      accent: EscrowTheme.error,
     );
     if (note == null) return;
-    await cubit.respondOffer(offerId: offer.id, accept: true, note: note);
+    await cubit.respondOffer(offerId: offer.id, accept: false, note: note);
   }
 
   Future<void> _cancel(EscrowOfferEntity offer) async {
@@ -288,6 +321,7 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
         },
         builder: (context, state) {
           if (state is EscrowOfferLoaded) {
+            _maybeWarnForeignViewer(state.offer, state.currentUserId);
             return _body(state.offer, state.currentUserId);
           }
           if (state is EscrowOfferActionSuccess) {
@@ -546,13 +580,28 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
 
   List<Widget> _actions(EscrowOfferEntity offer, String userId) {
     final out = <Widget>[];
+
+    // Someone who opened a share link meant for a specific person: view-only,
+    // no confirm/decline. The modal (shown on load) already explained why.
+    if (offer.isForeignViewer(userId)) {
+      out.add(_banner(
+          'This escrow is addressed to ${offer.counterpartyName.isNotEmpty ? offer.counterpartyName : 'someone else'}. '
+          'Only they can confirm or decline it.',
+          EscrowTheme.warning));
+      if (offer.isConverted && offer.dealId.isNotEmpty) {
+        // nothing actionable for a non-party
+      }
+      return out;
+    }
+
+    // Confirmation IS the money action: fund a sell listing / a buy request.
     if (offer.canFund(userId)) {
       out.add(_primaryBtn(
           offer.isSellOffer ? 'Buy securely' : 'Fund the escrow now',
           () => _buy(offer)));
     }
-    if (offer.canRespond(userId) && offer.isBuyRequest) {
-      out.add(_primaryBtn('Accept request', () => _respond(offer, true)));
+    // The addressed counterparty can DECLINE while the offer is still open.
+    if (offer.canDecline(userId)) {
       out.add(_secondaryBtn(
           'Decline', EscrowTheme.error, () => _respond(offer, false)));
     }

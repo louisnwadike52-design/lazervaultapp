@@ -363,8 +363,8 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
               Expanded(
                 child: Text(
                   _isSell
-                      ? 'No money moves now. The buyer pays into escrow when they accept; Lazervault releases it to you after they confirm delivery.'
-                      : 'No money moves now. The seller reviews your request first; you pay into escrow only after they accept.',
+                      ? 'No money moves now. The buyer pays into escrow when they confirm; Lazervault releases it to you after they confirm delivery.'
+                      : 'You pay into escrow now and we hold it. The seller delivers to get paid; if they decline or don\'t deliver, you\'re refunded.',
                   style: GoogleFonts.inter(
                       color: EscrowTheme.textSecondary,
                       fontSize: 11.sp,
@@ -442,7 +442,7 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
                           color: Colors.white, strokeWidth: 2))
                   : Text(
                       isLast
-                          ? (_isSell ? 'Publish offer' : 'Send request')
+                          ? (_isSell ? 'Publish offer' : 'Fund & send request')
                           : 'Continue',
                       style: GoogleFonts.inter(
                           color: Colors.white,

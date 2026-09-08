@@ -83,15 +83,34 @@ class EscrowOfferEntity {
       if (userId == creatorUserId) return false; // can't buy your own listing
       return !isAddressed || counterpartyUserId == userId;
     }
-    if (isBuyRequest && isAwaitingFunding) {
-      return userId == creatorUserId; // the requester is the buyer
+    if (isBuyRequest && (isOpen || isAwaitingFunding)) {
+      // A buyer-created escrow funds at creation (money held now); no seller-
+      // accept gate, so an OPEN request is directly fundable by its creator.
+      // AWAITING_FUNDING stays fundable for legacy accept-then-fund offers.
+      return userId == creatorUserId;
     }
     return false;
   }
 
-  /// Whether [userId] may accept/decline (buy_request seller answering).
-  bool canRespond(String userId) =>
+  /// Whether [userId] may accept/decline. The buyer-created escrow now funds
+  /// at creation with no seller-accept stage, so this is always false — the
+  /// seller acts on the resulting DEAL (deliver / release), never the offer.
+  bool canRespond(String userId) => false;
+
+  /// Whether [userId] may DECLINE this offer — the addressed counterparty of a
+  /// still-OPEN offer. A sell_offer's targeted buyer declines a listing; a
+  /// still-unfunded buy_request's seller declines the request.
+  bool canDecline(String userId) =>
       isOpen && isAddressed && counterpartyUserId == userId;
+
+  /// True when [userId] is neither the creator nor the addressed counterparty
+  /// of an ADDRESSED offer — e.g. someone who opened a share link meant for a
+  /// specific person. They may view but not act.
+  bool isForeignViewer(String userId) =>
+      isAddressed &&
+      userId.isNotEmpty &&
+      userId != creatorUserId &&
+      userId != counterpartyUserId;
 
   /// Whether [userId] may withdraw the offer.
   bool canCancel(String userId) =>
