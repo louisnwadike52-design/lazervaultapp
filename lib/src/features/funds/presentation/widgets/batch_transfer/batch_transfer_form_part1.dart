@@ -13,7 +13,10 @@ class BatchRecipientItem {
     required this.recipient,
     String? initialAmount,
     String? initialReference,
-    this.isExpanded = false,
+    // Expanded by default: the amount is only half of an item — the narration
+    // and per-recipient controls must be visible without hunting for a
+    // chevron (field feedback: users didn't know narration existed).
+    this.isExpanded = true,
     this.bankCode,
     this.bankName,
     this.beneficiaryName,

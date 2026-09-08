@@ -447,6 +447,82 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     );
   }
 
+  /// Pick a different source account for the whole batch. Options come from
+  /// the compose form's loaded NGN accounts (passed via arguments); selection
+  /// rewrites BOTH selectedAccount (display/balances) and fromAccountId (the
+  /// SPENDING account id — family-safe, matching the form's own rule). A
+  /// non-spendable option (family card without a virtual account) is refused
+  /// with the same message the form used.
+  void _changeSourceAccount() {
+    final accounts =
+        (transferData['accounts'] as List?)?.cast<AccountSummaryEntity>() ??
+            const <AccountSummaryEntity>[];
+    if (accounts.isEmpty) return;
+    final current = transferData['selectedAccount'] as AccountSummaryEntity?;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: btCard,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 14.h),
+            Text('Send this batch from',
+                style: GoogleFonts.inter(
+                    color: btTextPrimary,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700)),
+            SizedBox(height: 6.h),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  for (final a in accounts)
+                    ListTile(
+                      leading: Icon(Icons.account_balance_wallet,
+                          color:
+                              a.id == current?.id ? btBlue : btTextSecondary),
+                      title: Text(a.displayName,
+                          style: GoogleFonts.inter(
+                              color: btTextPrimary,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600)),
+                      subtitle: Text(
+                          '•••• ${a.accountNumberLast4} • ${a.currency} ${a.availableBalance.toStringAsFixed(2)}',
+                          style: GoogleFonts.inter(
+                              color: btTextSecondary, fontSize: 12.sp)),
+                      trailing: a.id == current?.id
+                          ? const Icon(Icons.check_circle, color: btBlue)
+                          : null,
+                      onTap: () {
+                        final spendId = a.spendingAccountId;
+                        if (spendId.isEmpty) {
+                          Get.snackbar('Account not ready',
+                              'This account can\'t send money yet — finish its setup first.',
+                              backgroundColor: btOrange,
+                              colorText: Colors.white,
+                              snackPosition: SnackPosition.TOP);
+                          return;
+                        }
+                        Navigator.pop(ctx);
+                        setState(() {
+                          transferData['selectedAccount'] = a;
+                          transferData['fromAccountId'] = spendId;
+                        });
+                      },
+                    ),
+                ],
+              ),
+            ),
+            SizedBox(height: 8.h),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSourceAccountCard(AccountSummaryEntity account, double total) {
     final hasInsufficientBalance = total > account.availableBalance;
 
@@ -472,6 +548,26 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                   color: btTextSecondary,
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w500,
+                ),
+              ),
+              const Spacer(),
+              // The source account is chosen HERE now (the compose page no
+              // longer shows it) — send-funds pattern: pick the money source
+              // at the payment step.
+              GestureDetector(
+                onTap: _changeSourceAccount,
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: btBlue.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Text('Change',
+                      style: GoogleFonts.inter(
+                          color: btBlue,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600)),
                 ),
               ),
             ],

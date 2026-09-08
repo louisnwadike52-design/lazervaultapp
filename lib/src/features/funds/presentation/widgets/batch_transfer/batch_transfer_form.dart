@@ -20,6 +20,7 @@ import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_ent
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import 'package:lazervault/src/features/widgets/category_selection.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
@@ -61,13 +62,51 @@ class BatchTransferForm extends StatefulWidget {
   });
 
   @override
-  State<BatchTransferForm> createState() => _BatchTransferFormState();
+  State<BatchTransferForm> createState() => BatchTransferFormState();
 }
 
-class _BatchTransferFormState extends State<BatchTransferForm> with TickerProviderStateMixin {
+/// Public so the host screen can address the live form (via a GlobalKey) —
+/// the Beneficiaries strip toggles saved people straight into the batch.
+class BatchTransferFormState extends State<BatchTransferForm> with TickerProviderStateMixin {
   static const int _maxRecipients = 20;
   final List<BatchRecipientItem> _selectedRecipients = [];
   final TextEditingController _categoryController = TextEditingController();
+  ServiceCategory? _selectedCategory;
+
+  /// Whether [r] is already one of the batch recipients (id or account match).
+  bool containsRecipient(RecipientModel r) => _selectedRecipients.any((item) =>
+      item.recipient.id == r.id ||
+      (r.accountNumber.isNotEmpty &&
+          item.recipient.accountNumber == r.accountNumber));
+
+  /// Strip quick-add: put a saved beneficiary straight into the batch (no-op
+  /// if already there). Returns true when added.
+  bool addSavedRecipient(RecipientModel r) {
+    if (containsRecipient(r)) return false;
+    if (_selectedRecipients.length >= 20) return false;
+    setState(() {
+      final isExternal = r.type == 'external';
+      _selectedRecipients.add(BatchRecipientItem(
+        recipient: r,
+        bankCode: isExternal ? r.sortCode : null,
+        bankName: isExternal ? r.bankName : null,
+        beneficiaryName: r.name,
+      ));
+      _calculateTotal();
+    });
+    return true;
+  }
+
+  /// Strip toggle-off: remove a beneficiary from the batch again.
+  void removeSavedRecipient(RecipientModel r) {
+    setState(() {
+      _selectedRecipients.removeWhere((item) =>
+          item.recipient.id == r.id ||
+          (r.accountNumber.isNotEmpty &&
+              item.recipient.accountNumber == r.accountNumber));
+      _calculateTotal();
+    });
+  }
   final TextEditingController _batchReferenceController = TextEditingController();
   final TextEditingController _bulkAmountController = TextEditingController();
   final TextEditingController _bulkReferenceController = TextEditingController();
@@ -758,6 +797,8 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
       'selectedAccount': _accounts.isNotEmpty && _selectedAccountIndex < _accounts.length
           ? _accounts[_selectedAccountIndex]
           : null,
+      // The review screen owns the visible source-account choice now.
+      'accounts': _accounts,
       'recipientNames': Map.fromEntries(
         _selectedRecipients.map((item) => MapEntry(item.recipient.accountNumber, item.recipient.name)),
       ),
@@ -799,12 +840,10 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
           children: [
             SizedBox(height: 8.h),
 
-            // Account selector section
-            _buildSectionHeader('Transfer From', Icons.account_balance_wallet_outlined),
-            SizedBox(height: 12.h),
-            _buildAccountSelector(),
-
-            SizedBox(height: 24.h),
+            // The source account is NOT chosen here anymore — the form
+            // defaults to the dashboard-active account and the REVIEW screen
+            // shows it with a Change control (send-funds pattern: pick the
+            // money source at the payment step, keep composition uncluttered).
 
             // Batch details section
             _buildSectionHeader('Batch Details', Icons.description_outlined),
@@ -815,11 +854,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
               hint: 'e.g., Monthly Allowances',
             ),
             SizedBox(height: 10.h),
-            _buildTextField(
-              controller: _categoryController,
-              label: 'Category (Optional)',
-              hint: 'e.g., Salary, Commission',
-            ),
+            _buildCategoryPicker(),
 
             SizedBox(height: 28.h),
 
@@ -967,6 +1002,10 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
   }
 
   // --- Account Selector ---
+  // Kept (ignored) rather than deleted: the account tile UI moved to the
+  // review screen; restore here only if a future design brings the picker
+  // back to the compose page.
+  // ignore: unused_element
   Widget _buildAccountSelector() {
     if (_accounts.isEmpty) {
       return Container(
@@ -1359,6 +1398,68 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
           ),
         ),
       ],
+    );
+  }
+
+  /// Same category experience as Send Funds: the shared bottom sheet with
+  /// search + "create custom category" (persisted via BudgetCubit). The picked
+  /// name is written into _categoryController so the whole existing pipeline
+  /// (review, per-item category, receipts, admin) is unchanged.
+  Widget _buildCategoryPicker() {
+    final hasValue = _categoryController.text.trim().isNotEmpty;
+    return InkWell(
+      onTap: () async {
+        final result = await CategorySelectionBottomSheet.show(
+          context,
+          serviceName: 'transfer',
+          selectedCategory: _selectedCategory,
+        );
+        if (result != null && mounted) {
+          setState(() {
+            _selectedCategory = result;
+            _categoryController.text = result.displayName;
+          });
+        }
+      },
+      borderRadius: BorderRadius.circular(12.r),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        decoration: BoxDecoration(
+          color: btCardElevated,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+              color: hasValue ? btBlue.withValues(alpha: 0.5) : btBorder),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.category_outlined,
+                color: hasValue ? btBlue : btTextTertiary, size: 20.sp),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                hasValue ? _categoryController.text : 'Category (Optional)',
+                style: GoogleFonts.inter(
+                  color: hasValue ? btTextPrimary : btTextTertiary,
+                  fontSize: 14.sp,
+                  fontWeight: hasValue ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ),
+            if (hasValue)
+              GestureDetector(
+                onTap: () => setState(() {
+                  _selectedCategory = null;
+                  _categoryController.clear();
+                }),
+                child: Icon(Icons.close_rounded,
+                    color: btTextTertiary, size: 18.sp),
+              )
+            else
+              Icon(Icons.keyboard_arrow_down_rounded,
+                  color: btTextTertiary, size: 20.sp),
+          ],
+        ),
+      ),
     );
   }
 

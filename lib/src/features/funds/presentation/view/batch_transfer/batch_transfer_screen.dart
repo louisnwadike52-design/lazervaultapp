@@ -64,6 +64,13 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
   // recipient in the form refreshes the beneficiaries list automatically.
   final RecipientCubit _recipientCubit = serviceLocator<RecipientCubit>();
 
+  // Live handle to whichever BatchTransferForm variant is mounted, so the
+  // Beneficiaries strip can toggle people in/out of the batch and render
+  // their membership ring. Long and short flow are mutually exclusive in the
+  // tree, so one key serves both.
+  final GlobalKey<BatchTransferFormState> _formKey =
+      GlobalKey<BatchTransferFormState>();
+
   // ── Short-flow state ──────────────────────────────────────────────────────
   // Resolved in build() from Get.arguments (explicit) falling back to the
   // admin-toggled FeatureFlag, so every entry point honours the toggle.
@@ -225,6 +232,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
                                       _buildBeneficiariesSection(),
                                       SizedBox(height: 14.h),
                                       BatchTransferForm(
+                                        key: _formKey,
                                         preSelectedRecipients:
                                             arguments?['preSelectedRecipients'],
                                         isRepeatTransaction: arguments?[
@@ -268,6 +276,7 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
             _buildShortScheduleToggle(),
             SizedBox(height: 8.h),
             BatchTransferForm(
+              key: _formKey,
               preSelectedRecipients: arguments?['preSelectedRecipients'],
               isRepeatTransaction: arguments?['isRepeatTransaction'] ?? false,
               batchReference: arguments?['batchReference'],
@@ -662,28 +671,65 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
         r.bankName.toLowerCase() == 'lazervault';
     final label = (r.alias != null && r.alias!.isNotEmpty) ? r.alias! : r.name;
     final initial = label.isNotEmpty ? label[0].toUpperCase() : '?';
+    final inBatch = _formKey.currentState?.containsRecipient(r) ?? false;
     return GestureDetector(
-      onTap: () => _showBeneficiaryOptions(r),
+      // Tap = toggle straight into/out of the batch (the ring + check show
+      // membership, and the Add-Recipients sheet mirrors it). Long-press
+      // keeps the manage options (send once / rename / delete).
+      onTap: () {
+        final form = _formKey.currentState;
+        if (form == null) return;
+        setState(() {
+          if (inBatch) {
+            form.removeSavedRecipient(r);
+          } else {
+            form.addSavedRecipient(r);
+          }
+        });
+      },
+      onLongPress: () => _showBeneficiaryOptions(r),
       child: SizedBox(
         width: 72.w,
         child: Column(
           children: [
-            Container(
-              width: 52.w,
-              height: 52.w,
-              decoration: BoxDecoration(
-                color: (isInternal ? btBlue : btOrange).withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-                border: Border.all(
-                    color: (isInternal ? btBlue : btOrange)
-                        .withValues(alpha: 0.4)),
-              ),
-              alignment: Alignment.center,
-              child: Text(initial,
-                  style: GoogleFonts.inter(
-                      color: isInternal ? btBlueLight : btOrange,
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w700)),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 52.w,
+                  height: 52.w,
+                  decoration: BoxDecoration(
+                    color:
+                        (isInternal ? btBlue : btOrange).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        color: inBatch
+                            ? btGreen
+                            : (isInternal ? btBlue : btOrange)
+                                .withValues(alpha: 0.4),
+                        width: inBatch ? 2 : 1),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(initial,
+                      style: GoogleFonts.inter(
+                          color: isInternal ? btBlueLight : btOrange,
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w700)),
+                ),
+                if (inBatch)
+                  Positioned(
+                    right: -2.w,
+                    bottom: -2.w,
+                    child: Container(
+                      width: 20.w,
+                      height: 20.w,
+                      decoration: const BoxDecoration(
+                          color: btGreen, shape: BoxShape.circle),
+                      child: Icon(Icons.check,
+                          color: Colors.white, size: 13.sp),
+                    ),
+                  ),
+              ],
             ),
             SizedBox(height: 6.h),
             Text(label,
@@ -765,6 +811,25 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
                   ],
                 ),
               ),
+              _optionTile(
+                  (_formKey.currentState?.containsRecipient(r) ?? false)
+                      ? Icons.person_remove_alt_1_outlined
+                      : Icons.person_add_alt_1_outlined,
+                  (_formKey.currentState?.containsRecipient(r) ?? false)
+                      ? 'Remove from this batch'
+                      : 'Add to this batch',
+                  btGreen, () {
+                Get.back();
+                final form = _formKey.currentState;
+                if (form == null) return;
+                setState(() {
+                  if (form.containsRecipient(r)) {
+                    form.removeSavedRecipient(r);
+                  } else {
+                    form.addSavedRecipient(r);
+                  }
+                });
+              }),
               _optionTile(Icons.send_rounded, 'Send money', btBlue, () {
                 Get.back();
                 _repeatToSendFunds(r);
