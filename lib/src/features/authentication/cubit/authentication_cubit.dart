@@ -474,7 +474,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     _currentProfile = null;
   }
 
-  Future<void> _clearSession() async {
+  Future<void> _clearSession({bool preserveRefreshToken = false}) async {
     // Drop any notification destination stashed for the outgoing user. These
     // targets are account-specific (an invoice id, a chat with a contact) and
     // the stash is a process-lifetime singleton, so a push tapped before a
@@ -487,8 +487,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     PendingDeepLink.instance.clear();
     try {
       await _storage.delete(key: _accessTokenKey);
-      await _storage.delete(key: _refreshTokenKey);
-      await _storage.delete(key: _userIdKey);
+      // preserveRefreshToken: biometric-enabled logout keeps the device-bound
+      // refresh token (and the user id biometric needs) so Face ID /
+      // fingerprint on the lock screen can re-mint a session. Every other
+      // teardown (rejected token, switch, biometrics off) wipes as before.
+      if (!preserveRefreshToken) {
+        await _storage.delete(key: _refreshTokenKey);
+        await _storage.delete(key: _userIdKey);
+      }
       await _storage.delete(key: _userEmailKey);
       // Keep stored_email, user_first_name, user_last_name, user_avatar_url
       // for passcode login screen greeting. Overwritten on next login via _saveSession().
@@ -1014,7 +1020,24 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     final refreshToken = _currentProfile?.session.refreshToken ??
         (await _storage.read(key: _refreshTokenKey)) ??
         '';
-    if (userId.isNotEmpty || refreshToken.isNotEmpty) {
+
+    // BIOMETRIC-AS-LOGIN (industry pattern: Revolut/Kuda class): when the user
+    // has turned Face ID / fingerprint login ON in Settings, an explicit
+    // logout behaves as a LOCK — the device-bound refresh token is preserved
+    // (and NOT revoked server-side) so the lock screen's biometric tap can
+    // re-mint a session with just the OS prompt. Without this, the button
+    // showed but every tap dead-ended on "Sign in required": logout had
+    // revoked the very token biometric unlocks ("enabled in settings but not
+    // working" report, 2026-09-08). Voice needs no token (server-minted).
+    // Biometrics OFF → the original full revoke, unchanged.
+    var preserveForBiometric = false;
+    try {
+      final store = serviceLocator<SecureStorageService>();
+      preserveForBiometric = (await store.getFaceLoginEnabled()) ||
+          (await store.getFingerprintLoginEnabled());
+    } catch (_) {/* fail closed: revoke as before */}
+
+    if (!preserveForBiometric && (userId.isNotEmpty || refreshToken.isNotEmpty)) {
       final result = await _authRepository.logout(
         userId: userId,
         refreshToken: refreshToken,
@@ -1024,9 +1047,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             'Logout: backend revoke failed (continuing local logout): ${f.message}'),
         (_) => debugPrint('Logout: backend session revoked'),
       );
+    } else if (preserveForBiometric) {
+      AppLogger.event('biometric_login', 'logout_preserved_session',
+          fields: {'user_id': userId});
     }
 
-    await _clearSession();
+    await _clearSession(preserveRefreshToken: preserveForBiometric);
     // Explicit logout revokes the session server-side above. Sweep any LEGACY
     // durable-biometric keys left on old installs (there is no durable token
     // anymore — biometric unlocks the single `refresh_token`, which _clearSession

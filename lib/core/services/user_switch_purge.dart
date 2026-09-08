@@ -43,6 +43,13 @@ const List<String> kPerUserStorageKeys = [
   'stored_email',
   'user_email',
   'preferred_login_method',
+  // Biometric-login opt-ins are PER USER: without purging them a user switch
+  // carried the previous user's Face ID/fingerprint enablement into the new
+  // session — and (worse) the biometric-preserving logout would then keep the
+  // NEW user's session alive on the strength of the OLD user's setting.
+  'face_login_enabled',
+  'fingerprint_login_enabled',
+  'voice_login_enabled',
 ];
 
 /// True when [newUserId]/[newEmail] describe someone other than whoever this
