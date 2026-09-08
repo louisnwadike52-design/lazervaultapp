@@ -10,6 +10,20 @@ abstract class QRPaymentRepository {
     String? description,
     QRPaymentType qrType,
     int? validityMinutes,
+    String usageMode,
+  });
+
+  /// Edit/clear the optional expiry after creation (0 = never expires).
+  Future<Either<Failure, QRPaymentEntity>> updateQRExpiry({
+    required String qrId,
+    required int validityMinutes,
+  });
+
+  /// Creator's payers view: (payments, total count, total collected).
+  Future<Either<Failure, (List<QRTransactionEntity>, int, double)>> getQRPayers({
+    required String qrId,
+    int? limit,
+    int? offset,
   });
 
   Future<Either<Failure, QRPaymentEntity>> getQRDetails({

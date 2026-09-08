@@ -120,6 +120,7 @@ class QRPaymentCubit extends Cubit<QRPaymentState> {
     String? description,
     QRPaymentType qrType = QRPaymentType.dynamic,
     int? validityMinutes,
+    String usageMode = '',
   }) async {
     if (isClosed) return;
     emit(QRPaymentLoading());
@@ -130,6 +131,7 @@ class QRPaymentCubit extends Cubit<QRPaymentState> {
       description: description,
       qrType: qrType,
       validityMinutes: validityMinutes,
+      usageMode: usageMode,
     );
 
     if (isClosed) return;

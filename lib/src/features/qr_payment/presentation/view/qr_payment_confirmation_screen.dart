@@ -253,11 +253,14 @@ class _QRPaymentConfirmationScreenState
               });
               return;
             }
-            if (qr.status == QRPaymentStatus.paid) {
+            // A REUSABLE code is never blocked by past payments — only a
+            // one-time code deactivates after its first payment.
+            if (qr.status == QRPaymentStatus.paid && !qr.isReusable) {
               setState(() {
                 _isLoadingDetails = false;
                 _isExpiredOrUnavailable = true;
-                _unavailableReason = 'This QR code has already been paid';
+                _unavailableReason =
+                    'This was a one-time QR code and it has already been used';
               });
               return;
             }

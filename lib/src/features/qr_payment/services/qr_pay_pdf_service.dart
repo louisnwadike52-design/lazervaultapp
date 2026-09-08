@@ -190,7 +190,7 @@ class QRPayPdfService {
         if (qr.description.isNotEmpty)
           _buildDetailRow('Description', qr.description),
         _buildDetailRow('Created', _formatDate(qr.createdAt)),
-        _buildDetailRow('Expires', _formatDate(qr.expiresAt)),
+        _buildDetailRow('Expires', qr.expiresAt == null ? 'Never' : _formatDate(qr.expiresAt!)),
         if (qr.paidAt != null)
           _buildDetailRow('Paid At', _formatDate(qr.paidAt!)),
       ],

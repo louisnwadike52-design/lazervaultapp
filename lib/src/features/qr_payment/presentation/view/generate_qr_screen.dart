@@ -20,7 +20,10 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
   final _descriptionController = TextEditingController();
   final String _selectedCurrency = 'NGN';
   QRPaymentType _selectedType = QRPaymentType.dynamic;
-  int _validityMinutes = 30;
+  // 'one_time' | 'reusable' — static codes only; dynamic is always reusable.
+  String _usageMode = 'one_time';
+  // 0 = no expiry (the default for every type). Editable later from history.
+  int _validityMinutes = 0;
 
   @override
   void dispose() {
@@ -84,8 +87,11 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
                     ],
                     _buildDescriptionInput(),
                     const SizedBox(height: 24),
-                    if (_selectedType == QRPaymentType.static)
-                      _buildValiditySelector(),
+                    if (_selectedType == QRPaymentType.static) ...[
+                      _buildUsageModeSelector(),
+                      const SizedBox(height: 24),
+                    ],
+                    _buildValiditySelector(),
                     const SizedBox(height: 32),
                     _buildGenerateButton(context, state),
                   ],
@@ -120,7 +126,7 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
             Expanded(
               child: _buildTypeOption(
                 'Static',
-                'One-time use with fixed amount',
+                'Fixed amount set by you',
                 QRPaymentType.static,
               ),
             ),
@@ -269,19 +275,86 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
     );
   }
 
+  Widget _buildUsageModeSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Usage',
+          style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: _buildUsageOption(
+                'One-time',
+                'Deactivates after the first payment',
+                'one_time',
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildUsageOption(
+                'Reusable',
+                'Anyone can scan and pay, again and again — like a menu item',
+                'reusable',
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUsageOption(String title, String subtitle, String mode) {
+    final isSelected = _usageMode == mode;
+    return GestureDetector(
+      onTap: () => setState(() => _usageMode = mode),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
+              : const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color:
+                isSelected ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title,
+                style: TextStyle(
+                    color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600)),
+            const SizedBox(height: 4),
+            Text(subtitle,
+                style: const TextStyle(
+                    color: Color(0xFF9CA3AF), fontSize: 11, height: 1.3)),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildValiditySelector() {
     final options = [
-      {'label': '15 min', 'value': 15},
+      {'label': 'None', 'value': 0},
       {'label': '30 min', 'value': 30},
       {'label': '1 hour', 'value': 60},
       {'label': '24 hours', 'value': 1440},
+      {'label': '7 days', 'value': 10080},
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Validity Period',
+          'Expiry (optional — you can change it later)',
           style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
         ),
         const SizedBox(height: 8),
@@ -375,6 +448,8 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
           description: _descriptionController.text.trim(),
           qrType: _selectedType,
           validityMinutes: _validityMinutes,
+          usageMode:
+              _selectedType == QRPaymentType.static ? _usageMode : 'reusable',
         );
   }
 }

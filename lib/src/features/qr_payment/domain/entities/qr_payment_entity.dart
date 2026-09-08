@@ -72,9 +72,16 @@ class QRPaymentEntity extends Equatable {
   final String currency;
   final String description;
   final QRPaymentType qrType;
+
+  /// 'one_time' (deactivates after the first successful payment) or
+  /// 'reusable' (menu-item style — anyone can scan and pay repeatedly).
+  /// Dynamic codes are always reusable.
+  final String usageMode;
   final QRPaymentStatus status;
   final DateTime createdAt;
-  final DateTime expiresAt;
+
+  /// Null = never expires (expiry is optional, none by default).
+  final DateTime? expiresAt;
   final DateTime? paidAt;
 
   const QRPaymentEntity({
@@ -87,16 +94,23 @@ class QRPaymentEntity extends Equatable {
     required this.currency,
     required this.description,
     required this.qrType,
+    this.usageMode = 'one_time',
     required this.status,
     required this.createdAt,
-    required this.expiresAt,
+    this.expiresAt,
     this.paidAt,
   });
 
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
+  bool get isExpired =>
+      expiresAt != null && DateTime.now().isAfter(expiresAt!);
   bool get isPending => status == QRPaymentStatus.pending;
   bool get isPaid => status == QRPaymentStatus.paid;
   bool get isStatic => qrType == QRPaymentType.static;
+  bool get isReusable =>
+      qrType == QRPaymentType.dynamic || usageMode == 'reusable';
+  bool get neverExpires => expiresAt == null;
+
+  String get usageModeLabel => isReusable ? 'Reusable' : 'One-time';
 
   @override
   List<Object?> get props => [
@@ -109,6 +123,7 @@ class QRPaymentEntity extends Equatable {
         currency,
         description,
         qrType,
+        usageMode,
         status,
         createdAt,
         expiresAt,

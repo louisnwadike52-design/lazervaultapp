@@ -14,6 +14,9 @@ import '../../domain/entities/qr_payment_entity.dart';
 import '../../services/qr_pay_pdf_service.dart';
 import '../cubit/qr_payment_cubit.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import '../../domain/repositories/qr_payment_repository.dart';
+import '../view/qr_payers_screen.dart';
 
 class QRCodeDetailsBottomSheet extends StatefulWidget {
   final QRPaymentEntity qrCode;
@@ -29,6 +32,9 @@ class QRCodeDetailsBottomSheet extends StatefulWidget {
 }
 
 class _QRCodeDetailsBottomSheetState extends State<QRCodeDetailsBottomSheet> {
+  // Mutable copy: Edit-expiry updates this in place so the sheet re-renders
+  // the new window without reopening.
+  late QRPaymentEntity _qr = widget.qrCode;
   bool _isDownloadingSummary = false;
   bool _isSharingSummary = false;
   // RepaintBoundary key over the white QR card: Share sends the scannable
@@ -125,6 +131,101 @@ class _QRCodeDetailsBottomSheetState extends State<QRCodeDetailsBottomSheet> {
     } catch (_) {
       return null;
     }
+  }
+
+  /// Expires row with an inline Edit affordance while the code can still
+  /// change (pending/expired). Tapping opens the same None/30m/1h/24h/7d
+  /// choices as creation; the backend enforces + audits the change and a new
+  /// valid window revives an expired code.
+  Widget _buildExpiryRow() {
+    final editable = _qr.status == QRPaymentStatus.pending ||
+        _qr.status == QRPaymentStatus.expired;
+    final value = _qr.expiresAt == null
+        ? 'Never'
+        : DateFormat('MMM dd, yyyy - hh:mm a').format(_qr.expiresAt!);
+    return Row(
+      children: [
+        Expanded(child: _buildDetailRow('Expires', value)),
+        if (editable)
+          GestureDetector(
+            onTap: _editExpiry,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Text('Edit',
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF60A5FA),
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600)),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _editExpiry() async {
+    final options = <(String, int)>[
+      ('No expiry', 0),
+      ('30 minutes', 30),
+      ('1 hour', 60),
+      ('24 hours', 1440),
+      ('7 days', 10080),
+    ];
+    final minutes = await showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 14.h),
+            Text('Expiry from now',
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700)),
+            SizedBox(height: 6.h),
+            for (final (label, v) in options)
+              ListTile(
+                title: Text(label,
+                    style: GoogleFonts.inter(
+                        color: Colors.white, fontSize: 14.sp)),
+                trailing: v == 0 && _qr.expiresAt == null
+                    ? const Icon(Icons.check, color: Color(0xFF10B981))
+                    : null,
+                onTap: () => Navigator.pop(ctx, v),
+              ),
+            SizedBox(height: 8.h),
+          ],
+        ),
+      ),
+    );
+    if (minutes == null || !mounted) return;
+    final result = await serviceLocator<QRPaymentRepository>()
+        .updateQRExpiry(qrId: _qr.id, validityMinutes: minutes);
+    if (!mounted) return;
+    result.fold(
+      (f) => Get.snackbar('Could not update expiry', f.message,
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP),
+      (updated) {
+        setState(() => _qr = updated);
+        Get.snackbar(
+            'Expiry updated',
+            updated.expiresAt == null
+                ? 'This code never expires now.'
+                : 'New expiry: ${DateFormat('MMM dd, hh:mm a').format(updated.expiresAt!)}',
+            backgroundColor: const Color(0xFF10B981),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.TOP);
+      },
+    );
   }
 
   void _cancelQR() {
@@ -292,10 +393,9 @@ class _QRCodeDetailsBottomSheetState extends State<QRCodeDetailsBottomSheet> {
             DateFormat('MMM dd, yyyy - hh:mm a').format(qr.createdAt),
           ),
           SizedBox(height: 16.h),
-          _buildDetailRow(
-            'Expires',
-            DateFormat('MMM dd, yyyy - hh:mm a').format(qr.expiresAt),
-          ),
+          _buildDetailRow('Usage', _qr.usageModeLabel),
+          SizedBox(height: 16.h),
+          _buildExpiryRow(),
           if (isPaid && qr.paidAt != null) ...[
             SizedBox(height: 16.h),
             _buildDetailRow(
@@ -303,7 +403,32 @@ class _QRCodeDetailsBottomSheetState extends State<QRCodeDetailsBottomSheet> {
               DateFormat('MMM dd, yyyy - hh:mm a').format(qr.paidAt!),
             ),
           ],
-          SizedBox(height: 24.h),
+          SizedBox(height: 16.h),
+          // Creator's payers view — every payment on this code with its own
+          // rich, shareable receipt. Most useful on reusable (menu-item)
+          // codes, but shown for all so a paid one-time code's receipt is one
+          // tap away too.
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => Get.to(() => QRPayersScreen(qrCode: _qr)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+              ),
+              icon: Icon(Icons.groups_outlined,
+                  size: 18.sp, color: const Color(0xFF10B981)),
+              label: Text('View payments received',
+                  style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white)),
+            ),
+          ),
+          SizedBox(height: 12.h),
 
           // Action Buttons Row
           Row(

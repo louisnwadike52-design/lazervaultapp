@@ -11,6 +11,7 @@ abstract class QRPaymentRemoteDataSource {
     String? description,
     QRPaymentType qrType,
     int? validityMinutes,
+    String usageMode,
   });
 
   Future<QRPaymentModel> getQRDetails({
@@ -43,6 +44,19 @@ abstract class QRPaymentRemoteDataSource {
   Future<QRTransactionModel> getQRTransactionReceipt({
     required String transactionId,
   });
+
+  /// Edit/clear the optional expiry after creation (0 = never expires).
+  Future<QRPaymentModel> updateQRExpiry({
+    required String qrId,
+    required int validityMinutes,
+  });
+
+  /// Creator's payers view: everyone who paid this QR + completed total.
+  Future<(List<QRTransactionModel>, int, double)> getQRPayers({
+    required String qrId,
+    int? limit,
+    int? offset,
+  });
 }
 
 class QRPaymentRemoteDataSourceImpl implements QRPaymentRemoteDataSource {
@@ -57,7 +71,9 @@ class QRPaymentRemoteDataSourceImpl implements QRPaymentRemoteDataSource {
     String? description,
     QRPaymentType qrType = QRPaymentType.dynamic,
     int? validityMinutes,
+    String usageMode = '',
   }) async {
+    // Expiry is OPTIONAL, none by default — only an explicit validity sets one.
     final request = pb.GenerateQRRequest()
       ..amount = amount
       ..currency = currency
@@ -65,7 +81,8 @@ class QRPaymentRemoteDataSourceImpl implements QRPaymentRemoteDataSource {
       ..qrType = qrType == QRPaymentType.static
           ? pb.QRType.QR_TYPE_STATIC
           : pb.QRType.QR_TYPE_DYNAMIC
-      ..validityMinutes = validityMinutes ?? 30;
+      ..validityMinutes = validityMinutes ?? 0
+      ..usageMode = usageMode;
 
     final options = await grpcClient.callOptions;
     final response = await grpcClient.qrPayClient.generateQR(
@@ -208,5 +225,39 @@ class QRPaymentRemoteDataSourceImpl implements QRPaymentRemoteDataSource {
       case QRPaymentStatus.expired:
         return pb.QRStatus.QR_STATUS_EXPIRED;
     }
+  }
+
+  @override
+  Future<QRPaymentModel> updateQRExpiry({
+    required String qrId,
+    required int validityMinutes,
+  }) async {
+    final request = pb.UpdateQRExpiryRequest()
+      ..qrId = qrId
+      ..validityMinutes = validityMinutes;
+    final options = await grpcClient.callOptions;
+    final response =
+        await grpcClient.qrPayClient.updateQRExpiry(request, options: options);
+    return QRPaymentModel.fromProto(response.qrCode);
+  }
+
+  @override
+  Future<(List<QRTransactionModel>, int, double)> getQRPayers({
+    required String qrId,
+    int? limit,
+    int? offset,
+  }) async {
+    final request = pb.GetQRPayersRequest()
+      ..qrId = qrId
+      ..limit = limit ?? 50
+      ..offset = offset ?? 0;
+    final options = await grpcClient.callOptions;
+    final response =
+        await grpcClient.qrPayClient.getQRPayers(request, options: options);
+    return (
+      response.transactions.map(QRTransactionModel.fromProto).toList(),
+      response.total,
+      response.totalCollected,
+    );
   }
 }

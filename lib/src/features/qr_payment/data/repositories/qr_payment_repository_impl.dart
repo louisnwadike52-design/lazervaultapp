@@ -18,6 +18,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
     String? description,
     QRPaymentType qrType = QRPaymentType.dynamic,
     int? validityMinutes,
+    String usageMode = '',
   }) async {
     try {
       final result = await remoteDataSource.generateQR(
@@ -26,6 +27,7 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
         description: description,
         qrType: qrType,
         validityMinutes: validityMinutes,
+        usageMode: usageMode,
       );
       return Right(result);
     } on GrpcError catch (e) {
@@ -149,6 +151,44 @@ class QRPaymentRepositoryImpl implements QRPaymentRepository {
     } on GrpcError catch (e) {
       return Left(ServerFailure(
           message: friendlyGrpcError(e, 'Failed to get transaction receipt'),
+          statusCode: e.codeName));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, QRPaymentEntity>> updateQRExpiry({
+    required String qrId,
+    required int validityMinutes,
+  }) async {
+    try {
+      final model = await remoteDataSource.updateQRExpiry(
+          qrId: qrId, validityMinutes: validityMinutes);
+      return Right(model);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+          message: friendlyGrpcError(e, 'Failed to update expiry'),
+          statusCode: e.codeName));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, (List<QRTransactionEntity>, int, double)>>
+      getQRPayers({
+    required String qrId,
+    int? limit,
+    int? offset,
+  }) async {
+    try {
+      final (models, total, collected) = await remoteDataSource.getQRPayers(
+          qrId: qrId, limit: limit, offset: offset);
+      return Right((List<QRTransactionEntity>.from(models), total, collected));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+          message: friendlyGrpcError(e, 'Failed to load payers'),
           statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));

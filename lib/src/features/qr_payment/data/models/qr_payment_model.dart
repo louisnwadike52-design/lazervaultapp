@@ -14,7 +14,8 @@ class QRPaymentModel extends QRPaymentEntity {
     required super.qrType,
     required super.status,
     required super.createdAt,
-    required super.expiresAt,
+    super.usageMode,
+    super.expiresAt,
     super.paidAt,
   });
 
@@ -33,7 +34,11 @@ class QRPaymentModel extends QRPaymentEntity {
           : QRPaymentType.dynamic,
       status: _statusFromProto(proto.status),
       createdAt: proto.createdAt.toDateTime().toLocal(),
-      expiresAt: proto.expiresAt.toDateTime(),
+      usageMode: proto.usageMode.isNotEmpty ? proto.usageMode : 'one_time',
+      // no_expiry (or an unset timestamp) = never expires.
+      expiresAt: (proto.noExpiry || !proto.hasExpiresAt())
+          ? null
+          : proto.expiresAt.toDateTime().toLocal(),
       paidAt: proto.hasPaidAt() ? proto.paidAt.toDateTime().toLocal() : null,
     );
   }

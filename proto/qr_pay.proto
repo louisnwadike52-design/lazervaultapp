@@ -1,37 +1,88 @@
 syntax = "proto3";
 
 package qr_pay;
-option go_package = "lazervaultGo/pb";
 
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
+option go_package = "qr-pay-service/proto";
+
+// QRPayService - QR code-based payment service
 service QRPayService {
   // Generate a QR code for receiving payment
-  rpc GenerateQR(GenerateQRRequest) returns (GenerateQRResponse);
+  rpc GenerateQR(GenerateQRRequest) returns (GenerateQRResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/qrpay/generate"
+      body: "*"
+    };
+  }
 
   // Get QR code details by code string (for scanner)
-  rpc GetQRDetails(GetQRDetailsRequest) returns (GetQRDetailsResponse);
+  rpc GetQRDetails(GetQRDetailsRequest) returns (GetQRDetailsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/qrpay/details/{qr_code}"
+    };
+  }
 
   // Process payment via scanned QR code
-  rpc ProcessQRPayment(ProcessQRPaymentRequest) returns (ProcessQRPaymentResponse);
+  rpc ProcessQRPayment(ProcessQRPaymentRequest) returns (ProcessQRPaymentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/qrpay/pay"
+      body: "*"
+    };
+  }
 
   // Get user's generated QR codes
-  rpc GetMyGeneratedQRCodes(GetMyGeneratedQRCodesRequest) returns (GetMyGeneratedQRCodesResponse);
+  rpc GetMyGeneratedQRCodes(GetMyGeneratedQRCodesRequest) returns (GetMyGeneratedQRCodesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/qrpay/generated"
+    };
+  }
 
   // Get user's QR payment history
-  rpc GetMyQRPayments(GetMyQRPaymentsRequest) returns (GetMyQRPaymentsResponse);
+  rpc GetMyQRPayments(GetMyQRPaymentsRequest) returns (GetMyQRPaymentsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/qrpay/payments"
+    };
+  }
 
   // Cancel a pending QR code
-  rpc CancelQR(CancelQRRequest) returns (CancelQRResponse);
+  rpc CancelQR(CancelQRRequest) returns (CancelQRResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/qrpay/cancel"
+      body: "*"
+    };
+  }
 
   // Get receipt data for a completed QR transaction
-  rpc GetQRTransactionReceipt(GetQRTransactionReceiptRequest) returns (GetQRTransactionReceiptResponse);
+  // Creator edits/clears the optional expiry after creation (0 = none). A
+  // still-valid new window also revives an EXPIRED code.
+  rpc UpdateQRExpiry(UpdateQRExpiryRequest) returns (UpdateQRExpiryResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/qrpay/{qr_id}/expiry"
+      body: "*"
+    };
+  }
+
+  // Creator lists everyone who paid one QR code (reusable codes accumulate
+  // many), newest first, with the completed total.
+  rpc GetQRPayers(GetQRPayersRequest) returns (GetQRPayersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/qrpay/{qr_id}/payers"
+    };
+  }
+
+  rpc GetQRTransactionReceipt(GetQRTransactionReceiptRequest) returns (GetQRTransactionReceiptResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/qrpay/receipt/{transaction_id}"
+    };
+  }
 }
 
 // Enums
 enum QRType {
-  QR_TYPE_DYNAMIC = 0;   // One-time use with specific amount
-  QR_TYPE_STATIC = 1;    // Reusable, payer enters amount
+  QR_TYPE_DYNAMIC = 0;
+  QR_TYPE_STATIC = 1;
 }
 
 enum QRStatus {
@@ -47,15 +98,19 @@ message QRCode {
   string user_id = 2;
   string username = 3;
   string full_name = 4;
-  string qr_code = 5;          // The actual code string to encode in QR
+  string qr_code = 5;
   double amount = 6;
   string currency = 7;
   string description = 8;
   QRType qr_type = 9;
   QRStatus status = 10;
   google.protobuf.Timestamp created_at = 11;
+  // Unset when the code never expires (no_expiry = true).
   google.protobuf.Timestamp expires_at = 12;
   google.protobuf.Timestamp paid_at = 13;
+  // "one_time" | "reusable". Dynamic codes are always reusable.
+  string usage_mode = 14;
+  bool no_expiry = 15;
 }
 
 message QRTransaction {
@@ -77,16 +132,19 @@ message QRTransaction {
 
 // Request/Response messages
 message GenerateQRRequest {
-  double amount = 1;            // 0 for static QR
+  double amount = 1;
   string currency = 2;
   string description = 3;
   QRType qr_type = 4;
-  int32 validity_minutes = 5;   // Default 30 mins for dynamic, 0 for static (no expiry)
+  // 0 = no expiry (the default). Editable later via UpdateQRExpiry.
+  int32 validity_minutes = 5;
+  // "one_time" (default for static) | "reusable". Dynamic is always reusable.
+  string usage_mode = 6;
 }
 
 message GenerateQRResponse {
   QRCode qr_code = 1;
-  string qr_data = 2;          // JSON data for QR code image
+  string qr_data = 2;
   string message = 3;
 }
 
@@ -101,7 +159,7 @@ message GetQRDetailsResponse {
 message ProcessQRPaymentRequest {
   string qr_code = 1;
   string source_account_id = 2;
-  double amount = 3;            // Required for static QR, ignored for dynamic
+  double amount = 3;
   string transaction_pin = 4;
   string idempotency_key = 5;
 }
@@ -115,7 +173,12 @@ message ProcessQRPaymentResponse {
 message GetMyGeneratedQRCodesRequest {
   int32 limit = 1;
   int32 offset = 2;
+  // QR_STATUS_PENDING is enum value 0 == the proto3 default, so an UNSET
+  // filter is indistinguishable from "pending" — which silently hid every
+  // paid/cancelled/expired QR from the history screen. Set include_all to
+  // list every status regardless of status_filter.
   QRStatus status_filter = 3;
+  bool include_all = 4;
 }
 
 message GetMyGeneratedQRCodesResponse {
@@ -147,4 +210,28 @@ message GetQRTransactionReceiptRequest {
 
 message GetQRTransactionReceiptResponse {
   QRTransaction transaction = 1;
+}
+
+message UpdateQRExpiryRequest {
+  string qr_id = 1;
+  // Minutes from NOW until expiry; 0 clears the expiry (never expires).
+  int32 validity_minutes = 2;
+}
+
+message UpdateQRExpiryResponse {
+  QRCode qr_code = 1;
+  string message = 2;
+}
+
+message GetQRPayersRequest {
+  string qr_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetQRPayersResponse {
+  repeated QRTransaction transactions = 1;
+  int32 total = 2;
+  // Sum of completed payments on this code, major units.
+  double total_collected = 3;
 }

@@ -28,7 +28,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
   late Animation<double> _pulseAnimation;
   Timer? _expiryTimer;
   Timer? _pollTimer;
-  Duration _remainingTime = Duration.zero;
+  Duration? _remainingTime = Duration.zero; // null = never expires
 
   QRPaymentEntity? _qrCode;
   String? _qrData;
@@ -120,7 +120,14 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
 
   void _updateRemainingTime() {
     if (_qrCode == null) return;
-    final remaining = _qrCode!.expiresAt.difference(DateTime.now());
+    final exp = _qrCode!.expiresAt;
+    if (exp == null) {
+      // No expiry set — nothing to count down.
+      _expiryTimer?.cancel();
+      setState(() => _remainingTime = null);
+      return;
+    }
+    final remaining = exp.difference(DateTime.now());
     if (remaining.isNegative) {
       _expiryTimer?.cancel();
       setState(() => _remainingTime = Duration.zero);
@@ -280,9 +287,33 @@ class _QRDisplayScreenState extends State<QRDisplayScreen>
   Widget _buildExpiryTimer() {
     if (_qrCode == null || !_qrCode!.isStatic) return const SizedBox.shrink();
 
-    final isExpired = _remainingTime == Duration.zero;
-    final minutes = _remainingTime.inMinutes;
-    final seconds = _remainingTime.inSeconds % 60;
+    // No expiry set: show a calm "never expires" chip instead of a countdown.
+    final rt = _remainingTime;
+    if (rt == null || _qrCode!.neverExpires) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF10B981).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.all_inclusive, color: Color(0xFF10B981), size: 18),
+            SizedBox(width: 8),
+            Text('No expiry — valid until you cancel it',
+                style: TextStyle(
+                    color: Color(0xFF10B981),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500)),
+          ],
+        ),
+      );
+    }
+
+    final isExpired = rt == Duration.zero;
+    final minutes = rt.inMinutes;
+    final seconds = rt.inSeconds % 60;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
