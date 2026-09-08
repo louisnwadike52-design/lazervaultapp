@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
@@ -125,10 +126,12 @@ class _QRPaymentConfirmationScreenState
         ? (double.tryParse(_amountController.text) ?? 0)
         : (double.tryParse(_qrData['amount'].toString()) ?? 0);
 
-    if (_payerEntersAmount && amount <= 0) {
+    if (amount <= 0) {
       Get.snackbar(
         'Invalid Amount',
-        'Please enter a valid amount',
+        _payerEntersAmount
+            ? 'Please enter a valid amount'
+            : 'This QR code carries an invalid amount — ask the payee to regenerate it',
         backgroundColor: const Color(0xFFEF4444),
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
@@ -142,10 +145,21 @@ class _QRPaymentConfirmationScreenState
     // Validate account has sufficient balance
     final accountState = context.read<AccountCardsSummaryCubit>().state;
     if (accountState is AccountCardsSummaryLoaded) {
-      final selectedAccount = accountState.accountSummaries.firstWhere(
-        (a) => a.id.toString() == _selectedAccountId,
-        orElse: () => throw Exception('Account not found'),
-      );
+      final matches = accountState.accountSummaries
+          .where((a) => a.id.toString() == _selectedAccountId)
+          .toList();
+      if (matches.isEmpty) {
+        Get.snackbar(
+          'Account Unavailable',
+          'The selected account is no longer available — pick another',
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+        abort();
+        return;
+      }
+      final selectedAccount = matches.first;
 
       if (selectedAccount.currency.toUpperCase() != currency) {
         Get.snackbar(
@@ -555,23 +569,50 @@ class _QRPaymentConfirmationScreenState
         if (state is AccountCardsSummaryLoaded) {
           final currency =
               (_qrData['currency'] ?? 'NGN').toString().toUpperCase();
-          final matchingAccounts = state.accountSummaries
+          final currencyMatches = state.accountSummaries
               .where((a) => a.currency.toUpperCase() == currency)
               .toList();
 
-          // Auto-select first matching account with sufficient balance
+          // Keep the choice simple: only the dashboard-ACTIVE account plus the
+          // personal (local) account when it's a different one — paying a QR
+          // shouldn't require picking through every wallet. Falls back to the
+          // full currency list only if neither can be identified.
+          final am = GetIt.I<AccountManager>();
+          final activeId =
+              am.activeAccountId ?? am.activeAccountDetails?.id ?? '';
+          final matchingAccounts = <dynamic>[];
+          for (final a in currencyMatches) {
+            final isActive = a.id.toString() == activeId;
+            final isPersonal =
+                a.accountType.toLowerCase().contains('personal') || a.isPrimary;
+            if (isActive || isPersonal) matchingAccounts.add(a);
+          }
+          if (matchingAccounts.isEmpty) matchingAccounts.addAll(currencyMatches);
+
+          // Preselect: the active account when it can cover the amount, else
+          // the first shown account that can, else the active/first anyway
+          // (its Insufficient state + the pay-time balance check handle it).
           if (_selectedAccountId == null && matchingAccounts.isNotEmpty) {
             final amount = _payerEntersAmount
                 ? (double.tryParse(_amountController.text) ?? 0)
                 : (double.tryParse(_qrData['amount'].toString()) ?? 0);
-            final bestAccount = matchingAccounts.firstWhere(
-              (a) => a.availableBalance >= amount,
-              orElse: () => matchingAccounts.first,
-            );
+            final active = matchingAccounts
+                .where((a) => a.id.toString() == activeId)
+                .toList();
+            dynamic best;
+            if (active.isNotEmpty && active.first.availableBalance >= amount) {
+              best = active.first;
+            } else {
+              best = matchingAccounts.firstWhere(
+                (a) => a.availableBalance >= amount,
+                orElse: () =>
+                    active.isNotEmpty ? active.first : matchingAccounts.first,
+              );
+            }
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
                 setState(() {
-                  _selectedAccountId = bestAccount.id.toString();
+                  _selectedAccountId = best.id.toString();
                 });
               }
             });

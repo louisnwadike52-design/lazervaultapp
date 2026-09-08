@@ -7,7 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/qr_payment/domain/entities/qr_transaction_entity.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_cubit.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment_state.dart';
-import 'package:lazervault/src/features/qr_payment/presentation/widgets/qr_transaction_details_bottom_sheet.dart';
+import 'package:lazervault/src/features/qr_payment/utils/qr_unified_mapper.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/screens/transaction_detail_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 class QRPaymentsHistoryScreen extends StatefulWidget {
@@ -265,11 +267,12 @@ class _QRPaymentsHistoryScreenState extends State<QRPaymentsHistoryScreen> {
 
     return GestureDetector(
       onTap: () {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.transparent,
-          isScrollControlled: true,
-          builder: (_) => QRTransactionDetailsBottomSheet(transaction: txn),
+        // Same rich receipt (and PDF/JPG share) the dashboard history opens —
+        // direction resolved from who's looking at it.
+        final viewerId = context.read<AuthenticationCubit>().userId;
+        Get.to(
+          () => TransactionDetailScreen(
+              transaction: qrTxnToUnified(txn, viewerUserId: viewerId)),
         );
       },
       child: Container(
