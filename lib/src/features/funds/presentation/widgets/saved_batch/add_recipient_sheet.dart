@@ -230,6 +230,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
                           recipientType: r.type == 'internal'
                               ? 'internal_lazervault'
                               : 'external_bank',
+                          recipientUserId: r.internalUserId ?? '',
                         ),
                 child: Container(
                   padding:
@@ -306,6 +307,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
     required String bankCode,
     required String bankName,
     required String recipientType,
+    String recipientUserId = '',
   }) async {
     if (_alreadyInBatch(accountNumber)) {
       _showError('$beneficiaryName is already in this batch.');
@@ -364,9 +366,11 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
       ),
     );
     if (amount == null || !mounted) return;
+    // The USER ID (when known) is the stable routing identifier for internal
+    // recipients — the run path prefers it over the account/tag string.
     final item = SavedBatchItemInputEntity(
       recipientType: recipientType,
-      recipientUserId: '',
+      recipientUserId: recipientUserId,
       bankCode: bankCode,
       accountNumber: accountNumber,
       beneficiaryName: beneficiaryName,

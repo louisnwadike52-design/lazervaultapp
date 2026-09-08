@@ -138,12 +138,18 @@ class _BatchTransferScreenState extends State<BatchTransferScreen>
     for (final participant in participants) {
       final recipientModel = participant as RecipientModel;
       final amountMinorUnits = amounts[recipientModel.id] ?? 0;
+      // Internal participants route by USER ID (SendFunds precedent).
+      final internalId = recipientModel.internalUserId ?? '';
+      final identifier =
+          (recipientModel.type == 'internal' && internalId.isNotEmpty)
+              ? internalId
+              : recipientModel.accountNumber;
       recipients.add(BatchTransferRecipient(
-        toAccountNumber: recipientModel.accountNumber,
+        toAccountNumber: identifier,
         amount: Int64(amountMinorUnits),
         reference: description,
       ));
-      recipientNames[recipientModel.accountNumber] = recipientModel.name;
+      recipientNames[identifier] = recipientModel.name;
     }
 
     final accountManager = GetIt.I<AccountManager>();

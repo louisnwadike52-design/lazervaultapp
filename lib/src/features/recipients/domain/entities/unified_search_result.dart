@@ -127,13 +127,16 @@ class UnifiedSearchResult extends Equatable {
   }
 
   /// Adapt to a RecipientModel for the send-funds / batch surfaces. For an
-  /// internal Lazervault user with no stored account number, the username /
-  /// userId is the routing identifier (mirrors the existing QR + batch code).
+  /// internal Lazervault user with no stored account number the USER ID is
+  /// the routing identifier (SendFunds precedent) — usernames change and are
+  /// only a last resort for legacy rows with no id.
   RecipientModel toRecipientModel({String? countryCode, String? currency}) {
     final internal = type == 'internal' || isLazervault;
     final acct = accountNumber.isNotEmpty
         ? accountNumber
-        : (username.isNotEmpty ? username : userId);
+        : (internal && userId.isNotEmpty
+            ? userId
+            : (username.isNotEmpty ? username : userId));
     return RecipientModel(
       id: recipientId.isNotEmpty ? recipientId : userId,
       name: name.isNotEmpty ? name : displayName,
