@@ -1141,20 +1141,21 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   Widget _utilityBtn(String label, IconData icon, VoidCallback onTap) =>
       TextButton.icon(
         onPressed: onTap,
-        icon: Icon(icon, color: EscrowTheme.textSecondary, size: 18.sp),
+        icon: Icon(icon, color: EscrowTheme.primaryLight, size: 18.sp),
         label: Text(label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
-                color: EscrowTheme.textSecondary,
+                color: EscrowTheme.primaryLight,
                 fontSize: 13.5.sp,
                 fontWeight: FontWeight.w600)),
         style: TextButton.styleFrom(
-          backgroundColor: EscrowTheme.card,
+          backgroundColor: EscrowTheme.primary.withValues(alpha: 0.14),
           padding: EdgeInsets.symmetric(vertical: 14.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
-            side: const BorderSide(color: EscrowTheme.border),
+            side: BorderSide(
+                color: EscrowTheme.primaryLight.withValues(alpha: 0.45)),
           ),
         ),
       );

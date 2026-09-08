@@ -86,6 +86,7 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
   bool _foreignPrompted = false;
   void _maybeWarnForeignViewer(EscrowOfferEntity offer, String userId) {
     if (_foreignPrompted) return;
+    if (!offer.isOpen) return; // taken/terminal links get a status banner instead
     if (!offer.isForeignViewer(userId)) return;
     _foreignPrompted = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -532,7 +533,10 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
           _metaRow(offer.isSellOffer ? 'Condition' : 'Condition wanted',
               EscrowTheme.conditionLabel(offer.condition)),
         if (offer.counterpartyName.isNotEmpty)
-          _metaRow(offer.isSellOffer ? 'Offered to' : 'Seller',
+          _metaRow(
+              offer.isSellOffer
+                  ? (offer.isConverted ? 'Bought by' : 'Offered to')
+                  : 'Seller',
               offer.counterpartyName),
         if (offer.deliveryDeadlineDays > 0)
           _metaRow('Delivery window', '${offer.deliveryDeadlineDays} days'),
@@ -581,6 +585,79 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
   List<Widget> _actions(EscrowOfferEntity offer, String userId) {
     final out = <Widget>[];
 
+    // Terminal states first — status-aware AND party-aware, so a later opener
+    // of a taken link sees an honest "no longer available" instead of buy
+    // buttons or a wrong "addressed to someone else" warning.
+    if (offer.isTerminal) {
+      final isCreator = offer.viewerIsCreator || offer.creatorUserId == userId;
+      final isCounterparty = offer.counterpartyUserId.isNotEmpty &&
+          offer.counterpartyUserId == userId;
+      final isParty = isCreator || isCounterparty;
+      final thing = offer.isSellOffer ? 'listing' : 'request';
+      if (offer.isConverted) {
+        final who = offer.counterpartyName.isNotEmpty
+            ? offer.counterpartyName
+            : 'the buyer';
+        if (offer.isSellOffer) {
+          if (isCreator) {
+            out.add(_banner(
+                'Sold to $who — the money is held in escrow. Deliver to get paid.',
+                EscrowTheme.success));
+          } else if (isCounterparty) {
+            out.add(_banner(
+                'You bought this. Track delivery and release the money from the deal.',
+                EscrowTheme.success));
+          } else {
+            out.add(_banner(
+                'This listing has already been bought and is no longer available.',
+                EscrowTheme.warning));
+          }
+        } else {
+          if (isCreator) {
+            out.add(_banner(
+                'You funded this request — the money is held in escrow until delivery.',
+                EscrowTheme.success));
+          } else if (isCounterparty) {
+            out.add(_banner(
+                '${offer.creatorName.isNotEmpty ? offer.creatorName : 'The buyer'} funded this request. Deliver to get paid.',
+                EscrowTheme.success));
+          } else {
+            out.add(_banner(
+                'This request has already been funded and is no longer available.',
+                EscrowTheme.warning));
+          }
+        }
+        if (isParty && offer.dealId.isNotEmpty) {
+          out.add(_primaryBtn('View the deal', () {
+            Get.toNamed(AppRoutes.escrowDetail, arguments: offer.dealId);
+          }));
+        }
+        return out;
+      }
+      if (offer.isDeclined) {
+        final reason = offer.declineReason.isNotEmpty
+            ? ' Reason: ${offer.declineReason}'
+            : '';
+        out.add(_banner(
+            isParty
+                ? 'This $thing was declined.$reason'
+                : 'This $thing is no longer available.',
+            EscrowTheme.error));
+        return out;
+      }
+      if (offer.isCancelled) {
+        out.add(_banner(
+            isCreator
+                ? 'You withdrew this $thing.'
+                : 'This $thing was withdrawn and is no longer available.',
+            EscrowTheme.warning));
+        return out;
+      }
+      out.add(_banner(
+          'This $thing expired before it was completed.', EscrowTheme.warning));
+      return out;
+    }
+
     // Someone who opened a share link meant for a specific person: view-only,
     // no confirm/decline. The modal (shown on load) already explained why.
     if (offer.isForeignViewer(userId)) {
@@ -588,9 +665,6 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
           'This escrow is addressed to ${offer.counterpartyName.isNotEmpty ? offer.counterpartyName : 'someone else'}. '
           'Only they can confirm or decline it.',
           EscrowTheme.warning));
-      if (offer.isConverted && offer.dealId.isNotEmpty) {
-        // nothing actionable for a non-party
-      }
       return out;
     }
 
@@ -628,11 +702,6 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
         out.add(_secondaryBtn(
             'Withdraw offer', EscrowTheme.error, () => _cancel(offer)));
       }
-    }
-    if (offer.isConverted && offer.dealId.isNotEmpty) {
-      out.add(_primaryBtn('View the deal', () {
-        Get.toNamed(AppRoutes.escrowDetail, arguments: offer.dealId);
-      }));
     }
     if (out.isEmpty) {
       final (label, color) = EscrowTheme.offerStatusMeta(offer.status);
@@ -687,20 +756,21 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
   Widget _utilityBtn(String label, IconData icon, VoidCallback onTap) =>
       TextButton.icon(
         onPressed: onTap,
-        icon: Icon(icon, color: EscrowTheme.textSecondary, size: 17.sp),
+        icon: Icon(icon, color: EscrowTheme.primaryLight, size: 17.sp),
         label: Text(label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
-                color: EscrowTheme.textSecondary,
+                color: EscrowTheme.primaryLight,
                 fontSize: 12.5.sp,
                 fontWeight: FontWeight.w600)),
         style: TextButton.styleFrom(
-          backgroundColor: EscrowTheme.card,
+          backgroundColor: EscrowTheme.primary.withValues(alpha: 0.14),
           padding: EdgeInsets.symmetric(vertical: 12.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
-            side: const BorderSide(color: EscrowTheme.border),
+            side: BorderSide(
+                color: EscrowTheme.primaryLight.withValues(alpha: 0.45)),
           ),
         ),
       );
