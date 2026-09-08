@@ -28,6 +28,7 @@ import 'package:lazervault/core/services/remote_log_sink.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/notifications/notification_navigator.dart';
 import 'package:lazervault/src/features/authentication/utils/login_identifier.dart';
+import 'package:lazervault/core/utils/logger.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
@@ -628,7 +629,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       // IMPORTANT: Await all storage operations before emitting success
       await _saveSession(profile);
       await _storage.write(key: 'login_method', value: 'passcode');
-      await _storage.write(key: 'stored_email', value: email);
+      // DO NOT write the RAW TYPED identifier here: _saveSession just stored
+      // the PROFILE email (backend truth), and overwriting it with whatever
+      // the user typed cached typos forever — the passcode lock then replayed
+      // the typo on every return ('ezekennaemekEchris' incident: first unlock
+      // failed 'invalid credentials', bounced to the full login screen, and
+      // only the manual retry healed it… until the next clobber).
       emit(AuthenticationSuccess(profile));
     }
   }
@@ -2670,10 +2676,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     final currentState = state as PasscodeLoginInProgress;
 
     final storedPhone = await _storage.read(key: 'stored_phone');
-    // Try multiple keys for email (for backwards compatibility)
-    String? email = await _storage.read(key: _userEmailKey);
+    // stored_email FIRST: every login path rewrites it from the backend
+    // profile, so it self-heals. The legacy user_email mirror is only a
+    // fallback — preferring it let a stale copy outrank the healed value.
+    String? email = await _storage.read(key: 'stored_email');
     if (email == null || email.isEmpty) {
-      email = await _storage.read(key: 'stored_email');
+      email = await _storage.read(key: _userEmailKey);
     }
 
     // INVARIANT: these cached identifiers must belong to the user this screen is
@@ -2726,6 +2734,15 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             ));
             return;
           }
+          AppLogger.error('passcode lock: phone login failed',
+              fields: {
+                'flow': 'login_lock',
+                'identifier_masked': storedPhone.length > 4
+                    ? '***${storedPhone.substring(storedPhone.length - 4)}'
+                    : '***',
+                'source': 'stored_phone',
+                'reason': failure.message,
+              });
           if (_handleUnknownCachedIdentifier(failure.message)) return;
           _showErrorSnackbar('Login Failed', failure.message);
           emit(PasscodeLoginInProgress(
