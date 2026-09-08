@@ -54,7 +54,10 @@ class _GenerateQRScreenState extends State<GenerateQRScreen> {
         body: BlocConsumer<QRPaymentCubit, QRPaymentState>(
           listener: (context, state) {
             if (state is QRGenerated) {
-              Get.toNamed(
+              // REPLACE the create screen with the display screen: Back from
+              // the freshly created code then lands on the QR landing page
+              // (which refreshes its last-3 on return), not back on the form.
+              Get.offNamed(
                 AppRoutes.qrDisplay,
                 arguments: {
                   'qrCode': state.qrCode,

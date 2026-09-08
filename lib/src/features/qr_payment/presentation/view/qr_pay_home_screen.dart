@@ -38,6 +38,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
   @override
   void initState() {
     super.initState();
+    // no-op marker (refresh helpers below)
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -77,6 +78,22 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
     super.dispose();
   }
 
+
+  /// Refetches the landing data (last-3 codes + payments). Called on entry,
+  /// on pull-to-refresh, and every time the user comes BACK from a sub-screen
+  /// so a freshly created code appears in the last-3 immediately.
+  Future<void> _reload() async {
+    if (!mounted) return;
+    await context.read<QRPaymentCubit>().getRecentActivity();
+  }
+
+  /// Navigate out and refresh on return — the landing's data is stale the
+  /// moment a sub-flow creates or receives anything.
+  void _goThenReload(String route) {
+    final f = Get.toNamed(route);
+    if (f != null) f.then((_) => _reload());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,24 +120,29 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
                     position: _slideAnimation,
                     child: FadeTransition(
                       opacity: _fadeAnimation,
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: EdgeInsets.symmetric(horizontal: 20.w),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(height: 8.h),
-                            _buildHeroSection(),
-                            SizedBox(height: 32.h),
-                            _buildActionCards(),
-                            SizedBox(height: 32.h),
-                            _buildQuickStats(),
-                            SizedBox(height: 32.h),
-                            _buildHistorySection(),
-                            SizedBox(height: 32.h),
-                            _buildSecurityBanner(),
-                            SizedBox(height: 100.h),
-                          ],
+                      child: RefreshIndicator(
+                        onRefresh: _reload,
+                        color: const Color(0xFF3B82F6),
+                        backgroundColor: const Color(0xFF1F1F1F),
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: 8.h),
+                              _buildHeroSection(),
+                              SizedBox(height: 32.h),
+                              _buildActionCards(),
+                              SizedBox(height: 32.h),
+                              _buildQuickStats(),
+                              SizedBox(height: 32.h),
+                              _buildHistorySection(),
+                              SizedBox(height: 32.h),
+                              _buildSecurityBanner(),
+                              SizedBox(height: 100.h),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -207,7 +229,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
           child: GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
-              Get.toNamed(AppRoutes.scanQR);
+              _goThenReload(AppRoutes.scanQR);
             },
             child: Container(
               width: double.infinity,
@@ -284,7 +306,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
           iconGradient: const [Color(0xFF10B981), Color(0xFF059669)],
           title: 'Generate QR Code',
           subtitle: 'Create a QR code for others to scan and pay you',
-          onTap: () => Get.toNamed(AppRoutes.generateQR),
+          onTap: () => _goThenReload(AppRoutes.generateQR),
         ),
         SizedBox(height: 16.h),
         _ActionCard(
@@ -292,7 +314,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
           iconGradient: const [Color(0xFF3B82F6), Color(0xFF2563EB)],
           title: 'Scan QR Code',
           subtitle: 'Scan a QR code to make a payment instantly',
-          onTap: () => Get.toNamed(AppRoutes.scanQR),
+          onTap: () => _goThenReload(AppRoutes.scanQR),
         ),
       ],
     );
@@ -447,7 +469,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
               ),
             ),
             GestureDetector(
-              onTap: () => Get.toNamed(AppRoutes.generatedQRHistory),
+              onTap: () => _goThenReload(AppRoutes.generatedQRHistory),
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
@@ -613,7 +635,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
               ),
             ),
             GestureDetector(
-              onTap: () => Get.toNamed(AppRoutes.qrPaymentsHistory),
+              onTap: () => _goThenReload(AppRoutes.qrPaymentsHistory),
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
@@ -764,7 +786,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
           iconGradient: const [Color(0xFF3B82F6), Color(0xFF2563EB)],
           title: 'Generated QR Codes',
           subtitle: 'View QR codes you created',
-          onTap: () => Get.toNamed(AppRoutes.generatedQRHistory),
+          onTap: () => _goThenReload(AppRoutes.generatedQRHistory),
         ),
         SizedBox(height: 12.h),
         _ActionCard(
@@ -772,7 +794,7 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
           iconGradient: const [Color(0xFF10B981), Color(0xFF059669)],
           title: 'QR Payments',
           subtitle: 'View payments you made via QR',
-          onTap: () => Get.toNamed(AppRoutes.qrPaymentsHistory),
+          onTap: () => _goThenReload(AppRoutes.qrPaymentsHistory),
         ),
       ],
     );
