@@ -2,12 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:lazervault/core/types/app_routes.dart';
+import 'account_details_sheet_opener.dart';
 import 'endpoint_registry.dart';
 
 /// Server-driven "your account details changed" announcement — shown once per
@@ -209,7 +208,10 @@ class AccountUpdateAnnouncementService {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.of(ctx).pop();
-                      Get.toNamed(AppRoutes.myAccount);
+                      // Open the account-details bottom sheet (number, bank,
+                      // copy/share) — the outer dashboard context can read the
+                      // summaries cubit; the dialog's own ctx cannot.
+                      openAccountDetailsSheet(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4E03D0),

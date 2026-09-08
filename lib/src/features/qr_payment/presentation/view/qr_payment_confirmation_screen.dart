@@ -365,10 +365,15 @@ class _QRPaymentConfirmationScreenState
                           _buildRecipientCard(),
                           const SizedBox(height: 24),
                           if (_payerEntersAmount) ...[
+                            _buildQrModeNotice(),
+                            const SizedBox(height: 12),
                             _buildAmountInput(),
                             const SizedBox(height: 24),
-                          ] else
+                          ] else ...[
+                            _buildQrModeNotice(),
+                            const SizedBox(height: 12),
                             _buildAmountDisplay(),
+                          ],
                           _buildAccountSelector(),
                           const SizedBox(height: 32),
                           _buildPayButton(),
@@ -376,6 +381,40 @@ class _QRPaymentConfirmationScreenState
                       ),
                     ),
         ),
+      ),
+    );
+  }
+
+  /// Brief, styled explanation of how THIS code works, so the payer always
+  /// knows what kind of QR they scanned. Dynamic = they set the amount;
+  /// static/fixed = the payee set the price and it can't be edited.
+  Widget _buildQrModeNotice() {
+    final accent = _payerEntersAmount
+        ? const Color(0xFF3B82F6)
+        : const Color(0xFF10B981);
+    final icon = _payerEntersAmount ? Icons.edit_outlined : Icons.lock_outline;
+    final text = _payerEntersAmount
+        ? 'Dynamic QR — like an open check: no fixed price is set, you write in the amount you want to pay.'
+        : 'Fixed-amount QR — the payee set this price. The amount can\'t be changed here.';
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: accent.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: accent, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                  color: Color(0xFFB6B9C6), fontSize: 13, height: 1.4),
+            ),
+          ),
+        ],
       ),
     );
   }

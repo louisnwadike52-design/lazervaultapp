@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:lazervault/core/types/app_routes.dart';
+import 'account_details_sheet_opener.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 
 /// Tells a user, on the dashboard, that their deposit account number changed.
@@ -75,6 +74,7 @@ class AccountNumberChangeWatcher {
         if (previous == current) continue;
 
         changes.add(_AccountNumberChange(
+          accountId: id,
           label: a.displayName,
           previous: previous,
           current: current,
@@ -180,7 +180,13 @@ class AccountNumberChangeWatcher {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.of(ctx).pop();
-                      Get.toNamed(AppRoutes.myAccount);
+                      // Open the details bottom sheet for the account whose
+                      // number changed (the first when several moved at once) —
+                      // the user sees the NEW number with copy/share, instead
+                      // of landing on a settings page. Outer dashboard context:
+                      // it can read the summaries cubit, the dialog ctx can't.
+                      openAccountDetailsSheet(context,
+                          preferAccountId: changes.first.accountId);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4E03D0),
@@ -271,12 +277,14 @@ class AccountNumberChangeWatcher {
 }
 
 class _AccountNumberChange {
+  final String accountId;
   final String label;
   final String previous;
   final String current;
   final String bankName;
 
   const _AccountNumberChange({
+    required this.accountId,
     required this.label,
     required this.previous,
     required this.current,

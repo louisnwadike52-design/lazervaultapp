@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
@@ -221,6 +223,51 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
     }
   }
 
+  /// The deposit details as one shareable block — what a payer needs to send
+  /// money to this account.
+  String get _shareableDetails {
+    final digits = ((widget.accountArgs['accountNumber'] as String?) ?? '')
+        .replaceAll(RegExp(r'[^0-9]'), '');
+    final lines = <String>[
+      if (_holderName.isNotEmpty) _holderName,
+      if (_bankName.isNotEmpty) _bankName,
+      'Account number: $digits',
+    ];
+    return lines.join('\n');
+  }
+
+  void _copyDetails() {
+    Clipboard.setData(ClipboardData(text: _shareableDetails));
+    Get.snackbar('Copied', 'Account details copied to clipboard',
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 2));
+  }
+
+  void _shareDetails() {
+    SharePlus.instance.share(ShareParams(
+        text: _shareableDetails, subject: 'My account details'));
+  }
+
+  Widget _numberActionIcon(IconData icon, String tooltip, VoidCallback onTap) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10.r),
+        child: Container(
+          padding: EdgeInsets.all(7.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+          child: Icon(icon, color: Colors.white, size: 16.sp),
+        ),
+      ),
+    );
+  }
+
   // ── Active (front) face ───────────────────────────────────────────────────
 
   Widget _buildActiveFace() {
@@ -315,14 +362,25 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
               ],
             )
           else
-            Text(
-              _fullNumber,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.95),
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 2.0,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _fullNumber,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.95),
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                ),
+                if (_hasRealNumber) ...[
+                  _numberActionIcon(Icons.copy_rounded, 'Copy', _copyDetails),
+                  SizedBox(width: 8.w),
+                  _numberActionIcon(Icons.ios_share_rounded, 'Share', _shareDetails),
+                ],
+              ],
             ),
           SizedBox(height: 14.h),
           _balanceBlock(labelColor: Colors.white.withValues(alpha: 0.65)),
