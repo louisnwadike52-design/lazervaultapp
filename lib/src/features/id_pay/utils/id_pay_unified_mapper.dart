@@ -43,6 +43,10 @@ UnifiedTransaction idPayTxnToUnified(
       'pay_id': 'PAY-${txn.payId}',
       if (txn.payerName.isNotEmpty) 'payer_name': txn.payerName,
       if (txn.payerUsername.isNotEmpty) 'payer_username': txn.payerUsername,
+      // PDF payload — see qr_unified_mapper: the unified PDF resolves
+      // From/To from these snake_case chains.
+      if (txn.payerName.isNotEmpty) 'sender_name': txn.payerName,
+      if (txn.recipientName.isNotEmpty) 'recipient_name': txn.recipientName,
       if (!viewerIsPayer && txn.fee > 0) ...{
         'platform_fee': '${txn.currency} ${txn.fee.toStringAsFixed(2)}',
         'you_receive': '${txn.currency} ${txn.creatorReceives.toStringAsFixed(2)}',

@@ -46,10 +46,14 @@ class _QRPaymentReceiptScreenState extends State<QRPaymentReceiptScreen> {
 
     // Dashboard underneath, rich receipt on top: Back from the receipt lands
     // on the dashboard, exactly like opening it from transaction history.
+    // Both route ops run synchronously in this frame and the receipt enters
+    // WITHOUT animation — an animated entry painted the dashboard for the
+    // slide's duration, which read as a navigation glitch after paying.
     Get.offAllNamed(AppRoutes.dashboard);
     Get.to(
       () => TransactionDetailScreen(transaction: unified),
-      transition: Transition.rightToLeft,
+      transition: Transition.noTransition,
+      duration: Duration.zero,
     );
   }
 

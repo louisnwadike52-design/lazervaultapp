@@ -42,6 +42,11 @@ UnifiedTransaction qrTxnToUnified(
       if (txn.qrId.isNotEmpty) 'qr_id': txn.qrId,
       if (txn.payerName.isNotEmpty) 'payer_name': txn.payerName,
       if (txn.payerUsername.isNotEmpty) 'payer_username': txn.payerUsername,
+      // PDF payload (generateUnifiedTransferReceipt resolves From/To off
+      // these snake_case chains — without them the sender line printed
+      // blank on the Revolut-style receipt).
+      if (txn.payerName.isNotEmpty) 'sender_name': txn.payerName,
+      if (txn.recipientName.isNotEmpty) 'recipient_name': txn.recipientName,
       if (newBalance != null)
         'new_balance': '${txn.currency} ${newBalance.toStringAsFixed(2)}',
     },

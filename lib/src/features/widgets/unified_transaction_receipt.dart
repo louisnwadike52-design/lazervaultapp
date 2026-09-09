@@ -726,7 +726,13 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   /// sender/recipient addresses); transfers use the fund-transfer PDF.
   bool get _supportsPdfReceipt =>
       tx.serviceType == TransactionServiceType.transfer ||
-      tx.serviceType == TransactionServiceType.crypto;
+      tx.serviceType == TransactionServiceType.crypto ||
+      // QR Pay + PayID receipts render the same Revolut-style unified
+      // transfer PDF (generateUnifiedTransferReceipt is generic over the
+      // entity + metadata payload); without this they fell back to the
+      // plain image/text share.
+      tx.serviceType == TransactionServiceType.qrPayment ||
+      tx.serviceType == TransactionServiceType.idPay;
 
   Widget _buildActionButtons() {
     final buttons = <Widget>[];
