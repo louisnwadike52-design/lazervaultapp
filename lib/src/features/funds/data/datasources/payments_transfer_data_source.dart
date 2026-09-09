@@ -414,6 +414,7 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
     required int amountMinorUnits,
     required String currency,
     required String transferType,
+    String? sourceAccountId,
   }) async {
     final request = payments.GetTransferFeeRequest(
       transferType: transferType,
@@ -422,10 +423,20 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
     );
     final response = await _callOptionsHelper.executeWithTokenRotation(() async {
       final callOptions = await _callOptionsHelper.withAuth();
+      // The quote resolves the PROVIDER fee from the paying wallet's rail, and
+      // the server reads that wallet from x-account-id (the proto carries no
+      // account id). withAuth() does not attach it, so without this the quote
+      // silently falls back to the admin default rail — today that matches, so
+      // the numbers agree, but the moment an account sits on a different rail
+      // the quoted fee and the charged fee diverge with nothing to flag it.
+      final extra = <String, String>{
+        if (sourceAccountId != null && sourceAccountId.isNotEmpty)
+          'x-account-id': sourceAccountId,
+      };
       return await _client.getTransferFee(
         request,
         options: callOptions.mergedWith(
-          CallOptions(timeout: const Duration(seconds: 20)),
+          CallOptions(timeout: const Duration(seconds: 20), metadata: extra),
         ),
       );
     });

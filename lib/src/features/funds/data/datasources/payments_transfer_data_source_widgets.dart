@@ -171,6 +171,8 @@ abstract class IPaymentsTransferDataSource {
     required int amountMinorUnits,
     required String currency,
     required String transferType,
+    // Paying wallet — the server resolves the provider fee from its rail.
+    String? sourceAccountId,
   });
 
   /// Current status of a transfer by its reference — drives the receipt screen's

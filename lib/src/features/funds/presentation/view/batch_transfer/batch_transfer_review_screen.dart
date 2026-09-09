@@ -51,32 +51,79 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
   // rendered as an em-dash, never as a fake zero.
   double? _totalFee;
   bool _feeLoading = false;
+  /// Per-recipient fee, keyed by account number — the breakdown behind the
+  /// total, so a user can see the sum is per payout rather than one flat fee.
+  Map<String, double> _feeByRecipient = const {};
+  /// At least one recipient's quote failed; the total shown is partial.
+  bool _feeQuotesIncomplete = false;
 
+  /// Quote the fee for EACH external recipient and sum them.
+  ///
+  /// The fee is banded per payout, not charged on the batch total, so summing
+  /// per recipient is materially different from one quote on the sum: three
+  /// ₦100 payouts cost ₦13 each (₦39), while a single ₦300 transfer costs ₦13.
+  /// Internal recipients are excluded because their fee is genuinely zero.
+  ///
+  /// Quotes run in PARALLEL and each failure is isolated. Serially awaiting up
+  /// to 20 recipients (the configured max) at a 20s timeout each meant a slow
+  /// backend could stall this screen for minutes, and one failure threw away
+  /// every quote already fetched — the user saw "Shown at receipt" for the
+  /// whole batch because a single recipient hiccupped.
   Future<void> _loadFees() async {
     final recipients =
         transferData['recipients'] as List<BatchTransferRecipient>? ?? [];
     final external = recipients.where((r) => r.isExternal).toList();
     if (external.isEmpty) {
-      setState(() => _totalFee = 0.0);
+      setState(() {
+        _totalFee = 0.0;
+        _feeByRecipient = const {};
+        _feeQuotesIncomplete = false;
+      });
       return;
     }
     setState(() => _feeLoading = true);
-    try {
-      final ds = serviceLocator<IPaymentsTransferDataSource>();
-      var feeMinor = 0;
-      for (final r in external) {
-        feeMinor += await ds.getTransferFee(
-          amountMinorUnits: r.amount.toInt(),
-          currency: _currency,
-          transferType: 'batch_external',
-        );
+    final ds = serviceLocator<IPaymentsTransferDataSource>();
+    // The paying wallet decides which provider rail carries the payout, and
+    // the provider fee comes from that rail — so the quote must be asked in
+    // the context of the account that will actually pay.
+    final sourceAccountId = transferData['fromAccountId'] as String?;
+
+    final results = await Future.wait(
+      external.map((r) async {
+        try {
+          final minor = await ds.getTransferFee(
+            amountMinorUnits: r.amount.toInt(),
+            currency: _currency,
+            transferType: 'batch_external',
+            sourceAccountId: sourceAccountId,
+          );
+          return MapEntry(r.toAccountNumber, minor);
+        } catch (_) {
+          return MapEntry(r.toAccountNumber, -1); // this one is unknown
+        }
+      }),
+    );
+    if (!mounted) return;
+
+    var feeMinor = 0;
+    var incomplete = false;
+    final byRecipient = <String, double>{};
+    for (final e in results) {
+      if (e.value < 0) {
+        incomplete = true;
+        continue;
       }
-      if (mounted) setState(() => _totalFee = feeMinor / 100.0);
-    } catch (_) {
-      if (mounted) setState(() => _totalFee = null); // unknown, not zero
-    } finally {
-      if (mounted) setState(() => _feeLoading = false);
+      feeMinor += e.value;
+      byRecipient[e.key] = e.value / 100.0;
     }
+    setState(() {
+      // All quotes failed → genuinely unknown. Some failed → show the partial
+      // sum and say so, rather than pretending the whole fee is unknowable.
+      _totalFee = byRecipient.isEmpty ? null : feeMinor / 100.0;
+      _feeByRecipient = byRecipient;
+      _feeQuotesIncomplete = incomplete;
+      _feeLoading = false;
+    });
   }
 
   @override
@@ -1061,6 +1108,25 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                   ? _buildBreakdownRowText('Service Fee', 'Shown at receipt',
                       valueColor: btOrange)
                   : _buildBreakdownRow('Service Fee', fee)),
+          // The fee is charged PER external payout and is banded by amount, so
+          // the total is a sum, not one flat charge. Showing the count makes
+          // that legible — otherwise a ₦39 fee on three ₦100 transfers reads
+          // like an error against the ₦13 a single ₦100 transfer costs.
+          if (!_feeLoading && fee != null && _feeByRecipient.isNotEmpty) ...[
+            SizedBox(height: 4.h),
+            _buildBreakdownRowText(
+              '',
+              '${_feeByRecipient.length} bank ${_feeByRecipient.length == 1 ? 'payout' : 'payouts'}'
+              '${_feeByRecipient.length > 1 ? ' · charged per payout' : ''}',
+              valueColor: btTextSecondary,
+            ),
+          ],
+          // Never let a partial sum masquerade as the whole fee.
+          if (_feeQuotesIncomplete) ...[
+            SizedBox(height: 4.h),
+            _buildBreakdownRowText('', 'Some fees unavailable — final amount at receipt',
+                valueColor: btOrange),
+          ],
           if (_isScheduled && _scheduledDateTime != null) ...[
             SizedBox(height: 8.h),
             _buildBreakdownRowText(
