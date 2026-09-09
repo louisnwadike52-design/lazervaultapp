@@ -361,6 +361,49 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
       'senderAccountInfo': transferDetails['senderAccountInfo'],
       // This is a drill-in, not a fresh settlement — don't double-count.
       'settledEmitted': true,
+      // Carry the batch down with the leg so the item receipt can offer its
+      // siblings and the full batch. Without this the drill-in is a dead end:
+      // the only way back to another recipient is out and in again.
+      'parentBatch': transferDetails,
+      // True when the batch receipt is the route directly beneath this one, so
+      // "All recipients" can pop back to the LIVE instance instead of pushing
+      // a second copy of a screen the user is already standing on.
+      'batchReceiptBelow': true,
+    });
+  }
+
+  /// The batch payload this receipt was drilled into from, if any.
+  Map<String, dynamic>? get _parentBatch =>
+      transferDetails['parentBatch'] as Map<String, dynamic>?;
+
+  /// Recipient rows for the batch a single-leg receipt belongs to.
+  List<Map<String, dynamic>> get _parentBatchTransfers {
+    final raw = _parentBatch?['transfers'];
+    if (raw is List) {
+      return raw.whereType<Map>().map((e) => e.cast<String, dynamic>()).toList();
+    }
+    return const [];
+  }
+
+  /// Opens the whole-batch receipt — the same view the transaction history
+  /// opens for a batch row.
+  ///
+  /// Two ways in, so two ways back. Drilled in from the batch receipt, that
+  /// screen is still alive underneath and holding the live status poll, so we
+  /// pop to it. Opened cold (a deep link, or a single leg tapped in history)
+  /// there is nothing to pop to, so we push one built from the payload the leg
+  /// carries.
+  void _openBatchOverview() {
+    final parent = _parentBatch;
+    if (parent == null) return;
+    Get.back(); // dismiss the sheet first — it is its own route
+    if (transferDetails['batchReceiptBelow'] == true) {
+      Get.back();
+      return;
+    }
+    Get.toNamed(AppRoutes.transferProof, arguments: {
+      ...parent,
+      'settledEmitted': true,
     });
   }
 
@@ -771,8 +814,12 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
                     // Transaction details with QR at bottom
                     _buildTransactionDetails(),
 
-                    // Batch-only: recipients summary CTA
-                    if (_isBatch) ...[
+                    // Recipients CTA. On the batch receipt it lists the legs;
+                    // on a LEG it lists its siblings plus a way back to the
+                    // whole batch. Without the second case a drill-in is a dead
+                    // end: the only route to another recipient is out and in
+                    // again.
+                    if (_isBatch || _parentBatchTransfers.isNotEmpty) ...[
                       SizedBox(height: 14.h),
                       _buildAllRecipientsCTA(),
                     ],
@@ -1389,7 +1436,8 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
   /// "View All Recipients (N)" CTA shown in the batch receipt body. Opens a
   /// sheet listing each recipient with their amount + status.
   Widget _buildAllRecipientsCTA() {
-    final transfers = _transfers;
+    // On a leg, the sibling list lives on the parent batch; _transfers is empty.
+    final transfers = _isBatch ? _transfers : _parentBatchTransfers;
     if (transfers.isEmpty) return const SizedBox.shrink();
     return GestureDetector(
       onTap: () => _showRecipientsSheet(transfers),
@@ -1408,7 +1456,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
                 color: const Color(0xFF3B82F6), size: 18.sp),
             SizedBox(width: 8.w),
             Text(
-              'View All Recipients',
+              _isBatch ? 'View All Recipients' : 'Other recipients in this batch',
               style: GoogleFonts.inter(
                 color: const Color(0xFF3B82F6),
                 fontSize: 14.sp,
@@ -1477,13 +1525,76 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
                 ],
               ),
             ),
+            // "All recipients" — the whole-batch receipt, the same view the
+            // transaction history opens for a batch row. Only shown when this
+            // receipt IS a leg: on the batch receipt itself the user is
+            // already looking at it, and a row that navigates to the current
+            // screen is just a confusing no-op.
+            if (!_isBatch && _parentBatch != null)
+              Padding(
+                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 8.h),
+                child: InkWell(
+                  onTap: _openBatchOverview,
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: Container(
+                    padding: EdgeInsets.all(14.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                          color: const Color(0xFF3B82F6)
+                              .withValues(alpha: 0.28)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 38.w,
+                          height: 38.w,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF3B82F6)
+                                .withValues(alpha: 0.18),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.receipt_long_rounded,
+                              color: const Color(0xFF3B82F6), size: 18.sp),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('All recipients',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                  )),
+                              SizedBox(height: 2.h),
+                              Text('Full batch receipt',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF8E8E93),
+                                    fontSize: 12.sp,
+                                  )),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right,
+                            color: const Color(0xFF3B82F6), size: 20.sp),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             Flexible(
               // Reactive: live status refreshes bump _itemsRev, so rows
               // update while this sheet (its own route) stays open.
               child: ValueListenableBuilder<int>(
                 valueListenable: _itemsRev,
                 builder: (context, _, __) {
-                  final liveTransfers = _transfers;
+                  // On a leg receipt the live list lives on the parent batch;
+                  // _transfers is empty there.
+                  final liveTransfers =
+                      _isBatch ? _transfers : _parentBatchTransfers;
                   return ListView.separated(
                 shrinkWrap: true,
                 padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),

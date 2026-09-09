@@ -57,21 +57,9 @@ class _BatchTransferProcessingScreenState
             icon: Icons.receipt_outlined,
           ),
           const _ProcessingStep(
-            status: BatchProcessingStatus.validating,
-            title: 'Validating Recipients',
-            description: 'Checking account details',
-            icon: Icons.verified_user_outlined,
-          ),
-          const _ProcessingStep(
-            status: BatchProcessingStatus.reservingFunds,
-            title: 'Verifying Funds',
-            description: 'Confirming balance availability',
-            icon: Icons.account_balance_outlined,
-          ),
-          const _ProcessingStep(
             status: BatchProcessingStatus.processing,
             title: 'Scheduling Transfer',
-            description: 'Setting up scheduled execution',
+            description: 'Validating recipients and confirming your balance',
             icon: Icons.schedule_outlined,
           ),
           const _ProcessingStep(
@@ -88,22 +76,14 @@ class _BatchTransferProcessingScreenState
             description: 'Request received',
             icon: Icons.receipt_outlined,
           ),
-          const _ProcessingStep(
-            status: BatchProcessingStatus.validating,
-            title: 'Validating Recipients',
-            description: 'Checking account details',
-            icon: Icons.verified_user_outlined,
-          ),
-          const _ProcessingStep(
-            status: BatchProcessingStatus.reservingFunds,
-            title: 'Reserving Funds',
-            description: 'Securing your balance',
-            icon: Icons.account_balance_outlined,
-          ),
+          // Validation and fund-reservation happen inside this one step on
+          // the server. They were separate ticks driven by timers; the server
+          // gives no signal for either, so they are described here instead of
+          // pretended at.
           const _ProcessingStep(
             status: BatchProcessingStatus.processing,
             title: 'Processing Transfers',
-            description: 'Sending to recipients',
+            description: 'Validating recipients, reserving funds and sending',
             icon: Icons.sync_outlined,
           ),
           const _ProcessingStep(
@@ -180,30 +160,35 @@ class _BatchTransferProcessingScreenState
     _pulseController.repeat(reverse: true);
   }
 
-  void _startProcessingSimulation() {
+  /// Marks the request as genuinely sent and moves to the in-flight step.
+  ///
+  /// This used to be `_startProcessingSimulation`, which walked the UI through
+  /// "Validating recipients" → "Reserving funds" → "Processing" on 1.2s / 2.8s
+  /// / 4.5s timers. Nothing behind it: the service emits Loading and then a
+  /// terminal state, with no intermediate signals, so those ticks were pure
+  /// theatre. On a slow batch the UI claimed funds were reserved while the
+  /// request was still in flight, and on a fast one it was still "validating"
+  /// after the money had already moved.
+  ///
+  /// Now only states we can actually observe are shown: the request was sent,
+  /// it is in flight, and it finished (with real counts).
+  void _markRequestSent() {
     if (_isCompleted) return;
-
-    // Progress through steps with timed delays
-    _updateStatus(BatchProcessingStatus.initiated,
-        _isScheduled ? 'Initiating schedule request...' : 'Initiating transfer...');
-
-    Future.delayed(const Duration(milliseconds: 1200), () {
-      if (!mounted || _isCompleted) return;
-      _updateStatus(BatchProcessingStatus.validating, 'Validating recipient details...');
-    });
-
-    Future.delayed(const Duration(milliseconds: 2800), () {
-      if (!mounted || _isCompleted) return;
-      _updateStatus(BatchProcessingStatus.reservingFunds,
-          _isScheduled ? 'Verifying funds availability...' : 'Reserving funds...');
-    });
-
-    Future.delayed(const Duration(milliseconds: 4500), () {
-      if (!mounted || _isCompleted) return;
-      _updateStatus(BatchProcessingStatus.processing,
-          _isScheduled ? 'Scheduling your batch transfer...' : 'Processing transfers...');
-    });
+    final count = _recipientCount;
+    _updateStatus(
+      BatchProcessingStatus.processing,
+      _isScheduled
+          ? 'Scheduling your batch transfer...'
+          : (count > 0
+              ? 'Sending $count ${count == 1 ? 'transfer' : 'transfers'}...'
+              : 'Processing transfers...'),
+    );
   }
+
+  int get _recipientCount =>
+      (batchTransferDetails['recipients'] as List<BatchTransferRecipient>?)
+          ?.length ??
+      0;
 
   void _updateStatus(BatchProcessingStatus status, String message) {
     if (!mounted) return;
@@ -227,8 +212,9 @@ class _BatchTransferProcessingScreenState
     final verificationToken =
         batchTransferDetails['verificationToken'] as String? ?? '';
 
-    // Start step progression animation
-    _startProcessingSimulation();
+    // The request is genuinely on the wire now — reflect that, and nothing
+    // more, until the service answers.
+    _markRequestSent();
 
     // Start timeout timer (90 seconds)
     _timeoutTimer = Timer(const Duration(seconds: 90), () {
@@ -255,7 +241,7 @@ class _BatchTransferProcessingScreenState
     );
   }
 
-  void _completeProcessing() {
+  void _completeProcessing([BatchTransferEntity? response]) {
     if (_isCompleted) return;
     _isCompleted = true;
     _timeoutTimer?.cancel();
@@ -264,10 +250,26 @@ class _BatchTransferProcessingScreenState
 
     setState(() {
       _currentStatus = BatchProcessingStatus.completed;
-      _statusMessage = _isScheduled
-          ? 'Transfer scheduled successfully!'
-          : 'Transfer complete!';
+      _statusMessage = _completionMessage(response);
     });
+  }
+
+  /// The only place real per-recipient progress exists is the RESPONSE
+  /// (successfulTransfers / totalTransfers), so this is where a count belongs.
+  /// A blanket "Transfer complete!" was wrong for a partial batch — it claimed
+  /// success while some recipients had failed.
+  String _completionMessage(BatchTransferEntity? r) {
+    if (_isScheduled) return 'Transfer scheduled successfully!';
+    if (r == null) return 'Transfer complete!';
+    final total = r.totalTransfers;
+    final ok = r.successfulTransfers;
+    if (total > 0 && ok < total) {
+      return '$ok of $total transfers sent — ${total - ok} need attention';
+    }
+    if (total > 0) {
+      return total == 1 ? 'Transfer sent' : 'All $total transfers sent';
+    }
+    return 'Transfer complete!';
   }
 
   @override
@@ -297,7 +299,7 @@ class _BatchTransferProcessingScreenState
   }
 
   void _navigateToReceipt(BatchTransferEntity response) {
-    _completeProcessing();
+    _completeProcessing(response);
 
     // Update balance for instant transfers
     if (!_isScheduled) {
@@ -388,7 +390,6 @@ class _BatchTransferProcessingScreenState
               });
               _processingController.repeat();
               _pulseController.repeat(reverse: true);
-              _startProcessingSimulation();
               _initiateBatchTransfer();
             },
             style: ElevatedButton.styleFrom(
