@@ -148,10 +148,13 @@ class AutoSaveRuleEntity extends Equatable {
       case TriggerType.roundUp:
         return 'Round up to nearest ${roundUpTo ?? 0}';
       case TriggerType.externalInflow:
-        // Retired trigger; legacy rules still render a truthful summary.
+        // Describes what the rule DOES, with no claim about whether the
+        // trigger is currently switched on — that is an admin setting that can
+        // change under a rule, and the pause/resume state already tells the
+        // user whether it is running.
         return sourceBankName.isNotEmpty
-            ? 'When money entered $sourceBankName (retired)'
-            : 'When money entered your linked bank (retired)';
+            ? 'When money lands in $sourceBankName'
+            : 'When money lands in your linked bank';
       case TriggerType.scheduledExternal:
         final schedule = _scheduleDescription;
         return sourceBankName.isNotEmpty
