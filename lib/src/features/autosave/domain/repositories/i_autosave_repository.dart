@@ -9,6 +9,38 @@ import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_sta
 /// the current page. The cubit uses [hasMore] to short-circuit
 /// further scroll-bottom fetches and [total] to render an
 /// out-of-the-box "X of Y" subheader.
+/// Server-computed fee split for a prospective save. All amounts in the
+/// user's major currency units.
+class AutoSaveFeeQuote {
+  final bool enabled;
+  final double fee;
+  final double net;
+  final String feeType; // percentage | fixed
+  final int percentBps;
+  final double cap;
+  final double fixed;
+
+  const AutoSaveFeeQuote({
+    required this.enabled,
+    required this.fee,
+    required this.net,
+    this.feeType = 'percentage',
+    this.percentBps = 0,
+    this.cap = 0,
+    this.fixed = 0,
+  });
+
+  static const none = AutoSaveFeeQuote(enabled: false, fee: 0, net: 0);
+
+  /// "0.5% (max ₦100)" / "₦25" — the rule, for disclosure copy.
+  String describe(String symbol) {
+    if (!enabled) return '';
+    if (feeType == 'fixed') return '$symbol${fixed.toStringAsFixed(2)}';
+    final pct = (percentBps / 100).toStringAsFixed(percentBps % 100 == 0 ? 0 : 2);
+    return cap > 0 ? '$pct% (max $symbol${cap.toStringAsFixed(2)})' : '$pct%';
+  }
+}
+
 class AutoSavePagedResult {
   final List<AutoSaveRuleEntity> rules;
   final int total;
@@ -104,6 +136,13 @@ abstract class IAutoSaveRepository {
   Future<Either<Failure, AutoSaveStatisticsEntity>> getAutoSaveStatistics();
 
   /// Manually trigger an auto-save rule
+  /// Server-computed platform-fee split for a prospective save. The app
+  /// NEVER computes a fee itself — this is the same math the executor runs.
+  Future<Either<Failure, AutoSaveFeeQuote>> getFeeQuote({
+    required double amount,
+    required String triggerType,
+  });
+
   Future<Either<Failure, AutoSaveTransactionEntity>> triggerAutoSave({
     required String ruleId,
     double? customAmount,

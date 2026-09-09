@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -34,7 +35,20 @@ class AutoSavePdfService {
     required String amountDescription,
     List<AutoSaveTransactionEntity> recentTransactions = const [],
   }) async {
-    final pdf = pw.Document();
+    // Load the embedded Inter faces BEFORE any symbol/style decision: the
+    // currency-symbol branch keys off ReceiptFonts.embedded, and the built-in
+    // PDF font cannot draw ₦ (the pdf package raises rather than
+    // substituting). Without this the export silently fell back to "NGN " —
+    // the ASCII mismatch against the on-screen ₦.
+    await ReceiptFonts.load();
+    final pdf = pw.Document(
+      theme: ReceiptFonts.embedded
+          ? pw.ThemeData.withFont(
+              base: ReceiptFonts.regular,
+              bold: ReceiptFonts.bold,
+            )
+          : null,
+    );
     // Resolve the active device locale so date / number / currency
     // formatters use the user's grouping (1,234 vs 1.234) + decimal
     // separator. Wrap in try/catch — Dart's Intl throws when the
@@ -51,14 +65,14 @@ class AutoSavePdfService {
       dateTimeFormat = DateFormat('MMM d, yyyy - HH:mm', rawLocale);
       currencyFormat = NumberFormat.currency(
         locale: rawLocale,
-        symbol: '${rule.currency} ',
+        symbol: receiptCurrencySymbol(rule.currency),
         decimalDigits: 2,
       );
     } catch (_) {
       dateFormat = DateFormat('MMMM d, yyyy');
       dateTimeFormat = DateFormat('MMM d, yyyy - HH:mm');
       currencyFormat = NumberFormat.currency(
-        symbol: '${rule.currency} ',
+        symbol: receiptCurrencySymbol(rule.currency),
         decimalDigits: 2,
       );
     }

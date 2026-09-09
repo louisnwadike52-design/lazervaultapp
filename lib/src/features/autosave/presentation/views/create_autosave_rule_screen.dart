@@ -48,6 +48,7 @@ import 'package:lazervault/src/core/config/mono_config.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../../utils/autosave_trigger_labels.dart';
 part 'create_autosave_rule_screen_part1.dart';
 part 'create_autosave_rule_screen_part2.dart';
 
@@ -552,78 +553,115 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   }
 
   Widget _triggerTypeSection() {
+    // Names/descriptions/colours come from AutoSaveTriggerLabels — the single
+    // source every autosave surface reads, so the picker, history chips,
+    // receipts and PDFs can never disagree again.
+    const order = [
+      TriggerType.onDeposit,
+      TriggerType.scheduled,
+      TriggerType.roundUp,
+      TriggerType.scheduledExternal,
+      // Bank Inflow last and DISABLED: kept visible so users who had it
+      // understand what replaced it, never selectable for new rules.
+      TriggerType.externalInflow,
+    ];
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (int i = 0; i < order.length; i++) ...[
+          if (i > 0) SizedBox(height: 14.h),
           _TriggerCard(
-            tint: _onDepositTint,
-            icon: Icons.south_rounded,
-            title: 'On Deposit',
-            description:
-                'Save every time money lands in your account. Pair with a fixed amount or a % of the deposit.',
-            selected: _selectedTriggerType == TriggerType.onDeposit,
-            onTap: () => setState(() {
-              _selectedTriggerType = TriggerType.onDeposit;
-              _stepError = null;
-            }),
-          ),
-          SizedBox(height: 14.h),
-          _TriggerCard(
-            tint: _scheduledTint,
-            icon: Icons.schedule_rounded,
-            title: 'Scheduled',
-            description:
-                'Save a fixed amount on a recurring cadence: daily, weekly or monthly at any time of day.',
-            selected: _selectedTriggerType == TriggerType.scheduled,
-            onTap: () => setState(() {
-              _selectedTriggerType = TriggerType.scheduled;
-              _stepError = null;
-            }),
-          ),
-          SizedBox(height: 14.h),
-          _TriggerCard(
-            tint: _roundUpTint,
-            icon: Icons.trending_up_rounded,
-            title: 'Round Up',
-            description:
-                'Round each spend up to the nearest unit and pocket the change. Great for passive saving.',
-            selected: _selectedTriggerType == TriggerType.roundUp,
-            onTap: () => setState(() {
-              _selectedTriggerType = TriggerType.roundUp;
-              _stepError = null;
-            }),
-          ),
-          SizedBox(height: 14.h),
-          _TriggerCard(
-            tint: _inflowTint,
-            icon: Icons.account_balance_rounded,
-            title: 'Bank Inflow',
-            description:
-                'Auto-save when money enters your linked bank. Direct Debit moves a slice straight into Lazervault.',
-            selected: _selectedTriggerType == TriggerType.externalInflow,
-            onTap: () => setState(() {
-              _selectedTriggerType = TriggerType.externalInflow;
-              _stepError = null;
-            }),
-          ),
-          SizedBox(height: 14.h),
-          _TriggerCard(
-            tint: _scheduledExternalTint,
-            icon: Icons.account_balance_wallet_rounded,
-            title: 'Bank standing order',
-            description:
-                'Pull a fixed amount from your linked bank into savings on a recurring schedule.',
-            selected: _selectedTriggerType == TriggerType.scheduledExternal,
-            onTap: () => setState(() {
-              _selectedTriggerType = TriggerType.scheduledExternal;
-              // Standing orders are fixed-amount only.
-              _selectedAmountType = AmountType.fixed;
-              _stepError = null;
-            }),
+            tint: AutoSaveTriggerLabels.colorOf(order[i]),
+            icon: AutoSaveTriggerLabels.iconOf(order[i]),
+            title: AutoSaveTriggerLabels.nameOf(order[i]),
+            description: AutoSaveTriggerLabels.descriptionOf(order[i]),
+            selected: _selectedTriggerType == order[i],
+            disabled: !AutoSaveTriggerLabels.isSelectable(order[i]),
+            disabledReason: AutoSaveTriggerLabels.disabledReason(order[i]),
+            onTap: () => _selectTrigger(order[i]),
           ),
         ],
-      );
+      ],
+    );
   }
+
+  void _selectTrigger(TriggerType t) {
+    if (!AutoSaveTriggerLabels.isSelectable(t)) {
+      // Explain rather than silently ignoring the tap.
+      _showRetiredTriggerSheet();
+      return;
+    }
+    setState(() {
+      _selectedTriggerType = t;
+      // Bank pulls are fixed-amount only (a percentage has no inflow to take
+      // a cut of on a scheduled pull — the backend rejects that combo).
+      if (t == TriggerType.scheduledExternal) {
+        _selectedAmountType = AmountType.fixed;
+      }
+      _stepError = null;
+    });
+  }
+
+  void _showRetiredTriggerSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 28.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Icon(Icons.info_outline_rounded,
+                  color: const Color(0xFF9CA3AF), size: 20.sp),
+              SizedBox(width: 8.w),
+              Text('Bank Inflow is retired',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700)),
+            ]),
+            SizedBox(height: 10.h),
+            Text(
+              'Spotting money as it arrived in your bank meant checking your '
+              'bank balance over and over, and each check costs — so we '
+              'retired it.\n\nRecurring Bank Debit does the same job more '
+              'predictably: you pick the amount and the schedule, and we pull '
+              'it from your bank by Direct Debit.',
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF), fontSize: 13.sp, height: 1.5),
+            ),
+            SizedBox(height: 18.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _selectTrigger(TriggerType.scheduledExternal);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AutoSaveTriggerLabels.colorOf(
+                      TriggerType.scheduledExternal),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
+                ),
+                child: Text('Use Recurring Bank Debit',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 14.5.sp,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   // ─── Step 1: Configure (trigger config + amount) ────────────────
 
@@ -1296,11 +1334,14 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       bankName: account.bankName,
       accountName: account.accountName,
       mandate: mandate,
-    ).then((_) {
+    ).then((_) async {
       if (!mounted) return;
-      // Refresh mandate state after the sheet closes; auto-select when the
-      // mandate became ready while the sheet was open.
-      context.read<MandateCubit>().fetchUserMandates(userId: userId);
+      // AWAIT the refresh before re-reading readiness: this used to fire the
+      // fetch and check the cubit on the very next line, so it read the STALE
+      // cache — a user who had just authorized Direct Debit landed in the
+      // else-branch and had to tap the bank a second time.
+      await context.read<MandateCubit>().fetchUserMandates(userId: userId);
+      if (!mounted) return;
       if (_isMandateReady(account)) {
         setState(() => _selectedLinkedAccount = account);
       } else {

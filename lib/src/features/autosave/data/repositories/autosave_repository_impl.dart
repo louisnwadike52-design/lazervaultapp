@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fixnum/fixnum.dart';
 
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
@@ -500,6 +501,44 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
   }
 
   @override
+  @override
+  Future<Either<Failure, AutoSaveFeeQuote>> getFeeQuote({
+    required double amount,
+    required String triggerType,
+  }) async {
+    try {
+      // Kobo on BOTH sides of this RPC (unlike the other autosave calls, the
+      // gateway does no x100 hop here), so send kobo and read kobo back.
+      final request = autosave_pb.GetAutoSaveFeeQuoteRequest(
+        amountKobo: Int64((amount * 100).round()),
+        triggerType: triggerType,
+      );
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth(
+          CallOptions(timeout: const Duration(seconds: 15)),
+        );
+        return await _autoSaveServiceClient.getAutoSaveFeeQuote(
+          request,
+          options: callOptions,
+        );
+      });
+      return Right(AutoSaveFeeQuote(
+        enabled: response.feeEnabled,
+        fee: response.feeKobo.toDouble() / 100,
+        net: response.netKobo.toDouble() / 100,
+        feeType: response.feeType,
+        percentBps: response.percentBps.toInt(),
+        cap: response.capKobo.toDouble() / 100,
+        fixed: response.fixedKobo.toDouble() / 100,
+      ));
+    } catch (e) {
+      // A quote failure must never block rule creation — the review screen
+      // simply omits the fee line and the executor remains authoritative.
+      return Left(ServerFailure(message: e.toString(), statusCode: 0));
+    }
+  }
+
   Future<Either<Failure, entity.AutoSaveTransactionEntity>> triggerAutoSave({
     required String ruleId,
     double? customAmount,

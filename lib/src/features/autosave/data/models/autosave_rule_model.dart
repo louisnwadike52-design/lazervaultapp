@@ -134,6 +134,9 @@ class AutoSaveTransactionModel extends AutoSaveTransactionEntity {
     required super.sourceAccountId,
     required super.destinationAccountId,
     required super.amount,
+    super.fee,
+    super.grossAmount,
+    super.depositStatus,
     required super.triggerType,
     required super.triggerReason,
     required super.success,
@@ -156,6 +159,10 @@ class AutoSaveTransactionModel extends AutoSaveTransactionEntity {
       errorMessage: proto.errorMessage.isEmpty ? null : proto.errorMessage,
       createdAt: proto.createdAt.toDateTime(),
       metadata: proto.metadata,
+      // Fee columns cross the wire in kobo like `amount`.
+      fee: proto.fee / 100,
+      grossAmount: proto.grossAmount / 100,
+      depositStatus: proto.depositStatus,
     );
   }
 }

@@ -7,6 +7,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart' as currency_forma
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
+import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_repository.dart';
 
 class AutoSaveRuleReviewScreen extends StatefulWidget {
   const AutoSaveRuleReviewScreen({super.key});
@@ -317,6 +318,10 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
           // Direct-debit fee disclosure — a bank-linked rule pulls from the bank
           // via Direct Debit, which incurs a fee EACH time. The user must know
           // this up front (especially for a schedule that runs automatically).
+          // Platform fee applies to EVERY trigger (the bank-debit fee card
+          // below is separate and only for bank pulls). Hidden entirely when
+          // the operator has fees switched off.
+          _buildPlatformFeeCard(),
           if (_isBankLinkedRule()) ...[
             SizedBox(height: 16.h),
             _buildFeeDisclosureCard(),
@@ -337,6 +342,76 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
   /// amount it quotes the exact aggregated fee (Mono + platform) via the shared
   /// deposit fee-quote; for a percentage-of-inflow rule it shows a general notice
   /// (the fee depends on the inflow size).
+  /// Platform fee, quoted by the SERVER (never computed client-side) so the
+  /// number shown here is exactly what the executor will deduct.
+  Widget _buildPlatformFeeCard() {
+    final amountType = ruleData['amountType'] as AmountType?;
+    final amountValue = (ruleData['amountValue'] as double?) ?? 0;
+    final t = ruleData['triggerType'] as TriggerType;
+    // A percentage rule has no fixed amount to quote against; the disclosure
+    // then states the rule instead of a naira figure.
+    final quotable = amountType == AmountType.fixed && amountValue > 0;
+
+    return FutureBuilder<AutoSaveFeeQuote>(
+      future: _platformFeeQuote(quotable ? amountValue : 1000, t),
+      builder: (context, snapshot) {
+        final q = snapshot.data;
+        if (q == null || !q.enabled) return const SizedBox.shrink();
+        final ccy = (ruleData['currency'] as String?) ?? 'NGN';
+        String money(double v) =>
+            currency_formatter.CurrencySymbols.formatAmountWithCurrency(v, ccy);
+        final sym = currency_formatter.CurrencySymbols.getSymbol(ccy);
+        final detail = quotable
+            ? 'Fee ${money(q.fee)} per save — ${money(q.net)} reaches your savings.'
+            : 'Fee ${q.describe(sym)} of each save, deducted from the amount saved.';
+        return Container(
+          margin: EdgeInsets.only(bottom: 12.h),
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: const Color(0xFF2D2D2D)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.percent_rounded,
+                  size: 18.sp, color: const Color(0xFFA78BFA)),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('AutoSave fee',
+                        style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w700)),
+                    SizedBox(height: 4.h),
+                    Text(detail,
+                        style: GoogleFonts.inter(
+                            color: const Color(0xFF9CA3AF),
+                            fontSize: 12.sp,
+                            height: 1.4)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<AutoSaveFeeQuote> _platformFeeQuote(double amount, TriggerType t) async {
+    final res = await serviceLocator<IAutoSaveRepository>().getFeeQuote(
+      amount: amount,
+      triggerType: t.name,
+    );
+    // Quote failures never block review — no card rather than a wrong number.
+    return res.fold((_) => AutoSaveFeeQuote.none, (q) => q);
+  }
+
   Widget _buildFeeDisclosureCard() {
     final t = ruleData['triggerType'] as TriggerType;
     final isScheduled = t == TriggerType.scheduledExternal;

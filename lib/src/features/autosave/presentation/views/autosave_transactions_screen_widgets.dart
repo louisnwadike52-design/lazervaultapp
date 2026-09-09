@@ -418,56 +418,11 @@ class _TransactionTile extends StatelessWidget {
     );
   }
 
-  Color _triggerColor(TriggerType t) {
-    switch (t) {
-      case TriggerType.scheduled:
-        return const Color(0xFF3B82F6);
-      case TriggerType.onDeposit:
-        return const Color(0xFF10B981);
-      case TriggerType.roundUp:
-        return const Color(0xFFFB923C);
-      case TriggerType.externalInflow:
-        return const Color(0xFFF97316);
-      case TriggerType.scheduledExternal:
-        return const Color(0xFF14B8A6);
-      default:
-        return const Color(0xFF6B7280);
-    }
-  }
+  Color _triggerColor(TriggerType t) => AutoSaveTriggerLabels.colorOf(t);
 
-  IconData _triggerIcon(TriggerType t) {
-    switch (t) {
-      case TriggerType.scheduled:
-        return Icons.schedule;
-      case TriggerType.onDeposit:
-        return Icons.south_west;
-      case TriggerType.roundUp:
-        return Icons.unfold_more;
-      case TriggerType.externalInflow:
-        return Icons.account_balance;
-      case TriggerType.scheduledExternal:
-        return Icons.account_balance_wallet;
-      default:
-        return Icons.help_outline;
-    }
-  }
+  IconData _triggerIcon(TriggerType t) => AutoSaveTriggerLabels.iconOf(t);
 
-  String _triggerLabel(TriggerType t) {
-    switch (t) {
-      case TriggerType.scheduled:
-        return 'SCHEDULED';
-      case TriggerType.onDeposit:
-        return 'ON DEPOSIT';
-      case TriggerType.roundUp:
-        return 'ROUND-UP';
-      case TriggerType.externalInflow:
-        return 'BANK INFLOW';
-      case TriggerType.scheduledExternal:
-        return 'STANDING ORDER';
-      default:
-        return 'OTHER';
-    }
-  }
+  String _triggerLabel(TriggerType t) => AutoSaveTriggerLabels.chipLabelOf(t);
 }
 
 /// Bottom sheet shown when a row is tapped. Same layout pattern as the
@@ -479,11 +434,14 @@ class _TransactionDetailsSheet extends StatelessWidget {
   final AutoSaveTransactionEntity tx;
   final AutoSaveRuleEntity? rule;
   final VoidCallback? onOpenRule;
+  /// Opens the shared rich receipt (PDF/JPG/share) for this save.
+  final VoidCallback? onOpenReceipt;
 
   const _TransactionDetailsSheet({
     required this.tx,
     required this.rule,
     required this.onOpenRule,
+    this.onOpenReceipt,
   });
 
   @override
@@ -587,6 +545,31 @@ class _TransactionDetailsSheet extends StatelessWidget {
                     _ruleSummary(),
                   ],
                   SizedBox(height: 16.h),
+                  if (onOpenReceipt != null) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: onOpenReceipt,
+                        icon: Icon(Icons.receipt_long_rounded, size: 18.sp),
+                        label: Text(
+                          'View full receipt',
+                          style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(
+                              color: Color.fromARGB(255, 78, 3, 208)),
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r)),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10.h),
+                  ],
                   if (onOpenRule != null)
                     SizedBox(
                       width: double.infinity,
@@ -782,20 +765,5 @@ class _TransactionDetailsSheet extends StatelessWidget {
     );
   }
 
-  String _triggerName(TriggerType t) {
-    switch (t) {
-      case TriggerType.scheduled:
-        return 'Scheduled';
-      case TriggerType.onDeposit:
-        return 'On deposit';
-      case TriggerType.roundUp:
-        return 'Round-up';
-      case TriggerType.externalInflow:
-        return 'Bank inflow';
-      case TriggerType.scheduledExternal:
-        return 'Standing order';
-      default:
-        return 'Other';
-    }
-  }
+  String _triggerName(TriggerType t) => AutoSaveTriggerLabels.nameOf(t);
 }

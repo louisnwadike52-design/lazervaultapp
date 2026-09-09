@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
+import '../../utils/autosave_trigger_labels.dart';
 
 class AutoSaveDashboardScreen extends StatefulWidget {
   const AutoSaveDashboardScreen({super.key});
@@ -679,39 +680,9 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
   // Per-trigger accent + icon for the rule-card leading badge. Mirrors the
   // create-rule wizard's trigger tints so the colour means the same thing
   // everywhere in the feature.
-  Color _triggerColor(TriggerType t) {
-    switch (t) {
-      case TriggerType.onDeposit:
-        return const Color(0xFF3B82F6);
-      case TriggerType.scheduled:
-        return const Color(0xFF10B981);
-      case TriggerType.roundUp:
-        return const Color(0xFFF59E0B);
-      case TriggerType.externalInflow:
-        return const Color(0xFFFB923C);
-      case TriggerType.scheduledExternal:
-        return const Color(0xFF14B8A6);
-      default:
-        return _brand;
-    }
-  }
+  Color _triggerColor(TriggerType t) => AutoSaveTriggerLabels.colorOf(t);
 
-  IconData _triggerIcon(TriggerType t) {
-    switch (t) {
-      case TriggerType.onDeposit:
-        return Icons.south_rounded;
-      case TriggerType.scheduled:
-        return Icons.schedule_rounded;
-      case TriggerType.roundUp:
-        return Icons.trending_up_rounded;
-      case TriggerType.externalInflow:
-        return Icons.account_balance_rounded;
-      case TriggerType.scheduledExternal:
-        return Icons.account_balance_wallet_rounded;
-      default:
-        return Icons.savings_rounded;
-    }
-  }
+  IconData _triggerIcon(TriggerType t) => AutoSaveTriggerLabels.iconOf(t);
 
   Color _getStatusColor(AutoSaveStatus status) {
     switch (status) {

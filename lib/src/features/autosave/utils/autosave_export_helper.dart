@@ -5,6 +5,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart' as currency_forma
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:intl/intl.dart';
 import 'dart:ui' show Rect;
+import 'autosave_trigger_labels.dart';
 
 class AutoSaveExportHelper {
   /// Export a list of autosave rules to CSV format and share
@@ -245,22 +246,7 @@ Rule: ${rule.name}
   }
 
   // Helper method to get trigger type text
-  static String _getTriggerTypeText(TriggerType type) {
-    switch (type) {
-      case TriggerType.onDeposit:
-        return 'On Deposit';
-      case TriggerType.scheduled:
-        return 'Scheduled';
-      case TriggerType.roundUp:
-        return 'Round Up';
-      case TriggerType.externalInflow:
-        return 'Bank Inflow';
-      case TriggerType.scheduledExternal:
-        return 'Standing Order';
-      default:
-        return 'Unknown';
-    }
-  }
+  static String _getTriggerTypeText(TriggerType type) => AutoSaveTriggerLabels.nameOf(type);
 
   // Helper method to get frequency text
   static String _getFrequencyText(ScheduleFrequency frequency) {

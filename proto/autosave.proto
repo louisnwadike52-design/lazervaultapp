@@ -250,6 +250,29 @@ message AutoSaveTransaction {
     // JSON context; external_inflow links the save to its banking deposit
     // ({"deposit_reference", "external_txn_id", "bank_name"}).
     string metadata = 12;
+    // Platform fee (kobo) deducted from the save: `amount` is the NET kept,
+    // gross_amount = amount + fee.
+    double fee = 13;
+    double gross_amount = 14;
+    string deposit_status = 15;  // ''=wallet; pending|completed|failed
+    string fee_settled_at = 16;
+}
+
+// Fee quote for the rule-review + manual-save sheets. Math is server-side
+// (single source with the executor) — the app never computes a fee itself.
+message GetAutoSaveFeeQuoteRequest {
+    int64 amount_kobo = 1;
+    string trigger_type = 2;
+}
+
+message GetAutoSaveFeeQuoteResponse {
+    bool fee_enabled = 1;
+    int64 fee_kobo = 2;
+    int64 net_kobo = 3;
+    string fee_type = 4;
+    int64 percent_bps = 5;
+    int64 cap_kobo = 6;
+    int64 fixed_kobo = 7;
 }
 
 // Get auto-save transactions request
@@ -439,6 +462,12 @@ service AutoSaveService {
     }
 
     // Manually trigger an auto-save rule
+    rpc GetAutoSaveFeeQuote(GetAutoSaveFeeQuoteRequest) returns (GetAutoSaveFeeQuoteResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/autosave/fee-quote"
+        };
+    }
+
     rpc TriggerAutoSave(TriggerAutoSaveRequest) returns (TriggerAutoSaveResponse) {
         option (google.api.http) = {
             post: "/v1/autosave/rules/{rule_id}/trigger"

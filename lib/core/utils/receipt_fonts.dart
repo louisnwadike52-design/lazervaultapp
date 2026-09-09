@@ -71,3 +71,45 @@ class ReceiptFonts {
     }
   }
 }
+
+/// Currency symbol for a PDF receipt, shared by every PDF service.
+///
+/// With Inter embedded we render the REAL glyph (₦, £, €, ₹…) so the document
+/// matches the on-screen receipt; without an embedded TrueType font the
+/// built-in PDF font cannot draw those glyphs and the pdf package RAISES
+/// rather than substituting, so the ISO code is the fallback.
+///
+/// Lives here (next to ReceiptFonts, which decides the branch) because it was
+/// previously duplicated: tag_pay had this logic library-private while the
+/// autosave PDF hardcoded `'${currency} '` and therefore ALWAYS printed
+/// "NGN 1,000.00" against an on-screen "₦1,000.00" for the same save.
+String receiptCurrencySymbol(String code) {
+  final upper = code.toUpperCase();
+  if (!ReceiptFonts.embedded) return '$upper ';
+  switch (upper) {
+    case 'NGN':
+      return '₦';
+    case 'GBP':
+      return '£';
+    case 'EUR':
+      return '€';
+    case 'ZAR':
+      return 'R';
+    case 'CAD':
+      return r'CA$';
+    case 'AUD':
+      return r'A$';
+    case 'INR':
+      return '₹';
+    case 'JPY':
+      return '¥';
+    case 'USD':
+      return r'$';
+    case 'KES':
+      return 'KSh';
+    case 'GHS':
+      return 'GH₵';
+    default:
+      return '$upper ';
+  }
+}

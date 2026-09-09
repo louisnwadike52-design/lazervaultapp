@@ -4,6 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../../utils/autosave_trigger_labels.dart';
+import '../../utils/autosave_unified_mapper.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/screens/transaction_detail_screen.dart';
 
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart' as cur;
@@ -279,28 +282,37 @@ class _AutoSaveTransactionsScreenState
     final triggerOptions = <_FilterOption<TriggerType?>>[
       const _FilterOption(label: 'All triggers', value: null),
       const _FilterOption(
-        label: 'On deposit',
+        label: 'On Wallet Deposit',
         value: TriggerType.onDeposit,
-        icon: Icons.south_west,
-        accent: Color(0xFF10B981),
-      ),
-      const _FilterOption(
-        label: 'Scheduled',
-        value: TriggerType.scheduled,
-        icon: Icons.schedule,
+        icon: Icons.account_balance_wallet_outlined,
         accent: Color(0xFF3B82F6),
       ),
       const _FilterOption(
-        label: 'Round-up',
-        value: TriggerType.roundUp,
-        icon: Icons.unfold_more,
-        accent: Color(0xFFFB923C),
+        label: 'Scheduled from Wallet',
+        value: TriggerType.scheduled,
+        icon: Icons.schedule_outlined,
+        accent: Color(0xFF10B981),
       ),
       const _FilterOption(
-        label: 'Bank inflow',
+        label: 'Round-Up',
+        value: TriggerType.roundUp,
+        icon: Icons.savings_outlined,
+        accent: Color(0xFFF59E0B),
+      ),
+      // Recurring Bank Debit was MISSING from this list, so standing-order
+      // saves could never be filtered even though every other surface knows
+      // the trigger.
+      const _FilterOption(
+        label: 'Recurring Bank Debit',
+        value: TriggerType.scheduledExternal,
+        icon: Icons.account_balance_outlined,
+        accent: Color(0xFF14B8A6),
+      ),
+      const _FilterOption(
+        label: 'Bank Inflow (retired)',
         value: TriggerType.externalInflow,
-        icon: Icons.account_balance,
-        accent: Color(0xFFF97316),
+        icon: Icons.trending_up_outlined,
+        accent: Color(0xFF6B7280),
       ),
     ];
     final outcomeSelected = outcomeOptions.firstWhere(
@@ -469,6 +481,18 @@ class _AutoSaveTransactionsScreenState
       builder: (sheetCtx) => _TransactionDetailsSheet(
         tx: tx,
         rule: rule,
+        // Same rich receipt (and PDF/share pipeline) the dashboard history
+        // opens — the in-feature sheet used to be a dead end with raw UUIDs.
+        onOpenReceipt: () {
+          Navigator.of(sheetCtx).pop();
+          Get.to(() => TransactionDetailScreen(
+                transaction: autoSaveTxnToUnified(
+                  tx,
+                  ruleName: rule?.name,
+                  destinationLabel: 'Savings',
+                ),
+              ));
+        },
         onOpenRule: rule == null
             ? null
             : () {

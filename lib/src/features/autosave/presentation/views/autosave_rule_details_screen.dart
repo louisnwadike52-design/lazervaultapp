@@ -25,6 +25,7 @@ import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.da
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_repository.dart';
 part 'autosave_rule_details_screen_widgets.dart';
 
 
@@ -273,6 +274,26 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
       }
       if (!mounted) return;
     }
+
+    // Platform fee stacks on top of the bank-debit fee (each computed on what
+    // actually moves toward the goal) and applies to WALLET saves too, so it
+    // is quoted for every trigger. Server-computed; a quote failure just
+    // omits the line rather than guessing.
+    double platformFee = 0;
+    try {
+      final res = await serviceLocator<IAutoSaveRepository>().getFeeQuote(
+        amount: netNaira,
+        triggerType: rule.triggerType.name,
+      );
+      res.fold((_) {}, (q) {
+        if (q.enabled) {
+          platformFee = q.fee;
+          netNaira = q.net;
+        }
+      });
+    } catch (_) {/* quote unavailable — backend remains authoritative */}
+    if (!mounted) return;
+    feeNaira += platformFee;
 
     final amtStr = currency_formatter.CurrencySymbols.formatAmountWithCurrency(saveAmount, rule.currency);
     final confirmMessage = feeNaira > 0

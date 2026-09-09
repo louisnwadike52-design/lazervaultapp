@@ -142,20 +142,21 @@ class AutoSaveRuleEntity extends Equatable {
   String get triggerDescription {
     switch (triggerType) {
       case TriggerType.onDeposit:
-        return 'When money is deposited';
+        return 'When money lands in your wallet';
       case TriggerType.scheduled:
-        return _scheduleDescription;
+        return '$_scheduleDescription from your wallet';
       case TriggerType.roundUp:
         return 'Round up to nearest ${roundUpTo ?? 0}';
       case TriggerType.externalInflow:
+        // Retired trigger; legacy rules still render a truthful summary.
         return sourceBankName.isNotEmpty
-            ? 'When money enters $sourceBankName'
-            : 'When money enters your linked bank';
+            ? 'When money entered $sourceBankName (retired)'
+            : 'When money entered your linked bank (retired)';
       case TriggerType.scheduledExternal:
         final schedule = _scheduleDescription;
         return sourceBankName.isNotEmpty
-            ? '$schedule from $sourceBankName'
-            : '$schedule from your linked bank';
+            ? '$schedule — direct debit from $sourceBankName'
+            : '$schedule — direct debit from your linked bank';
       default:
         return 'Unknown trigger';
     }
@@ -240,6 +241,24 @@ class AutoSaveTransactionEntity extends Equatable {
   /// ({"deposit_reference", "external_txn_id", "bank_name"}).
   final String metadata;
 
+  /// Platform fee deducted from this save. [amount] is the NET the user
+  /// kept; [grossAmount] is what moved before the fee.
+  final double fee;
+  final double grossAmount;
+
+  /// Bank-pull settlement state: '' for wallet saves (settled on commit),
+  /// otherwise pending | completed | failed.
+  final String depositStatus;
+
+  /// True when this save still awaits its bank deposit settling — the UI
+  /// shows "Processing" rather than claiming the money has landed.
+  bool get isAwaitingSettlement => depositStatus == 'pending';
+
+  /// The gross that actually moved (legacy rows carry no fee columns, where
+  /// gross IS the amount).
+  double get grossOrAmount =>
+      (grossAmount == 0 && fee == 0) ? amount : grossAmount;
+
   const AutoSaveTransactionEntity({
     required this.id,
     required this.ruleId,
@@ -247,6 +266,9 @@ class AutoSaveTransactionEntity extends Equatable {
     required this.sourceAccountId,
     required this.destinationAccountId,
     required this.amount,
+    this.fee = 0,
+    this.grossAmount = 0,
+    this.depositStatus = '',
     this.currency = 'NGN',
     required this.triggerType,
     required this.triggerReason,

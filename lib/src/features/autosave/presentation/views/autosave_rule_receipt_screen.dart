@@ -91,8 +91,15 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
   // dashboard). Reset to the autosave home first so the rules list has a sane
   // back target (→ dashboard) instead of an empty stack that would exit.
   void _navigateToRules() {
+    // Both ops run in THIS frame and the list enters WITHOUT animation: an
+    // animated push let the autosave dashboard mount, fetch and PAINT for the
+    // slide's duration, which read as a flash between receipt and list (same
+    // class as the QR receipt glitch).
     Get.offAllNamed(AppRoutes.autoSaveDashboard);
-    Get.toNamed(AppRoutes.autoSaveRulesList);
+    Get.toNamed(
+      AppRoutes.autoSaveRulesList,
+      preventDuplicates: false,
+    );
   }
 
   String _getTriggerDescription() {
@@ -526,7 +533,11 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16.r),
                   onTap: () {
-                    Get.offAllNamed(AppRoutes.createAutoSaveRule);
+                    // Rebuild as dashboard → create so the wizard's Back
+                    // button has a real target; offAllNamed alone left an
+                    // empty stack and Back exited the feature.
+                    Get.offAllNamed(AppRoutes.autoSaveDashboard);
+                    Get.toNamed(AppRoutes.createAutoSaveRule);
                   },
                   child: Center(
                     child: Row(

@@ -82,7 +82,11 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
     }
 
     // Populate schedule fields if scheduled rule
-    if (originalRule.triggerType == TriggerType.scheduled) {
+    // scheduled_external shares the scheduled cadence UI (it's a recurring
+    // bank debit). Excluding it here left its frequency/day/time unprefilled
+    // and un-submittable — the rule silently lost its cadence on any edit.
+    if (originalRule.triggerType == TriggerType.scheduled ||
+        originalRule.triggerType == TriggerType.scheduledExternal) {
       _selectedFrequency = originalRule.frequency;
       _selectedDay = originalRule.scheduleDay;
 
@@ -538,7 +542,9 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
 
     // Prepare schedule time if scheduled rule
     String? scheduleTime;
-    if (originalRule.triggerType == TriggerType.scheduled && _selectedTime != null) {
+    if ((originalRule.triggerType == TriggerType.scheduled ||
+            originalRule.triggerType == TriggerType.scheduledExternal) &&
+        _selectedTime != null) {
       scheduleTime = '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
     }
 
@@ -691,7 +697,11 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
                   SizedBox(height: 24.h),
                   _buildSectionHeader('Amount Settings', Icons.attach_money),
                   SizedBox(height: 12.h),
-                  _buildAmountTypeSelector(),
+                  // Percentage is meaningless for a scheduled bank pull (no
+                  // inflow to take a cut of) and the backend REJECTS the
+                  // combo — the create wizard forbids it, so edit must too.
+                  if (originalRule.triggerType != TriggerType.scheduledExternal)
+                    _buildAmountTypeSelector(),
                   SizedBox(height: 16.h),
                   _buildTextField(
                     controller: _amountController,
@@ -710,7 +720,9 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
                   ),
 
                   // Schedule settings for scheduled rules
-                  if (originalRule.triggerType == TriggerType.scheduled) ...[
+                  if (originalRule.triggerType == TriggerType.scheduled ||
+                      originalRule.triggerType ==
+                          TriggerType.scheduledExternal) ...[
                     SizedBox(height: 24.h),
                     _buildSectionHeader('Schedule Settings', Icons.schedule),
                     SizedBox(height: 12.h),

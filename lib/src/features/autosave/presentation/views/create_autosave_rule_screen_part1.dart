@@ -518,6 +518,10 @@ class _TriggerCard extends StatelessWidget {
   final String description;
   final bool selected;
   final VoidCallback onTap;
+  /// Retired trigger: rendered dimmed with a reason pill and never selectable
+  /// (tapping explains what replaced it instead of doing nothing).
+  final bool disabled;
+  final String? disabledReason;
   const _TriggerCard({
     required this.tint,
     required this.icon,
@@ -525,6 +529,8 @@ class _TriggerCard extends StatelessWidget {
     required this.description,
     required this.selected,
     required this.onTap,
+    this.disabled = false,
+    this.disabledReason,
   });
 
   @override
@@ -538,7 +544,9 @@ class _TriggerCard extends StatelessWidget {
           color: selected ? tint.withValues(alpha: 0.12) : _surface,
           borderRadius: BorderRadius.circular(18.r),
           border: Border.all(
-            color: selected ? tint : Colors.transparent,
+            color: selected
+                ? tint
+                : (disabled ? _hairline : Colors.transparent),
             width: 2,
           ),
           boxShadow: [
@@ -562,20 +570,44 @@ class _TriggerCard extends StatelessWidget {
                 color: tint.withValues(alpha: selected ? 0.28 : 0.16),
                 borderRadius: BorderRadius.circular(16.r),
               ),
-              child: Icon(icon, color: tint, size: 28.sp),
+              child: Icon(icon,
+                  color: disabled ? tint.withValues(alpha: 0.6) : tint,
+                  size: 28.sp),
             ),
             SizedBox(width: 16.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          style: GoogleFonts.inter(
+                            color: disabled ? _textMuted : Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      if (disabled && disabledReason != null) ...[
+                        SizedBox(width: 8.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color: _hairline.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Text(disabledReason!,
+                              style: GoogleFonts.inter(
+                                  color: _textMuted,
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w600)),
+                        ),
+                      ],
+                    ],
                   ),
                   SizedBox(height: 5.h),
                   Text(
@@ -590,6 +622,9 @@ class _TriggerCard extends StatelessWidget {
               ),
             ),
             SizedBox(width: 8.w),
+            if (disabled)
+              Icon(Icons.lock_outline_rounded, color: _textMuted, size: 18.sp)
+            else
             AnimatedContainer(
               duration: const Duration(milliseconds: 180),
               width: 24.w,
