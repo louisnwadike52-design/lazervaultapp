@@ -104,14 +104,14 @@ class IDPayCreatedScreen extends StatelessWidget {
       padding: EdgeInsets.all(28.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
+          colors: [Color(0xFF4C1D95), Color(0xFF9B6DFF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+            color: const Color(0xFF9B6DFF).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -310,7 +310,7 @@ class IDPayCreatedScreen extends StatelessWidget {
         child: ElevatedButton(
           onPressed: () => Get.offAllNamed(AppRoutes.idPayHome),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF3B82F6),
+            backgroundColor: const Color(0xFF9B6DFF),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14.r),
             ),

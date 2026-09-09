@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
 import '../../domain/entities/id_pay_entity.dart';
+import '../../domain/entities/id_pay_fee_rule_entity.dart';
 import '../../domain/entities/id_pay_organization_entity.dart';
 import '../../domain/entities/id_pay_transaction_entity.dart';
 import '../../domain/repositories/id_pay_repository.dart';
@@ -24,6 +25,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
     required int validityMinutes,
     bool neverExpires = false,
     String? organizationId,
+    String? recipientAccountId,
   }) async {
     try {
       final result = await remoteDataSource.createIDPay(
@@ -37,6 +39,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
         validityMinutes: validityMinutes,
         neverExpires: neverExpires,
         organizationId: organizationId,
+        recipientAccountId: recipientAccountId,
       );
       return Right(result);
     } on GrpcError catch (e) {
@@ -151,7 +154,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
   }
 
   @override
-  Future<Either<Failure, IDPayEntity>> getIDPayDetails({
+  Future<Either<Failure, (IDPayEntity, IDPayFeeRuleEntity?)>> getIDPayDetails({
     required String id,
   }) async {
     try {

@@ -14,6 +14,11 @@ class IDPayTransactionEntity extends Equatable {
   final String status;
   final DateTime createdAt;
 
+  /// Platform fee (major units), borne by the RECIPIENT (creator). The payer
+  /// is debited exactly [amount]; the creator keeps [netAmount].
+  final double fee;
+  final double netAmount;
+
   const IDPayTransactionEntity({
     required this.id,
     required this.payId,
@@ -27,7 +32,14 @@ class IDPayTransactionEntity extends Equatable {
     required this.reference,
     required this.status,
     required this.createdAt,
+    this.fee = 0,
+    this.netAmount = 0,
   });
+
+  /// What the creator actually keeps — legacy rows carry netAmount 0 with
+  /// fee 0, which means "everything".
+  double get creatorReceives =>
+      (netAmount == 0 && fee == 0) ? amount : netAmount;
 
   bool get isCompleted => status == 'completed';
 
@@ -45,5 +57,7 @@ class IDPayTransactionEntity extends Equatable {
         reference,
         status,
         createdAt,
+        fee,
+        netAmount,
       ];
 }

@@ -78,6 +78,8 @@ message IDPay {
   bool never_expires = 18;
   string organization_id = 19;
   string organization_name = 20;
+  // Creator-chosen receiving account (empty = creator's primary account).
+  string recipient_account_id = 21;
 }
 
 message IDPayTransaction {
@@ -93,6 +95,22 @@ message IDPayTransaction {
   string reference = 10;
   string status = 11;
   google.protobuf.Timestamp created_at = 12;
+  // Platform fee (major units), borne by the RECIPIENT (creator): payer is
+  // debited exactly `amount`; creator keeps `net_amount` = amount − fee.
+  double fee = 13;
+  double net_amount = 14;
+}
+
+// The admin-configured platform-fee rule, surfaced to the CREATOR so the
+// app can show "you receive amount − fee" honestly. Payers never see it —
+// they pay exactly the displayed amount.
+message IDPayFeeRule {
+  bool enabled = 1;
+  string fee_type = 2;      // "percentage" | "fixed"
+  int64 percent_bps = 3;    // 50 = 0.50%
+  int64 cap_kobo = 4;       // 0 = uncapped
+  int64 min_kobo = 5;       // 0 = none
+  int64 fixed_kobo = 6;
 }
 
 message IDPayOrganization {
@@ -127,6 +145,9 @@ message CreateIDPayRequest {
 message CreateIDPayResponse {
   IDPay id_pay = 1;
   string message = 2;
+  // Current fee rule at creation time (informational; the authoritative
+  // fee is computed per payment).
+  IDPayFeeRule fee_rule = 3;
 }
 
 message LookupIDPayRequest {
@@ -188,6 +209,9 @@ message GetIDPayDetailsRequest {
 
 message GetIDPayDetailsResponse {
   IDPay id_pay = 1;
+  // Current fee rule so the creator's detail screen can show what they
+  // keep per payment. Only meaningful to the creator.
+  IDPayFeeRule fee_rule = 2;
 }
 
 // Organization request/response messages

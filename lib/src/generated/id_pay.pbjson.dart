@@ -127,6 +127,13 @@ const IDPay$json = {
       '5': 9,
       '10': 'organizationName'
     },
+    {
+      '1': 'recipient_account_id',
+      '3': 21,
+      '4': 1,
+      '5': 9,
+      '10': 'recipientAccountId'
+    },
   ],
 };
 
@@ -145,7 +152,8 @@ final $typed_data.Uint8List iDPayDescriptor = $convert.base64Decode(
     'cmVhdGVkQXQSJQoOdG90YWxfcmVjZWl2ZWQYECABKAFSDXRvdGFsUmVjZWl2ZWQSIwoNcGF5bW'
     'VudF9jb3VudBgRIAEoBVIMcGF5bWVudENvdW50EiMKDW5ldmVyX2V4cGlyZXMYEiABKAhSDG5l'
     'dmVyRXhwaXJlcxInCg9vcmdhbml6YXRpb25faWQYEyABKAlSDm9yZ2FuaXphdGlvbklkEisKEW'
-    '9yZ2FuaXphdGlvbl9uYW1lGBQgASgJUhBvcmdhbml6YXRpb25OYW1l');
+    '9yZ2FuaXphdGlvbl9uYW1lGBQgASgJUhBvcmdhbml6YXRpb25OYW1lEjAKFHJlY2lwaWVudF9h'
+    'Y2NvdW50X2lkGBUgASgJUhJyZWNpcGllbnRBY2NvdW50SWQ=');
 
 @$core.Deprecated('Use iDPayTransactionDescriptor instead')
 const IDPayTransaction$json = {
@@ -170,6 +178,8 @@ const IDPayTransaction$json = {
       '6': '.google.protobuf.Timestamp',
       '10': 'createdAt'
     },
+    {'1': 'fee', '3': 13, '4': 1, '5': 1, '10': 'fee'},
+    {'1': 'net_amount', '3': 14, '4': 1, '5': 1, '10': 'netAmount'},
   ],
 };
 
@@ -182,7 +192,27 @@ final $typed_data.Uint8List iDPayTransactionDescriptor = $convert.base64Decode(
     'bnROYW1lEhYKBmFtb3VudBgIIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5GAkgASgJUghjdXJyZW'
     '5jeRIcCglyZWZlcmVuY2UYCiABKAlSCXJlZmVyZW5jZRIWCgZzdGF0dXMYCyABKAlSBnN0YXR1'
     'cxI5CgpjcmVhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJY3JlYX'
-    'RlZEF0');
+    'RlZEF0EhAKA2ZlZRgNIAEoAVIDZmVlEh0KCm5ldF9hbW91bnQYDiABKAFSCW5ldEFtb3VudA==');
+
+@$core.Deprecated('Use iDPayFeeRuleDescriptor instead')
+const IDPayFeeRule$json = {
+  '1': 'IDPayFeeRule',
+  '2': [
+    {'1': 'enabled', '3': 1, '4': 1, '5': 8, '10': 'enabled'},
+    {'1': 'fee_type', '3': 2, '4': 1, '5': 9, '10': 'feeType'},
+    {'1': 'percent_bps', '3': 3, '4': 1, '5': 3, '10': 'percentBps'},
+    {'1': 'cap_kobo', '3': 4, '4': 1, '5': 3, '10': 'capKobo'},
+    {'1': 'min_kobo', '3': 5, '4': 1, '5': 3, '10': 'minKobo'},
+    {'1': 'fixed_kobo', '3': 6, '4': 1, '5': 3, '10': 'fixedKobo'},
+  ],
+};
+
+/// Descriptor for `IDPayFeeRule`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List iDPayFeeRuleDescriptor = $convert.base64Decode(
+    'CgxJRFBheUZlZVJ1bGUSGAoHZW5hYmxlZBgBIAEoCFIHZW5hYmxlZBIZCghmZWVfdHlwZRgCIA'
+    'EoCVIHZmVlVHlwZRIfCgtwZXJjZW50X2JwcxgDIAEoA1IKcGVyY2VudEJwcxIZCghjYXBfa29i'
+    'bxgEIAEoA1IHY2FwS29ibxIZCghtaW5fa29ibxgFIAEoA1IHbWluS29ibxIdCgpmaXhlZF9rb2'
+    'JvGAYgASgDUglmaXhlZEtvYm8=');
 
 @$core.Deprecated('Use iDPayOrganizationDescriptor instead')
 const IDPayOrganization$json = {
@@ -301,13 +331,22 @@ const CreateIDPayResponse$json = {
       '10': 'idPay'
     },
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {
+      '1': 'fee_rule',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.id_pay.IDPayFeeRule',
+      '10': 'feeRule'
+    },
   ],
 };
 
 /// Descriptor for `CreateIDPayResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createIDPayResponseDescriptor = $convert.base64Decode(
     'ChNDcmVhdGVJRFBheVJlc3BvbnNlEiQKBmlkX3BheRgBIAEoCzINLmlkX3BheS5JRFBheVIFaW'
-    'RQYXkSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+    'RQYXkSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIvCghmZWVfcnVsZRgDIAEoCzIULmlkX3Bh'
+    'eS5JRFBheUZlZVJ1bGVSB2ZlZVJ1bGU=');
 
 @$core.Deprecated('Use lookupIDPayRequestDescriptor instead')
 const LookupIDPayRequest$json = {
@@ -525,14 +564,22 @@ const GetIDPayDetailsResponse$json = {
       '6': '.id_pay.IDPay',
       '10': 'idPay'
     },
+    {
+      '1': 'fee_rule',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.id_pay.IDPayFeeRule',
+      '10': 'feeRule'
+    },
   ],
 };
 
 /// Descriptor for `GetIDPayDetailsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getIDPayDetailsResponseDescriptor =
-    $convert.base64Decode(
-        'ChdHZXRJRFBheURldGFpbHNSZXNwb25zZRIkCgZpZF9wYXkYASABKAsyDS5pZF9wYXkuSURQYX'
-        'lSBWlkUGF5');
+final $typed_data.Uint8List getIDPayDetailsResponseDescriptor = $convert.base64Decode(
+    'ChdHZXRJRFBheURldGFpbHNSZXNwb25zZRIkCgZpZF9wYXkYASABKAsyDS5pZF9wYXkuSURQYX'
+    'lSBWlkUGF5Ei8KCGZlZV9ydWxlGAIgASgLMhQuaWRfcGF5LklEUGF5RmVlUnVsZVIHZmVlUnVs'
+    'ZQ==');
 
 @$core.Deprecated('Use createOrganizationRequestDescriptor instead')
 const CreateOrganizationRequest$json = {

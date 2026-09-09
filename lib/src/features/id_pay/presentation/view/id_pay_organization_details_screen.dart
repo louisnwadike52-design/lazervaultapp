@@ -190,14 +190,14 @@ class _IDPayOrganizationDetailsScreenState
                   width: 64.w,
                   height: 64.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                    color: const Color(0xFF9B6DFF).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
                   child: Center(
                     child: Text(
                       org.name.isNotEmpty ? org.name[0].toUpperCase() : '?',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF9B6DFF),
                         fontSize: 28.sp,
                         fontWeight: FontWeight.w700,
                       ),
@@ -236,7 +236,7 @@ class _IDPayOrganizationDetailsScreenState
                     _buildStat(
                       'Total Paid Out',
                       '\u20A6${totalPaidOut.toStringAsFixed(2)}',
-                      const Color(0xFF3B82F6),
+                      const Color(0xFF9B6DFF),
                     ),
                   ],
                 ),
@@ -252,7 +252,7 @@ class _IDPayOrganizationDetailsScreenState
                     _buildStat(
                       'Active PayIDs',
                       '${org.activeIdPayCount}',
-                      const Color(0xFF60A5FA),
+                      const Color(0xFFB794FF),
                     ),
                   ],
                 ),

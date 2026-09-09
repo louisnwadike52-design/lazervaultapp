@@ -39,7 +39,7 @@ class IDPayCard extends StatelessWidget {
                       child: Text(
                         idPay.displayPayId,
                         style: TextStyle(
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF9B6DFF),
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1.2,

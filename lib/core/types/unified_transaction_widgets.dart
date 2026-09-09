@@ -20,7 +20,7 @@ enum TransactionServiceType {
   splitBill('Split Bill', Icons.receipt_outlined, Color(0xFFFB923C)),
   tagPay('Tag Pay', Icons.local_offer, Color(0xFF14B8A6)),
   qrPayment('QR Payment', Icons.qr_code_2, Color(0xFFEC4899)),
-  idPay('PayID', Icons.badge_outlined, Color(0xFF6366F1)),
+  idPay('PayID', Icons.badge_outlined, Color(0xFF9B6DFF)),
   contactlessPay('Tap to Pay', Icons.contactless_outlined, Color(0xFF6F42C1)),
   rmb('RMB Transfer', Icons.currency_yuan, Color(0xFFE60012)),
 

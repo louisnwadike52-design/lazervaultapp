@@ -207,7 +207,7 @@ class _CreateOrganizationScreenState extends State<CreateOrganizationScreen> {
                       child: ElevatedButton(
                         onPressed: isLoading ? null : _onCreate,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B82F6),
+                          backgroundColor: const Color(0xFF9B6DFF),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14.r),
                           ),

@@ -15,6 +15,8 @@ class IDPayTransactionModel extends IDPayTransactionEntity {
     required super.reference,
     required super.status,
     required super.createdAt,
+    super.fee,
+    super.netAmount,
   });
 
   factory IDPayTransactionModel.fromProto(pb.IDPayTransaction proto) {
@@ -31,6 +33,8 @@ class IDPayTransactionModel extends IDPayTransactionEntity {
       reference: proto.reference,
       status: proto.status,
       createdAt: proto.createdAt.toDateTime(),
+      fee: proto.fee,
+      netAmount: proto.netAmount,
     );
   }
 }

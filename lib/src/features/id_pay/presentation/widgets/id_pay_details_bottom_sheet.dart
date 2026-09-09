@@ -76,7 +76,7 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
     IconData statusIcon;
     String statusText;
     if (idPay.isPaid) {
-      statusColor = const Color(0xFF3B82F6);
+      statusColor = const Color(0xFF9B6DFF);
       statusIcon = Icons.check_circle;
       statusText = 'PAID';
     } else if (idPay.status == IDPayStatus.cancelled) {
@@ -178,14 +178,14 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
               '${_currencySymbol(idPay.currency)}${idPay.amount.toStringAsFixed(2)}',
               valueColor: idPay.isPaid
                   ? const Color(0xFF10B981)
-                  : const Color(0xFF3B82F6),
+                  : const Color(0xFF9B6DFF),
               isBold: true,
             ),
           ] else ...[
             _buildDetailRow(
               'Amount',
               'Flexible',
-              valueColor: const Color(0xFF3B82F6),
+              valueColor: const Color(0xFF9B6DFF),
               isBold: true,
             ),
             if (idPay.minAmount > 0) ...[
@@ -258,14 +258,14 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
                     side:
-                        const BorderSide(color: Color(0xFF3B82F6), width: 1.5),
+                        const BorderSide(color: Color(0xFF9B6DFF), width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
                   icon: Icon(Icons.copy,
-                      size: 18.sp, color: const Color(0xFF3B82F6)),
+                      size: 18.sp, color: const Color(0xFF9B6DFF)),
                   label: Text(
                     'Copy ID',
                     style: GoogleFonts.inter(
@@ -283,7 +283,7 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
                     side:
-                        const BorderSide(color: Color(0xFF60A5FA), width: 1.5),
+                        const BorderSide(color: Color(0xFFB794FF), width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -292,7 +292,7 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
                   icon: _isDownloadingInvoice
                       ? LazerVaultLoader(size: 18)
                       : Icon(Icons.description_outlined,
-                          size: 18.sp, color: const Color(0xFF60A5FA)),
+                          size: 18.sp, color: const Color(0xFFB794FF)),
                   label: Text(
                     'Invoice',
                     style: GoogleFonts.inter(
@@ -318,7 +318,7 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
                     arguments: {'idPay': idPay});
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF9B6DFF),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
@@ -380,7 +380,7 @@ class _IDPayDetailsBottomSheetState extends State<IDPayDetailsBottomSheet> {
               },
               child: Icon(
                 Icons.copy,
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF9B6DFF),
                 size: 16.sp,
               ),
             ),

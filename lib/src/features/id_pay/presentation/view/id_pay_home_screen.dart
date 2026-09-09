@@ -90,7 +90,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
         onPressed: () {
           Get.toNamed(AppRoutes.createIdPay);
         },
-        backgroundColor: const Color(0xFF3B82F6),
+        backgroundColor: const Color(0xFF9B6DFF),
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text(
           'Create PayID',
@@ -180,7 +180,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
                 ),
                 child: Icon(
                   Icons.business_outlined,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF9B6DFF),
                   size: 20.sp,
                 ),
               ),
@@ -207,7 +207,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: const Color(0xFF3B82F6),
+          color: const Color(0xFF9B6DFF),
           borderRadius: BorderRadius.circular(10.r),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
@@ -269,7 +269,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
                     ? _buildEmptyState()
                     : RefreshIndicator(
                         onRefresh: _onRefresh,
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF9B6DFF),
                         backgroundColor: const Color(0xFF1F1F1F),
                         child: ListView.builder(
                           physics: const AlwaysScrollableScrollPhysics(),
@@ -289,7 +289,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
         if (state is IDPayError) {
           return RefreshIndicator(
             onRefresh: _onRefresh,
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF9B6DFF),
             backgroundColor: const Color(0xFF1F1F1F),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -331,12 +331,12 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
               width: 48.w,
               height: 48.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                color: const Color(0xFF9B6DFF).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(24.r),
               ),
               child: Icon(
                 Icons.qr_code_2,
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF9B6DFF),
                 size: 24.sp,
               ),
             ),
@@ -451,7 +451,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
               ),
               prefixText: 'PAY-',
               prefixStyle: GoogleFonts.inter(
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF9B6DFF),
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -460,7 +460,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
                 child: Container(
                   margin: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF9B6DFF),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Icon(
@@ -532,7 +532,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
   Widget _buildEmptyState() {
     return RefreshIndicator(
       onRefresh: _onRefresh,
-      color: const Color(0xFF3B82F6),
+      color: const Color(0xFF9B6DFF),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -592,7 +592,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
+                      backgroundColor: const Color(0xFF9B6DFF),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
                       ),
@@ -644,7 +644,7 @@ class _IDPayHomeScreenState extends State<IDPayHomeScreen>
             ElevatedButton(
               onPressed: _onRefresh,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF9B6DFF),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),

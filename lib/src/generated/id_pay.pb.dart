@@ -12,6 +12,7 @@
 
 import 'dart:core' as $core;
 
+import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'google/protobuf/timestamp.pb.dart' as $1;
@@ -44,6 +45,7 @@ class IDPay extends $pb.GeneratedMessage {
     $core.bool? neverExpires,
     $core.String? organizationId,
     $core.String? organizationName,
+    $core.String? recipientAccountId,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -66,6 +68,8 @@ class IDPay extends $pb.GeneratedMessage {
     if (neverExpires != null) result.neverExpires = neverExpires;
     if (organizationId != null) result.organizationId = organizationId;
     if (organizationName != null) result.organizationName = organizationName;
+    if (recipientAccountId != null)
+      result.recipientAccountId = recipientAccountId;
     return result;
   }
 
@@ -117,6 +121,7 @@ class IDPay extends $pb.GeneratedMessage {
     ..aOB(18, _omitFieldNames ? '' : 'neverExpires')
     ..aOS(19, _omitFieldNames ? '' : 'organizationId')
     ..aOS(20, _omitFieldNames ? '' : 'organizationName')
+    ..aOS(21, _omitFieldNames ? '' : 'recipientAccountId')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -321,6 +326,16 @@ class IDPay extends $pb.GeneratedMessage {
   $core.bool hasOrganizationName() => $_has(19);
   @$pb.TagNumber(20)
   void clearOrganizationName() => $_clearField(20);
+
+  /// Creator-chosen receiving account (empty = creator's primary account).
+  @$pb.TagNumber(21)
+  $core.String get recipientAccountId => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set recipientAccountId($core.String value) => $_setString(20, value);
+  @$pb.TagNumber(21)
+  $core.bool hasRecipientAccountId() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearRecipientAccountId() => $_clearField(21);
 }
 
 class IDPayTransaction extends $pb.GeneratedMessage {
@@ -337,6 +352,8 @@ class IDPayTransaction extends $pb.GeneratedMessage {
     $core.String? reference,
     $core.String? status,
     $1.Timestamp? createdAt,
+    $core.double? fee,
+    $core.double? netAmount,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -351,6 +368,8 @@ class IDPayTransaction extends $pb.GeneratedMessage {
     if (reference != null) result.reference = reference;
     if (status != null) result.status = status;
     if (createdAt != null) result.createdAt = createdAt;
+    if (fee != null) result.fee = fee;
+    if (netAmount != null) result.netAmount = netAmount;
     return result;
   }
 
@@ -380,6 +399,9 @@ class IDPayTransaction extends $pb.GeneratedMessage {
     ..aOS(11, _omitFieldNames ? '' : 'status')
     ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'createdAt',
         subBuilder: $1.Timestamp.create)
+    ..a<$core.double>(13, _omitFieldNames ? '' : 'fee', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        14, _omitFieldNames ? '' : 'netAmount', $pb.PbFieldType.OD)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -512,6 +534,145 @@ class IDPayTransaction extends $pb.GeneratedMessage {
   void clearCreatedAt() => $_clearField(12);
   @$pb.TagNumber(12)
   $1.Timestamp ensureCreatedAt() => $_ensure(11);
+
+  /// Platform fee (major units), borne by the RECIPIENT (creator): payer is
+  /// debited exactly `amount`; creator keeps `net_amount` = amount − fee.
+  @$pb.TagNumber(13)
+  $core.double get fee => $_getN(12);
+  @$pb.TagNumber(13)
+  set fee($core.double value) => $_setDouble(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasFee() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearFee() => $_clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.double get netAmount => $_getN(13);
+  @$pb.TagNumber(14)
+  set netAmount($core.double value) => $_setDouble(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasNetAmount() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearNetAmount() => $_clearField(14);
+}
+
+/// The admin-configured platform-fee rule, surfaced to the CREATOR so the
+/// app can show "you receive amount − fee" honestly. Payers never see it —
+/// they pay exactly the displayed amount.
+class IDPayFeeRule extends $pb.GeneratedMessage {
+  factory IDPayFeeRule({
+    $core.bool? enabled,
+    $core.String? feeType,
+    $fixnum.Int64? percentBps,
+    $fixnum.Int64? capKobo,
+    $fixnum.Int64? minKobo,
+    $fixnum.Int64? fixedKobo,
+  }) {
+    final result = create();
+    if (enabled != null) result.enabled = enabled;
+    if (feeType != null) result.feeType = feeType;
+    if (percentBps != null) result.percentBps = percentBps;
+    if (capKobo != null) result.capKobo = capKobo;
+    if (minKobo != null) result.minKobo = minKobo;
+    if (fixedKobo != null) result.fixedKobo = fixedKobo;
+    return result;
+  }
+
+  IDPayFeeRule._();
+
+  factory IDPayFeeRule.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory IDPayFeeRule.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'IDPayFeeRule',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'id_pay'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'enabled')
+    ..aOS(2, _omitFieldNames ? '' : 'feeType')
+    ..aInt64(3, _omitFieldNames ? '' : 'percentBps')
+    ..aInt64(4, _omitFieldNames ? '' : 'capKobo')
+    ..aInt64(5, _omitFieldNames ? '' : 'minKobo')
+    ..aInt64(6, _omitFieldNames ? '' : 'fixedKobo')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  IDPayFeeRule clone() => IDPayFeeRule()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  IDPayFeeRule copyWith(void Function(IDPayFeeRule) updates) =>
+      super.copyWith((message) => updates(message as IDPayFeeRule))
+          as IDPayFeeRule;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static IDPayFeeRule create() => IDPayFeeRule._();
+  @$core.override
+  IDPayFeeRule createEmptyInstance() => create();
+  static $pb.PbList<IDPayFeeRule> createRepeated() =>
+      $pb.PbList<IDPayFeeRule>();
+  @$core.pragma('dart2js:noInline')
+  static IDPayFeeRule getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<IDPayFeeRule>(create);
+  static IDPayFeeRule? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get enabled => $_getBF(0);
+  @$pb.TagNumber(1)
+  set enabled($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasEnabled() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearEnabled() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get feeType => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set feeType($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasFeeType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFeeType() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get percentBps => $_getI64(2);
+  @$pb.TagNumber(3)
+  set percentBps($fixnum.Int64 value) => $_setInt64(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPercentBps() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPercentBps() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get capKobo => $_getI64(3);
+  @$pb.TagNumber(4)
+  set capKobo($fixnum.Int64 value) => $_setInt64(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasCapKobo() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCapKobo() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get minKobo => $_getI64(4);
+  @$pb.TagNumber(5)
+  set minKobo($fixnum.Int64 value) => $_setInt64(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasMinKobo() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearMinKobo() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get fixedKobo => $_getI64(5);
+  @$pb.TagNumber(6)
+  set fixedKobo($fixnum.Int64 value) => $_setInt64(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasFixedKobo() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearFixedKobo() => $_clearField(6);
 }
 
 class IDPayOrganization extends $pb.GeneratedMessage {
@@ -889,10 +1050,12 @@ class CreateIDPayResponse extends $pb.GeneratedMessage {
   factory CreateIDPayResponse({
     IDPay? idPay,
     $core.String? message,
+    IDPayFeeRule? feeRule,
   }) {
     final result = create();
     if (idPay != null) result.idPay = idPay;
     if (message != null) result.message = message;
+    if (feeRule != null) result.feeRule = feeRule;
     return result;
   }
 
@@ -911,6 +1074,8 @@ class CreateIDPayResponse extends $pb.GeneratedMessage {
       createEmptyInstance: create)
     ..aOM<IDPay>(1, _omitFieldNames ? '' : 'idPay', subBuilder: IDPay.create)
     ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOM<IDPayFeeRule>(3, _omitFieldNames ? '' : 'feeRule',
+        subBuilder: IDPayFeeRule.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -953,6 +1118,19 @@ class CreateIDPayResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
   void clearMessage() => $_clearField(2);
+
+  /// Current fee rule at creation time (informational; the authoritative
+  /// fee is computed per payment).
+  @$pb.TagNumber(3)
+  IDPayFeeRule get feeRule => $_getN(2);
+  @$pb.TagNumber(3)
+  set feeRule(IDPayFeeRule value) => $_setField(3, value);
+  @$pb.TagNumber(3)
+  $core.bool hasFeeRule() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFeeRule() => $_clearField(3);
+  @$pb.TagNumber(3)
+  IDPayFeeRule ensureFeeRule() => $_ensure(2);
 }
 
 class LookupIDPayRequest extends $pb.GeneratedMessage {
@@ -1744,9 +1922,11 @@ class GetIDPayDetailsRequest extends $pb.GeneratedMessage {
 class GetIDPayDetailsResponse extends $pb.GeneratedMessage {
   factory GetIDPayDetailsResponse({
     IDPay? idPay,
+    IDPayFeeRule? feeRule,
   }) {
     final result = create();
     if (idPay != null) result.idPay = idPay;
+    if (feeRule != null) result.feeRule = feeRule;
     return result;
   }
 
@@ -1764,6 +1944,8 @@ class GetIDPayDetailsResponse extends $pb.GeneratedMessage {
       package: const $pb.PackageName(_omitMessageNames ? '' : 'id_pay'),
       createEmptyInstance: create)
     ..aOM<IDPay>(1, _omitFieldNames ? '' : 'idPay', subBuilder: IDPay.create)
+    ..aOM<IDPayFeeRule>(2, _omitFieldNames ? '' : 'feeRule',
+        subBuilder: IDPayFeeRule.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1799,6 +1981,19 @@ class GetIDPayDetailsResponse extends $pb.GeneratedMessage {
   void clearIdPay() => $_clearField(1);
   @$pb.TagNumber(1)
   IDPay ensureIdPay() => $_ensure(0);
+
+  /// Current fee rule so the creator's detail screen can show what they
+  /// keep per payment. Only meaningful to the creator.
+  @$pb.TagNumber(2)
+  IDPayFeeRule get feeRule => $_getN(1);
+  @$pb.TagNumber(2)
+  set feeRule(IDPayFeeRule value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasFeeRule() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFeeRule() => $_clearField(2);
+  @$pb.TagNumber(2)
+  IDPayFeeRule ensureFeeRule() => $_ensure(1);
 }
 
 /// Organization request/response messages

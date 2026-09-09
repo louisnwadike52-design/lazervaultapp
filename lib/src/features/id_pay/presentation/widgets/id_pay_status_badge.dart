@@ -31,7 +31,7 @@ class IDPayStatusBadge extends StatelessWidget {
       case IDPayStatus.active:
         return const Color(0xFF10B981).withValues(alpha: 0.15);
       case IDPayStatus.paid:
-        return const Color(0xFF3B82F6).withValues(alpha: 0.15);
+        return const Color(0xFF9B6DFF).withValues(alpha: 0.15);
       case IDPayStatus.expired:
         return const Color(0xFF9CA3AF).withValues(alpha: 0.15);
       case IDPayStatus.cancelled:
@@ -44,7 +44,7 @@ class IDPayStatusBadge extends StatelessWidget {
       case IDPayStatus.active:
         return const Color(0xFF10B981);
       case IDPayStatus.paid:
-        return const Color(0xFF3B82F6);
+        return const Color(0xFF9B6DFF);
       case IDPayStatus.expired:
         return const Color(0xFF9CA3AF);
       case IDPayStatus.cancelled:

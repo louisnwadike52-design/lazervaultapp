@@ -105,6 +105,7 @@ class IDPayCubit extends Cubit<IDPayState> {
     required int validityMinutes,
     bool neverExpires = false,
     String? organizationId,
+    String? recipientAccountId,
   }) async {
     if (isClosed) return;
     emit(IDPayLoading());
@@ -120,6 +121,7 @@ class IDPayCubit extends Cubit<IDPayState> {
       validityMinutes: validityMinutes,
       neverExpires: neverExpires,
       organizationId: organizationId,
+      recipientAccountId: recipientAccountId,
     );
 
     if (isClosed) return;
@@ -263,7 +265,7 @@ class IDPayCubit extends Cubit<IDPayState> {
     if (isClosed) return;
     result.fold(
       (failure) => emit(IDPayError(message: failure.message)),
-      (idPay) => emit(IDPayDetailsLoaded(idPay: idPay)),
+      (pair) => emit(IDPayDetailsLoaded(idPay: pair.$1, feeRule: pair.$2)),
     );
   }
 

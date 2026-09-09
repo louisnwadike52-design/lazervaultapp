@@ -4,6 +4,7 @@ import '../../domain/entities/id_pay_entity.dart';
 import '../models/id_pay_model.dart';
 import '../models/id_pay_organization_model.dart';
 import '../models/id_pay_transaction_model.dart';
+import '../../domain/entities/id_pay_fee_rule_entity.dart';
 
 abstract class IDPayRemoteDataSource {
   Future<IDPayModel> createIDPay({
@@ -17,6 +18,7 @@ abstract class IDPayRemoteDataSource {
     required int validityMinutes,
     bool neverExpires = false,
     String? organizationId,
+    String? recipientAccountId,
   });
 
   Future<IDPayModel> lookupIDPay({
@@ -47,7 +49,7 @@ abstract class IDPayRemoteDataSource {
     required String id,
   });
 
-  Future<IDPayModel> getIDPayDetails({
+  Future<(IDPayModel, IDPayFeeRuleEntity?)> getIDPayDetails({
     required String id,
   });
 
@@ -102,6 +104,7 @@ class IDPayRemoteDataSourceImpl implements IDPayRemoteDataSource {
     required int validityMinutes,
     bool neverExpires = false,
     String? organizationId,
+    String? recipientAccountId,
   }) async {
     final request = pb.CreateIDPayRequest()
       ..type = type == IDPayType.recurring
@@ -119,6 +122,9 @@ class IDPayRemoteDataSourceImpl implements IDPayRemoteDataSource {
     if (minAmount != null) request.minAmount = minAmount;
     if (maxAmount != null) request.maxAmount = maxAmount;
     if (organizationId != null) request.organizationId = organizationId;
+    if (recipientAccountId != null && recipientAccountId.isNotEmpty) {
+      request.recipientAccountId = recipientAccountId;
+    }
 
     final options = await grpcClient.callOptions;
     final response = await grpcClient.idPayClient.createIDPay(
@@ -230,7 +236,7 @@ class IDPayRemoteDataSourceImpl implements IDPayRemoteDataSource {
   }
 
   @override
-  Future<IDPayModel> getIDPayDetails({
+  Future<(IDPayModel, IDPayFeeRuleEntity?)> getIDPayDetails({
     required String id,
   }) async {
     final request = pb.GetIDPayDetailsRequest()..id = id;
@@ -240,7 +246,17 @@ class IDPayRemoteDataSourceImpl implements IDPayRemoteDataSource {
       request,
       options: options,
     );
-    return IDPayModel.fromProto(response.idPay);
+    final feeRule = response.hasFeeRule()
+        ? IDPayFeeRuleEntity(
+            enabled: response.feeRule.enabled,
+            feeType: response.feeRule.feeType,
+            percentBps: response.feeRule.percentBps.toInt(),
+            capKobo: response.feeRule.capKobo.toInt(),
+            minKobo: response.feeRule.minKobo.toInt(),
+            fixedKobo: response.feeRule.fixedKobo.toInt(),
+          )
+        : null;
+    return (IDPayModel.fromProto(response.idPay), feeRule);
   }
 
   @override

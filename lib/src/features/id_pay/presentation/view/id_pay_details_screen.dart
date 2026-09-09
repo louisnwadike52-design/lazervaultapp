@@ -11,10 +11,13 @@ import 'package:share_plus/share_plus.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/id_pay_entity.dart';
 import '../../domain/entities/id_pay_transaction_entity.dart';
+import '../../domain/entities/id_pay_fee_rule_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
 import '../widgets/id_pay_status_badge.dart';
+import '../../utils/id_pay_unified_mapper.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/screens/transaction_detail_screen.dart';
 
 class IDPayDetailsScreen extends StatefulWidget {
   const IDPayDetailsScreen({super.key});
@@ -26,6 +29,7 @@ class IDPayDetailsScreen extends StatefulWidget {
 class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
   late IDPayEntity _idPay;
   List<IDPayTransactionEntity> _transactions = [];
+  IDPayFeeRuleEntity? _feeRule;
   bool _transactionsLoaded = false;
   bool _argsOk = true;
 
@@ -44,6 +48,10 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      // Refresh the PayID row itself (status can have flipped server-side —
+      // expired/paid) AND learn the current platform-fee rule; then the
+      // payments list.
+      context.read<IDPayCubit>().getIDPayDetails(id: _idPay.id);
       context.read<IDPayCubit>().getIDPayTransactions(payId: _idPay.payId);
       _subscribeToLiveEvents();
     });
@@ -162,6 +170,7 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
         } else if (state is IDPayDetailsLoaded) {
           setState(() {
             _idPay = state.idPay;
+            _feeRule = state.feeRule;
           });
         } else if (state is IDPayError) {
           Get.snackbar(
@@ -231,14 +240,14 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
       padding: EdgeInsets.all(28.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
+          colors: [Color(0xFF4C1D95), Color(0xFF9B6DFF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+            color: const Color(0xFF9B6DFF).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -396,6 +405,13 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
             'Total Received',
             '${_currencySymbol(_idPay.currency)}${_idPay.totalReceived.toStringAsFixed(2)}',
           ),
+          if (_feeRule != null && _feeRule!.enabled) ...[
+            SizedBox(height: 12.h),
+            _buildInfoRow(
+              'Platform Fee',
+              _feeRule!.describe(_currencySymbol(_idPay.currency)),
+            ),
+          ],
           SizedBox(height: 12.h),
           _buildInfoRow(
             'Payment Count',
@@ -504,7 +520,19 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
   }
 
   Widget _buildTransactionItem(IDPayTransactionEntity transaction) {
-    return Container(
+    return InkWell(
+      // Creator's view of one landed payment: open the SAME rich receipt
+      // (and PDF/share pipeline) as dashboard history — incoming direction.
+      onTap: () => Get.to(
+        () => TransactionDetailScreen(
+          transaction: idPayTxnToUnified(
+            transaction,
+            viewerUserId: transaction.recipientId,
+          ),
+        ),
+      ),
+      borderRadius: BorderRadius.circular(14.r),
+      child: Container(
       margin: EdgeInsets.only(bottom: 8.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -555,7 +583,9 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '+${_currencySymbol(transaction.currency)}${transaction.amount.toStringAsFixed(2)}',
+                // Creator-facing: show what they actually keep (net of the
+                // platform fee); the gross + fee live in the receipt.
+                '+${_currencySymbol(transaction.currency)}${transaction.creatorReceives.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
                   color: const Color(0xFF10B981),
                   fontSize: 14.sp,
@@ -563,6 +593,15 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
                 ),
               ),
               SizedBox(height: 2.h),
+              if (transaction.fee > 0)
+                Text(
+                  'fee ${_currencySymbol(transaction.currency)}${transaction.fee.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
               Text(
                 _formatShortDate(transaction.createdAt),
                 style: GoogleFonts.inter(
@@ -574,6 +613,7 @@ class _IDPayDetailsScreenState extends State<IDPayDetailsScreen> {
             ],
           ),
         ],
+      ),
       ),
     );
   }

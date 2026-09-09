@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
 import '../entities/id_pay_entity.dart';
+import '../entities/id_pay_fee_rule_entity.dart';
 import '../entities/id_pay_organization_entity.dart';
 import '../entities/id_pay_transaction_entity.dart';
 
@@ -16,6 +17,7 @@ abstract class IDPayRepository {
     required int validityMinutes,
     bool neverExpires = false,
     String? organizationId,
+    String? recipientAccountId,
   });
 
   Future<Either<Failure, IDPayEntity>> lookupIDPay({
@@ -46,7 +48,7 @@ abstract class IDPayRepository {
     required String id,
   });
 
-  Future<Either<Failure, IDPayEntity>> getIDPayDetails({
+  Future<Either<Failure, (IDPayEntity, IDPayFeeRuleEntity?)>> getIDPayDetails({
     required String id,
   });
 

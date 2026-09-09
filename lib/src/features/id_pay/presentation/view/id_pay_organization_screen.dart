@@ -73,7 +73,7 @@ class _IDPayOrganizationScreenState extends State<IDPayOrganizationScreen> {
             context.read<IDPayCubit>().getMyOrganizations(accountId: accountId);
           }
         },
-        backgroundColor: const Color(0xFF3B82F6),
+        backgroundColor: const Color(0xFF9B6DFF),
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: BlocConsumer<IDPayCubit, IDPayState>(
@@ -114,7 +114,7 @@ class _IDPayOrganizationScreenState extends State<IDPayOrganizationScreen> {
                     .read<IDPayCubit>()
                     .getMyOrganizations(accountId: accountId);
               },
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF9B6DFF),
               backgroundColor: const Color(0xFF1F1F1F),
               child: ListView.separated(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -164,14 +164,14 @@ class _IDPayOrganizationScreenState extends State<IDPayOrganizationScreen> {
                   width: 44.w,
                   height: 44.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                    color: const Color(0xFF9B6DFF).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Center(
                     child: Text(
                       org.name.isNotEmpty ? org.name[0].toUpperCase() : '?',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF9B6DFF),
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w700,
                       ),
@@ -227,7 +227,7 @@ class _IDPayOrganizationScreenState extends State<IDPayOrganizationScreen> {
                 _buildStatChip(
                   'Payments',
                   '${org.totalPaymentCount}',
-                  const Color(0xFF3B82F6),
+                  const Color(0xFF9B6DFF),
                 ),
                 SizedBox(width: 12.w),
                 _buildStatChip(

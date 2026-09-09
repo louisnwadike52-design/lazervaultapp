@@ -1,4 +1,5 @@
 import '../../domain/entities/id_pay_entity.dart';
+import '../../domain/entities/id_pay_fee_rule_entity.dart';
 import '../../domain/entities/id_pay_organization_entity.dart';
 import '../../domain/entities/id_pay_transaction_entity.dart';
 
@@ -55,7 +56,8 @@ class IDPayCancelled extends IDPayState {}
 
 class IDPayDetailsLoaded extends IDPayState {
   final IDPayEntity idPay;
-  IDPayDetailsLoaded({required this.idPay});
+  final IDPayFeeRuleEntity? feeRule;
+  IDPayDetailsLoaded({required this.idPay, this.feeRule});
 }
 
 class IDPayOrganizationsLoaded extends IDPayState {

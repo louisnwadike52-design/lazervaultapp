@@ -15,6 +15,8 @@ import '../../domain/entities/id_pay_organization_entity.dart';
 import '../cubit/id_pay_cubit.dart';
 import '../cubit/id_pay_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 
 class CreateIDPayScreen extends StatefulWidget {
   const CreateIDPayScreen({super.key});
@@ -137,6 +139,15 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
 
   void _onCreate() {
     final cubit = context.read<IDPayCubit>();
+    // Receive into the dashboard-active account when its currency matches —
+    // the platform's account-first convention. Empty falls back to the
+    // creator's primary account server-side.
+    String? recipientAccountId;
+    final manager = serviceLocator<AccountManager>();
+    final active = manager.activeAccountDetails;
+    if (active != null && active.currency.toUpperCase() == _selectedCurrency.toUpperCase()) {
+      recipientAccountId = manager.activeAccountId;
+    }
     cubit.createIDPay(
       type: _selectedType,
       amountMode: _selectedAmountMode,
@@ -156,6 +167,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
       validityMinutes: _validityMinutes,
       neverExpires: _neverExpires,
       organizationId: _selectedOrganizationId,
+      recipientAccountId: recipientAccountId,
     );
   }
 
@@ -238,7 +250,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
               margin: EdgeInsets.symmetric(horizontal: 2.w),
               decoration: BoxDecoration(
                 color: isActive
-                    ? const Color(0xFF3B82F6)
+                    ? const Color(0xFF9B6DFF)
                     : const Color(0xFF2D2D2D),
                 borderRadius: BorderRadius.circular(2.r),
               ),
@@ -310,7 +322,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color:
-                isSelected ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
+                isSelected ? const Color(0xFF9B6DFF) : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -321,14 +333,14 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
               height: 52.w,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
+                    ? const Color(0xFF9B6DFF).withValues(alpha: 0.15)
                     : const Color(0xFF2D2D2D),
                 borderRadius: BorderRadius.circular(26.r),
               ),
               child: Icon(
                 icon,
                 color: isSelected
-                    ? const Color(0xFF3B82F6)
+                    ? const Color(0xFF9B6DFF)
                     : const Color(0xFF9CA3AF),
                 size: 26.sp,
               ),
@@ -362,7 +374,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
             if (isSelected)
               Icon(
                 Icons.check_circle,
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF9B6DFF),
                 size: 24.sp,
               ),
           ],
@@ -475,7 +487,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color:
-                isSelected ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
+                isSelected ? const Color(0xFF9B6DFF) : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -486,14 +498,14 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
               height: 52.w,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
+                    ? const Color(0xFF9B6DFF).withValues(alpha: 0.15)
                     : const Color(0xFF2D2D2D),
                 borderRadius: BorderRadius.circular(26.r),
               ),
               child: Icon(
                 icon,
                 color: isSelected
-                    ? const Color(0xFF3B82F6)
+                    ? const Color(0xFF9B6DFF)
                     : const Color(0xFF9CA3AF),
                 size: 26.sp,
               ),
@@ -527,7 +539,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
             if (isSelected)
               Icon(
                 Icons.check_circle,
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF9B6DFF),
                 size: 24.sp,
               ),
           ],
@@ -559,7 +571,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
         ),
         prefixText: '${_currencySymbol(_selectedCurrency)} ',
         prefixStyle: GoogleFonts.inter(
-          color: const Color(0xFF3B82F6),
+          color: const Color(0xFF9B6DFF),
           fontSize: 18.sp,
           fontWeight: FontWeight.w600,
         ),
@@ -658,12 +670,12 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
                       EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
+                        ? const Color(0xFF9B6DFF).withValues(alpha: 0.2)
                         : const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFF3B82F6)
+                          ? const Color(0xFF9B6DFF)
                           : const Color(0xFF2D2D2D),
                     ),
                   ),
@@ -671,7 +683,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
                     option,
                     style: GoogleFonts.inter(
                       color: isSelected
-                          ? const Color(0xFF3B82F6)
+                          ? const Color(0xFF9B6DFF)
                           : const Color(0xFF9CA3AF),
                       fontSize: 13.sp,
                       fontWeight:
@@ -977,7 +989,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
                     onPressed: isLoading ? null : _onBack,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      side: const BorderSide(color: Color(0xFF3B82F6)),
+                      side: const BorderSide(color: Color(0xFF9B6DFF)),
                       padding: EdgeInsets.symmetric(vertical: 14.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -999,9 +1011,9 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
                       ? null
                       : (_currentStep == 3 ? _onCreate : _onNext),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF9B6DFF),
                     disabledBackgroundColor:
-                        const Color(0xFF3B82F6).withValues(alpha: 0.5),
+                        const Color(0xFF9B6DFF).withValues(alpha: 0.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
