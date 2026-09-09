@@ -117,7 +117,10 @@ class AutoSaveTriggerLabels {
       case TriggerType.roundUp:
         return const Color(0xFFF59E0B);
       case TriggerType.externalInflow:
-        return const Color(0xFF8B5CF6);
+        // Must stay in step with _inflowTint in create_autosave_rule_screen,
+        // which tints the linked-bank picker on the next step — otherwise the
+        // trigger card and the step it leads to are two different colours.
+        return const Color(0xFFFB923C);
       case TriggerType.scheduledExternal:
         return const Color(0xFF14B8A6);
       case TriggerType.unknown:

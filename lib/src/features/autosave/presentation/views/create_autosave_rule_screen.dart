@@ -258,6 +258,18 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         if (_selectedAmountType == AmountType.percentage && amt > 100) {
           return 'Percentage must be 1-100';
         }
+        // Enforce the server's minimum-save floor HERE, on the step where the
+        // amount is typed. The executor refuses anything below it, so without
+        // this the rule saves fine and then fails silently on its first fire —
+        // the user finds out from a failed save, not from the form. Only for
+        // fixed amounts: a percentage's real value isn't known until an inflow
+        // arrives, so the executor stays the authority there.
+        final floor = _capabilities?.minSave ?? 0;
+        if (_selectedAmountType == AmountType.fixed &&
+            floor > 0 &&
+            amt < floor) {
+          return 'Minimum save is ${_currencyLabel(floor)}';
+        }
         return null;
       case 2:
         if (_selectedTriggerType == TriggerType.externalInflow ||
@@ -654,6 +666,21 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           _SectionTitle('Amount'),
           SizedBox(height: 14.h),
           _amountSection(),
+          // Say a fee exists at the moment the amount is chosen, not for the
+          // first time on the review screen. The exact split is quoted there
+          // (server-computed); this only warns that the saved amount will be
+          // slightly less than typed, so the number isn't a surprise.
+          if (_capabilities?.feeEnabled ?? false) ...[
+            SizedBox(height: 12.h),
+            _PreviewCard(
+              tint: _accent,
+              icon: Icons.receipt_long_outlined,
+              title: 'A small platform fee applies',
+              body:
+                  'It comes out of each save, so slightly less than this lands '
+                  'in savings. You will see the exact split before you confirm.',
+            ),
+          ],
         ],
       ),
     );

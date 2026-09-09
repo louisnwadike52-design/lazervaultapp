@@ -946,8 +946,13 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
                         SizedBox(height: 20.h),
                         if (_isLinkedBankRule)
                           MandateHealthBanner(rule: rule, userId: _userId),
+                        // Only offer the "tap to save" prompt on a rule that
+                        // can actually act on it. A paused rule (including one
+                        // the backend paused because Bank Inflow was switched
+                        // off) would send the user into a refusal.
                         if (rule.triggerType == TriggerType.externalInflow &&
-                            rule.pendingInflowKobo > 0) ...[
+                            rule.pendingInflowKobo > 0 &&
+                            rule.isActive) ...[
                           _buildPendingInflowBanner(),
                           SizedBox(height: 20.h),
                         ],
