@@ -49,11 +49,18 @@ UnifiedTransaction autoSaveTxnToUnified(
     metadata: {
       'trigger': triggerName,
       if (txn.triggerReason.isNotEmpty) 'trigger_reason': txn.triggerReason,
+      // Gross and fee, but NOT the net: the headline amount above is already
+      // the net saved, so a "you saved" row would repeat it and read like a
+      // second, different number.
+      //
+      // Unlike the platform_fee_*_kobo keys the receipt deliberately hides
+      // (those are a breakdown of OUR margin on someone else's charge), this
+      // fee is taken out of the user's own save — they moved one amount and a
+      // smaller one landed, so they are owed both numbers.
       if (txn.fee > 0) ...{
-        'platform_fee': '${txn.currency} ${txn.fee.toStringAsFixed(2)}',
         'amount_moved':
             '${txn.currency} ${txn.grossOrAmount.toStringAsFixed(2)}',
-        'you_saved': '${txn.currency} ${txn.amount.toStringAsFixed(2)}',
+        'platform_fee': '${txn.currency} ${txn.fee.toStringAsFixed(2)}',
       },
       if (txn.isAwaitingSettlement)
         'settlement': 'Awaiting your bank — this completes once the debit '
