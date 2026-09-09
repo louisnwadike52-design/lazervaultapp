@@ -58,6 +58,7 @@ class BatchTransferHistoryModel extends BatchTransferHistoryEntity {
     required super.status,
     required super.createdAt,
     required super.currency,
+    super.scheduledAt,
   });
 
   factory BatchTransferHistoryModel.fromProto(payments.BatchTransferSummary proto) {
@@ -69,6 +70,9 @@ class BatchTransferHistoryModel extends BatchTransferHistoryEntity {
       totalAmount: proto.totalAmount,
       totalFees: proto.totalFees,
       status: proto.status,
+      scheduledAt: proto.scheduledAt.isNotEmpty
+          ? DateTime.tryParse(proto.scheduledAt)?.toLocal()
+          : null,
       createdAt: proto.createdAt.isNotEmpty
           ? DateTime.tryParse(proto.createdAt)?.toLocal() ?? DateTime.now()
           : DateTime.now(),

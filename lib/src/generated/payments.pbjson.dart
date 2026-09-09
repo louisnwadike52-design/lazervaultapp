@@ -2239,6 +2239,7 @@ const BatchTransferSummary$json = {
     {'1': 'status', '3': 7, '4': 1, '5': 9, '10': 'status'},
     {'1': 'created_at', '3': 8, '4': 1, '5': 9, '10': 'createdAt'},
     {'1': 'currency', '3': 9, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'scheduled_at', '3': 10, '4': 1, '5': 9, '10': 'scheduledAt'},
   ],
 };
 
@@ -2249,7 +2250,36 @@ final $typed_data.Uint8List batchTransferSummaryDescriptor = $convert.base64Deco
     'BVIKc3VjY2Vzc2Z1bBIWCgZmYWlsZWQYBCABKAVSBmZhaWxlZBIhCgx0b3RhbF9hbW91bnQYBS'
     'ABKAFSC3RvdGFsQW1vdW50Eh0KCnRvdGFsX2ZlZXMYBiABKAFSCXRvdGFsRmVlcxIWCgZzdGF0'
     'dXMYByABKAlSBnN0YXR1cxIdCgpjcmVhdGVkX2F0GAggASgJUgljcmVhdGVkQXQSGgoIY3Vycm'
-    'VuY3kYCSABKAlSCGN1cnJlbmN5');
+    'VuY3kYCSABKAlSCGN1cnJlbmN5EiEKDHNjaGVkdWxlZF9hdBgKIAEoCVILc2NoZWR1bGVkQXQ=');
+
+@$core.Deprecated('Use cancelScheduledBatchRequestDescriptor instead')
+const CancelScheduledBatchRequest$json = {
+  '1': 'CancelScheduledBatchRequest',
+  '2': [
+    {'1': 'batch_id', '3': 1, '4': 1, '5': 9, '10': 'batchId'},
+  ],
+};
+
+/// Descriptor for `CancelScheduledBatchRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cancelScheduledBatchRequestDescriptor =
+    $convert.base64Decode(
+        'ChtDYW5jZWxTY2hlZHVsZWRCYXRjaFJlcXVlc3QSGQoIYmF0Y2hfaWQYASABKAlSB2JhdGNoSW'
+        'Q=');
+
+@$core.Deprecated('Use cancelScheduledBatchResponseDescriptor instead')
+const CancelScheduledBatchResponse$json = {
+  '1': 'CancelScheduledBatchResponse',
+  '2': [
+    {'1': 'status', '3': 1, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `CancelScheduledBatchResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cancelScheduledBatchResponseDescriptor =
+    $convert.base64Decode(
+        'ChxDYW5jZWxTY2hlZHVsZWRCYXRjaFJlc3BvbnNlEhYKBnN0YXR1cxgBIAEoCVIGc3RhdHVzEh'
+        'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use getBatchTransfersResponseDescriptor instead')
 const GetBatchTransfersResponse$json = {

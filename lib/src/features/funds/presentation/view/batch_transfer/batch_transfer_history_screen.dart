@@ -1,3 +1,8 @@
+import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/src/generated/payments.pbgrpc.dart' as payments_grpc;
+import 'package:lazervault/src/generated/payments.pb.dart' as payments_pb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -57,6 +62,64 @@ class _BatchTransferHistoryScreenState
       _isLoadingMore = true;
       _currentPage++;
       _loadHistory();
+    }
+  }
+
+  /// Cancel a SCHEDULED batch before it fires. Confirm first; the backend
+  /// CAS loses cleanly to an already-firing batch ("just started sending").
+  Future<void> _cancelScheduled(BatchTransferHistoryEntity batch) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: btCard,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Text('Cancel this scheduled batch?',
+            style: GoogleFonts.inter(
+                color: btTextPrimary,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700)),
+        content: Text(
+            'Nothing has been sent yet. Cancelling stops the whole batch — '
+            'none of the ${batch.totalRecipients} recipients will be paid.',
+            style: GoogleFonts.inter(
+                color: btTextSecondary, fontSize: 13.sp, height: 1.5)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Keep it',
+                style: GoogleFonts.inter(color: btTextSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Cancel batch',
+                style: GoogleFonts.inter(
+                    color: btRed, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      final options = await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+      await serviceLocator<payments_grpc.PaymentsServiceClient>()
+          .cancelScheduledBatch(
+        payments_pb.CancelScheduledBatchRequest()..batchId = batch.batchId,
+        options: options,
+      );
+      if (!mounted) return;
+      Get.snackbar('Cancelled', 'Scheduled batch cancelled — nothing will be sent.',
+          backgroundColor: const Color(0xFF10B981),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP);
+      _refresh();
+    } on GrpcError catch (e) {
+      if (!mounted) return;
+      Get.snackbar('Could not cancel', e.message ?? 'Please try again.',
+          backgroundColor: btRed,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP);
+      _refresh(); // it may have started sending — show the fresh status
     }
   }
 
@@ -246,6 +309,53 @@ class _BatchTransferHistoryScreenState
                 buildBatchStatusBadge(batch.status),
               ],
             ),
+            if (batch.status == 'scheduled') ...[
+              SizedBox(height: 10.h),
+              Container(
+                padding:
+                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF9B6DFF).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(10.r),
+                  border: Border.all(
+                      color: const Color(0xFF9B6DFF).withValues(alpha: 0.35)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.schedule_rounded,
+                        color: const Color(0xFF9B6DFF), size: 16.sp),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        batch.scheduledAt != null
+                            ? 'Sends ${DateFormat('MMM dd • HH:mm').format(batch.scheduledAt!)}'
+                            : 'Scheduled to send',
+                        style: GoogleFonts.inter(
+                            color: btTextPrimary,
+                            fontSize: 12.5.sp,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => _cancelScheduled(batch),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: btRed.withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Text('Cancel',
+                            style: GoogleFonts.inter(
+                                color: btRed,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             SizedBox(height: 12.h),
             Container(
               padding: EdgeInsets.all(10.w),

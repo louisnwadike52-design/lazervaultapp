@@ -317,6 +317,15 @@ class PaymentsServiceClient extends $grpc.Client {
         options: options);
   }
 
+  /// Cancels a SCHEDULED batch before it fires. Owner-only; loses cleanly to
+  /// the worker's executing claim (a batch already firing cannot be cancelled).
+  $grpc.ResponseFuture<$0.CancelScheduledBatchResponse> cancelScheduledBatch(
+    $0.CancelScheduledBatchRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$cancelScheduledBatch, request, options: options);
+  }
+
   $grpc.ResponseFuture<$0.GetBatchTransfersResponse> getBatchTransfers(
     $0.GetBatchTransfersRequest request, {
     $grpc.CallOptions? options,
@@ -920,6 +929,11 @@ class PaymentsServiceClient extends $grpc.Client {
           '/payments.PaymentsService/ValidateQRPaymentToken',
           ($0.ValidateQRTokenRequest value) => value.writeToBuffer(),
           $0.ValidateQRTokenResponse.fromBuffer);
+  static final _$cancelScheduledBatch = $grpc.ClientMethod<
+          $0.CancelScheduledBatchRequest, $0.CancelScheduledBatchResponse>(
+      '/payments.PaymentsService/CancelScheduledBatch',
+      ($0.CancelScheduledBatchRequest value) => value.writeToBuffer(),
+      $0.CancelScheduledBatchResponse.fromBuffer);
   static final _$getBatchTransfers = $grpc.ClientMethod<
           $0.GetBatchTransfersRequest, $0.GetBatchTransfersResponse>(
       '/payments.PaymentsService/GetBatchTransfers',
@@ -1463,6 +1477,15 @@ abstract class PaymentsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.ValidateQRTokenRequest.fromBuffer(value),
         ($0.ValidateQRTokenResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CancelScheduledBatchRequest,
+            $0.CancelScheduledBatchResponse>(
+        'CancelScheduledBatch',
+        cancelScheduledBatch_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.CancelScheduledBatchRequest.fromBuffer(value),
+        ($0.CancelScheduledBatchResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetBatchTransfersRequest,
             $0.GetBatchTransfersResponse>(
         'GetBatchTransfers',
@@ -2181,6 +2204,15 @@ abstract class PaymentsServiceBase extends $grpc.Service {
 
   $async.Future<$0.ValidateQRTokenResponse> validateQRPaymentToken(
       $grpc.ServiceCall call, $0.ValidateQRTokenRequest request);
+
+  $async.Future<$0.CancelScheduledBatchResponse> cancelScheduledBatch_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CancelScheduledBatchRequest> $request) async {
+    return cancelScheduledBatch($call, await $request);
+  }
+
+  $async.Future<$0.CancelScheduledBatchResponse> cancelScheduledBatch(
+      $grpc.ServiceCall call, $0.CancelScheduledBatchRequest request);
 
   $async.Future<$0.GetBatchTransfersResponse> getBatchTransfers_Pre(
       $grpc.ServiceCall $call,

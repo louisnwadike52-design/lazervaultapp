@@ -499,6 +499,15 @@ service PaymentsService {
 
   // === BATCH TRANSFER HISTORY ===
 
+  // Cancels a SCHEDULED batch before it fires. Owner-only; loses cleanly to
+  // the worker's executing claim (a batch already firing cannot be cancelled).
+  rpc CancelScheduledBatch(CancelScheduledBatchRequest) returns (CancelScheduledBatchResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/batch/{batch_id}/cancel-schedule"
+      body: "*"
+    };
+  }
+
   rpc GetBatchTransfers(GetBatchTransfersRequest) returns (GetBatchTransfersResponse) {
     option (google.api.http) = {
       get: "/api/v1/payments/batch-transfers"
@@ -1887,6 +1896,17 @@ message BatchTransferSummary {
   string status = 7;          // "completed", "partial", "failed"
   string created_at = 8;
   string currency = 9;
+  // Fire time for status=="scheduled" holders (RFC3339); empty otherwise.
+  string scheduled_at = 10;
+}
+
+message CancelScheduledBatchRequest {
+  string batch_id = 1;
+}
+
+message CancelScheduledBatchResponse {
+  string status = 1;   // "schedule_cancelled"
+  string message = 2;
 }
 
 message GetBatchTransfersResponse {

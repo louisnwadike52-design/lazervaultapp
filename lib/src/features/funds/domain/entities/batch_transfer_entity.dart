@@ -162,6 +162,9 @@ class BatchTransferHistoryEntity extends Equatable {
   final DateTime createdAt;
   final String currency;
 
+  /// Fire time for a status=='scheduled' holder (null otherwise).
+  final DateTime? scheduledAt;
+
   const BatchTransferHistoryEntity({
     required this.batchId,
     required this.totalRecipients,
@@ -172,6 +175,7 @@ class BatchTransferHistoryEntity extends Equatable {
     required this.status,
     required this.createdAt,
     required this.currency,
+    this.scheduledAt,
   });
 
   @override

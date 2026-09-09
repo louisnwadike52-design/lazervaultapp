@@ -35,6 +35,14 @@ Color batchStatusColor(String status) {
     case 'failed':
     case 'refund_failed':
       return btRed;
+    case 'scheduled':
+      return const Color(0xFF9B6DFF); // scheduled: platform purple
+    case 'schedule_cancelled':
+      return btTextTertiary;
+    case 'schedule_failed':
+      return btRed;
+    case 'schedule_executed':
+      return btGreen;
     case 'pending':
     case 'processing':
     case 'scheduled':

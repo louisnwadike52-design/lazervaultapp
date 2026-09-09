@@ -9350,6 +9350,7 @@ class BatchTransferSummary extends $pb.GeneratedMessage {
     $core.String? status,
     $core.String? createdAt,
     $core.String? currency,
+    $core.String? scheduledAt,
   }) {
     final result = create();
     if (batchId != null) result.batchId = batchId;
@@ -9361,6 +9362,7 @@ class BatchTransferSummary extends $pb.GeneratedMessage {
     if (status != null) result.status = status;
     if (createdAt != null) result.createdAt = createdAt;
     if (currency != null) result.currency = currency;
+    if (scheduledAt != null) result.scheduledAt = scheduledAt;
     return result;
   }
 
@@ -9388,6 +9390,7 @@ class BatchTransferSummary extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'status')
     ..aOS(8, _omitFieldNames ? '' : 'createdAt')
     ..aOS(9, _omitFieldNames ? '' : 'currency')
+    ..aOS(10, _omitFieldNames ? '' : 'scheduledAt')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -9492,6 +9495,148 @@ class BatchTransferSummary extends $pb.GeneratedMessage {
   $core.bool hasCurrency() => $_has(8);
   @$pb.TagNumber(9)
   void clearCurrency() => $_clearField(9);
+
+  /// Fire time for status=="scheduled" holders (RFC3339); empty otherwise.
+  @$pb.TagNumber(10)
+  $core.String get scheduledAt => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set scheduledAt($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasScheduledAt() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearScheduledAt() => $_clearField(10);
+}
+
+class CancelScheduledBatchRequest extends $pb.GeneratedMessage {
+  factory CancelScheduledBatchRequest({
+    $core.String? batchId,
+  }) {
+    final result = create();
+    if (batchId != null) result.batchId = batchId;
+    return result;
+  }
+
+  CancelScheduledBatchRequest._();
+
+  factory CancelScheduledBatchRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CancelScheduledBatchRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CancelScheduledBatchRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'payments'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'batchId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CancelScheduledBatchRequest clone() =>
+      CancelScheduledBatchRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CancelScheduledBatchRequest copyWith(
+          void Function(CancelScheduledBatchRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as CancelScheduledBatchRequest))
+          as CancelScheduledBatchRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CancelScheduledBatchRequest create() =>
+      CancelScheduledBatchRequest._();
+  @$core.override
+  CancelScheduledBatchRequest createEmptyInstance() => create();
+  static $pb.PbList<CancelScheduledBatchRequest> createRepeated() =>
+      $pb.PbList<CancelScheduledBatchRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CancelScheduledBatchRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CancelScheduledBatchRequest>(create);
+  static CancelScheduledBatchRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get batchId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set batchId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasBatchId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBatchId() => $_clearField(1);
+}
+
+class CancelScheduledBatchResponse extends $pb.GeneratedMessage {
+  factory CancelScheduledBatchResponse({
+    $core.String? status,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (status != null) result.status = status;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  CancelScheduledBatchResponse._();
+
+  factory CancelScheduledBatchResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CancelScheduledBatchResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CancelScheduledBatchResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'payments'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'status')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CancelScheduledBatchResponse clone() =>
+      CancelScheduledBatchResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CancelScheduledBatchResponse copyWith(
+          void Function(CancelScheduledBatchResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as CancelScheduledBatchResponse))
+          as CancelScheduledBatchResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CancelScheduledBatchResponse create() =>
+      CancelScheduledBatchResponse._();
+  @$core.override
+  CancelScheduledBatchResponse createEmptyInstance() => create();
+  static $pb.PbList<CancelScheduledBatchResponse> createRepeated() =>
+      $pb.PbList<CancelScheduledBatchResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CancelScheduledBatchResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CancelScheduledBatchResponse>(create);
+  static CancelScheduledBatchResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get status => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set status($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasStatus() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStatus() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
 }
 
 class GetBatchTransfersResponse extends $pb.GeneratedMessage {
