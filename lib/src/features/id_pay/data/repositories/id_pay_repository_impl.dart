@@ -14,7 +14,7 @@ class IDPayRepositoryImpl implements IDPayRepository {
   IDPayRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, IDPayEntity>> createIDPay({
+  Future<Either<Failure, (IDPayEntity, IDPayFeeRuleEntity?)>> createIDPay({
     required IDPayType type,
     required IDPayAmountMode amountMode,
     required double amount,

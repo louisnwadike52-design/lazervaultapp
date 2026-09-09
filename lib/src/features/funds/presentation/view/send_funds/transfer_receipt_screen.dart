@@ -356,9 +356,6 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
       'recipientBankName': (t['destinationBankName'] ?? '').toString(),
       'recipientBankCode': (t['destinationBankCode'] ?? '').toString(),
       'transferType': (t['transferType'] ?? '').toString(),
-      'narration': (t['failureReason'] ?? '').toString().isNotEmpty
-          ? t['failureReason'].toString()
-          : null,
       'timestamp': transferDetails['timestamp'],
       'senderAccountName': transferDetails['senderAccountName'],
       'senderAccountInfo': transferDetails['senderAccountInfo'],
@@ -1753,8 +1750,20 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
         return 'Failed';
       case 'scheduled':
         return 'Scheduled';
+      case 'partial_success':
+        return 'Partially Completed';
+      case 'awaiting_webhook':
+        return 'Processing';
+      case 'reversed':
+        return 'Reversed';
+      case 'refunded':
+        return 'Refunded';
       default:
-        return status;
+        // Raw backend tokens (e.g. schedule_executing) read as labels.
+        return status
+            .split('_')
+            .map((w) => w.isEmpty ? w : w[0].toUpperCase() + w.substring(1))
+            .join(' ');
     }
   }
 

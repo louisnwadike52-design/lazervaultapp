@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/id_pay_entity.dart';
+import '../../domain/entities/id_pay_fee_rule_entity.dart';
 
 class IDPayCreatedScreen extends StatelessWidget {
   const IDPayCreatedScreen({super.key});
@@ -21,6 +22,8 @@ class IDPayCreatedScreen extends StatelessWidget {
       popMissingArgs('your new PayID');
       return const Scaffold(backgroundColor: Color(0xFF0A0A0A));
     }
+    final feeRule = args?['feeRule'];
+    final feeRuleEntity = feeRule is IDPayFeeRuleEntity ? feeRule : null;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
@@ -71,6 +74,10 @@ class IDPayCreatedScreen extends StatelessWidget {
                     _buildPayIDCard(context, idPay),
                     SizedBox(height: 24.h),
                     _buildDetailsSection(idPay),
+                    if (feeRuleEntity != null && feeRuleEntity.enabled) ...[
+                      SizedBox(height: 12.h),
+                      _buildFeeNote(idPay, feeRuleEntity),
+                    ],
                   ],
                 ),
               ),
@@ -78,6 +85,42 @@ class IDPayCreatedScreen extends StatelessWidget {
             _buildBottomBar(context),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Honest heads-up for the creator: the platform fee is recipient-borne,
+  /// so payers pay exactly the displayed amount and the creator keeps
+  /// amount − fee. Only rendered when fees are enabled.
+  Widget _buildFeeNote(IDPayEntity idPay, IDPayFeeRuleEntity rule) {
+    final symbol = idPay.currency == 'NGN' ? '₦' : '${idPay.currency} ';
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF9B6DFF).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+            color: const Color(0xFF9B6DFF).withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded,
+              color: const Color(0xFF9B6DFF), size: 18.sp),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              'A platform fee of ${rule.describe(symbol)} is deducted from '
+              'what you receive. Payers always pay exactly the amount shown.',
+              style: GoogleFonts.inter(
+                color: const Color(0xFFD1D5DB),
+                fontSize: 12.5.sp,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -6,7 +6,7 @@ import '../entities/id_pay_organization_entity.dart';
 import '../entities/id_pay_transaction_entity.dart';
 
 abstract class IDPayRepository {
-  Future<Either<Failure, IDPayEntity>> createIDPay({
+  Future<Either<Failure, (IDPayEntity, IDPayFeeRuleEntity?)>> createIDPay({
     required IDPayType type,
     required IDPayAmountMode amountMode,
     required double amount,

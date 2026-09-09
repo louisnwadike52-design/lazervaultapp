@@ -177,7 +177,7 @@ class _CreateIDPayScreenState extends State<CreateIDPayScreen> {
       listener: (context, state) {
         if (state is IDPayCreated) {
           Get.offNamed(AppRoutes.idPayCreated,
-              arguments: {'idPay': state.idPay});
+              arguments: {'idPay': state.idPay, 'feeRule': state.feeRule});
         } else if (state is IDPayError) {
           Get.snackbar(
             'Error',

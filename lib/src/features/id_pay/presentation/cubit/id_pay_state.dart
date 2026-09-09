@@ -26,8 +26,9 @@ class IDPayInsufficientFunds extends IDPayState {
 }
 
 class IDPayCreated extends IDPayState {
+  final IDPayFeeRuleEntity? feeRule;
   final IDPayEntity idPay;
-  IDPayCreated({required this.idPay});
+  IDPayCreated({required this.idPay, this.feeRule});
 }
 
 class IDPayLookedUp extends IDPayState {

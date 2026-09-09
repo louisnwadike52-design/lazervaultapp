@@ -7,7 +7,7 @@ import '../models/id_pay_transaction_model.dart';
 import '../../domain/entities/id_pay_fee_rule_entity.dart';
 
 abstract class IDPayRemoteDataSource {
-  Future<IDPayModel> createIDPay({
+  Future<(IDPayModel, IDPayFeeRuleEntity?)> createIDPay({
     required IDPayType type,
     required IDPayAmountMode amountMode,
     required double amount,
@@ -93,7 +93,7 @@ class IDPayRemoteDataSourceImpl implements IDPayRemoteDataSource {
   IDPayRemoteDataSourceImpl({required this.grpcClient});
 
   @override
-  Future<IDPayModel> createIDPay({
+  Future<(IDPayModel, IDPayFeeRuleEntity?)> createIDPay({
     required IDPayType type,
     required IDPayAmountMode amountMode,
     required double amount,
@@ -132,7 +132,17 @@ class IDPayRemoteDataSourceImpl implements IDPayRemoteDataSource {
       options: options,
     );
 
-    return IDPayModel.fromProto(response.idPay);
+    final feeRule = response.hasFeeRule()
+        ? IDPayFeeRuleEntity(
+            enabled: response.feeRule.enabled,
+            feeType: response.feeRule.feeType,
+            percentBps: response.feeRule.percentBps.toInt(),
+            capKobo: response.feeRule.capKobo.toInt(),
+            minKobo: response.feeRule.minKobo.toInt(),
+            fixedKobo: response.feeRule.fixedKobo.toInt(),
+          )
+        : null;
+    return (IDPayModel.fromProto(response.idPay), feeRule);
   }
 
   @override

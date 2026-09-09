@@ -127,9 +127,9 @@ class IDPayCubit extends Cubit<IDPayState> {
     if (isClosed) return;
     result.fold(
       (failure) => emit(IDPayError(message: failure.message)),
-      (idPay) {
-        _cachedIDPays = [idPay, ..._cachedIDPays];
-        emit(IDPayCreated(idPay: idPay));
+      (pair) {
+        _cachedIDPays = [pair.$1, ..._cachedIDPays];
+        emit(IDPayCreated(idPay: pair.$1, feeRule: pair.$2));
         if (!isClosed) emit(MyIDPaysLoaded(idPays: _cachedIDPays));
       },
     );
