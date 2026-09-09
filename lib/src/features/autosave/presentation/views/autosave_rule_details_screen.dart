@@ -76,6 +76,9 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
   AutoSaveCapabilities? _capabilities;
 
   Future<void> _loadCapabilities() async {
+    // Only Bank Inflow can be gated, so only that rule type needs the call —
+    // a wallet rule would spend a round trip on an answer it never reads.
+    if (rule.triggerType != TriggerType.externalInflow) return;
     final res = await serviceLocator<IAutoSaveRepository>().getCapabilities();
     if (!mounted) return;
     setState(() => _capabilities = res.fold((_) => null, (caps) => caps));

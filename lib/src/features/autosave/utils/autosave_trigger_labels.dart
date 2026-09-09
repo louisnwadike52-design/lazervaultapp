@@ -91,14 +91,20 @@ class AutoSaveTriggerLabels {
   /// Why an EXISTING rule can't be resumed right now, or null if it can.
   /// Existing rules stay visible in the list whatever the switch says — a
   /// user must always be able to see and manage money they set up.
+  ///
+  /// Note the deliberate asymmetry with [isVisibleForCreate]: a null [caps]
+  /// (still loading, or the call failed) blocks CREATION but NOT resume.
+  /// Offering a trigger that gets refused at the end of a wizard is worse than
+  /// hiding it, so creation fails closed. But refusing a resume on a guess
+  /// would tell the user the trigger is off when it may well be on, and strand
+  /// a rule they own. When we don't know, let the attempt through and quote
+  /// the server's answer, which is authoritative either way.
   static String? resumeBlockedReason(TriggerType t, AutoSaveCapabilities? caps) {
-    if (t == TriggerType.externalInflow && !(caps?.bankInflowEnabled ?? false)) {
-      final reason = caps?.bankInflowDisabledReason ?? '';
-      return reason.isNotEmpty
-          ? reason
-          : 'Bank Inflow saving is switched off right now.';
-    }
-    return null;
+    if (t != TriggerType.externalInflow || caps == null) return null;
+    if (caps.bankInflowEnabled) return null;
+    return caps.bankInflowDisabledReason.isNotEmpty
+        ? caps.bankInflowDisabledReason
+        : 'Bank Inflow saving is switched off right now.';
   }
 
   /// True when the trigger pulls from a linked BANK (Direct Debit) rather
