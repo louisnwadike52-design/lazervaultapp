@@ -120,9 +120,15 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
   }
 
   void _initLiveStatus() {
+    // Batch has its own per-recipient status model: every non-terminal item
+    // polls GetTransferStatus by its own reference (the same status feed the
+    // SendFunds receipt uses) and listens on the banking WS, so external
+    // legs flip to Completed the moment the provider webhook lands.
+    if (_isBatch) {
+      _initBatchLiveStatus();
+      return;
+    }
     if (!_canLiveUpdate) return;
-    // Batch has its own per-recipient status model — don't drive a single status.
-    if (_isBatch) return;
     _refreshLiveStatus(); // fetch-on-load
     if (_statusIsTerminal()) return; // already settled — nothing to watch
 
@@ -218,10 +224,154 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     _statusPollTimer = null;
   }
 
+  // ── Batch per-item live status ───────────────────────────────────────────
+  // Bumped whenever any item's status changes so the recipients sheet (a
+  // separate route from this screen) rebuilds its rows too.
+  final ValueNotifier<int> _itemsRev = ValueNotifier(0);
+  bool _batchRefreshing = false;
+
+  static const _batchTerminalStatuses = {
+    'completed', 'success', 'successful',
+    'failed', 'cancelled', 'canceled', 'declined', 'rejected',
+    'reversed', 'refunded',
+  };
+
+  bool _itemTerminal(Map<String, dynamic> t) => _batchTerminalStatuses
+      .contains((t['status'] ?? '').toString().toLowerCase());
+
+  void _initBatchLiveStatus() {
+    final items = _transfers;
+    if (items.every(_itemTerminal)) return; // nothing in flight
+
+    // WS: any banking event naming one of our pending item references flips
+    // the receipt instantly; the bounded poll below covers delivery gaps.
+    final refs = <String>{
+      for (final t in items)
+        if (!_itemTerminal(t)) ...[
+          (t['reference'] ?? '').toString(),
+          (t['transferId'] ?? '').toString(),
+        ],
+    }..remove('');
+    if (refs.isNotEmpty) {
+      try {
+        _wsSub = serviceLocator<BankingWebSocketService>()
+            .bankingUpdates
+            .where((e) => refs.contains(e.reference) || refs.contains(e.transferId))
+            .listen((_) => _refreshBatchItemStatuses());
+      } catch (_) {/* WS unavailable — poll covers */}
+    }
+    _statusPollTimer?.cancel();
+    _statusPollTicks = 0;
+    _statusPollTimer = Timer.periodic(_statusPollInterval, (timer) async {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      _statusPollTicks++;
+      await _refreshBatchItemStatuses();
+      if (_transfers.every(_itemTerminal) ||
+          _statusPollTicks >= _statusPollMaxTicks) {
+        timer.cancel();
+        _statusPollTimer = null;
+      }
+    });
+    // Refresh once immediately — externals often settle within seconds now
+    // that the provider webhook completes batch items directly.
+    _refreshBatchItemStatuses();
+  }
+
+  Future<void> _refreshBatchItemStatuses() async {
+    if (_batchRefreshing || !mounted) return;
+    _batchRefreshing = true;
+    try {
+      final items = (transferDetails['transfers'] as List?) ?? const [];
+      var changed = false;
+      for (final raw in items) {
+        if (raw is! Map) continue;
+        final t = raw;
+        final status = (t['status'] ?? '').toString().toLowerCase();
+        if (_batchTerminalStatuses.contains(status)) continue;
+        final ref = (t['reference'] ?? '').toString();
+        if (ref.isEmpty) continue;
+        try {
+          final snap = await serviceLocator<IPaymentsTransferDataSource>()
+              .getTransferStatus(reference: ref);
+          if (snap != null && snap.status.isNotEmpty &&
+              snap.status.toLowerCase() != status) {
+            t['status'] = snap.status;
+            changed = true;
+          }
+        } catch (_) {/* keep last known; next tick retries */}
+      }
+      if (changed && mounted) {
+        setState(_recomputeBatchAggregate);
+        _itemsRev.value++;
+      }
+    } finally {
+      _batchRefreshing = false;
+    }
+  }
+
+  /// Re-derives the header counts/status from the freshest item statuses so
+  /// "Processing" flips to "Completed"/"Partially Completed" without leaving
+  /// the receipt. Only ever PROMOTES to a terminal aggregate — while any item
+  /// is still in flight the backend's original status stands.
+  void _recomputeBatchAggregate() {
+    final items = _transfers;
+    if (items.isEmpty) return;
+    var completed = 0, failed = 0;
+    for (final t in items) {
+      final st = (t['status'] ?? '').toString().toLowerCase();
+      if (st == 'completed' || st == 'success' || st == 'successful') {
+        completed++;
+      } else if (_batchTerminalStatuses.contains(st)) {
+        failed++;
+      }
+    }
+    transferDetails['successfulTransfers'] = completed;
+    transferDetails['failedTransfers'] = failed;
+    if (completed + failed == items.length) {
+      transferDetails['status'] = failed == 0
+          ? 'completed'
+          : (completed == 0 ? 'failed' : 'partial_success');
+    }
+  }
+
+  /// Opens ONE batch item as its own full receipt — the exact single-transfer
+  /// TransferReceiptScreen (live status poll + WS included), so a batch leg's
+  /// receipt is indistinguishable from the same transfer sent via SendFunds.
+  void _openItemReceipt(Map<String, dynamic> t) {
+    final currency = transferDetails['currency'] as String? ?? 'NGN';
+    Get.toNamed(AppRoutes.transferProof, arguments: <String, dynamic>{
+      'amount': (t['amount'] as num?)?.toDouble() ?? 0.0,
+      'fee': (t['fee'] as num?)?.toDouble() ?? 0.0,
+      'currency': currency,
+      'currencySymbol': _currencySymbol(currency),
+      'status': (t['status'] ?? '').toString(),
+      'reference': (t['reference'] ?? '').toString(),
+      'transferId': (t['transferId'] ?? '').toString(),
+      'liveStatusReference': (t['reference'] ?? '').toString(),
+      'recipientName': (t['recipientName'] ?? 'Recipient').toString(),
+      'recipientAccountMasked': (t['recipientAccount'] ?? '').toString(),
+      'recipientBankName': (t['destinationBankName'] ?? '').toString(),
+      'recipientBankCode': (t['destinationBankCode'] ?? '').toString(),
+      'transferType': (t['transferType'] ?? '').toString(),
+      'narration': (t['failureReason'] ?? '').toString().isNotEmpty
+          ? t['failureReason'].toString()
+          : null,
+      'timestamp': transferDetails['timestamp'],
+      'senderAccountName': transferDetails['senderAccountName'],
+      'senderAccountInfo': transferDetails['senderAccountInfo'],
+      // This is a drill-in, not a fresh settlement — don't double-count.
+      'settledEmitted': true,
+    });
+  }
+
   @override
   void dispose() {
     _wsSub?.cancel();
     _statusPollTimer?.cancel();
+    _itemsRev.dispose();
     super.dispose();
   }
 
@@ -1331,23 +1481,37 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
               ),
             ),
             Flexible(
-              child: ListView.separated(
+              // Reactive: live status refreshes bump _itemsRev, so rows
+              // update while this sheet (its own route) stays open.
+              child: ValueListenableBuilder<int>(
+                valueListenable: _itemsRev,
+                builder: (context, _, __) {
+                  final liveTransfers = _transfers;
+                  return ListView.separated(
                 shrinkWrap: true,
                 padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-                itemCount: transfers.length,
+                itemCount: liveTransfers.length,
                 separatorBuilder: (_, __) => SizedBox(height: 8.h),
                 itemBuilder: (context, i) {
-                  final t = transfers[i];
+                  final t = liveTransfers[i];
                   final name = (t['recipientName'] ?? 'Recipient').toString();
                   final account = (t['recipientAccount'] ?? '').toString();
                   final amount = (t['amount'] as num?)?.toDouble() ?? 0.0;
                   final status = (t['status'] ?? 'completed').toString();
                   final ok = status.toLowerCase() == 'completed' ||
                       status.toLowerCase() == 'success';
+                  final bad = const {'failed', 'cancelled', 'canceled',
+                      'declined', 'rejected', 'reversed', 'refunded'}
+                      .contains(status.toLowerCase());
                   final last4 = account.length >= 4
                       ? account.substring(account.length - 4)
                       : account;
-                  return Container(
+                  return InkWell(
+                    // Each leg opens its OWN full receipt (live status,
+                    // PDF/share) — same screen a SendFunds transfer gets.
+                    onTap: () => _openItemReceipt(t),
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Container(
                     padding: EdgeInsets.all(14.w),
                     decoration: BoxDecoration(
                       color: const Color(0xFF161616),
@@ -1415,16 +1579,27 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
                               style: GoogleFonts.inter(
                                 color: ok
                                     ? const Color(0xFF10B981)
-                                    : const Color(0xFFFB923C),
+                                    : bad
+                                        ? const Color(0xFFEF4444)
+                                        : const Color(0xFFFB923C),
                                 fontSize: 11.sp,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
                         ),
+                        SizedBox(width: 6.w),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          color: const Color(0xFF8E8E93),
+                          size: 18.sp,
+                        ),
                       ],
                     ),
+                    ),
                   );
+                },
+              );
                 },
               ),
             ),

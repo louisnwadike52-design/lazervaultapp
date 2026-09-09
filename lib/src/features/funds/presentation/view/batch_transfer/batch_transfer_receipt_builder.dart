@@ -70,6 +70,15 @@ Map<String, dynamic> buildBatchReceiptData(
         'status': r.status,
         'failureReason': r.failureReason,
         'reference': r.reference,
+        // Identity + rail data so each row can open its OWN full receipt
+        // (the single-transfer TransferReceiptScreen with live status) —
+        // these were previously dropped, making rows dead ends.
+        'transferId': r.transferId,
+        'transferType': r.transferType,
+        'destinationBankCode': r.destinationBankCode,
+        'destinationBankName': r.destinationBankName,
+        'currency': currency,
+        'currencySymbol': currencySymbol,
       };
     }).toList(),
   };

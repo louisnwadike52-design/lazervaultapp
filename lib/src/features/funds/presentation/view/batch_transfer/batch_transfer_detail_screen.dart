@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_ent
 import 'package:lazervault/src/features/funds/services/batch_transfer_pdf_service.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 class BatchTransferDetailScreen extends StatefulWidget {
   const BatchTransferDetailScreen({super.key});
@@ -835,6 +836,18 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
 
                           SizedBox(height: 20.h),
 
+                          // Full receipt: the same live single-transfer
+                          // receipt screen a SendFunds transfer gets (status
+                          // poll + WS on the item reference).
+                          _buildSheetActionButton(
+                            icon: Icons.receipt_long_rounded,
+                            label: 'View Full Receipt',
+                            color: btBlue,
+                            isLoading: false,
+                            onTap: () => _openItemFullReceipt(item, detail),
+                          ),
+                          SizedBox(height: 12.h),
+
                           // Download & Share buttons
                           Row(
                             children: [
@@ -877,6 +890,34 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
         );
       },
     );
+  }
+
+  /// Opens one batch leg as its own full receipt — identical to the receipt
+  /// a single SendFunds transfer gets, including live status by reference.
+  void _openItemFullReceipt(BatchTransferResult item, BatchTransferDetailEntity detail) {
+    final currency = detail.summary.currency;
+    final symbol = currency == 'NGN' ? '₦' : currency;
+    Get.toNamed(AppRoutes.transferProof, arguments: <String, dynamic>{
+      'amount': item.amount.toDouble() / 100,
+      'fee': item.fee.toDouble() / 100,
+      'currency': currency,
+      'currencySymbol': symbol,
+      'status': item.status,
+      'reference': item.reference ?? '',
+      'transferId': item.transferId,
+      'liveStatusReference': item.reference ?? '',
+      'recipientName': item.beneficiaryName?.isNotEmpty == true
+          ? item.beneficiaryName!
+          : (item.recipientName ?? 'Recipient'),
+      'recipientAccountMasked': item.recipientAccount ?? '',
+      'recipientBankName': item.destinationBankName ?? '',
+      'recipientBankCode': item.destinationBankCode ?? '',
+      'transferType': item.transferType ?? '',
+      'timestamp': detail.summary.createdAt,
+      'senderAccountName': detail.sourceAccountName,
+      'senderAccountInfo': detail.sourceAccountNumber,
+      'settledEmitted': true,
+    });
   }
 
   Widget _buildSheetActionButton({

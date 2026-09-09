@@ -28,6 +28,11 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   List<AccountSuggestion> _bankSuggestions = [];
   bool _loadingBankSuggestions = false;
   Timer? _suggestDebounce;
+  // SendFunds parity (add_recipient.dart `_bankFieldRevealed`): the bank
+  // selector stays HIDDEN — account number is the only field — until the
+  // user dismisses the auto-detected suggestions (manual mode), detection
+  // returns nothing, or a bank was already applied.
+  bool _bankFieldRevealed = false;
   final TextEditingController _bankAmountController = TextEditingController();
 
   // Current user info for self-transfer prevention
@@ -700,44 +705,8 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
             SizedBox(height: 8.h),
           ],
 
-          // Bank selection
-          GestureDetector(
-            onTap: _showBankSelectionSheet,
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: btCardElevated,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: _isBankSelected ? btGreen : btBorder),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    _isBankSelected ? Icons.account_balance : Icons.account_balance_outlined,
-                    color: _isBankSelected ? btGreen : btTextTertiary,
-                    size: 20.sp,
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Text(
-                      _selectedBankName ?? 'Select Bank',
-                      style: GoogleFonts.inter(
-                        color: _isBankSelected ? btTextPrimary : btTextTertiary,
-                        fontSize: 14.sp,
-                        fontWeight: _isBankSelected ? FontWeight.w600 : FontWeight.w400,
-                      ),
-                    ),
-                  ),
-                  Icon(Icons.keyboard_arrow_down, color: btTextTertiary, size: 20.sp),
-                ],
-              ),
-            ),
-          ),
-
-          SizedBox(height: 12.h),
-
-          // Account number input
+          // Account number input — the ONLY field until detection resolves
+          // (or the user opts into manual mode). SendFunds parity.
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             decoration: BoxDecoration(
@@ -769,6 +738,9 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                   _verifiedBankCode = null;
                   _verifiedBankName = null;
                   _bankSuggestions = [];
+                  // Editing the number restarts auto-detection: hide the
+                  // manual bank field again unless a bank is already applied.
+                  if (!_isBankSelected) _bankFieldRevealed = false;
                 });
                 // SendFunds pattern: a full NUBAN with no bank picked triggers
                 // auto-detection across banks (debounced).
@@ -788,6 +760,46 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
 
           SizedBox(height: 12.h),
 
+          // Bank selection — manual-mode fallback only: appears when the user
+          // dismisses the suggestions, detection found nothing, or a bank is
+          // already applied (so it can be changed).
+          if (_bankFieldRevealed || _isBankSelected) ...[
+            GestureDetector(
+              onTap: _showBankSelectionSheet,
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  color: btCardElevated,
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: _isBankSelected ? btGreen : btBorder),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _isBankSelected ? Icons.account_balance : Icons.account_balance_outlined,
+                      color: _isBankSelected ? btGreen : btTextTertiary,
+                      size: 20.sp,
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Text(
+                        _selectedBankName ?? 'Select Bank',
+                        style: GoogleFonts.inter(
+                          color: _isBankSelected ? btTextPrimary : btTextTertiary,
+                          fontSize: 14.sp,
+                          fontWeight: _isBankSelected ? FontWeight.w600 : FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.keyboard_arrow_down, color: btTextTertiary, size: 20.sp),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 12.h),
+          ],
+
           // Auto-detect results: resolving spinner, then candidate banks (each
           // already carries the resolved holder name — tap to apply).
           if (_loadingBankSuggestions)
@@ -804,11 +816,35 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
               ),
             ),
           if (_bankSuggestions.isNotEmpty) ...[
-            Text('Select the account',
-                style: GoogleFonts.inter(
-                    color: btTextSecondary,
-                    fontSize: 12.5.sp,
-                    fontWeight: FontWeight.w600)),
+            Row(
+              children: [
+                Text('Select the account',
+                    style: GoogleFonts.inter(
+                        color: btTextSecondary,
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w600)),
+                const Spacer(),
+                // Cancel the auto-detected candidates → manual mode: reveals
+                // the bank selector (SendFunds parity).
+                InkWell(
+                  onTap: _dismissSuggestionsRevealBank,
+                  borderRadius: BorderRadius.circular(8.r),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                    child: Row(
+                      children: [
+                        Text('Enter bank manually',
+                            style: GoogleFonts.inter(
+                                color: btTextTertiary, fontSize: 11.5.sp)),
+                        SizedBox(width: 4.w),
+                        Icon(Icons.close_rounded,
+                            color: btTextTertiary, size: 14.sp),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
             SizedBox(height: 8.h),
             ..._bankSuggestions.map((sug) => Container(
                   margin: EdgeInsets.only(bottom: 8.h),
@@ -1229,12 +1265,29 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
         // save the tap. Multi-match stays a human choice: same number at
         // different banks is a DIFFERENT holder each time.
         _applyBankSuggestion(suggestions.first);
+      } else if (suggestions.isEmpty) {
+        // Nothing detected → reveal the manual bank selector (SendFunds
+        // parity: add_recipient reveals on empty results too).
+        setState(() => _bankFieldRevealed = true);
       }
-      // No candidates → the always-visible bank selector is the fallback.
     } catch (_) {
       if (!mounted) return;
-      setState(() => _loadingBankSuggestions = false);
+      // Detection failed → manual mode is the only way forward.
+      setState(() {
+        _loadingBankSuggestions = false;
+        _bankFieldRevealed = true;
+      });
     }
+  }
+
+  /// The user cancelled the auto-detected candidates: clear them and switch
+  /// to manual mode (bank selector + explicit Verify), SendFunds parity.
+  void _dismissSuggestionsRevealBank() {
+    setState(() {
+      _bankSuggestions = [];
+      _loadingBankSuggestions = false;
+      _bankFieldRevealed = true;
+    });
   }
 
   /// Apply a resolved candidate: bank + code + holder name land in the SAME
