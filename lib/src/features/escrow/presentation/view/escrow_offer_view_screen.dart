@@ -7,6 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
@@ -43,6 +45,22 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
   String _offerId = '';
   String _shareToken = '';
 
+  // LOCAL screen state. The EscrowCubit is shared across the whole feature,
+  // so building purely off its latest state had two failure modes: (a) every
+  // entry showed a blank full-screen loader while GetOffer round-tripped,
+  // even when the tapped card already held the full entity; (b) any OTHER
+  // escrow state emitted while this screen was open (home refresh, deal
+  // loads) knocked the builder back to the loader indefinitely. The offer is
+  // held here instead: seeded instantly from the nav args when available,
+  // refreshed in the background, and never regresses to a spinner.
+  EscrowOfferEntity? _offer;
+  String _viewerUserId = '';
+  String _loadError = '';
+
+  // True while a decline/withdraw RPC is in flight — disables the action
+  // CTAs so a double-tap can't double-fire, without blanking the page.
+  bool _actionBusy = false;
+
   @override
   void initState() {
     super.initState();
@@ -50,12 +68,19 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
     if (args is Map) {
       _offerId = (args['offerId'] as String?) ?? '';
       _shareToken = (args['shareToken'] as String?) ?? '';
+      final passed = args['offer'];
+      if (passed is EscrowOfferEntity) _offer = passed;
     }
     _shareToken = _shareToken.isNotEmpty
         ? _shareToken
         : (Get.parameters['shareToken'] ?? '');
     _offerId =
         _offerId.isNotEmpty ? _offerId : (Get.parameters['offerId'] ?? '');
+    final auth = context.read<AuthenticationCubit>().state;
+    if (auth is AuthenticationSuccess) _viewerUserId = auth.profile.userId;
+    // Always refresh from the backend (status can have moved since the list
+    // loaded) — but when an entity was passed the screen is ALREADY rendered
+    // and this is a silent background update.
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
@@ -126,7 +151,10 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
 
   // Decline only — there is no separate acceptance stage. Confirming an offer
   // is funding it; declining marks it declined and notifies the creator.
-  Future<void> _respond(EscrowOfferEntity offer, bool accept) async {
+  // (The old bool `accept` parameter was accepted and then ignored — a latent
+  // bug waiting for a caller to pass true — so it's gone.)
+  Future<void> _respond(EscrowOfferEntity offer) async {
+    if (_actionBusy) return;
     final cubit = context.read<EscrowCubit>();
     final note = await _noteSheet(
       title: offer.isSellOffer ? 'Decline this offer?' : 'Decline this request?',
@@ -136,10 +164,13 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
       accent: EscrowTheme.error,
     );
     if (note == null) return;
+    if (!mounted) return;
+    setState(() => _actionBusy = true);
     await cubit.respondOffer(offerId: offer.id, accept: false, note: note);
   }
 
   Future<void> _cancel(EscrowOfferEntity offer) async {
+    if (_actionBusy) return;
     final note = await _noteSheet(
       title: 'Withdraw this offer?',
       subtitle:
@@ -149,6 +180,7 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
     );
     if (note == null) return;
     if (!mounted) return;
+    setState(() => _actionBusy = true);
     await context.read<EscrowCubit>().cancelOffer(offer.id);
   }
 
@@ -307,11 +339,33 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
       ),
       body: BlocConsumer<EscrowCubit, EscrowState>(
         listener: (context, state) {
+          if (state is EscrowOfferLoaded) {
+            setState(() {
+              _offer = state.offer;
+              if (state.currentUserId.isNotEmpty) {
+                _viewerUserId = state.currentUserId;
+              }
+              _loadError = '';
+            });
+            _maybeWarnForeignViewer(state.offer, state.currentUserId);
+          }
           if (state is EscrowError) {
-            showAppSnackbar('Escrow Pay', state.message,
-                type: AppSnackbarType.error);
+            // With a rendered offer this is just a failed background refresh
+            // — keep the page, surface a quiet snackbar. Without one, it's
+            // the primary load failing: show the error body.
+            if (_offer == null) {
+              setState(() => _loadError = state.message);
+            } else {
+              setState(() => _actionBusy = false);
+              showAppSnackbar('Escrow Pay', state.message,
+                  type: AppSnackbarType.error);
+            }
           }
           if (state is EscrowOfferActionSuccess) {
+            setState(() {
+              _offer = state.offer;
+              _actionBusy = false;
+            });
             showAppSnackbar('Escrow Pay', state.message,
                 type: AppSnackbarType.success);
           }
@@ -321,14 +375,10 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
           }
         },
         builder: (context, state) {
-          if (state is EscrowOfferLoaded) {
-            _maybeWarnForeignViewer(state.offer, state.currentUserId);
-            return _body(state.offer, state.currentUserId);
+          if (_offer != null) {
+            return _body(_offer!, _viewerUserId);
           }
-          if (state is EscrowOfferActionSuccess) {
-            return _body(state.offer, null);
-          }
-          if (state is EscrowError) {
+          if (_loadError.isNotEmpty) {
             return Center(
               child: Padding(
                 padding: EdgeInsets.all(24.w),
@@ -344,14 +394,17 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w600)),
                     SizedBox(height: 6.h),
-                    Text(state.message,
+                    Text(_loadError,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                             color: EscrowTheme.textSecondary,
                             fontSize: 12.5.sp)),
                     SizedBox(height: 14.h),
                     TextButton(
-                        onPressed: _load,
+                        onPressed: () {
+                          setState(() => _loadError = '');
+                          _load();
+                        },
                         child: Text('Try again',
                             style: GoogleFonts.inter(
                                 color: EscrowTheme.primary,
@@ -677,7 +730,7 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
     // The addressed counterparty can DECLINE while the offer is still open.
     if (offer.canDecline(userId)) {
       out.add(_secondaryBtn(
-          'Decline', EscrowTheme.error, () => _respond(offer, false)));
+          'Decline', EscrowTheme.error, () => _respond(offer)));
     }
     if (offer.viewerIsCreator || offer.creatorUserId == userId) {
       if (!offer.isTerminal && offer.shareToken.isNotEmpty) {
@@ -715,7 +768,7 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: onTap,
+            onPressed: _actionBusy ? null : onTap,
             style: ElevatedButton.styleFrom(
               backgroundColor: EscrowTheme.primary,
               padding: EdgeInsets.symmetric(vertical: 15.h),
@@ -737,7 +790,7 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
         child: SizedBox(
           width: double.infinity,
           child: OutlinedButton(
-            onPressed: onTap,
+            onPressed: _actionBusy ? null : onTap,
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: color),
               padding: EdgeInsets.symmetric(vertical: 14.h),

@@ -243,7 +243,10 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
 
   @override
   Future<EscrowOfferEntity> getOffer(String offerId) async {
-    return retryWithBackoff(operation: () async {
+    // Interactive read behind a visible screen: one retry, not three — the
+    // full ladder (3 × 30s deadlines + backoff) held the offer page hostage
+    // for ~2 minutes when the service was unreachable.
+    return retryWithBackoff(maxRetries: 1, operation: () async {
       final req = pb.GetOfferRequest()..offerId = offerId;
       final options = await grpcClient.callOptions;
       final resp = await grpcClient.escrowClient.getOffer(req, options: options);
@@ -253,7 +256,9 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
 
   @override
   Future<EscrowOfferEntity> getOfferByShareToken(String shareToken) async {
-    return retryWithBackoff(operation: () async {
+    // Same interactive-read policy; also, the backend rate-limits this by
+    // user — blind retries just re-enter the limiter.
+    return retryWithBackoff(maxRetries: 1, operation: () async {
       final req = pb.GetOfferByShareTokenRequest()..shareToken = shareToken;
       final options = await grpcClient.callOptions;
       final resp =

@@ -12,6 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -76,6 +77,16 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
       if (deal is EscrowDealEntity) _deal = deal;
       final kind = args['kind'];
       if (kind is String && kind.isNotEmpty) _kind = kind;
+    }
+    if (_deal == null) {
+      // No deal in the arguments (malformed navigation) — the old behavior
+      // was a permanent full-screen spinner with no way out.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Get.back();
+        showAppSnackbar('Escrow Pay', 'This receipt could not be opened.',
+            type: AppSnackbarType.error);
+      });
     }
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 500),

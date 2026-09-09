@@ -116,6 +116,45 @@ class EscrowOfferEntity {
   bool canCancel(String userId) =>
       (isOpen || isAwaitingFunding) && userId == creatorUserId;
 
+  /// Who acts next, from [viewerUserId]'s seat — the descriptive line the
+  /// offers strip/list render. Returns (label, viewerActs): viewerActs=true
+  /// means it's THIS user's turn (render emphasized), false means the offer
+  /// is waiting on someone else (render muted, with their name so it's
+  /// explicit who everyone is waiting for).
+  (String, bool) nextActionLabel(String viewerUserId) {
+    final bool mine =
+        viewerIsCreator || (viewerUserId.isNotEmpty && viewerUserId == creatorUserId);
+    final String other = mine
+        ? (counterpartyName.isNotEmpty ? counterpartyName : 'a buyer')
+        : (creatorName.isNotEmpty ? creatorName : 'the other party');
+
+    if (canFund(viewerUserId)) {
+      return mine
+          ? ('Waiting for you — pay to fund', true)
+          : ('Waiting for you — buy securely', true);
+    }
+    if (canDecline(viewerUserId)) {
+      // Addressed to this viewer but not fundable by them right now.
+      return ('Waiting for you — review this ${isSellOffer ? 'listing' : 'request'}', true);
+    }
+    if (mine) {
+      if (isSellOffer) {
+        return isAddressed
+            ? ('Created by you · waiting for $other', false)
+            : ('Created by you · waiting for a buyer', false);
+      }
+      // Unfunded buy_request the viewer created but can't fund (edge:
+      // stale status) — still theirs.
+      return ('Created by you · waiting for $other', false);
+    }
+    // Someone else must act (e.g. a foreign viewer on an addressed offer, or
+    // an awaiting-funding request where the creator must pay).
+    final String actor = isAwaitingFunding || isBuyRequest
+        ? (creatorName.isNotEmpty ? creatorName : 'the buyer')
+        : (counterpartyName.isNotEmpty ? counterpartyName : 'the buyer');
+    return ('Waiting for $actor', false);
+  }
+
   /// Human label for the SELLER of this offer, whichever side created it.
   String get sellerName => isSellOffer ? creatorName : counterpartyName;
 

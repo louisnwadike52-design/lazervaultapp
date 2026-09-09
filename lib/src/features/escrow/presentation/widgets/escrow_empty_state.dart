@@ -146,8 +146,8 @@ class _EscrowNoDealsEmptyState extends EscrowEmptyState {
           icon: Icons.handshake_outlined,
           title: 'No Escrow Deals Yet',
           description:
-              'Buy or sell safely — funds are held in escrow and only released when both sides are happy. Start your first deal.',
-          actionText: 'Create a Deal',
+              'Buy or sell safely — funds are held in escrow and only released when both sides are happy. Publish your first offer.',
+          actionText: 'Create an Offer',
         );
 }
 
@@ -158,7 +158,7 @@ class _EscrowNoBuyingEmptyState extends EscrowEmptyState {
           title: 'Nothing You\'re Buying',
           description:
               'Deals where you pay and funds are held until you confirm delivery will appear here.',
-          actionText: 'Start a Purchase',
+          actionText: 'Request to Buy',
         );
 }
 
@@ -169,7 +169,7 @@ class _EscrowNoSellingEmptyState extends EscrowEmptyState {
           title: 'Nothing You\'re Selling',
           description:
               'Deals where a buyer pays into escrow and you deliver to get paid will appear here.',
-          actionText: 'Create a Deal',
+          actionText: 'Sell Something',
         );
 }
 

@@ -21,7 +21,11 @@ class EscrowHomeOffersStrip extends StatelessWidget {
     required this.onOpenOffer,
     required this.onSeeAll,
     required this.onRetry,
+    this.viewerUserId = '',
   });
+
+  /// The signed-in user's id — drives the per-card "who acts next" line.
+  final String viewerUserId;
 
   /// Active offers only (OPEN / AWAITING_FUNDING), newest first.
   final List<EscrowOfferEntity> offers;
@@ -47,27 +51,27 @@ class EscrowHomeOffersStrip extends StatelessWidget {
           child: Row(
             children: [
               Icon(Icons.local_offer_outlined,
-                  color: EscrowTheme.primary, size: 16.sp),
+                  color: EscrowTheme.primaryLight, size: 16.sp),
               SizedBox(width: 6.w),
-              // Named to make the tabs/strip split self-explanatory: the
-              // All/Buying/Selling tabs hold DEALS (money already in escrow);
-              // this strip holds what hasn't been funded yet — published
-              // listings waiting for a buyer and requests awaiting action.
-              Text('Not yet funded',
+              // These are OFFERS (nothing funded yet) — the All/Buying/
+              // Selling tabs below hold DEALS (money already in escrow).
+              // primaryLight, not primary: the deep violet was nearly
+              // invisible on the dark background.
+              Text('Offers',
                   style: GoogleFonts.inter(
-                      color: Colors.white,
+                      color: EscrowTheme.primaryLight,
                       fontSize: 13.5.sp,
                       fontWeight: FontWeight.w700)),
               SizedBox(width: 6.w),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 1.h),
                 decoration: BoxDecoration(
-                  color: EscrowTheme.primary.withValues(alpha: 0.18),
+                  color: EscrowTheme.primaryLight.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text('${offers.length}',
                     style: GoogleFonts.inter(
-                        color: EscrowTheme.primary,
+                        color: EscrowTheme.primaryLight,
                         fontSize: 11.sp,
                         fontWeight: FontWeight.w700)),
               ),
@@ -76,7 +80,7 @@ class EscrowHomeOffersStrip extends StatelessWidget {
                 onTap: onSeeAll,
                 child: Text('See all',
                     style: GoogleFonts.inter(
-                        color: EscrowTheme.primary,
+                        color: EscrowTheme.primaryLight,
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w600)),
               ),
@@ -108,15 +112,11 @@ class EscrowHomeOffersStrip extends StatelessWidget {
   }
 
   Widget _offerMiniCard(EscrowOfferEntity o) {
-    final String subtitle = o.viewerIsCreator
-        ? (o.isSellOffer
-            ? (o.isAddressed
-                ? 'Your listing for ${o.counterpartyName}'
-                : 'Your open listing')
-            : 'Your request to ${o.counterpartyName}')
-        : (o.isSellOffer
-            ? '${o.creatorName.isNotEmpty ? o.creatorName : 'Someone'} is selling to you'
-            : '${o.creatorName.isNotEmpty ? o.creatorName : 'Someone'} wants to buy from you');
+    // "Who acts next", from this viewer's seat: "Created by you · waiting
+    // for X" / "Waiting for you — …" / "Waiting for <name>". Explicit names
+    // beat the old role-poetry ("Someone is selling to you").
+    final (String actionLabel, bool viewerActs) = o.nextActionLabel(viewerUserId);
+    final String subtitle = actionLabel;
     return GestureDetector(
       onTap: () => onOpenOffer(o),
       child: Container(
@@ -157,7 +157,11 @@ class EscrowHomeOffersStrip extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.inter(
-                    color: EscrowTheme.textSecondary, fontSize: 10.5.sp)),
+                    color: viewerActs
+                        ? EscrowTheme.primaryLight
+                        : EscrowTheme.textSecondary,
+                    fontWeight: viewerActs ? FontWeight.w600 : FontWeight.w400,
+                    fontSize: 10.5.sp)),
             const Spacer(),
             Text('${o.currency} ${NumberFormat('#,##0.00').format(o.amount)}',
                 style: GoogleFonts.inter(

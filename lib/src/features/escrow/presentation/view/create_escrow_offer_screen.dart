@@ -207,7 +207,8 @@ class _CreateEscrowOfferScreenState extends State<CreateEscrowOfferScreen> {
         // Dismissed without funding: the request is created but unpaid. Land on
         // the offer page where the "Fund the escrow now" button still finishes it.
       }
-      Get.offNamed(AppRoutes.escrowOfferView, arguments: {'offerId': offer.id});
+      Get.offNamed(AppRoutes.escrowOfferView,
+          arguments: {'offerId': offer.id, 'offer': offer});
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

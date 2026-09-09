@@ -16,6 +16,8 @@ import '../../domain/entities/escrow_offer_entity.dart';
 import 'escrow_theme.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 
 class EscrowHomeScreen extends StatefulWidget {
   const EscrowHomeScreen({super.key});
@@ -57,6 +59,13 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
   void _reload() {
     context.read<EscrowCubit>().loadDeals(role: _role);
     _loadActiveOffers();
+  }
+
+  /// Signed-in user id for role-aware offer labels (empty when unknown —
+  /// entities still carry viewerIsCreator as the fallback).
+  String _viewerUserId(BuildContext context) {
+    final auth = context.read<AuthenticationCubit>().state;
+    return auth is AuthenticationSuccess ? auth.profile.userId : '';
   }
 
   Future<void> _loadActiveOffers() async {
@@ -173,9 +182,12 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
             EscrowHomeOffersStrip(
               offers: _activeOffers,
               fetchFailed: _offersFetchFailed,
+              viewerUserId: _viewerUserId(context),
               onOpenOffer: (o) async {
+                // Pass the loaded entity so the offer page renders INSTANTLY
+                // and refreshes in the background — no blank loading screen.
                 await Get.toNamed(AppRoutes.escrowOfferView,
-                    arguments: {'offerId': o.id});
+                    arguments: {'offerId': o.id, 'offer': o});
                 _reload();
               },
               onSeeAll: () async {

@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -44,6 +45,14 @@ class _EscrowInvoiceScreenState extends State<EscrowInvoiceScreen> {
     if (args is Map) {
       final deal = args['deal'];
       if (deal is EscrowDealEntity) _deal = deal;
+    }
+    if (_deal == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Get.back();
+        showAppSnackbar('Escrow Pay', 'This agreement could not be opened.',
+            type: AppSnackbarType.error);
+      });
     }
   }
 

@@ -187,20 +187,13 @@ class _EscrowOffersListScreenState extends State<EscrowOffersListScreen> {
       );
 
   Widget _offerCard(EscrowOfferEntity o, String uid) {
-    final mine = o.creatorUserId == uid || o.viewerIsCreator;
-    final subtitle = mine
-        ? (o.isSellOffer
-            ? (o.isAddressed
-                ? 'Your listing for ${o.counterpartyName}'
-                : 'Your open listing')
-            : 'Your request to ${o.counterpartyName}')
-        : (o.isSellOffer
-            ? '${o.creatorName.isNotEmpty ? o.creatorName : 'Someone'} is selling to you'
-            : '${o.creatorName.isNotEmpty ? o.creatorName : 'Someone'} wants to buy from you');
+    // Same "who acts next" line as the home strip: explicit names, and an
+    // emphasized style when it's THIS user's turn.
+    final (String subtitle, bool viewerActs) = o.nextActionLabel(uid);
     return InkWell(
       onTap: () async {
         await Get.toNamed(AppRoutes.escrowOfferView,
-            arguments: {'offerId': o.id});
+            arguments: {'offerId': o.id, 'offer': o});
         _reload();
       },
       borderRadius: BorderRadius.circular(14.r),
@@ -240,7 +233,12 @@ class _EscrowOffersListScreenState extends State<EscrowOffersListScreen> {
             SizedBox(height: 6.h),
             Text(subtitle,
                 style: GoogleFonts.inter(
-                    color: EscrowTheme.textSecondary, fontSize: 11.5.sp)),
+                    color: viewerActs
+                        ? EscrowTheme.primaryLight
+                        : EscrowTheme.textSecondary,
+                    fontWeight:
+                        viewerActs ? FontWeight.w600 : FontWeight.w400,
+                    fontSize: 11.5.sp)),
             SizedBox(height: 8.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
