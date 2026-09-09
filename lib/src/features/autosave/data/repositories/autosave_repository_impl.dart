@@ -539,6 +539,7 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
     }
   }
 
+  @override
   Future<Either<Failure, entity.AutoSaveTransactionEntity>> triggerAutoSave({
     required String ruleId,
     double? customAmount,
