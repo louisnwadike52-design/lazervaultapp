@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_status_badge.dart';
 
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/funds/presentation/view/deposit_history_screen.dart';
@@ -3080,30 +3081,39 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   /// "persistent" (active mandate), "pending" (mandate mid-authorization), or
   /// "onetime" (no usable mandate). A pending mandate must NOT read as
   /// "one-time" — it's a Direct Debit being set up.
+  /// Deposit's access mode, derived from the CANONICAL mandate mapper.
+  ///
+  /// This used to be a hand-rolled copy that collapsed paused / expired /
+  /// rejected / cancelled mandates into a grey "One-time" pill, so the same
+  /// dead mandate rendered differently here than in Beam or AutoSave. It now
+  /// delegates to linkedAccountStateForMandate() — one mapper, one truth —
+  /// and only translates the state into this screen's string vocabulary.
+  /// The confirming-window poll (which the shared mapper has no business
+  /// doing) stays here as a side effect.
   String _accessModeForAccount(LinkedBankAccount account) {
     final m = serviceLocator<MandateCubit>().getMandateForAccount(account.id);
-    if (m == null) return 'onetime';
-    // A deposit-method switch awaiting Mono confirmation takes precedence over
-    // the (still-transitioning) status so the card shows "Switching…" instead of
-    // prematurely flipping to the destination and then reverting.
-    if (m.switchProcessing) return 'switching';
-    if (m.isActive) return 'persistent';
-    if (m.isActivating) return 'pending';
-    if (m.awaitingUserAuthorization) {
-      // Authorization GRANTED recently (any device — the stamp is only written
-      // on the widget's explicit success callback): Mono/the bank is
-      // provisioning the mandate, so show "Setting up" and poll to converge.
-      if (m.authAttemptedRecently || MandateAuthAttemptStore.openedRecently(m.id)) {
-        _pollConfirmingMandate(m.id);
-        return 'pending';
-      }
-      // Mandate exists but authorization was never granted (the user merely
-      // opened/closed the Mono widget, or never opened it). Deposits use the
-      // one-time rail, so the badge honestly reads "One-time" — resuming the
-      // Direct Debit setup stays available in the account action sheet.
-      return 'onetime';
+    final state = linkedAccountStateForMandate(m);
+    if (state == LinkedAccountState.settingUp && m != null) {
+      _pollConfirmingMandate(m.id);
     }
-    return 'onetime';
+    switch (state) {
+      case LinkedAccountState.directDebit:
+        return 'persistent';
+      case LinkedAccountState.switching:
+        return 'switching';
+      case LinkedAccountState.settingUp:
+        return 'pending';
+      case LinkedAccountState.paused:
+        return 'paused';
+      case LinkedAccountState.expired:
+        return 'expired';
+      case LinkedAccountState.rejected:
+        return 'rejected';
+      case LinkedAccountState.cancelled:
+        return 'cancelled';
+      default:
+        return 'onetime';
+    }
   }
 
   // Throttled status poll for a mandate whose authorization is confirming at
@@ -3143,13 +3153,18 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   /// Withdrawal and budgeting all render the SAME pill. Pass [onTap] to open
   /// the access-mode info modal.
   Widget _accessChip({required String mode, VoidCallback? onTap, bool showInfo = false}) {
-    final state = mode == 'persistent'
-        ? LinkedAccountState.directDebit
-        : mode == 'switching'
-            ? LinkedAccountState.switching
-            : mode == 'pending'
-                ? LinkedAccountState.settingUp
-                : LinkedAccountState.oneTime;
+    // Every state the canonical mapper can produce is rendered honestly — a
+    // paused or bank-rejected mandate no longer masquerades as "One-time".
+    const map = <String, LinkedAccountState>{
+      'persistent': LinkedAccountState.directDebit,
+      'switching': LinkedAccountState.switching,
+      'pending': LinkedAccountState.settingUp,
+      'paused': LinkedAccountState.paused,
+      'expired': LinkedAccountState.expired,
+      'rejected': LinkedAccountState.rejected,
+      'cancelled': LinkedAccountState.cancelled,
+    };
+    final state = map[mode] ?? LinkedAccountState.oneTime;
     return LinkedAccountStateChip(state: state, onTap: onTap, showInfoAffordance: showInfo);
   }
 
@@ -3603,10 +3618,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
     // agreement sheet. Fee-aware: a zero-fee quote needs no sheet at all; if the
     // quote can't be fetched (backend hiccup) we fall back to the generic notice
     // so we NEVER link without some consent. On decline we abort before the webview.
-    final quote = await serviceLocator<OpenBankingCubit>().fetchDepositFeeQuote(
-      amountKobo: (amount * 100).round(),
-      useRecurringAccess: _useRecurringAccess,
-      firstTimeLink: true, // this Link & Deposit path always runs Mono Connect
+    // Behind a progress barrier: this is a network round-trip that happens
+    // AFTER the sheet has already been dismissed, so without it the user sits
+    // on a bare deposit screen with no indication their tap did anything.
+    final quote = await runWithLinkProgress(
+      context,
+      'Getting your fees…',
+      () => serviceLocator<OpenBankingCubit>().fetchDepositFeeQuote(
+        amountKobo: (amount * 100).round(),
+        useRecurringAccess: _useRecurringAccess,
+        firstTimeLink: true, // Link & Deposit always runs Mono Connect
+      ),
     );
     if (!mounted) return;
     if (quote != null && !quote.isFree) {

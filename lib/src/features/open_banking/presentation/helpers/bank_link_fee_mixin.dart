@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 import '../../domain/entities/deposit.dart';
 import 'bank_link_kyc_gate.dart';
@@ -41,8 +43,80 @@ String _formatKobo(int minor) {
 /// KYC path) or routes to verification, and the fee notice is only shown once the
 /// account is ready. This guarantees every reference to linking a bank gets the
 /// VA modal first, regardless of which entry point called us.
+
+/// Runs [task] behind a small blocking progress dialog so a CTA never looks
+/// dead while an API call is in flight. Always dismisses the dialog, even if
+/// [task] throws, and rethrows so callers keep their error handling.
+///
+/// Deliberately barrier-dismissible=false: the work continues regardless, and
+/// letting the user tap through would leave them on a stale screen wondering
+/// whether their tap registered.
+Future<T> runWithLinkProgress<T>(
+  BuildContext context,
+  String message,
+  Future<T> Function() task,
+) async {
+  if (!context.mounted) return task();
+  final navigator = Navigator.of(context, rootNavigator: true);
+  var dialogShown = false;
+  unawaited(showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.black54,
+    builder: (_) {
+      dialogShown = true;
+      return PopScope(
+        canPop: false,
+        child: Center(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 18.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                LazerVaultLoader(size: 20),
+                SizedBox(width: 14.w),
+                Flexible(
+                  child: Text(
+                    message,
+                    style: GoogleFonts.inter(
+                        color: Colors.white, fontSize: 13.5.sp),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  ));
+  try {
+    return await task();
+  } finally {
+    // Let the dialog's first frame land before popping it, otherwise a fast
+    // task can try to dismiss a route that hasn't been pushed yet.
+    if (!dialogShown) await Future<void>.delayed(const Duration(milliseconds: 16));
+    if (navigator.canPop()) navigator.pop();
+  }
+}
+
 Future<bool> showBankConnectionFeeNotice(BuildContext context) async {
-  if (!await ensureVirtualAccountForLink(context)) return false;
+  // The virtual-account gate below does a SECURE-STORAGE read plus a full
+  // account-summaries round-trip before anything is painted. Every one of the
+  // seven link entry points therefore had a silent tap → network → dialog gap
+  // (worst on deposit, which stacks a fee-quote call on top and whose button
+  // structurally can't spin). One barrier here covers all of them: the user
+  // always sees that something is happening. Fixing it at the chokepoint
+  // rather than in seven call sites keeps the behaviour identical everywhere.
+  final gateOk = await runWithLinkProgress(
+    context,
+    'Checking your account…',
+    () => ensureVirtualAccountForLink(context),
+  );
+  if (!gateOk) return false;
   if (!context.mounted) return false;
   final res = await showDialog<bool>(
     context: context,
