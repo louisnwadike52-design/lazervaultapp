@@ -26,6 +26,7 @@ import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_m
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_repository.dart';
+import '../../utils/autosave_trigger_labels.dart';
 part 'autosave_rule_details_screen_widgets.dart';
 
 
@@ -66,6 +67,80 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
     rule = args;
     _fetchAccountNames();
     _fetchMandateHealth();
+    _loadCapabilities();
+  }
+
+  /// Admin-controlled trigger availability, used to gate RESUME (an existing
+  /// rule stays visible and manageable whatever the switch says — only
+  /// bringing it back to life is gated).
+  AutoSaveCapabilities? _capabilities;
+
+  Future<void> _loadCapabilities() async {
+    final res = await serviceLocator<IAutoSaveRepository>().getCapabilities();
+    if (!mounted) return;
+    setState(() => _capabilities = res.fold((_) => null, (caps) => caps));
+  }
+
+  /// Explains a switched-off trigger instead of failing at the server.
+  void _showTriggerUnavailableSheet(String reason) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 28.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Icon(Icons.pause_circle_outline_rounded,
+                  color: const Color(0xFF9CA3AF), size: 20.sp),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Text('This trigger is paused for now',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ]),
+            SizedBox(height: 10.h),
+            Text(
+              reason,
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF), fontSize: 13.sp, height: 1.5),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              'Your rule and its history are safe — you can resume it once '
+              'Bank Inflow is switched back on.',
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF6B7280), fontSize: 12.sp, height: 1.5),
+            ),
+            SizedBox(height: 18.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6366F1),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
+                ),
+                child: Text('Got it',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 14.5.sp,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   /// Whether this rule pulls from a Mono-linked bank via a Direct Debit mandate
@@ -198,6 +273,19 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
   void _toggleRule() {
     final action = rule.isActive ? 'pause' : 'resume';
     final actionText = rule.isActive ? 'Pause' : 'Resume';
+
+    // Resuming a Bank Inflow rule while the trigger is switched off would be
+    // refused by the server. Say so up front instead of walking the user
+    // through a confirmation dialog that ends in an error — pausing stays
+    // available in both states, so only resume is gated here.
+    if (action == 'resume') {
+      final blocked = AutoSaveTriggerLabels.resumeBlockedReason(
+          rule.triggerType, _capabilities);
+      if (blocked != null) {
+        _showTriggerUnavailableSheet(blocked);
+        return;
+      }
+    }
 
     _showConfirmationDialog(
       title: '$actionText Rule',

@@ -276,7 +276,6 @@ const CreateAutoSaveRuleRequest$json = {
     },
     {'1': 'source_bank_name', '3': 16, '4': 1, '5': 9, '10': 'sourceBankName'},
   ],
-  '7': {},
 };
 
 /// Descriptor for `CreateAutoSaveRuleRequest`. Decode as a `google.protobuf.DescriptorProto`.
@@ -293,9 +292,7 @@ final $typed_data.Uint8List createAutoSaveRuleRequestDescriptor = $convert.base6
     'JnZXRBbW91bnQSJwoPbWluaW11bV9iYWxhbmNlGA0gASgBUg5taW5pbXVtQmFsYW5jZRIoChBt'
     'YXhpbXVtX3Blcl9zYXZlGA4gASgBUg5tYXhpbXVtUGVyU2F2ZRI3Chhzb3VyY2VfbGlua2VkX2'
     'FjY291bnRfaWQYDyABKAlSFXNvdXJjZUxpbmtlZEFjY291bnRJZBIoChBzb3VyY2VfYmFua19u'
-    'YW1lGBAgASgJUg5zb3VyY2VCYW5rTmFtZTplkkFiCmDSAQRuYW1l0gEMdHJpZ2dlcl90eXBl0g'
-    'ELYW1vdW50X3R5cGXSAQxhbW91bnRfdmFsdWXSARFzb3VyY2VfYWNjb3VudF9pZNIBFmRlc3Rp'
-    'bmF0aW9uX2FjY291bnRfaWQ=');
+    'YW1lGBAgASgJUg5zb3VyY2VCYW5rTmFtZQ==');
 
 @$core.Deprecated('Use createAutoSaveRuleResponseDescriptor instead')
 const CreateAutoSaveRuleResponse$json = {
@@ -406,7 +403,6 @@ const UpdateAutoSaveRuleRequest$json = {
     {'1': 'minimum_balance', '3': 11, '4': 1, '5': 1, '10': 'minimumBalance'},
     {'1': 'maximum_per_save', '3': 12, '4': 1, '5': 1, '10': 'maximumPerSave'},
   ],
-  '7': {},
 };
 
 /// Descriptor for `UpdateAutoSaveRuleRequest`. Decode as a `google.protobuf.DescriptorProto`.
@@ -419,7 +415,7 @@ final $typed_data.Uint8List updateAutoSaveRuleRequestDescriptor = $convert.base6
     'ltZRIhCgxzY2hlZHVsZV9kYXkYCCABKAVSC3NjaGVkdWxlRGF5Eh4KC3JvdW5kX3VwX3RvGAkg'
     'ASgFUglyb3VuZFVwVG8SIwoNdGFyZ2V0X2Ftb3VudBgKIAEoAVIMdGFyZ2V0QW1vdW50EicKD2'
     '1pbmltdW1fYmFsYW5jZRgLIAEoAVIObWluaW11bUJhbGFuY2USKAoQbWF4aW11bV9wZXJfc2F2'
-    'ZRgMIAEoAVIObWF4aW11bVBlclNhdmU6D5JBDAoK0gEHcnVsZV9pZA==');
+    'ZRgMIAEoAVIObWF4aW11bVBlclNhdmU=');
 
 @$core.Deprecated('Use updateAutoSaveRuleResponseDescriptor instead')
 const UpdateAutoSaveRuleResponse$json = {
@@ -451,14 +447,13 @@ const ToggleAutoSaveRuleRequest$json = {
     {'1': 'rule_id', '3': 1, '4': 1, '5': 9, '10': 'ruleId'},
     {'1': 'action', '3': 2, '4': 1, '5': 9, '10': 'action'},
   ],
-  '7': {},
 };
 
 /// Descriptor for `ToggleAutoSaveRuleRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List toggleAutoSaveRuleRequestDescriptor =
     $convert.base64Decode(
         'ChlUb2dnbGVBdXRvU2F2ZVJ1bGVSZXF1ZXN0EhcKB3J1bGVfaWQYASABKAlSBnJ1bGVJZBIWCg'
-        'ZhY3Rpb24YAiABKAlSBmFjdGlvbjoYkkEVChPSAQdydWxlX2lk0gEGYWN0aW9u');
+        'ZhY3Rpb24YAiABKAlSBmFjdGlvbg==');
 
 @$core.Deprecated('Use toggleAutoSaveRuleResponseDescriptor instead')
 const ToggleAutoSaveRuleResponse$json = {
@@ -489,14 +484,12 @@ const DeleteAutoSaveRuleRequest$json = {
   '2': [
     {'1': 'rule_id', '3': 1, '4': 1, '5': 9, '10': 'ruleId'},
   ],
-  '7': {},
 };
 
 /// Descriptor for `DeleteAutoSaveRuleRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List deleteAutoSaveRuleRequestDescriptor =
     $convert.base64Decode(
-        'ChlEZWxldGVBdXRvU2F2ZVJ1bGVSZXF1ZXN0EhcKB3J1bGVfaWQYASABKAlSBnJ1bGVJZDoPkk'
-        'EMCgrSAQdydWxlX2lk');
+        'ChlEZWxldGVBdXRvU2F2ZVJ1bGVSZXF1ZXN0EhcKB3J1bGVfaWQYASABKAlSBnJ1bGVJZA==');
 
 @$core.Deprecated('Use deleteAutoSaveRuleResponseDescriptor instead')
 const DeleteAutoSaveRuleResponse$json = {
@@ -606,6 +599,46 @@ final $typed_data.Uint8List getAutoSaveFeeQuoteResponseDescriptor = $convert.bas
     'dEtvYm8SGQoIZmVlX3R5cGUYBCABKAlSB2ZlZVR5cGUSHwoLcGVyY2VudF9icHMYBSABKANSCn'
     'BlcmNlbnRCcHMSGQoIY2FwX2tvYm8YBiABKANSB2NhcEtvYm8SHQoKZml4ZWRfa29ibxgHIAEo'
     'A1IJZml4ZWRLb2Jv');
+
+@$core.Deprecated('Use getAutoSaveCapabilitiesRequestDescriptor instead')
+const GetAutoSaveCapabilitiesRequest$json = {
+  '1': 'GetAutoSaveCapabilitiesRequest',
+};
+
+/// Descriptor for `GetAutoSaveCapabilitiesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAutoSaveCapabilitiesRequestDescriptor =
+    $convert.base64Decode('Ch5HZXRBdXRvU2F2ZUNhcGFiaWxpdGllc1JlcXVlc3Q=');
+
+@$core.Deprecated('Use getAutoSaveCapabilitiesResponseDescriptor instead')
+const GetAutoSaveCapabilitiesResponse$json = {
+  '1': 'GetAutoSaveCapabilitiesResponse',
+  '2': [
+    {
+      '1': 'bank_inflow_enabled',
+      '3': 1,
+      '4': 1,
+      '5': 8,
+      '10': 'bankInflowEnabled'
+    },
+    {'1': 'min_save_kobo', '3': 2, '4': 1, '5': 3, '10': 'minSaveKobo'},
+    {'1': 'fee_enabled', '3': 3, '4': 1, '5': 8, '10': 'feeEnabled'},
+    {
+      '1': 'bank_inflow_disabled_reason',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '10': 'bankInflowDisabledReason'
+    },
+  ],
+};
+
+/// Descriptor for `GetAutoSaveCapabilitiesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAutoSaveCapabilitiesResponseDescriptor =
+    $convert.base64Decode(
+        'Ch9HZXRBdXRvU2F2ZUNhcGFiaWxpdGllc1Jlc3BvbnNlEi4KE2JhbmtfaW5mbG93X2VuYWJsZW'
+        'QYASABKAhSEWJhbmtJbmZsb3dFbmFibGVkEiIKDW1pbl9zYXZlX2tvYm8YAiABKANSC21pblNh'
+        'dmVLb2JvEh8KC2ZlZV9lbmFibGVkGAMgASgIUgpmZWVFbmFibGVkEj0KG2JhbmtfaW5mbG93X2'
+        'Rpc2FibGVkX3JlYXNvbhgEIAEoCVIYYmFua0luZmxvd0Rpc2FibGVkUmVhc29u');
 
 @$core.Deprecated('Use getAutoSaveTransactionsRequestDescriptor instead')
 const GetAutoSaveTransactionsRequest$json = {
@@ -800,14 +833,13 @@ const TriggerAutoSaveRequest$json = {
       '10': 'transactionPinToken'
     },
   ],
-  '7': {},
 };
 
 /// Descriptor for `TriggerAutoSaveRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List triggerAutoSaveRequestDescriptor = $convert.base64Decode(
     'ChZUcmlnZ2VyQXV0b1NhdmVSZXF1ZXN0EhcKB3J1bGVfaWQYASABKAlSBnJ1bGVJZBIjCg1jdX'
     'N0b21fYW1vdW50GAIgASgBUgxjdXN0b21BbW91bnQSMgoVdHJhbnNhY3Rpb25fcGluX3Rva2Vu'
-    'GA8gASgJUhN0cmFuc2FjdGlvblBpblRva2VuOg+SQQwKCtIBB3J1bGVfaWQ=');
+    'GA8gASgJUhN0cmFuc2FjdGlvblBpblRva2Vu');
 
 @$core.Deprecated('Use triggerAutoSaveResponseDescriptor instead')
 const TriggerAutoSaveResponse$json = {

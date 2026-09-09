@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../domain/entities/autosave_rule_entity.dart';
+import '../domain/repositories/i_autosave_repository.dart';
 
 /// THE canonical source for how every AutoSave trigger is named, described
 /// and coloured.
@@ -48,9 +49,9 @@ class AutoSaveTriggerLabels {
         return 'Round each wallet spend up to the nearest amount you pick and '
             'save the difference. Passive, small, adds up.';
       case TriggerType.externalInflow:
-        return 'Retired. Detecting money arriving in your bank required '
-            'repeated balance checks that cost on every check. Use Recurring '
-            'Bank Debit to pull from your bank instead.';
+        return 'Watches your linked bank and offers to save a cut whenever '
+            'money lands there. You confirm each save — nothing is pulled '
+            'automatically.';
       case TriggerType.scheduledExternal:
         return 'Pulls your set amount from your linked bank into LazerVault on '
             'your schedule, using Direct Debit. A bank-debit fee applies per '
@@ -60,17 +61,45 @@ class AutoSaveTriggerLabels {
     }
   }
 
-  /// Whether a NEW rule may be created with this trigger. Bank Inflow stays
-  /// VISIBLE (so existing users understand what happened to it) but can no
-  /// longer be selected; the backend rejects it too.
-  static bool isSelectable(TriggerType t) =>
-      t != TriggerType.externalInflow && t != TriggerType.unknown;
+  /// Triggers a NEW rule may be created with, given what the server says is
+  /// currently switched on.
+  ///
+  /// Bank Inflow is HIDDEN, not greyed, when it is off: an unavailable option
+  /// a user cannot act on is noise, and the reason ("it costs us money to
+  /// watch your bank") is not something to explain on a picker. It reappears
+  /// whole the moment an admin switches it on.
+  ///
+  /// [caps] is null while capabilities are still loading — treat that as
+  /// hidden so the card never flashes in and out.
+  static bool isVisibleForCreate(TriggerType t, AutoSaveCapabilities? caps) {
+    if (t == TriggerType.unknown) return false;
+    if (t == TriggerType.externalInflow) {
+      return caps?.bankInflowEnabled ?? false;
+    }
+    return true;
+  }
 
-  /// Short reason shown on the disabled card.
-  static String? disabledReason(TriggerType t) =>
-      t == TriggerType.externalInflow
-          ? 'Retired — use Recurring Bank Debit'
-          : null;
+  /// The ordered set of triggers to offer for a NEW rule.
+  static List<TriggerType> selectableTriggers(AutoSaveCapabilities? caps) => [
+        TriggerType.onDeposit,
+        TriggerType.scheduled,
+        TriggerType.roundUp,
+        TriggerType.externalInflow,
+        TriggerType.scheduledExternal,
+      ].where((t) => isVisibleForCreate(t, caps)).toList();
+
+  /// Why an EXISTING rule can't be resumed right now, or null if it can.
+  /// Existing rules stay visible in the list whatever the switch says — a
+  /// user must always be able to see and manage money they set up.
+  static String? resumeBlockedReason(TriggerType t, AutoSaveCapabilities? caps) {
+    if (t == TriggerType.externalInflow && !(caps?.bankInflowEnabled ?? false)) {
+      final reason = caps?.bankInflowDisabledReason ?? '';
+      return reason.isNotEmpty
+          ? reason
+          : 'Bank Inflow saving is switched off right now.';
+    }
+    return null;
+  }
 
   /// True when the trigger pulls from a linked BANK (Direct Debit) rather
   /// than moving money inside LazerVault. Drives the mandate gate and the
@@ -88,7 +117,7 @@ class AutoSaveTriggerLabels {
       case TriggerType.roundUp:
         return const Color(0xFFF59E0B);
       case TriggerType.externalInflow:
-        return const Color(0xFF6B7280); // muted: retired
+        return const Color(0xFF8B5CF6);
       case TriggerType.scheduledExternal:
         return const Color(0xFF14B8A6);
       case TriggerType.unknown:

@@ -20,7 +20,7 @@ import 'autosave.pb.dart' as $0;
 
 export 'autosave.pb.dart';
 
-/// Service definition
+/// AutoSave Service definition
 @$pb.GrpcServiceName('pb.AutoSaveService')
 class AutoSaveServiceClient extends $grpc.Client {
   /// The hostname for this service.
@@ -33,7 +33,6 @@ class AutoSaveServiceClient extends $grpc.Client {
 
   AutoSaveServiceClient(super.channel, {super.options, super.interceptors});
 
-  /// Create a new auto-save rule
   $grpc.ResponseFuture<$0.CreateAutoSaveRuleResponse> createAutoSaveRule(
     $0.CreateAutoSaveRuleRequest request, {
     $grpc.CallOptions? options,
@@ -41,7 +40,6 @@ class AutoSaveServiceClient extends $grpc.Client {
     return $createUnaryCall(_$createAutoSaveRule, request, options: options);
   }
 
-  /// Get all auto-save rules for the user
   $grpc.ResponseFuture<$0.GetAutoSaveRulesResponse> getAutoSaveRules(
     $0.GetAutoSaveRulesRequest request, {
     $grpc.CallOptions? options,
@@ -49,7 +47,6 @@ class AutoSaveServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getAutoSaveRules, request, options: options);
   }
 
-  /// Update an existing auto-save rule
   $grpc.ResponseFuture<$0.UpdateAutoSaveRuleResponse> updateAutoSaveRule(
     $0.UpdateAutoSaveRuleRequest request, {
     $grpc.CallOptions? options,
@@ -57,7 +54,6 @@ class AutoSaveServiceClient extends $grpc.Client {
     return $createUnaryCall(_$updateAutoSaveRule, request, options: options);
   }
 
-  /// Pause or resume an auto-save rule
   $grpc.ResponseFuture<$0.ToggleAutoSaveRuleResponse> toggleAutoSaveRule(
     $0.ToggleAutoSaveRuleRequest request, {
     $grpc.CallOptions? options,
@@ -65,7 +61,6 @@ class AutoSaveServiceClient extends $grpc.Client {
     return $createUnaryCall(_$toggleAutoSaveRule, request, options: options);
   }
 
-  /// Delete an auto-save rule
   $grpc.ResponseFuture<$0.DeleteAutoSaveRuleResponse> deleteAutoSaveRule(
     $0.DeleteAutoSaveRuleRequest request, {
     $grpc.CallOptions? options,
@@ -73,7 +68,6 @@ class AutoSaveServiceClient extends $grpc.Client {
     return $createUnaryCall(_$deleteAutoSaveRule, request, options: options);
   }
 
-  /// Get auto-save transaction history
   $grpc.ResponseFuture<$0.GetAutoSaveTransactionsResponse>
       getAutoSaveTransactions(
     $0.GetAutoSaveTransactionsRequest request, {
@@ -83,7 +77,6 @@ class AutoSaveServiceClient extends $grpc.Client {
         options: options);
   }
 
-  /// Get auto-save statistics
   $grpc.ResponseFuture<$0.GetAutoSaveStatisticsResponse> getAutoSaveStatistics(
     $0.GetAutoSaveStatisticsRequest request, {
     $grpc.CallOptions? options,
@@ -91,12 +84,20 @@ class AutoSaveServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getAutoSaveStatistics, request, options: options);
   }
 
-  /// Manually trigger an auto-save rule
   $grpc.ResponseFuture<$0.GetAutoSaveFeeQuoteResponse> getAutoSaveFeeQuote(
     $0.GetAutoSaveFeeQuoteRequest request, {
     $grpc.CallOptions? options,
   }) {
     return $createUnaryCall(_$getAutoSaveFeeQuote, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetAutoSaveCapabilitiesResponse>
+      getAutoSaveCapabilities(
+    $0.GetAutoSaveCapabilitiesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getAutoSaveCapabilities, request,
+        options: options);
   }
 
   $grpc.ResponseFuture<$0.TriggerAutoSaveResponse> triggerAutoSave(
@@ -149,6 +150,12 @@ class AutoSaveServiceClient extends $grpc.Client {
       '/pb.AutoSaveService/GetAutoSaveFeeQuote',
       ($0.GetAutoSaveFeeQuoteRequest value) => value.writeToBuffer(),
       $0.GetAutoSaveFeeQuoteResponse.fromBuffer);
+  static final _$getAutoSaveCapabilities = $grpc.ClientMethod<
+          $0.GetAutoSaveCapabilitiesRequest,
+          $0.GetAutoSaveCapabilitiesResponse>(
+      '/pb.AutoSaveService/GetAutoSaveCapabilities',
+      ($0.GetAutoSaveCapabilitiesRequest value) => value.writeToBuffer(),
+      $0.GetAutoSaveCapabilitiesResponse.fromBuffer);
   static final _$triggerAutoSave =
       $grpc.ClientMethod<$0.TriggerAutoSaveRequest, $0.TriggerAutoSaveResponse>(
           '/pb.AutoSaveService/TriggerAutoSave',
@@ -233,6 +240,15 @@ abstract class AutoSaveServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetAutoSaveFeeQuoteRequest.fromBuffer(value),
         ($0.GetAutoSaveFeeQuoteResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAutoSaveCapabilitiesRequest,
+            $0.GetAutoSaveCapabilitiesResponse>(
+        'GetAutoSaveCapabilities',
+        getAutoSaveCapabilities_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetAutoSaveCapabilitiesRequest.fromBuffer(value),
+        ($0.GetAutoSaveCapabilitiesResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.TriggerAutoSaveRequest,
             $0.TriggerAutoSaveResponse>(
         'TriggerAutoSave',
@@ -315,6 +331,15 @@ abstract class AutoSaveServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetAutoSaveFeeQuoteResponse> getAutoSaveFeeQuote(
       $grpc.ServiceCall call, $0.GetAutoSaveFeeQuoteRequest request);
+
+  $async.Future<$0.GetAutoSaveCapabilitiesResponse> getAutoSaveCapabilities_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetAutoSaveCapabilitiesRequest> $request) async {
+    return getAutoSaveCapabilities($call, await $request);
+  }
+
+  $async.Future<$0.GetAutoSaveCapabilitiesResponse> getAutoSaveCapabilities(
+      $grpc.ServiceCall call, $0.GetAutoSaveCapabilitiesRequest request);
 
   $async.Future<$0.TriggerAutoSaveResponse> triggerAutoSave_Pre(
       $grpc.ServiceCall $call,

@@ -28,6 +28,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
@@ -35,6 +36,7 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
+import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_repository.dart';
 import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
 import 'package:lazervault/src/features/move_money/cubit/mandate_state.dart';
 import 'package:lazervault/src/features/move_money/domain/entities/mandate_entity.dart';
@@ -125,6 +127,24 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
 
   String? _stepError;
 
+  /// Admin-controlled trigger availability. Null until the server answers;
+  /// [AutoSaveTriggerLabels.selectableTriggers] treats null as "hide the
+  /// optional triggers", so we never offer a card the server would refuse.
+  AutoSaveCapabilities? _capabilities;
+  bool _capabilitiesLoading = true;
+
+  Future<void> _loadCapabilities() async {
+    final res = await serviceLocator<IAutoSaveRepository>().getCapabilities();
+    if (!mounted) return;
+    setState(() {
+      // On failure keep null (= hide optional triggers). The always-available
+      // triggers still work, so a capabilities outage degrades the picker
+      // instead of blocking rule creation entirely.
+      _capabilities = res.fold((_) => null, (caps) => caps);
+      _capabilitiesLoading = false;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -132,6 +152,10 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     context
         .read<AccountCardsSummaryCubit>()
         .fetchAccountSummaries(userId: userId, accessToken: null);
+
+    // Which triggers we're allowed to offer is an admin setting, so ask
+    // before drawing the picker.
+    _loadCapabilities();
 
     // Bank-inflow trigger needs the user's Mono-linked accounts + mandate
     // states (same data the Beam flow uses).
@@ -556,15 +580,16 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     // Names/descriptions/colours come from AutoSaveTriggerLabels — the single
     // source every autosave surface reads, so the picker, history chips,
     // receipts and PDFs can never disagree again.
-    const order = [
-      TriggerType.onDeposit,
-      TriggerType.scheduled,
-      TriggerType.roundUp,
-      TriggerType.scheduledExternal,
-      // Bank Inflow last and DISABLED: kept visible so users who had it
-      // understand what replaced it, never selectable for new rules.
-      TriggerType.externalInflow,
-    ];
+    //
+    // Which triggers appear is the SERVER's call (admin settings), not a
+    // constant here: Bank Inflow is hidden unless it has been switched on.
+    // While capabilities are still loading we show a skeleton rather than the
+    // always-on subset, so a card can never pop in after the user has already
+    // started reading the list.
+    if (_capabilities == null && _capabilitiesLoading) {
+      return _triggerPickerSkeleton();
+    }
+    final order = AutoSaveTriggerLabels.selectableTriggers(_capabilities);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -576,8 +601,6 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             title: AutoSaveTriggerLabels.nameOf(order[i]),
             description: AutoSaveTriggerLabels.descriptionOf(order[i]),
             selected: _selectedTriggerType == order[i],
-            disabled: !AutoSaveTriggerLabels.isSelectable(order[i]),
-            disabledReason: AutoSaveTriggerLabels.disabledReason(order[i]),
             onTap: () => _selectTrigger(order[i]),
           ),
         ],
@@ -585,12 +608,27 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     );
   }
 
+  /// Three inert cards while the server tells us which triggers to offer.
+  Widget _triggerPickerSkeleton() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (int i = 0; i < 3; i++) ...[
+          if (i > 0) SizedBox(height: 14.h),
+          Container(
+            height: 88.h,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.04),
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   void _selectTrigger(TriggerType t) {
-    if (!AutoSaveTriggerLabels.isSelectable(t)) {
-      // Explain rather than silently ignoring the tap.
-      _showRetiredTriggerSheet();
-      return;
-    }
     setState(() {
       _selectedTriggerType = t;
       // Bank pulls are fixed-amount only (a percentage has no inflow to take
@@ -601,67 +639,6 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       _stepError = null;
     });
   }
-
-  void _showRetiredTriggerSheet() {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: const Color(0xFF1F1F1F),
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 28.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: [
-              Icon(Icons.info_outline_rounded,
-                  color: const Color(0xFF9CA3AF), size: 20.sp),
-              SizedBox(width: 8.w),
-              Text('Bank Inflow is retired',
-                  style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700)),
-            ]),
-            SizedBox(height: 10.h),
-            Text(
-              'Spotting money as it arrived in your bank meant checking your '
-              'bank balance over and over, and each check costs — so we '
-              'retired it.\n\nRecurring Bank Debit does the same job more '
-              'predictably: you pick the amount and the schedule, and we pull '
-              'it from your bank by Direct Debit.',
-              style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF), fontSize: 13.sp, height: 1.5),
-            ),
-            SizedBox(height: 18.h),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _selectTrigger(TriggerType.scheduledExternal);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AutoSaveTriggerLabels.colorOf(
-                      TriggerType.scheduledExternal),
-                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r)),
-                ),
-                child: Text('Use Recurring Bank Debit',
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 14.5.sp,
-                        fontWeight: FontWeight.w700)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
 
   // ─── Step 1: Configure (trigger config + amount) ────────────────
 

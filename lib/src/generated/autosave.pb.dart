@@ -263,7 +263,6 @@ class AutoSaveRule extends $pb.GeneratedMessage {
   @$pb.TagNumber(10)
   void clearStatus() => $_clearField(10);
 
-  /// For scheduled triggers
   @$pb.TagNumber(11)
   ScheduleFrequency get frequency => $_getN(10);
   @$pb.TagNumber(11)
@@ -291,7 +290,6 @@ class AutoSaveRule extends $pb.GeneratedMessage {
   @$pb.TagNumber(13)
   void clearScheduleDay() => $_clearField(13);
 
-  /// For round-up triggers
   @$pb.TagNumber(14)
   $core.int get roundUpTo => $_getIZ(13);
   @$pb.TagNumber(14)
@@ -301,7 +299,6 @@ class AutoSaveRule extends $pb.GeneratedMessage {
   @$pb.TagNumber(14)
   void clearRoundUpTo() => $_clearField(14);
 
-  /// Goals and limits
   @$pb.TagNumber(15)
   $core.double get targetAmount => $_getN(14);
   @$pb.TagNumber(15)
@@ -329,7 +326,6 @@ class AutoSaveRule extends $pb.GeneratedMessage {
   @$pb.TagNumber(17)
   void clearMaximumPerSave() => $_clearField(17);
 
-  /// Metadata
   @$pb.TagNumber(18)
   $1.Timestamp get createdAt => $_getN(17);
   @$pb.TagNumber(18)
@@ -402,11 +398,11 @@ class AutoSaveRule extends $pb.GeneratedMessage {
   @$pb.TagNumber(24)
   void clearSourceBankName() => $_clearField(24);
 
-  /// Pending manual-save prompt for a reactive external_inflow rule: money
-  /// landed in the linked bank and is ready to save, but a bank pull incurs a
-  /// fee so it's never auto-executed. The app surfaces "₦X available to save".
-  /// Types MUST match the backend proto (kobo int64 + strings) for the wire
-  /// format. Zero/empty when nothing is pending.
+  /// Pending detected inflow awaiting the user's PIN-confirmed save. The
+  /// backend populates these and the app renders "₦X available — tap to
+  /// save", but the gateway message stopped at 24 and silently DROPPED
+  /// them, so that prompt could never appear (Bank Inflow's entire UX).
+  /// Kept (and now forwarded) so legacy paused rules display honestly.
   @$pb.TagNumber(25)
   $fixnum.Int64 get pendingInflowKobo => $_getI64(24);
   @$pb.TagNumber(25)
@@ -609,7 +605,6 @@ class CreateAutoSaveRuleRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   void clearDestinationAccountId() => $_clearField(7);
 
-  /// Optional fields based on trigger type
   @$pb.TagNumber(8)
   ScheduleFrequency get frequency => $_getN(7);
   @$pb.TagNumber(8)
@@ -646,7 +641,6 @@ class CreateAutoSaveRuleRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(11)
   void clearRoundUpTo() => $_clearField(11);
 
-  /// Optional goals and limits
   @$pb.TagNumber(12)
   $core.double get targetAmount => $_getN(11);
   @$pb.TagNumber(12)
@@ -695,7 +689,6 @@ class CreateAutoSaveRuleRequest extends $pb.GeneratedMessage {
   void clearSourceBankName() => $_clearField(16);
 }
 
-/// Create auto-save rule response
 class CreateAutoSaveRuleResponse extends $pb.GeneratedMessage {
   factory CreateAutoSaveRuleResponse({
     $core.bool? success,
@@ -783,8 +776,8 @@ class CreateAutoSaveRuleResponse extends $pb.GeneratedMessage {
 }
 
 /// Get auto-save rules request. Server-side filter / sort / pagination
-/// support so the All-Rules screen can scroll through hundreds of
-/// rules without loading the full collection on every interaction.
+/// support so the Flutter All-Rules screen can scroll through hundreds
+/// of rules without loading the full collection on every interaction.
 class GetAutoSaveRulesRequest extends $pb.GeneratedMessage {
   factory GetAutoSaveRulesRequest({
     $core.String? accountId,
@@ -875,6 +868,7 @@ class GetAutoSaveRulesRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   void clearStatus() => $_clearField(2);
 
+  /// Substring match against name + description (case-insensitive).
   @$pb.TagNumber(3)
   $core.String get search => $_getSZ(2);
   @$pb.TagNumber(3)
@@ -884,6 +878,7 @@ class GetAutoSaveRulesRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   void clearSearch() => $_clearField(3);
 
+  /// sort_by: "created_at" | "name" | "total_saved" | "last_triggered_at".
   @$pb.TagNumber(4)
   $core.String get sortBy => $_getSZ(3);
   @$pb.TagNumber(4)
@@ -893,6 +888,7 @@ class GetAutoSaveRulesRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   void clearSortBy() => $_clearField(4);
 
+  /// sort_dir: "asc" | "desc". Default "desc".
   @$pb.TagNumber(5)
   $core.String get sortDir => $_getSZ(4);
   @$pb.TagNumber(5)
@@ -930,7 +926,6 @@ class GetAutoSaveRulesRequest extends $pb.GeneratedMessage {
   void clearTriggerType() => $_clearField(8);
 }
 
-/// Get auto-save rules response
 class GetAutoSaveRulesResponse extends $pb.GeneratedMessage {
   factory GetAutoSaveRulesResponse({
     $core.bool? success,
@@ -1170,7 +1165,6 @@ class UpdateAutoSaveRuleRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   void clearAmountValue() => $_clearField(5);
 
-  /// Optional fields
   @$pb.TagNumber(6)
   ScheduleFrequency get frequency => $_getN(5);
   @$pb.TagNumber(6)
@@ -1235,7 +1229,6 @@ class UpdateAutoSaveRuleRequest extends $pb.GeneratedMessage {
   void clearMaximumPerSave() => $_clearField(12);
 }
 
-/// Update auto-save rule response
 class UpdateAutoSaveRuleResponse extends $pb.GeneratedMessage {
   factory UpdateAutoSaveRuleResponse({
     $core.bool? success,
@@ -1322,7 +1315,7 @@ class UpdateAutoSaveRuleResponse extends $pb.GeneratedMessage {
   AutoSaveRule ensureRule() => $_ensure(2);
 }
 
-/// Pause/resume auto-save rule request
+/// Toggle auto-save rule request
 class ToggleAutoSaveRuleRequest extends $pb.GeneratedMessage {
   factory ToggleAutoSaveRuleRequest({
     $core.String? ruleId,
@@ -1393,7 +1386,6 @@ class ToggleAutoSaveRuleRequest extends $pb.GeneratedMessage {
   void clearAction() => $_clearField(2);
 }
 
-/// Pause/resume auto-save rule response
 class ToggleAutoSaveRuleResponse extends $pb.GeneratedMessage {
   factory ToggleAutoSaveRuleResponse({
     $core.bool? success,
@@ -1539,7 +1531,6 @@ class DeleteAutoSaveRuleRequest extends $pb.GeneratedMessage {
   void clearRuleId() => $_clearField(1);
 }
 
-/// Delete auto-save rule response
 class DeleteAutoSaveRuleResponse extends $pb.GeneratedMessage {
   factory DeleteAutoSaveRuleResponse({
     $core.bool? success,
@@ -1822,8 +1813,8 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
   @$pb.TagNumber(12)
   void clearMetadata() => $_clearField(12);
 
-  /// Platform fee (kobo) deducted from the save: `amount` is the NET kept,
-  /// gross_amount = amount + fee.
+  /// Platform fee (major units) deducted from the save: `amount` is the NET
+  /// kept, gross_amount = amount + fee.
   @$pb.TagNumber(13)
   $core.double get fee => $_getN(12);
   @$pb.TagNumber(13)
@@ -1862,7 +1853,7 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
 }
 
 /// Fee quote for the rule-review + manual-save sheets. Math is server-side
-/// (single source with the executor) — the app never computes a fee itself.
+/// (single source with the executor) — the app never computes a fee.
 class GetAutoSaveFeeQuoteRequest extends $pb.GeneratedMessage {
   factory GetAutoSaveFeeQuoteRequest({
     $fixnum.Int64? amountKobo,
@@ -2066,6 +2057,151 @@ class GetAutoSaveFeeQuoteResponse extends $pb.GeneratedMessage {
   void clearFixedKobo() => $_clearField(7);
 }
 
+/// Which triggers the app may offer, read from admin settings. Asked before the
+/// trigger picker is drawn so a switched-off trigger is never shown; the server
+/// re-checks on create/resume/trigger, so this is a display hint, not the gate.
+class GetAutoSaveCapabilitiesRequest extends $pb.GeneratedMessage {
+  factory GetAutoSaveCapabilitiesRequest() => create();
+
+  GetAutoSaveCapabilitiesRequest._();
+
+  factory GetAutoSaveCapabilitiesRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetAutoSaveCapabilitiesRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetAutoSaveCapabilitiesRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetAutoSaveCapabilitiesRequest clone() =>
+      GetAutoSaveCapabilitiesRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetAutoSaveCapabilitiesRequest copyWith(
+          void Function(GetAutoSaveCapabilitiesRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetAutoSaveCapabilitiesRequest))
+          as GetAutoSaveCapabilitiesRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetAutoSaveCapabilitiesRequest create() =>
+      GetAutoSaveCapabilitiesRequest._();
+  @$core.override
+  GetAutoSaveCapabilitiesRequest createEmptyInstance() => create();
+  static $pb.PbList<GetAutoSaveCapabilitiesRequest> createRepeated() =>
+      $pb.PbList<GetAutoSaveCapabilitiesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetAutoSaveCapabilitiesRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetAutoSaveCapabilitiesRequest>(create);
+  static GetAutoSaveCapabilitiesRequest? _defaultInstance;
+}
+
+class GetAutoSaveCapabilitiesResponse extends $pb.GeneratedMessage {
+  factory GetAutoSaveCapabilitiesResponse({
+    $core.bool? bankInflowEnabled,
+    $fixnum.Int64? minSaveKobo,
+    $core.bool? feeEnabled,
+    $core.String? bankInflowDisabledReason,
+  }) {
+    final result = create();
+    if (bankInflowEnabled != null) result.bankInflowEnabled = bankInflowEnabled;
+    if (minSaveKobo != null) result.minSaveKobo = minSaveKobo;
+    if (feeEnabled != null) result.feeEnabled = feeEnabled;
+    if (bankInflowDisabledReason != null)
+      result.bankInflowDisabledReason = bankInflowDisabledReason;
+    return result;
+  }
+
+  GetAutoSaveCapabilitiesResponse._();
+
+  factory GetAutoSaveCapabilitiesResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetAutoSaveCapabilitiesResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetAutoSaveCapabilitiesResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'bankInflowEnabled')
+    ..aInt64(2, _omitFieldNames ? '' : 'minSaveKobo')
+    ..aOB(3, _omitFieldNames ? '' : 'feeEnabled')
+    ..aOS(4, _omitFieldNames ? '' : 'bankInflowDisabledReason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetAutoSaveCapabilitiesResponse clone() =>
+      GetAutoSaveCapabilitiesResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetAutoSaveCapabilitiesResponse copyWith(
+          void Function(GetAutoSaveCapabilitiesResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetAutoSaveCapabilitiesResponse))
+          as GetAutoSaveCapabilitiesResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetAutoSaveCapabilitiesResponse create() =>
+      GetAutoSaveCapabilitiesResponse._();
+  @$core.override
+  GetAutoSaveCapabilitiesResponse createEmptyInstance() => create();
+  static $pb.PbList<GetAutoSaveCapabilitiesResponse> createRepeated() =>
+      $pb.PbList<GetAutoSaveCapabilitiesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetAutoSaveCapabilitiesResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetAutoSaveCapabilitiesResponse>(
+          create);
+  static GetAutoSaveCapabilitiesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get bankInflowEnabled => $_getBF(0);
+  @$pb.TagNumber(1)
+  set bankInflowEnabled($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasBankInflowEnabled() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBankInflowEnabled() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get minSaveKobo => $_getI64(1);
+  @$pb.TagNumber(2)
+  set minSaveKobo($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMinSaveKobo() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMinSaveKobo() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get feeEnabled => $_getBF(2);
+  @$pb.TagNumber(3)
+  set feeEnabled($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasFeeEnabled() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFeeEnabled() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get bankInflowDisabledReason => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set bankInflowDisabledReason($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasBankInflowDisabledReason() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearBankInflowDisabledReason() => $_clearField(4);
+}
+
 /// Get auto-save transactions request
 class GetAutoSaveTransactionsRequest extends $pb.GeneratedMessage {
   factory GetAutoSaveTransactionsRequest({
@@ -2163,7 +2299,6 @@ class GetAutoSaveTransactionsRequest extends $pb.GeneratedMessage {
   void clearOffset() => $_clearField(4);
 }
 
-/// Get auto-save transactions response
 class GetAutoSaveTransactionsResponse extends $pb.GeneratedMessage {
   factory GetAutoSaveTransactionsResponse({
     $core.bool? success,
@@ -2427,6 +2562,8 @@ class AutoSaveStatistics extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   AutoSaveRule ensureMostActiveRule() => $_ensure(7);
 
+  /// Rule with the highest lifetime total_saved (distinct from
+  /// most_active_rule which uses trigger_count).
   @$pb.TagNumber(9)
   AutoSaveRule get topRuleByTotalSaved => $_getN(8);
   @$pb.TagNumber(9)
@@ -2438,6 +2575,7 @@ class AutoSaveStatistics extends $pb.GeneratedMessage {
   @$pb.TagNumber(9)
   AutoSaveRule ensureTopRuleByTotalSaved() => $_ensure(8);
 
+  /// Per-status counters maintained alongside active_rules_count.
   @$pb.TagNumber(10)
   $core.int get pausedRulesCount => $_getIZ(9);
   @$pb.TagNumber(10)
@@ -2466,7 +2604,6 @@ class AutoSaveStatistics extends $pb.GeneratedMessage {
   void clearCancelledRulesCount() => $_clearField(12);
 }
 
-/// Get auto-save statistics request
 class GetAutoSaveStatisticsRequest extends $pb.GeneratedMessage {
   factory GetAutoSaveStatisticsRequest() => create();
 
@@ -2511,7 +2648,6 @@ class GetAutoSaveStatisticsRequest extends $pb.GeneratedMessage {
   static GetAutoSaveStatisticsRequest? _defaultInstance;
 }
 
-/// Get auto-save statistics response
 class GetAutoSaveStatisticsResponse extends $pb.GeneratedMessage {
   factory GetAutoSaveStatisticsResponse({
     $core.bool? success,
@@ -2599,7 +2735,7 @@ class GetAutoSaveStatisticsResponse extends $pb.GeneratedMessage {
   AutoSaveStatistics ensureStatistics() => $_ensure(2);
 }
 
-/// Manual trigger auto-save request (for testing or manual execution)
+/// Manual trigger auto-save request
 class TriggerAutoSaveRequest extends $pb.GeneratedMessage {
   factory TriggerAutoSaveRequest({
     $core.String? ruleId,
@@ -2684,7 +2820,6 @@ class TriggerAutoSaveRequest extends $pb.GeneratedMessage {
   void clearTransactionPinToken() => $_clearField(15);
 }
 
-/// Manual trigger auto-save response
 class TriggerAutoSaveResponse extends $pb.GeneratedMessage {
   factory TriggerAutoSaveResponse({
     $core.bool? success,

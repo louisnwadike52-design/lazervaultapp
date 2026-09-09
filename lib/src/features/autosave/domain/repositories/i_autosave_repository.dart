@@ -9,6 +9,40 @@ import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_sta
 /// the current page. The cubit uses [hasMore] to short-circuit
 /// further scroll-bottom fetches and [total] to render an
 /// out-of-the-box "X of Y" subheader.
+/// What AutoSave currently allows, as decided by admin settings.
+///
+/// Bank Inflow costs money to WATCH (each check is a billed Mono statement
+/// refresh), so it ships off and an admin switches it on. The app hides the
+/// trigger rather than showing a dead card — but this is a display hint only:
+/// the server re-checks the switch on create, resume and manual save, so a
+/// stale app can never talk its way past it.
+///
+/// [fallback] is what we assume when the call fails: hide the optional
+/// trigger. Guessing "available" would offer a card that then fails at the
+/// end of a multi-step wizard, which is a far worse place to learn.
+class AutoSaveCapabilities {
+  final bool bankInflowEnabled;
+  final double minSave;
+  final bool feeEnabled;
+
+  /// Server-supplied copy for the switched-off case, so the app never
+  /// hard-codes a second explanation that can drift from the backend's.
+  final String bankInflowDisabledReason;
+
+  const AutoSaveCapabilities({
+    required this.bankInflowEnabled,
+    required this.minSave,
+    required this.feeEnabled,
+    this.bankInflowDisabledReason = '',
+  });
+
+  static const fallback = AutoSaveCapabilities(
+    bankInflowEnabled: false,
+    minSave: 0,
+    feeEnabled: false,
+  );
+}
+
 /// Server-computed fee split for a prospective save. All amounts in the
 /// user's major currency units.
 class AutoSaveFeeQuote {
@@ -31,6 +65,7 @@ class AutoSaveFeeQuote {
   });
 
   static const none = AutoSaveFeeQuote(enabled: false, fee: 0, net: 0);
+
 
   /// "0.5% (max ₦100)" / "₦25" — the rule, for disclosure copy.
   String describe(String symbol) {
@@ -142,6 +177,9 @@ abstract class IAutoSaveRepository {
     required double amount,
     required String triggerType,
   });
+
+  /// Which triggers this user may be offered right now, per admin settings.
+  Future<Either<Failure, AutoSaveCapabilities>> getCapabilities();
 
   Future<Either<Failure, AutoSaveTransactionEntity>> triggerAutoSave({
     required String ruleId,

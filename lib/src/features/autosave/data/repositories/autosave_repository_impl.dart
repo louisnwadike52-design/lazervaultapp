@@ -540,6 +540,33 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
   }
 
   @override
+  Future<Either<Failure, AutoSaveCapabilities>> getCapabilities() async {
+    try {
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth(
+          CallOptions(timeout: const Duration(seconds: 15)),
+        );
+        return await _autoSaveServiceClient.getAutoSaveCapabilities(
+          autosave_pb.GetAutoSaveCapabilitiesRequest(),
+          options: callOptions,
+        );
+      });
+      return Right(AutoSaveCapabilities(
+        bankInflowEnabled: response.bankInflowEnabled,
+        // Kobo on the wire, major units in the UI.
+        minSave: response.minSaveKobo.toDouble() / 100,
+        feeEnabled: response.feeEnabled,
+        bankInflowDisabledReason: response.bankInflowDisabledReason,
+      ));
+    } catch (e) {
+      // Fail CLOSED: callers fall back to hiding the optional trigger rather
+      // than offering a card that would be refused at the end of the wizard.
+      return Left(ServerFailure(message: e.toString(), statusCode: 0));
+    }
+  }
+
+  @override
   Future<Either<Failure, entity.AutoSaveTransactionEntity>> triggerAutoSave({
     required String ruleId,
     double? customAmount,
