@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:lazervault/src/features/recipients/domain/entities/unified_search_result.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -160,7 +161,7 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
         orElse: () => accounts.first);
     final buyerTotal = _quote?.buyerTotal ?? amount;
     if (acct.availableBalance < buyerTotal) {
-      _snack('Insufficient balance. You need ${acct.currency} ${buyerTotal.toStringAsFixed(2)}',
+      _snack('Insufficient balance. You need ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(buyerTotal, acct.currency)}',
           EscrowTheme.error);
       return;
     }
@@ -178,7 +179,7 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
       amount: buyerTotal,
       currency: acct.currency,
       title: 'Fund escrow',
-      message: 'Lock ${acct.currency} ${buyerTotal.toStringAsFixed(2)} in escrow for "${_titleCtrl.text.trim()}"',
+      message: 'Lock ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(buyerTotal, acct.currency)} in escrow for "${_titleCtrl.text.trim()}"',
       showProcessingPhase: false,
       onPinValidated: (t) async => token = t,
     );
@@ -661,7 +662,7 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
                   .map((a) => DropdownMenuItem(
                         value: a.id.toString(),
                         child: Text(
-                            '${a.accountType.toUpperCase()} · ${a.currency} ${a.availableBalance.toStringAsFixed(2)}',
+                            '${a.accountType.toUpperCase()} · ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(a.availableBalance, a.currency)}',
                             style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
                       ))
                   .toList(),

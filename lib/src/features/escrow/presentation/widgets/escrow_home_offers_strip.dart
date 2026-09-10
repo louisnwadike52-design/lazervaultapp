@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 
 import '../../domain/entities/escrow_offer_entity.dart';
+import '../view/escrow_role_labels.dart';
 import '../view/escrow_theme.dart';
 
 /// Horizontal strip of the user's ACTIVE offers (open listings/requests +
@@ -162,8 +163,20 @@ class EscrowHomeOffersStrip extends StatelessWidget {
                         : EscrowTheme.textSecondary,
                     fontWeight: viewerActs ? FontWeight.w600 : FontWeight.w400,
                     fontSize: 10.5.sp)),
+            SizedBox(height: 5.h),
+            // Seller-listing vs buy-request, at a glance, without opening it.
+            Wrap(
+              spacing: 4.w,
+              runSpacing: 4.h,
+              children: <Widget?>[
+                EscrowRoles.directionBadge(o, compact: true),
+                EscrowRoles.feePromoBadge(o, viewerUserId, compact: true),
+              ].whereType<Widget>().toList(),
+            ),
             const Spacer(),
-            Text('${o.currency} ${NumberFormat('#,##0.00').format(o.amount)}',
+            Text(
+                currency_formatter.CurrencySymbols
+                    .formatAmountWithCurrency(o.amount, o.currency),
                 style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 13.sp,

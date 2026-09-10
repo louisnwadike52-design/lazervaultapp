@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -20,6 +21,7 @@ import '../../domain/entities/escrow_offer_entity.dart';
 import '../cubit/escrow_cubit.dart';
 import '../widgets/escrow_media_viewer.dart';
 import '../widgets/escrow_offer_fund_sheet.dart';
+import 'escrow_role_labels.dart';
 import 'escrow_theme.dart';
 
 /// Escrow OFFER view — the listing page both sides see before money moves.
@@ -321,7 +323,8 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
   }
 
   String _money(EscrowOfferEntity o) =>
-      '${o.currency} ${NumberFormat('#,##0.00').format(o.amount)}';
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          o.amount, o.currency);
 
   @override
   Widget build(BuildContext context) {
@@ -440,12 +443,24 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
               EscrowTheme.offerStatusChip(offer.status),
             ]),
             SizedBox(height: 4.h),
-            Text(
-                offer.isSellOffer
-                    ? 'Listed by ${offer.creatorName.isNotEmpty ? offer.creatorName : 'a Lazervault user'}'
-                    : 'Requested by ${offer.creatorName.isNotEmpty ? offer.creatorName : 'a Lazervault user'}',
+            Text(EscrowRoles.createdByLine(offer, userId),
                 style: GoogleFonts.inter(
                     color: EscrowTheme.textSecondary, fontSize: 12.sp)),
+            SizedBox(height: 8.h),
+            // Which side created this, which seat the viewer is in, and any
+            // fee promo — the three facts that decide what everything else on
+            // this screen means.
+            Wrap(
+              spacing: 6.w,
+              runSpacing: 6.h,
+              children: <Widget?>[
+                EscrowRoles.directionBadge(offer),
+                EscrowRoles.seatBadge(offer, userId),
+                EscrowRoles.feePromoBadge(offer, userId),
+              ].whereType<Widget>().toList(),
+            ),
+            SizedBox(height: 10.h),
+            _awaitingLine(offer, userId),
             SizedBox(height: 16.h),
             _priceCard(offer),
             if (offer.attachments.isNotEmpty) ...[
@@ -480,6 +495,33 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
     );
   }
 
+  /// Names whoever the offer is currently waiting on, emphasised when that is
+  /// the viewer. Previously the screen showed only a status chip
+  /// ("Awaiting response"), which never said awaiting WHOM.
+  Widget _awaitingLine(EscrowOfferEntity offer, String userId) {
+    if (offer.isTerminal) {
+      return Text(EscrowRoles.statusMeaning(offer, userId),
+          style: GoogleFonts.inter(
+              color: EscrowTheme.textSecondary, fontSize: 12.sp));
+    }
+    final (label, viewerActs) = EscrowRoles.awaiting(offer, userId);
+    final color = viewerActs ? EscrowTheme.primaryLight : EscrowTheme.textSecondary;
+    return Row(
+      children: [
+        Icon(viewerActs ? Icons.pending_actions_rounded : Icons.hourglass_top_rounded,
+            size: 13.sp, color: color),
+        SizedBox(width: 6.w),
+        Expanded(
+          child: Text(label,
+              style: GoogleFonts.inter(
+                  color: color,
+                  fontSize: 12.sp,
+                  fontWeight: viewerActs ? FontWeight.w700 : FontWeight.w500)),
+        ),
+      ],
+    );
+  }
+
   Widget _priceCard(EscrowOfferEntity offer) => Container(
         width: double.infinity,
         padding: EdgeInsets.all(16.w),
@@ -505,9 +547,17 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
                     fontSize: 24.sp,
                     fontWeight: FontWeight.w700)),
             SizedBox(height: 6.h),
-            Text('Held in escrow until you confirm delivery',
+            Text(EscrowRoles.custodyLine(offer, _viewerUserId),
                 style: GoogleFonts.inter(
-                    color: EscrowTheme.textSecondary, fontSize: 11.5.sp)),
+                    color: EscrowTheme.textSecondary,
+                    fontSize: 11.5.sp,
+                    height: 1.45)),
+            SizedBox(height: 6.h),
+            Text(EscrowRoles.feeSplitLine(offer, _viewerUserId),
+                style: GoogleFonts.inter(
+                    color: EscrowTheme.textSecondary.withValues(alpha: 0.85),
+                    fontSize: 11.sp,
+                    height: 1.45)),
             if (EscrowTheme.conditionChip(offer.condition) != null) ...[
               SizedBox(height: 8.h),
               EscrowTheme.conditionChip(offer.condition)!,

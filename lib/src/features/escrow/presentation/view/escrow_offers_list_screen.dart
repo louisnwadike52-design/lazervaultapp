@@ -7,11 +7,13 @@ import 'package:intl/intl.dart';
 
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 
 import '../../domain/entities/escrow_offer_entity.dart';
 import '../cubit/escrow_cubit.dart';
 import '../widgets/escrow_shimmer.dart';
 import '../widgets/escrow_empty_state.dart';
+import 'escrow_role_labels.dart';
 import 'escrow_theme.dart';
 
 /// Offers inbox — listings I published and offers/requests addressed to me,
@@ -231,6 +233,18 @@ class _EscrowOffersListScreenState extends State<EscrowOffersListScreen> {
               EscrowTheme.offerStatusChip(o.status),
             ]),
             SizedBox(height: 6.h),
+            // Which side created it, the viewer's seat, and any fee promo —
+            // readable without opening the offer.
+            Wrap(
+              spacing: 5.w,
+              runSpacing: 5.h,
+              children: <Widget?>[
+                EscrowRoles.directionBadge(o, compact: true),
+                EscrowRoles.seatBadge(o, uid, compact: true),
+                EscrowRoles.feePromoBadge(o, uid, compact: true),
+              ].whereType<Widget>().toList(),
+            ),
+            SizedBox(height: 6.h),
             Text(subtitle,
                 style: GoogleFonts.inter(
                     color: viewerActs
@@ -244,7 +258,8 @@ class _EscrowOffersListScreenState extends State<EscrowOffersListScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                    '${o.currency} ${NumberFormat('#,##0.00').format(o.amount)}',
+                    currency_formatter.CurrencySymbols
+                        .formatAmountWithCurrency(o.amount, o.currency),
                     style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 14.sp,

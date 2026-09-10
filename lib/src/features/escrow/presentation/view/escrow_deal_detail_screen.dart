@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,6 +20,7 @@ import '../widgets/escrow_media_viewer.dart';
 import '../widgets/escrow_shimmer.dart';
 import '../widgets/escrow_empty_state.dart';
 import '../../domain/entities/escrow_deal_entity.dart';
+import 'escrow_role_labels.dart';
 import 'escrow_theme.dart';
 part 'escrow_deal_detail_screen_widgets.dart';
 
@@ -62,7 +64,7 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
       amount: deal.sellerNet,
       currency: deal.currency,
       title: 'Release funds',
-      message: 'Release ${deal.currency} ${deal.sellerNet.toStringAsFixed(2)} to ${deal.sellerName}',
+      message: 'Release ${_money(deal.sellerNet, deal.currency)} to ${deal.sellerName}',
       showProcessingPhase: false,
       onPinValidated: (t) async => token = t,
     );
@@ -256,7 +258,7 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     final note = await _promptSheet(
       title: 'Accept & refund',
       subtitle:
-          'This returns ${deal.currency} ${deal.buyerTotal.toStringAsFixed(2)} to the buyer and closes the deal. This can\'t be undone.',
+          'This returns ${_money(deal.buyerTotal, deal.currency)} to the buyer and closes the deal. This can\'t be undone.',
       hint: 'Add a note (optional)',
       confirmLabel: 'Accept & refund',
       icon: Icons.undo_rounded,
@@ -605,6 +607,14 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
               ],
             ),
             SizedBox(height: 4.h),
+            // Name both sides and mark which one is the viewer, so the page
+            // never leaves you working out which seat you are in.
+            Text(EscrowRoles.dealPartyLine(deal, uid),
+                style: GoogleFonts.inter(
+                    color: EscrowTheme.textSecondary,
+                    fontSize: 12.sp,
+                    height: 1.4)),
+            SizedBox(height: 4.h),
             Row(children: [
               Expanded(
                 child: Text('Ref ${deal.reference}',
@@ -667,15 +677,79 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         border: Border.all(color: EscrowTheme.border),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          row('Deal amount', '${deal.currency} ${deal.amount.toStringAsFixed(2)}'),
-          row('Escrow fee (${deal.feePayer}-paid)', '${deal.currency} ${deal.fee.toStringAsFixed(2)}'),
+          row('Deal amount', _money(deal.amount, deal.currency)),
+          // YOUR share of the fee, not just who the payer is. Since the fee is
+          // normally split, "Escrow fee (split-paid)" told a user the label of
+          // a policy instead of what it cost them.
+          row(_feeRowLabel(deal, isBuyer),
+              _money(_viewerFeeShare(deal, isBuyer), deal.currency)),
           Divider(color: EscrowTheme.border, height: 18.h),
-          row(isBuyer ? 'You paid' : 'Buyer paid', '${deal.currency} ${deal.buyerTotal.toStringAsFixed(2)}', bold: true),
-          row(isBuyer ? 'Seller receives' : 'You receive', '${deal.currency} ${deal.sellerNet.toStringAsFixed(2)}'),
+          row(isBuyer ? 'You paid' : 'Buyer paid',
+              _money(deal.buyerTotal, deal.currency), bold: true),
+          row(isBuyer ? 'Seller receives' : 'You receive',
+              _money(deal.sellerNet, deal.currency)),
+          SizedBox(height: 8.h),
+          Text(_feeSplitExplainer(deal, isBuyer),
+              style: GoogleFonts.inter(
+                  color: EscrowTheme.textSecondary,
+                  fontSize: 11.sp,
+                  height: 1.45)),
         ],
       ),
     );
+  }
+
+  String _money(double v, String currency) =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(v, currency);
+
+  /// What this viewer actually bore of the escrow fee.
+  double _viewerFeeShare(EscrowDealEntity deal, bool isBuyer) {
+    switch (deal.feePayer) {
+      case 'buyer':
+        return isBuyer ? deal.fee : 0;
+      case 'seller':
+        return isBuyer ? 0 : deal.fee;
+      case 'none':
+        return 0;
+      default: // split — derive each side from the recorded totals rather than
+        // halving again, so the row always matches the money that moved.
+        return isBuyer
+            ? _round2(deal.buyerTotal - deal.amount)
+            : _round2(deal.amount - deal.sellerNet);
+    }
+  }
+
+  double _round2(double v) => (v * 100).roundToDouble() / 100;
+
+  String _feeRowLabel(EscrowDealEntity deal, bool isBuyer) {
+    final share = _viewerFeeShare(deal, isBuyer);
+    if (share <= 0) return 'Escrow fee (you paid none)';
+    return deal.feePayer == 'split' ? 'Escrow fee (your half)' : 'Escrow fee';
+  }
+
+  String _feeSplitExplainer(EscrowDealEntity deal, bool isBuyer) {
+    final total = _money(deal.fee, deal.currency);
+    switch (deal.feePayer) {
+      case 'none':
+        return 'No escrow fee applied to this deal.';
+      case 'buyer':
+        return isBuyer
+            ? 'You covered the whole $total escrow fee, so the seller\'s '
+                'proceeds were not reduced.'
+            : 'The buyer covered the whole $total escrow fee, so your proceeds '
+                'were not reduced.';
+      case 'seller':
+        return isBuyer
+            ? 'The seller covered the whole $total escrow fee — you paid only '
+                'the deal amount.'
+            : 'You covered the whole $total escrow fee, so the buyer paid only '
+                'the deal amount.';
+      default:
+        return 'The $total escrow fee was split evenly — half added to the '
+            'buyer\'s payment, half taken from the seller\'s proceeds.';
+    }
   }
 
   Widget _reviewBanner() => Container(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -193,7 +194,7 @@ class _EscrowOfferFundSheetState extends State<_EscrowOfferFundSheet>
                     style: GoogleFonts.inter(
                         color: Colors.white, fontSize: 14.sp)),
                 subtitle: Text(
-                    '${a.currency} ${NumberFormat('#,##0.00').format(a.availableBalance)} available',
+                    '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(a.availableBalance, a.currency)} available',
                     style: GoogleFonts.inter(
                         color: a.availableBalance >= _payable
                             ? EscrowTheme.textSecondary
@@ -341,7 +342,7 @@ class _EscrowOfferFundSheetState extends State<_EscrowOfferFundSheet>
                                     fontWeight: FontWeight.w600)),
                             SizedBox(height: 2.h),
                             Text(
-                                '${a.currency} ${NumberFormat('#,##0.00').format(a.availableBalance)} available',
+                                '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(a.availableBalance, a.currency)} available',
                                 style: GoogleFonts.inter(
                                     color: _hasEnough
                                         ? EscrowTheme.textSecondary

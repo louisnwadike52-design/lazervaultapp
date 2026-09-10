@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide Trans;
@@ -452,8 +453,8 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
               children: [
                 Text(
                     isBuyer
-                        ? 'You pay ${deal.currency} ${deal.buyerTotal.toStringAsFixed(2)}'
-                        : 'You get ${deal.currency} ${deal.sellerNet.toStringAsFixed(2)}',
+                        ? 'You pay ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(deal.buyerTotal, deal.currency)}'
+                        : 'You get ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(deal.sellerNet, deal.currency)}',
                     style: GoogleFonts.inter(
                         color: Colors.white, fontSize: 13.5.sp, fontWeight: FontWeight.w600)),
                 Icon(Icons.chevron_right, color: EscrowTheme.textSecondary, size: 20.sp),
