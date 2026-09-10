@@ -243,6 +243,80 @@ class EscrowRoles {
         'released to them only once you confirm delivery.';
   }
 
+  // ── What the fee actually cost THIS viewer ──────────────────────────────
+
+  /// The share of [d]'s escrow fee this viewer actually bore.
+  ///
+  /// For a split, derived from the RECORDED totals rather than halving the fee
+  /// again, so the figure always matches the money that moved — including the
+  /// odd kobo, which the split deliberately lands on one party.
+  static double dealViewerFeeShare(EscrowDealEntity d, bool isBuyer) {
+    switch (d.feePayer) {
+      case 'buyer':
+        return isBuyer ? d.fee : 0;
+      case 'seller':
+        return isBuyer ? 0 : d.fee;
+      case 'none':
+        return 0;
+      default: // split
+        return isBuyer
+            ? _round2(d.buyerTotal - d.amount)
+            : _round2(d.amount - d.sellerNet);
+    }
+  }
+
+  static double _round2(double v) => (v * 100).roundToDouble() / 100;
+
+  static String dealFeeRowLabel(EscrowDealEntity d, bool isBuyer) {
+    if (dealViewerFeeShare(d, isBuyer) <= 0) {
+      return 'Escrow fee (you paid none)';
+    }
+    return d.feePayer == 'split' ? 'Escrow fee (your half)' : 'Escrow fee';
+  }
+
+  static String dealFeeExplainer(
+      EscrowDealEntity d, bool isBuyer, String Function(double) money) {
+    final total = money(d.fee);
+    switch (d.feePayer) {
+      case 'none':
+        return 'No escrow fee applied to this deal.';
+      case 'buyer':
+        return isBuyer
+            ? 'You covered the whole $total escrow fee, so the seller\'s '
+                'proceeds were not reduced.'
+            : 'The buyer covered the whole $total escrow fee, so your proceeds '
+                'were not reduced.';
+      case 'seller':
+        return isBuyer
+            ? 'The seller covered the whole $total escrow fee — you paid only '
+                'the deal amount.'
+            : 'You covered the whole $total escrow fee, so the buyer paid only '
+                'the deal amount.';
+      default:
+        return 'The $total escrow fee was split evenly — half added to the '
+            'buyer\'s payment, half taken from the seller\'s proceeds.';
+    }
+  }
+
+  /// How a deal's fee split reads on a document showing BOTH sides (invoice,
+  /// PDF). An empty value means the deal deferred to configuration, whose
+  /// default is SPLIT — the two copies of this that existed both claimed
+  /// "paid by buyer" there, which stopped being true when the split landed.
+  static String feePayerLabel(String feePayer) {
+    switch (feePayer.toUpperCase()) {
+      case 'BUYER':
+        return 'paid by buyer';
+      case 'SELLER':
+        return 'paid by seller';
+      case 'NONE':
+        return 'no fee';
+      case 'SPLIT':
+        return 'split evenly';
+      default:
+        return feePayer.isEmpty ? 'split evenly' : feePayer.toLowerCase();
+    }
+  }
+
   /// Plain-language meaning of an offer status, for the detail header.
   static String statusMeaning(EscrowOfferEntity o, String viewerUserId) {
     if (o.isOpen) {

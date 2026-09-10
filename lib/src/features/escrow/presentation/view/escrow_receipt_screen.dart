@@ -19,6 +19,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 import '../../domain/entities/escrow_deal_entity.dart';
 import '../services/escrow_pdf_service.dart';
+import 'escrow_role_labels.dart';
 import 'escrow_theme.dart';
 part 'escrow_receipt_screen_widgets.dart';
 
@@ -431,13 +432,28 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
       if (deal.condition.isNotEmpty)
         _DetailEntry('Condition', EscrowTheme.conditionLabel(deal.condition)),
       _DetailEntry('Item price', _money(deal.amount)),
-      // The fee is shown to the party who actually BEARS it (feePayer), so the
-      // other side isn't invited to reconcile a charge that was never theirs.
-      if (deal.fee > 0 &&
-          (_viewerId == null ||
-              (_viewerIsBuyer && deal.feePayer == 'buyer') ||
-              (_viewerIsSeller && deal.feePayer == 'seller')))
+      // The fee shown is the share this viewer actually BORE, so the other
+      // side isn't invited to reconcile a charge that was never theirs.
+      //
+      // This used to match only feePayer == 'buyer'/'seller' exactly, so once
+      // fees became a 50/50 SPLIT by default the row vanished for BOTH parties
+      // — a receipt silently omitting a charge they each half-paid. The share
+      // is derived from the recorded totals, so it also stays right for the
+      // odd kobo the split lands on one side.
+      if (deal.fee > 0 && _viewerId == null)
         _DetailEntry('Platform fee', _money(deal.fee)),
+      if (deal.fee > 0 && _viewerId != null)
+        ...() {
+          final share =
+              EscrowRoles.dealViewerFeeShare(deal, _viewerIsBuyer);
+          return share > 0
+              ? [
+                  _DetailEntry(
+                      EscrowRoles.dealFeeRowLabel(deal, _viewerIsBuyer),
+                      _money(share)),
+                ]
+              : const <_DetailEntry>[];
+        }(),
       // Each party sees THEIR OWN figure. Printing both put the counterparty's
       // total on every receipt: a seller learned exactly what the buyer was
       // charged, and a buyer exactly what the seller pocketed — neither is

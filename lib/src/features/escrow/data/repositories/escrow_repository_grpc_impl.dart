@@ -13,11 +13,13 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
   EscrowRepositoryGrpcImpl({required this.grpcClient});
 
   @override
-  Future<EscrowFeeQuote> quoteFee({required double amount, String currency = 'NGN'}) async {
+  Future<EscrowFeeQuote> quoteFee(
+      {required double amount, String currency = 'NGN', String offerId = ''}) async {
     return retryWithBackoff(operation: () async {
       final req = pb.QuoteFeeRequest()
         ..amount = amount
         ..currency = currency;
+      if (offerId.isNotEmpty) req.offerId = offerId;
       final options = await grpcClient.callOptions;
       final resp = await grpcClient.escrowClient.quoteFee(req, options: options);
       return EscrowFeeQuote(

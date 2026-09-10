@@ -88,6 +88,12 @@ class _EscrowOfferFundSheetState extends State<_EscrowOfferFundSheet>
     final q = await context.read<EscrowCubit>().quoteFee(
           widget.offer.amount,
           currency: widget.offer.currency,
+          // Price on THIS offer's agreed split. Without it the sheet quoted the
+          // global default, so a seller who volunteered to cover the whole fee
+          // still had a fee line added to the buyer's total here — a number the
+          // buyer was never charged, and the exact opposite of the promo the
+          // listing advertises.
+          offerId: widget.offer.id,
         );
     if (mounted && q != null) setState(() => _quote = q);
   }

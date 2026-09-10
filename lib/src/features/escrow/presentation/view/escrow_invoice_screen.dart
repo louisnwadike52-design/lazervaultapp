@@ -17,6 +17,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
 import '../../domain/entities/escrow_deal_entity.dart';
 import '../services/escrow_pdf_service.dart';
+import 'escrow_role_labels.dart';
 import 'escrow_theme.dart';
 
 /// Formal Escrow Agreement / Invoice document.
@@ -83,18 +84,8 @@ class _EscrowInvoiceScreenState extends State<EscrowInvoiceScreen> {
     return n.isEmpty ? '—' : n;
   }
 
-  String _feePayerLabel(String feePayer) {
-    switch (feePayer.toUpperCase()) {
-      case 'BUYER':
-        return 'paid by buyer';
-      case 'SELLER':
-        return 'paid by seller';
-      case 'SPLIT':
-        return 'split';
-      default:
-        return feePayer.isEmpty ? 'paid by buyer' : feePayer.toLowerCase();
-    }
-  }
+  String _feePayerLabel(String feePayer) =>
+      EscrowRoles.feePayerLabel(feePayer);
 
   @override
   Widget build(BuildContext context) {

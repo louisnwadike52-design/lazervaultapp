@@ -55,9 +55,11 @@ class EscrowCubit extends Cubit<EscrowState> {
   }
 
   /// Fee preview — emits EscrowFeeQuoted without disturbing list/detail state.
-  Future<EscrowFeeQuote?> quoteFee(double amount, {String currency = 'NGN'}) async {
+  Future<EscrowFeeQuote?> quoteFee(double amount,
+      {String currency = 'NGN', String offerId = ''}) async {
     try {
-      final q = await repository.quoteFee(amount: amount, currency: currency);
+      final q = await repository.quoteFee(
+          amount: amount, currency: currency, offerId: offerId);
       emit(EscrowFeeQuoted(q));
       return q;
     } catch (_) {

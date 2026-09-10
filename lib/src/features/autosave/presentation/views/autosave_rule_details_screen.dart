@@ -884,7 +884,18 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
             }
           });
         } else if (state is AutoSaveTransactionTriggered) {
-          setState(() => _isTriggeringRule = false);
+          setState(() {
+            _isTriggeringRule = false;
+            // Fold the save in immediately. The refresh below only re-syncs
+            // this rule if it lands on page 1 of the paged list (25), so a
+            // rule beyond that would otherwise show "Save successful" over an
+            // unchanged Total Saved. A successful save is the only path here,
+            // and the refresh REPLACES this value, so it cannot double-count.
+            if (state.transaction.success) {
+              rule = rule.withSaveApplied(
+                  state.transaction.amount, state.transaction.createdAt);
+            }
+          });
 
           Get.snackbar(
             'Success',

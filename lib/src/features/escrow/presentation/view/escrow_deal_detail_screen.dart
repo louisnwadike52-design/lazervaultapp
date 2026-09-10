@@ -683,15 +683,16 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
           // YOUR share of the fee, not just who the payer is. Since the fee is
           // normally split, "Escrow fee (split-paid)" told a user the label of
           // a policy instead of what it cost them.
-          row(_feeRowLabel(deal, isBuyer),
-              _money(_viewerFeeShare(deal, isBuyer), deal.currency)),
+          row(EscrowRoles.dealFeeRowLabel(deal, isBuyer),
+              _money(EscrowRoles.dealViewerFeeShare(deal, isBuyer), deal.currency)),
           Divider(color: EscrowTheme.border, height: 18.h),
           row(isBuyer ? 'You paid' : 'Buyer paid',
               _money(deal.buyerTotal, deal.currency), bold: true),
           row(isBuyer ? 'Seller receives' : 'You receive',
               _money(deal.sellerNet, deal.currency)),
           SizedBox(height: 8.h),
-          Text(_feeSplitExplainer(deal, isBuyer),
+          Text(EscrowRoles.dealFeeExplainer(
+                  deal, isBuyer, (v) => _money(v, deal.currency)),
               style: GoogleFonts.inter(
                   color: EscrowTheme.textSecondary,
                   fontSize: 11.sp,
@@ -704,53 +705,8 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   String _money(double v, String currency) =>
       currency_formatter.CurrencySymbols.formatAmountWithCurrency(v, currency);
 
-  /// What this viewer actually bore of the escrow fee.
-  double _viewerFeeShare(EscrowDealEntity deal, bool isBuyer) {
-    switch (deal.feePayer) {
-      case 'buyer':
-        return isBuyer ? deal.fee : 0;
-      case 'seller':
-        return isBuyer ? 0 : deal.fee;
-      case 'none':
-        return 0;
-      default: // split — derive each side from the recorded totals rather than
-        // halving again, so the row always matches the money that moved.
-        return isBuyer
-            ? _round2(deal.buyerTotal - deal.amount)
-            : _round2(deal.amount - deal.sellerNet);
-    }
-  }
 
-  double _round2(double v) => (v * 100).roundToDouble() / 100;
 
-  String _feeRowLabel(EscrowDealEntity deal, bool isBuyer) {
-    final share = _viewerFeeShare(deal, isBuyer);
-    if (share <= 0) return 'Escrow fee (you paid none)';
-    return deal.feePayer == 'split' ? 'Escrow fee (your half)' : 'Escrow fee';
-  }
-
-  String _feeSplitExplainer(EscrowDealEntity deal, bool isBuyer) {
-    final total = _money(deal.fee, deal.currency);
-    switch (deal.feePayer) {
-      case 'none':
-        return 'No escrow fee applied to this deal.';
-      case 'buyer':
-        return isBuyer
-            ? 'You covered the whole $total escrow fee, so the seller\'s '
-                'proceeds were not reduced.'
-            : 'The buyer covered the whole $total escrow fee, so your proceeds '
-                'were not reduced.';
-      case 'seller':
-        return isBuyer
-            ? 'The seller covered the whole $total escrow fee — you paid only '
-                'the deal amount.'
-            : 'You covered the whole $total escrow fee, so the buyer paid only '
-                'the deal amount.';
-      default:
-        return 'The $total escrow fee was split evenly — half added to the '
-            'buyer\'s payment, half taken from the seller\'s proceeds.';
-    }
-  }
 
   Widget _reviewBanner() => Container(
         padding: EdgeInsets.all(12.w),

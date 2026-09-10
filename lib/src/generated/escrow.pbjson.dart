@@ -463,13 +463,14 @@ const QuoteFeeRequest$json = {
   '2': [
     {'1': 'amount', '3': 1, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 2, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'offer_id', '3': 3, '4': 1, '5': 9, '10': 'offerId'},
   ],
 };
 
 /// Descriptor for `QuoteFeeRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List quoteFeeRequestDescriptor = $convert.base64Decode(
     'Cg9RdW90ZUZlZVJlcXVlc3QSFgoGYW1vdW50GAEgASgBUgZhbW91bnQSGgoIY3VycmVuY3kYAi'
-    'ABKAlSCGN1cnJlbmN5');
+    'ABKAlSCGN1cnJlbmN5EhkKCG9mZmVyX2lkGAMgASgJUgdvZmZlcklk');
 
 @$core.Deprecated('Use quoteFeeResponseDescriptor instead')
 const QuoteFeeResponse$json = {

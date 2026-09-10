@@ -1758,14 +1758,20 @@ class OpenDisputeRequest extends $pb.GeneratedMessage {
   void clearEvidenceUrl() => $_clearField(3);
 }
 
+/// offer_id is optional. When set, the quote is priced with THAT OFFER'S agreed
+/// fee split rather than the global default — otherwise a listing whose seller
+/// volunteered to absorb the whole fee still quoted the buyer a fee line they
+/// were never going to be charged, which is the opposite of the promo.
 class QuoteFeeRequest extends $pb.GeneratedMessage {
   factory QuoteFeeRequest({
     $core.double? amount,
     $core.String? currency,
+    $core.String? offerId,
   }) {
     final result = create();
     if (amount != null) result.amount = amount;
     if (currency != null) result.currency = currency;
+    if (offerId != null) result.offerId = offerId;
     return result;
   }
 
@@ -1784,6 +1790,7 @@ class QuoteFeeRequest extends $pb.GeneratedMessage {
       createEmptyInstance: create)
     ..a<$core.double>(1, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(2, _omitFieldNames ? '' : 'currency')
+    ..aOS(3, _omitFieldNames ? '' : 'offerId')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1824,6 +1831,15 @@ class QuoteFeeRequest extends $pb.GeneratedMessage {
   $core.bool hasCurrency() => $_has(1);
   @$pb.TagNumber(2)
   void clearCurrency() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get offerId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set offerId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasOfferId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearOfferId() => $_clearField(3);
 }
 
 class QuoteFeeResponse extends $pb.GeneratedMessage {

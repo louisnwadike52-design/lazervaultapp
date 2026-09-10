@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:barcode/barcode.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import '../view/escrow_role_labels.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
@@ -560,18 +561,8 @@ class EscrowPdfService {
     }
   }
 
-  static String _feePayerLabel(String feePayer) {
-    switch (feePayer.toUpperCase()) {
-      case 'BUYER':
-        return 'paid by buyer';
-      case 'SELLER':
-        return 'paid by seller';
-      case 'SPLIT':
-        return 'split';
-      default:
-        return feePayer.isEmpty ? 'paid by buyer' : feePayer.toLowerCase();
-    }
-  }
+  static String _feePayerLabel(String feePayer) =>
+      EscrowRoles.feePayerLabel(feePayer);
 
   /// Saves a generated PDF where the user can get at it.
   ///

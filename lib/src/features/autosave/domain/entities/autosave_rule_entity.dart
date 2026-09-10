@@ -210,6 +210,49 @@ class AutoSaveRuleEntity extends Equatable {
   }
 
   // Formatted amount with currency symbol (e.g., "₦1,000.00")
+  /// This rule with a completed save folded in.
+  ///
+  /// The rules list is paged (25), so a rule beyond the first page is absent
+  /// from the refresh that follows a manual save and the details screen could
+  /// not re-sync from it — "Save successful" while Total Saved stayed put.
+  /// The deltas are exact: [amountSaved] is the NET the backend recorded, which
+  /// is the same figure it adds to total_saved. A later authoritative refresh
+  /// REPLACES this value rather than adding to it, so the two cannot
+  /// double-count.
+  ///
+  /// Deliberately not a general copyWith: with this many nullable fields a
+  /// copyWith cannot tell "not passed" from "set to null" without sentinels,
+  /// and silently nulling a schedule or a limit here would be a money bug.
+  AutoSaveRuleEntity withSaveApplied(double amountSaved, DateTime when) =>
+      AutoSaveRuleEntity(
+        id: id,
+        userId: userId,
+        name: name,
+        description: description,
+        triggerType: triggerType,
+        amountType: amountType,
+        amountValue: amountValue,
+        sourceAccountId: sourceAccountId,
+        destinationAccountId: destinationAccountId,
+        status: status,
+        currency: currency,
+        sourceLinkedAccountId: sourceLinkedAccountId,
+        sourceBankName: sourceBankName,
+        pendingInflowKobo: pendingInflowKobo,
+        frequency: frequency,
+        scheduleTime: scheduleTime,
+        scheduleDay: scheduleDay,
+        roundUpTo: roundUpTo,
+        targetAmount: targetAmount,
+        minimumBalance: minimumBalance,
+        maximumPerSave: maximumPerSave,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        lastTriggeredAt: when,
+        triggerCount: triggerCount + 1,
+        totalSaved: totalSaved + amountSaved,
+      );
+
   String get formattedAmount => currency_formatter.CurrencySymbols.formatAmountWithCurrency(amountValue, currency);
 
   // Formatted total saved with currency symbol

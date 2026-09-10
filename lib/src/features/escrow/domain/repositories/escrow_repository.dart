@@ -5,7 +5,11 @@ import '../entities/escrow_offer_entity.dart';
 /// over gRPC to commerce-gateway (EscrowService).
 abstract class EscrowRepository {
   /// Fee preview for a prospective deal (reads admin-configurable fee config).
-  Future<EscrowFeeQuote> quoteFee({required double amount, String currency = 'NGN'});
+  /// [offerId], when given, prices the quote with THAT OFFER'S agreed fee
+  /// split instead of the global default — so a listing whose seller absorbed
+  /// the fee quotes the buyer what they will actually be charged.
+  Future<EscrowFeeQuote> quoteFee(
+      {required double amount, String currency = 'NGN', String offerId = ''});
 
   /// Create + fund a deal (buyer locks funds into the escrow pool). PIN-gated.
   Future<EscrowDealEntity> createDeal({
