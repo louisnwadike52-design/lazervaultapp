@@ -1,4 +1,5 @@
 import 'package:lazervault/core/shared_widgets/face_id_icon.dart';
+import 'package:lazervault/core/shared_widgets/fingerprint_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -45,8 +46,18 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
   bool _fingerprintOn = false;
   bool _faceOn = false;
   bool _voiceOn = false;
-  /// Fire the OS prompt as the lock screen appears, or wait for a tap.
-  bool _autoPrompt = false;
+  /// Fire the OS prompt as the lock screen appears, or wait for a tap —
+  /// answered separately per method, since a device can offer both.
+  bool _autoPromptFace = true;
+  bool _autoPromptFingerprint = true;
+  /// Shake twice on the lock screen to leave automatic mode. One switch for
+  /// both methods: it is a property of automatic mode, not of a modality.
+  bool _shakeEscape = true;
+  /// Whether each tile's unlock-mode body is open. Starts open so turning a
+  /// biometric on reveals the choice that comes with it rather than hiding it
+  /// behind a chevron nobody looks for.
+  bool _faceExpanded = true;
+  bool _fingerprintExpanded = true;
 
   bool get _fingerprintAvailable => _status.isAvailable && _status.hasFingerprint;
   bool get _faceAvailable => _status.isAvailable && _status.hasFace;
@@ -79,7 +90,9 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
     _fingerprintOn = await _store.getFingerprintLoginEnabled();
     _faceOn = await _store.getFaceLoginEnabled();
     _voiceOn = await _store.getVoiceLoginEnabled();
-    _autoPrompt = await _store.getBiometricAutoPrompt();
+    _autoPromptFace = await _store.getBiometricAutoPrompt(isFace: true);
+    _autoPromptFingerprint = await _store.getBiometricAutoPrompt(isFace: false);
+    _shakeEscape = await _store.getBiometricShakeEscape();
     // If a biometric was removed at the OS level, drop the stale opt-in so we
     // never show an "on" toggle the OS can no longer satisfy.
     if (!_status.isAvailable) {
@@ -200,9 +213,14 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
     if (isFace) {
       _faceOn = true;
       await _store.setFaceLoginEnabled(true);
+      // Reveal the unlock-mode options with the toggle that unlocks them —
+      // that choice arrives WITH the method, so a body the user collapsed on
+      // a previous visit must not hide it the next time they switch it on.
+      _faceExpanded = true;
     } else {
       _fingerprintOn = true;
       await _store.setFingerprintLoginEnabled(true);
+      _fingerprintExpanded = true;
     }
     // No durable token to arm: biometric unlock re-mints from the single
     // `refresh_token` already in storage (rotating it one-time-use). Enabling is
@@ -288,6 +306,7 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
                 SizedBox(height: 20.h),
                 _tile(
                   icon: Icons.fingerprint,
+                  iconBuilder: (c) => FingerprintIcon(size: 22.sp, color: c),
                   title: 'Fingerprint',
                   subtitle: _fingerprintAvailable
                       ? 'Unlock with your fingerprint'
@@ -299,6 +318,10 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
                   onChanged: (v) =>
                       _toggleDeviceBiometric(isFace: false, turnOn: v),
                   onSetup: _canEnroll ? _openEnrollment : null,
+                  expansion: _unlockModeSelector(isFace: false),
+                  expanded: _fingerprintExpanded,
+                  onToggleExpand: () => setState(
+                      () => _fingerprintExpanded = !_fingerprintExpanded),
                 ),
                 _tile(
                   icon: Icons.face_outlined,
@@ -314,14 +337,14 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
                   onChanged: (v) =>
                       _toggleDeviceBiometric(isFace: true, turnOn: v),
                   onSetup: _canEnroll ? _openEnrollment : null,
+                  // Lives INSIDE the Face ID tile now. It used to float below
+                  // both toggles as a loose block, which read as a separate
+                  // setting rather than part of the one that enables it.
+                  expansion: _unlockModeSelector(isFace: true),
+                  expanded: _faceExpanded,
+                  onToggleExpand: () =>
+                      setState(() => _faceExpanded = !_faceExpanded),
                 ),
-                // Only meaningful when a device biometric can actually unlock —
-                // voice has its own sheet and never auto-fires.
-                if ((_fingerprintOn && _fingerprintAvailable) ||
-                    (_faceOn && _faceAvailable)) ...[
-                  SizedBox(height: 6.h),
-                  _unlockModeSelector(),
-                ],
                 _tile(
                   icon: Icons.record_voice_over_outlined,
                   title: 'Voice',
@@ -405,15 +428,28 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
     );
   }
 
-  Future<void> _setAutoPrompt(bool v) async {
-    setState(() => _autoPrompt = v);
-    await _store.setBiometricAutoPrompt(v);
+  Future<void> _setAutoPrompt(bool v, {required bool isFace}) async {
+    setState(() {
+      if (isFace) {
+        _autoPromptFace = v;
+      } else {
+        _autoPromptFingerprint = v;
+      }
+    });
+    await _store.setBiometricAutoPrompt(v, isFace: isFace);
   }
 
-  /// How the unlock biometric fires. Kept next to the toggles that enable it,
+  Future<void> _setShakeEscape(bool v) async {
+    setState(() => _shakeEscape = v);
+    await _store.setBiometricShakeEscape(v);
+  }
+
+  /// How the unlock biometric fires. Kept inside the toggle that enables it,
   /// because "Face ID is on" and "Face ID opens by itself" are different
   /// decisions and the second is the one people notice.
-  Widget _unlockModeSelector() {
+  Widget _unlockModeSelector({required bool isFace}) {
+    final auto = isFace ? _autoPromptFace : _autoPromptFingerprint;
+    final noun = isFace ? 'Face ID' : 'your fingerprint';
     Widget option({
       required bool selected,
       required IconData icon,
@@ -482,22 +518,80 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
           SizedBox(height: 8.h),
           Row(children: [
             option(
-              selected: !_autoPrompt,
+              selected: !auto,
               icon: Icons.touch_app_outlined,
               title: 'When I tap',
-              subtitle: 'Open the lock screen first. Unlock by tapping the '
-                  'Face ID button.',
-              onTap: () => _setAutoPrompt(false),
+              subtitle: 'Open the lock screen first, then unlock with $noun '
+                  'by tapping the button.',
+              onTap: () => _setAutoPrompt(false, isFace: isFace),
             ),
             SizedBox(width: 10.w),
             option(
-              selected: _autoPrompt,
+              selected: auto,
               icon: Icons.bolt_outlined,
               title: 'Automatically',
               subtitle: 'Ask as soon as the lock screen opens.',
-              onTap: () => _setAutoPrompt(true),
+              onTap: () => _setAutoPrompt(true, isFace: isFace),
             ),
           ]),
+          // Only meaningful in automatic mode — there is nothing to escape
+          // from when the prompt already waits for a tap.
+          AnimatedCrossFade(
+            firstChild: const SizedBox(width: double.infinity, height: 0),
+            secondChild: _shakeEscapeRow(),
+            crossFadeState:
+                auto ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 200),
+            sizeCurve: Curves.easeOut,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The way out of automatic mode that does not require getting past the lock
+  /// screen first. Presented here, under the option it qualifies, because it
+  /// only makes sense as a property of "Automatically".
+  Widget _shakeEscapeRow() {
+    return Padding(
+      padding: EdgeInsets.only(top: 12.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.vibration, size: 16.sp, color: _textSecondary),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Shake twice to stop it',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w600)),
+                SizedBox(height: 3.h),
+                Text(
+                  _shakeEscape
+                      ? 'On the lock screen, shake your phone twice to switch '
+                          'to “When I tap”. Useful when your face will not '
+                          'verify and you just want the keypad.'
+                      : 'Off. If automatic unlock ever traps you, you will '
+                          'need to sign in before you can change it here.',
+                  style: GoogleFonts.inter(
+                      color: _textSecondary, fontSize: 11.sp, height: 1.35),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 8.w),
+          Switch(
+            value: _shakeEscape,
+            activeThumbColor: Colors.white,
+            activeTrackColor: _primary,
+            inactiveThumbColor: Colors.white,
+            inactiveTrackColor: _divider,
+            onChanged: _setShakeEscape,
+          ),
         ],
       ),
     );
@@ -514,7 +608,17 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
     required bool value,
     required ValueChanged<bool> onChanged,
     VoidCallback? onSetup,
+
+    /// Settings that only exist because this toggle is on — revealed inside
+    /// the tile rather than floated beside it, so the dependency is obvious
+    /// and turning the toggle off takes them away with it.
+    Widget? expansion,
+    bool expanded = false,
+    VoidCallback? onToggleExpand,
   }) {
+    // The body is only reachable when the toggle is actually on; a disabled or
+    // off tile has nothing to expand.
+    final hasExpansion = expansion != null && enabled && value;
     // In "set up" mode (hardware present, nothing enrolled) the tile is active
     // and its trailing control is a Set-up button that deep-links to the OS.
     final active = enabled || onSetup != null;
@@ -526,7 +630,10 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
         borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: _divider),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
         children: [
           Container(
             width: 44.w,
@@ -585,6 +692,45 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
               inactiveTrackColor: _divider,
               onChanged: enabled ? onChanged : null,
             ),
+          // Chevron only when there is a body to open, so a plain tile does
+          // not grow an affordance that does nothing.
+          if (hasExpansion)
+            GestureDetector(
+              onTap: onToggleExpand,
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: EdgeInsets.only(left: 4.w),
+                child: AnimatedRotation(
+                  turns: expanded ? 0.5 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(Icons.keyboard_arrow_down_rounded,
+                      color: _primary, size: 22.sp),
+                ),
+              ),
+            ),
+        ],
+      ),
+          // Same 200ms crossfade the settings accordions use. Collapsing to a
+          // zero-height first child keeps the tile's padding from reserving
+          // space for a body that is not there.
+          AnimatedCrossFade(
+            firstChild: const SizedBox(width: double.infinity, height: 0),
+            secondChild: hasExpansion
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(height: 12.h),
+                      Divider(height: 1, thickness: 1, color: _divider),
+                      expansion,
+                    ],
+                  )
+                : const SizedBox(width: double.infinity, height: 0),
+            crossFadeState: hasExpansion && expanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 200),
+            sizeCurve: Curves.easeOut,
+          ),
         ],
       ),
     );

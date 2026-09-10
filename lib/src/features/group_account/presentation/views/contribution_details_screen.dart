@@ -3455,25 +3455,33 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         context: context,
         barrierDismissible: false,
         builder: (context) => Center(
-          child: Container(
-            padding: EdgeInsets.all(24.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                LazerVaultLoader.small(),
-                SizedBox(height: 16.h),
-                Text(
-                  'Generating Receipt...',
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    color: Colors.white,
+          // showDialog inserts no Material, and a Text without one inherits
+          // Flutter's fallback debug style. The explicit style below overrides
+          // the colour but NOT the decoration, so this rendered white text
+          // under a yellow double underline.
+          child: Material(
+            type: MaterialType.transparency,
+            child: Container(
+              padding: EdgeInsets.all(24.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  LazerVaultLoader.small(),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'Generating Receipt...',
+                    style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      color: Colors.white,
+                      decoration: TextDecoration.none,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

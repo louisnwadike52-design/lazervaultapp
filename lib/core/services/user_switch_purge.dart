@@ -54,6 +54,13 @@ const List<String> kPerUserStorageKeys = [
   // new account inheriting "ask automatically" would meet a Face ID sheet it
   // never asked for, before it had even enabled the biometric.
   'biometric_auto_prompt',
+  'biometric_auto_prompt_face',
+  'biometric_auto_prompt_fingerprint',
+  // And whether the shake escape is armed. Clearing both together means a new
+  // account starts on the documented defaults (automatic, escape armed) rather
+  // than inheriting a half-configured pair — automatic ON with the only way out
+  // of it switched OFF by someone else.
+  'biometric_shake_escape',
 ];
 
 /// True when [newUserId]/[newEmail] describe someone other than whoever this

@@ -32,10 +32,29 @@ class SecureStorageService {
 
   /// How the unlock biometric FIRES on the passcode screen: automatically as
   /// the screen appears, or only when the user taps the biometric button.
-  /// Chosen in Settings → Biometric Login. Absent means TAP — a prompt that
-  /// opens by itself the moment you look at the app is the behaviour this
-  /// setting exists to make optional, so it is not what an unset value does.
+  /// Chosen in Settings → Biometric Login.
+  ///
+  /// Absent means AUTOMATIC — unlocking by just looking at the phone is the
+  /// behaviour people expect from Face ID, so it is the default for everyone.
+  /// Getting out of it must not require finding a settings screen you cannot
+  /// reach until you have logged in, hence [_keyBiometricShakeEscape].
+  ///
+  /// Stored PER METHOD. Face and fingerprint are different gestures with
+  /// different failure modes — a face that will not verify re-arms in your
+  /// face, a finger you have to place is already deliberate — so a device that
+  /// offers both must let them be answered separately. This bare key is the
+  /// pre-split preference and is now read only as the default for both.
   static const String _keyBiometricAutoPrompt = 'biometric_auto_prompt';
+  static const String _keyAutoPromptFace = 'biometric_auto_prompt_face';
+  static const String _keyAutoPromptFingerprint =
+      'biometric_auto_prompt_fingerprint';
+
+  /// Escape hatch for automatic mode: shake the phone twice ON THE LOCK SCREEN
+  /// to switch to tap-to-unlock. Exists because automatic mode can trap a user
+  /// who wants the passcode pad — the OS sheet re-arms over it — and Settings
+  /// live behind the very login they cannot complete. Absent means ON: the
+  /// escape is only reachable if it is armed before you need it.
+  static const String _keyBiometricShakeEscape = 'biometric_shake_escape';
 
   /// LEGACY durable-biometric keys. These were a SECOND copy of the refresh
   /// token that biometric unlock re-minted from. They are gone: the auth-service
@@ -110,12 +129,30 @@ class SecureStorageService {
   Future<bool> getVoiceLoginEnabled() async =>
       (await _storage.read(key: _keyVoiceLogin)) == 'true';
 
-  Future<void> setBiometricAutoPrompt(bool v) async =>
-      _storage.write(key: _keyBiometricAutoPrompt, value: v.toString());
+  Future<void> setBiometricAutoPrompt(bool v, {required bool isFace}) async =>
+      _storage.write(
+          key: isFace ? _keyAutoPromptFace : _keyAutoPromptFingerprint,
+          value: v.toString());
 
-  /// Defaults to false (tap to unlock) when never set — see the key's note.
-  Future<bool> getBiometricAutoPrompt() async =>
-      (await _storage.read(key: _keyBiometricAutoPrompt)) == 'true';
+  /// Defaults to TRUE (automatic) when never set — see the key's note. Only an
+  /// explicit 'false' opts out, so an unreadable or half-written value falls
+  /// back to the default rather than silently changing how login behaves.
+  ///
+  /// Falls back to the pre-split key so anyone who already chose "when I tap"
+  /// keeps it instead of being handed the new default.
+  Future<bool> getBiometricAutoPrompt({required bool isFace}) async {
+    final own = await _storage.read(
+        key: isFace ? _keyAutoPromptFace : _keyAutoPromptFingerprint);
+    if (own != null) return own != 'false';
+    return (await _storage.read(key: _keyBiometricAutoPrompt)) != 'false';
+  }
+
+  Future<void> setBiometricShakeEscape(bool v) async =>
+      _storage.write(key: _keyBiometricShakeEscape, value: v.toString());
+
+  /// Defaults to TRUE when never set — see the key's note.
+  Future<bool> getBiometricShakeEscape() async =>
+      (await _storage.read(key: _keyBiometricShakeEscape)) != 'false';
 
   // Legacy durable-biometric cleanup. -----------------------------------------
   /// Delete any legacy durable-biometric keys left on an existing install. There

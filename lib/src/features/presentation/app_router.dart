@@ -750,7 +750,15 @@ class AppRouter {
     GetPage(
       name: AppRoutes.dashboard,
       page: () => serviceLocator<DashboardScreen>(),
-      transition: Transition.upToDown,
+      // NO TRANSITION on purpose. Almost every route into the dashboard is an
+      // `offAllNamed`, which removes the routes underneath immediately — so a
+      // sliding transition animates the dashboard over an EMPTY navigator and
+      // the app canvas shows through as a black screen for the whole
+      // animation. It was most obvious after a Face ID unlock, where the OS
+      // sheet closes and the next thing you see is black. A fade has the same
+      // problem (black shows through the fade); only skipping the animation
+      // removes the gap.
+      transition: Transition.noTransition,
     ),
     GetPage(
       name: AppRoutes.newCard,

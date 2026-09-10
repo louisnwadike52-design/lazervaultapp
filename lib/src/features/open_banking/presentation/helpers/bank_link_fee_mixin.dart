@@ -68,25 +68,48 @@ Future<T> runWithLinkProgress<T>(
       return PopScope(
         canPop: false,
         child: Center(
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 18.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                LazerVaultLoader(size: 20),
-                SizedBox(width: 14.w),
-                Flexible(
-                  child: Text(
-                    message,
-                    style: GoogleFonts.inter(
-                        color: Colors.white, fontSize: 13.5.sp),
-                  ),
+          // MATERIAL IS REQUIRED. showDialog does not insert one — only the
+          // stock Dialog/AlertDialog widgets do — and a Text with no Material
+          // ancestor renders in Flutter's fallback debug style: yellow, double
+          // underlined. That is what shipped, and it read as a broken overlay
+          // rather than a loader. Transparency keeps the pill's own colour.
+          child: Material(
+            type: MaterialType.transparency,
+            child: ConstrainedBox(
+              // Without a bound the pill grows with the string until it is
+              // clipped by the screen. Cap it so a longer message wraps to a
+              // second line instead of running off the edge.
+              constraints: BoxConstraints(maxWidth: 0.72.sw),
+              child: Container(
+                padding:
+                    EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.circular(16.r),
                 ),
-              ],
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    LazerVaultLoader(size: 20),
+                    SizedBox(width: 14.w),
+                    Flexible(
+                      child: Text(
+                        message,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 13.5.sp,
+                          height: 1.3,
+                          // Spelled out rather than inherited: this sits in a
+                          // bare overlay, so anything left to the ambient
+                          // theme is what regressed here in the first place.
+                          fontWeight: FontWeight.w500,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

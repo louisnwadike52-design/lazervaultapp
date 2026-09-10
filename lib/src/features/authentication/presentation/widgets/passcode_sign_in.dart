@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -17,12 +18,14 @@ import 'package:lazervault/src/features/widgets/user_avatar.dart';
 import 'package:lazervault/src/features/ai_chats/presentation/widgets/fullscreen_image_viewer.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/utils/double_shake_detector.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/voice_login_sheet.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/account_locked_modal.dart';
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/services/biometric_service.dart';
 import 'package:lazervault/core/shared_widgets/face_id_icon.dart';
+import 'package:lazervault/core/shared_widgets/fingerprint_icon.dart';
 import 'package:lazervault/core/utils/logger.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/session_login_completer.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/biometric/biometric_setup_dialog.dart';
@@ -62,9 +65,15 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
   bool _biometricEnabled = false; // opted-in for the device's biometric in Settings
   bool _voiceEnabled = false; // voice login opted-in via Settings → Biometric Login
   // User's choice in Settings → Biometric Login: fire the OS prompt as this
-  // screen appears, or wait for a tap on the biometric button. Defaults to
-  // tap.
+  // screen appears, or wait for a tap on the biometric button. The stored
+  // default is AUTOMATIC; this field starts false only so the first frame,
+  // before the async read lands, cannot prompt on a preference we have not
+  // read yet.
   bool _biometricAutoPrompt = false;
+  // Escape hatch for automatic mode — see [_onShakeEscape].
+  bool _shakeEscapeEnabled = false;
+  DoubleShakeDetector? _shakeEscape;
+  AppLifecycleState _lifecycle = AppLifecycleState.resumed;
   IconData _biometricIcon = Icons.fingerprint;
   String _biometricTooltip = 'Use Biometrics';
   BiometricType? _availableBiometricType;
@@ -100,6 +109,14 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
     _checkBiometricCapabilities().then((_) => _maybeAutoLogon());
     _loadStoredUserData();
     _refreshAuthMode();
+    // Armed for the whole time the lock screen is up, not just after the
+    // prompt fires: the shake has to work whether the user is staring at the
+    // OS sheet or has just dismissed it. The gate below decides whether a
+    // shake means anything, so this costs nothing when it does not.
+    _shakeEscape = DoubleShakeDetector(
+      enabled: _shakeEscapeArmed,
+      onDoubleShake: _onShakeEscape,
+    )..start();
 
     // Initialize passcode login state
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -112,11 +129,17 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    // Release the accelerometer with the screen. Leaving it subscribed would
+    // keep sampling for the rest of the session, and a shake on the dashboard
+    // would silently rewrite a login setting.
+    _shakeEscape?.dispose();
+    _shakeEscape = null;
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    _lifecycle = state;
     // Re-detect biometric capability when returning to the lock screen: the
     // user may have just enrolled a fingerprint/face in the OS settings (e.g.
     // via our "Set up" prompt), or removed one — so the button reflects reality
@@ -138,13 +161,19 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
     final faceOn = await store.getFaceLoginEnabled();
     final fingerprintOn = await store.getFingerprintLoginEnabled();
     final voiceOn = await store.getVoiceLoginEnabled();
-    final autoPrompt = await store.getBiometricAutoPrompt();
+    // Read BOTH so the choice can be resolved once the modality is known —
+    // status() decides which one actually unlocks this device, and asking for
+    // the wrong method's preference would apply a setting the user made about
+    // the other one.
+    final autoPromptFace = await store.getBiometricAutoPrompt(isFace: true);
+    final autoPromptFinger = await store.getBiometricAutoPrompt(isFace: false);
+    final shakeEscape = await store.getBiometricShakeEscape();
 
     if (!mounted) return;
 
     setState(() {
       _voiceEnabled = voiceOn;
-      _biometricAutoPrompt = autoPrompt;
+      _shakeEscapeEnabled = shakeEscape;
       // Hardware present but nothing enrolled → we still let the button show so
       // the tap can send the user to OS enrollment.
       _canEnrollBiometric = status.canEnroll;
@@ -160,16 +189,22 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
         // prompt uses whichever modality is enrolled, so either preference
         // should unlock rather than dead-ending on "Face ID not set up".
         _biometricEnabled = faceOn || (status.hasFingerprint && fingerprintOn);
+        // Follow the opt-in that is actually carrying the unlock. On a face
+        // device where only fingerprint was enabled, the fingerprint
+        // preference is the one the user expressed about this gesture.
+        _biometricAutoPrompt = faceOn ? autoPromptFace : autoPromptFinger;
       } else if (status.isAvailable && status.hasFingerprint) {
         _availableBiometricType = BiometricType.fingerprint;
         _biometricIcon = Icons.fingerprint;
         _biometricTooltip = 'Fingerprint';
         _canCheckBiometrics = true;
         _biometricEnabled = fingerprintOn;
+        _biometricAutoPrompt = autoPromptFinger;
       } else {
         _availableBiometricType = null;
         _canCheckBiometrics = false;
         _biometricEnabled = false;
+        _biometricAutoPrompt = false;
       }
     });
   }
@@ -293,6 +328,80 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _onBiometricPressed();
     });
+  }
+
+  /// Whether a double shake right now should mean anything.
+  ///
+  /// Every condition here is one where switching automatic off would be a
+  /// no-op or a surprise:
+  ///   • the user turned the escape off in Settings;
+  ///   • automatic is already off, so there is nothing to escape from;
+  ///   • no usable biometric, so automatic never fires anyway and the option
+  ///     is not even shown in Settings — the two must agree;
+  ///   • the app is not on screen. A shake in a pocket or bag must not rewrite
+  ///     a security preference. `inactive` counts as on-screen because that is
+  ///     what iOS reports while the Face ID sheet covers the app, and that is
+  ///     precisely the moment someone reaches for this.
+  bool _shakeEscapeArmed() {
+    if (!mounted) return false;
+    if (!_shakeEscapeEnabled || !_biometricAutoPrompt) return false;
+    if (!_biometricEnabled || !_canCheckBiometrics) return false;
+    return _lifecycle == AppLifecycleState.resumed ||
+        _lifecycle == AppLifecycleState.inactive;
+  }
+
+  /// Shake twice on the lock screen to fall back to tap-to-unlock.
+  ///
+  /// Automatic mode can corner someone: the OS sheet opens on arrival, and on a
+  /// face that will not verify (a bad angle, a mask, a twin, sunglasses) it
+  /// re-arms over the keypad, while the setting that would stop it sits behind
+  /// the login they cannot finish. This is the way out that needs no login.
+  ///
+  /// It persists, because an escape that lasted one screen would have to be
+  /// repeated at every launch. That makes an accidental shake a real setting
+  /// change, so it is announced and undoable rather than silent.
+  Future<void> _onShakeEscape() async {
+    if (!_shakeEscapeArmed()) return;
+    // Change the preference for the method that is actually prompting here,
+    // not both — silencing fingerprint because a face would not verify would
+    // be a setting the user never asked for.
+    final isFace = _availableBiometricType == BiometricType.face;
+    await serviceLocator<SecureStorageService>()
+        .setBiometricAutoPrompt(false, isFace: isFace);
+    if (!mounted) return;
+    setState(() {
+      _biometricAutoPrompt = false;
+      // Belt and braces: the auto-prompt is a one-shot per session, but if it
+      // has not fired yet this stops it firing after the user just asked it
+      // not to.
+      _autoPromptAttempted = true;
+    });
+    HapticFeedback.mediumImpact();
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    messenger
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 6),
+          behavior: SnackBarBehavior.floating,
+          content: const Text(
+            'Automatic unlock turned off. Tap the biometric button to unlock.',
+          ),
+          action: SnackBarAction(
+            label: 'UNDO',
+            onPressed: () async {
+              await serviceLocator<SecureStorageService>()
+                  .setBiometricAutoPrompt(true, isFace: isFace);
+              if (!mounted) return;
+              // Restore the preference only. We deliberately do NOT re-fire the
+              // prompt: the user is already here with the keypad open, and
+              // popping the OS sheet on an UNDO tap is the surprise this whole
+              // feature exists to prevent. It applies from the next launch.
+              setState(() => _biometricAutoPrompt = true);
+            },
+          ),
+        ),
+      );
   }
 
   void _onBiometricPressed() async {
@@ -696,14 +805,43 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
         }
       },
       builder: (context, state) {
-        // Handle non-passcode login states
+        // Between states: at mount (before startPasscodeLogin lands in its
+        // post-frame callback) and again once a biometric unlock succeeds,
+        // through to the route swap. It used to be a bare scrim with a small
+        // unlabelled loader, which after Face ID read as "the app went black
+        // and then the dashboard appeared". Same scrim — so there is no jump
+        // to or from the keypad — with the greeting kept and the wait named.
         if (state is! PasscodeLoginInProgress) {
           return Stack(
             children: [
               Positioned.fill(
                 child: Container(color: Colors.black.withValues(alpha: 0.65)),
               ),
-              const Center(child: LazerVaultLoader.small()),
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const LazerVaultLoader.small(),
+                    SizedBox(height: 18.h),
+                    Text(
+                      displayName,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 17.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    Text(
+                      'Signing you in…',
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.72),
+                        fontSize: 13.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           );
         }
@@ -891,12 +1029,18 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                                             _canEnrollBiometric))
                                       _buildIconButton(
                                         icon: _biometricIcon,
+                                        // Both modalities get the drawn glyph
+                                        // now; Icons.fingerprint clogs at this
+                                        // size and did not match the Face ID
+                                        // mark beside it.
                                         child: _availableBiometricType ==
                                                 BiometricType.face
                                             ? FaceIdIcon(
                                                 size: 30.sp,
                                                 color: Colors.white)
-                                            : null,
+                                            : FingerprintIcon(
+                                                size: 30.sp,
+                                                color: Colors.white),
                                         onPressed: _onBiometricPressed,
                                         iconColor: Colors.white,
                                         colorScheme: colorScheme,
