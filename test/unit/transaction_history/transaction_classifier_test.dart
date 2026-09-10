@@ -368,4 +368,51 @@ void main() {
           TransactionServiceType.unknown);
     });
   });
+
+  // ── AutoSave must not be classified as Insurance ───────────────────────
+  //
+  // financial-products-service is a MULTI-PRODUCT service. The classifier used
+  // to answer "insurance" for the whole service, so this real prod row —
+  //   category=auto_save, type=credit, service_name=financial-products-service
+  //   description='AutoSave (manual_trigger): Save on wallet deposit'
+  // rendered in history as "Insurance Refund" behind a shield icon.
+  group('autosave is classified by category, not by the owning service', () {
+    const svc = 'financial-products-service';
+    const ref = 'IDEM-CR-65ec3cf3de878d70f8e51b2938e56ef2a872e0dcd6ea185ef8'
+        '0b91602c431ebd:credit';
+
+    test('the exact prod row titles as an Auto-Save deposit', () {
+      expect(
+        generateTransactionTitle('auto_save', 'credit',
+            'AutoSave (manual_trigger): Save on wallet deposit', ref, svc),
+        'Auto-Save Deposit',
+      );
+    });
+
+    test('the source-side debit leg titles as an Auto-Save transfer', () {
+      expect(
+        generateTransactionTitle('auto_save', 'debit',
+            'AutoSave (scheduled_worker): Rainy day', ref, svc),
+        'Auto-Save Transfer',
+      );
+    });
+
+    test('domains map to the savings service type, never insurance', () {
+      for (final cat in const ['auto_save', 'auto_save_reversal']) {
+        expect(serviceTypeForDomain(classifyDomain(cat, '', ref, svc)),
+            TransactionServiceType.autosave,
+            reason: cat);
+      }
+      expect(serviceTypeForDomain(classifyDomain('autosave_fee', '', ref, svc)),
+          TransactionServiceType.fee);
+    });
+
+    test('a genuine insurance row on the same service still says insurance', () {
+      expect(
+        generateTransactionTitle('insurance_settle', 'debit',
+            'Insurance premium', 'INS-123', svc),
+        'Insurance Payment',
+      );
+    });
+  });
 }

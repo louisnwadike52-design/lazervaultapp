@@ -625,7 +625,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: const BorderSide(
-                            color: Color.fromARGB(255, 78, 3, 208),
+                            color: _accent,
                           ),
                         ),
                         errorBorder: OutlineInputBorder(
@@ -644,7 +644,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
                       child: ElevatedButton(
                         onPressed: submit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                          backgroundColor: _accent,
                           padding: EdgeInsets.symmetric(vertical: 16.h),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -897,6 +897,23 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
 
           // Refresh rule data to show updated totalSaved
           context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true);
+        } else if (state is AutoSaveRulesLoadedState) {
+          // Re-sync THIS rule from the refreshed list.
+          //
+          // Without this the refresh above was pointless here: the manual-save
+          // branch asks the cubit to re-fetch, the cubit emits
+          // AutoSaveRulesLoadedState, and nothing was listening for it — so the
+          // screen kept rendering the `rule` snapshot it was pushed with.
+          // "Save successful" followed by Total Saved still reading zero is
+          // indistinguishable from a CTA that did nothing.
+          //
+          // A deleted rule is absent from the list, so the lookup no-ops and
+          // the delete branch's pop still runs.
+          final refreshed =
+              state.rules.where((r) => r.id == rule.id).firstOrNull;
+          if (refreshed != null && refreshed != rule) {
+            setState(() => rule = refreshed);
+          }
         } else if (state is AutoSaveError) {
           setState(() {
             _isTogglingRule = false;
@@ -1028,7 +1045,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
             onPressed: _navigateToEdit,
             icon: Icon(
               Icons.edit,
-              color: const Color.fromARGB(255, 78, 3, 208),
+              color: _accent,
               size: 20.sp,
             ),
             tooltip: 'Edit Rule',
@@ -1219,7 +1236,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
             children: [
               Icon(
                 Icons.info_outline,
-                color: const Color.fromARGB(255, 78, 3, 208),
+                color: _accent,
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
@@ -1265,7 +1282,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
             children: [
               Icon(
                 Icons.account_balance_wallet_outlined,
-                color: const Color.fromARGB(255, 78, 3, 208),
+                color: _accent,
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
@@ -1311,7 +1328,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
             children: [
               Icon(
                 Icons.trending_up,
-                color: const Color.fromARGB(255, 78, 3, 208),
+                color: _accent,
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
@@ -1327,28 +1344,54 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
           ),
           SizedBox(height: 20.h),
           if (rule.targetAmount != null) ...[
-            _buildDetailRow(
+            _buildLimitRow(
               'Target Amount',
               currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.targetAmount!, rule.currency),
+              _targetAmountHint,
             ),
             SizedBox(height: 8.h),
             _buildProgressBar(),
-            SizedBox(height: 12.h),
+            SizedBox(height: 16.h),
           ],
           if (rule.minimumBalance != null) ...[
-            _buildDetailRow(
+            _buildLimitRow(
               'Minimum Balance',
               currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.minimumBalance!, rule.currency),
+              _minimumBalanceHint(rule.triggerType),
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 16.h),
           ],
           if (rule.maximumPerSave != null)
-            _buildDetailRow(
+            _buildLimitRow(
               'Maximum Per Save',
               currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.maximumPerSave!, rule.currency),
+              _maximumPerSaveHint,
             ),
         ],
       ),
+    );
+  }
+
+  /// A limit row: the figure on its own line, then one line of plain
+  /// language saying what the figure actually does. "Minimum Balance" and
+  /// "Maximum Per Save" are ambiguous on their own — minimum where, maximum
+  /// of what — and a user reading a money rule should never have to guess.
+  Widget _buildLimitRow(String label, String value, String hint) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildDetailRow(label, value),
+        SizedBox(height: 6.h),
+        Text(
+          hint,
+          style: GoogleFonts.inter(
+            color: Colors.grey[500],
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w400,
+            height: 1.45,
+          ),
+        ),
+      ],
     );
   }
 
@@ -1369,7 +1412,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
             Text(
               currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.totalSaved, rule.currency),
               style: GoogleFonts.inter(
-                color: const Color.fromARGB(255, 78, 3, 208),
+                color: _accent,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w700,
               ),
@@ -1398,8 +1441,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [
-                    Color.fromARGB(255, 78, 3, 208),
-                    Color.fromARGB(255, 98, 33, 224),
+                    _accent,
+                    _accentDeep,
                   ],
                 ),
                 borderRadius: BorderRadius.circular(4.r),
@@ -1426,7 +1469,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
             children: [
               Icon(
                 Icons.bar_chart,
-                color: const Color.fromARGB(255, 78, 3, 208),
+                color: _accent,
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
@@ -1525,7 +1568,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
         ? _buildActionButton(
             label: 'Manual Save',
             icon: Icons.play_circle_outline,
-            color: const Color.fromARGB(255, 78, 3, 208),
+            color: _accent,
             onPressed: busy ? null : _triggerManualSave,
             isLoading: _isTriggeringRule,
           )

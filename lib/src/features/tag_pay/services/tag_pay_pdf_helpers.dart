@@ -307,54 +307,21 @@ String _tagStatusLabel(UserTagEntity tag) {
 
 /// Rasterise page 1 of a generated receipt PDF to a PNG/JPG file. Reuses the
 /// exact PDF layout, so the image is a pixel-faithful copy of the document.
+///
+/// The implementation moved to `core/utils/receipt_raster.dart` so autosave
+/// (and any future receipt) shares it rather than re-deriving the offset and
+/// alpha-flattening corrections documented there. This wrapper only maps the
+/// tag_pay format enum onto that shared entry point.
 Future<File> _rasterizeReceipt({
   required File pdfFile,
   required ReceiptFileFormat format,
   required String baseName,
-}) async {
-  final pdfBytes = await pdfFile.readAsBytes();
-  // 200 dpi = crisp on-screen + printable without a huge file.
-  final raster = await Printing.raster(pdfBytes, pages: [0], dpi: 200).first;
-
-  // Decode the raster ONCE, correctly, for both image formats.
-  //
-  // Two things were wrong here and both produced visibly broken files:
-  //
-  // 1. `raster.pixels.buffer` throws away the view's offset. A Uint8List is a
-  //    WINDOW onto a ByteBuffer, and .buffer hands back the whole underlying
-  //    buffer ignoring offsetInBytes/lengthInBytes. Whenever that window did
-  //    not start at byte 0 the image decoded from the wrong origin, which is
-  //    why the exported picture came out skewed/garbled.
-  //
-  // 2. The old comment claimed the background was "already white". It is not:
-  //    a rasterised PDF page carries an ALPHA channel, and the receipt card
-  //    sits on transparent pixels. JPG has no alpha, so encoding dropped it
-  //    and those pixels rendered BLACK; PNG kept them transparent, which
-  //    viewers show as black or a checkerboard. Both formats are now
-  //    composited onto opaque white first, so what is saved is what is seen.
-  // Copy into a fresh list so the ByteBuffer handed to the decoder starts at
-  // byte 0. Taking .buffer off a view would re-introduce the very offset this
-  // is correcting, since .buffer always returns the whole underlying buffer.
-  final rgba = Uint8List.fromList(raster.pixels);
-  final decoded = img.Image.fromBytes(
-    width: raster.width,
-    height: raster.height,
-    bytes: rgba.buffer,
-    numChannels: 4,
-    order: img.ChannelOrder.rgba,
-  );
-  final flattened = img.Image(width: raster.width, height: raster.height)
-    ..clear(img.ColorRgb8(255, 255, 255));
-  img.compositeImage(flattened, decoded);
-
-  final Uint8List bytes = format == ReceiptFileFormat.jpg
-      ? img.encodeJpg(flattened, quality: 92)
-      : img.encodePng(flattened);
-  final out = await getTemporaryDirectory();
-  final file = File('${out.path}/$baseName.${format.ext}');
-  await file.writeAsBytes(bytes);
-  return file;
-}
+}) =>
+    rasterizePdfPage(
+      pdfFile: pdfFile,
+      baseName: baseName,
+      ext: format.ext,
+    );
 
 String _formatTransferStatus(String status) {
   switch (status.toLowerCase()) {

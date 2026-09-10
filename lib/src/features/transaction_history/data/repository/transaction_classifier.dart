@@ -77,6 +77,24 @@ String classifyDomain(String category, String description, String reference,
     return 'invoice_fee';
   }
 
+  // AutoSave. financial-products-service is a MULTI-PRODUCT service — autosave,
+  // insurance, crowdfund, uplift and the pool all write through it — so its
+  // service_name says nothing about which product a row belongs to. The
+  // service_name branch below used to answer "insurance" for the whole service,
+  // which labelled every AutoSave credit "Insurance Refund" under a shield
+  // icon; in prod that branch had a 100% miss rate, because every row
+  // financial-products-service has written so far is an autosave one.
+  //
+  // The CATEGORY the service writes is authoritative and already correct
+  // (autosave_executor.go writes auto_save / auto_save_reversal, and the fee
+  // leg writes autosave_fee), so classify on that and keep it ahead of the
+  // service_name fallback.
+  if (cat == 'auto_save_reversal') return 'autosave_reversal';
+  if (cat == 'autosave_fee') return 'autosave_fee';
+  if (cat.startsWith('auto_save') || cat.startsWith('autosave')) {
+    return 'autosave';
+  }
+
   // 1) service_name is authoritative for the shared hold_capture bucket.
   if (svc.contains('giftcard')) return 'giftcard';
   if (svc.contains('crypto')) return 'crypto';
@@ -141,6 +159,14 @@ String? titleForDomain(String domain, String typeLower) {
       // A wallet credit on the insurance domain is a premium refund/reversal,
       // not a payment.
       return credit ? 'Insurance Refund' : 'Insurance Payment';
+    case 'autosave':
+      // Both legs of one save: the source account is debited, the savings
+      // destination credited. Name them from the account the row belongs to.
+      return credit ? 'Auto-Save Deposit' : 'Auto-Save Transfer';
+    case 'autosave_reversal':
+      return 'Auto-Save Reversal';
+    case 'autosave_fee':
+      return credit ? 'Auto-Save Fee Refund' : 'Auto-Save Fee';
     case 'refresh_fee':
       return credit ? 'Balance Refresh Fee Refund' : 'Balance Refresh Fee';
     case 'invoice_fee':
@@ -173,6 +199,13 @@ TransactionServiceType? serviceTypeForDomain(String domain) {
       return TransactionServiceType.exchange;
     case 'insurance':
       return TransactionServiceType.insurance;
+    case 'autosave':
+    case 'autosave_reversal':
+      return TransactionServiceType.autosave;
+    case 'autosave_fee':
+      // Reuse the EXISTING fee enum value — the history cache persists enum
+      // indices, so inserting/reordering values corrupts cached rows.
+      return TransactionServiceType.fee;
     case 'refresh_fee':
       return TransactionServiceType.fee;
     case 'invoice_fee':

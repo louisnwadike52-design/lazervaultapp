@@ -1,11 +1,17 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:lazervault/core/utils/receipt_download.dart';
 import 'package:lazervault/core/utils/receipt_fonts.dart';
+import 'package:lazervault/core/utils/receipt_raster.dart';
+import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart'
+    show ReceiptFileFormat;
 
+import 'package:flutter/widgets.dart' show Rect;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:share_plus/share_plus.dart';
 
 // AutoSaveTransactionEntity lives in the same file as the rule entity.
 import '../domain/entities/autosave_rule_entity.dart';
@@ -178,6 +184,92 @@ class AutoSavePdfService {
 
     return _savePdf(pdf, 'autosave_rule_${rule.id}');
   }
+
+  /// Produce the rule document in the requested format. PDF returns the vector
+  /// document; PNG/JPG rasterise page 1 of that SAME document through the
+  /// shared core rasteriser, so all three formats are the identical layout.
+  static Future<File> _asFormat({
+    required File pdfFile,
+    required ReceiptFileFormat format,
+    required String baseName,
+  }) async {
+    if (format == ReceiptFileFormat.pdf) return pdfFile;
+    return rasterizePdfPage(
+      pdfFile: pdfFile,
+      baseName: baseName,
+      ext: format.ext,
+    );
+  }
+
+  /// Save the rule document to device storage and hand it to a viewer.
+  ///
+  /// Goes through [ReceiptDownload] — the app's single answer to where a saved
+  /// document lands — rather than writing a path directly, which fails under
+  /// Android 11+ scoped storage.
+  static Future<String> downloadRuleReceipt({
+    required AutoSaveRuleEntity rule,
+    required String sourceAccountLabel,
+    required String destinationAccountLabel,
+    required String triggerDescription,
+    required String amountDescription,
+    ReceiptFileFormat format = ReceiptFileFormat.pdf,
+  }) async {
+    final pdfFile = await generateRuleDetails(
+      rule: rule,
+      sourceAccountLabel: sourceAccountLabel,
+      destinationAccountLabel: destinationAccountLabel,
+      triggerDescription: triggerDescription,
+      amountDescription: amountDescription,
+    );
+    final baseName = 'autosave_rule_${_shortId(rule.id)}';
+    final file = await _asFormat(
+      pdfFile: pdfFile,
+      format: format,
+      baseName: baseName,
+    );
+    return ReceiptDownload.saveAndOpen(
+      source: file,
+      fileName: '$baseName.${format.ext}',
+    );
+  }
+
+  /// Share the rule document via the system share sheet.
+  ///
+  /// [sharePositionOrigin] anchors the iPad/iOS popover; capture it from the
+  /// widget BEFORE any await so no BuildContext is touched across an async gap.
+  static Future<void> shareRuleReceipt({
+    required AutoSaveRuleEntity rule,
+    required String sourceAccountLabel,
+    required String destinationAccountLabel,
+    required String triggerDescription,
+    required String amountDescription,
+    ReceiptFileFormat format = ReceiptFileFormat.pdf,
+    Rect? sharePositionOrigin,
+  }) async {
+    final pdfFile = await generateRuleDetails(
+      rule: rule,
+      sourceAccountLabel: sourceAccountLabel,
+      destinationAccountLabel: destinationAccountLabel,
+      triggerDescription: triggerDescription,
+      amountDescription: amountDescription,
+    );
+    final file = await _asFormat(
+      pdfFile: pdfFile,
+      format: format,
+      baseName: 'autosave_rule_${_shortId(rule.id)}',
+    );
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path, mimeType: format.mime)],
+        text: 'Auto-Save rule: ${rule.name}',
+        sharePositionOrigin: sharePositionOrigin ??
+            const Rect.fromLTWH(0, 0, 1, 1),
+      ),
+    );
+  }
+
+  static String _shortId(String id) =>
+      id.length >= 8 ? id.substring(0, 8) : id;
 
   // ============= layout helpers =============
 
