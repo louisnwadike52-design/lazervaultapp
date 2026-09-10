@@ -244,9 +244,13 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
                     const TextInputType.numberWithOptions(decimal: true)),
             SizedBox(height: 6.h),
             Text(
-                'The escrow fee is calculated when the buyer pays — they\'ll see the exact total before confirming.',
+                'The escrow fee is split evenly by default — half from the buyer, '
+                'half from your proceeds. It is calculated when the buyer pays, '
+                'and they see the exact total before confirming.',
                 style: GoogleFonts.inter(
-                    color: EscrowTheme.textSecondary, fontSize: 11.sp)),
+                    color: EscrowTheme.textSecondary, fontSize: 11.sp, height: 1.45)),
+            SizedBox(height: 14.h),
+            _coverAllFeesToggle(),
             SizedBox(height: 16.h),
             _label('Delivery window (optional)'),
             _deliveryPicker(),
@@ -258,6 +262,76 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
           ],
         ),
       );
+
+  /// "I'll handle all fees" — the promo.
+  ///
+  /// Only ever offers to move the fee ONTO THE PERSON TOGGLING IT, which is
+  /// also what the backend enforces (ValidateFeePayerMode): a seller may
+  /// absorb the buyer's half, a buyer may absorb the seller's, and neither can
+  /// push their own half onto the other side. A buyer browsing sees a "Seller
+  /// pays all fees" badge on the listing, which is the whole point.
+  Widget _coverAllFeesToggle() {
+    final on = _coverAllFees;
+    final otherSide = _isSell ? 'buyer' : 'seller';
+    return InkWell(
+      onTap: () => _refresh(() => _coverAllFees = !_coverAllFees),
+      borderRadius: BorderRadius.circular(12.r),
+      child: Container(
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: on
+              ? EscrowTheme.warning.withValues(alpha: 0.10)
+              : EscrowTheme.card,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+              color: on ? EscrowTheme.warning.withValues(alpha: 0.45)
+                        : EscrowTheme.border),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+                on
+                    ? Icons.local_fire_department_rounded
+                    : Icons.volunteer_activism_outlined,
+                color: on ? EscrowTheme.warning : EscrowTheme.textSecondary,
+                size: 20.sp),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("I'll handle all fees",
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 13.5.sp,
+                          fontWeight: FontWeight.w700)),
+                  SizedBox(height: 3.h),
+                  Text(
+                      on
+                          ? 'You cover the whole escrow fee. The $otherSide sees '
+                              'that on your offer and pays nothing extra.'
+                          : 'Cover the $otherSide\'s half too. Your offer shows '
+                              'that you are handling every fee.',
+                      style: GoogleFonts.inter(
+                          color: EscrowTheme.textSecondary,
+                          fontSize: 11.sp,
+                          height: 1.45)),
+                ],
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Switch.adaptive(
+              value: on,
+              onChanged: (v) => _refresh(() => _coverAllFees = v),
+              activeThumbColor: Colors.white,
+              activeTrackColor: EscrowTheme.warning,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _deliveryPicker() {
     const options = [0, 3, 7, 14, 30];
@@ -351,6 +425,8 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
                   : EscrowTheme.conditionLabel(_condition)),
           _reviewRow('Delivery window',
               _deliveryDays == 0 ? 'None' : '$_deliveryDays days'),
+          _reviewRow('Escrow fee',
+              _coverAllFees ? 'You cover all of it' : 'Split evenly'),
           _reviewRow('Photos & video',
               _media.isEmpty ? 'None' : '${_media.length} attached'),
           SizedBox(height: 14.h),

@@ -55,6 +55,13 @@ class _CreateEscrowOfferScreenState extends State<CreateEscrowOfferScreen> {
   // without a grade is what condition disputes are made of); optional for a
   // buy request ('' = any condition is acceptable).
   String _condition = '';
+
+  /// True when the creator has offered to absorb the ENTIRE escrow fee rather
+  /// than the default half. Maps to the side they are on, because a party may
+  /// only ever take fees onto themselves.
+  bool _coverAllFees = false;
+  String get _feePayerPreference =>
+      _coverAllFees ? (_isSell ? 'seller' : 'buyer') : '';
   int _deliveryDays = 0;
   List<EscrowMediaUploadResult> _media = const [];
   bool _submitting = false;
@@ -164,6 +171,7 @@ class _CreateEscrowOfferScreenState extends State<CreateEscrowOfferScreen> {
         amount: _amount,
         deliveryDeadlineDays: _deliveryDays,
         condition: _condition,
+        feePayerPreference: _feePayerPreference,
       );
       if (offer == null) return; // listener surfaced the error
 
