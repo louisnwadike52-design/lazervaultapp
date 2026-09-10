@@ -130,8 +130,7 @@ class EscrowRoles {
     );
   }
 
-  /// One line spelling out the fee split for this offer, in money terms.
-  /// [feeText] is the already-formatted fee, or null when it isn't known yet.
+  /// One line spelling out the fee split for this offer, from this seat.
   static String feeSplitLine(EscrowOfferEntity o, String viewerUserId) {
     switch (o.feePayerMode) {
       case 'seller':
