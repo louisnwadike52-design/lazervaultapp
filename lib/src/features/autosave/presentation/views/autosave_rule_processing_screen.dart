@@ -115,7 +115,15 @@ class _AutoSaveRuleProcessingScreenState
                   Get.offNamed(
                     AppRoutes.autoSaveRuleReceipt,
                     arguments: {
+                      // The wizard map stays for the resolved ACCOUNT NAMES,
+                      // which the entity only carries as UUIDs.
                       ...ruleData,
+                      // The rule the SERVER actually created. The receipt used
+                      // to render the wizard's input, so any value the backend
+                      // clamped or normalised (min-save floor, schedule
+                      // rounding, currency) was shown back as whatever the user
+                      // typed rather than what was stored.
+                      'rule': state.rule,
                       'ruleId': state.rule.id,
                       'createdAt': state.rule.createdAt.toIso8601String(),
                     },

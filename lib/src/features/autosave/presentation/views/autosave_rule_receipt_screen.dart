@@ -3,43 +3,56 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
+import 'package:lazervault/src/features/autosave/services/autosave_pdf_service.dart';
+import 'package:lazervault/src/features/autosave/utils/autosave_trigger_labels.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/payment_receipt_shared.dart';
+import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart'
+    show TagPayPdfService;
 
+part 'autosave_rule_receipt_screen_widgets.dart';
+
+/// Receipt for a just-created Auto-Save rule.
+///
+/// Reads the rule the SERVER returned (passed as `rule`), not the wizard's
+/// input map — the backend can clamp an amount, apply the min-save floor or
+/// normalise a schedule, and a receipt showing what you typed instead of what
+/// was stored is worse than no receipt. The map is still used for the resolved
+/// account NAMES, which the entity only holds as UUIDs.
+///
+/// Styled to match the send-funds receipt (status badge → hero → detail cards →
+/// Download/Share) so every receipt in the app reads the same way, and shares
+/// the same PDF/JPG/PNG export the money receipts offer.
 class AutoSaveRuleReceiptScreen extends StatefulWidget {
   const AutoSaveRuleReceiptScreen({super.key});
 
   @override
-  State<AutoSaveRuleReceiptScreen> createState() => _AutoSaveRuleReceiptScreenState();
+  State<AutoSaveRuleReceiptScreen> createState() =>
+      _AutoSaveRuleReceiptScreenState();
 }
 
-class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _animationController;
-  late AnimationController _checkAnimationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _checkAnimation;
-
-  Map<String, dynamic> ruleData = {};
+class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen> {
+  Map<String, dynamic> _args = {};
+  AutoSaveRuleEntity? _rule;
   bool _invalidArgs = false;
+  bool _isDownloading = false;
+  bool _isSharing = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeData();
-    _setupAnimations();
-  }
+    _args = Get.arguments as Map<String, dynamic>? ?? {};
+    final passed = _args['rule'];
+    if (passed is AutoSaveRuleEntity) _rule = passed;
 
-  void _initializeData() {
-    ruleData = Get.arguments as Map<String, dynamic>? ?? {};
-    // Guard: this receipt is only valid straight after a rule was created (full
-    // args). On a blank/deep-link entry the trigger/amount casts in build would
-    // crash — route back to the autosave home instead.
-    if (ruleData['triggerType'] == null ||
-        ruleData['amountType'] == null ||
-        ruleData['amountValue'] == null) {
+    // This receipt is only meaningful straight after a rule was created. On a
+    // blank / deep-link entry there is nothing to render, so route home rather
+    // than paint an empty shell.
+    if (_rule == null) {
       _invalidArgs = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) Get.offAllNamed(AppRoutes.autoSaveDashboard);
@@ -47,524 +60,143 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
     }
   }
 
-  void _setupAnimations() {
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
+  String get _sourceLabel =>
+      (_args['sourceAccountName'] as String?)?.trim().isNotEmpty == true
+          ? _args['sourceAccountName'] as String
+          : 'Source account';
 
-    _checkAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
+  String get _destinationLabel =>
+      (_args['destinationAccountName'] as String?)?.trim().isNotEmpty == true
+          ? _args['destinationAccountName'] as String
+          : 'Savings account';
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
+  String _money(double v) =>
+      currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+          v, _rule?.currency ?? 'NGN');
 
-    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
-    );
+  // ── Export ──────────────────────────────────────────────────────────────
 
-    _checkAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _checkAnimationController, curve: Curves.easeInOut),
-    );
-
-    _animationController.forward();
-    Future.delayed(const Duration(milliseconds: 500), () {
-      _checkAnimationController.forward();
-    });
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    _checkAnimationController.dispose();
-    super.dispose();
-  }
-
-  void _navigateToDashboard() {
-    Get.offAllNamed(AppRoutes.autoSaveDashboard);
-  }
-
-  // "View All Rules" must open the rules list (it previously landed on the
-  // dashboard). Reset to the autosave home first so the rules list has a sane
-  // back target (→ dashboard) instead of an empty stack that would exit.
-  void _navigateToRules() {
-    // Both ops run in THIS frame and the list enters WITHOUT animation: an
-    // animated push let the autosave dashboard mount, fetch and PAINT for the
-    // slide's duration, which read as a flash between receipt and list (same
-    // class as the QR receipt glitch).
-    Get.offAllNamed(AppRoutes.autoSaveDashboard);
-    Get.toNamed(
-      AppRoutes.autoSaveRulesList,
-      preventDuplicates: false,
-    );
-  }
-
-  String _getTriggerDescription() {
-    final triggerType = ruleData['triggerType'] as TriggerType;
-    switch (triggerType) {
-      case TriggerType.onDeposit:
-        return 'On Deposit';
-      case TriggerType.scheduled:
-        final frequency = ruleData['frequency'] as ScheduleFrequency?;
-        switch (frequency) {
-          case ScheduleFrequency.daily:
-            return 'Daily Schedule';
-          case ScheduleFrequency.weekly:
-            return 'Weekly Schedule';
-          case ScheduleFrequency.biweekly:
-            return 'Bi-Weekly Schedule';
-          case ScheduleFrequency.monthly:
-            return 'Monthly Schedule';
-          default:
-            return 'Scheduled';
-        }
-      case TriggerType.roundUp:
-        return 'Round Up';
-      case TriggerType.externalInflow:
-        final bank = ruleData['sourceBankName'] as String?;
-        return bank != null && bank.isNotEmpty
-            ? 'Bank Inflow ($bank)'
-            : 'Bank Inflow';
-      case TriggerType.scheduledExternal:
-        final bank = ruleData['sourceBankName'] as String?;
-        final frequency = ruleData['frequency'] as ScheduleFrequency?;
-        String freqText;
-        switch (frequency) {
-          case ScheduleFrequency.daily:
-            freqText = 'Daily';
-            break;
-          case ScheduleFrequency.weekly:
-            freqText = 'Weekly';
-            break;
-          case ScheduleFrequency.biweekly:
-            freqText = 'Bi-Weekly';
-            break;
-          case ScheduleFrequency.monthly:
-            freqText = 'Monthly';
-            break;
-          default:
-            freqText = 'Scheduled';
-        }
-        return bank != null && bank.isNotEmpty
-            ? '$freqText Standing Order ($bank)'
-            : '$freqText Standing Order';
-      default:
-        return 'Unknown';
+  Future<void> _download() async {
+    final rule = _rule;
+    if (rule == null || _isDownloading) return;
+    final format = await pickReceiptFormat(context, action: 'Download');
+    if (format == null || !mounted) return;
+    setState(() => _isDownloading = true);
+    try {
+      final path = await AutoSavePdfService.downloadRuleReceipt(
+        rule: rule,
+        sourceAccountLabel: _sourceLabel,
+        destinationAccountLabel: _destinationLabel,
+        triggerDescription: rule.triggerDescription,
+        amountDescription: rule.amountDescription,
+        format: format,
+      );
+      _snack('Receipt saved', '${format.ext.toUpperCase()} saved to $path',
+          ok: true);
+    } catch (_) {
+      _snack('Save failed', 'Could not save the receipt. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
     }
   }
 
-  String _getAmountDescription() {
-    final amountType = ruleData['amountType'] as AmountType;
-    final amountValue = ruleData['amountValue'] as double;
-
-    if (amountType == AmountType.fixed) {
-      return currency_formatter.CurrencySymbols.formatAmountWithCurrency(amountValue, 'NGN');
-    } else {
-      return '${amountValue.toStringAsFixed(0)}%';
+  Future<void> _share() async {
+    final rule = _rule;
+    if (rule == null || _isSharing) return;
+    // Capture the iOS popover anchor BEFORE the async gap so no BuildContext
+    // is touched across it.
+    final origin = TagPayPdfService.shareOriginFromContext(context);
+    final format = await pickReceiptFormat(context, action: 'Share');
+    if (format == null || !mounted) return;
+    setState(() => _isSharing = true);
+    try {
+      await AutoSavePdfService.shareRuleReceipt(
+        rule: rule,
+        sourceAccountLabel: _sourceLabel,
+        destinationAccountLabel: _destinationLabel,
+        triggerDescription: rule.triggerDescription,
+        amountDescription: rule.amountDescription,
+        format: format,
+        sharePositionOrigin: origin,
+      );
+    } catch (_) {
+      _snack('Share failed', 'Could not share the receipt. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
     }
+  }
+
+  void _snack(String title, String body, {bool ok = false}) {
+    Get.snackbar(
+      title,
+      body,
+      backgroundColor:
+          ok ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+      margin: EdgeInsets.all(16.w),
+    );
+  }
+
+  // ── Navigation ──────────────────────────────────────────────────────────
+
+  void _toDashboard() => Get.offAllNamed(AppRoutes.autoSaveDashboard);
+
+  /// Both ops run in THIS frame and the list enters WITHOUT animation: an
+  /// animated push let the dashboard mount, fetch and PAINT for the slide's
+  /// duration, which read as a flash between receipt and list.
+  void _toRules() {
+    Get.offAllNamed(AppRoutes.autoSaveDashboard);
+    Get.toNamed(AppRoutes.autoSaveRulesList, preventDuplicates: false);
+  }
+
+  void _createAnother() {
+    // Rebuild as dashboard → create so the wizard's Back has a real target;
+    // offAllNamed alone left an empty stack and Back exited the feature.
+    Get.offAllNamed(AppRoutes.autoSaveDashboard);
+    Get.toNamed(AppRoutes.createAutoSaveRule);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_invalidArgs) {
+    if (_invalidArgs || _rule == null) {
       return const Scaffold(
         backgroundColor: Color(0xFF0A0A0A),
         body: SizedBox.shrink(),
       );
     }
+    final rule = _rule!;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) {
-          _navigateToDashboard();
-        }
+        if (!didPop) _toDashboard();
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                const Color(0xFF1F1F1F),
-                const Color(0xFF0A0A0A),
-                const Color(0xFF000000),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(),
-                Expanded(
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: _buildReceiptContent(),
-                  ),
-                ),
-                _buildActionButtons(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Auto-Save Rule Created!',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Your automatic savings are now active',
-                  style: GoogleFonts.inter(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReceiptContent() {
-    final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
-    final createdAt = ruleData['createdAt'] != null
-        ? DateTime.parse(ruleData['createdAt'] as String)
-        : DateTime.now();
-
-    return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Column(
-        children: [
-          // Success Icon
-          ScaleTransition(
-            scale: _scaleAnimation,
-            child: Container(
-              width: 100.w,
-              height: 100.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    const Color.fromARGB(255, 78, 3, 208),
-                    const Color.fromARGB(255, 98, 33, 224),
-                  ],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.4),
-                    blurRadius: 30,
-                    spreadRadius: 5,
-                  ),
-                ],
-              ),
-              child: AnimatedBuilder(
-                animation: _checkAnimation,
-                builder: (context, child) {
-                  return Icon(
-                    Icons.check_rounded,
-                    color: Colors.white,
-                    size: 60.sp * _checkAnimation.value,
-                  );
-                },
-              ),
-            ),
-          ),
-
-          SizedBox(height: 32.h),
-
-          // Rule ID Card
-          Container(
-            padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: const Color(0xFF2D2D2D)),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Rule ID',
-                  style: GoogleFonts.inter(
-                    color: Colors.grey[400],
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                SizedBox(height: 8.h),
-                Text(
-                  ruleData['ruleId'] as String? ?? 'AR000000',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          SizedBox(height: 24.h),
-
-          // Rule Details Card
-          Container(
-            padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: const Color(0xFF2D2D2D)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Rule Details',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 20.h),
-
-                _buildDetailRow('Rule Name', ruleData['name'] as String? ?? ''),
-                SizedBox(height: 16.h),
-
-                _buildDetailRow('Trigger Type', _getTriggerDescription()),
-                SizedBox(height: 16.h),
-
-                _buildDetailRow('Save Amount', _getAmountDescription()),
-                SizedBox(height: 16.h),
-
-                _buildDetailRow('Source Account', ruleData['sourceAccountName'] as String? ?? ''),
-                SizedBox(height: 16.h),
-
-                _buildDetailRow('Destination Account', ruleData['destinationAccountName'] as String? ?? ''),
-                SizedBox(height: 16.h),
-
-                _buildDetailRow('Created', dateFormat.format(createdAt)),
-
-                if (ruleData['targetAmount'] != null) ...[
-                  SizedBox(height: 16.h),
-                  _buildDetailRow('Target Amount', currency_formatter.CurrencySymbols.formatAmountWithCurrency(ruleData['targetAmount'] as double, 'NGN')),
-                ],
-              ],
-            ),
-          ),
-
-          SizedBox(height: 24.h),
-
-          // Info Card
-          Container(
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.info_outline,
-                  color: const Color.fromARGB(255, 78, 3, 208),
-                  size: 24.sp,
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Text(
-                    'Your auto-save rule is now active and will automatically save based on your trigger settings.',
-                    style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w500,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          SizedBox(height: 120.h),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            color: Colors.grey[400],
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        SizedBox(width: 16.w),
-        Flexible(
-          child: Text(
-            value,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.right,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            const Color(0xFF0A0A0A).withValues(alpha: 0),
-            const Color(0xFF0A0A0A),
-          ],
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          children: [
-            // View Rules Button
-            Container(
-              width: double.infinity,
-              height: 56.h,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [
-                    Color.fromARGB(255, 78, 3, 208),
-                    Color.fromARGB(255, 98, 33, 224),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(16.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.4),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16.r),
-                  onTap: _navigateToRules,
-                  child: Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.list_alt_rounded,
-                          color: Colors.white,
-                          size: 24.sp,
-                        ),
-                        SizedBox(width: 12.w),
-                        Text(
-                          'View All Rules',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _backBar(),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 8.h),
+                      _hero(rule),
+                      SizedBox(height: 16.h),
+                      _detailsCard(rule),
+                      SizedBox(height: 12.h),
+                      _ctaCard(),
+                      SizedBox(height: 12.h),
+                    ],
                   ),
                 ),
               ),
-            ),
-
-            SizedBox(height: 12.h),
-
-            // Create Another Rule Button
-            Container(
-              width: double.infinity,
-              height: 56.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: const Color(0xFF2D2D2D)),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16.r),
-                  onTap: () {
-                    // Rebuild as dashboard → create so the wizard's Back
-                    // button has a real target; offAllNamed alone left an
-                    // empty stack and Back exited the feature.
-                    Get.offAllNamed(AppRoutes.autoSaveDashboard);
-                    Get.toNamed(AppRoutes.createAutoSaveRule);
-                  },
-                  child: Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.add_circle_outline,
-                          color: Colors.white,
-                          size: 24.sp,
-                        ),
-                        SizedBox(width: 12.w),
-                        Text(
-                          'Create Another Rule',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+              _actions(),
+            ],
+          ),
         ),
       ),
     );
