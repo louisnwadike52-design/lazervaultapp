@@ -111,12 +111,31 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
     _roundUpToController.addListener(_checkForChanges);
   }
 
+  /// The rule's schedule time as the picker holds it, so the comparison below
+  /// is like-for-like with [_selectedTime] instead of parsing on both sides.
+  TimeOfDay? get _originalTime {
+    final raw = originalRule.scheduleTime;
+    if (raw == null || raw.isEmpty) return null;
+    final parts = raw.split(':');
+    if (parts.length != 2) return null;
+    final h = int.tryParse(parts[0]);
+    final m = int.tryParse(parts[1]);
+    if (h == null || m == null) return null;
+    return TimeOfDay(hour: h, minute: m);
+  }
+
   void _checkForChanges() {
+    // EVERY editable field, not just the text ones. Schedule time, cadence and
+    // day were all missing, so changing when a rule fires — the most common
+    // edit there is — left Save greyed out and the change unsaveable.
     setState(() {
       _hasChanges = _nameController.text != originalRule.name ||
           _descriptionController.text != originalRule.description ||
           _amountController.text != originalRule.amountValue.toString() ||
           _selectedAmountType != originalRule.amountType ||
+          _selectedFrequency != originalRule.frequency ||
+          _selectedTime != _originalTime ||
+          _selectedDay != originalRule.scheduleDay ||
           _targetAmountController.text != (originalRule.targetAmount?.toString() ?? '') ||
           _minimumBalanceController.text != (originalRule.minimumBalance?.toString() ?? '') ||
           _maximumPerSaveController.text != (originalRule.maximumPerSave?.toString() ?? '') ||
@@ -954,6 +973,7 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
         groupValue: _selectedAmountType,
         onChanged: (value) {
           setState(() => _selectedAmountType = value ?? _selectedAmountType);
+        _checkForChanges();
           _checkForChanges();
         },
         child: Row(
@@ -1031,6 +1051,7 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
       onTap: () {
         setState(() => _selectedFrequency = isSelected ? null : freq);
         _checkForChanges();
+        _checkForChanges();
       },
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
@@ -1072,6 +1093,7 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
         );
         if (time != null) {
           setState(() => _selectedTime = time);
+      _checkForChanges();
           _checkForChanges();
         }
       },
