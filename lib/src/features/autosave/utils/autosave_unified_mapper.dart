@@ -1,3 +1,4 @@
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:lazervault/core/types/unified_transaction.dart';
 
 import '../domain/entities/autosave_rule_entity.dart';
@@ -58,9 +59,13 @@ UnifiedTransaction autoSaveTxnToUnified(
       // fee is taken out of the user's own save — they moved one amount and a
       // smaller one landed, so they are owed both numbers.
       if (txn.fee > 0) ...{
-        'amount_moved':
-            '${txn.currency} ${txn.grossOrAmount.toStringAsFixed(2)}',
-        'platform_fee': '${txn.currency} ${txn.fee.toStringAsFixed(2)}',
+        // Formatted through the shared currency helper so these rows carry ₦
+        // like the rest of the app — and, since the metadata is rendered
+        // verbatim into the PDF, so the exported document does too.
+        'amount_moved': currency_formatter.CurrencySymbols
+            .formatAmountWithCurrency(txn.grossOrAmount, txn.currency),
+        'platform_fee': currency_formatter.CurrencySymbols
+            .formatAmountWithCurrency(txn.fee, txn.currency),
       },
       if (txn.isAwaitingSettlement)
         'settlement': 'Awaiting your bank — this completes once the debit '

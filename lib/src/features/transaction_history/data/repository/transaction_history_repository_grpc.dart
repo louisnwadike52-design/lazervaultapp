@@ -684,6 +684,22 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       if (ref != null) metadata['giftcard_ref'] = ref;
     }
 
+    // AutoSave rows carry no metadata on the accounts ledger — their story is
+    // in the description ("AutoSave (manual_trigger): Save on wallet deposit").
+    // Lift it into real rows so the receipt, and the PDF it exports, name the
+    // rule and how it fired instead of reprinting one raw sentence.
+    if (serviceType == TransactionServiceType.autosave) {
+      final details =
+          classifier.autoSaveDetailsFromDescription(protoTx.description);
+      if (details.ruleName != null && metadata['rule'] == null) {
+        metadata['rule'] = details.ruleName;
+      }
+      if (details.triggerReason != null && metadata['trigger'] == null) {
+        metadata['trigger'] =
+            classifier.autoSaveTriggerReasonLabel(details.triggerReason!);
+      }
+    }
+
     // Legacy invoice-fee rows predate the metadata stamp — recover the
     // invoice id from the idempotency reference so tapping the row can still
     // open the invoice receipt.

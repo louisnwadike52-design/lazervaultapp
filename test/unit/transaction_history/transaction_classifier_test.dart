@@ -415,4 +415,49 @@ void main() {
       );
     });
   });
+
+  // ── AutoSave detail recovered from the ledger description ──────────────
+  //
+  // The accounts ledger stores no autosave metadata, so the receipt (and its
+  // PDF) can only name the rule and trigger if they are parsed back out of the
+  // description the service stamps.
+  group('autosave details are recovered from the description', () {
+    test('the exact prod description parses into rule + trigger', () {
+      final d = autoSaveDetailsFromDescription(
+          'AutoSave (manual_trigger): Save on wallet deposit');
+      expect(d.ruleName, 'Save on wallet deposit');
+      expect(d.triggerReason, 'manual_trigger');
+      expect(autoSaveTriggerReasonLabel(d.triggerReason!), 'Manual save');
+    });
+
+    test('every trigger reason gets readable words', () {
+      expect(autoSaveTriggerReasonLabel('scheduled_worker'), 'Scheduled');
+      expect(autoSaveTriggerReasonLabel('round_up'), 'Round-up');
+      expect(autoSaveTriggerReasonLabel('on_deposit'), 'On deposit');
+      expect(autoSaveTriggerReasonLabel('external_inflow'), 'Bank inflow');
+      expect(autoSaveTriggerReasonLabel('scheduled_external'),
+          'Recurring bank debit');
+      // An unknown reason is de-snaked rather than shown raw.
+      expect(autoSaveTriggerReasonLabel('some_new_reason'), 'Some new reason');
+    });
+
+    test('a rule name containing a colon survives intact', () {
+      final d = autoSaveDetailsFromDescription(
+          'AutoSave (round_up): Rent: 2026 fund');
+      expect(d.ruleName, 'Rent: 2026 fund');
+      expect(d.triggerReason, 'round_up');
+    });
+
+    test('a description in another shape yields nothing, never a guess', () {
+      for (final s in const [
+        'Transfer to Grace',
+        'AutoSave without parens',
+        '',
+      ]) {
+        final d = autoSaveDetailsFromDescription(s);
+        expect(d.ruleName, isNull, reason: s);
+        expect(d.triggerReason, isNull, reason: s);
+      }
+    });
+  });
 }

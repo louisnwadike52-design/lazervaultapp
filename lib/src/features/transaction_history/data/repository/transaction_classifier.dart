@@ -186,6 +186,52 @@ String? titleForDomain(String domain, String typeLower) {
   }
 }
 
+/// Recovers the rule name and trigger reason from an AutoSave ledger
+/// description.
+///
+/// AutoSave stamps its ledger rows `AutoSave (reason): rule name` — e.g.
+/// "AutoSave (manual_trigger): Save on wallet deposit". The accounts ledger
+/// carries no autosave metadata of its own, so without this the global history
+/// (and the PDF it exports) can only show that raw sentence. Returns nulls when
+/// the description isn't in that shape, so a legacy or hand-written row simply
+/// contributes nothing rather than a wrong guess.
+({String? triggerReason, String? ruleName}) autoSaveDetailsFromDescription(
+    String description) {
+  final m = RegExp(r'^\s*AutoSave\s*\(([^)]*)\)\s*:\s*(.*)$', caseSensitive: false)
+      .firstMatch(description);
+  if (m == null) return (triggerReason: null, ruleName: null);
+  final reason = (m.group(1) ?? '').trim();
+  final name = (m.group(2) ?? '').trim();
+  return (
+    triggerReason: reason.isEmpty ? null : reason,
+    ruleName: name.isEmpty ? null : name,
+  );
+}
+
+/// Turns a raw trigger reason ("manual_trigger", "scheduled_worker") into the
+/// words a receipt should show.
+String autoSaveTriggerReasonLabel(String reason) {
+  switch (reason.toLowerCase()) {
+    case 'manual_trigger':
+      return 'Manual save';
+    case 'scheduled_worker':
+      return 'Scheduled';
+    case 'round_up':
+      return 'Round-up';
+    case 'on_deposit':
+      return 'On deposit';
+    case 'external_inflow':
+      return 'Bank inflow';
+    case 'scheduled_external':
+      return 'Recurring bank debit';
+    default:
+      // Unknown reasons still read better de-snaked than raw.
+      return reason
+          .replaceAll('_', ' ')
+          .replaceFirstMapped(RegExp(r'^\w'), (c) => c[0]!.toUpperCase());
+  }
+}
+
 /// Maps a [classifyDomain] domain to its [TransactionServiceType]. Returns null
 /// when the domain doesn't correspond to a concrete service type.
 TransactionServiceType? serviceTypeForDomain(String domain) {

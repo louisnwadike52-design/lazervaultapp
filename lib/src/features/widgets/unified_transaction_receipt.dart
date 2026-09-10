@@ -732,7 +732,15 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // entity + metadata payload); without this they fell back to the
       // plain image/text share.
       tx.serviceType == TransactionServiceType.qrPayment ||
-      tx.serviceType == TransactionServiceType.idPay;
+      tx.serviceType == TransactionServiceType.idPay ||
+      // AutoSave for the same reason: a save is a real money movement between
+      // two of your accounts and deserves the same document, with its trigger
+      // and fee rows carried through from the metadata. Omitting it left the
+      // Download/Share buttons on an autosave receipt producing a flat image.
+      // No copy-type prompt is needed — there is no counterparty and no fee
+      // borne by one side, so _withReceiptOptions derives the copy from
+      // direction as it does for every other non-fee-bearing type.
+      tx.serviceType == TransactionServiceType.autosave;
 
   Widget _buildActionButtons() {
     final buttons = <Widget>[];
