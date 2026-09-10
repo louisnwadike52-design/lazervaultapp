@@ -222,7 +222,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             children: [
               Center(
                 child: Container(
-                  width: 44.w, height: 4.h,
+                  width: 44.w,
+                  height: 4.h,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(2.r),
@@ -231,13 +232,18 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
               ),
               SizedBox(height: 18.h),
               Text('How should we move money from this bank?',
-                  style: TextStyle(color: Colors.white, fontSize: 17.sp, fontWeight: FontWeight.w800)),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 17.sp,
+                      fontWeight: FontWeight.w800)),
               SizedBox(height: 6.h),
               Text(
                 useDirectDebit
                     ? 'Direct Debit: authorise once, then transfers are instant with no bank approval each time.'
                     : 'DirectPay: you approve each transfer at your bank.',
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12.5.sp),
+                style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 12.5.sp),
               ),
               SizedBox(height: 18.h),
               Container(
@@ -253,8 +259,13 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                 ),
                 child: Row(
                   children: [
-                    Icon(useDirectDebit ? Icons.bolt_rounded : Icons.verified_user_outlined,
-                        color: useDirectDebit ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+                    Icon(
+                        useDirectDebit
+                            ? Icons.bolt_rounded
+                            : Icons.verified_user_outlined,
+                        color: useDirectDebit
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFF9CA3AF),
                         size: 22.sp),
                     SizedBox(width: 12.w),
                     Expanded(
@@ -262,10 +273,18 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(useDirectDebit ? 'Direct Debit' : 'DirectPay',
-                              style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w700)),
                           SizedBox(height: 2.h),
-                          Text(useDirectDebit ? 'Recommended' : 'One-time approval per transfer',
-                              style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11.5.sp)),
+                          Text(
+                              useDirectDebit
+                                  ? 'Recommended'
+                                  : 'One-time approval per transfer',
+                              style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                  fontSize: 11.5.sp)),
                         ],
                       ),
                     ),
@@ -273,7 +292,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                       value: useDirectDebit,
                       onChanged: (v) => setSheet(() => useDirectDebit = v),
                       activeThumbColor: const Color(0xFF10B981),
-                      activeTrackColor: const Color(0xFF10B981).withValues(alpha: 0.3),
+                      activeTrackColor:
+                          const Color(0xFF10B981).withValues(alpha: 0.3),
                     ),
                   ],
                 ),
@@ -286,10 +306,14 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                   onPressed: () => Navigator.of(sheetCtx).pop(useDirectDebit),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4834D4),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14.r)),
                   ),
                   child: Text('Continue to link',
-                      style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w700)),
                 ),
               ),
             ],
@@ -388,207 +412,217 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
 
   @override
   Widget build(BuildContext context) {
-    return AppGradientBackground(
-      child: Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: _leaveToLifestyle,
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-        ),
-        title: Text(
-          'Lazerbeam',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          // Per-service voice + chat icons — Beam moves money so
-          // pins the session to chat-transfers-service via
-          // DIRECT_ROUTES['transfers']. Canonical pattern.
-          ServiceVoiceButton(
-            serviceName: 'transfers',
-            iconColor: const Color(0xFF4834D4),
-            backgroundColor: const Color(0xFF4834D4),
-          ),
-          SizedBox(width: 8.w),
-          MicroserviceChatIcon(
-            // Display name only (the chat sheet renders "<serviceName> Assistant").
-            // Routing is driven by sourceContext:'transfers', so this is safe to
-            // brand as Lazerbeam.
-            serviceName: 'Lazerbeam',
-            sourceContext: 'transfers',
-            icon: Icons.chat_bubble_outline,
-            iconColor: const Color(0xFF4834D4),
-          ),
-          SizedBox(width: 12.w),
-        ],
-      ),
-      body: MultiBlocListener(
-        listeners: [
-          BlocListener<OpenBankingCubit, OpenBankingState>(
-            listenWhen: (prev, curr) =>
-                curr is AccountLinked ||
-                curr is AccountLinkedWithMandate ||
-                curr is AccountUnlinked ||
-                curr is BalanceRefreshing ||
-                curr is BalanceRefreshed ||
-                (curr is OpenBankingError &&
-                    (curr.operation == 'refreshBalance' ||
-                        curr.operation == 'linkAccount')),
-            listener: (context, state) async {
-              if (state is BalanceRefreshing) {
-                // No snackbar — the account card shows an inline
-                // 'Fetching balance…' row with its own spinner.
-                _refreshFeedbackAccountId = state.accountId;
-                if (mounted) setState(() {});
-                return;
-              }
-              if (state is BalanceRefreshed) {
-                // No snackbar — the card flips to the live figure inline.
-                if (mounted) setState(() {});
-                return;
-              }
-              if (state is OpenBankingError &&
-                  state.operation == 'linkAccount') {
-                // Linked-bank cap (admin-tunable default 3) / provider capacity
-                // exhausted — styled modal with a "Manage banks" CTA, not the
-                // generic error state. Nothing was charged (checked pre-fee).
-                Get.closeAllSnackbars();
-                if (state.errorCode == kLinkLimitReachedCode) {
-                  showLinkLimitReachedDialog(context, state.message);
-                } else if (state.errorCode == kLinkingCapacityCode) {
-                  showLinkingCapacityDialog(context);
-                }
-                return;
-              }
-              if (state is OpenBankingError &&
-                  state.operation == 'refreshBalance') {
-                Get.closeAllSnackbars();
-                final failedId = _refreshFeedbackAccountId;
-                final needsReauth = state.errorType ==
-                    BankingErrorType.reauthorizationRequired;
-                final account =
-                    failedId == null ? null : _linkedAccountById(failedId);
-                if (needsReauth && account != null) {
-                  Get.snackbar(
-                    'Bank Session Expired',
-                    '${account.bankName} needs to be reconnected before we can read its balance.',
-                    backgroundColor: const Color(0xFFFB923C),
-                    colorText: Colors.white,
-                    snackPosition: SnackPosition.BOTTOM,
-                    duration: const Duration(seconds: 6),
-                    mainButton: TextButton(
-                      onPressed: () {
-                        Get.closeAllSnackbars();
-                        startAccountReauthorization(context, account);
-                      },
-                      child: const Text('Reconnect',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700)),
-                    ),
-                  );
-                  if (mounted) setState(() {}); // repaint reauth chrome
-                } else {
-                  Get.snackbar(
-                    'Balance Refresh Failed',
-                    state.message,
-                    backgroundColor: const Color(0xFFEF4444),
-                    colorText: Colors.white,
-                    snackPosition: SnackPosition.BOTTOM,
-                    duration: const Duration(seconds: 4),
-                  );
-                }
-                return;
-              }
-              if (state is AccountLinkedWithMandate) {
-                // Auto-mandate flow: mandate created automatically
-                final mandateCubit = context.read<MandateCubit>();
-                final authState = context.read<AuthenticationCubit>().state;
-                if (authState is AuthenticationSuccess) {
-                  mandateCubit.fetchUserMandates(
-                    userId: authState.profile.userId,
-                  );
-                }
-                Get.snackbar(
-                  'Account Linked',
-                  state.mandateFailed
-                      ? '${state.account.bankName} linked. Direct Debit setup pending — tap account to retry.'
-                      : '${state.account.bankName} linked with Direct Debit enabled.',
-                  backgroundColor: state.mandateFailed
-                      ? const Color(0xFFFB923C)
-                      : const Color(0xFF10B981),
-                  colorText: Colors.white,
-                  snackPosition: SnackPosition.BOTTOM,
-                  duration: const Duration(seconds: 3),
-                );
-                _loadData();
-              } else if (state is AccountLinked) {
-                // Legacy flow: no auto-mandate
-                _loadData();
-              } else if (state is AccountUnlinked) {
-                Get.snackbar(
-                  'Account Unlinked',
-                  'Bank account has been removed.',
-                  backgroundColor: const Color(0xFF10B981),
-                  colorText: Colors.white,
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-                _loadData();
-              }
-            },
-          ),
-          BlocListener<MandateCubit, MandateState>(
-            listener: (context, state) {
-              if (state is UserMandatesLoaded ||
-                  state is MandateCreated ||
-                  state is MandatePaused ||
-                  state is MandateReinstated ||
-                  state is MandateCancelled) {
-                setState(() {});
-              }
-            },
-          ),
-          BlocListener<AccountCardsSummaryCubit, AccountCardsSummaryState>(
-            listener: (context, state) {
-              if (state is AccountCardsSummaryLoaded) {
-                _loadWalletHistory(state.accountSummaries);
-              } else if (state is AccountBalanceUpdated) {
-                _loadWalletHistory(state.accountSummaries);
-              }
-            },
-          ),
-        ],
-        child: Column(
-          children: [
-            // Shared hero banner
-            _buildHeroBanner(),
-            SizedBox(height: 16.h),
-
-            // Tab bar
-            _buildTabBar(),
-            SizedBox(height: 8.h),
-
-            // Tab content
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildExternalBanksTab(),
-                  _buildWalletTab(),
-                ],
+    return PopScope(
+        // No back ARROW on the landing — reached from the dashboard shell it sits
+        // above that shell's own nav, so the arrow was a second way out of a
+        // screen the nav already leaves.
+        //
+        // The system back gesture still has to go somewhere safe, and a plain pop
+        // is exactly what _leaveToLifestyle exists to avoid: it can land on a
+        // stranded, nav-less frame (e.g. after a Redo cleared the stack with
+        // offAllNamed). Intercept it and route through the shell as the arrow did.
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _leaveToLifestyle();
+        },
+        child: AppGradientBackground(
+            child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            automaticallyImplyLeading: false,
+            title: Text(
+              'Lazerbeam',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
               ),
             ),
-          ],
-        ),
-      ),
-    ));
+            centerTitle: true,
+            actions: [
+              // Per-service voice + chat icons — Beam moves money so
+              // pins the session to chat-transfers-service via
+              // DIRECT_ROUTES['transfers']. Canonical pattern.
+              ServiceVoiceButton(
+                serviceName: 'transfers',
+                iconColor: const Color(0xFF4834D4),
+                backgroundColor: const Color(0xFF4834D4),
+              ),
+              SizedBox(width: 8.w),
+              MicroserviceChatIcon(
+                // Display name only (the chat sheet renders "<serviceName> Assistant").
+                // Routing is driven by sourceContext:'transfers', so this is safe to
+                // brand as Lazerbeam.
+                serviceName: 'Lazerbeam',
+                sourceContext: 'transfers',
+                icon: Icons.chat_bubble_outline,
+                iconColor: const Color(0xFF4834D4),
+              ),
+              SizedBox(width: 12.w),
+            ],
+          ),
+          body: MultiBlocListener(
+            listeners: [
+              BlocListener<OpenBankingCubit, OpenBankingState>(
+                listenWhen: (prev, curr) =>
+                    curr is AccountLinked ||
+                    curr is AccountLinkedWithMandate ||
+                    curr is AccountUnlinked ||
+                    curr is BalanceRefreshing ||
+                    curr is BalanceRefreshed ||
+                    (curr is OpenBankingError &&
+                        (curr.operation == 'refreshBalance' ||
+                            curr.operation == 'linkAccount')),
+                listener: (context, state) async {
+                  if (state is BalanceRefreshing) {
+                    // No snackbar — the account card shows an inline
+                    // 'Fetching balance…' row with its own spinner.
+                    _refreshFeedbackAccountId = state.accountId;
+                    if (mounted) setState(() {});
+                    return;
+                  }
+                  if (state is BalanceRefreshed) {
+                    // No snackbar — the card flips to the live figure inline.
+                    if (mounted) setState(() {});
+                    return;
+                  }
+                  if (state is OpenBankingError &&
+                      state.operation == 'linkAccount') {
+                    // Linked-bank cap (admin-tunable default 3) / provider capacity
+                    // exhausted — styled modal with a "Manage banks" CTA, not the
+                    // generic error state. Nothing was charged (checked pre-fee).
+                    Get.closeAllSnackbars();
+                    if (state.errorCode == kLinkLimitReachedCode) {
+                      showLinkLimitReachedDialog(context, state.message);
+                    } else if (state.errorCode == kLinkingCapacityCode) {
+                      showLinkingCapacityDialog(context);
+                    }
+                    return;
+                  }
+                  if (state is OpenBankingError &&
+                      state.operation == 'refreshBalance') {
+                    Get.closeAllSnackbars();
+                    final failedId = _refreshFeedbackAccountId;
+                    final needsReauth = state.errorType ==
+                        BankingErrorType.reauthorizationRequired;
+                    final account =
+                        failedId == null ? null : _linkedAccountById(failedId);
+                    if (needsReauth && account != null) {
+                      Get.snackbar(
+                        'Bank Session Expired',
+                        '${account.bankName} needs to be reconnected before we can read its balance.',
+                        backgroundColor: const Color(0xFFFB923C),
+                        colorText: Colors.white,
+                        snackPosition: SnackPosition.BOTTOM,
+                        duration: const Duration(seconds: 6),
+                        mainButton: TextButton(
+                          onPressed: () {
+                            Get.closeAllSnackbars();
+                            startAccountReauthorization(context, account);
+                          },
+                          child: const Text('Reconnect',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700)),
+                        ),
+                      );
+                      if (mounted) setState(() {}); // repaint reauth chrome
+                    } else {
+                      Get.snackbar(
+                        'Balance Refresh Failed',
+                        state.message,
+                        backgroundColor: const Color(0xFFEF4444),
+                        colorText: Colors.white,
+                        snackPosition: SnackPosition.BOTTOM,
+                        duration: const Duration(seconds: 4),
+                      );
+                    }
+                    return;
+                  }
+                  if (state is AccountLinkedWithMandate) {
+                    // Auto-mandate flow: mandate created automatically
+                    final mandateCubit = context.read<MandateCubit>();
+                    final authState = context.read<AuthenticationCubit>().state;
+                    if (authState is AuthenticationSuccess) {
+                      mandateCubit.fetchUserMandates(
+                        userId: authState.profile.userId,
+                      );
+                    }
+                    Get.snackbar(
+                      'Account Linked',
+                      state.mandateFailed
+                          ? '${state.account.bankName} linked. Direct Debit setup pending — tap account to retry.'
+                          : '${state.account.bankName} linked with Direct Debit enabled.',
+                      backgroundColor: state.mandateFailed
+                          ? const Color(0xFFFB923C)
+                          : const Color(0xFF10B981),
+                      colorText: Colors.white,
+                      snackPosition: SnackPosition.BOTTOM,
+                      duration: const Duration(seconds: 3),
+                    );
+                    _loadData();
+                  } else if (state is AccountLinked) {
+                    // Legacy flow: no auto-mandate
+                    _loadData();
+                  } else if (state is AccountUnlinked) {
+                    Get.snackbar(
+                      'Account Unlinked',
+                      'Bank account has been removed.',
+                      backgroundColor: const Color(0xFF10B981),
+                      colorText: Colors.white,
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                    _loadData();
+                  }
+                },
+              ),
+              BlocListener<MandateCubit, MandateState>(
+                listener: (context, state) {
+                  if (state is UserMandatesLoaded ||
+                      state is MandateCreated ||
+                      state is MandatePaused ||
+                      state is MandateReinstated ||
+                      state is MandateCancelled) {
+                    setState(() {});
+                  }
+                },
+              ),
+              BlocListener<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+                listener: (context, state) {
+                  if (state is AccountCardsSummaryLoaded) {
+                    _loadWalletHistory(state.accountSummaries);
+                  } else if (state is AccountBalanceUpdated) {
+                    _loadWalletHistory(state.accountSummaries);
+                  }
+                },
+              ),
+            ],
+            child: Column(
+              children: [
+                // Shared hero banner
+                _buildHeroBanner(),
+                SizedBox(height: 16.h),
+
+                // Tab bar
+                _buildTabBar(),
+                SizedBox(height: 8.h),
+
+                // Tab content
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildExternalBanksTab(),
+                      _buildWalletTab(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        )));
   }
 
   // ---------------------------------------------------------------------------
@@ -704,14 +738,16 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                         borderRadius: BorderRadius.circular(18.r),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.35),
                             blurRadius: 16,
                             offset: const Offset(0, 6),
                           ),
                         ],
                       ),
                       child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 18.w, vertical: 16.h),
                         child: Row(
                           children: [
                             Container(
@@ -744,7 +780,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: GoogleFonts.inter(
-                                      color: Colors.white.withValues(alpha: 0.85),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.85),
                                       fontSize: 12.sp,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -919,71 +956,72 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
       padding: EdgeInsets.all(12.w),
       decoration: BeamStyle.card(radius: 20),
       child: Column(
-      children: [
-        // FROM card
-        _buildWalletDraggableSlot(
-          dragData: 'from',
-          acceptData: 'to',
-          isHovering: _isWalletHoveringFrom,
-          onHoverChanged: (h) => setState(() => _isWalletHoveringFrom = h),
-          child: _buildWalletDraggableCard(
-            label: 'From',
-            account: _walletSourceAccount,
-            onTap: () => _showWalletAccountPicker(
-              accounts: accounts,
-              excludeId: _walletDestinationAccount?.id,
-              onSelected: (a) => setState(() => _walletSourceAccount = a),
+        children: [
+          // FROM card
+          _buildWalletDraggableSlot(
+            dragData: 'from',
+            acceptData: 'to',
+            isHovering: _isWalletHoveringFrom,
+            onHoverChanged: (h) => setState(() => _isWalletHoveringFrom = h),
+            child: _buildWalletDraggableCard(
+              label: 'From',
+              account: _walletSourceAccount,
+              onTap: () => _showWalletAccountPicker(
+                accounts: accounts,
+                excludeId: _walletDestinationAccount?.id,
+                onSelected: (a) => setState(() => _walletSourceAccount = a),
+              ),
+              highlight: _isWalletHoveringFrom,
             ),
-            highlight: _isWalletHoveringFrom,
-          ),
-          feedbackChild: _buildWalletDraggableCard(
-            label: 'From',
-            account: _walletSourceAccount,
-            highlight: true,
-          ),
-          ghostChild: _buildWalletDraggableCard(
-            label: 'From',
-            account: _walletSourceAccount,
-          ),
-        ),
-        // Swap button — purple gradient square, equal spacing above and below
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.h),
-          child: BeamSwapButton(
-            onTap:
-                (_walletSourceAccount != null || _walletDestinationAccount != null)
-                    ? _swapWalletAccounts
-                    : null,
-          ),
-        ),
-        // TO card
-        _buildWalletDraggableSlot(
-          dragData: 'to',
-          acceptData: 'from',
-          isHovering: _isWalletHoveringTo,
-          onHoverChanged: (h) => setState(() => _isWalletHoveringTo = h),
-          child: _buildWalletDraggableCard(
-            label: 'To',
-            account: _walletDestinationAccount,
-            onTap: () => _showWalletAccountPicker(
-              accounts: accounts,
-              excludeId: _walletSourceAccount?.id,
-              onSelected: (a) => setState(() => _walletDestinationAccount = a),
+            feedbackChild: _buildWalletDraggableCard(
+              label: 'From',
+              account: _walletSourceAccount,
+              highlight: true,
             ),
-            highlight: _isWalletHoveringTo,
+            ghostChild: _buildWalletDraggableCard(
+              label: 'From',
+              account: _walletSourceAccount,
+            ),
           ),
-          feedbackChild: _buildWalletDraggableCard(
-            label: 'To',
-            account: _walletDestinationAccount,
-            highlight: true,
+          // Swap button — purple gradient square, equal spacing above and below
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.h),
+            child: BeamSwapButton(
+              onTap: (_walletSourceAccount != null ||
+                      _walletDestinationAccount != null)
+                  ? _swapWalletAccounts
+                  : null,
+            ),
           ),
-          ghostChild: _buildWalletDraggableCard(
-            label: 'To',
-            account: _walletDestinationAccount,
+          // TO card
+          _buildWalletDraggableSlot(
+            dragData: 'to',
+            acceptData: 'from',
+            isHovering: _isWalletHoveringTo,
+            onHoverChanged: (h) => setState(() => _isWalletHoveringTo = h),
+            child: _buildWalletDraggableCard(
+              label: 'To',
+              account: _walletDestinationAccount,
+              onTap: () => _showWalletAccountPicker(
+                accounts: accounts,
+                excludeId: _walletSourceAccount?.id,
+                onSelected: (a) =>
+                    setState(() => _walletDestinationAccount = a),
+              ),
+              highlight: _isWalletHoveringTo,
+            ),
+            feedbackChild: _buildWalletDraggableCard(
+              label: 'To',
+              account: _walletDestinationAccount,
+              highlight: true,
+            ),
+            ghostChild: _buildWalletDraggableCard(
+              label: 'To',
+              account: _walletDestinationAccount,
+            ),
           ),
-        ),
-      ],
-    ),
+        ],
+      ),
     );
   }
 
@@ -1473,64 +1511,64 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
       child: GestureDetector(
         onTap: () => _openBeamWalletReceipt(transfer),
         child: Container(
-        padding: EdgeInsets.all(14.w),
-        decoration: BeamStyle.card(radius: 12),
-        child: Row(
-          children: [
-            Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: BeamStyle.purple.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(10.r),
+          padding: EdgeInsets.all(14.w),
+          decoration: BeamStyle.card(radius: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  color: BeamStyle.purple.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(Icons.account_balance_wallet_outlined,
+                    color: BeamStyle.purpleLight, size: 20.sp),
               ),
-              child: Icon(Icons.account_balance_wallet_outlined,
-                  color: BeamStyle.purpleLight, size: 20.sp),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      description,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      _formatDate(date),
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF6B7280),
+                        fontSize: 11.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 8.w),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    description,
+                    amountDisplay,
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w600,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 4.h),
-                  Text(
-                    _formatDate(date),
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF6B7280),
-                      fontSize: 11.sp,
-                    ),
-                  ),
+                  _buildWalletStatusBadge(transfer.status ?? 'processing'),
                 ],
               ),
-            ),
-            SizedBox(width: 8.w),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  amountDisplay,
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                _buildWalletStatusBadge(transfer.status ?? 'processing'),
-              ],
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );
@@ -1851,7 +1889,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
   Widget _buildAccountsList(List<LinkedBankAccount> accounts) {
     // Show the most recently linked account first, so a bank you just added
     // via "Link New" appears at the front of the carousel.
-    final sorted = [...accounts]..sort((a, b) => b.linkedAt.compareTo(a.linkedAt));
+    final sorted = [...accounts]
+      ..sort((a, b) => b.linkedAt.compareTo(a.linkedAt));
     // Rebuild when the MandateCubit updates (the background Mono refresh) so the
     // card badges correct themselves on display.
     return BlocBuilder<MandateCubit, MandateState>(
@@ -1876,8 +1915,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             // Per-account "refreshing" state (screen rebuilds on Balance* via the
             // MultiBlocListener setState, so this reads fresh each build).
             final obState = context.read<OpenBankingCubit>().state;
-            final isRefreshing = obState is BalanceRefreshing &&
-                obState.accountId == account.id;
+            final isRefreshing =
+                obState is BalanceRefreshing && obState.accountId == account.id;
             return MoveAccountCard(
               account: account,
               isSelected: false,
@@ -2163,20 +2202,16 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                               style: TextStyle(color: Colors.white)),
                           content: Text(
                             'Are you sure you want to unlink ${account.bankName} (${account.displayAccountNumber})?',
-                            style:
-                                const TextStyle(color: Color(0xFF9CA3AF)),
+                            style: const TextStyle(color: Color(0xFF9CA3AF)),
                           ),
                           actions: [
                             TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(dlgCtx, false),
+                              onPressed: () => Navigator.pop(dlgCtx, false),
                               child: const Text('Cancel',
-                                  style:
-                                      TextStyle(color: Color(0xFF9CA3AF))),
+                                  style: TextStyle(color: Color(0xFF9CA3AF))),
                             ),
                             TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(dlgCtx, true),
+                              onPressed: () => Navigator.pop(dlgCtx, true),
                               style: TextButton.styleFrom(
                                   foregroundColor: Colors.red),
                               child: const Text('Unlink'),
@@ -2276,8 +2311,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                 color: const Color(0xFF4834D4).withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.add,
-                  color: const Color(0xFF4834D4), size: 24.sp),
+              child:
+                  Icon(Icons.add, color: const Color(0xFF4834D4), size: 24.sp),
             ),
             SizedBox(height: 12.h),
             Text(
@@ -2563,8 +2598,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                         decoration: BoxDecoration(
                           color: const Color(0xFF1F1F1F),
                           borderRadius: BorderRadius.circular(12.r),
-                          border:
-                              Border.all(color: const Color(0xFF2D2D2D)),
+                          border: Border.all(color: const Color(0xFF2D2D2D)),
                         ),
                         child: Row(
                           children: [
@@ -2577,14 +2611,12 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                                 borderRadius: BorderRadius.circular(10.r),
                               ),
                               child: Icon(Icons.account_balance,
-                                  color: const Color(0xFF60A5FA),
-                                  size: 20.sp),
+                                  color: const Color(0xFF60A5FA), size: 20.sp),
                             ),
                             SizedBox(width: 12.w),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     account.bankName,
@@ -2606,8 +2638,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                               ),
                             ),
                             Icon(Icons.check_circle,
-                                color: const Color(0xFF10B981),
-                                size: 20.sp),
+                                color: const Color(0xFF10B981), size: 20.sp),
                           ],
                         ),
                       ),
@@ -2846,7 +2877,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
     final amount = transfer.amount != null
         ? _formatNaira(transfer.amount! / 100.0)
         : 'NGN 0.00';
-    final description = transfer.reference ?? transfer.transferId ?? 'Wallet Transfer';
+    final description =
+        transfer.reference ?? transfer.transferId ?? 'Wallet Transfer';
     final date = transfer.createdAt ?? DateTime.now();
 
     return Container(
@@ -2877,7 +2909,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
           ],
           _buildSheetDivider(),
           _buildSheetDetailRow('Date', _formatDate(date)),
-          if (transfer.recipientName != null && transfer.recipientName!.isNotEmpty) ...[
+          if (transfer.recipientName != null &&
+              transfer.recipientName!.isNotEmpty) ...[
             _buildSheetDivider(),
             _buildSheetDetailRow('Recipient', transfer.recipientName!),
           ],
@@ -2930,7 +2963,9 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             onPressed: () async {
               final authState = context.read<AuthenticationCubit>().state;
               if (authState is! AuthenticationSuccess) return;
-              final userName = '${authState.profile.user.firstName} ${authState.profile.user.lastName}'.trim();
+              final userName =
+                  '${authState.profile.user.firstName} ${authState.profile.user.lastName}'
+                      .trim();
 
               try {
                 await MoveTransferPdfService.downloadReceipt(
@@ -2956,7 +2991,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             icon: Icon(Icons.download_rounded, size: 16.sp),
             label: Text(
               'Download',
-              style: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                  fontSize: 12.sp, fontWeight: FontWeight.w600),
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
@@ -2974,7 +3010,9 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             onPressed: () async {
               final authState = context.read<AuthenticationCubit>().state;
               if (authState is! AuthenticationSuccess) return;
-              final userName = '${authState.profile.user.firstName} ${authState.profile.user.lastName}'.trim();
+              final userName =
+                  '${authState.profile.user.firstName} ${authState.profile.user.lastName}'
+                      .trim();
 
               try {
                 await MoveTransferPdfService.shareReceipt(
@@ -2994,7 +3032,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             icon: Icon(Icons.share_rounded, size: 16.sp),
             label: Text(
               'Share Receipt',
-              style: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                  fontSize: 12.sp, fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4834D4),
@@ -3009,10 +3048,12 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
     );
   }
 
-  Widget _buildWalletTransferPdfActions(PaymentsTransferResult transfer, BuildContext ctx) {
+  Widget _buildWalletTransferPdfActions(
+      PaymentsTransferResult transfer, BuildContext ctx) {
     // Get account names from current state or use defaults
     final sourceName = _walletSourceAccount?.displayName ?? 'Source Account';
-    final destName = _walletDestinationAccount?.displayName ?? 'Destination Account';
+    final destName =
+        _walletDestinationAccount?.displayName ?? 'Destination Account';
 
     return Row(
       children: [
@@ -3021,7 +3062,9 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             onPressed: () async {
               final authState = context.read<AuthenticationCubit>().state;
               if (authState is! AuthenticationSuccess) return;
-              final userName = '${authState.profile.user.firstName} ${authState.profile.user.lastName}'.trim();
+              final userName =
+                  '${authState.profile.user.firstName} ${authState.profile.user.lastName}'
+                      .trim();
 
               try {
                 await WalletTransferPdfService.downloadReceipt(
@@ -3049,7 +3092,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             icon: Icon(Icons.download_rounded, size: 16.sp),
             label: Text(
               'Download',
-              style: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                  fontSize: 12.sp, fontWeight: FontWeight.w600),
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
@@ -3067,7 +3111,9 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             onPressed: () async {
               final authState = context.read<AuthenticationCubit>().state;
               if (authState is! AuthenticationSuccess) return;
-              final userName = '${authState.profile.user.firstName} ${authState.profile.user.lastName}'.trim();
+              final userName =
+                  '${authState.profile.user.firstName} ${authState.profile.user.lastName}'
+                      .trim();
 
               try {
                 await WalletTransferPdfService.shareReceipt(
@@ -3089,7 +3135,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             icon: Icon(Icons.share_rounded, size: 16.sp),
             label: Text(
               'Share Receipt',
-              style: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                  fontSize: 12.sp, fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4834D4),
