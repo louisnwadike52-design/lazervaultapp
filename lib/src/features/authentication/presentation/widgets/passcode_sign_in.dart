@@ -22,6 +22,7 @@ import 'package:lazervault/src/features/authentication/presentation/widgets/acco
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/services/biometric_service.dart';
+import 'package:lazervault/core/shared_widgets/face_id_icon.dart';
 import 'package:lazervault/core/utils/logger.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/session_login_completer.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/biometric/biometric_setup_dialog.dart';
@@ -60,6 +61,10 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
   bool _canEnrollBiometric = false; // sensor present but nothing enrolled yet
   bool _biometricEnabled = false; // opted-in for the device's biometric in Settings
   bool _voiceEnabled = false; // voice login opted-in via Settings → Biometric Login
+  // User's choice in Settings → Biometric Login: fire the OS prompt as this
+  // screen appears, or wait for a tap on the biometric button. Defaults to
+  // tap.
+  bool _biometricAutoPrompt = false;
   IconData _biometricIcon = Icons.fingerprint;
   String _biometricTooltip = 'Use Biometrics';
   BiometricType? _availableBiometricType;
@@ -133,11 +138,13 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
     final faceOn = await store.getFaceLoginEnabled();
     final fingerprintOn = await store.getFingerprintLoginEnabled();
     final voiceOn = await store.getVoiceLoginEnabled();
+    final autoPrompt = await store.getBiometricAutoPrompt();
 
     if (!mounted) return;
 
     setState(() {
       _voiceEnabled = voiceOn;
+      _biometricAutoPrompt = autoPrompt;
       // Hardware present but nothing enrolled → we still let the button show so
       // the tap can send the user to OS enrollment.
       _canEnrollBiometric = status.canEnroll;
@@ -257,7 +264,11 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
   /// loop it, and [_autoPromptAttempted] guards a second attempt within the session.
   Future<void> _maybeAutoLogon() async {
     if (_autoPromptAttempted || !mounted) return;
+    // Platform kill-switch first (admin-toggled, no redeploy), then the USER's
+    // choice. The admin flag can only ever take auto-logon away; it cannot
+    // turn it on for someone who asked to unlock by tapping.
     if (!FeatureFlags.autoBiometricLoginOnLaunch) return;
+    if (!_biometricAutoPrompt) return;
     // Only proceed to the native prompt when fully READY: enrolled sensor AND
     // opted-in for Lazervault. Never auto-open the OS-setup / enable-in-app
     // guidance dialogs — those must be user-initiated so launch never nags.
@@ -880,6 +891,12 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                                             _canEnrollBiometric))
                                       _buildIconButton(
                                         icon: _biometricIcon,
+                                        child: _availableBiometricType ==
+                                                BiometricType.face
+                                            ? FaceIdIcon(
+                                                size: 30.sp,
+                                                color: Colors.white)
+                                            : null,
                                         onPressed: _onBiometricPressed,
                                         iconColor: Colors.white,
                                         colorScheme: colorScheme,
@@ -994,14 +1011,19 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
   }
 
   Widget _buildIconButton({
-    required IconData icon,
+    IconData? icon,
+    // A prebuilt glyph, for the icons Material has no good version of. Takes
+    // precedence over [icon]; IconButton's own `color` cannot tint a painted
+    // child, so such a child arrives already coloured.
+    Widget? child,
     required VoidCallback? onPressed,
     required ColorScheme colorScheme,
     required Color iconColor,
     String? tooltip,
   }) {
+    assert(icon != null || child != null, 'icon button needs an icon or child');
     return IconButton(
-      icon: Icon(icon),
+      icon: child ?? Icon(icon),
       tooltip: tooltip,
       iconSize: 30.sp,
       color: onPressed == null ? Colors.grey : iconColor,

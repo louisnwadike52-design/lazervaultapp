@@ -116,6 +116,16 @@ void main() {
       expect(kPerUserStorageKeys, contains('user_avatar_url'));
     });
 
+    test('carries every biometric preference, including how it fires', () {
+      // Enablement AND trigger mode are both the previous user's choice. A new
+      // account inheriting "ask automatically" would meet a Face ID sheet it
+      // never asked for, before enabling any biometric at all.
+      expect(kPerUserStorageKeys, contains('face_login_enabled'));
+      expect(kPerUserStorageKeys, contains('fingerprint_login_enabled'));
+      expect(kPerUserStorageKeys, contains('voice_login_enabled'));
+      expect(kPerUserStorageKeys, contains('biometric_auto_prompt'));
+    });
+
     test('does not drop the device id', () {
       // device_id identifies the HARDWARE, not the person. Clearing it would
       // rotate the device UUID on every user switch, so the next login looks

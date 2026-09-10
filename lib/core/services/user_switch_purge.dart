@@ -50,6 +50,10 @@ const List<String> kPerUserStorageKeys = [
   'face_login_enabled',
   'fingerprint_login_enabled',
   'voice_login_enabled',
+  // Same reasoning: how the prompt FIRES is the previous user's preference. A
+  // new account inheriting "ask automatically" would meet a Face ID sheet it
+  // never asked for, before it had even enabled the biometric.
+  'biometric_auto_prompt',
 ];
 
 /// True when [newUserId]/[newEmail] describe someone other than whoever this

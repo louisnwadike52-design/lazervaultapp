@@ -1,3 +1,4 @@
+import 'package:lazervault/core/shared_widgets/face_id_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -44,6 +45,8 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
   bool _fingerprintOn = false;
   bool _faceOn = false;
   bool _voiceOn = false;
+  /// Fire the OS prompt as the lock screen appears, or wait for a tap.
+  bool _autoPrompt = false;
 
   bool get _fingerprintAvailable => _status.isAvailable && _status.hasFingerprint;
   bool get _faceAvailable => _status.isAvailable && _status.hasFace;
@@ -76,6 +79,7 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
     _fingerprintOn = await _store.getFingerprintLoginEnabled();
     _faceOn = await _store.getFaceLoginEnabled();
     _voiceOn = await _store.getVoiceLoginEnabled();
+    _autoPrompt = await _store.getBiometricAutoPrompt();
     // If a biometric was removed at the OS level, drop the stale opt-in so we
     // never show an "on" toggle the OS can no longer satisfy.
     if (!_status.isAvailable) {
@@ -298,6 +302,7 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
                 ),
                 _tile(
                   icon: Icons.face_outlined,
+                  iconBuilder: (c) => FaceIdIcon(size: 22.sp, color: c),
                   title: 'Face ID',
                   subtitle: _faceAvailable
                       ? 'Unlock with face recognition'
@@ -310,6 +315,13 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
                       _toggleDeviceBiometric(isFace: true, turnOn: v),
                   onSetup: _canEnroll ? _openEnrollment : null,
                 ),
+                // Only meaningful when a device biometric can actually unlock —
+                // voice has its own sheet and never auto-fires.
+                if ((_fingerprintOn && _fingerprintAvailable) ||
+                    (_faceOn && _faceAvailable)) ...[
+                  SizedBox(height: 6.h),
+                  _unlockModeSelector(),
+                ],
                 _tile(
                   icon: Icons.record_voice_over_outlined,
                   title: 'Voice',
@@ -393,8 +405,109 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
     );
   }
 
+  Future<void> _setAutoPrompt(bool v) async {
+    setState(() => _autoPrompt = v);
+    await _store.setBiometricAutoPrompt(v);
+  }
+
+  /// How the unlock biometric fires. Kept next to the toggles that enable it,
+  /// because "Face ID is on" and "Face ID opens by itself" are different
+  /// decisions and the second is the one people notice.
+  Widget _unlockModeSelector() {
+    Widget option({
+      required bool selected,
+      required IconData icon,
+      required String title,
+      required String subtitle,
+      required VoidCallback onTap,
+    }) =>
+        Expanded(
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12.r),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+              decoration: BoxDecoration(
+                color: selected
+                    ? const Color(0xFFA78BFA).withValues(alpha: 0.12)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: selected
+                      ? const Color(0xFFA78BFA).withValues(alpha: 0.5)
+                      : const Color(0xFF2D2D2D),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Icon(icon,
+                        size: 16.sp,
+                        color: selected
+                            ? const Color(0xFFA78BFA)
+                            : _textSecondary),
+                    SizedBox(width: 6.w),
+                    Expanded(
+                      child: Text(title,
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ]),
+                  SizedBox(height: 4.h),
+                  Text(subtitle,
+                      style: GoogleFonts.inter(
+                          color: _textSecondary,
+                          fontSize: 11.sp,
+                          height: 1.35)),
+                ],
+              ),
+            ),
+          ),
+        );
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('WHEN TO ASK',
+              style: GoogleFonts.inter(
+                  color: _textSecondary,
+                  fontSize: 10.5.sp,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8)),
+          SizedBox(height: 8.h),
+          Row(children: [
+            option(
+              selected: !_autoPrompt,
+              icon: Icons.touch_app_outlined,
+              title: 'When I tap',
+              subtitle: 'Open the lock screen first. Unlock by tapping the '
+                  'Face ID button.',
+              onTap: () => _setAutoPrompt(false),
+            ),
+            SizedBox(width: 10.w),
+            option(
+              selected: _autoPrompt,
+              icon: Icons.bolt_outlined,
+              title: 'Automatically',
+              subtitle: 'Ask as soon as the lock screen opens.',
+              onTap: () => _setAutoPrompt(true),
+            ),
+          ]),
+        ],
+      ),
+    );
+  }
+
   Widget _tile({
     required IconData icon,
+    /// Prebuilt glyph for icons Material has no good version of (Face ID).
+    /// Receives the resolved colour, since a painted child cannot inherit it.
+    Widget Function(Color color)? iconBuilder,
     required String title,
     required String subtitle,
     required bool enabled,
@@ -425,11 +538,12 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
                   .withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12.r),
             ),
-            child: Icon(icon,
-                color: (enabled && value) || onSetup != null
-                    ? _primary
-                    : _textSecondary,
-                size: 22.sp),
+            child: Builder(builder: (_) {
+              final c = (enabled && value) || onSetup != null
+                  ? _primary
+                  : _textSecondary;
+              return iconBuilder?.call(c) ?? Icon(icon, color: c, size: 22.sp);
+            }),
           ),
           SizedBox(width: 12.w),
           Expanded(

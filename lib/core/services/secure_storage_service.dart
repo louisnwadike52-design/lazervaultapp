@@ -30,6 +30,13 @@ class SecureStorageService {
   static const String _keyFaceLogin = 'face_login_enabled';
   static const String _keyVoiceLogin = 'voice_login_enabled';
 
+  /// How the unlock biometric FIRES on the passcode screen: automatically as
+  /// the screen appears, or only when the user taps the biometric button.
+  /// Chosen in Settings → Biometric Login. Absent means TAP — a prompt that
+  /// opens by itself the moment you look at the app is the behaviour this
+  /// setting exists to make optional, so it is not what an unset value does.
+  static const String _keyBiometricAutoPrompt = 'biometric_auto_prompt';
+
   /// LEGACY durable-biometric keys. These were a SECOND copy of the refresh
   /// token that biometric unlock re-minted from. They are gone: the auth-service
   /// rotates refresh tokens one-time-use and revokes the WHOLE token family on
@@ -102,6 +109,13 @@ class SecureStorageService {
       _storage.write(key: _keyVoiceLogin, value: v.toString());
   Future<bool> getVoiceLoginEnabled() async =>
       (await _storage.read(key: _keyVoiceLogin)) == 'true';
+
+  Future<void> setBiometricAutoPrompt(bool v) async =>
+      _storage.write(key: _keyBiometricAutoPrompt, value: v.toString());
+
+  /// Defaults to false (tap to unlock) when never set — see the key's note.
+  Future<bool> getBiometricAutoPrompt() async =>
+      (await _storage.read(key: _keyBiometricAutoPrompt)) == 'true';
 
   // Legacy durable-biometric cleanup. -----------------------------------------
   /// Delete any legacy durable-biometric keys left on an existing install. There
