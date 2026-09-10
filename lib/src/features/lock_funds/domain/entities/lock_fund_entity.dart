@@ -47,6 +47,13 @@ class LockFund {
   final String? sourceAccountId;
   final String? destinationAccountId;
 
+  /// UUID of the PiggyVaultConfig this lock was created from — the STABLE plan
+  /// identity. [lockType] is a denormalized display label derived from it, so
+  /// anything that must agree with what the backend will allow (top-up,
+  /// auto-save, renewal) should resolve the plan by this id rather than
+  /// switching on the enum. Empty for legacy rows.
+  final String configId;
+
   const LockFund({
     required this.id,
     required this.userId,
@@ -73,6 +80,7 @@ class LockFund {
     this.canUnlockEarly = false,
     this.sourceAccountId,
     this.destinationAccountId,
+    this.configId = '',
   });
 
   LockFund copyWith({
@@ -101,6 +109,7 @@ class LockFund {
     bool? canUnlockEarly,
     String? sourceAccountId,
     String? destinationAccountId,
+    String? configId,
   }) {
     return LockFund(
       id: id ?? this.id,
@@ -128,6 +137,7 @@ class LockFund {
       canUnlockEarly: canUnlockEarly ?? this.canUnlockEarly,
       sourceAccountId: sourceAccountId ?? this.sourceAccountId,
       destinationAccountId: destinationAccountId ?? this.destinationAccountId,
+      configId: configId ?? this.configId,
     );
   }
 

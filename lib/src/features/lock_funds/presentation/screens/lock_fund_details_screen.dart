@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/lock_fund_entity.dart';
+import '../../domain/repositories/lock_funds_repository.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
 import '../widgets/lock_funds_empty_state.dart';
@@ -47,7 +49,51 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
     );
     _animationController.forward();
     context.read<LockFundsCubit>().loadLockFundDetails(widget.lockFund.id);
+    _loadPlanConfig();
   }
+
+  /// The plan this lock belongs to, resolved by its config UUID.
+  ///
+  /// Read through the repository rather than the cubit on purpose: the cubit
+  /// signals configs by EMITTING PiggyVaultConfigsLoaded, which would replace
+  /// the lock-details state this screen is built on.
+  ///
+  /// Null until it arrives (and on any failure), which is why every caller
+  /// falls back to the lock-type default rather than assuming a capability is
+  /// off — a slow config fetch must not hide a button the user is entitled to.
+  PiggyVaultConfig? _planConfig;
+
+  Future<void> _loadPlanConfig() async {
+    try {
+      final configs = await serviceLocator<LockFundsRepository>()
+          .getPiggyVaultConfigs(currency: widget.lockFund.currency);
+      if (!mounted) return;
+      final id = widget.lockFund.configId;
+      PiggyVaultConfig? match;
+      for (final c in configs) {
+        // Prefer the stable id. Legacy rows carry no config_id, so fall back
+        // to the lock_type slug — the same denormalized label the screen used
+        // to rely on exclusively.
+        if (id.isNotEmpty ? c.id == id : c.lockType == widget.lockFund.lockType.backendKey) {
+          match = c;
+          break;
+        }
+      }
+      if (match != null) setState(() => _planConfig = match);
+    } catch (_) {
+      // Non-fatal: the lock-type defaults below still render a usable screen.
+    }
+  }
+
+  // Capability gates. The PLAN decides what the backend will accept; the
+  // lock_type enum is only a display label, so it is the fallback and never
+  // the authority. Without this an operator turning a capability off in the
+  // admin console left the button on screen for the backend to reject.
+  bool get _supportsTopUp =>
+      _planConfig?.supportsTopUp ?? widget.lockFund.lockType.defaultSupportsTopUp;
+  bool get _supportsAutoSave =>
+      _planConfig?.supportsAutoSave ??
+      widget.lockFund.lockType.defaultSupportsAutoSave;
 
   @override
   void dispose() {
@@ -894,10 +940,10 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
       if (lock.canRenew || lock.lockType.defaultSupportsRenewal)
         _buildActionButton('Renew Lock', Icons.refresh, const Color(0xFF6366F1),
             () => _showRenewDialog()),
-      if (lock.lockType.defaultSupportsTopUp)
+      if (_supportsTopUp)
         _buildActionButton('Top Up', Icons.add_circle_outline, const Color(0xFF6366F1),
             () => _showTopUpScreen()),
-      if (lock.lockType.defaultSupportsAutoSave)
+      if (_supportsAutoSave)
         _buildActionButton('Auto-Save', Icons.autorenew, const Color(0xFF3B82F6),
             () => _showAutoSaveScreen()),
     ];

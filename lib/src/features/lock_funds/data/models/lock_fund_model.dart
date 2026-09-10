@@ -30,6 +30,11 @@ class LockFundModel {
       canUnlockEarly: proto.canUnlockEarly,
       sourceAccountId: proto.sourceAccountId.isEmpty ? null : proto.sourceAccountId,
       destinationAccountId: proto.destinationAccountId.isEmpty ? null : proto.destinationAccountId,
+      // The plan this lock was created from. The gateway has always sent it and
+      // this mapper dropped it, which left the app resolving capabilities from
+      // the `lock_type` display enum — a denormalized label, not the plan
+      // identity. Empty for legacy rows created before ID-based identity.
+      configId: proto.configId,
     );
   }
 
