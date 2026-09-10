@@ -49,7 +49,7 @@ void main() {
       expect(AppServiceName.insurance.backendServiceName,
           equals('insurance-service'));
       expect(AppServiceName.sendFunds.backendServiceName,
-          equals('transfer-service'));
+          equals('core-payments-service'));
       expect(
           AppServiceName.tagPay.backendServiceName, equals('tag-pay-service'));
       expect(AppServiceName.autoSave.backendServiceName,

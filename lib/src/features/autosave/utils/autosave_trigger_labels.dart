@@ -37,6 +37,20 @@ class AutoSaveTriggerLabels {
 
   /// One-line explanation shown under the name on the trigger picker and on
   /// the rule review screen. Says what fires it and where money moves.
+  /// Whether the minimum-balance floor is actually ENFORCED for [t].
+  ///
+  /// Only the on-deposit and round-up consumers hold a fresh source balance —
+  /// they read it off the balance-changed event and clamp or skip the save
+  /// before the executor runs (autosave_deposit_consumer /
+  /// autosave_roundup_consumer). A scheduled, bank-pull or manual save has no
+  /// such event: the executor cannot re-fetch the balance without a user JWT,
+  /// so it defers to accounts-service, which only refuses an overdraft.
+  ///
+  /// Offering the field on a trigger that ignores it is worse than not
+  /// offering it — the user believes they set a guardrail that does not exist.
+  static bool enforcesMinimumBalance(TriggerType t) =>
+      t == TriggerType.onDeposit || t == TriggerType.roundUp;
+
   static String descriptionOf(TriggerType t) {
     switch (t) {
       case TriggerType.onDeposit:

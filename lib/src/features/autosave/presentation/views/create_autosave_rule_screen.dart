@@ -648,6 +648,14 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       if (t == TriggerType.scheduledExternal) {
         _selectedAmountType = AmountType.fixed;
       }
+      // Drop a minimum-balance the new trigger cannot honour. Switching back
+      // after typing one would otherwise submit a floor that nothing enforces
+      // — the field is hidden by then, so the user never sees the value they
+      // are still sending, and the rule's details page would advertise a
+      // guardrail it does not have.
+      if (!AutoSaveTriggerLabels.enforcesMinimumBalance(t)) {
+        _minimumBalanceController.clear();
+      }
       _stepError = null;
     });
   }
@@ -1372,7 +1380,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           _LabeledField(
             label: 'Target amount',
             optional: true,
-            help: 'Auto-completes the rule once this much has been saved.',
+            help: 'Each save is trimmed so the total never overshoots, and '
+                'the rule completes itself once you reach this.',
             child: _TextInput(
               controller: _targetAmountController,
               hint: '1,000.00',
@@ -1383,26 +1392,34 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               ],
             ),
           ),
-          SizedBox(height: 16.h),
-          _LabeledField(
-            label: 'Minimum balance to keep',
-            optional: true,
-            help: 'Source must keep at least this much after each save.',
-            child: _TextInput(
-              controller: _minimumBalanceController,
-              hint: '100.00',
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-              ],
+          // Only offered where it is actually enforced. On a scheduled or
+          // bank-pull rule nothing reads a live source balance, so this field
+          // would be a guardrail the user believes in and never gets.
+          if (AutoSaveTriggerLabels.enforcesMinimumBalance(
+              _selectedTriggerType)) ...[
+            SizedBox(height: 16.h),
+            _LabeledField(
+              label: 'Minimum balance to keep',
+              optional: true,
+              help: 'A save is trimmed — or skipped entirely — rather than '
+                  'take your source below this.',
+              child: _TextInput(
+                controller: _minimumBalanceController,
+                hint: '100.00',
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                ],
+              ),
             ),
-          ),
+          ],
           SizedBox(height: 16.h),
           _LabeledField(
             label: 'Maximum per save',
             optional: true,
-            help: 'Caps how much one fire can move.',
+            help: 'The most one save can move. A larger amount is trimmed '
+                'down to this before the money leaves.',
             child: _TextInput(
               controller: _maximumPerSaveController,
               hint: '500.00',

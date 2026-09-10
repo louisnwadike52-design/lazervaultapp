@@ -76,11 +76,11 @@ void main() {
       expect(backendName, equals('crypto-service'));
     });
 
-    test('AppServiceName.transfer (sendFunds) maps to transfer-service', () {
+    test('AppServiceName.transfer (sendFunds) maps to core-payments-service', () {
       const transferService = AppServiceName.sendFunds;
       final backendName = transferService.backendServiceName;
 
-      expect(backendName, equals('transfer-service'));
+      expect(backendName, equals('core-payments-service'));
     });
 
     test('AppServiceName.payBills maps to utility-payments-service', () {
@@ -148,7 +148,7 @@ void main() {
       expect(AppServiceName.insurance.backendServiceName,
           equals('insurance-service'));
       expect(AppServiceName.sendFunds.backendServiceName,
-          equals('transfer-service'));
+          equals('core-payments-service'));
       expect(
           AppServiceName.tagPay.backendServiceName, equals('tag-pay-service'));
     });

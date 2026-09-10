@@ -29,8 +29,11 @@ const _accentDeep = Color(0xFF8B5CF6);
 /// event, so promising "we'll never take you below this" on those rules
 /// would be a straight lie; they get the honest version instead.
 String _minimumBalanceHint(TriggerType trigger) {
+  // Same predicate the create wizard uses to decide whether to OFFER the
+  // field, so a rule cannot be created under one rule and described under
+  // another.
   final readsLiveBalance =
-      trigger == TriggerType.onDeposit || trigger == TriggerType.roundUp;
+      AutoSaveTriggerLabels.enforcesMinimumBalance(trigger);
   return readsLiveBalance
       ? 'The floor you keep in your source account. A save is trimmed — or '
           'skipped entirely — rather than take you below this.'
