@@ -29,12 +29,18 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
   bool _isProcessing = false;
   bool _hasConfirmed = false;
 
-  double get _withdrawalAmount {
-    if (widget.isEarlyWithdrawal) {
-      return widget.lockFund.earlyWithdrawalAmount;
-    }
-    return widget.lockFund.totalValue;
-  }
+  double get _withdrawalAmount =>
+      widget.lockFund.proceedsOnUnlock(early: widget.isEarlyWithdrawal);
+
+  /// Interest that will actually be PAID — zero on an early break, which is
+  /// not the same as the interest that has accrued.
+  double get _interestPaid => widget.lockFund
+      .interestPayableOnUnlock(early: widget.isEarlyWithdrawal);
+
+  /// True when there IS accrued interest but breaking early forfeits it — the
+  /// case the breakdown has to state plainly rather than quietly drop.
+  bool get _interestForfeited =>
+      widget.lockFund.accruedInterest > 0 && _interestPaid <= 0;
 
   double get _penaltyAmount {
     if (widget.isEarlyWithdrawal) {
@@ -246,7 +252,12 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'Breaking your lock early will incur a ${widget.lockFund.earlyUnlockPenaltyPercent}% penalty on your principal.',
+                  'Breaking your lock early will incur a '
+                  '${widget.lockFund.earlyUnlockPenaltyPercent}% penalty on '
+                  'your principal'
+                  // Naming the second consequence matters: the penalty is the
+                  // one people expect, losing the interest is not.
+                  '${_interestForfeited ? ', and you will lose the interest earned so far' : ''}.',
                   style: GoogleFonts.inter(
                     fontSize: 13.sp,
                     color: const Color(0xFF9CA3AF),
@@ -343,10 +354,17 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
           ),
           SizedBox(height: 16.h),
           _buildBreakdownRow('Principal Amount', lock.formattedAmount, Colors.white),
+          // The interest PAID, not the interest accrued. Breaking early
+          // forfeits it, and quoting the accrued figure here promised money
+          // the unlock does not pay.
           _buildBreakdownRow(
-            'Interest Earned',
-            '+${CurrencySymbols.getSymbol(lock.currency)}${lock.accruedInterest.toStringAsFixed(2)}',
-            const Color(0xFF10B981),
+            _interestForfeited ? 'Interest (forfeited)' : 'Interest Earned',
+            _interestForfeited
+                ? '-${CurrencySymbols.getSymbol(lock.currency)}${lock.accruedInterest.toStringAsFixed(2)}'
+                : '+${CurrencySymbols.getSymbol(lock.currency)}${_interestPaid.toStringAsFixed(2)}',
+            _interestForfeited
+                ? const Color(0xFFEF4444)
+                : const Color(0xFF10B981),
           ),
           if (widget.isEarlyWithdrawal && _penaltyAmount > 0)
             _buildBreakdownRow(

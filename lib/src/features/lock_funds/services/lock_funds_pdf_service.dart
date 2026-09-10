@@ -6,7 +6,6 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:lazervault/core/utils/receipt_download.dart';
 import '../domain/entities/lock_fund_entity.dart';
@@ -20,8 +19,41 @@ class LockFundsPdfService {
   static pw.Font? _regularFont;
   static pw.Font? _boldFont;
 
-  /// Get currency symbol - using ASCII-safe alternatives for PDF compatibility
+  /// Currency symbol for the PDF. With Inter embedded we render the REAL
+  /// symbol (₦, £, €, ₹…) so the document matches the on-screen receipt,
+  /// which has always shown ₦; the blanket ASCII codes below were a leftover
+  /// from the CDN-only font era and printed "NGN 1500.00" against an
+  /// on-screen "₦1,500.00" for the same lock. Without an embedded TrueType
+  /// font the built-in PDF font cannot draw those glyphs and the pdf package
+  /// RAISES rather than substituting, so the ASCII code remains the fallback.
+  ///
+  /// Mirrors tag_pay_pdf_helpers.dart, which is the pattern every other
+  /// receipt in the app already follows.
   static String _currencySymbolFor(String code) {
+    if (ReceiptFonts.embedded) {
+      switch (code.toUpperCase()) {
+        case 'NGN':
+          return '₦';
+        case 'GBP':
+          return '£';
+        case 'EUR':
+          return '€';
+        case 'ZAR':
+          return 'R';
+        case 'CAD':
+          return r'CA$';
+        case 'AUD':
+          return r'A$';
+        case 'INR':
+          return '₹';
+        case 'JPY':
+          return '¥';
+        case 'USD':
+          return r'$';
+        default:
+          return '$code ';
+      }
+    }
     switch (code.toUpperCase()) {
       case 'NGN':
         return 'NGN ';

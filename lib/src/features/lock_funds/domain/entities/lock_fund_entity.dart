@@ -182,9 +182,28 @@ class LockFund {
     return '$years year${years > 1 ? 's' : ''}, $remainingMonths month${remainingMonths > 1 ? 's' : ''}';
   }
 
-  /// Early withdrawal penalty amount
+  /// Early withdrawal penalty amount. Matches the backend formula
+  /// (accounts_lockfunds_cancel.go: amount * penalty_rate / 100).
   double get earlyWithdrawalPenalty => amount * (earlyUnlockPenaltyPercent / 100);
 
-  /// Amount returned after early withdrawal
-  double get earlyWithdrawalAmount => amount - earlyWithdrawalPenalty + accruedInterest;
+  /// Interest actually PAYABLE if the lock is unlocked right now.
+  ///
+  /// Breaking a lock early forfeits the interest entirely — the backend zeroes
+  /// it whenever a penalty applies (accounts_lockfunds_cancel.go step 9:
+  /// `if penaltyAmount > 0 { interestAmount = 0 }`), because paying interest
+  /// on a broken lock is both the customer-facing policy and ambiguous to
+  /// reconcile. [accruedInterest] is what has ACCRUED, which is not the same
+  /// question, and quoting it on a withdrawal screen promises money that will
+  /// not arrive.
+  double interestPayableOnUnlock({required bool early}) =>
+      early && earlyWithdrawalPenalty > 0 ? 0 : accruedInterest;
+
+  /// What actually lands in the user's account on unlock.
+  double proceedsOnUnlock({required bool early}) =>
+      amount -
+      (early ? earlyWithdrawalPenalty : 0) +
+      interestPayableOnUnlock(early: early);
+
+  /// Amount returned after early withdrawal.
+  double get earlyWithdrawalAmount => proceedsOnUnlock(early: true);
 }
