@@ -146,9 +146,28 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
         : _fallbackTtlSeconds);
   }
 
+  /// When a resend becomes possible. SEPARATE from the expiry deadline: the
+  /// server's cooldown is shorter than the code's life, so a user who never
+  /// received the SMS had to sit through the WHOLE window before the button
+  /// appeared. The countdown is not the same question as "may I ask again".
+  DateTime? _resendDeadline;
+
+  /// Server-enforced anyway — this only decides when the affordance is shown,
+  /// so a stale value can never let a request through early.
+  static const int _resendCooldownSeconds = 60;
+
+  bool get _canResend =>
+      _resendDeadline == null ||
+      !DateTime.now().isBefore(_resendDeadline!);
+
   void _restartTicker(int seconds) {
     _ticker?.cancel();
     _deadline = DateTime.now().add(Duration(seconds: seconds));
+    // Never past the expiry: if the code dies first, resend is already offered
+    // by the expired branch and a later cooldown would contradict it.
+    final cooldown =
+        seconds < _resendCooldownSeconds ? seconds : _resendCooldownSeconds;
+    _resendDeadline = DateTime.now().add(Duration(seconds: cooldown));
     _remaining = seconds;
     _ticker = Timer.periodic(const Duration(seconds: 1), (t) {
       if (!mounted) {
@@ -626,10 +645,11 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
         ],
       );
     }
-    // While the code is live there is no resend affordance — the countdown
-    // is the whole story. Resend appears the moment the timer ends (the
-    // expired row above), which also stops mid-window resends from burning
-    // the resend cap while a perfectly good code is in flight.
+    // Once the COOLDOWN has passed, offer the resend even though the code is
+    // still live. Waiting for expiry stranded anyone whose SMS never arrived:
+    // they could see a running timer and no way to act on it for the whole
+    // window. The server enforces the cooldown regardless, so showing the
+    // button can only ever be as permissive as the backend already is.
     return Row(
       children: [
         Icon(Icons.timer_outlined, color: _textSecondary, size: 15.sp),
@@ -637,8 +657,11 @@ class _LoginOtpViewState extends State<_LoginOtpView> {
         Text('Expires in $_countdownLabel',
             style: TextStyle(color: _textSecondary, fontSize: 12.5.sp)),
         const Spacer(),
-        Text('Resend available when the timer ends',
-            style: TextStyle(color: _textSecondary, fontSize: 11.5.sp)),
+        if (_canResend)
+          _linkButton('Get a new code', _requestNewCode)
+        else
+          Text("Didn't get it? Resend shortly",
+              style: TextStyle(color: _textSecondary, fontSize: 11.5.sp)),
       ],
     );
   }
