@@ -20,22 +20,8 @@ class IDPayPdfService {
   static pw.Font? _regularFont;
   static pw.Font? _boldFont;
 
-  static String _currencySymbolFor(String code) {
-    switch (code.toUpperCase()) {
-      case 'NGN':
-        return 'NGN ';
-      case 'GBP':
-        return 'GBP ';
-      case 'EUR':
-        return 'EUR ';
-      case 'USD':
-        return 'USD ';
-      case 'ZAR':
-        return 'ZAR ';
-      default:
-        return '$code ';
-    }
-  }
+  static String _currencySymbolFor(String code) =>
+      receiptCurrencySymbol(code);
 
   static String _currencyNameFor(String code) {
     switch (code.toUpperCase()) {

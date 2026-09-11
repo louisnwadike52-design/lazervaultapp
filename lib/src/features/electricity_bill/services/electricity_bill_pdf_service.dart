@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -19,30 +20,8 @@ class ElectricityBillPdfService {
   static pw.Font? _boldFont;
 
   /// Get currency symbol - using ASCII-safe alternatives for PDF compatibility
-  static String _currencySymbolFor(String code) {
-    switch (code.toUpperCase()) {
-      case 'NGN':
-        return 'NGN '; // Use code instead of symbol for PDF compatibility
-      case 'GBP':
-        return 'GBP ';
-      case 'EUR':
-        return 'EUR ';
-      case 'USD':
-        return 'USD ';
-      case 'ZAR':
-        return 'ZAR ';
-      case 'CAD':
-        return 'CAD ';
-      case 'AUD':
-        return 'AUD ';
-      case 'INR':
-        return 'INR ';
-      case 'JPY':
-        return 'JPY ';
-      default:
-        return '$code ';
-    }
-  }
+  static String _currencySymbolFor(String code) =>
+      receiptCurrencySymbol(code);
 
   /// Get display currency name
   static String _currencyNameFor(String code) {
@@ -123,7 +102,20 @@ class ElectricityBillPdfService {
     required BillPaymentEntity payment,
   }) async {
     await _loadFonts();
-    final pdf = pw.Document();
+    // Embed Inter BEFORE the symbol is resolved. ReceiptFonts.embedded is
+    // PROCESS-WIDE, so once any other receipt has loaded it this service would
+    // start emitting the real glyph — and the pdf package RAISES on a glyph
+    // the document's font cannot draw rather than substituting one. Loading
+    // here keeps the symbol and the font that has to draw it in agreement.
+    await ReceiptFonts.load();
+    final pdf = pw.Document(
+      theme: ReceiptFonts.embedded
+          ? pw.ThemeData.withFont(
+              base: ReceiptFonts.regular!,
+              bold: ReceiptFonts.bold!,
+            )
+          : null,
+    );
     final logo = await _loadLogo();
     final generatedDate = _displayDateFormat.format(DateTime.now());
     final paymentDate = _dateFormat.format(payment.createdAt);

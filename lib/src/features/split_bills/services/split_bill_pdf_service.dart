@@ -5,12 +5,51 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/utils/receipt_fonts.dart';
 import '../domain/entities/split_bill_entity.dart';
 
 class SplitBillPdfService {
   static final _displayDateFormat = DateFormat('MMM dd, yyyy HH:mm');
 
+  /// Masked account numbers arrive from the BACKEND, which picks its own
+  /// masking glyph. The PDF printed whatever it sent, and the built-in font
+  /// had no glyph for it — so "••••4282" came out as four tofu boxes next to
+  /// the digits, which reads as corruption rather than masking.
+  ///
+  /// Normalise any non-ASCII run to a character we know renders: a bullet once
+  /// Inter is embedded, an asterisk otherwise. Digits, spaces and ordinary
+  /// punctuation are left exactly as sent.
+  static String _safeMask(String raw) {
+    final fill = ReceiptFonts.embedded ? '•' : '*';
+    final out = StringBuffer();
+    for (final rune in raw.runes) {
+      // Printable ASCII survives; everything else becomes the fill glyph.
+      out.write(rune >= 0x20 && rune <= 0x7E ? String.fromCharCode(rune) : fill);
+    }
+    return out.toString();
+  }
+
+  /// Currency symbol for the PDF. With Inter embedded we render the REAL
+  /// symbol so the document matches the on-screen receipt; the built-in PDF
+  /// font cannot draw those glyphs, so the ASCII code stays as the fallback.
+  /// Mirrors tag_pay_pdf_helpers.dart.
   static String _currencySymbolFor(String code) {
+    if (ReceiptFonts.embedded) {
+      switch (code.toUpperCase()) {
+        case 'NGN':
+          return '₦';
+        case 'GBP':
+          return '£';
+        case 'EUR':
+          return '€';
+        case 'ZAR':
+          return 'R';
+        case 'USD':
+          return r'$';
+        default:
+          return '$code ';
+      }
+    }
     switch (code.toUpperCase()) {
       case 'NGN':
         return 'NGN ';
@@ -47,7 +86,18 @@ class SplitBillPdfService {
     DateTime? paidAt,
     String status = 'Paid',
   }) async {
-    final pdf = pw.Document();
+    // Embed Inter BEFORE anything reads ReceiptFonts.embedded — the currency
+    // symbol and the mask glyph both branch on it, and the built-in PDF font
+    // can draw neither ₦ nor a bullet.
+    await ReceiptFonts.load();
+    final pdf = pw.Document(
+      theme: ReceiptFonts.embedded
+          ? pw.ThemeData.withFont(
+              base: ReceiptFonts.regular!,
+              bold: ReceiptFonts.bold!,
+            )
+          : null,
+    );
     final currencySymbol = _currencySymbolFor(currency);
     final formattedAmount = '$currencySymbol${amount.toStringAsFixed(2)}';
     // Use the participant's authoritative paid time when provided.
@@ -134,7 +184,7 @@ class SplitBillPdfService {
               ],
               if (receiverAccountMasked.trim().isNotEmpty) ...[
                 pw.SizedBox(height: 8),
-                _buildRow('Account', receiverAccountMasked.trim()),
+                _buildRow('Account', _safeMask(receiverAccountMasked.trim())),
               ],
               pw.SizedBox(height: 8),
               _buildRow('Reference', transactionReference),
@@ -348,7 +398,17 @@ class SplitBillPdfService {
   }
 
   static Future<File> _generateSummary(SplitBillEntity bill) async {
-    final pdf = pw.Document();
+    // Same reason as _generateReceipt: load BEFORE reading
+    // ReceiptFonts.embedded, which both the symbol and the mask branch on.
+    await ReceiptFonts.load();
+    final pdf = pw.Document(
+      theme: ReceiptFonts.embedded
+          ? pw.ThemeData.withFont(
+              base: ReceiptFonts.regular!,
+              bold: ReceiptFonts.bold!,
+            )
+          : null,
+    );
     final currencySymbol = _currencySymbolFor(bill.currency);
     String money(double v) => '$currencySymbol${v.toStringAsFixed(2)}';
     final now = DateTime.now();
@@ -440,7 +500,7 @@ class SplitBillPdfService {
           ],
           if (bill.receiverAccountMasked.trim().isNotEmpty) ...[
             pw.SizedBox(height: 8),
-            _buildRow('Account', bill.receiverAccountMasked.trim()),
+            _buildRow('Account', _safeMask(bill.receiverAccountMasked.trim())),
           ],
           pw.SizedBox(height: 8),
           _buildRow(

@@ -66,26 +66,8 @@ class EscrowPdfService {
     }
   }
 
-  static String _currencySymbolFor(String code) {
-    switch (code.toUpperCase()) {
-      case 'NGN':
-        return 'NGN ';
-      case 'GBP':
-        return 'GBP ';
-      case 'EUR':
-        return 'EUR ';
-      case 'USD':
-        return 'USD ';
-      case 'ZAR':
-        return 'ZAR ';
-      case 'CAD':
-        return 'CAD ';
-      case 'AUD':
-        return 'AUD ';
-      default:
-        return '$code ';
-    }
-  }
+  static String _currencySymbolFor(String code) =>
+      receiptCurrencySymbol(code);
 
   static String _money(double v, String currency) =>
       '${_currencySymbolFor(currency)}${NumberFormat('#,##0.00').format(v)}';

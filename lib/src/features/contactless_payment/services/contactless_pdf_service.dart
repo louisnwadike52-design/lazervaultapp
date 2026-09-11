@@ -21,30 +21,8 @@ class ContactlessPdfService {
   static pw.Font? _boldFont;
 
   /// Get currency symbol - using ASCII-safe alternatives for PDF compatibility
-  static String _currencySymbolFor(String code) {
-    switch (code.toUpperCase()) {
-      case 'NGN':
-        return 'NGN ';
-      case 'GBP':
-        return 'GBP ';
-      case 'EUR':
-        return 'EUR ';
-      case 'USD':
-        return 'USD ';
-      case 'ZAR':
-        return 'ZAR ';
-      case 'CAD':
-        return 'CAD ';
-      case 'AUD':
-        return 'AUD ';
-      case 'INR':
-        return 'INR ';
-      case 'JPY':
-        return 'JPY ';
-      default:
-        return '$code ';
-    }
-  }
+  static String _currencySymbolFor(String code) =>
+      receiptCurrencySymbol(code);
 
   /// Get display currency name
   /// Real transaction status — receipts must never claim 'Completed' for a
