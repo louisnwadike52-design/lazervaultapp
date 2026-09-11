@@ -33,6 +33,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/c
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_prompt_card.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card_v2.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_qr_card.dart';
 import '../../cubit/ai_chat_cubit.dart';
 import '../../cubit/ai_chat_state.dart';
 import '../../domain/entities/ai_chat_message_entity.dart';
@@ -1579,6 +1580,11 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             // emit only receipt_card (e.g. batch transfers).
             else if (!isUser && message.receiptCard != null)
               _buildReceiptCardV2(message.receiptCard),
+            // Scannable QR code. Rendered independently of the receipt cards
+            // above: creating a QR is not a receipt, and the two never appear
+            // on the same message.
+            if (!isUser && message.qrCard != null)
+              ChatQrCard(payload: message.qrCard!),
             // PIN prompt card — chat-driven money moves collect the PIN inline.
             // "Enter PIN" opens the native modal; on success the single-use
             // token round-trips to the agent (submitPinVerification) and the

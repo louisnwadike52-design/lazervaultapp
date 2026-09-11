@@ -64,6 +64,8 @@ class ChatMessage {
   final Map<String, dynamic>? receiptData;
   // ReceiptCard V2 payload — single dict OR a list (batch transfer).
   final dynamic receiptCard;
+  /// Scannable QR payload — see ChatQrCard.
+  final Map<String, dynamic>? qrCard;
   final Map<String, dynamic>? pinPrompt;
 
   ChatMessage({
@@ -80,6 +82,7 @@ class ChatMessage {
     this.transcript,
     this.receiptData,
     this.receiptCard,
+    this.qrCard,
     this.pinPrompt,
   });
 
@@ -98,6 +101,7 @@ class ChatMessage {
       transcript: entity.transcript,
       receiptData: entity.receiptData,
       receiptCard: entity.receiptCard,
+      qrCard: entity.qrCard,
       pinPrompt: entity.pinPrompt,
     );
   }
