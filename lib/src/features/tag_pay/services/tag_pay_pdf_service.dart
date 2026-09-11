@@ -605,6 +605,8 @@ class TagPayPdfService {
   // ─── Fund Transfer Receipt (same visual style as TagPay) ───
 
   /// Generate a transfer receipt PDF from map-based transfer details
+  /// `transferDetails['extraRows']` carries service-specific label/value pairs
+  /// (e.g. the gift card behind a payout) appended to the details card.
   static Future<File> generateFundTransferReceipt({
     required Map<String, dynamic> transferDetails,
     ReceiptCopyType copyType = ReceiptCopyType.sender,
@@ -634,6 +636,15 @@ class TagPayPdfService {
         _pdfSafe(transferDetails['sourceAccountInfo'] as String?);
     final reference = transferDetails['reference'] as String? ?? '';
     final narration = _pdfSafe(transferDetails['narration'] as String?);
+    // Service-specific rows (e.g. WHICH gift card). Sanitised like every other
+    // user-supplied string so a provider's curly apostrophe cannot fail the
+    // whole document.
+    final rawExtra = transferDetails['extraRows'];
+    final extraRows = rawExtra is List<MapEntry<String, String>>
+        ? rawExtra
+            .map((e) => MapEntry(e.key, _pdfSafe(e.value) ?? ''))
+            .toList()
+        : const <MapEntry<String, String>>[];
     final status = transferDetails['status'] as String? ?? 'completed';
     final transferType =
         transferDetails['transferType'] as String? ?? 'Fund Transfer';
@@ -725,6 +736,7 @@ class TagPayPdfService {
                 description: narration ?? '',
                 transferReference: _cleanTransferRef(
                     reference.isNotEmpty ? reference : transferId),
+                extraRows: extraRows,
               ),
               pw.SizedBox(height: 24),
 
@@ -791,6 +803,10 @@ class TagPayPdfService {
     required UnifiedTransaction transaction,
     ReceiptCopyType copyType = ReceiptCopyType.sender,
     ReceiptFileFormat format = ReceiptFileFormat.pdf,
+    /// Rows the CALLER resolved that the transaction itself cannot carry —
+    /// today the gift card behind a payout, which is looked up by reference
+    /// because the ledger credit stores only a description.
+    List<MapEntry<String, String>> extraRows = const [],
   }) async {
     final metadata = transaction.metadata ?? {};
 
@@ -858,6 +874,7 @@ class TagPayPdfService {
                     ?.replaceAll(RegExp(r'[^0-9.]'), '') ??
                 '0'),
         'timestamp': transaction.createdAt,
+        'extraRows': extraRows,
       },
     );
   }
@@ -952,10 +969,14 @@ class TagPayPdfService {
     required UnifiedTransaction transaction,
     ReceiptCopyType copyType = ReceiptCopyType.sender,
     ReceiptFileFormat format = ReceiptFileFormat.pdf,
+    List<MapEntry<String, String>> extraRows = const [],
   }) async {
     try {
       final file = await generateUnifiedTransferReceipt(
-          transaction: transaction, copyType: copyType, format: format);
+          transaction: transaction,
+          copyType: copyType,
+          format: format,
+          extraRows: extraRows);
       final safeRef = (transaction.transactionReference ?? transaction.id)
           .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
       return await ReceiptDownload.saveAndOpen(
@@ -973,10 +994,14 @@ class TagPayPdfService {
     Rect? sharePositionOrigin,
     ReceiptCopyType copyType = ReceiptCopyType.sender,
     ReceiptFileFormat format = ReceiptFileFormat.pdf,
+    List<MapEntry<String, String>> extraRows = const [],
   }) async {
     try {
       final file = await generateUnifiedTransferReceipt(
-          transaction: transaction, copyType: copyType, format: format);
+          transaction: transaction,
+          copyType: copyType,
+          format: format,
+          extraRows: extraRows);
 
       final currencySymbol = _currencySymbolFor(transaction.currency);
       final amount = _amountFormat.format(transaction.amount);

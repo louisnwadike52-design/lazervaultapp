@@ -1,4 +1,8 @@
 import 'dart:io';
+import 'package:lazervault/src/features/gift_cards/utils/gift_card_txn_details.dart';
+import 'package:lazervault/src/features/gift_cards/domain/entities/gift_card_entity.dart';
+import 'package:lazervault/src/features/gift_cards/domain/repositories/i_gift_card_repository.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
@@ -74,9 +78,62 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
 
   UnifiedTransaction get tx => widget.transaction;
 
+  /// The gift card behind this transaction, once resolved.
+  ///
+  /// A gift-card payout/refund/purchase arrived here as a bare amount plus an
+  /// opaque SELL-/GC- reference: every surface could say how much moved and
+  /// nothing about WHICH card. Resolved on open rather than carried in the
+  /// transaction because the ledger credit is written through
+  /// accounts.CreditAccount, which takes a description and no metadata.
+  ///
+  /// Null while loading AND on failure — the rows are simply absent, so a
+  /// slow or failed lookup degrades to the receipt we had before rather than
+  /// blocking it or showing placeholders on a document people forward.
+  GiftCardTxnDetails? _giftCard;
+
+  Future<void> _resolveGiftCard() async {
+    if (tx.serviceType != TransactionServiceType.giftCard) return;
+    final ref = giftCardReferenceIn(tx.transactionReference) ??
+        giftCardReferenceIn(tx.description);
+    if (ref == null) return;
+    try {
+      final repo = serviceLocator<IGiftCardRepository>();
+      GiftCardTxnDetails? found;
+      if (isGiftCardSaleReference(ref)) {
+        final sales = await repo.getMySales();
+        final cards = await repo.getSellableCards();
+        final catalogue = cards.fold<List<SellableCard>>((_) => const [], (c) => c);
+        sales.fold((_) => null, (list) {
+          for (final sale in list) {
+            if (sale.reference == ref) {
+              found = GiftCardTxnDetails.fromSale(sale, catalogue);
+              break;
+            }
+          }
+        });
+      } else {
+        final owned = await repo.getUserGiftCards();
+        owned.fold((_) => null, (list) {
+          for (final card in list) {
+            if (card.reference == ref) {
+              found = GiftCardTxnDetails.fromCard(card);
+              break;
+            }
+          }
+        });
+      }
+      if (mounted && found != null && !found!.isEmpty) {
+        setState(() => _giftCard = found);
+      }
+    } catch (_) {
+      // Non-fatal — see the field note.
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _resolveGiftCard();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -479,6 +536,14 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         _DetailEntry('Description', _cleanDescription(tx.description!)),
       if (tx.transactionReference != null)
         _DetailEntry('Reference', tx.transactionReference!, copyable: true),
+      // WHICH gift card this was. Placed above the generic rows because it is
+      // the detail that makes the transaction recognisable; Type/Category say
+      // the same thing for every gift-card row.
+      if (_giftCard != null)
+        ..._giftCard!.rows.map(
+          (r) => _DetailEntry(r.key, r.value,
+              copyable: r.key == 'Card reference'),
+        ),
       // An unmapped service type reads as "Type: Unknown" — noise, not
       // information. Hide the row instead.
       if (tx.serviceType != TransactionServiceType.unknown)
@@ -745,7 +810,12 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // movements with a counterparty and a reference, and they were falling
       // back to the flat dark image because escrow had no enum constant to
       // list here at all.
-      tx.serviceType == TransactionServiceType.escrow;
+      tx.serviceType == TransactionServiceType.escrow ||
+      // Gift cards: a sale payout, refund or purchase is a real money
+      // movement, and its receipt was falling back to a flat image — so
+      // the card details resolved above never reached a saved or shared
+      // document at all.
+      tx.serviceType == TransactionServiceType.giftCard;
 
   Widget _buildActionButtons() {
     final buttons = <Widget>[];
@@ -1194,6 +1264,9 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
               transaction: tx,
               copyType: _chosenCopy,
               format: _chosenFormat,
+              // The card the on-screen receipt resolved, so the SAVED document
+              // names it too rather than being a strictly poorer copy.
+              extraRows: _giftCard?.rows ?? const [],
             );
 
       _showSnackbar('Receipt saved to $filePath');
@@ -1220,6 +1293,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           transaction: tx,
           copyType: _chosenCopy,
           format: _chosenFormat,
+          extraRows: _giftCard?.rows ?? const [],
           // Anchors the iPad share popover; omitted it anchored top-left.
           sharePositionOrigin: _shareOrigin(),
         );

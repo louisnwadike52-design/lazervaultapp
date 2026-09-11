@@ -160,6 +160,11 @@ pw.Widget _buildFundTransferDetails({
   // sender's cost and must never appear on the beneficiary's copy.
   bool showFee = true,
   String? totalPaid,
+  /// Service-specific rows appended after the standard ones — e.g. WHICH gift
+  /// card a payout was for. Without this the PDF could only render the fixed
+  /// transfer fields, so details resolved for the on-screen receipt never
+  /// reached the document people actually save and forward.
+  List<MapEntry<String, String>> extraRows = const [],
 }) {
   return pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -190,6 +195,8 @@ pw.Widget _buildFundTransferDetails({
             if (description.isNotEmpty)
               _buildDetailRow('Description', description),
             _buildDetailRow('Transfer Reference', transferReference),
+            for (final r in extraRows)
+              if (r.value.trim().isNotEmpty) _buildDetailRow(r.key, r.value),
           ],
         ),
       ),
