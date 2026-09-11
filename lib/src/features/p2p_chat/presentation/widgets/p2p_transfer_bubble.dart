@@ -60,6 +60,27 @@ class P2PTransferBubble extends StatelessWidget {
     return ref.endsWith('-recv') ? ref.substring(0, ref.length - 5) : ref;
   }
 
+  /// How the money moved, when the reference tells us.
+  ///
+  /// A contactless payment is indistinguishable from any other transfer once it
+  /// lands in chat — same bubble, same amount, same "Money Received". The
+  /// reference is the only carrier of that fact on this surface
+  /// (contactless-payment-service mints NFC-<id>), so a tap-to-pay shows up as
+  /// an ordinary transfer and the user cannot tell how they were paid.
+  ///
+  /// Derived from the reference PREFIX because the chat message carries no
+  /// payment-method field; it is presentation only and never gates money.
+  /// Returns null for an ordinary transfer, which renders no row at all rather
+  /// than a meaningless "Method: Transfer".
+  String? get _paymentMeans {
+    final ref = _cleanTransferRef?.toUpperCase();
+    if (ref == null || ref.isEmpty) return null;
+    if (ref.startsWith('NFC-')) return 'Contactless (NFC)';
+    if (ref.startsWith('QR-') || ref.startsWith('QRPAY-')) return 'QR Payment';
+    if (ref.startsWith('TAG-') || ref.startsWith('TAGPAY-')) return 'TagPay';
+    return null;
+  }
+
   /// Whether "Send Again" should be offered for this transfer.
   bool get _canSendAgain {
     if (!_isSentByMe) return false;
@@ -406,6 +427,8 @@ class P2PTransferBubble extends StatelessWidget {
                     }
                   : null,
             ),
+            if (_paymentMeans != null)
+              _buildDetailRow('Method', _paymentMeans!),
             _buildDetailRow(
               'Status',
               statusLabel,
@@ -479,8 +502,19 @@ class P2PTransferBubble extends StatelessWidget {
                                 'sourceAccountInfo': 'Lazervault',
                                 'timestamp': message.createdAt,
                                 'status': statusLabel.toLowerCase(),
-                                'network': 'Lazervault Internal Transfer',
-                                'transferType': 'Internal Transfer',
+                                // Carry the MEANS into the receipt. It is
+                                // still an internal LazerVault transfer, but a
+                                // tap-to-pay that prints "Internal Transfer"
+                                // loses the one detail distinguishing it — and
+                                // this receipt is shareable evidence of how the
+                                // money moved, not just that it did.
+                                'network': _paymentMeans != null
+                                    ? 'Lazervault ${_paymentMeans!}'
+                                    : 'Lazervault Internal Transfer',
+                                'transferType':
+                                    _paymentMeans ?? 'Internal Transfer',
+                                if (_paymentMeans != null)
+                                  'paymentMethod': _paymentMeans!,
                                 'type': isSent ? 'debit' : 'credit',
                               },
                             );
