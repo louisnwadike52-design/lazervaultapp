@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+import '../../domain/trade_amounts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../cubit/crypto_cubit.dart';
@@ -89,6 +91,13 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
         final remaining = state.expiresAt.difference(DateTime.now().toUtc());
         final secondsLeft = remaining.inMilliseconds.clamp(0, 60000) / 1000.0;
         final fraction = (secondsLeft / 15.0).clamp(0.0, 1.0);
+        final amounts = CryptoTradeAmounts.fromQuote(
+          fromCurrency: state.fromCurrency,
+          toCurrency: state.toCurrency,
+          fromAmount: state.fromAmount,
+          toAmount: state.toAmount,
+          spreadMinorUnits: state.spreadMinorUnits,
+        );
 
         return Material(
           color: const Color(0xFF0A0A0A),
@@ -124,10 +133,17 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
                   ],
                 ),
                 const SizedBox(height: 24),
+                // Pay/receive come from the SHARED definition, so this sheet
+                // agrees with the amount sheet before it and with the money
+                // that actually moves. It used to print Quidax's raw legs: on a
+                // sell that showed the gross proceeds and our fee was taken
+                // afterwards, so the headline here was ~350 naira above what
+                // landed — the step that made a consistent 0.5% fee look like a
+                // hidden charge.
                 _buildSummaryRow('You pay',
-                    '${state.fromAmount} ${state.fromCurrency.toUpperCase()}'),
+                    '${_fmt(amounts.pay)} ${state.fromCurrency.toUpperCase()}'),
                 _buildSummaryRow('You receive',
-                    '${state.toAmount} ${state.toCurrency.toUpperCase()}'),
+                    '${_fmt(amounts.receive)} ${state.toCurrency.toUpperCase()}'),
                 _buildSummaryRow('Rate', state.quotedPrice),
                 // Transaction fee — the ONE aggregated fee the user pays. Quidax's
                 // own trading fee is baked into the quoted rate (already reflected
@@ -138,7 +154,7 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
                 _buildSummaryRow(
                   'Transaction fee',
                   state.spreadBps > 0
-                      ? '${_feeAmountStr(state)} ${state.fromCurrency.toUpperCase()}'
+                      ? '${_fmt(amounts.feeInFiat)} ${amounts.feeCurrency.toUpperCase()}'
                           ' (${(state.spreadBps / 100).toStringAsFixed(2)}%)'
                       : 'Free',
                 ),
@@ -216,15 +232,16 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
     );
   }
 
-  /// Platform fee as a concrete amount in the FROM (pay) currency, derived from
-  /// the authoritative spread bps against the pay amount so it stays consistent
-  /// with the % shown. 2dp when >= 1 (fiat buys); more precision for a small
-  /// crypto pay leg so a tiny fee never reads as 0.00.
-  String _feeAmountStr(SwapQuotePending state) {
-    final from = double.tryParse(state.fromAmount) ?? 0;
-    final fee = from * state.spreadBps / 10000.0;
-    return fee >= 1 ? fee.toStringAsFixed(2) : fee.toStringAsFixed(6);
+  /// Trims trailing zeros so a fiat amount reads 69,628.71 and a crypto amount
+  /// keeps the precision that matters.
+  static String _fmt(double v) {
+    if (v == 0) return '0';
+    final s = v >= 1 ? v.toStringAsFixed(2) : v.toStringAsFixed(8);
+    return s.contains('.')
+        ? s.replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '')
+        : s;
   }
+
 
   Widget _buildSummaryRow(String label, String value) {
     return Padding(
