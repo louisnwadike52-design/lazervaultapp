@@ -556,6 +556,21 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
               .toList();
           final hiddenCount = currencyAccounts.length - matchingAccounts.length;
 
+          // Drop a selection that has stopped being payable.
+          //
+          // This state is reachable and it is the dangerous one: the user picks
+          // an account, a concurrent debit (or a freeze) lands, the summaries
+          // refresh, and the account drops out of the list above — but
+          // _selectedAccountId still points at it. The row would simply render
+          // unhighlighted while Confirm stayed armed, so the payment would be
+          // attempted from an account we had just decided could not fund it.
+          // Clearing it hands the user back to the "No account selected" guard.
+          if (_selectedAccountId != null &&
+              !matchingAccounts.any((a) => a.id == _selectedAccountId)) {
+            _selectedAccountId = null;
+            _hasPreSelectedAccount = false;
+          }
+
           _preSelectAccountIfNeeded(matchingAccounts);
 
           final hasValidAccount = matchingAccounts.isNotEmpty;
