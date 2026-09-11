@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:lazervault/core/utils/logger.dart';
 import 'package:flutter/material.dart';
+
+import '../widgets/nfc_positioning_guide.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -124,7 +126,11 @@ class _NfcReaderViewState extends State<_NfcReaderView>
 
     NfcManager.instance.startSession(
       pollingOptions: {NfcPollingOption.iso14443, NfcPollingOption.iso15693},
-      alertMessageIos: 'Hold your device near the payment terminal',
+      // This is phone-to-phone, not a card terminal. "Payment terminal" sent
+      // iPhone payers looking for hardware that does not exist, and the iPhone
+      // antenna is its TOP EDGE — back-to-back advice is wrong here.
+      alertMessageIos:
+          'Hold the top of your iPhone to the back of the other phone',
       onDiscovered: (NfcTag tag) async {
         // Ignore repeat discoveries of the same (or another) tag once one has
         // already been accepted — the first valid read wins.
@@ -640,6 +646,14 @@ class _NfcReaderViewState extends State<_NfcReaderView>
             ),
             textAlign: TextAlign.center,
           ),
+          // How to hold the phones, as an instruction rather than a status
+          // line. NFC couples over ~2cm between antennas the user cannot see:
+          // misaligned, the tap simply does nothing and both people conclude
+          // the feature is broken.
+          if (!_hasError) ...[
+            SizedBox(height: 16.h),
+            const NfcPositioningGuide(isPayer: true),
+          ],
         ],
       ),
     );

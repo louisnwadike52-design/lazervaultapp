@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'package:lazervault/core/utils/logger.dart';
 import 'package:flutter/material.dart';
+
+import '../widgets/nfc_positioning_guide.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -394,6 +396,18 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                             _buildTimerSection(),
                             SizedBox(height: 32.h),
                             _buildStatusSection(),
+                            // The payee holds still while the payer brings
+                            // their phone in — stated plainly, because the
+                            // status line above reads as status, not as the
+                            // instruction the tap actually depends on. Hidden
+                            // once the payment lands or the session dies.
+                            if (!_isCompleted && !_isExpired) ...[
+                              SizedBox(height: 16.h),
+                              const NfcPositioningGuide(
+                                isPayer: false,
+                                compact: true,
+                              ),
+                            ],
                             SizedBox(height: 32.h),
                             if (!_isCompleted && !_isExpired) ...[
                               _buildSessionQrSection(),
