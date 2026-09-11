@@ -600,6 +600,13 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // above; provider ids stay in the admin dashboard's raw metadata view.
       'flw_id', 'flwref', 'flw_ref', 'nomba_id', 'nomba_ref',
       'tx_ref', 'session_id',
+      // THE REFERENCE IS ALREADY A FIRST-CLASS ROW above. Carrying it in
+      // metadata too printed it twice under the same label, one line apart
+      // (reported from a transfer receipt: "Reference TRF-transfer_4987…"
+      // rendered above AND below the Transaction ID). Same value, same label,
+      // no added information — it just makes a receipt look unreliable.
+      'reference', 'transaction_reference', 'txn_reference', 'trx_reference',
+      'payment_reference', 'order_reference',
       // PARTY IDs. A customer receipt identifies people by name/tag; raw
       // user/account UUIDs are admin-dashboard material only. (The shared
       // humanizer also hides any *_id party key and any bare-UUID value —
@@ -630,6 +637,12 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
         'amount', 'currency', 'recipient', 'recipient_type',
       },
     };
+    // Labels already spoken for by the first-class rows above. Metadata is
+    // supplementary: when it repeats a row we already render, the row wins.
+    // This is defence-in-depth behind hiddenKeys — a provider can introduce a
+    // new spelling of an existing field at any time, and a receipt that prints
+    // the same label twice reads as a bug in the money, not in the layout.
+    final usedLabels = rows.map((r) => r.label.toLowerCase()).toSet();
     if (tx.metadata != null) {
       for (final entry in tx.metadata!.entries) {
         if (hiddenKeys.contains(entry.key)) continue;
@@ -644,6 +657,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
             formatKey: _formatKey,
           );
           if (human == null) continue;
+          if (!usedLabels.add(human.label.toLowerCase())) continue;
           rows.add(_DetailEntry(human.label, human.value));
         }
       }
