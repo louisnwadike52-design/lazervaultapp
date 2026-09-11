@@ -275,7 +275,14 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         if (_selectedTriggerType == TriggerType.externalInflow ||
             _selectedTriggerType == TriggerType.scheduledExternal) {
           if (_selectedLinkedAccount == null) {
-            return 'Pick the linked bank to save from';
+            // "Pick the linked bank" is only actionable when there IS one to
+            // pick. With none linked, the step shows an empty state and a
+            // "Link a bank" button, so telling the user to pick one asks for
+            // something the screen cannot offer — name the step they're
+            // actually on instead.
+            return context.read<OpenBankingCubit>().linkedAccounts.isEmpty
+                ? 'Link a bank first to save by Direct Debit'
+                : 'Pick the linked bank to save from';
           }
           if (!_isMandateReady(_selectedLinkedAccount!)) {
             return 'Set up Direct Debit on that bank first';

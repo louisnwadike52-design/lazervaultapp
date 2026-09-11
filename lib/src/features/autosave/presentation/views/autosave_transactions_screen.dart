@@ -308,12 +308,13 @@ class _AutoSaveTransactionsScreenState
         icon: Icons.account_balance_outlined,
         accent: Color(0xFF14B8A6),
       ),
-      const _FilterOption(
-        label: 'Bank Inflow (retired)',
-        value: TriggerType.externalInflow,
-        icon: Icons.trending_up_outlined,
-        accent: Color(0xFF6B7280),
-      ),
+      // ACTIVE triggers only. Bank Inflow is retired, and a filter is a list
+      // of things to DO — offering a dead one just to label it "(retired)"
+      // spends a row explaining something the user can no longer choose.
+      // Any historical Bank Inflow saves still appear under "All triggers",
+      // which is the only place they could be reached anyway: _triggerFilter
+      // starts null and is only ever set from this sheet, so dropping the
+      // option makes the value unreachable rather than stale.
     ];
     final outcomeSelected = outcomeOptions.firstWhere(
       (o) => o.value == _successFilter,
