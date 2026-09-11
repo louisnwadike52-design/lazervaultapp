@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'mandate_outcome_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -142,15 +143,15 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
             // backend already cancels the old one when it mints a new one, so
             // this cannot accumulate stranded rows.
             if (state.mandate.authLinkStale) {
-              Get.snackbar(
-                'Starting a new authorization',
-                'The previous bank authorization link expired, so we have '
-                    'started a fresh one for you.',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.95),
-                colorText: Colors.white,
-                duration: const Duration(seconds: 4),
+              // A sheet, not a snackbar: the user is about to be handed a new
+              // bank screen, and "nothing was charged" is the reassurance they
+              // need BEFORE it appears rather than in a toast behind it.
+              await showMandateOutcomeSheet(
+                context: context,
+                outcome: MandateOutcome.linkExpired,
+                bankName: widget.bankName,
               );
+              if (!mounted) return;
               cubit.createMandate(
                 userId: widget.userId,
                 linkedAccountId: widget.linkedAccountId,

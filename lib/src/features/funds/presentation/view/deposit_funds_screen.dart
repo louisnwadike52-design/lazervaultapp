@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_outcome_sheet.dart';
 import 'dart:io' show Platform;
 import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_status_badge.dart';
 
@@ -2469,14 +2470,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         // Authorization was granted on an earlier attempt and the bank is
         // still confirming — the card reads "Setting up"; match it (a
         // finish-setup nag would send them into the spent Mono link).
-        Get.snackbar(
-          'Setting up Direct Debit',
-          'Your authorization is being confirmed by ${account.bankName} — this '
-              'can take up to 30 minutes and completes automatically.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFFFB923C).withValues(alpha: 0.95),
-          colorText: Colors.black,
-          duration: const Duration(seconds: 4),
+        await showMandateOutcomeSheet(
+          context: context,
+          outcome: MandateOutcome.confirming,
+          bankName: account.bankName,
         );
       } else if (m != null && m.awaitingUserAuthorization) {
         // Closing the sheet does NOT mean the user abandoned this.
@@ -2492,20 +2489,29 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
         // So: poll. If the money already moved, the card settles to Direct
         // Debit on its own. The old copy declared failure and stopped, which
         // stranded exactly the user who HAD paid.
+        // Poll regardless of what they answer — the transfer may already be
+        // in flight and Mono can confirm it without us.
         serviceLocator<MandateCubit>().pollMandateStatus(
           mandateId: m.id,
           userId: user.id,
         );
-        Get.snackbar(
-          'Waiting for your bank',
-          'If you already sent the transfer, we will pick it up automatically '
-              '— no need to do it again. If not, open the ${account.bankName} '
-              'card menu and choose "Finish Direct Debit setup".',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.95),
-          colorText: Colors.black,
-          duration: const Duration(seconds: 6),
+        // A SHEET, not a snackbar. This asks a question only the user can
+        // answer ("did you already send it?"), and the answer decides whether
+        // they should be sent back into the bank flow. A snackbar cannot carry
+        // that, and vanishes while they are still deciding.
+        final alreadySent = await showMandateOutcomeSheet(
+          context: context,
+          outcome: MandateOutcome.unconfirmed,
+          bankName: account.bankName,
         );
+        if (alreadySent == false && mounted) {
+          // "Not yet" — put them straight back rather than making them find
+          // the card menu.
+          // Re-enter with a FRESH mandate lookup: the resume path re-reads
+          // state, so a link that expired while they decided is caught by
+          // the stale-link guard rather than reopened.
+          _switchToDirectDebit(account, null);
+        }
       }
       // No mandate at all ("Not Now" on the explainer) — a deliberate
       // decline; respect it silently.
