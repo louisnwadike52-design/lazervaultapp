@@ -55,7 +55,7 @@ Future<bool?> showMandateOutcomeSheet({
   );
 }
 
-class _MandateOutcomeSheet extends StatelessWidget {
+class _MandateOutcomeSheet extends StatefulWidget {
   const _MandateOutcomeSheet({
     required this.outcome,
     required this.bankName,
@@ -65,6 +65,30 @@ class _MandateOutcomeSheet extends StatelessWidget {
   final MandateOutcome outcome;
   final String bankName;
   final VoidCallback? onResume;
+
+  @override
+  State<_MandateOutcomeSheet> createState() => _MandateOutcomeSheetState();
+}
+
+class _MandateOutcomeSheetState extends State<_MandateOutcomeSheet> {
+  MandateOutcome get outcome => widget.outcome;
+  String get bankName => widget.bankName;
+  VoidCallback? get onResume => widget.onResume;
+
+  /// One resolution per sheet.
+  ///
+  /// A modal bottom sheet stays hit-testable while it animates out, so an
+  /// impatient double-tap pops TWICE: the sheet, and then the screen
+  /// underneath it. On this sheet that would dump the user out of deposits
+  /// entirely, mid-setup, right after they may have sent ₦50.
+  bool _resolved = false;
+
+  void _resolve(bool result, {bool thenResume = false}) {
+    if (_resolved) return;
+    _resolved = true;
+    Navigator.of(context).pop(result);
+    if (thenResume) onResume?.call();
+  }
 
   ({IconData icon, Color tint, String title, String body}) get _copy {
     switch (outcome) {
@@ -114,6 +138,23 @@ class _MandateOutcomeSheet extends StatelessWidget {
     final c = _copy;
     final isUnconfirmed = outcome == MandateOutcome.unconfirmed;
 
+    // `isDismissible: false` stops a scrim tap and nothing else — the Android
+    // back button and the iOS back-swipe still pop a modal sheet. That handed
+    // the caller a null result, which matches neither branch, so a user who
+    // had just paid ₦50 landed back on the deposit screen with no poll, no
+    // explanation, and every reason to pay again. Both buttons here resolve
+    // the sheet, so there is always a way out.
+    return PopScope(
+      canPop: !isUnconfirmed,
+      child: _body(context, c, isUnconfirmed),
+    );
+  }
+
+  Widget _body(
+    BuildContext context,
+    ({IconData icon, Color tint, String title, String body}) c,
+    bool isUnconfirmed,
+  ) {
     return SafeArea(
       top: false,
       child: Container(
@@ -184,28 +225,25 @@ class _MandateOutcomeSheet extends StatelessWidget {
                 _primary(
                   context,
                   label: 'Yes, I already sent it',
-                  onTap: () => Navigator.of(context).pop(true),
+                  onTap: () => _resolve(true),
                 ),
                 SizedBox(height: 10.h),
                 _secondary(
                   context,
                   label: 'Not yet — take me back',
-                  onTap: () {
-                    Navigator.of(context).pop(false);
-                    onResume?.call();
-                  },
+                  onTap: () => _resolve(false, thenResume: true),
                 ),
               ] else if (outcome == MandateOutcome.linkExpired) ...[
                 _primary(
                   context,
                   label: 'Continue',
-                  onTap: () => Navigator.of(context).pop(true),
+                  onTap: () => _resolve(true),
                 ),
               ] else ...[
                 _primary(
                   context,
                   label: 'Got it',
-                  onTap: () => Navigator.of(context).pop(true),
+                  onTap: () => _resolve(true),
                 ),
               ],
             ],
