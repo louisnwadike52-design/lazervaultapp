@@ -93,11 +93,31 @@ Map<String, dynamic> beamReceiptPayloadFromWalletTransfer(
       : (destName != null && destName.isNotEmpty
           ? destName
           : 'Lazervault account');
+  // WHICH RAIL this actually used.
+  //
+  // getPaymentHistory has no rail filter — it returns every payment on the
+  // account, interbank ones included — and the Beam dashboard feeds them all
+  // through here. This builder used to hardcode the wallet rail, so a transfer
+  // that really went out to someone's bank was rendered as
+  // "Type: Wallet transfer / Bank: Lazervault Wallet", and its Redo re-opened
+  // the WALLET flow for a transfer that had never touched it.
+  //
+  // The record has carried the answer all along: `type` is "internal" or
+  // "external", mapped from the proto's transfer_type. Null means the caller
+  // synthesized this from a just-completed wallet transfer (the flow screen),
+  // which is internal by construction.
+  final isExternal = (r.type ?? 'internal').toLowerCase() == 'external';
+  // Only claim "Lazervault Wallet" for a leg that really is one.
+  final destBank = isExternal
+      ? ((r.destinationBankName?.isNotEmpty ?? false)
+          ? r.destinationBankName!
+          : 'Recipient bank')
+      : 'Lazervault Wallet';
   return <String, dynamic>{
     // Wallet rail = Lazervault account → Lazervault account. See the note in
     // beamReceiptPayloadFromMoveTransfer: "Type" is the kind of transfer, not
     // the product name.
-    'transferType': 'Wallet transfer',
+    'transferType': isExternal ? 'Bank transfer' : 'Wallet transfer',
     'amount': (r.amount ?? 0) / 100.0,
     'fee': (r.fee ?? 0) / 100.0,
     'currency': ccy,
@@ -106,10 +126,12 @@ Map<String, dynamic> beamReceiptPayloadFromWalletTransfer(
     'providerReference': r.providerReference,
     'transferId': r.transferId,
     'recipientName': dest,
-    'recipientBankName': 'Lazervault Wallet',
+    'recipientBankName': destBank,
     'recipientAccountMasked':
         destinationAccountMasked ?? r.counterpartyAccount ?? '',
     'sourceAccountName': sourceName,
+    // The SOURCE is a Lazervault wallet on both rails — the money leaves the
+    // user's wallet either way. Only the destination differs.
     'sourceBankName': 'Lazervault Wallet',
     'sourceAccountMasked': sourceAccountMasked ?? '',
     'sourceAccountInfo': 'Lazervault Wallet',
@@ -118,15 +140,26 @@ Map<String, dynamic> beamReceiptPayloadFromWalletTransfer(
     'createdAt': date.toLocal(),
     'backRoute': backRoute,
     'backArgs': const <String, dynamic>{'initialTab': 3},
-    // Redo → re-open the wallet flow. When the record carries the source/dest
-    // account ids (history rows do), the flow pre-selects them; otherwise it
-    // opens fresh. Amount pre-fills when known.
-    'redoRoute': AppRoutes.walletTransfer,
+    // Redo → re-open the flow THIS transfer actually used. Sending someone
+    // back to the wallet flow to repeat a bank payout is the bug this fixes:
+    // the destination is not a Lazervault account, so the flow could never
+    // pre-select it and the user would have to start over on the right rail.
+    //
+    // The external branch carries no destination id: the wallet record
+    // identifies the payee by account number + bank, not by the linked-account
+    // id the interbank flow pre-selects on. Amount and narration still
+    // pre-fill, and the flow opens on the correct rail — which is the part
+    // that was broken.
+    'redoRoute':
+        isExternal ? AppRoutes.moveMoneyTransfer : AppRoutes.walletTransfer,
     'redoArgs': <String, dynamic>{
-      if (r.sourceAccountId != null) 'sourceAccountId': r.sourceAccountId,
-      if (r.destinationAccountId != null)
+      if (!isExternal && r.sourceAccountId != null)
+        'sourceAccountId': r.sourceAccountId,
+      if (!isExternal && r.destinationAccountId != null)
         'destinationAccountId': r.destinationAccountId,
       'amount': (r.amount ?? 0) / 100.0,
+      if (isExternal && (r.description?.isNotEmpty ?? false))
+        'narration': r.description,
     },
   };
 }
