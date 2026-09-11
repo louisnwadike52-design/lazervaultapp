@@ -29,12 +29,19 @@ class PriceQuoteCard extends StatefulWidget {
   /// rate instead of stale entity fields. Optional.
   final ValueChanged<double?>? onRateUpdated;
 
+  /// Quidax's swap margin as a fraction (0.01 = 1%) — how far the rate a trade
+  /// actually fills at sits from the order-book ticker shown here. Sheets apply
+  /// it in the direction being traded so their estimate matches the binding
+  /// quote instead of the (unobtainable) ticker.
+  final ValueChanged<double>? onSwapMarginUpdated;
+
   const PriceQuoteCard({
     super.key,
     required this.cryptoId,
     required this.cryptoSymbol,
     this.overrideFiat,
     this.onRateUpdated,
+    this.onSwapMarginUpdated,
   });
 
   @override
@@ -92,6 +99,7 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
   // wiping it back to "Rate unavailable". The card auto-refreshes every
   // 30s; better to show a 30s-old number than nothing.
   double? _lastGoodPrice;
+  double _swapMargin = 0;
 
   // Surface the current effective rate to the parent. Null = loading
   // OR error-with-no-fallback. Non-null = live or stale-but-usable.
@@ -119,6 +127,7 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
         setState(() {
           _price = resp.rate;
           _lastGoodPrice = resp.rate;
+          _swapMargin = resp.spread;
           // GetCryptoFiatRate doesn't expose 24h change today; surface the
           // spread basis points instead so the user sees the fee built into
           // the rate. When the server learns to return change24h, swap here.
@@ -126,6 +135,7 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
           _loading = false;
         });
         _notifyRate();
+        widget.onSwapMarginUpdated?.call(_swapMargin);
         return;
       } catch (e) {
         lastErr = e;

@@ -67,6 +67,10 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
   bool _isAmountInCrypto = false;
   // Live rate from PriceQuoteCard; falls back to the entity's currentPrice.
   double? _liveRate;
+  // Quidax's swap margin (0.01 = 1%). The ticker is the order book; a buy
+  // actually fills about a percent above it. Quoting the ticker is what made a
+  // trade look ~₦700 better than it was and read as a hidden charge.
+  double _swapMargin = 0;
 
   // Receive-network selection. Quidax keeps one unified balance per currency,
   // so picking a network doesn't change the buy (an internal, network-agnostic
@@ -490,7 +494,10 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
 
   double _rate() {
     final r = _liveRate ?? 0.0;
-    return r > 0 ? r : widget.crypto.currentPrice;
+    final base = r > 0 ? r : widget.crypto.currentPrice;
+    // A buy lifts the swap's offer, so the naira cost per unit is ABOVE the
+    // ticker. Margin 0 (unmeasured) degrades to the previous behaviour.
+    return base * (1 + _swapMargin);
   }
 
   double get _typed => double.tryParse(_amountController.text) ?? 0.0;
@@ -589,6 +596,11 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
                 PriceQuoteCard(
                   cryptoId: widget.crypto.id,
                   cryptoSymbol: widget.crypto.symbol,
+                  onSwapMarginUpdated: (m) {
+                    if (mounted && m != _swapMargin) {
+                      setState(() => _swapMargin = m);
+                    }
+                  },
                   onRateUpdated: (r) {
                     if (mounted && r != _liveRate) setState(() => _liveRate = r);
                   },

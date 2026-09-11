@@ -194,9 +194,17 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
     return _holding;
   }
 
+  // Quidax's swap margin (0.01 = 1%). The ticker is the order book; a sell
+  // actually fills about a percent BELOW it. Quoting the ticker is what showed
+  // ₦70,344 on a sale that credited ₦69,628.
+  double _swapMargin = 0;
+
   double _price() {
     final p = _holding?.currentPrice ?? 0.0;
-    return p > 0 ? p : widget.crypto.currentPrice;
+    final base = p > 0 ? p : widget.crypto.currentPrice;
+    // A sell hits the swap's bid, so proceeds per unit are BELOW the ticker.
+    // Margin 0 (unmeasured) degrades to the previous behaviour.
+    return base * (1 - _swapMargin);
   }
 
   /// The raw number typed in the field, interpreted per the active unit.
@@ -294,6 +302,11 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
                 PriceQuoteCard(
                   cryptoId: widget.crypto.id,
                   cryptoSymbol: widget.crypto.symbol,
+                  onSwapMarginUpdated: (m) {
+                    if (mounted && m != _swapMargin) {
+                      setState(() => _swapMargin = m);
+                    }
+                  },
                 ),
                 SizedBox(height: 20.h),
                 _buildAmountField(h),
