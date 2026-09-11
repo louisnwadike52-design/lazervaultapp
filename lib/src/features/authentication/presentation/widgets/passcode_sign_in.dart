@@ -72,6 +72,8 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
   bool _biometricAutoPrompt = false;
   // Escape hatch for automatic mode — see [_onShakeEscape].
   bool _shakeEscapeEnabled = false;
+  /// Swipe up on the lock screen to offer the biometric. See [_swipeUpReady].
+  bool _swipeUpEnabled = false;
   DoubleShakeDetector? _shakeEscape;
   AppLifecycleState _lifecycle = AppLifecycleState.resumed;
   IconData _biometricIcon = Icons.fingerprint;
@@ -168,12 +170,14 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
     final autoPromptFace = await store.getBiometricAutoPrompt(isFace: true);
     final autoPromptFinger = await store.getBiometricAutoPrompt(isFace: false);
     final shakeEscape = await store.getBiometricShakeEscape();
+    final swipeUp = await store.getBiometricSwipeUp();
 
     if (!mounted) return;
 
     setState(() {
       _voiceEnabled = voiceOn;
       _shakeEscapeEnabled = shakeEscape;
+      _swipeUpEnabled = swipeUp;
       // Hardware present but nothing enrolled → we still let the button show so
       // the tap can send the user to OS enrollment.
       _canEnrollBiometric = status.canEnroll;
@@ -402,6 +406,55 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
           ),
         ),
       );
+  }
+
+  /// Whether a swipe up should offer the biometric right now.
+  ///
+  /// Deliberately independent of the auto-prompt mode: a swipe is an EXPLICIT
+  /// request, so someone who chose "when I tap" to stop the sheet opening by
+  /// itself should still be able to ask for it.
+  bool get _swipeUpReady =>
+      _swipeUpEnabled &&
+      _biometricEnabled &&
+      _canCheckBiometrics &&
+      _availableBiometricType != null;
+
+  void _onSwipeUp(DragEndDetails d) {
+    if (!_swipeUpReady) return;
+    // Upward only, and fast enough to be deliberate. A slow drift while
+    // reaching for a keypad digit must not pop the OS sheet. Negative Y is up.
+    const threshold = -320.0;
+    if (d.primaryVelocity == null || d.primaryVelocity! > threshold) return;
+    // _onBiometricPressed already guards re-entrancy and in-flight auth.
+    _onBiometricPressed();
+  }
+
+  /// A one-line affordance. An invisible gesture helps nobody — if the swipe
+  /// is armed, say so, using the name of the biometric this device actually
+  /// has rather than a generic "biometrics".
+  Widget _swipeUpHint() {
+    final label = _availableBiometricType == BiometricType.face
+        ? 'Face ID'
+        : 'Fingerprint';
+    return Padding(
+      padding: EdgeInsets.only(bottom: 14.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.keyboard_arrow_up_rounded,
+              color: Colors.white.withValues(alpha: 0.55), size: 18.sp),
+          SizedBox(width: 4.w),
+          Text(
+            'Swipe up for $label',
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.55),
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _onBiometricPressed() async {
@@ -967,9 +1020,24 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                       // =========== BOTTOM ZONE: keypad + actions ===========
                       // Kept together at the bottom so the keypad reads as the
                       // primary, always-at-the-bottom input surface.
-                      Column(
+                      //
+                      // SWIPE UP TO UNLOCK is bound to this zone rather than
+                      // the whole screen on purpose: the page body is a
+                      // SingleChildScrollView with bouncing physics, so a
+                      // screen-wide vertical-drag recogniser would compete
+                      // with the scroller in the gesture arena and lose (or
+                      // worse, win intermittently on short screens where the
+                      // content actually scrolls). This zone never scrolls.
+                      //
+                      // Dragging does not conflict with the keypad: digits are
+                      // taps, and a tap never becomes a drag.
+                      GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onVerticalDragEnd: _onSwipeUp,
+                        child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          if (_swipeUpReady) _swipeUpHint(),
                           PasscodeKeypad(
                             onDigit: _onNumberPressed,
                             onBackspace: _onBackspacePressed,
@@ -1103,6 +1171,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                           // already accounts for the system inset).
                           SizedBox(height: 10.h),
                         ],
+                      ),
                       ),
                     ],
                   ),

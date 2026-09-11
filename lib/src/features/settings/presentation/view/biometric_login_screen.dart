@@ -53,6 +53,8 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
   /// Shake twice on the lock screen to leave automatic mode. One switch for
   /// both methods: it is a property of automatic mode, not of a modality.
   bool _shakeEscape = true;
+  /// Swipe up on the lock screen to offer the biometric.
+  bool _swipeUp = true;
   /// Whether each tile's unlock-mode body is open. Starts open so turning a
   /// biometric on reveals the choice that comes with it rather than hiding it
   /// behind a chevron nobody looks for.
@@ -93,6 +95,7 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
     _autoPromptFace = await _store.getBiometricAutoPrompt(isFace: true);
     _autoPromptFingerprint = await _store.getBiometricAutoPrompt(isFace: false);
     _shakeEscape = await _store.getBiometricShakeEscape();
+    _swipeUp = await _store.getBiometricSwipeUp();
     // If a biometric was removed at the OS level, drop the stale opt-in so we
     // never show an "on" toggle the OS can no longer satisfy.
     if (!_status.isAvailable) {
@@ -444,6 +447,11 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
     await _store.setBiometricShakeEscape(v);
   }
 
+  Future<void> _setSwipeUp(bool v) async {
+    setState(() => _swipeUp = v);
+    await _store.setBiometricSwipeUp(v);
+  }
+
   /// How the unlock biometric fires. Kept inside the toggle that enables it,
   /// because "Face ID is on" and "Face ID opens by itself" are different
   /// decisions and the second is the one people notice.
@@ -534,6 +542,10 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
               onTap: () => _setAutoPrompt(true, isFace: isFace),
             ),
           ]),
+          // NOT gated on the mode above. A swipe is an explicit request, so it
+          // stays available to someone on "When I tap" — that setting exists to
+          // stop the prompt opening BY ITSELF, not to stop them asking for it.
+          _swipeUpRow(isFace: isFace),
           // Only meaningful in automatic mode — there is nothing to escape
           // from when the prompt already waits for a tap.
           AnimatedCrossFade(
@@ -543,6 +555,53 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
                 auto ? CrossFadeState.showSecond : CrossFadeState.showFirst,
             duration: const Duration(milliseconds: 200),
             sizeCurve: Curves.easeOut,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Swipe up on the lock screen to unlock. The OS lock screen trained
+  /// everyone to swipe up, so people try it here regardless — this makes the
+  /// attempt do the obvious thing instead of nothing.
+  Widget _swipeUpRow({required bool isFace}) {
+    final noun = isFace ? 'Face ID' : 'your fingerprint';
+    return Padding(
+      padding: EdgeInsets.only(top: 12.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.swipe_up_rounded, size: 16.sp, color: _textSecondary),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Swipe up to unlock',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w600)),
+                SizedBox(height: 3.h),
+                Text(
+                  _swipeUp
+                      ? 'Swipe up on the lock screen to unlock with $noun. '
+                          'Works whichever option you picked above.'
+                      : 'Off. Unlock with the button on the lock screen.',
+                  style: GoogleFonts.inter(
+                      color: _textSecondary, fontSize: 11.sp, height: 1.35),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 8.w),
+          Switch(
+            value: _swipeUp,
+            activeThumbColor: Colors.white,
+            activeTrackColor: _primary,
+            inactiveThumbColor: Colors.white,
+            inactiveTrackColor: _divider,
+            onChanged: _setSwipeUp,
           ),
         ],
       ),

@@ -56,6 +56,14 @@ class SecureStorageService {
   /// escape is only reachable if it is armed before you need it.
   static const String _keyBiometricShakeEscape = 'biometric_shake_escape';
 
+  /// Swipe UP on the lock screen to unlock with the device biometric.
+  ///
+  /// The OS lock screen trained everyone to swipe up, so people try it here
+  /// too. Defaults ON, and works whatever the auto-prompt mode is: it is an
+  /// explicit request, so it should be honoured even by someone who chose
+  /// "when I tap" precisely to stop the prompt opening by itself.
+  static const String _keyBiometricSwipeUp = 'biometric_swipe_up';
+
   /// How long the app may sit idle before it logs the user out, in seconds.
   ///
   /// ABSENT means "follow the platform" — the admin-tuned
@@ -189,6 +197,13 @@ class SecureStorageService {
     if (n == null || n <= 0) return null; // unparseable → follow the platform
     return n.clamp(minInactivityTimeout, maxInactivityTimeout);
   }
+
+  Future<void> setBiometricSwipeUp(bool v) async =>
+      _storage.write(key: _keyBiometricSwipeUp, value: v.toString());
+
+  /// Defaults to TRUE when never set — see the key's note.
+  Future<bool> getBiometricSwipeUp() async =>
+      (await _storage.read(key: _keyBiometricSwipeUp)) != 'false';
 
   Future<void> setBiometricShakeEscape(bool v) async =>
       _storage.write(key: _keyBiometricShakeEscape, value: v.toString());

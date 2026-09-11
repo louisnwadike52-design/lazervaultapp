@@ -61,6 +61,7 @@ const List<String> kPerUserStorageKeys = [
   // than inheriting a half-configured pair — automatic ON with the only way out
   // of it switched OFF by someone else.
   'biometric_shake_escape',
+  'biometric_swipe_up',
   // How long the app may sit idle before signing you out. One person's session
   // policy must not govern the next person's session on a shared device.
   'inactivity_timeout_seconds',
