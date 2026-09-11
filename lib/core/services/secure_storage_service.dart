@@ -56,6 +56,23 @@ class SecureStorageService {
   /// escape is only reachable if it is armed before you need it.
   static const String _keyBiometricShakeEscape = 'biometric_shake_escape';
 
+  /// How long the app may sit idle before it logs the user out, in seconds.
+  ///
+  /// ABSENT means "follow the platform" — the admin-tuned
+  /// `session_inactivity_logout_seconds`. A stored value only ever holds a
+  /// figure the platform itself considers acceptable: the registry clamps the
+  /// admin to [15, 600], and this is clamped to the same range, so a user can
+  /// tune within the sanctioned window but never outside it.
+  ///
+  /// There is deliberately NO "never" option here. An admin can switch
+  /// auto-logout off for everyone, but a single user must not be able to
+  /// remove a protection the platform has turned on for their own session.
+  static const String _keyInactivityTimeout = 'inactivity_timeout_seconds';
+
+  /// Lower/upper bounds, matching EndpointRegistry.inactivityTimeoutSeconds.
+  static const int minInactivityTimeout = 15;
+  static const int maxInactivityTimeout = 600;
+
   /// LEGACY durable-biometric keys. These were a SECOND copy of the refresh
   /// token that biometric unlock re-minted from. They are gone: the auth-service
   /// rotates refresh tokens one-time-use and revokes the WHOLE token family on
@@ -145,6 +162,32 @@ class SecureStorageService {
         key: isFace ? _keyAutoPromptFace : _keyAutoPromptFingerprint);
     if (own != null) return own != 'false';
     return (await _storage.read(key: _keyBiometricAutoPrompt)) != 'false';
+  }
+
+  /// Store the user's idle-logout choice, or pass null to follow the platform.
+  /// Clamped on WRITE so a bad value can never be persisted — a stored 1 would
+  /// otherwise log the user out a second after every tap.
+  Future<void> setInactivityTimeoutSeconds(int? seconds) async {
+    if (seconds == null) {
+      await _storage.delete(key: _keyInactivityTimeout);
+      return;
+    }
+    final clamped =
+        seconds.clamp(minInactivityTimeout, maxInactivityTimeout).toString();
+    await _storage.write(key: _keyInactivityTimeout, value: clamped);
+  }
+
+  /// The user's choice, or null to follow the platform default.
+  ///
+  /// Clamped on READ as well as write: a value written by an older build (or
+  /// tampered with on a rooted device) must not be able to set a one-second
+  /// timeout or an effectively infinite one.
+  Future<int?> getInactivityTimeoutSeconds() async {
+    final raw = await _storage.read(key: _keyInactivityTimeout);
+    if (raw == null) return null;
+    final n = int.tryParse(raw.trim());
+    if (n == null || n <= 0) return null; // unparseable → follow the platform
+    return n.clamp(minInactivityTimeout, maxInactivityTimeout);
   }
 
   Future<void> setBiometricShakeEscape(bool v) async =>

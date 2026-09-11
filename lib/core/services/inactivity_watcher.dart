@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/core/services/inactivity_preference.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
@@ -74,12 +75,20 @@ class _InactivityWatcherState extends State<InactivityWatcher>
     return r.startsWith('/auth/') || r.startsWith('/kyc/');
   }
 
-  // Inactivity auto-logout is ENABLED and read LIVE from the registry (single
-  // source of truth, admin-tunable) on every (re)arm — defaults to 90s (1m30s);
-  // an admin can override, or set 0 to disable. See
-  // EndpointRegistry.inactivityTimeoutSeconds.
-  Duration get _timeout =>
-      Duration(seconds: endpointRegistry.inactivityTimeoutSeconds);
+  /// The user's own choice wins when they have made one; otherwise the
+  /// platform value. The registry clamps the admin to [15, 600] and the stored
+  /// preference is clamped to the same range, so a user can tune inside the
+  /// sanctioned window but never outside it — and never to "off", which would
+  /// let one person remove a protection the platform turned on.
+  ///
+  /// Deliberately checked even when the platform value is 0 (admin-disabled):
+  /// a user asking for a timeout where the platform has none is asking for
+  /// MORE protection, and refusing that would be the wrong way round.
+  Duration get _timeout {
+    final chosen = InactivityPreference.seconds;
+    if (chosen != null && chosen > 0) return Duration(seconds: chosen);
+    return Duration(seconds: endpointRegistry.inactivityTimeoutSeconds);
+  }
 
   // An active voice-agent session counts as activity: while the voice bottom
   // sheet / LiveKit session is engaged the user may be hands-free (speaking, or
@@ -123,6 +132,11 @@ class _InactivityWatcherState extends State<InactivityWatcher>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Warm the user's idle-logout choice so _timeout can stay a synchronous
+    // getter (it re-reads on every pointer event). Until this lands the
+    // PLATFORM value applies, which is the fail-safe direction: a slow read
+    // can only leave the admin's policy in force, never no policy at all.
+    InactivityPreference.load();
     // Non-pointer engagement (typing, chat send/receive, streaming AI reply,
     // voice activity) pings this bus → re-arm the timer.
     AppActivityBus.instance.tick.addListener(_onUserInteraction);
@@ -261,9 +275,18 @@ class _InactivityWatcherState extends State<InactivityWatcher>
       // Arm on login, cancel on logout / auth screens.
       listener: (_, state) {
         if (_authed(state)) {
+          // Re-read the idle-logout choice on every login, not just at app
+          // start. Without this, signing out of one account and into another
+          // in the same process would leave the FIRST user's session policy
+          // governing the second user's session.
+          InactivityPreference.load();
           _armTimer();
         } else {
           _timer?.cancel();
+          // Drop it on the way out for the same reason — the next sign-in
+          // starts from the platform default until that user's own value is
+          // read back.
+          InactivityPreference.clear();
         }
       },
       child: Listener(

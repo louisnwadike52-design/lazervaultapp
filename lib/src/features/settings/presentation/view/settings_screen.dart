@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/endpoint_registry.dart';
+import 'package:lazervault/core/services/inactivity_preference.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -1203,6 +1205,15 @@ class _SettingsViewState extends State<_SettingsView> {
             ),
           ),
           _navTile(
+            icon: Icons.timer_outlined,
+            title: 'Auto-logout',
+            subtitle: _autoLogoutSubtitle(),
+            keywords: const [
+              'auto logout', 'timeout', 'idle', 'inactivity', 'session', 'lock'
+            ],
+            onTap: _showAutoLogoutPicker,
+          ),
+          _navTile(
             icon: Icons.email_outlined,
             title: 'Verify Email',
             subtitle: emailVerified
@@ -1997,6 +2008,118 @@ class _SettingsViewState extends State<_SettingsView> {
           ),
         ),
       ),
+    );
+  }
+
+  // ===== Auto-logout ========================================================
+
+  /// The choices offered, in seconds. Every one sits inside the [15, 600]
+  /// window EndpointRegistry already clamps the admin to, so a user tunes
+  /// within the window the platform sanctions rather than outside it.
+  ///
+  /// There is deliberately no "Never". An admin can switch auto-logout off for
+  /// everyone, but a single user must not be able to remove a protection the
+  /// platform turned on for their own session — that is a security control,
+  /// not a preference.
+  static const List<({int seconds, String label})> _autoLogoutChoices = [
+    (seconds: 30, label: '30 seconds'),
+    (seconds: 60, label: '1 minute'),
+    (seconds: 120, label: '2 minutes'),
+    (seconds: 300, label: '5 minutes'),
+    (seconds: 600, label: '10 minutes'),
+  ];
+
+  static String _autoLogoutLabel(int seconds) {
+    if (seconds < 60) return '$seconds seconds';
+    final m = seconds ~/ 60;
+    return m == 1 ? '1 minute' : '$m minutes';
+  }
+
+  String _autoLogoutSubtitle() {
+    final chosen = InactivityPreference.seconds;
+    if (chosen != null) return 'Signs you out after ${_autoLogoutLabel(chosen)}';
+    final platform = endpointRegistry.inactivityTimeoutSeconds;
+    // 0 means the platform has auto-logout switched off entirely. Say so
+    // plainly instead of implying a duration the app will not act on.
+    return platform <= 0
+        ? 'Off — using the default for everyone'
+        : 'Default (${_autoLogoutLabel(platform)})';
+  }
+
+  void _showAutoLogoutPicker() {
+    final platform = endpointRegistry.inactivityTimeoutSeconds;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _kCard,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      builder: (sheetCtx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Auto-logout',
+                  style: GoogleFonts.inter(
+                      color: _kTextPrimary,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700)),
+              SizedBox(height: 4.h),
+              Text(
+                'How long Lazervault can sit idle before signing you out. '
+                'Time spent with the app in the background counts.',
+                style: GoogleFonts.inter(
+                    color: _kTextSecondary, fontSize: 12.5.sp, height: 1.4),
+              ),
+              SizedBox(height: 12.h),
+              _autoLogoutOption(
+                sheetCtx,
+                label: platform <= 0
+                    ? 'Use the default (off)'
+                    : 'Use the default (${_autoLogoutLabel(platform)})',
+                selected: InactivityPreference.seconds == null,
+                value: null,
+              ),
+              ..._autoLogoutChoices.map((c) => _autoLogoutOption(
+                    sheetCtx,
+                    label: c.label,
+                    selected: InactivityPreference.seconds == c.seconds,
+                    value: c.seconds,
+                  )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _autoLogoutOption(
+    BuildContext sheetCtx, {
+    required String label,
+    required bool selected,
+    required int? value,
+  }) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(
+        selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+        color: selected ? _kBrand : _kTextSecondary,
+        size: 22.sp,
+      ),
+      title: Text(label,
+          style: GoogleFonts.inter(
+              color: _kTextPrimary,
+              fontSize: 14.sp,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500)),
+      onTap: () async {
+        Navigator.of(sheetCtx).pop();
+        await InactivityPreference.set(value);
+        // Rebuild so the tile's subtitle reflects the new choice. The watcher
+        // needs no signal: it re-reads the cached value on its next re-arm,
+        // which this very tap has already triggered.
+        if (mounted) setState(() {});
+      },
     );
   }
 
