@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -473,6 +475,44 @@ class _AutoSaveTransactionsScreenState
     );
   }
 
+  /// The saver's name, for the receipt's FROM heading. Null rather than a
+  /// placeholder when the profile has not loaded: the PDF omits the line
+  /// entirely, which is better than printing "Unknown" on a document the user
+  /// may forward to someone else.
+  String? _saverName() {
+    final auth = context.read<AuthenticationCubit>().state;
+    if (auth is! AuthenticationSuccess) return null;
+    final u = auth.profile.user;
+    final name = '${u.firstName ?? ''} ${u.lastName ?? ''}'.trim();
+    return name.isEmpty ? null : name;
+  }
+
+  /// Human name for an account id, via the cubit's id→name cache. Returns null
+  /// on a miss so callers fall back rather than printing a raw UUID — showing
+  /// one is exactly the dead end the in-feature sheet used to be.
+  String? _accountLabel(String accountId) {
+    if (accountId.isEmpty) return null;
+    final name = context.read<AutoSaveCubit>().accountNames[accountId];
+    return (name == null || name.isEmpty) ? null : name;
+  }
+
+  /// The line under FROM: WHERE this save was funded from.
+  ///
+  /// A bank-funded rule pulls by Direct Debit, so the honest answer is the
+  /// bank — the wallet account id on those rows is not the funding source at
+  /// all. Everything else moves inside LazerVault, so it is the wallet account.
+  String? _sourceDetail(AutoSaveTransactionEntity tx, AutoSaveRuleEntity? rule) {
+    if (rule != null && AutoSaveTriggerLabels.usesLinkedBank(rule.triggerType)) {
+      final bank = rule.sourceBankName.trim();
+      if (bank.isNotEmpty) return '$bank · Direct Debit';
+      // Mandate present but the bank name never came back — still say HOW the
+      // money moved rather than falling through to a wallet label that would
+      // misdescribe a bank pull.
+      return 'Linked bank · Direct Debit';
+    }
+    return _accountLabel(tx.sourceAccountId);
+  }
+
   void _showDetailsSheet(
       AutoSaveTransactionEntity tx, AutoSaveRuleEntity? rule) {
     showModalBottomSheet(
@@ -490,7 +530,14 @@ class _AutoSaveTransactionsScreenState
                 transaction: autoSaveTxnToUnified(
                   tx,
                   ruleName: rule?.name,
-                  destinationLabel: 'Savings',
+                  userName: _saverName(),
+                  sourceLabel: _accountLabel(tx.sourceAccountId),
+                  sourceDetail: _sourceDetail(tx, rule),
+                  // The REAL destination account, not a hardcoded "Savings" —
+                  // a rule can land in any account the user picked.
+                  destinationLabel:
+                      _accountLabel(tx.destinationAccountId) ?? 'Savings',
+                  destinationAccount: _accountLabel(tx.destinationAccountId),
                 ),
               ));
         },

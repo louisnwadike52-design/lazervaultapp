@@ -710,6 +710,15 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     }
   }
 
+  /// The id→name cache, readable whatever the current state is.
+  ///
+  /// The same map is also published on AutoSaveRulesLoadedState, but only that
+  /// ONE state carries it — a screen sitting on a transactions state (or mid
+  /// refresh) would read nothing and fall back to showing a raw UUID. The
+  /// cache outlives those transitions, so callers that just need a label read
+  /// it here.
+  Map<String, String> get accountNames => Map.unmodifiable(_accountNamesCache);
+
   // Set account names cache (called from UI)
   void setAccountNames(Map<String, String> accountNames) {
     _accountNamesCache = accountNames;

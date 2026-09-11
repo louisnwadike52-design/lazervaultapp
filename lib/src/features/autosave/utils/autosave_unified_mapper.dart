@@ -12,11 +12,23 @@ import 'autosave_trigger_labels.dart';
 /// raw account UUIDs while the GLOBAL history rendered the same event through
 /// the rich receipt — two different faces for one transaction. QR/PayID
 /// precedent.
+/// [userName] is the saver — the PDF prints it as the FROM heading, exactly
+/// where a transfer receipt prints the sender. Without it the document showed
+/// an empty FROM box.
+///
+/// [sourceLabel] / [destinationLabel] are the human account names, and
+/// [sourceDetail] / [destinationAccount] the line beneath each (a masked
+/// number, or for a bank-funded rule the bank the Direct Debit pulled from).
+/// These used to be absent or hardcoded, so the receipt said "Savings" with no
+/// account either side and could not tell you WHICH account a save came from.
 UnifiedTransaction autoSaveTxnToUnified(
   AutoSaveTransactionEntity txn, {
   String? ruleName,
+  String? userName,
   String? sourceLabel,
+  String? sourceDetail,
   String? destinationLabel,
+  String? destinationAccount,
 }) {
   final triggerName = AutoSaveTriggerLabels.nameOf(txn.triggerType);
   final title = ruleName != null && ruleName.isNotEmpty
@@ -46,9 +58,28 @@ UnifiedTransaction autoSaveTxnToUnified(
     flow: TransactionFlow.outgoing,
     transactionReference: txn.id,
     counterpartyName: destinationLabel ?? 'Savings',
-    counterpartyAccount: sourceLabel,
+    // The DESTINATION account. This slot feeds the beneficiary's account line,
+    // and it used to be handed the SOURCE — so the receipt named the account
+    // the money left as the one it arrived in.
+    counterpartyAccount: destinationAccount,
     metadata: {
       'trigger': triggerName,
+      // ── Keys the unified transfer PDF reads to fill its party blocks ──
+      // The saver, printed as the FROM heading where a transfer prints its
+      // sender. A save is still money leaving a named person's account.
+      if ((userName ?? '').isNotEmpty) 'Source Account': userName!,
+      // The line under FROM: which account funded this save. For a bank-funded
+      // rule that is the BANK the Direct Debit pulled from, which the receipt
+      // could not show at all before.
+      if ((sourceDetail ?? sourceLabel ?? '').isNotEmpty)
+        'sender_account': (sourceDetail ?? sourceLabel)!,
+      if ((destinationLabel ?? '').isNotEmpty)
+        'recipient_name': destinationLabel!,
+      if ((destinationAccount ?? '').isNotEmpty)
+        'recipient_account': destinationAccount!,
+      // Stops the Type row reading "Fund Transfer" — a generic default that
+      // told the reader nothing about which of the five triggers fired.
+      'Transfer Type': 'AutoSave · $triggerName',
       if (txn.triggerReason.isNotEmpty) 'trigger_reason': txn.triggerReason,
       // Gross and fee, but NOT the net: the headline amount above is already
       // the net saved, so a "you saved" row would repeat it and read like a
