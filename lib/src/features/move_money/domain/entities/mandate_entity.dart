@@ -194,6 +194,17 @@ class MandateEntity extends Equatable {
 
   bool get isRejected => status == MandateStatus.rejected;
 
+  /// Nothing further will happen to this mandate on its own.
+  ///
+  /// Anything WATCHING a mandate (polling, banners, "setting up" copy) must
+  /// stop here. Without it a rejected or expired mandate is indistinguishable
+  /// from one still converging, so a watcher waits forever for a state that
+  /// can never arrive.
+  bool get isTerminal =>
+      status == MandateStatus.cancelled ||
+      status == MandateStatus.expired ||
+      status == MandateStatus.rejected;
+
   /// A previously-set-up mandate that can no longer be debited and needs a brand
   /// new authorization. `isExpired` (a field) factors the mandate end date;
   /// status==expired covers the reconciler/webhook-driven expiry.

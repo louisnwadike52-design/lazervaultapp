@@ -67,6 +67,8 @@ void main() {
     expect(m.authLinkStale, isFalse);
   });
 
+  terminalStates();
+
   test('a live mandate is never stale whatever its age', () {
     // Staleness is about an UNUSED authorization link, not about the mandate.
     for (final s in [MandateStatus.active, MandateStatus.paused]) {
@@ -74,6 +76,41 @@ void main() {
         mandate(status: s, age: const Duration(days: 30)).authLinkStale,
         isFalse,
         reason: '$s',
+      );
+    }
+  });
+}
+
+// A poll that only stops on success runs forever on every other outcome. The
+// abandonment path now starts a poll whenever the user leaves the bank sheet,
+// so "forever" became "on a route users actually take" — a 60s timer against
+// the backend for the rest of the session, for a mandate that is already dead.
+void terminalStates() {
+  test('rejected, cancelled and expired all read as terminal', () {
+    for (final s in [
+      MandateStatus.rejected,
+      MandateStatus.cancelled,
+      MandateStatus.expired,
+    ]) {
+      expect(
+        mandate(status: s, age: const Duration(minutes: 5)).isTerminal,
+        isTrue,
+        reason: '$s must stop the poll',
+      );
+    }
+  });
+
+  test('states that can still progress are NOT terminal', () {
+    for (final s in [
+      MandateStatus.pending,
+      MandateStatus.awaitingAuthorization,
+      MandateStatus.active,
+      MandateStatus.paused,
+    ]) {
+      expect(
+        mandate(status: s, age: const Duration(minutes: 5)).isTerminal,
+        isFalse,
+        reason: '$s must keep polling',
       );
     }
   });

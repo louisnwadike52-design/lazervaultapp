@@ -363,8 +363,22 @@ class MandateCubit extends Cubit<MandateState> {
     required String userId,
   }) {
     _mandatePollTimer?.cancel();
+    // Bounded. This used to stop ONLY on success, so a mandate that ended up
+    // rejected/cancelled/expired polled every 60s for the life of the cubit —
+    // and since an abandoned setup now starts a poll, that was one permanent
+    // background call per abandonment.
+    //
+    // 30 minutes matches the Mono authorization window: past it the link is
+    // dead and nothing can change without the user starting again, so there is
+    // nothing left to watch for.
+    const maxPolls = 30;
+    var polls = 0;
     _mandatePollTimer = Timer.periodic(const Duration(seconds: 60), (timer) async {
       if (isClosed) {
+        timer.cancel();
+        return;
+      }
+      if (++polls > maxPolls) {
         timer.cancel();
         return;
       }
@@ -385,9 +399,23 @@ class MandateCubit extends Cubit<MandateState> {
               needsAuthorization: false,
             ));
           }
+          return;
+        }
+        // Terminal failure: nothing further will happen on its own. Stop, and
+        // EMIT so the UI can drop any "setting up" state instead of showing a
+        // spinner against a mandate that is already dead.
+        if (mandate.isTerminal) {
+          timer.cancel();
+          if (!isClosed) {
+            emit(MandateCreated(
+              mandate: mandate,
+              needsAuthorization: false,
+            ));
+          }
         }
       } catch (_) {
-        // Continue polling on transient errors
+        // Continue polling on transient errors — a flaky network must not be
+        // mistaken for a dead mandate.
       }
     });
   }
