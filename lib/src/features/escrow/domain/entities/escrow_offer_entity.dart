@@ -152,7 +152,18 @@ class EscrowOfferEntity {
     final String actor = isAwaitingFunding || isBuyRequest
         ? (creatorName.isNotEmpty ? creatorName : 'the buyer')
         : (counterpartyName.isNotEmpty ? counterpartyName : 'the buyer');
-    return ('Waiting for $actor', false);
+    // Name the ACTION, not just the person. "Waiting for Nnaemeka Ezeke" told
+    // the seller who was holding things up but nothing about what had to
+    // happen next, on the one screen where that is the whole question.
+    if (isAwaitingFunding) {
+      // The seller has already accepted; all that is left is the buyer paying.
+      return ('Waiting for $actor to pay', false);
+    }
+    if (isBuyRequest) {
+      // Still OPEN: the seller has not accepted yet, so the buyer cannot pay.
+      return ('Waiting for $actor to accept', false);
+    }
+    return ('Waiting for $actor to pay', false);
   }
 
   /// Human label for the SELLER of this offer, whichever side created it.

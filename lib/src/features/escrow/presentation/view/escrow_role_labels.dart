@@ -221,8 +221,12 @@ class EscrowRoles {
           ? '$seller accepted your request. Nothing is held yet — pay to move '
               'the money into escrow, and it is released to them once you '
               'confirm delivery.'
-          : 'You accepted this request. Nothing is held yet — waiting for '
-              '$buyer to fund the escrow.';
+          // "fund the escrow" is our internal mechanic, not what the buyer
+          // experiences — from their side they are simply paying for the item.
+          // Say what happens next, and what it means for the seller.
+          : 'You accepted this request. Nothing is held yet — $buyer still has '
+              'to pay. Once they do, Lazervault holds the money and releases '
+              'it to you after they confirm delivery.';
     }
 
     // OPEN.
@@ -230,8 +234,9 @@ class EscrowRoles {
       return buying == true
           ? 'Nothing is held yet. $seller has to accept your request before '
               'you can pay.'
-          : 'Nothing is held yet. Accept the request and $buyer can fund the '
-              'escrow.';
+          : 'Nothing is held yet. Accept the request and $buyer can pay — '
+              'their money is then held by Lazervault until they confirm '
+              'delivery.';
     }
     // OPEN sell_offer.
     if (buying == false) {

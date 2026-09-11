@@ -808,7 +808,16 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
     }
     if (out.isEmpty) {
       final (label, color) = EscrowTheme.offerStatusMeta(offer.status);
-      out.add(_banner('This offer is ${label.toLowerCase()}.', color));
+      // This banner shows precisely when the viewer has NOTHING to do, so it
+      // has to explain who does. The raw status label is seat-blind: it told
+      // a seller who had already accepted that the offer was "ready to fund",
+      // which is true of the offer but reads as an instruction they cannot
+      // act on. statusMeaning answers it from THIS viewer's seat.
+      final meaning = EscrowRoles.statusMeaning(offer, userId);
+      out.add(_banner(
+        meaning.isNotEmpty ? meaning : 'This offer is ${label.toLowerCase()}.',
+        color,
+      ));
     }
     return out;
   }
