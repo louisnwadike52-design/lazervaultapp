@@ -74,7 +74,11 @@ class DepositFundsScreen extends StatefulWidget {
 }
 
 class _DepositFundsScreenState extends State<DepositFundsScreen>
-    with TransactionPinMixin, BankLinkFeeMixin, LinkedBalanceRefreshMixin {
+    with
+        TransactionPinMixin,
+        BankLinkFeeMixin,
+        LinkedBalanceRefreshMixin,
+        WidgetsBindingObserver {
   @override
   ITransactionPinService get transactionPinService =>
       serviceLocator<ITransactionPinService>();
@@ -243,6 +247,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Telemetry: deposit screen view (currency is bounded server-side).
     AnalyticsService.instance.trackDepositScreen(_currency);
     _loadBanks();
@@ -429,6 +434,18 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
   /// Pull the user's saved mandates into the shared MandateCubit cache so the
   /// Link Account method can show + manage them. Silent on failure (mandates
   /// are an optional enhancement).
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Re-read mandates whenever the user comes BACK to the app.
+    //
+    // Completing a Direct Debit for a bank on the NIBSS method REQUIRES
+    // leaving: the user has to make a one-off NGN 50 transfer from their own
+    // banking app. They return expecting the card to reflect what they just
+    // did, and nothing here was listening — so a completed setup kept showing
+    // as unfinished until the screen happened to be rebuilt.
+    if (state == AppLifecycleState.resumed) _loadUserMandates();
+  }
+
   void _loadUserMandates() {
     if (!mounted) return;
     final authState = context.read<AuthenticationCubit>().state;
@@ -2462,17 +2479,32 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           duration: const Duration(seconds: 4),
         );
       } else if (m != null && m.awaitingUserAuthorization) {
-        // They started (a mandate exists) but abandoned the bank
-        // authorization — point them at the resume path.
+        // Closing the sheet does NOT mean the user abandoned this.
+        //
+        // For banks without direct e-mandate support (ALAT by WEMA among
+        // them) Mono serves the NIBSS activation method: a one-off NGN 50
+        // transfer the user can only make in their OWN bank app. Leaving is
+        // therefore part of the happy path, not a cancellation — and the
+        // mandate can complete with no further action here, because NIBSS
+        // sees the inbound transfer and Mono advances the mandate whether or
+        // not "I've sent the money" was ever pressed.
+        //
+        // So: poll. If the money already moved, the card settles to Direct
+        // Debit on its own. The old copy declared failure and stopped, which
+        // stranded exactly the user who HAD paid.
+        serviceLocator<MandateCubit>().pollMandateStatus(
+          mandateId: m.id,
+          userId: user.id,
+        );
         Get.snackbar(
-          'Setup not finished',
-          'Your bank authorization wasn\'t completed. Open the '
-              '${account.bankName} card menu and choose "Finish Direct Debit '
-              'setup" to complete it.',
+          'Waiting for your bank',
+          'If you already sent the transfer, we will pick it up automatically '
+              '— no need to do it again. If not, open the ${account.bankName} '
+              'card menu and choose "Finish Direct Debit setup".',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.95),
           colorText: Colors.black,
-          duration: const Duration(seconds: 4),
+          duration: const Duration(seconds: 6),
         );
       }
       // No mandate at all ("Not Now" on the explainer) — a deliberate
@@ -5244,6 +5276,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _cancelLinkWatchdog();
     _amountController.removeListener(_onAmountChanged);
     _amountController.dispose();
