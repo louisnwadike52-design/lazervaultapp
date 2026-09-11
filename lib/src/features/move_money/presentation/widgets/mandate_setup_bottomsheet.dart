@@ -130,6 +130,37 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
               if (mounted) navigator.pop(true);
               return;
             }
+            // EXPIRED-LINK GUARD. A Mono authorization link lives ~30 minutes
+            // (its NIBSS activation screen counts down from 29:52). Past that
+            // the link is dead, and reopening it shows "This link is incorrect
+            // or the transaction is already completed" — which reads as the
+            // USER's mistake and leaves them with no way forward. Observed
+            // exactly that: a mandate created at 14:58 was resumed at 15:29
+            // and dead-ended.
+            //
+            // A fresh mandate is the only thing that can work here, and the
+            // backend already cancels the old one when it mints a new one, so
+            // this cannot accumulate stranded rows.
+            if (state.mandate.authLinkStale) {
+              Get.snackbar(
+                'Starting a new authorization',
+                'The previous bank authorization link expired, so we have '
+                    'started a fresh one for you.',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.95),
+                colorText: Colors.white,
+                duration: const Duration(seconds: 4),
+              );
+              cubit.createMandate(
+                userId: widget.userId,
+                linkedAccountId: widget.linkedAccountId,
+                userEmail: widget.userEmail,
+                userName: widget.userName,
+              );
+              // Do NOT pop: the cubit re-emits MandateCreated with the new
+              // link and this same listener opens it.
+              return;
+            }
             // Authorize the mandate IN-APP. This used to bounce to an external
             // browser (LaunchMode.externalApplication) with no progress and no
             // status refresh on return. Reuse the shared Mono webview sheet in

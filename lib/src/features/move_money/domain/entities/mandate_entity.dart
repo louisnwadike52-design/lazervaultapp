@@ -152,6 +152,33 @@ class MandateEntity extends Equatable {
       authAttemptedAt != null &&
       DateTime.now().difference(authAttemptedAt!) < const Duration(minutes: 40);
 
+  /// How long a Mono authorization link stays usable.
+  ///
+  /// Mono does not return an expiry on create, so this is measured from the
+  /// only thing we hold: when the mandate was made. Observed live on an ALAT
+  /// by WEMA mandate — Mono served the NIBSS activation screen with a
+  /// "expires in 29:52" countdown against a mandate created two minutes
+  /// earlier, so the window is ~30 minutes. Held slightly under that: a link
+  /// wrongly judged stale costs one extra mandate, while one wrongly judged
+  /// live dead-ends the user in Mono's "Configuration error" with no way
+  /// forward.
+  static const Duration authLinkWindow = Duration(minutes: 25);
+
+  /// True when this mandate's authorization link is almost certainly DEAD.
+  ///
+  /// Reopening it is not a neutral retry: Mono answers "This link is incorrect
+  /// or the transaction is already completed", which reads as the user's
+  /// mistake and leaves them stuck. A resume in this state must mint a FRESH
+  /// mandate instead.
+  ///
+  /// Deliberately excludes a mandate whose authorization was already granted —
+  /// that link is spent for a different reason ([authAttemptedRecently]) and
+  /// the right response there is to poll, not to create another mandate.
+  bool get authLinkStale =>
+      awaitingUserAuthorization &&
+      !authAttemptedRecently &&
+      DateTime.now().difference(createdAt) > authLinkWindow;
+
   /// Temporarily paused by the user — reinstate to use again.
   bool get isPaused => status == MandateStatus.paused;
 
