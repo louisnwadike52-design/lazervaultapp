@@ -405,10 +405,15 @@ TransactionServiceType inferServiceTypeFromCategory(
   // bill handling, and gift cards are already resolved above so `card` here
   // cannot steal them.
   //
-  // Escrow is absent because TransactionServiceType has no escrow constant.
-  // Mapping it to `transfer` would label held funds as a completed transfer,
-  // which is worse than the neutral unknown glyph — add the enum value first.
   final text = _textOf(description, category);
+  // Escrow FIRST: its descriptions ("Escrow funding: iPhone 17", "Escrow
+  // release") carry words like funding and release that later arms would
+  // otherwise claim. It now has its own enum constant, so held funds are no
+  // longer either a grey unknown glyph or — worse — labelled a completed
+  // transfer.
+  if (cat.contains('escrow') || text.contains('escrow')) {
+    return TransactionServiceType.escrow;
+  }
   if (cat.contains('split') || text.contains('split bill')) {
     return TransactionServiceType.splitBill;
   } else if (cat.contains('batch')) {

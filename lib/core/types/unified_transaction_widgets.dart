@@ -43,6 +43,12 @@ enum TransactionServiceType {
   crowdfund('Crowdfund', Icons.volunteer_activism, Color(0xFFF472B6)),
   autosave('AutoSave', Icons.savings, Color(0xFF22C55E)),
   lockFunds('Piggyvault', Icons.lock_clock_outlined, Color(0xFF6366F1)),
+  // Escrow had NO constant, so funding a deal fell through to `unknown` — the
+  // grey help-outline glyph — and its receipt lost the PDF document every
+  // other money movement gets. Mapping it onto `transfer` was rejected
+  // deliberately: escrow money is HELD, and calling that a completed transfer
+  // is a worse lie than the neutral glyph.
+  escrow('Escrow', Icons.handshake_outlined, Color(0xFF7C3AED)),
   groupFunds('Group Funds', Icons.groups_2_outlined, Color(0xFFA855F7)),
   exchange('Exchange', Icons.currency_exchange, Color(0xFFFB923C)),
 

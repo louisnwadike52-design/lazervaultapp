@@ -740,7 +740,12 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // No copy-type prompt is needed — there is no counterparty and no fee
       // borne by one side, so _withReceiptOptions derives the copy from
       // direction as it does for every other non-fee-bearing type.
-      tx.serviceType == TransactionServiceType.autosave;
+      tx.serviceType == TransactionServiceType.autosave ||
+      // Escrow for the same reason: funding and release are real money
+      // movements with a counterparty and a reference, and they were falling
+      // back to the flat dark image because escrow had no enum constant to
+      // list here at all.
+      tx.serviceType == TransactionServiceType.escrow;
 
   Widget _buildActionButtons() {
     final buttons = <Widget>[];
