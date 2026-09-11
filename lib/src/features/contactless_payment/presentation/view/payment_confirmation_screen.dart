@@ -81,6 +81,12 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
     super.dispose();
   }
 
+  /// Pre-select only from accounts that can ACTUALLY fund the payment.
+  ///
+  /// The old fallback picked the highest-balance account even when none could
+  /// pay, so the screen opened with a selection that was guaranteed to fail —
+  /// and, because the picker also ignored frozen accounts, it could open
+  /// pre-selected on an account accounts-service refuses to debit at all.
   void _preSelectAccountIfNeeded(List<dynamic> accounts) {
     if (_hasPreSelectedAccount || _selectedAccountId != null) return;
 
@@ -93,9 +99,9 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
     }
 
     if (_selectedAccountId == null && accounts.isNotEmpty) {
-      final sortedAccounts = List.from(accounts)
-        ..sort((a, b) => b.balance.compareTo(a.balance));
-      _selectedAccountId = sortedAccounts.first.id;
+      // Nothing can fund it: leave the selection EMPTY rather than arming the
+      // Confirm button with an account that cannot pay.
+      _selectedAccountId = null;
       _hasPreSelectedAccount = true;
     }
   }
@@ -532,17 +538,29 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
         }
 
         if (state is AccountCardsSummaryLoaded) {
-          final matchingAccounts = state.accountSummaries
+          final currencyAccounts = state.accountSummaries
               .where((a) => a.currency == widget.session.currency)
               .toList();
 
+          // "Pay from" must list only accounts that can ACTUALLY pay. Two
+          // things disqualify one, and the picker honoured neither:
+          //
+          //  * FROZEN/SUSPENDED — accounts-service rejects debits and holds on
+          //    these outright, so offering one guarantees a failure after the
+          //    user has entered their PIN.
+          //  * INSUFFICIENT BALANCE — these were listed, styled red with a
+          //    "Low" badge, and remained fully selectable, so a payment could
+          //    be armed from a 0.00 account.
+          final matchingAccounts = currencyAccounts
+              .where((a) => !a.isFrozen && a.balance >= widget.session.amount)
+              .toList();
+          final hiddenCount = currencyAccounts.length - matchingAccounts.length;
+
           _preSelectAccountIfNeeded(matchingAccounts);
 
-          final hasValidAccount = matchingAccounts.any(
-            (a) => a.balance >= widget.session.amount,
-          );
+          final hasValidAccount = matchingAccounts.isNotEmpty;
 
-          if (matchingAccounts.isEmpty) {
+          if (currencyAccounts.isEmpty) {
             return Container(
               padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
@@ -597,7 +615,9 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                       SizedBox(width: 12.w),
                       Expanded(
                         child: Text(
-                          'None of your accounts have sufficient balance.',
+                          hiddenCount > 0
+                              ? 'No ${widget.session.currency} account can cover this payment right now. Top up or unfreeze an account to continue.'
+                              : 'None of your accounts have sufficient balance.',
                           style: GoogleFonts.inter(
                             color: const Color(0xFFEF4444),
                             fontSize: 12.sp,
@@ -617,6 +637,22 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              // Say what was left out. Filtering silently is its own bug: the
+              // user knows they have a Business account and, finding it gone
+              // with no explanation, reasonably concludes the app lost it.
+              if (hiddenCount > 0) ...[
+                SizedBox(height: 6.h),
+                Text(
+                  hiddenCount == 1
+                      ? '1 account hidden — frozen or balance below this amount'
+                      : '$hiddenCount accounts hidden — frozen or balance below this amount',
+                  style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.45),
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
               SizedBox(height: 12.h),
               ...matchingAccounts.map((account) {
                 final isSelected = _selectedAccountId == account.id;
@@ -624,9 +660,15 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
                     account.balance < widget.session.amount;
 
                 return GestureDetector(
-                  onTap: () {
-                    setState(() => _selectedAccountId = account.id);
-                  },
+                  // Defensive: the list above is already filtered, but a
+                  // selection is what arms the money, so it is guarded at the
+                  // point of action too rather than only by what we chose to
+                  // render.
+                  onTap: hasInsufficientBalance || account.isFrozen
+                      ? null
+                      : () {
+                          setState(() => _selectedAccountId = account.id);
+                        },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     margin: EdgeInsets.only(bottom: 12.h),
