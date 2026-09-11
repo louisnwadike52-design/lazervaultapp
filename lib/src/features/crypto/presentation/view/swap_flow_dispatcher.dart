@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+
+import '../../domain/trade_amounts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -242,6 +244,11 @@ Future<SwapFlowResult> runSwapFlow({
   if (cubit.state is! SwapQuotePending) {
     return const SwapFlowResult.error('Unable to create swap quote.');
   }
+  // Our fee, captured while the quote state still carries it: SwapCompleted
+  // does not. Without it the receipt printed Quidax's GROSS proceeds with no
+  // fee line at all — 69,978.61 on a sale that credited 69,628.71.
+  final int quotedSpreadMinor =
+      (cubit.state as SwapQuotePending).spreadMinorUnits;
 
   // PR12 — no balance refresh here. CreateSwapQuote is display-only
   // now; the user's NGN isn't touched until they tap Confirm and the
@@ -347,7 +354,7 @@ Future<SwapFlowResult> runSwapFlow({
   // Pass `terminal`, NOT cubit.state: an unrelated holdings/price emit can
   // clobber cubit.state between the confirm and here (the terminal snapshot
   // exists precisely to survive that race), which would blank the receipt.
-  final details = _buildReceiptDetails(side, fromCurrency, toCurrency,
+  final details = _buildReceiptDetails(quotedSpreadMinor, side, fromCurrency, toCurrency,
       fromAmountMinor, cryptoSymbol, fromCryptoSymbol, terminal);
 
   final transactionId = (terminal is SwapCompleted)
@@ -416,6 +423,7 @@ Future<SwapFlowResult> runSwapFlow({
 /// fields (fees, network) are best-effort defaults; the receipt screen
 /// substitutes server-known values via the cubit state observer.
 CryptoTransactionDetails _buildReceiptDetails(
+  int spreadMinorUnits,
   String side,
   String fromCurrency,
   String toCurrency,
@@ -452,11 +460,19 @@ CryptoTransactionDetails _buildReceiptDetails(
   // A crypto→crypto CONVERT has NO fiat value — fromAmountStr is a crypto qty,
   // so treating it as fiat rendered "₦5.50" for 5.5 TRX. Show 0 (the receipt
   // suppresses zero-value money rows) and carry both legs in metadata instead.
-  final double fiatAmount = isConvert
-      ? 0.0
-      : (isSell
-          ? (double.tryParse(toAmountStr) ?? 0.0)
-          : (double.tryParse(fromAmountStr) ?? 0.0));
+  // Same definition the confirm sheet and the settlement use, so the receipt
+  // agrees with the money that moved and with the push notification.
+  final amounts = CryptoTradeAmounts.fromQuote(
+    fromCurrency: fromCurrency,
+    toCurrency: toCurrency,
+    fromAmount: fromAmountStr,
+    toAmount: toAmountStr,
+    spreadMinorUnits: spreadMinorUnits,
+  );
+  // A sell's headline is what LANDED (net); a buy's is what was DEBITED
+  // (subtotal + fee). A crypto→crypto convert has no fiat value at all.
+  final double fiatAmount =
+      isConvert ? 0.0 : (isSell ? amounts.receive : amounts.pay);
 
   return CryptoTransactionDetails(
     type: type,
@@ -466,7 +482,9 @@ CryptoTransactionDetails _buildReceiptDetails(
     pricePerUnit: pricePerUnit,
     fiatAmount: fiatAmount,
     networkFee: 0.0,
-    tradingFee: 0.0,
+    // Was hardcoded 0, so the receipt showed no fee whatsoever and the user had
+    // to infer it from a balance that did not match the headline.
+    tradingFee: isConvert ? 0.0 : amounts.feeInFiat,
     totalAmount: fiatAmount,
     paymentMethod: 'Lazervault Wallet',
     fromCrypto: isConvert ? fromCryptoSymbol.toUpperCase() : null,
