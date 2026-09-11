@@ -516,6 +516,12 @@ class GiftCardSale extends Equatable {
   String get userDisplayStatus {
     final s = displayStatus.isNotEmpty ? displayStatus : status;
     switch (s) {
+      // `completed` is the CANONICAL terminal success — giftcards-service says
+      // so itself: "SaleStatusPaid is 'paid' (legacy synonym for completed)".
+      // This mapper only knew the legacy name, so a settled sale fell through
+      // to `default` here and then to `default` in userStatusLabel, and a
+      // seller who had already been paid was shown "Under review".
+      case 'completed':
       case 'paid':
       case 'settled':
         return 'paid';
@@ -574,7 +580,9 @@ class GiftCardSale extends Equatable {
   bool get isReviewing => status == 'reviewing';
   bool get isApproved => status == 'approved';
   bool get isRejected => status == 'rejected';
-  bool get isPaid => status == 'paid';
+  // Canonical terminal-success is `completed`; `paid` is the legacy synonym
+  // (giftcards-service says so). Match BOTH or a settled sale reads unpaid.
+  bool get isPaid => status == 'paid' || status == 'completed';
   // Pending settlement = provider confirmed the trade but the wallet
   // credit hasn't landed yet (either the credit was never attempted or
   // the credit attempt failed and is queued for retry by the
