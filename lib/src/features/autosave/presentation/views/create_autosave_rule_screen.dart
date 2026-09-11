@@ -118,6 +118,10 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   int? _selectedScheduleDay;
   TimeOfDay _selectedTime = const TimeOfDay(hour: 0, minute: 0);
   int? _selectedRoundUpTo;
+  /// True once the user picks "Custom", BEFORE they have typed a value.
+  /// Without this the mode had to be inferred from the value, which meant the
+  /// input could never appear to collect one.
+  bool _customRoundUpMode = false;
   String? _selectedSourceAccountId;
   String? _selectedDestinationAccountId;
 
@@ -212,6 +216,13 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     }
     if (rule.triggerType == TriggerType.roundUp && rule.roundUpTo != null) {
       _selectedRoundUpTo = rule.roundUpTo;
+      // Re-entering an existing CUSTOM value has to show it in the field, not
+      // just leave the chip lit with an empty box underneath.
+      const presets = [50, 100, 500, 1000];
+      if (!presets.contains(rule.roundUpTo)) {
+        _customRoundUpMode = true;
+        _customRoundUpController.text = '${rule.roundUpTo}';
+      }
     }
     setState(() {});
   }
@@ -252,6 +263,10 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         if (_selectedTriggerType == TriggerType.roundUp) {
           final val = _resolvedRoundUpTo();
           if (val == null || val < 10) return 'Pick a round-up amount (≥ 10)';
+          // The round-up unit IS the amount for this trigger — there is no
+          // separate amount field to validate. Capping a single round-up is
+          // optional and lives on the Limits step.
+          return null;
         }
         final amt = double.tryParse(_amountController.text.trim());
         if (amt == null || amt <= 0) return 'Enter a valid amount';
@@ -402,7 +417,14 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         'description': _descriptionController.text.trim(),
         'triggerType': _selectedTriggerType,
         'amountType': _selectedAmountType,
-        'amountValue': double.parse(_amountController.text),
+        // The backend requires a positive amount_value for EVERY trigger,
+        // but the round-up consumer never reads it — it saves the rounding
+        // delta. Send the round-up unit: it is the largest a single
+        // round-up can be, so the stored figure is at least truthful
+        // rather than an arbitrary number the user was forced to invent.
+        'amountValue': isRoundUp
+            ? (_resolvedRoundUpTo() ?? 0).toDouble()
+            : double.parse(_amountController.text),
         // External-inflow rules have no LazerVault source wallet — the
         // linked bank is the source (banking-service mandate pulls from it).
         'sourceAccountId': usesLinkedSource ? '' : _selectedSourceAccountId!,
@@ -498,7 +520,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           case TriggerType.scheduled:
             return 'Choose the cadence, then how much to save each run.';
           case TriggerType.roundUp:
-            return 'Set the round-up unit, then an optional per-fire cap.';
+            return 'Choose what each spend rounds up to.';
           case TriggerType.onDeposit:
             return 'Save a fixed amount or a percentage of each deposit.';
           case TriggerType.externalInflow:
@@ -841,8 +863,16 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
 
   Widget _roundUpConfig() {
     final presets = const [50, 100, 500, 1000];
-    final isCustom =
-        _selectedRoundUpTo != null && !presets.contains(_selectedRoundUpTo);
+    // Custom is an explicit MODE, not something inferred from the value.
+    //
+    // It used to be `value != null && !presets.contains(value)`, which made
+    // the chip unusable: tapping it parsed an empty controller to null, so
+    // isCustom stayed false, so the field you type the value into never
+    // appeared — you could only reach custom mode by already having a custom
+    // value. The second clause still recognises an existing custom value when
+    // editing a rule, where the mode flag starts false.
+    final isCustom = _customRoundUpMode ||
+        (_selectedRoundUpTo != null && !presets.contains(_selectedRoundUpTo));
     return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -862,6 +892,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                   label: _currencyLabel(p.toDouble()),
                   selected: _selectedRoundUpTo == p && !isCustom,
                   onTap: () => setState(() {
+                    _customRoundUpMode = false;
                     _selectedRoundUpTo = p;
                     _customRoundUpController.clear();
                     _stepError = null;
@@ -872,6 +903,11 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 icon: Icons.tune_rounded,
                 selected: isCustom,
                 onTap: () => setState(() {
+                  // Enter the mode FIRST. The value stays null until the user
+                  // types one, and that is exactly the state the field below
+                  // exists to collect — deriving the mode from the value is
+                  // what made this chip inert.
+                  _customRoundUpMode = true;
                   _selectedRoundUpTo =
                       int.tryParse(_customRoundUpController.text);
                   _stepError = null;
@@ -882,12 +918,15 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           if (isCustom) ...[
             SizedBox(height: 16.h),
             _LabeledField(
-              label: 'Custom amount',
+              label: 'Custom round-up unit',
               child: _TextInput(
                 controller: _customRoundUpController,
                 hint: 'e.g. 250',
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                // Opens the keyboard the moment Custom is chosen, so the tap
+                // has a visible result rather than just revealing a box.
+                autofocus: true,
                 onChanged: (v) => setState(() {
                   _selectedRoundUpTo = int.tryParse(v);
                   _stepError = null;
@@ -994,6 +1033,14 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             ),
             SizedBox(height: 24.h),
           ],
+          // ROUND-UP has no amount field. What it used to collect was
+          // amountValue, and the round-up consumer never reads it: it
+          // computes the rounding delta and passes that straight to the
+          // executor. The only thing that caps a round-up is
+          // maximumPerSave, which lives on the Limits step — so this asked
+          // for a REQUIRED number that changed nothing, under a name
+          // ("per-fire cap") that promised it did.
+          if (_selectedTriggerType != TriggerType.roundUp)
           StreamBuilder<String>(
             stream: CurrencySymbols.currencySymbolStream,
             builder: (context, snapshot) {
@@ -1006,7 +1053,11 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                       ? 'Percentage of each inflow'
                       : 'Percentage of deposit';
               final label = _selectedTriggerType == TriggerType.roundUp
-                  ? 'Per-fire cap ($symbol)'
+                  // "Per-fire cap" was internal vocabulary: a "fire" is
+                  // one execution of the rule, which the user has never been
+                  // shown that word for. The details screen already called
+                  // this same field "Maximum per save"; the two now agree.
+                  ? 'Most to save at once ($symbol)'
                   : _selectedTriggerType == TriggerType.scheduledExternal
                       ? 'Amount to pull each time ($symbol)'
                       : (isPct ? pctLabel : 'Save amount ($symbol)');
@@ -1047,10 +1098,20 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             _PreviewCard(
               tint: _textMuted,
               icon: Icons.info_outline_rounded,
-              title: 'Heads up',
-              body:
-                  'For round-up rules this is just a per-fire upper bound. '
-                  'The actual save is the rounding delta you configured.',
+              title: 'How much gets saved',
+              // The old copy explained the field in terms of "per-fire upper
+              // bound" and "the rounding delta you configured" — both internal
+              // vocabulary, and neither answers the actual question, which is
+              // "what number do I put here and what happens if I leave it".
+              // Worked example first, because that is what makes it land.
+              // Answers the question the removed field left hanging:
+                  // how much a round-up actually saves, and where to cap it
+                  // if you want to.
+              body: 'Each save is just the rounding difference, so it is '
+                  'always smaller than your round-up unit — spending '
+                  '₦8,050 with a ₦100 unit saves ₦50.\n\n'
+                  'Want a ceiling on a single round-up? Set "Maximum per '
+                  'save" on the last step.',
             ),
           ],
         ],
