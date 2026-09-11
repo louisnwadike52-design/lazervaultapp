@@ -99,28 +99,56 @@ class _DirectPayWebViewSheetState extends State<_DirectPayWebViewSheet> {
     });
   }
 
-  void _handleSuccess() {
-    if (_hasCompleted) return;
+  /// The ONE way this sheet closes.
+  ///
+  /// Every exit has to come through here, because a second pop does not close
+  /// the sheet again — it closes the screen UNDERNEATH, and the user is left
+  /// staring at an empty navigator. A snackbar is a global overlay, so it
+  /// survives that and renders over the void: a black screen with an orange
+  /// warning floating on it, which is exactly what was reported from the
+  /// field after a Direct Debit setup on ALAT by WEMA.
+  ///
+  /// Two ways that happened. The close button popped unguarded, so a
+  /// double-tap popped twice. And the webview outlives the route during the
+  /// exit animation — so a redirect arriving just after the user dismissed
+  /// the sheet called back in and popped again.
+  void _close(bool result) {
+    if (_hasCompleted || !mounted) return;
     _hasCompleted = true;
     _timeoutTimer?.cancel();
-    Navigator.of(context).pop(true);
+    Navigator.of(context).pop(result);
   }
 
-  void _handleFailure() {
-    if (_hasCompleted) return;
-    _hasCompleted = true;
-    _timeoutTimer?.cancel();
-    Navigator.of(context).pop(false);
-  }
+  void _handleSuccess() => _close(true);
+
+  void _handleFailure() => _close(false);
 
   @override
   void dispose() {
+    // Anything still in flight is now aimed at a dead route.
+    _hasCompleted = true;
     _timeoutTimer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // isDismissible/enableDrag cover the scrim and the drag handle; the
+    // Android back button and the iOS back-swipe pop a modal sheet regardless.
+    // Leaving is legitimate here — the NIBSS method needs the user in their
+    // own banking app — so the pop is allowed, but it must be RECORDED, or a
+    // redirect landing a moment later pops a second time and takes the screen
+    // underneath with it.
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) _hasCompleted = true;
+      },
+      child: _body(context),
+    );
+  }
+
+  Widget _body(BuildContext context) {
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.9,
       child: Column(
@@ -147,7 +175,7 @@ class _DirectPayWebViewSheetState extends State<_DirectPayWebViewSheet> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () => Navigator.of(context).pop(false),
+                  onTap: () => _close(false),
                   child: Container(
                     padding: EdgeInsets.all(4.w),
                     decoration: BoxDecoration(

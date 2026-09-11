@@ -30,6 +30,25 @@ class _LinkBankScreenState extends State<LinkBankScreen>
   String? _publicKey;
   String? _appId;
   bool _configLoaded = false;
+
+  /// This screen has six ways out — the app-bar close, Mono's JS `close`
+  /// message (handled in two places), a successful link, and three error
+  /// dialogs that back the user out once dismissed. None of them knew about
+  /// the others.
+  ///
+  /// A second pop does not close this screen again; it closes the one behind
+  /// it. Tap the app-bar close while an error dialog is still resolving, or
+  /// let a stray `close` arrive after a successful link, and the user is
+  /// dropped a screen too far — or onto an empty navigator, which draws
+  /// black with any snackbar still floating over it. That is the shape of the
+  /// blank-screen report from the field.
+  bool _exited = false;
+
+  void _exit(bool linked) {
+    if (_exited || !mounted) return;
+    _exited = true;
+    Navigator.pop(context, linked);
+  }
   String _monoCustomerId = '';
   String _customerName = '';
   String _customerEmail = '';
@@ -194,7 +213,7 @@ class _LinkBankScreenState extends State<LinkBankScreen>
           }
           break;
         case 'close':
-          Navigator.pop(context, false);
+          _exit(false);
           break;
         case 'event':
           // Handle events (logging, analytics)
@@ -215,7 +234,7 @@ class _LinkBankScreenState extends State<LinkBankScreen>
                 }
                 break;
               case 'close':
-                Navigator.pop(context, false);
+                _exit(false);
                 break;
             }
           }
@@ -264,6 +283,19 @@ class _LinkBankScreenState extends State<LinkBankScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Backing out of the Mono webview is legitimate, but it has to be
+    // RECORDED: the webview outlives the route briefly, and a `close` or
+    // redirect landing afterwards would pop a second time.
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) _exited = true;
+      },
+      child: _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -273,7 +305,7 @@ class _LinkBankScreenState extends State<LinkBankScreen>
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => Navigator.pop(context, false),
+          onPressed: () => _exit(false),
         ),
       ),
       body: BlocConsumer<OpenBankingCubit, OpenBankingState>(
@@ -300,21 +332,17 @@ class _LinkBankScreenState extends State<LinkBankScreen>
                 backgroundColor: Colors.green,
               ),
             );
-            Navigator.pop(context, true);
+            _exit(true);
           } else if (state is OpenBankingError) {
             // Per-user cap OR provider capacity exhausted → styled modal with
             // CTAs, not a red snackbar. Landing here means the link was rejected,
             // so pop back to the linked-banks list once dismissed (don't strand
             // the user on the dead Mono webview).
-            final nav = Navigator.of(context);
             if (state.errorCode == kLinkLimitReachedCode) {
-              showLinkLimitReachedDialog(context, state.message).then((_) {
-                if (mounted) nav.pop(false);
-              });
+              showLinkLimitReachedDialog(context, state.message)
+                  .then((_) => _exit(false));
             } else if (state.errorCode == kLinkingCapacityCode) {
-              showLinkingCapacityDialog(context).then((_) {
-                if (mounted) nav.pop(false);
-              });
+              showLinkingCapacityDialog(context).then((_) => _exit(false));
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -327,11 +355,8 @@ class _LinkBankScreenState extends State<LinkBankScreen>
             // Banking / Mono backend unreachable → themed "temporarily
             // unavailable" modal (not a snackbar), then back out of the dead
             // webview so the user isn't stuck.
-            final nav = Navigator.of(context);
             showServiceUnavailableDialog(context, serviceLabel: 'Bank linking')
-                .then((_) {
-              if (mounted) nav.pop(false);
-            });
+                .then((_) => _exit(false));
           }
         },
         builder: (context, state) {
