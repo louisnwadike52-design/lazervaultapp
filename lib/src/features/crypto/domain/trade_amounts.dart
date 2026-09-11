@@ -38,9 +38,22 @@ class CryptoTradeAmounts {
   /// The currency [feeInFiat] is denominated in.
   final String feeCurrency;
 
-  /// Fiat currencies LazerVault settles in. Anything else is treated as crypto,
-  /// which matters only for deciding WHICH leg carries the fee.
-  static const _fiat = {'ngn', 'usd', 'ghs', 'kes', 'zar', 'eur', 'gbp'};
+  /// Fiat currencies LazerVault settles in. This list MIRRORS the server's
+  /// isLazerVaultFiat (crypto_swap_saga.go) and must stay in step with it: the
+  /// server decides which leg the fee is charged on, and if the two disagree
+  /// this class applies it to the wrong leg — or to neither, printing the gross
+  /// again. An earlier draft of this list carried eur/gbp (which the server does
+  /// not settle) and omitted ugx/tzs/xof (which it does).
+  static const _fiat = {
+    'ngn',
+    'ghs',
+    'kes',
+    'ugx',
+    'tzs',
+    'zar',
+    'xof',
+    'usd',
+  };
 
   static bool isFiat(String currency) => _fiat.contains(currency.toLowerCase());
 
