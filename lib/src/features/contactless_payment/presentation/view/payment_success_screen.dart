@@ -234,6 +234,10 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
         buffer.writeln('Reference: ${widget.referenceNumber}');
       }
       buffer.writeln('Date: $_formattedDate');
+      // Same means-of-payment line the PDF and the on-screen tag carry, so a
+      // shared receipt says how the money moved no matter which path produced
+      // it. Only the PDF stated it before.
+      buffer.writeln('Method: Contactless (NFC)');
       buffer.writeln('Status: Completed ✓');
       buffer.writeln('─────────────────────────');
       buffer.writeln('Powered by Lazervault');
@@ -468,73 +472,67 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                         opacity: _contentFade,
                         child: Column(
                           children: [
-                            // Download receipt button
-                            if (widget.transaction != null) ...[
-                              SizedBox(
-                                width: double.infinity,
-                                height: 52.h,
-                                child: OutlinedButton.icon(
-                                  onPressed:
-                                      _isDownloading ? null : _downloadReceipt,
-                                  icon: _isDownloading
-                                      ? LazerVaultLoader(size: 18)
-                                      : Icon(Icons.download_rounded,
-                                          size: 18.sp),
-                                  label: Text(
-                                    _isDownloading
-                                        ? 'Downloading...'
-                                        : 'Download Receipt',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 15.sp,
-                                      fontWeight: FontWeight.w600,
+                            // Download + Share SIDE BY SIDE. Stacked
+                            // full-width they cost ~64h more, and the receipt
+                            // card above is Expanded — so the stack was eating
+                            // the card's height and clipping its last detail
+                            // row mid-word. Paired, everything fits without a
+                            // scroll, and the two secondary actions read as the
+                            // pair they are against the primary Done below.
+                            Row(
+                              children: [
+                                if (widget.transaction != null) ...[
+                                  Expanded(
+                                    child: SizedBox(
+                                      height: 52.h,
+                                      child: OutlinedButton.icon(
+                                        onPressed: _isDownloading
+                                            ? null
+                                            : _downloadReceipt,
+                                        icon: _isDownloading
+                                            ? LazerVaultLoader(size: 18)
+                                            : Icon(Icons.download_rounded,
+                                                size: 18.sp),
+                                        label: Text(
+                                          _isDownloading
+                                              ? 'Saving...'
+                                              : 'Download',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        style: _secondaryCtaStyle(),
+                                      ),
                                     ),
                                   ),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor:
-                                        const Color.fromARGB(255, 78, 3, 208),
-                                    side: const BorderSide(
-                                      color: Color.fromARGB(255, 78, 3, 208),
-                                      width: 1.5,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14.r),
+                                  SizedBox(width: 12.w),
+                                ],
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 52.h,
+                                    child: OutlinedButton.icon(
+                                      onPressed: _isGeneratingPdf
+                                          ? null
+                                          : _shareReceipt,
+                                      icon: _isGeneratingPdf
+                                          ? LazerVaultLoader(size: 18)
+                                          : Icon(Icons.share_rounded,
+                                              size: 18.sp),
+                                      label: Text(
+                                        _isGeneratingPdf
+                                            ? 'Preparing...'
+                                            : 'Share',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      style: _secondaryCtaStyle(),
                                     ),
                                   ),
                                 ),
-                              ),
-                              SizedBox(height: 12.h),
-                            ],
-                            // Share receipt
-                            SizedBox(
-                              width: double.infinity,
-                              height: 52.h,
-                              child: OutlinedButton.icon(
-                                onPressed:
-                                    _isGeneratingPdf ? null : _shareReceipt,
-                                icon: _isGeneratingPdf
-                                    ? LazerVaultLoader(size: 18)
-                                    : Icon(Icons.share_rounded, size: 18.sp),
-                                label: Text(
-                                  _isGeneratingPdf
-                                      ? 'Generating PDF...'
-                                      : 'Share Receipt',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 15.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor:
-                                      const Color.fromARGB(255, 78, 3, 208),
-                                  side: const BorderSide(
-                                    color: Color.fromARGB(255, 78, 3, 208),
-                                    width: 1.5,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14.r),
-                                  ),
-                                ),
-                              ),
+                              ],
                             ),
                             SizedBox(height: 12.h),
 
@@ -598,6 +596,20 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
       ),
     );
   }
+
+  /// One style for the paired secondary CTAs, so Download and Share cannot
+  /// drift apart visually the way two hand-rolled copies did.
+  ButtonStyle _secondaryCtaStyle() => OutlinedButton.styleFrom(
+        foregroundColor: const Color.fromARGB(255, 78, 3, 208),
+        padding: EdgeInsets.symmetric(horizontal: 8.w),
+        side: const BorderSide(
+          color: Color.fromARGB(255, 78, 3, 208),
+          width: 1.5,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14.r),
+        ),
+      );
 
   Widget _buildReceiptCard() {
     return Container(
@@ -664,6 +676,39 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF10B981),
                     ),
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                // Means of payment, stated on the receipt itself. A contactless
+                // payment is indistinguishable from any other transfer once it
+                // lands, so without this the user cannot tell from the receipt
+                // HOW they were paid — which is the one thing that makes this
+                // receipt different from a send-funds one.
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.35),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.contactless_rounded,
+                          size: 13.sp, color: const Color(0xFF9B6BFF)),
+                      SizedBox(width: 5.w),
+                      Text(
+                        'Contactless (NFC)',
+                        style: GoogleFonts.inter(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF9B6BFF),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
