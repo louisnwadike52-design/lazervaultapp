@@ -1113,6 +1113,11 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
       cryptoSymbol: widget.crypto.symbol,
       fiatAmount: fiat,
       cryptoAmount: quantity,
+      // When the user typed the CRYPTO amount, that amount is the order —
+      // Quidax is asked for it directly so they receive exactly what they
+      // asked for. Converting it to naira ourselves at the ticker is what
+      // delivered 118.8439 USDT to someone who typed 120.
+      buyDenominatedInCrypto: _isAmountInCrypto,
       description:
           'Buy ${quantity.toStringAsFixed(6)} ${widget.crypto.symbol.toUpperCase()}',
       clientIntentId: intentId,

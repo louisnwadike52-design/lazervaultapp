@@ -56,6 +56,9 @@ Future<SwapFlowResult> runSwapFlow({
   // remains the fiat proceeds, used only for the min-order pre-check + display.
   // Ignored for buy (from = fiat) and convert (uses fromCryptoSymbol path).
   double cryptoAmount = 0,
+  // True when a BUY was typed in the crypto field. Quidax is then asked for the
+  // out-amount so the user receives exactly what they ordered.
+  bool buyDenominatedInCrypto = false,
   // When empty, resolved from LocaleManager.currentCurrency below.
   // Defaulting to a hardcoded "ngn" used to silently label every GHS
   // user's trade as NGN — the user's active locale is the source of truth.
@@ -152,6 +155,11 @@ Future<SwapFlowResult> runSwapFlow({
   final String fromCurrency;
   final String toCurrency;
   final int fromAmountMinor;
+  // Set for a buy the user expressed in CRYPTO. Quidax is then asked for the
+  // out-amount directly, so the delivered crypto is exactly what was typed and
+  // the naira cost is what moves with the rate. Sizing it in naira ourselves
+  // is what delivered 118.8439 USDT to a user who asked for 120.
+  int? toAmountMinor;
   if (side == 'convert') {
     // PR9d — crypto-to-crypto. fromCryptoSymbol is the asset the user is
     // spending; cryptoSymbol is the asset they want to receive. The
@@ -171,7 +179,14 @@ Future<SwapFlowResult> runSwapFlow({
   } else if (side == 'buy') {
     fromCurrency = lowerFiat;
     toCurrency = lowerCrypto;
-    fromAmountMinor = cryptoConfig.toMinorUnits(fiatAmount, lowerFiat);
+    if (buyDenominatedInCrypto && cryptoAmount > 0) {
+      // The saga rejects both amounts being set, so the fiat leg stays 0 and
+      // Quidax returns the cost.
+      fromAmountMinor = 0;
+      toAmountMinor = cryptoConfig.toMinorUnits(cryptoAmount, lowerCrypto);
+    } else {
+      fromAmountMinor = cryptoConfig.toMinorUnits(fiatAmount, lowerFiat);
+    }
   } else {
     // Sell: the user is selling a specific CRYPTO quantity. Quidax quotes
     // crypto->fiat with `from_amount` denominated in the crypto, and the saga
@@ -210,6 +225,7 @@ Future<SwapFlowResult> runSwapFlow({
     fromCurrency: fromCurrency,
     toCurrency: toCurrency,
     fromAmountMinorUnits: fromAmountMinor,
+    toAmountMinorUnits: toAmountMinor,
     description: description,
     clientIntentId: clientIntentId,
   );

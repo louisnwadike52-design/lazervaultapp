@@ -370,6 +370,10 @@ class CryptoGrpcClient {
     required Int64 fromAmountMinorUnits,
     required String clientIntentId,
     String description = '',
+    // Set INSTEAD of fromAmountMinorUnits to denominate a buy in the crypto:
+    // "give me exactly 120 USDT" rather than "spend this much naira". The saga
+    // rejects both being set, so exactly one is sent.
+    Int64? toAmountMinorUnits,
   }) async {
     final options = await _callOptionsHelper.withAuth();
     final request = CreateSwapQuoteRequest()
@@ -377,9 +381,13 @@ class CryptoGrpcClient {
       ..side = side
       ..fromCurrency = fromCurrency
       ..toCurrency = toCurrency
-      ..fromAmountMinorUnits = fromAmountMinorUnits
       ..clientIntentId = clientIntentId
       ..description = description;
+    if (toAmountMinorUnits != null && toAmountMinorUnits > Int64.ZERO) {
+      request.toAmountMinorUnits = toAmountMinorUnits;
+    } else {
+      request.fromAmountMinorUnits = fromAmountMinorUnits;
+    }
     return await _client.createSwapQuote(request, options: options);
   }
 

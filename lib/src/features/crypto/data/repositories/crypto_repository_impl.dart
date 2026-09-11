@@ -399,6 +399,7 @@ class CryptoRepositoryImpl implements CryptoRepository {
     required String fromCurrency,
     required String toCurrency,
     required int fromAmountMinorUnits,
+    int? toAmountMinorUnits,
     required String clientIntentId,
     String description = '',
   }) async {
@@ -408,6 +409,8 @@ class CryptoRepositoryImpl implements CryptoRepository {
       fromCurrency: fromCurrency,
       toCurrency: toCurrency,
       fromAmountMinorUnits: Int64(fromAmountMinorUnits),
+      toAmountMinorUnits:
+          toAmountMinorUnits == null ? null : Int64(toAmountMinorUnits),
       clientIntentId: clientIntentId,
       description: description,
     );

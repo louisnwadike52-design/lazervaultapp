@@ -62,6 +62,7 @@ abstract class CryptoRepository {
     required String fromCurrency,
     required String toCurrency,
     required int fromAmountMinorUnits,
+    int? toAmountMinorUnits,
     required String clientIntentId,
     String description,
   });
