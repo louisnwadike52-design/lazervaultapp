@@ -554,6 +554,7 @@ const UnlockFundRequest$json = {
       '5': 9,
       '10': 'destinationAccountId'
     },
+    {'1': 'withdrawal_mode', '3': 5, '4': 1, '5': 9, '10': 'withdrawalMode'},
   ],
 };
 
@@ -562,7 +563,8 @@ final $typed_data.Uint8List unlockFundRequestDescriptor = $convert.base64Decode(
     'ChFVbmxvY2tGdW5kUmVxdWVzdBIgCgxsb2NrX2Z1bmRfaWQYASABKAlSCmxvY2tGdW5kSWQSLA'
     'oSZm9yY2VfZWFybHlfdW5sb2NrGAIgASgIUhBmb3JjZUVhcmx5VW5sb2NrEicKD3RyYW5zYWN0'
     'aW9uX3BpbhgDIAEoCVIOdHJhbnNhY3Rpb25QaW4SNAoWZGVzdGluYXRpb25fYWNjb3VudF9pZB'
-    'gEIAEoCVIUZGVzdGluYXRpb25BY2NvdW50SWQ=');
+    'gEIAEoCVIUZGVzdGluYXRpb25BY2NvdW50SWQSJwoPd2l0aGRyYXdhbF9tb2RlGAUgASgJUg53'
+    'aXRoZHJhd2FsTW9kZQ==');
 
 @$core.Deprecated('Use unlockFundResponseDescriptor instead')
 const UnlockFundResponse$json = {

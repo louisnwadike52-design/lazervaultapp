@@ -183,6 +183,11 @@ message UnlockFundRequest {
   bool force_early_unlock = 2;
   string transaction_pin = 3;
   string destination_account_id = 4;
+  // "" or "full"    → principal + any unpaid eligible interest
+  // "interest_only" → pay accrued ROI only; principal stays locked
+  //                   (rejected for upfront-interest plans — paid at creation)
+  // "principal_only"→ alias of full (interest is never stranded)
+  string withdrawal_mode = 5;
 }
 
 message UnlockFundResponse {

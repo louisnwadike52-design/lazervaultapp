@@ -112,11 +112,13 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
 
   @override
   Future<UnlockResult> unlockFund({
+    String withdrawalMode = '',
     required String lockFundId,
     bool forceEarlyUnlock = false,
   }) async {
     try {
       final request = pb.UnlockFundRequest()
+        ..withdrawalMode = withdrawalMode
         ..lockFundId = lockFundId
         ..forceEarlyUnlock = forceEarlyUnlock;
 

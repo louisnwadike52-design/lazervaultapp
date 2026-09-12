@@ -1773,6 +1773,7 @@ class UnlockFundRequest extends $pb.GeneratedMessage {
     $core.bool? forceEarlyUnlock,
     $core.String? transactionPin,
     $core.String? destinationAccountId,
+    $core.String? withdrawalMode,
   }) {
     final result = create();
     if (lockFundId != null) result.lockFundId = lockFundId;
@@ -1780,6 +1781,7 @@ class UnlockFundRequest extends $pb.GeneratedMessage {
     if (transactionPin != null) result.transactionPin = transactionPin;
     if (destinationAccountId != null)
       result.destinationAccountId = destinationAccountId;
+    if (withdrawalMode != null) result.withdrawalMode = withdrawalMode;
     return result;
   }
 
@@ -1800,6 +1802,7 @@ class UnlockFundRequest extends $pb.GeneratedMessage {
     ..aOB(2, _omitFieldNames ? '' : 'forceEarlyUnlock')
     ..aOS(3, _omitFieldNames ? '' : 'transactionPin')
     ..aOS(4, _omitFieldNames ? '' : 'destinationAccountId')
+    ..aOS(5, _omitFieldNames ? '' : 'withdrawalMode')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1858,6 +1861,19 @@ class UnlockFundRequest extends $pb.GeneratedMessage {
   $core.bool hasDestinationAccountId() => $_has(3);
   @$pb.TagNumber(4)
   void clearDestinationAccountId() => $_clearField(4);
+
+  /// "" or "full"    → principal + any unpaid eligible interest
+  /// "interest_only" → pay accrued ROI only; principal stays locked
+  ///                   (rejected for upfront-interest plans — paid at creation)
+  /// "principal_only"→ alias of full (interest is never stranded)
+  @$pb.TagNumber(5)
+  $core.String get withdrawalMode => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set withdrawalMode($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasWithdrawalMode() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearWithdrawalMode() => $_clearField(5);
 }
 
 class UnlockFundResponse extends $pb.GeneratedMessage {

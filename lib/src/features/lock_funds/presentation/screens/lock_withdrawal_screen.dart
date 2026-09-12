@@ -29,8 +29,21 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
   bool _isProcessing = false;
   bool _hasConfirmed = false;
 
-  double get _withdrawalAmount =>
-      widget.lockFund.proceedsOnUnlock(early: widget.isEarlyWithdrawal);
+  /// 'full' or 'interest_only'. The choice exists only where it means
+  /// something: a NON-early withdrawal on a plan with accrued, unpaid ROI.
+  /// The gateway zeroes accruedInterest for upfront plans (their ROI was paid
+  /// at creation) and an early break forfeits interest anyway — in both cases
+  /// the chooser is hidden and the flow behaves exactly as before.
+  String _mode = 'full';
+
+  bool get _canChooseMode =>
+      !widget.isEarlyWithdrawal && widget.lockFund.accruedInterest > 0;
+
+  bool get _isInterestOnly => _canChooseMode && _mode == 'interest_only';
+
+  double get _withdrawalAmount => _isInterestOnly
+      ? widget.lockFund.accruedInterest
+      : widget.lockFund.proceedsOnUnlock(early: widget.isEarlyWithdrawal);
 
   /// Interest that will actually be PAID — zero on an early break, which is
   /// not the same as the interest that has accrued.
@@ -60,6 +73,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
                 amountReturned: state.amountReturned,
                 penaltyAmount: state.penaltyAmount,
                 interestEarned: state.interestEarned,
+                interestOnly: _isInterestOnly,
               ));
         } else if (state is LockFundsError) {
           setState(() => _isProcessing = false);
@@ -98,6 +112,10 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
                         _buildWarningBanner(),
                         SizedBox(height: 24.h),
                         _buildSummaryCard(),
+                        if (_canChooseMode) ...[
+                          SizedBox(height: 24.h),
+                          _buildModeChooser(),
+                        ],
                         SizedBox(height: 24.h),
                         _buildBreakdownCard(),
                         SizedBox(height: 24.h),
@@ -538,6 +556,100 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
     );
   }
 
+  Widget _buildModeChooser() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('What would you like to withdraw?',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600)),
+          SizedBox(height: 12.h),
+          _modeOption(
+            value: 'full',
+            title: 'Everything — savings + ROI',
+            subtitle:
+                'Your ${widget.lockFund.formattedAmount} plus '
+                '${widget.lockFund.formattedInterest} ROI. This closes the plan.',
+          ),
+          SizedBox(height: 10.h),
+          _modeOption(
+            value: 'interest_only',
+            title: 'ROI only — keep saving',
+            subtitle:
+                '${widget.lockFund.formattedInterest} is paid out now. Your '
+                '${widget.lockFund.formattedAmount} stays in the plan and keeps earning.',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _modeOption({
+    required String value,
+    required String title,
+    required String subtitle,
+  }) {
+    final selected = _mode == value;
+    return GestureDetector(
+      onTap: () => setState(() => _mode = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: selected
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.16)
+              : Colors.white.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: selected
+                ? const Color(0xFF4E03D0)
+                : Colors.white.withValues(alpha: 0.08),
+            width: selected ? 1.6 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              selected
+                  ? Icons.radio_button_checked_rounded
+                  : Icons.radio_button_off_rounded,
+              color: selected ? const Color(0xFF9B6BFF) : Colors.white38,
+              size: 20.sp,
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600)),
+                  SizedBox(height: 3.h),
+                  Text(subtitle,
+                      style: TextStyle(
+                          color: Colors.white60,
+                          fontSize: 12.sp,
+                          height: 1.35)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _processWithdrawal() {
     HapticFeedback.mediumImpact();
     setState(() => _isProcessing = true);
@@ -545,6 +657,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
     context.read<LockFundsCubit>().unlockFund(
           lockFundId: widget.lockFund.id,
           forceEarlyUnlock: widget.isEarlyWithdrawal,
+          withdrawalMode: _isInterestOnly ? 'interest_only' : 'full',
         );
   }
 }

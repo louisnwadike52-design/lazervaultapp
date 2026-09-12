@@ -133,6 +133,10 @@ class LockFundsPdfService {
     required double amountReturned,
     required double penaltyAmount,
     required double interestEarned,
+    // ROI-only payout: the principal stayed locked. The receipt must say so —
+    // a shareable document claiming a "withdrawal" of a plan that is still
+    // running misstates where the user's savings are.
+    bool interestOnly = false,
   }) async {
     await _loadFonts();
     final pdf = pw.Document();
@@ -171,7 +175,11 @@ class LockFundsPdfService {
                       lockedDate: _dateFormat.format(lockFund.lockedAt),
                       maturityDate: _dateFormat.format(lockFund.unlockAt),
                       withdrawalDate: withdrawalDate,
-                      status: isEarlyWithdrawal ? 'Early Withdrawal' : 'Matured Withdrawal',
+                      status: interestOnly
+                          ? 'ROI Payout — plan still active'
+                          : (isEarlyWithdrawal
+                              ? 'Early Withdrawal'
+                              : 'Matured Withdrawal'),
                     ),
                   ),
                 ],
@@ -724,6 +732,7 @@ class LockFundsPdfService {
     required double amountReturned,
     required double penaltyAmount,
     required double interestEarned,
+    bool interestOnly = false,
   }) async {
     try {
       final file = await generateWithdrawalReceipt(
@@ -731,6 +740,7 @@ class LockFundsPdfService {
         amountReturned: amountReturned,
         penaltyAmount: penaltyAmount,
         interestEarned: interestEarned,
+        interestOnly: interestOnly,
       );
 
       final reference = lockFund.transactionId ?? 'LF-${lockFund.id.length > 8 ? lockFund.id.substring(0, 8) : lockFund.id}';
@@ -776,6 +786,7 @@ class LockFundsPdfService {
     required double amountReturned,
     required double penaltyAmount,
     required double interestEarned,
+    bool interestOnly = false,
     Rect? sharePositionOrigin,
   }) async {
     try {
@@ -784,6 +795,7 @@ class LockFundsPdfService {
         amountReturned: amountReturned,
         penaltyAmount: penaltyAmount,
         interestEarned: interestEarned,
+        interestOnly: interestOnly,
       );
 
       final currencySymbol = _currencySymbolFor(lockFund.currency);

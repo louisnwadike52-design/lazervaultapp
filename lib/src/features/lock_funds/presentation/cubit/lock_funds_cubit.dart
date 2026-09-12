@@ -143,6 +143,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
   }
 
   Future<void> unlockFund({
+    String withdrawalMode = '',
     required String lockFundId,
     bool forceEarlyUnlock = false,
   }) async {
@@ -151,6 +152,7 @@ class LockFundsCubit extends Cubit<LockFundsState> {
       emit(const LockFundUnlocking());
 
       final result = await _repository.unlockFund(
+        withdrawalMode: withdrawalMode,
         lockFundId: lockFundId,
         forceEarlyUnlock: forceEarlyUnlock,
       );

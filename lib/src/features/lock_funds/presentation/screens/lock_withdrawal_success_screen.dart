@@ -15,12 +15,18 @@ class LockWithdrawalSuccessScreen extends StatefulWidget {
   final double penaltyAmount;
   final double interestEarned;
 
+  /// True for an ROI-only payout: the principal stayed locked, so the copy
+  /// must not read as if the plan was closed — the biggest confusion an
+  /// interest withdrawal can cause is a user believing their savings are gone.
+  final bool interestOnly;
+
   const LockWithdrawalSuccessScreen({
     super.key,
     required this.lockFund,
     required this.amountReturned,
     required this.penaltyAmount,
     required this.interestEarned,
+    this.interestOnly = false,
   });
 
   @override
@@ -140,7 +146,7 @@ class _LockWithdrawalSuccessScreenState extends State<LockWithdrawalSuccessScree
           SizedBox(width: 16.w),
           Expanded(
             child: Text(
-              'Withdrawal Complete',
+              widget.interestOnly ? 'ROI Paid Out' : 'Withdrawal Complete',
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 20.sp,
@@ -460,6 +466,7 @@ class _LockWithdrawalSuccessScreenState extends State<LockWithdrawalSuccessScree
       final filePath = await LockFundsPdfService.downloadWithdrawalReceipt(
         lockFund: widget.lockFund,
         amountReturned: widget.amountReturned,
+        interestOnly: widget.interestOnly,
         penaltyAmount: widget.penaltyAmount,
         interestEarned: widget.interestEarned,
       );
@@ -495,6 +502,7 @@ class _LockWithdrawalSuccessScreenState extends State<LockWithdrawalSuccessScree
       await LockFundsPdfService.shareWithdrawalReceipt(
         lockFund: widget.lockFund,
         amountReturned: widget.amountReturned,
+        interestOnly: widget.interestOnly,
         penaltyAmount: widget.penaltyAmount,
         interestEarned: widget.interestEarned,
         sharePositionOrigin:

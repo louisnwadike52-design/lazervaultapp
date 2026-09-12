@@ -25,6 +25,10 @@ abstract class LockFundsRepository {
 
   /// Unlock a fund
   Future<UnlockResult> unlockFund({
+    /// '' / 'full' — principal + any unpaid ROI. 'interest_only' — pay accrued
+    /// ROI, principal stays locked (accrual plans only). 'principal_only' —
+    /// alias of full: ROI is never left stranded when capital leaves.
+    String withdrawalMode = '',
     required String lockFundId,
     bool forceEarlyUnlock = false,
   });
