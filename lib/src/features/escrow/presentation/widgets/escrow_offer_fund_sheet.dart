@@ -98,8 +98,17 @@ class _EscrowOfferFundSheetState extends State<_EscrowOfferFundSheet>
     if (mounted && q != null) setState(() => _quote = q);
   }
 
+  /// Accounts that can actually fund this offer.
+  ///
+  /// Currency was the only filter, so a FROZEN or SUSPENDED account could be
+  /// listed, pre-selected and paid from — and accounts-service rejects debits
+  /// and holds on those outright, so the failure landed after the user had
+  /// entered their transaction PIN. The entity exposes isFrozen for exactly
+  /// this check.
   List<AccountSummaryEntity> _eligible(List<AccountSummaryEntity> all) => all
-      .where((a) => a.currency.toUpperCase() == widget.offer.currency.toUpperCase())
+      .where((a) =>
+          a.currency.toUpperCase() == widget.offer.currency.toUpperCase() &&
+          !a.isFrozen)
       .toList();
 
   /// Default = the dashboard-ACTIVE account (AccountManager holds its

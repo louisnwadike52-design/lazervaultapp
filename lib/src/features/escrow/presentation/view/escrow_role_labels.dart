@@ -240,11 +240,20 @@ class EscrowRoles {
     }
     // OPEN sell_offer.
     if (buying == false) {
-      return 'Nothing moves until $buyer pays. Their payment is then held by '
-          'Lazervault and released to you once they confirm delivery.';
+      // "until they pay" described a two-step flow this one does not have. On a
+      // sell offer the buyer's only action is "Buy securely", which funds the
+      // deal in the same tap — accepting IS paying. Saying "pays" left sellers
+      // waiting for a second step that never comes, and buyers surprised that
+      // accepting moved their money.
+      return 'Nothing moves until $buyer accepts. Accepting takes the payment '
+          'from them there and then — Lazervault holds it and releases it to '
+          'you once they confirm delivery.';
     }
-    return 'Your payment is held by Lazervault — not sent to $seller — and '
-        'released to them only once you confirm delivery.';
+    // Buyer looking at an OPEN sell offer: nothing has been paid yet, so the
+    // present tense ("is held") described money that does not exist. Say what
+    // buying will do, since the Buy CTA takes the payment immediately.
+    return 'When you buy, your payment goes to Lazervault — not to $seller — '
+        'and is released to them only once you confirm delivery.';
   }
 
   // ── What the fee actually cost THIS viewer ──────────────────────────────
