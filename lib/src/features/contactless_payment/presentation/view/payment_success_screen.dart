@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+
+import 'package:lazervault/src/features/widgets/success_checkmark.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -55,9 +57,6 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
   late AnimationController _checkController;
   late AnimationController _contentController;
   late AnimationController _confettiController;
-  late Animation<double> _checkScale;
-  late Animation<double> _checkOpacity;
-  late Animation<double> _ringExpand;
   late Animation<double> _contentFade;
   late Animation<Offset> _contentSlide;
 
@@ -84,27 +83,6 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
     _confettiController = AnimationController(
       duration: const Duration(milliseconds: 2500),
       vsync: this,
-    );
-
-    _checkScale = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _checkController,
-        curve: const Interval(0.0, 0.5, curve: Curves.elasticOut),
-      ),
-    );
-
-    _checkOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _checkController,
-        curve: const Interval(0.0, 0.3, curve: Curves.easeIn),
-      ),
-    );
-
-    _ringExpand = Tween<double>(begin: 0.5, end: 1.4).animate(
-      CurvedAnimation(
-        parent: _checkController,
-        curve: const Interval(0.2, 0.8, curve: Curves.easeOut),
-      ),
     );
 
     _contentFade = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -343,80 +321,83 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                 padding: EdgeInsets.symmetric(horizontal: 24.w),
                 child: Column(
                   children: [
-                    SizedBox(height: 40.h),
-
-                    // Animated check icon
-                    AnimatedBuilder(
-                      animation: _checkController,
-                      builder: (context, _) {
-                        return Opacity(
-                          opacity: _checkOpacity.value,
-                          child: Transform.scale(
-                            scale: _checkScale.value,
-                            child: SizedBox(
-                              width: 140.w,
-                              height: 140.w,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  // Expanding ring
-                                  Transform.scale(
-                                    scale: _ringExpand.value,
-                                    child: Container(
-                                      width: 140.w,
-                                      height: 140.w,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: const Color(0xFF10B981)
-                                              .withValues(
-                                                  alpha: 1.0 -
-                                                      (_ringExpand.value -
-                                                              0.5) /
-                                                          0.9),
-                                          width: 2.w,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  // Inner circle
-                                  Container(
-                                    width: 110.w,
-                                    height: 110.w,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      gradient: const LinearGradient(
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                        colors: [
-                                          Color(0xFF10B981),
-                                          Color(0xFF059669),
-                                        ],
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFF10B981)
-                                              .withValues(alpha: 0.4),
-                                          blurRadius: 30,
-                                          spreadRadius: 5,
-                                        ),
-                                      ],
-                                    ),
-                                    child: Icon(
-                                      _heroIcon,
-                                      size: 56.sp,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                    SizedBox(height: 8.h),
+                    // Same header the Send Funds receipt carries: back on the
+                    // left (replacing the old full-width Done button), the
+                    // brand on the right — a receipt is a shareable document
+                    // and should say whose it is at a glance.
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Material(
+                          color: const Color(0xFF1F1F1F),
+                          shape: const CircleBorder(
+                              side: BorderSide(color: Color(0xFF2D2D2D))),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: () {
+                              HapticFeedback.mediumImpact();
+                              Navigator.of(context)
+                                  .popUntil((route) => route.isFirst);
+                            },
+                            child: Padding(
+                              padding: EdgeInsets.all(10.w),
+                              child: Icon(Icons.arrow_back,
+                                  color: Colors.white, size: 22.sp),
                             ),
                           ),
-                        );
-                      },
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 30.w,
+                              height: 30.w,
+                              padding: EdgeInsets.all(4.w),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1F1F1F),
+                                shape: BoxShape.circle,
+                                border:
+                                    Border.all(color: const Color(0xFF2D2D2D)),
+                              ),
+                              child: Image.asset(
+                                'assets/images/logo.png',
+                                errorBuilder: (_, __, ___) => Icon(
+                                  Icons.shield_outlined,
+                                  color: const Color(0xFF3B82F6),
+                                  size: 16.sp,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 7.w),
+                            Text(
+                              'Lazervault',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 12.h),
+
+                    // The SHARED payment-success badge (scalloped seal +
+                    // splash) — the same widget Send Funds stamps, so success
+                    // is one recognisable moment across the product. Colour
+                    // and glyph stay status-aware: a failed or reversed
+                    // payment opened from history gets its own icon and tint
+                    // with the identical motion.
+                    SuccessCheckmark(
+                      size: 80.w,
+                      color: _statusColor,
+                      icon: _heroIcon,
                     ),
 
-                    SizedBox(height: 32.h),
+                    SizedBox(height: 10.h),
 
                     // Content
                     SlideTransition(
@@ -446,7 +427,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                       ),
                     ),
 
-                    SizedBox(height: 32.h),
+                    SizedBox(height: 14.h),
 
                     // Receipt card
                     Expanded(
@@ -454,9 +435,10 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                         position: _contentSlide,
                         child: FadeTransition(
                           opacity: _contentFade,
-                          child: SingleChildScrollView(
-                            child: _buildReceiptCard(),
-                          ),
+                          // No scroll: with Done gone and the header/hero
+                          // tightened, the whole receipt fits one screen —
+                          // matching the Send Funds receipt.
+                          child: _buildReceiptCard(),
                         ),
                       ),
                     ),
@@ -533,54 +515,6 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                               ],
                             ),
                             SizedBox(height: 12.h),
-
-                            // Done button
-                            SizedBox(
-                              width: double.infinity,
-                              height: 52.h,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF4E03D0),
-                                      Color.fromARGB(255, 78, 3, 208),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(14.r),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF4E03D0)
-                                          .withValues(alpha: 0.4),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    HapticFeedback.mediumImpact();
-                                    Navigator.of(context)
-                                        .popUntil((route) => route.isFirst);
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    shadowColor: Colors.transparent,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14.r),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Done',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 16.h),
                           ],
                         ),
                       ),
@@ -660,10 +594,12 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
   /// One style for the paired secondary CTAs, so Download and Share cannot
   /// drift apart visually the way two hand-rolled copies did.
   ButtonStyle _secondaryCtaStyle() => OutlinedButton.styleFrom(
-        foregroundColor: const Color.fromARGB(255, 78, 3, 208),
+        // Lighter purple than the brand primary: these are supporting actions
+        // on a success screen and the deep purple competed with the moment.
+        foregroundColor: const Color(0xFF9B6BFF),
         padding: EdgeInsets.symmetric(horizontal: 8.w),
         side: const BorderSide(
-          color: Color.fromARGB(255, 78, 3, 208),
+          color: Color(0xFF9B6BFF),
           width: 1.5,
         ),
         shape: RoundedRectangleBorder(

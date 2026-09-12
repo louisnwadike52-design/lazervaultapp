@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:flutter/material.dart';
+
+import 'package:lazervault/src/features/widgets/success_checkmark.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -403,6 +405,13 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
   }
 
   Widget _buildProcessingIcon() {
+    // Success uses the SHARED scalloped-badge checkmark with its splash, so a
+    // completed transfer is visually the same event as a completed tap-to-pay
+    // (SuccessCheckmark is the one source of that moment across payment
+    // flows). The in-flight spinner below is untouched.
+    if (_isCompleted) {
+      return SuccessCheckmark(size: 96.w);
+    }
     return AnimatedBuilder(
       animation: _isCompleted ? _fadeAnimation : _rotationAnimation,
       builder: (context, child) {
