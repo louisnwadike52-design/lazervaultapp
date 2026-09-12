@@ -117,6 +117,11 @@ class _BettingReceiptScreenState extends State<BettingReceiptScreen> {
         : refunded
             ? 'Funding refunded'
             : (pending ? 'Funding pending' : 'Wallet funded');
+    // ONE definition of "did this succeed", because the hero used to ask
+    // `!isFailed && !pending` in four places. Once 'reversed' moved from
+    // isFailed to isRefunded, every one of those read a refund as a success —
+    // celebratory gradient and a green check for money that had come back.
+    final succeeded = !payment.isFailed && !refunded && !pending;
 
     return PopScope(
       canPop: false,
@@ -139,21 +144,19 @@ class _BettingReceiptScreenState extends State<BettingReceiptScreen> {
                       height: 88.w,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: (!payment.isFailed && !pending)
-                            ? BettingTheme.heroGradient
-                            : null,
-                        color: (!payment.isFailed && !pending)
-                            ? null
-                            : color.withValues(alpha: 0.15),
+                        gradient: succeeded ? BettingTheme.heroGradient : null,
+                        color:
+                            succeeded ? null : color.withValues(alpha: 0.15),
                       ),
                       child: Icon(
                         payment.isFailed
                             ? Icons.close
-                            : (pending
-                                ? Icons.hourglass_bottom
-                                : Icons.check),
-                        color:
-                            (!payment.isFailed && !pending) ? Colors.white : color,
+                            : refunded
+                                ? Icons.undo_rounded
+                                : (pending
+                                    ? Icons.hourglass_bottom
+                                    : Icons.check),
+                        color: succeeded ? Colors.white : color,
                         size: 44.sp,
                       ),
                     ),

@@ -132,7 +132,12 @@ class _BettingHistoryScreenState extends State<BettingHistoryScreen> {
   }
 
   Widget _buildTile(BettingFundingRecord r) {
-    final color = r.isFailed ? _error : (r.isPending ? _warning : _success);
+    // A refunded (or 'reversed') record is NOT a success. Without this it fell
+    // through to the success colour and a returned top-up showed green in the
+    // list — the same trap the receipt hero had.
+    final color = (r.isFailed || r.isRefunded)
+        ? _error
+        : (r.isPending ? _warning : _success);
     String created = r.createdAt;
     final parsed = DateTime.tryParse(r.createdAt);
     if (parsed != null) {

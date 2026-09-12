@@ -181,7 +181,10 @@ class _BettingHomeScreenState extends State<BettingHomeScreen> {
   }
 
   Widget _buildRecentTile(BettingFundingRecord r) {
-    final color = r.isFailed ? _error : (r.isPending ? _warning : _success);
+    // Refunded is not success — see betting_history_screen for the same fix.
+    final color = (r.isFailed || r.isRefunded)
+        ? _error
+        : (r.isPending ? _warning : _success);
     String created = r.createdAt;
     final parsed = DateTime.tryParse(r.createdAt);
     if (parsed != null) {
