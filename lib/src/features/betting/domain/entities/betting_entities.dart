@@ -91,7 +91,7 @@ class BettingFundingRecord extends Equatable {
 
   bool get isFailed {
     final s = status.toLowerCase();
-    return s == 'failed' || s == 'cancelled' || s == 'reversed';
+    return s == 'failed' || s == 'cancelled';
   }
 
   /// Terminal REFUNDED state — the funding didn't go through and the money was
@@ -99,7 +99,12 @@ class BettingFundingRecord extends Equatable {
   /// doesn't show "Funding pending" for an already-refunded transaction.
   bool get isRefunded {
     final s = status.toLowerCase().trim();
-    return s == 'refunded' || s == 'refund_completed';
+    // 'reversed' belongs here, not under isFailed. utility-payments marks a
+    // funding 'reversed' precisely when the money has gone BACK to the wallet
+    // — a failure whose refund already completed. Reading it as a plain
+    // failure told a user their top-up failed without telling them the money
+    // was returned, which is the half of the story they care about.
+    return s == 'refunded' || s == 'refund_completed' || s == 'reversed';
   }
 
   bool get isPending => !isCompleted && !isFailed && !isRefunded;

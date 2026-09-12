@@ -252,7 +252,8 @@ class _BettingReceiptScreenState extends State<BettingReceiptScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () => _shareReceipt(
                           context, result, _platformName, _accountName),
-                      icon: Icon(Icons.ios_share, color: _primary, size: 18.sp),
+                      icon: Icon(Icons.receipt_long_outlined,
+                          color: _primary, size: 18.sp),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: _primary),
                         padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -260,7 +261,13 @@ class _BettingReceiptScreenState extends State<BettingReceiptScreen> {
                           borderRadius: BorderRadius.circular(14.r),
                         ),
                       ),
-                      label: Text('Share',
+                      // Labelled "Share" while it actually opens the full
+                      // UnifiedTransactionReceipt — the same screen Send Funds
+                      // uses, carrying BOTH Download (PNG to
+                      // .../Lazervault/Receipts/) and Share. Users who wanted
+                      // to save a betting receipt had no reason to press a
+                      // button that said Share.
+                      label: Text('View receipt',
                           style: TextStyle(color: _primary, fontSize: 14.sp)),
                     ),
                   ),

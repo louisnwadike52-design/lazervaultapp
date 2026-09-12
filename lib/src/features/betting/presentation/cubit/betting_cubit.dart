@@ -104,11 +104,18 @@ class BettingCubit extends Cubit<BettingState> {
       );
 
       if (isClosed) return;
-      if (result.payment.isFailed) {
+      // Refunded is NOT success. It is a failure whose money has already come
+      // back, so it must not fall through to "Wallet Funded" — but it also
+      // deserves its own message, because "Funding failed" alone withholds the
+      // half the user actually cares about.
+      if (result.payment.isFailed || result.payment.isRefunded) {
         emit(BettingFundingFailed(
-          message: result.message.isNotEmpty
-              ? sanitizeUserFacingError(result.message)
-              : 'Funding failed',
+          message: result.payment.isRefunded
+              ? 'Funding did not go through — your money has been returned to '
+                  'your wallet.'
+              : (result.message.isNotEmpty
+                  ? sanitizeUserFacingError(result.message)
+                  : 'Funding failed'),
         ));
         return;
       }
