@@ -26,6 +26,7 @@ import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/services/biometric_service.dart';
 import 'package:lazervault/core/shared_widgets/face_id_icon.dart';
 import 'package:lazervault/core/shared_widgets/fingerprint_icon.dart';
+import 'package:lazervault/src/features/widgets/oauth_sign_in_buttons.dart';
 import 'package:lazervault/core/utils/logger.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/session_login_completer.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/biometric/biometric_setup_dialog.dart';
@@ -64,6 +65,10 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
   bool _canEnrollBiometric = false; // sensor present but nothing enrolled yet
   bool _biometricEnabled = false; // opted-in for the device's biometric in Settings
   bool _voiceEnabled = false; // voice login opted-in via Settings → Biometric Login
+  // Google/Apple sign-in on this lock screen. Settings-toggleable (default
+  // on); platform availability is gated separately by [OAuthProviders].
+  bool _googleLoginOn = true;
+  bool _appleLoginOn = true;
   // User's choice in Settings → Biometric Login: fire the OS prompt as this
   // screen appears, or wait for a tap on the biometric button. The stored
   // default is AUTOMATIC; this field starts false only so the first frame,
@@ -171,11 +176,15 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
     final autoPromptFinger = await store.getBiometricAutoPrompt(isFace: false);
     final shakeEscape = await store.getBiometricShakeEscape();
     final swipeUp = await store.getBiometricSwipeUp();
+    final googleOn = await store.getGoogleLoginEnabled();
+    final appleOn = await store.getAppleLoginEnabled();
 
     if (!mounted) return;
 
     setState(() {
       _voiceEnabled = voiceOn;
+      _googleLoginOn = googleOn;
+      _appleLoginOn = appleOn;
       _shakeEscapeEnabled = shakeEscape;
       _swipeUpEnabled = swipeUp;
       // Hardware present but nothing enrolled → we still let the button show so
@@ -455,6 +464,25 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
         ],
       ),
     );
+  }
+
+  /// Platform availability × the Settings toggle. Both must agree — a method
+  /// the OS can't complete is as useless as one the user turned off.
+  bool get _showGoogleSignIn =>
+      OAuthProviders.googleAvailable && _googleLoginOn;
+  bool get _showAppleSignIn => OAuthProviders.appleAvailable && _appleLoginOn;
+
+  /// Google/Apple from the lock screen sign in as WHOEVER the provider
+  /// verifies — the cubit + backend resolve the account; a mismatch with the
+  /// remembered user on this screen simply logs into the verified account.
+  /// The AuthenticationLoading/Success/2FA states ride this screen's existing
+  /// BlocConsumer, so navigation and gates match a passcode login.
+  void _onGooglePressed() {
+    context.read<AuthenticationCubit>().signInWithGoogle();
+  }
+
+  void _onApplePressed() {
+    context.read<AuthenticationCubit>().signInWithApple();
   }
 
   void _onBiometricPressed() async {
@@ -1091,6 +1119,18 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
+                                    // Google flanks the row on the left,
+                                    // Apple on the right — brand marks in
+                                    // their own official treatments so the
+                                    // store reviews pass, sized to sit as
+                                    // peers of the biometric/mic actions.
+                                    if (_showGoogleSignIn) ...[
+                                      GoogleRoundIconButton(
+                                        size: 40.w,
+                                        onPressed: _onGooglePressed,
+                                      ),
+                                      SizedBox(width: 24.w),
+                                    ],
                                     if ((_canCheckBiometrics &&
                                             _availableBiometricType != null) ||
                                         (Platform.isAndroid &&
@@ -1126,6 +1166,13 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                                       colorScheme: colorScheme,
                                       tooltip: 'Voice login',
                                     ),
+                                    if (_showAppleSignIn) ...[
+                                      SizedBox(width: 24.w),
+                                      AppleRoundIconButton(
+                                        size: 40.w,
+                                        onPressed: _onApplePressed,
+                                      ),
+                                    ],
                                   ],
                                 ),
                           SizedBox(height: 14.h),

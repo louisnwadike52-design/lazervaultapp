@@ -22,6 +22,8 @@ import 'package:lazervault/core/services/haptics_service.dart';
 import 'package:lazervault/core/services/server_status_service.dart';
 import 'package:lazervault/core/services/voice_biometrics_service.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/src/features/widgets/oauth_sign_in_buttons.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/authentication/presentation/utils/session_login_completer.dart';
@@ -63,11 +65,30 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
   // shipping non-functional auth buttons is a common review rejection. Flip this
   // to true once the OAuth integration lands; nothing else needs to change (the
   // buttons + handlers stay in place, just not rendered).
-  static const bool _socialSignInEnabled = false;
+  // Google/Apple sign-in. Platform availability comes from [OAuthProviders];
+  // the Settings → Sign-in methods toggles can hide either one (default on).
+  bool _googleLoginOn = true;
+  bool _appleLoginOn = true;
+
+  bool get _showGoogle => OAuthProviders.googleAvailable && _googleLoginOn;
+  bool get _showApple => OAuthProviders.appleAvailable && _appleLoginOn;
+  bool get _socialSignInEnabled => _showGoogle || _showApple;
+
+  Future<void> _loadSocialLoginPrefs() async {
+    final store = serviceLocator<SecureStorageService>();
+    final googleOn = await store.getGoogleLoginEnabled();
+    final appleOn = await store.getAppleLoginEnabled();
+    if (!mounted) return;
+    setState(() {
+      _googleLoginOn = googleOn;
+      _appleLoginOn = appleOn;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
+    _loadSocialLoginPrefs();
     _responsiveController = ResponsiveController(context);
     // Set status bar icons to white
     SystemChrome.setSystemUIOverlayStyle(
@@ -526,32 +547,42 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                                 ),
                               ),
                             ),
-                          // Social sign-in (Google/Apple) is hidden until wired — see
-                          // _socialSignInEnabled. When hidden, keep balanced spacing so
-                          // the sign-up link isn't cramped against the field above.
-                          if (_socialSignInEnabled) ...[
-                            SizedBox(height: 12.0.h),
-                            UniversalImageLoader(imagePath: AppData.orDivider),
-                            SizedBox(height: 24.0.h),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _socialLoginButton(context, AppData.googleLogo,
-                                    () {
-                                  context
-                                      .read<AuthenticationCubit>()
-                                      .signInWithGoogle();
-                                }),
-                                SizedBox(width: 10.w),
-                                _socialLoginButton(context, AppData.appleLogo,
-                                    () {
-                                  context
-                                      .read<AuthenticationCubit>()
-                                      .signInWithApple();
-                                }),
-                              ],
-                            ),
-                            SizedBox(height: 56.h),
+                          // Google/Apple sign-in — full-width buttons in each
+                          // brand's official treatment (the compact grey
+                          // squares failed both style guides). Hidden while a
+                          // login is in flight so the provider sheet can't
+                          // stack on a submit.
+                          if (_socialSignInEnabled && !isLoading) ...[
+                            SizedBox(height: 16.0.h),
+                            Row(children: [
+                              const Expanded(child: Divider(thickness: 0.6)),
+                              Padding(
+                                padding:
+                                    EdgeInsets.symmetric(horizontal: 12.w),
+                                child: Text(
+                                  'or continue with',
+                                  style: TextStyle(
+                                      fontSize: 13.sp, color: Colors.black54),
+                                ),
+                              ),
+                              const Expanded(child: Divider(thickness: 0.6)),
+                            ]),
+                            SizedBox(height: 16.0.h),
+                            if (_showGoogle) ...[
+                              GoogleSignInButton(
+                                onPressed: () => context
+                                    .read<AuthenticationCubit>()
+                                    .signInWithGoogle(),
+                              ),
+                              if (_showApple) SizedBox(height: 12.h),
+                            ],
+                            if (_showApple)
+                              AppleSignInButtonFull(
+                                onPressed: () => context
+                                    .read<AuthenticationCubit>()
+                                    .signInWithApple(),
+                              ),
+                            SizedBox(height: 24.h),
                           ] else
                             SizedBox(height: 32.h),
                           _buildSignUpLink(context),
@@ -863,25 +894,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
           ),
         ),
       ],
-    );
-  }
-
-  Widget _socialLoginButton(
-      BuildContext context, String imagePath, VoidCallback onPressed) {
-    return InkWell(
-      onTap: onPressed,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 8.0.h, horizontal: 50.0.w),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(32.0.r),
-          border: Border.all(color: Colors.black, width: 1.2),
-        ),
-        child: UniversalImageLoader(
-          imagePath: imagePath,
-          height: 24.0.h,
-          width: 24.0.w,
-        ),
-      ),
     );
   }
 

@@ -6193,6 +6193,8 @@ class SocialLoginRequest extends $pb.GeneratedMessage {
     $core.String? firstName,
     $core.String? lastName,
     $core.String? providerUserId,
+    $core.String? deviceId,
+    $core.String? deviceName,
   }) {
     final result = create();
     if (provider != null) result.provider = provider;
@@ -6201,6 +6203,8 @@ class SocialLoginRequest extends $pb.GeneratedMessage {
     if (firstName != null) result.firstName = firstName;
     if (lastName != null) result.lastName = lastName;
     if (providerUserId != null) result.providerUserId = providerUserId;
+    if (deviceId != null) result.deviceId = deviceId;
+    if (deviceName != null) result.deviceName = deviceName;
     return result;
   }
 
@@ -6223,6 +6227,8 @@ class SocialLoginRequest extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'firstName')
     ..aOS(5, _omitFieldNames ? '' : 'lastName')
     ..aOS(6, _omitFieldNames ? '' : 'providerUserId')
+    ..aOS(7, _omitFieldNames ? '' : 'deviceId')
+    ..aOS(8, _omitFieldNames ? '' : 'deviceName')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -6255,6 +6261,9 @@ class SocialLoginRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearProvider() => $_clearField(1);
 
+  /// The provider's identity token (Google ID token / Apple identity token).
+  /// The server verifies signature, issuer, audience and expiry against the
+  /// provider's JWKS; identity (subject/email) comes from the VERIFIED claims.
   @$pb.TagNumber(2)
   $core.String get providerToken => $_getSZ(1);
   @$pb.TagNumber(2)
@@ -6264,6 +6273,10 @@ class SocialLoginRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   void clearProviderToken() => $_clearField(2);
 
+  /// email + provider_user_id are IGNORED for identity — legacy fields kept so
+  /// old clients don't break the wire. first/last name are display-only
+  /// fallbacks for new-user creation (Apple sends the name to the client once
+  /// and never embeds it in the token).
   @$pb.TagNumber(3)
   $core.String get email => $_getSZ(2);
   @$pb.TagNumber(3)
@@ -6299,6 +6312,24 @@ class SocialLoginRequest extends $pb.GeneratedMessage {
   $core.bool hasProviderUserId() => $_has(5);
   @$pb.TagNumber(6)
   void clearProviderUserId() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get deviceId => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set deviceId($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasDeviceId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearDeviceId() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get deviceName => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set deviceName($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasDeviceName() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearDeviceName() => $_clearField(8);
 }
 
 class SocialLoginResponse extends $pb.GeneratedMessage {
@@ -6308,6 +6339,14 @@ class SocialLoginResponse extends $pb.GeneratedMessage {
     $fixnum.Int64? expiresIn,
     User? user,
     $core.bool? isNewUser,
+    $core.bool? twoFactorRequired,
+    $core.String? twoFactorToken,
+    $core.String? twoFactorMethod,
+    $core.bool? stepUpRequired,
+    $core.String? stepUpToken,
+    $core.String? stepUpMethod,
+    $core.String? stepUpDestination,
+    $fixnum.Int64? stepUpExpiresIn,
   }) {
     final result = create();
     if (accessToken != null) result.accessToken = accessToken;
@@ -6315,6 +6354,14 @@ class SocialLoginResponse extends $pb.GeneratedMessage {
     if (expiresIn != null) result.expiresIn = expiresIn;
     if (user != null) result.user = user;
     if (isNewUser != null) result.isNewUser = isNewUser;
+    if (twoFactorRequired != null) result.twoFactorRequired = twoFactorRequired;
+    if (twoFactorToken != null) result.twoFactorToken = twoFactorToken;
+    if (twoFactorMethod != null) result.twoFactorMethod = twoFactorMethod;
+    if (stepUpRequired != null) result.stepUpRequired = stepUpRequired;
+    if (stepUpToken != null) result.stepUpToken = stepUpToken;
+    if (stepUpMethod != null) result.stepUpMethod = stepUpMethod;
+    if (stepUpDestination != null) result.stepUpDestination = stepUpDestination;
+    if (stepUpExpiresIn != null) result.stepUpExpiresIn = stepUpExpiresIn;
     return result;
   }
 
@@ -6336,6 +6383,14 @@ class SocialLoginResponse extends $pb.GeneratedMessage {
     ..aInt64(3, _omitFieldNames ? '' : 'expiresIn')
     ..aOM<User>(4, _omitFieldNames ? '' : 'user', subBuilder: User.create)
     ..aOB(5, _omitFieldNames ? '' : 'isNewUser')
+    ..aOB(6, _omitFieldNames ? '' : 'twoFactorRequired')
+    ..aOS(7, _omitFieldNames ? '' : 'twoFactorToken')
+    ..aOS(8, _omitFieldNames ? '' : 'twoFactorMethod')
+    ..aOB(9, _omitFieldNames ? '' : 'stepUpRequired')
+    ..aOS(10, _omitFieldNames ? '' : 'stepUpToken')
+    ..aOS(11, _omitFieldNames ? '' : 'stepUpMethod')
+    ..aOS(12, _omitFieldNames ? '' : 'stepUpDestination')
+    ..aInt64(13, _omitFieldNames ? '' : 'stepUpExpiresIn')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -6405,6 +6460,82 @@ class SocialLoginResponse extends $pb.GeneratedMessage {
   $core.bool hasIsNewUser() => $_has(4);
   @$pb.TagNumber(5)
   void clearIsNewUser() => $_clearField(5);
+
+  /// OAuth proves the first factor only. When the account has 2FA enabled, no
+  /// session is issued: the client takes two_factor_token to the same
+  /// VerifyTwoFactor flow password login uses.
+  @$pb.TagNumber(6)
+  $core.bool get twoFactorRequired => $_getBF(5);
+  @$pb.TagNumber(6)
+  set twoFactorRequired($core.bool value) => $_setBool(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasTwoFactorRequired() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearTwoFactorRequired() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get twoFactorToken => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set twoFactorToken($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasTwoFactorToken() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearTwoFactorToken() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get twoFactorMethod => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set twoFactorMethod($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasTwoFactorMethod() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearTwoFactorMethod() => $_clearField(8);
+
+  /// Adaptive step-up (risk-based login OTP) — same contract as LoginResponse.
+  @$pb.TagNumber(9)
+  $core.bool get stepUpRequired => $_getBF(8);
+  @$pb.TagNumber(9)
+  set stepUpRequired($core.bool value) => $_setBool(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasStepUpRequired() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearStepUpRequired() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get stepUpToken => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set stepUpToken($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasStepUpToken() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearStepUpToken() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get stepUpMethod => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set stepUpMethod($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasStepUpMethod() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearStepUpMethod() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get stepUpDestination => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set stepUpDestination($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasStepUpDestination() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearStepUpDestination() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $fixnum.Int64 get stepUpExpiresIn => $_getI64(12);
+  @$pb.TagNumber(13)
+  set stepUpExpiresIn($fixnum.Int64 value) => $_setInt64(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasStepUpExpiresIn() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearStepUpExpiresIn() => $_clearField(13);
 }
 
 /// ===== Social Account Linking =====

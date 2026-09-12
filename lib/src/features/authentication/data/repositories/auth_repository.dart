@@ -24,9 +24,10 @@ import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
 import 'package:lazervault/src/generated/auth.pb.dart' as auth_req_resp;
 import 'package:lazervault/src/generated/user.pbgrpc.dart';
 
-// Import google_sign_in and sign_in_with_apple if implementing those methods
-// import 'package:google_sign_in/google_sign_in.dart';
-// import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:lazervault/core/config/oauth_client_ids.dart';
+import 'package:lazervault/core/utils/logger.dart';
 
 class AuthRepositoryImpl implements IAuthRepository {
   // ignore: unused_field
@@ -34,7 +35,6 @@ class AuthRepositoryImpl implements IAuthRepository {
   final AuthServiceClient _authServiceClient;
   final GrpcCallOptionsHelper _callOptionsHelper;
   final DeviceService _deviceService;
-  // final GoogleSignIn _googleSignIn = GoogleSignIn(); // Uncomment if using Google Sign In
 
   AuthRepositoryImpl({
     required UserServiceClient userServiceClient,
@@ -887,18 +887,162 @@ class AuthRepositoryImpl implements IAuthRepository {
     }
   }     
 
+  // ── Google / Apple sign-in ────────────────────────────────────────────────
+  //
+  // The provider proves the identity NATIVELY (no WebView — both providers
+  // refuse embedded views), the app forwards ONLY the identity token, and
+  // auth-service verifies it against the provider's JWKS before touching any
+  // account. Client-side values (email, name) are display hints at most.
+
+  bool _googleReady = false;
+
+  Future<void> _initGoogleSignIn() async {
+    if (_googleReady) return;
+    await GoogleSignIn.instance.initialize(
+      clientId: Platform.isIOS && OAuthClientIds.googleIos.isNotEmpty
+          ? OAuthClientIds.googleIos
+          : null,
+      // The web client id, so the returned ID token is audienced to the
+      // BACKEND — the id auth-service actually checks.
+      serverClientId: OAuthClientIds.googleWeb,
+    );
+    _googleReady = true;
+  }
+
   @override
   Future<Either<Failure, ProfileEntity>> signInWithGoogle() async {
-    print('signInWithGoogle called - NOT IMPLEMENTED');
-    await Future.delayed(const Duration(milliseconds: 50));
-    return Left(ServerFailure(message: 'Google Sign-In not implemented yet.', statusCode: 501));
+    try {
+      await _initGoogleSignIn();
+      final account = await GoogleSignIn.instance.authenticate();
+      final idToken = account.authentication.idToken;
+      if (idToken == null) {
+        return Left(ServerFailure(
+            message: 'Google did not return an identity token. Please try again.',
+            statusCode: 401));
+      }
+      return _processSocialLogin(provider: 'google', providerToken: idToken);
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        return Left(SignInCancelledFailure());
+      }
+      return Left(ServerFailure(
+          message: 'Google sign-in failed (${e.code.name}). Please try again.',
+          statusCode: 401));
+    } catch (e) {
+      AppLogger.error('Google sign-in failed', error: e);
+      return Left(ServerFailure(
+          message: 'Google sign-in failed. Please try again.', statusCode: 500));
+    }
   }
 
   @override
   Future<Either<Failure, ProfileEntity>> signInWithApple() async {
-    print('signInWithApple called - NOT IMPLEMENTED');
-    await Future.delayed(const Duration(milliseconds: 50));
-    return Left(ServerFailure(message: 'Apple Sign-In not implemented yet.', statusCode: 501));
+    try {
+      final cred = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+      final identityToken = cred.identityToken;
+      if (identityToken == null) {
+        return Left(ServerFailure(
+            message: 'Apple did not return an identity token. Please try again.',
+            statusCode: 401));
+      }
+      // Apple sends the name exactly once (first authorization) and never
+      // embeds it in the token — pass it along or it is gone for good. The
+      // backend uses it ONLY as a display name for a brand-new account.
+      return _processSocialLogin(
+        provider: 'apple',
+        providerToken: identityToken,
+        firstName: cred.givenName ?? '',
+        lastName: cred.familyName ?? '',
+      );
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) {
+        return Left(SignInCancelledFailure());
+      }
+      return Left(ServerFailure(
+          message: 'Apple sign-in failed (${e.code.name}). Please try again.',
+          statusCode: 401));
+    } catch (e) {
+      AppLogger.error('Apple sign-in failed', error: e);
+      return Left(ServerFailure(
+          message: 'Apple sign-in failed. Please try again.', statusCode: 500));
+    }
+  }
+
+  /// Exchange a verified-by-the-server provider token for a LazerVault
+  /// session. Mirrors _processAuthResponse's contract: 2FA and step-up come
+  /// back as their typed failures so the cubit routes into the SAME
+  /// continuation flows password login uses.
+  Future<Either<Failure, ProfileEntity>> _processSocialLogin({
+    required String provider,
+    required String providerToken,
+    String firstName = '',
+    String lastName = '',
+  }) async {
+    try {
+      final dev = await _deviceFields();
+      final response = await _authServiceClient.socialLogin(
+        auth_req_resp.SocialLoginRequest(
+          provider: provider,
+          providerToken: providerToken,
+          firstName: firstName,
+          lastName: lastName,
+          deviceId: dev.id,
+          deviceName: dev.name,
+        ),
+        options: await _callOptionsHelper.withAppCheck(),
+      );
+
+      if (response.twoFactorRequired) {
+        return Left(TwoFactorRequiredFailure(
+          twoFactorToken: response.twoFactorToken,
+          method: response.twoFactorMethod.isNotEmpty
+              ? response.twoFactorMethod
+              : 'totp',
+        ));
+      }
+      if (response.stepUpRequired) {
+        return Left(StepUpRequiredFailure(
+          stepUpToken: response.stepUpToken,
+          stepUpMethod: response.stepUpMethod,
+          destination: response.stepUpDestination,
+          expiresInSeconds: response.stepUpExpiresIn.toInt(),
+        ));
+      }
+      if (response.accessToken.isEmpty || !response.hasUser()) {
+        return Left(ServerFailure(
+            message: 'Sign-in failed. Please try again.', statusCode: 401));
+      }
+
+      final userModel = UserModel.fromAuthProto(response.user)
+          .withRolesFromAccessToken(response.accessToken);
+      final now = DateTime.now();
+      final expiresAt = response.expiresIn > 0
+          ? now.add(Duration(seconds: response.expiresIn.toInt()))
+          : now.add(const Duration(hours: 1));
+      final sessionModel = SessionModel(
+        id: response.user.id,
+        userId: response.user.id,
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+        accessTokenExpiresAt: expiresAt,
+        refreshTokenExpiresAt: expiresAt,
+      );
+      return Right(ProfileModel(user: userModel, session: sessionModel));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Sign-in failed. Please try again.'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      AppLogger.error('Social login exchange failed', error: e);
+      return Left(ServerFailure(
+          message: 'An unexpected error occurred.', statusCode: 500));
+    }
   }
 
   @override

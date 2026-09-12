@@ -139,6 +139,14 @@ class LoginActivity {
   });
 }
 
+/// Returned (as a Left) when the user closed a provider sign-in sheet
+/// (Google/Apple) themselves. Not an error: the cubit returns to the previous
+/// state silently — an "error" snackbar for a deliberate Cancel tap is the
+/// same lie the NFC reader used to tell.
+class SignInCancelledFailure extends Failure {
+  SignInCancelledFailure() : super(message: 'cancelled', statusCode: 0);
+}
+
 /// Returned (as a Left) when a login needs 2FA verification before a session is
 /// issued. Carries the temp token + method so the UI can prompt correctly (TOTP
 /// = enter authenticator code; sms/email = a code is sent).

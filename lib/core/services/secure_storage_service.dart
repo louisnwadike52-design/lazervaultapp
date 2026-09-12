@@ -29,6 +29,8 @@ class SecureStorageService {
   static const String _keyFingerprintLogin = 'fingerprint_login_enabled';
   static const String _keyFaceLogin = 'face_login_enabled';
   static const String _keyVoiceLogin = 'voice_login_enabled';
+  static const String _keyGoogleLogin = 'google_login_enabled';
+  static const String _keyAppleLogin = 'apple_login_enabled';
 
   /// How the unlock biometric FIRES on the passcode screen: automatically as
   /// the screen appears, or only when the user taps the biometric button.
@@ -153,6 +155,19 @@ class SecureStorageService {
       _storage.write(key: _keyVoiceLogin, value: v.toString());
   Future<bool> getVoiceLoginEnabled() async =>
       (await _storage.read(key: _keyVoiceLogin)) == 'true';
+
+  // Google / Apple sign-in preferences. Default ON (only an explicit 'false'
+  // hides them): these are entry points into the login flow, not a security
+  // gate — the server verifies every provider token regardless.
+  Future<void> setGoogleLoginEnabled(bool v) async =>
+      _storage.write(key: _keyGoogleLogin, value: v.toString());
+  Future<bool> getGoogleLoginEnabled() async =>
+      (await _storage.read(key: _keyGoogleLogin)) != 'false';
+
+  Future<void> setAppleLoginEnabled(bool v) async =>
+      _storage.write(key: _keyAppleLogin, value: v.toString());
+  Future<bool> getAppleLoginEnabled() async =>
+      (await _storage.read(key: _keyAppleLogin)) != 'false';
 
   Future<void> setBiometricAutoPrompt(bool v, {required bool isFace}) async =>
       _storage.write(

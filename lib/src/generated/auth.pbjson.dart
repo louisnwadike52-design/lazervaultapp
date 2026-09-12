@@ -1549,6 +1549,8 @@ const SocialLoginRequest$json = {
     {'1': 'first_name', '3': 4, '4': 1, '5': 9, '10': 'firstName'},
     {'1': 'last_name', '3': 5, '4': 1, '5': 9, '10': 'lastName'},
     {'1': 'provider_user_id', '3': 6, '4': 1, '5': 9, '10': 'providerUserId'},
+    {'1': 'device_id', '3': 7, '4': 1, '5': 9, '10': 'deviceId'},
+    {'1': 'device_name', '3': 8, '4': 1, '5': 9, '10': 'deviceName'},
   ],
 };
 
@@ -1557,7 +1559,8 @@ final $typed_data.Uint8List socialLoginRequestDescriptor = $convert.base64Decode
     'ChJTb2NpYWxMb2dpblJlcXVlc3QSGgoIcHJvdmlkZXIYASABKAlSCHByb3ZpZGVyEiUKDnByb3'
     'ZpZGVyX3Rva2VuGAIgASgJUg1wcm92aWRlclRva2VuEhQKBWVtYWlsGAMgASgJUgVlbWFpbBId'
     'CgpmaXJzdF9uYW1lGAQgASgJUglmaXJzdE5hbWUSGwoJbGFzdF9uYW1lGAUgASgJUghsYXN0Tm'
-    'FtZRIoChBwcm92aWRlcl91c2VyX2lkGAYgASgJUg5wcm92aWRlclVzZXJJZA==');
+    'FtZRIoChBwcm92aWRlcl91c2VyX2lkGAYgASgJUg5wcm92aWRlclVzZXJJZBIbCglkZXZpY2Vf'
+    'aWQYByABKAlSCGRldmljZUlkEh8KC2RldmljZV9uYW1lGAggASgJUgpkZXZpY2VOYW1l');
 
 @$core.Deprecated('Use socialLoginResponseDescriptor instead')
 const SocialLoginResponse$json = {
@@ -1568,6 +1571,32 @@ const SocialLoginResponse$json = {
     {'1': 'expires_in', '3': 3, '4': 1, '5': 3, '10': 'expiresIn'},
     {'1': 'user', '3': 4, '4': 1, '5': 11, '6': '.pb.User', '10': 'user'},
     {'1': 'is_new_user', '3': 5, '4': 1, '5': 8, '10': 'isNewUser'},
+    {
+      '1': 'two_factor_required',
+      '3': 6,
+      '4': 1,
+      '5': 8,
+      '10': 'twoFactorRequired'
+    },
+    {'1': 'two_factor_token', '3': 7, '4': 1, '5': 9, '10': 'twoFactorToken'},
+    {'1': 'two_factor_method', '3': 8, '4': 1, '5': 9, '10': 'twoFactorMethod'},
+    {'1': 'step_up_required', '3': 9, '4': 1, '5': 8, '10': 'stepUpRequired'},
+    {'1': 'step_up_token', '3': 10, '4': 1, '5': 9, '10': 'stepUpToken'},
+    {'1': 'step_up_method', '3': 11, '4': 1, '5': 9, '10': 'stepUpMethod'},
+    {
+      '1': 'step_up_destination',
+      '3': 12,
+      '4': 1,
+      '5': 9,
+      '10': 'stepUpDestination'
+    },
+    {
+      '1': 'step_up_expires_in',
+      '3': 13,
+      '4': 1,
+      '5': 3,
+      '10': 'stepUpExpiresIn'
+    },
   ],
 };
 
@@ -1576,7 +1605,13 @@ final $typed_data.Uint8List socialLoginResponseDescriptor = $convert.base64Decod
     'ChNTb2NpYWxMb2dpblJlc3BvbnNlEiEKDGFjY2Vzc190b2tlbhgBIAEoCVILYWNjZXNzVG9rZW'
     '4SIwoNcmVmcmVzaF90b2tlbhgCIAEoCVIMcmVmcmVzaFRva2VuEh0KCmV4cGlyZXNfaW4YAyAB'
     'KANSCWV4cGlyZXNJbhIcCgR1c2VyGAQgASgLMggucGIuVXNlclIEdXNlchIeCgtpc19uZXdfdX'
-    'NlchgFIAEoCFIJaXNOZXdVc2Vy');
+    'NlchgFIAEoCFIJaXNOZXdVc2VyEi4KE3R3b19mYWN0b3JfcmVxdWlyZWQYBiABKAhSEXR3b0Zh'
+    'Y3RvclJlcXVpcmVkEigKEHR3b19mYWN0b3JfdG9rZW4YByABKAlSDnR3b0ZhY3RvclRva2VuEi'
+    'oKEXR3b19mYWN0b3JfbWV0aG9kGAggASgJUg90d29GYWN0b3JNZXRob2QSKAoQc3RlcF91cF9y'
+    'ZXF1aXJlZBgJIAEoCFIOc3RlcFVwUmVxdWlyZWQSIgoNc3RlcF91cF90b2tlbhgKIAEoCVILc3'
+    'RlcFVwVG9rZW4SJAoOc3RlcF91cF9tZXRob2QYCyABKAlSDHN0ZXBVcE1ldGhvZBIuChNzdGVw'
+    'X3VwX2Rlc3RpbmF0aW9uGAwgASgJUhFzdGVwVXBEZXN0aW5hdGlvbhIrChJzdGVwX3VwX2V4cG'
+    'lyZXNfaW4YDSABKANSD3N0ZXBVcEV4cGlyZXNJbg==');
 
 @$core.Deprecated('Use linkedSocialAccountDescriptor instead')
 const LinkedSocialAccount$json = {

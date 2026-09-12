@@ -1,5 +1,6 @@
 import 'package:lazervault/core/shared_widgets/face_id_icon.dart';
 import 'package:lazervault/core/shared_widgets/fingerprint_icon.dart';
+import 'package:lazervault/src/features/widgets/oauth_sign_in_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -46,6 +47,8 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
   bool _fingerprintOn = false;
   bool _faceOn = false;
   bool _voiceOn = false;
+  bool _googleOn = true;
+  bool _appleOn = true;
   /// Fire the OS prompt as the lock screen appears, or wait for a tap —
   /// answered separately per method, since a device can offer both.
   bool _autoPromptFace = true;
@@ -92,6 +95,8 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
     _fingerprintOn = await _store.getFingerprintLoginEnabled();
     _faceOn = await _store.getFaceLoginEnabled();
     _voiceOn = await _store.getVoiceLoginEnabled();
+    _googleOn = await _store.getGoogleLoginEnabled();
+    _appleOn = await _store.getAppleLoginEnabled();
     _autoPromptFace = await _store.getBiometricAutoPrompt(isFace: true);
     _autoPromptFingerprint = await _store.getBiometricAutoPrompt(isFace: false);
     _shakeEscape = await _store.getBiometricShakeEscape();
@@ -232,6 +237,24 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
     _snack('$label login enabled.');
   }
 
+  Future<void> _toggleGoogle(bool turnOn) async {
+    _googleOn = turnOn;
+    await _store.setGoogleLoginEnabled(turnOn);
+    if (mounted) setState(() {});
+    _snack(turnOn
+        ? 'Google sign-in shown on your login screens.'
+        : 'Google sign-in hidden.');
+  }
+
+  Future<void> _toggleApple(bool turnOn) async {
+    _appleOn = turnOn;
+    await _store.setAppleLoginEnabled(turnOn);
+    if (mounted) setState(() {});
+    _snack(turnOn
+        ? 'Apple sign-in shown on your login screens.'
+        : 'Apple sign-in hidden.');
+  }
+
   Future<void> _toggleVoice(bool turnOn) async {
     // Resolve from the CURRENT session (access-token sub), never the possibly
     // stale cached user_id key — so enabling voice login always binds to the
@@ -358,6 +381,46 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
                   value: _voiceOn,
                   onChanged: _toggleVoice,
                 ),
+                // ── Google / Apple sign-in ─────────────────────────────
+                // Entry-point toggles, not security gates: the server
+                // verifies every provider token regardless. Off simply
+                // hides the buttons on the lock and sign-in screens.
+                SizedBox(height: 22.h),
+                Text('Sign-in methods',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700)),
+                SizedBox(height: 4.h),
+                Text(
+                  'Show or hide Google and Apple sign-in on your login screens.',
+                  style: GoogleFonts.inter(
+                      color: _textSecondary, fontSize: 12.sp, height: 1.4),
+                ),
+                SizedBox(height: 12.h),
+                if (OAuthProviders.googleAvailable)
+                  _tile(
+                    icon: Icons.g_mobiledata_rounded,
+                    iconBuilder: (c) => GoogleGIcon(size: 20.sp),
+                    title: 'Google sign-in',
+                    subtitle: _googleOn
+                        ? 'Shown on your login screens'
+                        : 'Hidden from your login screens',
+                    enabled: true,
+                    value: _googleOn,
+                    onChanged: _toggleGoogle,
+                  ),
+                if (OAuthProviders.appleAvailable)
+                  _tile(
+                    icon: Icons.apple,
+                    title: 'Apple sign-in',
+                    subtitle: _appleOn
+                        ? 'Shown on your login screens'
+                        : 'Hidden from your login screens',
+                    enabled: true,
+                    value: _appleOn,
+                    onChanged: _toggleApple,
+                  ),
                 SizedBox(height: 14.h),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4.w),

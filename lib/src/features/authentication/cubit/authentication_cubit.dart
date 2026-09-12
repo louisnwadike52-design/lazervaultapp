@@ -724,47 +724,61 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
-  Future<void> signInWithGoogle() async {
+  Future<void> signInWithGoogle() =>
+      _signInWithProvider('Google', _signInWithGoogleUseCase.call);
+
+  Future<void> signInWithApple() =>
+      _signInWithProvider('Apple', _signInWithAppleUseCase.call);
+
+  /// Shared Google/Apple sign-in continuation. The SAME gates password login
+  /// honors apply here — a 2FA or step-up response routes into the existing
+  /// verification flows, so OAuth can never be a way around them. A deliberate
+  /// cancel of the provider sheet returns quietly to where the user was.
+  Future<void> _signInWithProvider(
+    String providerLabel,
+    Future<Either<Failure, ProfileEntity>> Function() signIn,
+  ) async {
     if (isClosed) return;
+    final previousState = state;
+    _isLoggingOut = false;
     emit(AuthenticationLoading());
 
-    final result = await _signInWithGoogleUseCase();
+    final result = await signIn();
 
     if (isClosed) return;
 
-    // Handle result properly - fold doesn't await async callbacks
     if (result.isLeft()) {
       final failure = result.fold((l) => l, (r) => throw StateError('unreachable'));
-      _showErrorSnackbar('Google Sign-In Failed', failure.message);
-      emit(AuthenticationFailure(
-        failure.message,
-        statusCode: failure.statusCode,
-      ));
+      if (failure is SignInCancelledFailure) {
+        // The user closed the provider sheet — not an error, no snackbar.
+        emit(previousState);
+        return;
+      }
+      if (failure is TwoFactorRequiredFailure) {
+        emit(LoginTwoFactorRequired(
+            twoFactorToken: failure.twoFactorToken, method: failure.method));
+        return;
+      }
+      if (failure is StepUpRequiredFailure) {
+        emit(LoginStepUpRequired(
+          stepUpToken: failure.stepUpToken,
+          method: failure.stepUpMethod,
+          destination: failure.destination,
+          expiresInSeconds: failure.expiresInSeconds,
+        ));
+        return;
+      }
+      final message = isNetworkStatusCode(failure.statusCode)
+          ? networkErrorMessage
+          : failure.message;
+      _showErrorSnackbar('$providerLabel Sign-In Failed', message);
+      emit(AuthenticationFailure(message, statusCode: failure.statusCode));
     } else {
-      final profile = result.fold((l) => throw StateError('unreachable'), (r) => r);
-      await _saveSession(profile);
-      emit(AuthenticationSuccess(profile));
-    }
-  }
-
-  Future<void> signInWithApple() async {
-    if (isClosed) return;
-    emit(AuthenticationLoading());
-
-    final result = await _signInWithAppleUseCase();
-
-    if (isClosed) return;
-
-    // Handle result properly - fold doesn't await async callbacks
-    if (result.isLeft()) {
-      final failure = result.fold((l) => l, (r) => throw StateError('unreachable'));
-      _showErrorSnackbar('Apple Sign-In Failed', failure.message);
-      emit(AuthenticationFailure(
-        failure.message,
-        statusCode: failure.statusCode,
-      ));
-    } else {
-      final profile = result.fold((l) => throw StateError('unreachable'), (r) => r);
+      final profile =
+          result.fold((l) => throw StateError('unreachable'), (r) => r);
+      // Remember how this user signs in, so the returning-user experience
+      // (lock screen identity, method switch) matches the method they chose.
+      await _storage.write(key: 'login_method', value: 'social');
       await _saveSession(profile);
       emit(AuthenticationSuccess(profile));
     }

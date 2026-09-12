@@ -12,7 +12,12 @@
           "package_name": "com.lazervault.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "815870072849-0rj1ekjanhck3u9mutl5lenh90neu9dc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyABbef0mBQj2jFJ3bIadX_GR_8lO4zr6AE"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "815870072849-0rj1ekjanhck3u9mutl5lenh90neu9dc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
