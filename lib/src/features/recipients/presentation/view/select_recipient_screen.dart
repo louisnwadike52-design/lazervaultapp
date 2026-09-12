@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -30,7 +32,19 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
     // the add-recipient UI is inline under the filters, so the "add" FAB is
     // hidden to avoid a duplicate path.
     final args = Get.arguments;
-    final shortFlow = args is Map && args['shortFlow'] == true;
+    // An ABSENT argument used to mean the long flow, which is the opposite of
+    // the platform default (sendFundsShortFlow is true) and of the user's own
+    // transfer-style setting. Any entry point that forgot to pass the flag
+    // therefore dropped the user into the long flow — reported from the
+    // dashboard sliders, and split_bill_home_screen still navigates here with
+    // no arguments at all.
+    //
+    // Absence now falls back to the session-pinned preference, so every caller
+    // honours what the user actually chose and forgetting the argument can no
+    // longer change the journey. An explicit false is still respected.
+    final shortFlow = args is Map && args['shortFlow'] is bool
+        ? args['shortFlow'] as bool
+        : FeatureFlags.sendFlowShortForSession;
     final preselected = args is Map && args['preselectedRecipient'] is RecipientModel
         ? args['preselectedRecipient'] as RecipientModel
         : null;

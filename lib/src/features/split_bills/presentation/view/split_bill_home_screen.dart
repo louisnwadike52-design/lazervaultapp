@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
@@ -89,7 +91,10 @@ class _SplitBillHomeViewState extends State<_SplitBillHomeView>
     if (Navigator.of(context).canPop()) {
       Get.back();
     } else {
-      Get.offNamed(AppRoutes.selectRecipient);
+      // Pass the flow explicitly rather than relying on the screen's fallback,
+      // so this entry point states its intent like every other one.
+      Get.offNamed(AppRoutes.selectRecipient,
+          arguments: {'shortFlow': FeatureFlags.sendFlowShortForSession});
     }
   }
 
