@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'payment_success_screen.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -495,17 +497,19 @@ class _ContactlessPaymentHomeViewState
                       padding:
                           EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
+                        // Lighter purple: on the dark card the deep brand
+                        // purple read almost black and the CTA disappeared.
+                        color: const Color(0xFF9B6BFF).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(
                             color:
-                                const Color(0xFF4E03D0).withValues(alpha: 0.3)),
+                                const Color(0xFF9B6BFF).withValues(alpha: 0.4)),
                       ),
                       child: Text(
                         'View all',
                         style: GoogleFonts.inter(
                           fontSize: 11.5.sp,
-                          color: const Color(0xFF4E03D0),
+                          color: const Color(0xFF9B6BFF),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -590,7 +594,12 @@ class _ContactlessPaymentHomeViewState
     final icon = categoryIcons[transaction.category?.toLowerCase()] ??
         Icons.contactless_rounded;
 
-    return Container(
+    // The recent rows were the only transaction rows in the product that DID
+    // NOTHING on tap. They now open the same receipt the history list opens,
+    // so "recent" is a shortcut into the receipt rather than a dead preview.
+    return GestureDetector(
+      onTap: () => _openReceiptFor(transaction),
+      child: Container(
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -617,10 +626,10 @@ class _ContactlessPaymentHomeViewState
             width: 44.w,
             height: 44.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+              color: const Color(0xFF9B6BFF).withValues(alpha: 0.16),
               borderRadius: BorderRadius.circular(12.r),
             ),
-            child: Icon(icon, color: const Color(0xFF4E03D0), size: 22.sp),
+            child: Icon(icon, color: const Color(0xFF9B6BFF), size: 22.sp),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -630,7 +639,8 @@ class _ContactlessPaymentHomeViewState
                 Text(
                   transaction.receiverName,
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    // Lighter purple, per the landing's accent language.
+                    color: const Color(0xFFCBB7FF),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -659,7 +669,34 @@ class _ContactlessPaymentHomeViewState
           ),
         ],
       ),
+      ),
     );
+  }
+
+  /// Same receipt the history rows open, with the same direction logic —
+  /// direction from the transaction against the signed-in user, because the
+  /// recent list mixes money in and money out.
+  void _openReceiptFor(dynamic transaction) {
+    HapticFeedback.lightImpact();
+    var isReceiver = false;
+    try {
+      final me = context.read<AuthenticationCubit>().currentProfile?.user;
+      if (me != null) isReceiver = me.id == transaction.receiverId;
+    } catch (_) {}
+    Get.to(() => PaymentSuccessScreen(
+          amount: transaction.amount,
+          currency: transaction.currency,
+          payerName: transaction.payerName,
+          receiverName: transaction.receiverName,
+          payerUsername: transaction.payerUsername,
+          receiverUsername: transaction.receiverUsername,
+          referenceNumber: transaction.referenceNumber,
+          category: transaction.category,
+          description: transaction.description,
+          transactionDate: transaction.createdAt,
+          isReceiver: isReceiver,
+          transaction: transaction,
+        ));
   }
 
   Widget _buildSecurityBanner() {
