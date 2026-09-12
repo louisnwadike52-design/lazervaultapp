@@ -700,7 +700,13 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
           // exit early, possibly with a penalty). Driven by the lock
           // row, not the enum, so it stays correct even if the
           // admin-side config changes after issue.
-          if (lock.earlyUnlockPenaltyPercent < 100 && lock.isActive) ...[
+          // Gated on canUnlockEarly too: the panel says the user CAN exit
+          // early, and for Treasury/Year Lock the server now says they
+          // cannot. Advertising an exit that will be refused is worse than
+          // not mentioning one.
+          if (lock.canUnlockEarly &&
+              lock.earlyUnlockPenaltyPercent < 100 &&
+              lock.isActive) ...[
             SizedBox(height: 12.h),
             Container(
               width: double.infinity,
@@ -955,7 +961,13 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
           SizedBox(height: 12.h),
           ..._pairRows(secondary),
         ],
+        // canUnlockEarly now carries the PLAN's policy (gateway ANDs
+        // allows_early_withdrawal into it), and the server rejects an early
+        // break on plans that forbid it. Offering the flow anyway would walk
+        // the user through reason + penalty preview + PIN and then fail on
+        // the final call — the worst possible ordering of that news.
         if (!matured &&
+            lock.canUnlockEarly &&
             lock.lockType != LockType.savings &&
             lock.earlyUnlockPenaltyPercent > 0) ...[
           SizedBox(height: 8.h),
