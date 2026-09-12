@@ -403,7 +403,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                                       ],
                                     ),
                                     child: Icon(
-                                      Icons.check_rounded,
+                                      _heroIcon,
                                       size: 56.sp,
                                       color: Colors.white,
                                     ),
@@ -426,9 +426,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                         child: Column(
                           children: [
                             Text(
-                              widget.isReceiver
-                                  ? 'Payment Received!'
-                                  : 'Payment Successful!',
+                              _headline,
                               style: GoogleFonts.inter(
                                 fontSize: 24.sp,
                                 fontWeight: FontWeight.w700,
@@ -597,6 +595,68 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
     );
   }
 
+  /// The chip used to be the literal string 'Completed'.
+  ///
+  /// That was safe while this screen was only ever reached straight after a
+  /// successful payment. It stopped being safe the moment the payment-history
+  /// list started opening it for ANY past transaction — the history has Failed
+  /// and Reversed filters, so a failed payment would have been shown to the
+  /// user as "Completed" on its own receipt.
+  TransactionStatus? get _status => widget.transaction?.status;
+
+  /// The headline and hero glyph were fixed on success for the same reason the
+  /// chip was: this screen only ever followed a completed payment. Opened from
+  /// history it must not greet a failed payment with "Payment Successful!" and
+  /// a tick.
+  String get _headline {
+    switch (_status) {
+      case TransactionStatus.failed:
+        return 'Payment Failed';
+      case TransactionStatus.reversed:
+        return 'Payment Reversed';
+      case TransactionStatus.completed:
+      case null:
+        return widget.isReceiver ? 'Payment Received!' : 'Payment Successful!';
+    }
+  }
+
+  IconData get _heroIcon {
+    switch (_status) {
+      case TransactionStatus.failed:
+        return Icons.close_rounded;
+      case TransactionStatus.reversed:
+        return Icons.undo_rounded;
+      case TransactionStatus.completed:
+      case null:
+        return Icons.check_rounded;
+    }
+  }
+
+  String get _statusLabel {
+    switch (_status) {
+      case TransactionStatus.failed:
+        return 'Failed';
+      case TransactionStatus.reversed:
+        return 'Reversed';
+      case TransactionStatus.completed:
+      case null:
+        // null = the live success flow, which reaches here only on success.
+        return 'Completed';
+    }
+  }
+
+  Color get _statusColor {
+    switch (_status) {
+      case TransactionStatus.failed:
+        return const Color(0xFFEF4444);
+      case TransactionStatus.reversed:
+        return const Color(0xFFFB923C);
+      case TransactionStatus.completed:
+      case null:
+        return const Color(0xFF10B981);
+    }
+  }
+
   /// One style for the paired secondary CTAs, so Download and Share cannot
   /// drift apart visually the way two hand-rolled copies did.
   ButtonStyle _secondaryCtaStyle() => OutlinedButton.styleFrom(
@@ -666,15 +726,15 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
                   padding:
                       EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    color: _statusColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Text(
-                    'Completed',
+                    _statusLabel,
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF10B981),
+                      color: _statusColor,
                     ),
                   ),
                 ),
