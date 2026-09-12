@@ -32,6 +32,10 @@ class _NfcReaderViewState extends State<_NfcReaderView>
   bool _nfcAvailable = true;
   String _statusMessage = 'Ready to scan';
   bool _hasError = false;
+  // The user closed the iOS NFC sheet themselves. A cancel is a decision, not
+  // a malfunction — showing it as "Scan Failed / NFC read failed" (red alert,
+  // heavy haptic) told people something broke when nothing did.
+  bool _wasCancelled = false;
   bool _showManualEntry = false;
   bool _isLoadingManual = false;
   String? _manualEntryError;
@@ -119,6 +123,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
       _isScanning = true;
       _statusMessage = 'Hold your phone near the other device';
       _hasError = false;
+      _wasCancelled = false;
     });
 
     _pulseController.repeat(reverse: true);
@@ -170,7 +175,12 @@ class _NfcReaderViewState extends State<_NfcReaderView>
         }
       },
       onSessionErrorIos: (error) {
-        _handleScanError('NFC read failed. Please try again.');
+        if (error.code ==
+            NfcReaderErrorCodeIos.readerSessionInvalidationErrorUserCanceled) {
+          _handleScanCancelled();
+        } else {
+          _handleScanError('NFC read failed. Please try again.');
+        }
       },
     );
   }
@@ -337,11 +347,33 @@ class _NfcReaderViewState extends State<_NfcReaderView>
     setState(() {
       _statusMessage = message;
       _hasError = true;
+      _wasCancelled = false;
       _isScanning = false;
     });
     _pulseController.stop();
     _rippleController.stop();
     HapticFeedback.heavyImpact();
+  }
+
+  /// The user backed out of the scan on purpose. Neutral state, light
+  /// haptic, and the alternates (retry / QR / manual session id) stay in
+  /// front of them — cancelling one way of paying should read as an
+  /// invitation to pick another, not as a failure to recover from.
+  void _handleScanCancelled() {
+    AppLogger.info('contactless: scan cancelled by user',
+        fields: {'feature': 'contactless_pay'});
+    if (!mounted) return;
+    setState(() {
+      _statusMessage =
+          'No problem — try again, scan their QR code, or type the session ID.';
+      _wasCancelled = true;
+      _hasError = false;
+      _isScanning = false;
+      _tagHandled = false;
+    });
+    _pulseController.stop();
+    _rippleController.stop();
+    HapticFeedback.lightImpact();
   }
 
   void _stopNfcScan() {
@@ -355,6 +387,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
   void _retryScan() {
     setState(() {
       _hasError = false;
+      _wasCancelled = false;
       _statusMessage = 'Ready to scan';
       // Release the one-tag latch so a retry can actually read again; otherwise
       // a failed session load would leave the reader permanently deaf.
@@ -441,7 +474,8 @@ class _NfcReaderViewState extends State<_NfcReaderView>
                             SizedBox(height: 40.h),
                             _buildStatusText(),
                             SizedBox(height: 32.h),
-                            if (_hasError && _nfcAvailable) _buildRetryButton(),
+                            if ((_hasError || _wasCancelled) && _nfcAvailable)
+                              _buildRetryButton(),
                             if (!_nfcAvailable && Platform.isAndroid)
                               _buildOpenSettingsButton(),
                             SizedBox(height: 16.h),
@@ -529,9 +563,12 @@ class _NfcReaderViewState extends State<_NfcReaderView>
   Widget _buildNfcIndicator() {
     final Color indicatorColor = _hasError
         ? const Color(0xFFEF4444)
-        : _isScanning
-            ? const Color(0xFF4E03D0)
-            : const Color(0xFF9CA3AF);
+        : _wasCancelled
+            // Calm purple, not alarm red: nothing malfunctioned.
+            ? const Color(0xFF9B6BFF)
+            : _isScanning
+                ? const Color(0xFF4E03D0)
+                : const Color(0xFF9CA3AF);
 
     return SizedBox(
       width: 220.w,
@@ -629,7 +666,11 @@ class _NfcReaderViewState extends State<_NfcReaderView>
       child: Column(
         children: [
           Text(
-            _hasError ? 'Scan Failed' : (_isScanning ? 'Scanning...' : 'Ready'),
+            _hasError
+                ? 'Scan Failed'
+                : _wasCancelled
+                    ? 'Scan Cancelled'
+                    : (_isScanning ? 'Scanning...' : 'Ready'),
             style: GoogleFonts.inter(
               color: _hasError ? const Color(0xFFEF4444) : Colors.white,
               fontSize: 22.sp,
@@ -650,7 +691,7 @@ class _NfcReaderViewState extends State<_NfcReaderView>
           // line. NFC couples over ~2cm between antennas the user cannot see:
           // misaligned, the tap simply does nothing and both people conclude
           // the feature is broken.
-          if (!_hasError) ...[
+          if (!_hasError && !_wasCancelled) ...[
             SizedBox(height: 16.h),
             const NfcPositioningGuide(isPayer: true),
           ],
