@@ -12,6 +12,10 @@ import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
 import 'package:lazervault/src/features/widgets/status_filter_chips.dart';
 import '../../services/contactless_websocket_service.dart';
+import 'package:get/get.dart';
+
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'payment_success_screen.dart';
 part 'payment_history_screen_widgets.dart';
 
 class _TransactionCard extends StatelessWidget {
@@ -91,7 +95,7 @@ class _TransactionCard extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           HapticFeedback.lightImpact();
-          _showTransactionDetails(context);
+          _openReceipt(context);
         },
         child: Container(
           margin: EdgeInsets.only(bottom: 12.h),
@@ -203,6 +207,43 @@ class _TransactionCard extends StatelessWidget {
     );
   }
 
+  /// Open the full receipt rather than a read-only sheet.
+  ///
+  /// The sheet could show the details but not DO anything with them — no
+  /// download, no share, no PDF. A user looking up a past payment wants the
+  /// receipt, which is the artefact they can actually send to someone.
+  void _openReceipt(BuildContext context) {
+    // Direction decides whose name leads the receipt and which PDF is built.
+    // Getting it from the transaction rather than assuming: this screen shows
+    // both money in and money out.
+    var isReceiver = false;
+    try {
+      final me = context.read<AuthenticationCubit>().currentProfile?.user;
+      if (me != null) isReceiver = me.id == transaction.receiverId;
+    } catch (_) {
+      // Provider not in tree (deep link / test) — fall back to payer view
+      // rather than failing to open the receipt at all.
+    }
+
+    Get.to(() => PaymentSuccessScreen(
+          amount: transaction.amount,
+          currency: transaction.currency,
+          payerName: transaction.payerName,
+          receiverName: transaction.receiverName,
+          payerUsername: transaction.payerUsername,
+          receiverUsername: transaction.receiverUsername,
+          referenceNumber: transaction.referenceNumber,
+          category: transaction.category,
+          description: transaction.description,
+          transactionDate: transaction.createdAt,
+          isReceiver: isReceiver,
+          // The entity itself drives the PDF, so share/download carry the real
+          // payload instead of a re-derived summary.
+          transaction: transaction,
+        ));
+  }
+
+  // ignore: unused_element
   void _showTransactionDetails(BuildContext context) {
     final dateFormat = DateFormat('MMMM d, yyyy • h:mm a');
 
