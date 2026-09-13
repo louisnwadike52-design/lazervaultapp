@@ -26,6 +26,7 @@ import 'package:lazervault/src/generated/user.pbgrpc.dart';
 
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/config/oauth_client_ids.dart';
 import 'package:lazervault/core/utils/logger.dart';
 
@@ -904,14 +905,30 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   Future<void> _initGoogleSignIn() async {
     if (_googleReady) return;
-    await GoogleSignIn.instance.initialize(
-      clientId: Platform.isIOS && OAuthClientIds.googleIos.isNotEmpty
-          ? OAuthClientIds.googleIos
-          : null,
-      // The web client id, so the returned ID token is audienced to the
-      // BACKEND — the id auth-service actually checks.
-      serverClientId: OAuthClientIds.googleWeb,
-    );
+    // Platform-specific client wiring:
+    //  - Android: no clientId (google-services.json matches by SHA-1+package);
+    //    serverClientId = the PROD web client, so the ID token is audienced to
+    //    the id auth-service checks.
+    //  - iOS: reuse the SAME client the Gmail flow uses (GoogleSignIn.instance
+    //    is a singleton — a different client here would collide). clientId is
+    //    the lazervault-dev iOS client (also GIDClientID in Info.plist);
+    //    serverClientId is that project's web client, preferring the shared
+    //    GMAIL_WEB_CLIENT_ID env value so login and Gmail initialise
+    //    identically. The backend trusts this audience via GOOGLE_OAUTH_AUDIENCES.
+    if (Platform.isIOS) {
+      final iosServerClient =
+          (dotenv.env['GMAIL_WEB_CLIENT_ID']?.trim().isNotEmpty ?? false)
+              ? dotenv.env['GMAIL_WEB_CLIENT_ID']!.trim()
+              : OAuthClientIds.googleWebIos;
+      await GoogleSignIn.instance.initialize(
+        clientId: OAuthClientIds.googleIos,
+        serverClientId: iosServerClient,
+      );
+    } else {
+      await GoogleSignIn.instance.initialize(
+        serverClientId: OAuthClientIds.googleWeb,
+      );
+    }
     _googleReady = true;
   }
 
