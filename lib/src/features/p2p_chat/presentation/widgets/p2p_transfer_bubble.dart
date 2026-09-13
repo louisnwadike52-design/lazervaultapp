@@ -131,11 +131,17 @@ class P2PTransferBubble extends StatelessWidget {
     } else if (isSent) {
       iconColor = const Color(0xFFEF4444); // red
       icon = Icons.arrow_upward;
-      label = message.isCryptoTransfer ? 'Crypto Sent' : 'Money Sent';
+      // Directional copy so the bubble depicts WHERE the money went, not just
+      // that a transfer happened.
+      label = message.isCryptoTransfer
+          ? 'You sent crypto to $_displayName'
+          : 'You sent to $_displayName';
     } else {
       iconColor = const Color(0xFF10B981); // green
       icon = Icons.arrow_downward;
-      label = message.isCryptoTransfer ? 'Crypto Received' : 'Money Received';
+      label = message.isCryptoTransfer
+          ? '$_displayName sent you crypto'
+          : '$_displayName sent you';
     }
 
     final currency = message.transferCurrency ?? 'NGN';
