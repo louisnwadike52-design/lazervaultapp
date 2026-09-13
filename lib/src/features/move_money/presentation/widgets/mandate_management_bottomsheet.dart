@@ -76,6 +76,9 @@ class _MandateManagementSheet extends StatefulWidget {
 
 class _MandateManagementSheetState extends State<_MandateManagementSheet> {
   String? _errorMessage;
+  // Guards the "Finish Direct Debit setup" resume against a double-tap opening
+  // two setup sheets.
+  bool _finishingSetup = false;
 
   @override
   void initState() {
@@ -301,17 +304,51 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                     color: const Color(0xFFF59E0B),
                     icon: Icons.touch_app_outlined,
                     isLoading: isLoading,
-                    onPressed: () {
+                    onPressed: () async {
+                      // Re-entrancy guard: a double-tap must not stack two setup
+                      // sheets.
+                      if (_finishingSetup) return;
+                      _finishingSetup = true;
+                      // Capture everything that outlives this sheet BEFORE it
+                      // pops — using the popped sheet's context to open the next
+                      // sheet / show a snackbar is use-after-dispose.
+                      final cubit = serviceLocator<MandateCubit>();
+                      final messenger = ScaffoldMessenger.of(context);
+                      final rootContext =
+                          Navigator.of(context, rootNavigator: true).context;
+                      final mandateId = widget.mandate!.id;
                       Navigator.of(context).pop();
-                      // Resumes the SAME mandate: CreateMandate's reuse ladder
-                      // re-points to it and reopens its Mono authorization.
-                      showMandateSetupBottomSheet(
-                        context: context,
+                      // Resume the SAME mandate: the setup sheet's own spent-link
+                      // and expired-link guards decide whether to reopen the Mono
+                      // link, poll, or mint a fresh one — so this cannot reopen a
+                      // dead link. Returns true only on a granted authorization.
+                      final ok = await showMandateSetupBottomSheet(
+                        context: rootContext,
                         linkedAccountId: widget.linkedAccountId,
                         userId: widget.userId,
                         bankName: widget.bankName,
                         accountName: widget.accountName,
                       );
+                      _finishingSetup = false;
+                      if (ok != true) {
+                        // Cancelled/closed the webview — do NOT re-open (that is
+                        // the loop the deposit flow had). Poll (the auth may
+                        // still land) and guide, mirroring the deposit fix.
+                        cubit.pollMandateStatus(
+                          mandateId: mandateId,
+                          userId: widget.userId,
+                        );
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'You can finish Direct Debit anytime — send the '
+                              'one-off ₦50 from your bank app, then reopen Direct '
+                              'Debit setup.',
+                            ),
+                            duration: Duration(seconds: 5),
+                          ),
+                        );
+                      }
                     },
                   ),
                 ] else if (widget.mandate!.isActive) ...[
