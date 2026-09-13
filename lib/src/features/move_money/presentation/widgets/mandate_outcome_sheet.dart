@@ -100,13 +100,18 @@ class _MandateOutcomeSheetState extends State<_MandateOutcomeSheet> {
         return (
           icon: Icons.account_balance_outlined,
           tint: const Color(0xFFF59E0B),
-          title: 'Did you send the transfer?',
-          // Names the exact amount and destination so the user can match it
-          // against what they actually did, rather than guessing at what we
-          // mean by "authorization".
-          body: 'To finish Direct Debit, $bankName asks for a one-off ₦50 '
-              'transfer from your own banking app.\n\nIf you already sent '
-              'it, we will confirm it automatically — do NOT send it again.',
+          title: 'Did you finish with $bankName?',
+          // Method-agnostic on purpose. Mono decides the authorization method on
+          // its own hosted page and never tells us which one a bank uses: some
+          // banks approve by logging in, others ask for a small one-off transfer
+          // from the user's own banking app. We only know the user closed that
+          // page before we saw a confirmation, so the copy must cover BOTH paths
+          // rather than falsely instruct everyone to send ₦50.
+          body: 'To turn on Direct Debit, $bankName needs you to approve it. '
+              'Depending on your bank that is either a quick login approval or a '
+              'small one-off transfer from your own banking app.\n\nIf you '
+              'already did what your bank asked, we will confirm it '
+              'automatically. Please do not do it twice.',
         );
       case MandateOutcome.confirming:
         return (
@@ -226,13 +231,13 @@ class _MandateOutcomeSheetState extends State<_MandateOutcomeSheet> {
                 // one to hit.
                 _primary(
                   context,
-                  label: 'Yes, I already sent it',
+                  label: 'Yes, I finished it',
                   onTap: () => _resolve(true),
                 ),
                 SizedBox(height: 10.h),
                 _secondary(
                   context,
-                  label: "Not yet — I'll finish later",
+                  label: "Not yet, I'll finish later",
                   onTap: () => _resolve(false, thenResume: true),
                 ),
               ] else if (outcome == MandateOutcome.linkExpired) ...[

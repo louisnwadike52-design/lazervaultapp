@@ -42,30 +42,39 @@ void main() {
   testWidgets('the unconfirmed state ASKS rather than declaring failure',
       (tester) async {
     await pump(tester, MandateOutcome.unconfirmed);
-    expect(find.text('Did you send the transfer?'), findsOneWidget);
-    // The user who already paid is the one at risk of paying twice, so their
-    // path must be present and unmistakable.
-    expect(find.text('Yes, I already sent it'), findsOneWidget);
-    expect(find.text("Not yet — I'll finish later"), findsOneWidget);
+    expect(find.textContaining('Did you finish with'), findsOneWidget);
+    // The user who already completed the step is at risk of doing it twice, so
+    // their path must be present and unmistakable.
+    expect(find.text('Yes, I finished it'), findsOneWidget);
+    expect(find.text("Not yet, I'll finish later"), findsOneWidget);
   });
 
-  testWidgets('it names the amount and warns against paying twice',
+  testWidgets('it is method-agnostic and warns against doing it twice',
       (tester) async {
+    // Mono decides login-vs-one-off-transfer on its hosted page and never tells
+    // us which, so the copy must cover BOTH and never falsely instruct a
+    // login-based bank to "send ₦50".
     await pump(tester, MandateOutcome.unconfirmed);
     final body = tester
         .widgetList<Text>(find.byType(Text))
         .map((t) => t.data ?? '')
         .join(' ');
-    expect(body, contains('₦50'));
-    expect(body.toLowerCase(), contains('do not send it again'));
+    expect(body.toLowerCase(), contains('login approval'));
+    expect(body.toLowerCase(), contains('one-off transfer'));
+    expect(body.toLowerCase(), contains('do not do it twice'));
+    // Must NOT hardcode the ₦50 amount as the required action.
+    expect(body, isNot(contains('₦50')));
   });
 
-  testWidgets('"already sent" returns true so the caller keeps polling',
+  testWidgets('"finished" returns true so the caller keeps polling',
       (tester) async {
     await pump(tester, MandateOutcome.unconfirmed);
-    await tester.tap(find.text('Yes, I already sent it'));
+    // The sheet scrolls (85% max height); bring the button into view first.
+    await tester.ensureVisible(find.text('Yes, I finished it'));
     await tester.pumpAndSettle();
-    expect(find.text('Did you send the transfer?'), findsNothing);
+    await tester.tap(find.text('Yes, I finished it'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Did you finish with'), findsNothing);
   });
 
   testWidgets('the unconfirmed sheet exposes a dismissible scrim (escape)',
@@ -89,7 +98,7 @@ void main() {
     await pump(tester, MandateOutcome.confirming);
     expect(find.textContaining('Confirming with ALAT by WEMA'), findsOneWidget);
     // No resume action — reopening a spent link is exactly what dead-ends.
-    expect(find.text('Not yet — take me back'), findsNothing);
+    expect(find.text("Not yet, I'll finish later"), findsNothing);
   });
 
   testWidgets('the expired state reassures that nothing was charged',
@@ -179,7 +188,7 @@ void navigationEdgeCases() {
     );
     await tester.pumpAndSettle();
     expect(handled, isNotNull);
-    expect(find.text('Did you send the transfer?'), findsNothing);
+    expect(find.textContaining('Did you finish with'), findsNothing);
   });
 
   testWidgets('a resolved state CAN still be dismissed normally',
@@ -198,7 +207,9 @@ void navigationEdgeCases() {
   testWidgets('a double-tap resolves once, never popping the screen under it',
       (tester) async {
     await pumpOverAScreen(tester, MandateOutcome.unconfirmed);
-    final btn = find.text('Yes, I already sent it');
+    final btn = find.text('Yes, I finished it');
+    await tester.ensureVisible(btn);
+    await tester.pumpAndSettle();
     // Two taps inside the exit animation — the sheet is still hit-testable.
     await tester.tap(btn, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 16));

@@ -2516,8 +2516,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           // deposit form and tell them how to finish when they're ready.
           Get.snackbar(
             'Finish anytime',
-            'Send the one-off ₦50 from your bank app, then choose "Finish '
-                'Direct Debit setup" on your linked account.',
+            'Complete the step your bank asked for (a login approval, or a small '
+                'one-off transfer from your bank app), then choose "Finish Direct '
+                'Debit setup" on your linked account.',
             snackPosition: SnackPosition.BOTTOM,
             duration: const Duration(seconds: 5),
           );

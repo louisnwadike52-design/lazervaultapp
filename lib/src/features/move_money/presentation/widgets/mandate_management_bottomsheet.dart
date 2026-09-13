@@ -200,9 +200,10 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
               ],
 
               if (widget.mandate != null) ...[
-                // Info rows
-                _buildInfoRow(
-                    'Type', widget.mandate!.mandateType.name.toUpperCase()),
+                // Info rows. Don't leak the raw Mono enum ("EMANDATE") — it is
+                // always the same value and means nothing to a user; show the
+                // human method name.
+                _buildInfoRow('Method', 'Direct Debit'),
                 _buildInfoRow(
                   'Limit',
                   widget.mandate!.amountLimit == 0
@@ -341,9 +342,10 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                         messenger.showSnackBar(
                           const SnackBar(
                             content: Text(
-                              'You can finish Direct Debit anytime — send the '
-                              'one-off ₦50 from your bank app, then reopen Direct '
-                              'Debit setup.',
+                              'You can finish Direct Debit anytime. Complete the '
+                              'step your bank asked for (a login approval, or a '
+                              'small one-off transfer from your bank app), then '
+                              'reopen Direct Debit setup.',
                             ),
                             duration: Duration(seconds: 5),
                           ),
