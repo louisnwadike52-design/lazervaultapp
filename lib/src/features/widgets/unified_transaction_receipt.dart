@@ -584,6 +584,12 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       'bank_code', 'destination_bank_code',
       'recipient_name', 'counterparty_name',
       'recipient_account', 'counterparty_account',
+      // Payer/sender identity is already shown once via the To/From
+      // (counterpartyName) + Account rows; these metadata keys (QR flow) would
+      // otherwise print duplicate "Payer name / Sender name / Payer username"
+      // rows. sender_name/recipient_name stay in metadata for the PDF From/To
+      // lines; this only stops the WIDGET re-printing them.
+      'sender_name', 'payer_name', 'payer_username',
       // OPS plumbing — meaningful in the admin dashboard's transaction
       // details (where the raw metadata is shown), never to the user.
       // e.g. "source: stale_transfer_reconciler" on a reconciler-settled
