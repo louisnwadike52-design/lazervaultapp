@@ -79,11 +79,14 @@ class LockTypeSelector extends StatelessWidget {
                       maxRate: config.maxRatePercent,
                       isPremium: decor.$2,
                       isSelected: cubit.selectedConfigId == config.id,
-                      onTap: () => cubit.selectConfig(config),
-                      // Info icon → full plan details, so users can compare
-                      // before choosing. Only the config-driven path has the
-                      // full data; the offline enum fallback below omits it.
-                      onInfo: () => _showPlanDetails(context, config),
+                      // Tapping a plan opens its full details first; the user
+                      // confirms "Select this plan" (or cancels) from there, so
+                      // nobody picks a plan without seeing how it works.
+                      onTap: () => _showPlanDetails(
+                        context,
+                        config,
+                        onSelect: () => cubit.selectConfig(config),
+                      ),
                     );
                   }),
                   SizedBox(height: 16.h),
@@ -125,7 +128,6 @@ class LockTypeSelector extends StatelessWidget {
     bool isPremium = false,
     required bool isSelected,
     required VoidCallback onTap,
-    VoidCallback? onInfo,
   }) {
     final rateText = maxRate != null && maxRate != baseRate
         ? '${baseRate.toStringAsFixed(0)}-${maxRate.toStringAsFixed(0)}%'
@@ -232,27 +234,10 @@ class LockTypeSelector extends StatelessWidget {
               ),
             ),
             SizedBox(width: 8.w),
-            // Info button — opens the full plan details modal. Its own tap
-            // target sits inside the card's GestureDetector; the inner tap wins
-            // so tapping "i" shows details without also selecting the plan.
-            if (onInfo != null)
-              GestureDetector(
-                onTap: onInfo,
-                behavior: HitTestBehavior.opaque,
-                child: Padding(
-                  padding: EdgeInsets.all(4.w),
-                  child: Icon(
-                    Icons.info_outline_rounded,
-                    color: isSelected
-                        ? Colors.white.withValues(alpha: 0.9)
-                        : const Color(0xFF9CA3AF),
-                    size: 22.sp,
-                  ),
-                ),
-              ),
-            SizedBox(width: 6.w),
+            // A chevron signals "tap to see details + choose" (the tap opens
+            // the details sheet where the user confirms the selection).
             Icon(
-              isSelected ? Icons.check_circle : Icons.circle_outlined,
+              isSelected ? Icons.check_circle : Icons.chevron_right_rounded,
               color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
               size: 24.sp,
             ),
@@ -265,9 +250,14 @@ class LockTypeSelector extends StatelessWidget {
   /// Bottom-sheet with the full details of a plan, so a user can understand
   /// exactly what they're choosing before they commit: rate, duration and
   /// amount ranges, how interest pays out (upfront vs at maturity), the
-  /// early-withdrawal policy + penalty, supported features, and the admin's
-  /// own "before you confirm" notes.
-  void _showPlanDetails(BuildContext context, PiggyVaultConfig config) {
+  /// early-withdrawal policy and penalty, supported features, and the admin's
+  /// own "before you confirm" notes. [onSelect] runs when the user confirms
+  /// "Select this plan"; closing or "Cancel" selects nothing.
+  void _showPlanDetails(
+    BuildContext context,
+    PiggyVaultConfig config, {
+    required VoidCallback onSelect,
+  }) {
     String money(double amt) =>
         currency_formatter.CurrencySymbols.formatAmountWithCurrency(
             amt, config.currency);
@@ -281,13 +271,13 @@ class LockTypeSelector extends StatelessWidget {
       }
 
       if (config.minDurationDays <= 0 && config.maxDurationDays <= 0) {
-        return 'Flexible — withdraw anytime';
+        return 'Flexible. Withdraw anytime';
       }
       if (config.maxDurationDays <= 0 ||
           config.minDurationDays == config.maxDurationDays) {
         return fmt(config.minDurationDays);
       }
-      return '${fmt(config.minDurationDays)} – ${fmt(config.maxDurationDays)}';
+      return '${fmt(config.minDurationDays)} to ${fmt(config.maxDurationDays)}';
     }
 
     String amountText() {
@@ -317,9 +307,9 @@ class LockTypeSelector extends StatelessWidget {
         'Early withdrawal',
         config.allowsEarlyWithdrawal
             ? (config.penaltyPercent > 0
-                ? 'Allowed — ${config.penaltyPercent.toStringAsFixed(0)}% penalty on the amount'
+                ? 'Allowed, with a ${config.penaltyPercent.toStringAsFixed(0)}% penalty on the amount'
                 : 'Allowed, no penalty')
-            : 'Not allowed — funds unlock at maturity',
+            : 'Not allowed. Funds unlock at maturity',
       ),
     ];
 
@@ -470,26 +460,55 @@ class LockTypeSelector extends StatelessWidget {
                   ),
                   SizedBox(height: 16.h),
                 ],
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6366F1),
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          side: const BorderSide(color: Color(0xFF3A3A52)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: Text(
+                          'Cancel',
+                          style: GoogleFonts.inter(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFFCBD5E1),
+                          ),
+                        ),
                       ),
                     ),
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: Text(
-                      'Got it',
-                      style: GoogleFonts.inter(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6366F1),
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                        // Confirm the choice, then close. Selecting from inside
+                        // the details view means nobody picks a plan blind.
+                        onPressed: () {
+                          onSelect();
+                          Navigator.of(ctx).pop();
+                        },
+                        child: Text(
+                          'Select this plan',
+                          style: GoogleFonts.inter(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),
