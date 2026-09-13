@@ -42,11 +42,15 @@ Future<bool?> showMandateOutcomeSheet({
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
-    // A money step the user may have already paid for must not be dismissed by
-    // a stray tap on the scrim — they would lose the one screen telling them
-    // it is still in progress.
-    isDismissible: outcome != MandateOutcome.unconfirmed,
-    enableDrag: outcome != MandateOutcome.unconfirmed,
+    // Dismissible (scrim tap + drag). It used to be locked for the unconfirmed
+    // case to avoid losing the "still in progress" context, but that left NO
+    // exit and — combined with the caller re-opening the flow — trapped the user
+    // in an infinite loop. Safe to allow now: the caller polls the mandate
+    // BEFORE showing this, so dismissing never loses progress (the card settles
+    // on its own if the ₦50 lands), and the caller no longer re-opens on
+    // dismiss. A dismiss returns null, treated exactly like "Not yet".
+    isDismissible: true,
+    enableDrag: true,
     builder: (ctx) => _MandateOutcomeSheet(
       outcome: outcome,
       bankName: bankName,
@@ -138,14 +142,12 @@ class _MandateOutcomeSheetState extends State<_MandateOutcomeSheet> {
     final c = _copy;
     final isUnconfirmed = outcome == MandateOutcome.unconfirmed;
 
-    // `isDismissible: false` stops a scrim tap and nothing else — the Android
-    // back button and the iOS back-swipe still pop a modal sheet. That handed
-    // the caller a null result, which matches neither branch, so a user who
-    // had just paid ₦50 landed back on the deposit screen with no poll, no
-    // explanation, and every reason to pay again. Both buttons here resolve
-    // the sheet, so there is always a way out.
+    // Back button / back-swipe pop freely — a null result is treated the same
+    // as "Not yet" by the caller (return to the deposit form, no re-open), and
+    // the mandate poll fired before this sheet keeps running regardless. This is
+    // the escape hatch whose absence trapped users in a loop.
     return PopScope(
-      canPop: !isUnconfirmed,
+      canPop: true,
       child: _body(context, c, isUnconfirmed),
     );
   }
@@ -230,7 +232,7 @@ class _MandateOutcomeSheetState extends State<_MandateOutcomeSheet> {
                 SizedBox(height: 10.h),
                 _secondary(
                   context,
-                  label: 'Not yet — take me back',
+                  label: "Not yet — I'll finish later",
                   onTap: () => _resolve(false, thenResume: true),
                 ),
               ] else if (outcome == MandateOutcome.linkExpired) ...[

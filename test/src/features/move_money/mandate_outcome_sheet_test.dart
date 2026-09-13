@@ -46,7 +46,7 @@ void main() {
     // The user who already paid is the one at risk of paying twice, so their
     // path must be present and unmistakable.
     expect(find.text('Yes, I already sent it'), findsOneWidget);
-    expect(find.text('Not yet — take me back'), findsOneWidget);
+    expect(find.text("Not yet — I'll finish later"), findsOneWidget);
   });
 
   testWidgets('it names the amount and warns against paying twice',
@@ -68,14 +68,18 @@ void main() {
     expect(find.text('Did you send the transfer?'), findsNothing);
   });
 
-  testWidgets('the unconfirmed sheet cannot be dismissed by the scrim',
+  testWidgets('the unconfirmed sheet exposes a dismissible scrim (escape)',
       (tester) async {
-    // Tapping it away would lose the only screen telling a user who may have
-    // just paid that the setup is still in progress.
+    // The scrim is now a valid escape: a dismissible ModalBarrier means the
+    // sheet can be tapped away, returning null — which the caller treats like
+    // "Not yet" (return to the deposit form, no re-open). Locking it, combined
+    // with the caller re-opening the flow, was the infinite-loop trap. (Actual
+    // dismissal is exercised by the back-button test below.)
     await pump(tester, MandateOutcome.unconfirmed);
-    await tester.tapAt(const Offset(200, 60));
-    await tester.pumpAndSettle();
-    expect(find.text('Did you send the transfer?'), findsOneWidget);
+    final dismissibleBarrier = find.byWidgetPredicate(
+      (w) => w is ModalBarrier && w.dismissible == true,
+    );
+    expect(dismissibleBarrier, findsWidgets);
   });
 
   navigationEdgeCases();
@@ -114,10 +118,11 @@ void main() {
   });
 }
 
-// Navigation edge cases. `isDismissible: false` covers the scrim and NOTHING
-// else — the system back button still pops a modal sheet, and a sheet stays
-// hit-testable while it animates out. Both routes dropped the user out of a
-// half-finished money setup.
+// Navigation edge cases. The unconfirmed sheet is now escapable (scrim + back
+// both dismiss → null, treated as "Not yet"), because locking it trapped users
+// in a loop. The remaining guard is the double-tap one: a sheet stays
+// hit-testable while it animates out, so a fast double-tap must resolve ONCE
+// and never pop the screen underneath.
 
 Future<int> pumpOverAScreen(WidgetTester tester, MandateOutcome outcome) async {
   var poppedPastTheSheet = 0;
@@ -158,11 +163,12 @@ class _PopSpy extends NavigatorObserver {
 }
 
 void navigationEdgeCases() {
-  testWidgets('the back button cannot strand a user mid-setup', (tester) async {
+  testWidgets('the back button dismisses the sheet (escape, no loop)',
+      (tester) async {
     await pump(tester, MandateOutcome.unconfirmed);
-    // Android back / iOS back-swipe. Without PopScope this pops the sheet and
-    // hands the caller null — which matches NEITHER branch, so nothing polls
-    // and nothing is explained to someone who may have just paid ₦50.
+    // Android back / iOS back-swipe now pops the sheet → caller gets null and
+    // returns to the deposit form (the poll it fired beforehand keeps running).
+    // This is the escape hatch; blocking it is what trapped users in a loop.
     final handled =
         await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
       'flutter/navigation',
@@ -173,12 +179,12 @@ void navigationEdgeCases() {
     );
     await tester.pumpAndSettle();
     expect(handled, isNotNull);
-    expect(find.text('Did you send the transfer?'), findsOneWidget);
+    expect(find.text('Did you send the transfer?'), findsNothing);
   });
 
   testWidgets('a resolved state CAN still be dismissed normally',
       (tester) async {
-    // Only the unconfirmed question is trapped. "Got it" has nothing at stake.
+    // Every state is now dismissible; the terminal "Got it" states especially.
     await pump(tester, MandateOutcome.active);
     await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
       'flutter/navigation',

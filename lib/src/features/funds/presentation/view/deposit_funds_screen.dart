@@ -2504,13 +2504,23 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
           outcome: MandateOutcome.unconfirmed,
           bankName: account.bankName,
         );
-        if (alreadySent == false && mounted) {
-          // "Not yet" — put them straight back rather than making them find
-          // the card menu.
-          // Re-enter with a FRESH mandate lookup: the resume path re-reads
-          // state, so a link that expired while they decided is caught by
-          // the stale-link guard rather than reopened.
-          _switchToDirectDebit(account, null);
+        if ((alreadySent == false || alreadySent == null) && mounted) {
+          // "Not yet" / dismissed — do NOT re-open the Direct Debit flow.
+          //
+          // The old code re-called _switchToDirectDebit here, which re-opened
+          // the (already-spent) Mono link and re-showed this same sheet on the
+          // next cancel — an infinite loop with no exit (the stale-link guard
+          // only fires for a link that was STAMPED, and a cancel never stamps).
+          // The poll fired above already settles the card to Direct Debit if
+          // the ₦50 lands later, so there's nothing to re-drive. Return to the
+          // deposit form and tell them how to finish when they're ready.
+          Get.snackbar(
+            'Finish anytime',
+            'Send the one-off ₦50 from your bank app, then choose "Finish '
+                'Direct Debit setup" on your linked account.',
+            snackPosition: SnackPosition.BOTTOM,
+            duration: const Duration(seconds: 5),
+          );
         }
       }
       // No mandate at all ("Not Now" on the explainer) — a deliberate
