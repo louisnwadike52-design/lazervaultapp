@@ -23,6 +23,15 @@ class ContactlessPdfService {
   static String _currencySymbolFor(String code) =>
       receiptCurrencySymbol(code);
 
+  /// A human label for the other party in share text: prefer "@handle", fall
+  /// back to their name, and only then to a generic phrase — never a bare "@"
+  /// (empty username) which reads as broken.
+  static String _partyLabel(String username, String name) {
+    if (username.trim().isNotEmpty) return '@${username.trim()}';
+    if (name.trim().isNotEmpty) return name.trim();
+    return 'a Lazervault user';
+  }
+
   /// Get display currency name
   /// Real transaction status — receipts must never claim 'Completed' for a
   /// failed or reversed payment.
@@ -313,11 +322,15 @@ class ContactlessPdfService {
               : 'LAZERVAULT USER',
           style: _getTextStyle(fontSize: 14, isBold: true),
         ),
-        pw.SizedBox(height: 4),
-        pw.Text(
-          '@${transaction.payerUsername}',
-          style: _getTextStyle(fontSize: 12, color: PdfColors.grey700),
-        ),
+        // Only render the handle when there IS one — a bare "@" (empty username)
+        // reads as broken. The name above already identifies the payer.
+        if (transaction.payerUsername.isNotEmpty) ...[
+          pw.SizedBox(height: 4),
+          pw.Text(
+            '@${transaction.payerUsername}',
+            style: _getTextStyle(fontSize: 12, color: PdfColors.grey700),
+          ),
+        ],
         if (accountNumber != null && accountNumber.isNotEmpty) ...[
           pw.SizedBox(height: 16),
           pw.Text(
@@ -351,11 +364,13 @@ class ContactlessPdfService {
               : 'LAZERVAULT USER',
           style: _getTextStyle(fontSize: 14, isBold: true),
         ),
-        pw.SizedBox(height: 4),
-        pw.Text(
-          '@${transaction.payerUsername}',
-          style: _getTextStyle(fontSize: 12, color: PdfColors.grey700),
-        ),
+        if (transaction.payerUsername.isNotEmpty) ...[
+          pw.SizedBox(height: 4),
+          pw.Text(
+            '@${transaction.payerUsername}',
+            style: _getTextStyle(fontSize: 12, color: PdfColors.grey700),
+          ),
+        ],
       ],
     );
   }
@@ -652,7 +667,7 @@ class ContactlessPdfService {
         sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
         text:
-            'Contactless Payment Receipt - $currencySymbol$amount to @${transaction.receiverUsername}',
+            'Contactless Payment Receipt - $currencySymbol$amount to ${_partyLabel(transaction.receiverUsername, transaction.receiverName)}',
         subject: 'Lazervault Contactless Payment Receipt',
       ));
     } catch (e) {
@@ -680,7 +695,7 @@ class ContactlessPdfService {
         sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
         text:
-            'Contactless Payment Received - $currencySymbol$amount from @${transaction.payerUsername}',
+            'Contactless Payment Received - $currencySymbol$amount from ${_partyLabel(transaction.payerUsername, transaction.payerName)}',
         subject: 'Lazervault Contactless Payment Received',
       ));
     } catch (e) {
