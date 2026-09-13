@@ -267,7 +267,8 @@ class LockTypeSelector extends StatelessWidget {
         if (days <= 0) return 'flexible';
         if (days < 30) return '$days days';
         if (days < 365) return '${(days / 30).floor()} months';
-        return '${(days / 365).floor()} year(s)';
+        final years = (days / 365).floor();
+        return years == 1 ? '1 year' : '$years years';
       }
 
       if (config.minDurationDays <= 0 && config.maxDurationDays <= 0) {

@@ -68,6 +68,16 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
     if (cubit.amount != null) {
       _amountController.text = cubit.amount!.toStringAsFixed(2);
     }
+
+    // Auto-select the duration when a plan offers exactly ONE (e.g. Year Lock is
+    // a fixed 365 days). A single chip is not a choice — pre-select it so the
+    // user isn't forced to tap the only option (and the maturity/interest
+    // preview + the Continue gate are satisfied immediately). Configs are loaded
+    // by the time this step is reached (the plan was picked on the prior step).
+    final durations = _durations;
+    if (durations.length == 1 && cubit.lockDurationDays == null) {
+      cubit.updateLockDuration(durations.first);
+    }
   }
 
   @override
