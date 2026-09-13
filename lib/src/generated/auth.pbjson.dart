@@ -726,16 +726,39 @@ const GetAuthenticationConfigResponse$json = {
       '5': 8,
       '10': 'phoneVerificationRequired'
     },
+    {
+      '1': 'social_login_enabled',
+      '3': 4,
+      '4': 1,
+      '5': 8,
+      '10': 'socialLoginEnabled'
+    },
+    {
+      '1': 'google_login_enabled',
+      '3': 5,
+      '4': 1,
+      '5': 8,
+      '10': 'googleLoginEnabled'
+    },
+    {
+      '1': 'apple_login_enabled',
+      '3': 6,
+      '4': 1,
+      '5': 8,
+      '10': 'appleLoginEnabled'
+    },
   ],
 };
 
 /// Descriptor for `GetAuthenticationConfigResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAuthenticationConfigResponseDescriptor =
-    $convert.base64Decode(
-        'Ch9HZXRBdXRoZW50aWNhdGlvbkNvbmZpZ1Jlc3BvbnNlEi8KE2F1dGhlbnRpY2F0aW9uX21vZG'
-        'UYASABKAlSEmF1dGhlbnRpY2F0aW9uTW9kZRI+ChtlbWFpbF92ZXJpZmljYXRpb25fcmVxdWly'
-        'ZWQYAiABKAhSGWVtYWlsVmVyaWZpY2F0aW9uUmVxdWlyZWQSPgobcGhvbmVfdmVyaWZpY2F0aW'
-        '9uX3JlcXVpcmVkGAMgASgIUhlwaG9uZVZlcmlmaWNhdGlvblJlcXVpcmVk');
+final $typed_data.Uint8List getAuthenticationConfigResponseDescriptor = $convert.base64Decode(
+    'Ch9HZXRBdXRoZW50aWNhdGlvbkNvbmZpZ1Jlc3BvbnNlEi8KE2F1dGhlbnRpY2F0aW9uX21vZG'
+    'UYASABKAlSEmF1dGhlbnRpY2F0aW9uTW9kZRI+ChtlbWFpbF92ZXJpZmljYXRpb25fcmVxdWly'
+    'ZWQYAiABKAhSGWVtYWlsVmVyaWZpY2F0aW9uUmVxdWlyZWQSPgobcGhvbmVfdmVyaWZpY2F0aW'
+    '9uX3JlcXVpcmVkGAMgASgIUhlwaG9uZVZlcmlmaWNhdGlvblJlcXVpcmVkEjAKFHNvY2lhbF9s'
+    'b2dpbl9lbmFibGVkGAQgASgIUhJzb2NpYWxMb2dpbkVuYWJsZWQSMAoUZ29vZ2xlX2xvZ2luX2'
+    'VuYWJsZWQYBSABKAhSEmdvb2dsZUxvZ2luRW5hYmxlZBIuChNhcHBsZV9sb2dpbl9lbmFibGVk'
+    'GAYgASgIUhFhcHBsZUxvZ2luRW5hYmxlZA==');
 
 @$core.Deprecated('Use requestSignupPhoneOTPRequestDescriptor instead')
 const RequestSignupPhoneOTPRequest$json = {
@@ -1597,6 +1620,15 @@ const SocialLoginResponse$json = {
       '5': 3,
       '10': 'stepUpExpiresIn'
     },
+    {'1': 'has_passcode', '3': 14, '4': 1, '5': 8, '10': 'hasPasscode'},
+    {
+      '1': 'has_transaction_pin',
+      '3': 15,
+      '4': 1,
+      '5': 8,
+      '10': 'hasTransactionPin'
+    },
+    {'1': 'has_password', '3': 16, '4': 1, '5': 8, '10': 'hasPassword'},
   ],
 };
 
@@ -1611,7 +1643,9 @@ final $typed_data.Uint8List socialLoginResponseDescriptor = $convert.base64Decod
     'ZXF1aXJlZBgJIAEoCFIOc3RlcFVwUmVxdWlyZWQSIgoNc3RlcF91cF90b2tlbhgKIAEoCVILc3'
     'RlcFVwVG9rZW4SJAoOc3RlcF91cF9tZXRob2QYCyABKAlSDHN0ZXBVcE1ldGhvZBIuChNzdGVw'
     'X3VwX2Rlc3RpbmF0aW9uGAwgASgJUhFzdGVwVXBEZXN0aW5hdGlvbhIrChJzdGVwX3VwX2V4cG'
-    'lyZXNfaW4YDSABKANSD3N0ZXBVcEV4cGlyZXNJbg==');
+    'lyZXNfaW4YDSABKANSD3N0ZXBVcEV4cGlyZXNJbhIhCgxoYXNfcGFzc2NvZGUYDiABKAhSC2hh'
+    'c1Bhc3Njb2RlEi4KE2hhc190cmFuc2FjdGlvbl9waW4YDyABKAhSEWhhc1RyYW5zYWN0aW9uUG'
+    'luEiEKDGhhc19wYXNzd29yZBgQIAEoCFILaGFzUGFzc3dvcmQ=');
 
 @$core.Deprecated('Use linkedSocialAccountDescriptor instead')
 const LinkedSocialAccount$json = {

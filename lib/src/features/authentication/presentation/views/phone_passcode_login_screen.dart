@@ -309,6 +309,15 @@ class _PhonePasscodeLoginScreenState extends State<PhonePasscodeLoginScreen> {
                 _passcodePhase = false;
                 _identifierError = _unknownIdentifierMessage();
               });
+              // ALSO surface a snackbar on the way back. The inline field error
+              // alone read as "it just went back to the phone screen with no
+              // explanation" — the navigation itself needs a spoken reason (the
+              // haptic already fired above), matching the email/password flow.
+              showAppSnackbar(
+                "We couldn't find that account",
+                'Check the phone number or email you entered and try again.',
+                type: AppSnackbarType.error,
+              );
             } else if (noPasscodeAccount) {
               setState(() => _passcodePhase = false); // back to the phone step
               showAppSnackbar(

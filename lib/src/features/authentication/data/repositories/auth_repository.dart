@@ -428,6 +428,12 @@ class AuthRepositoryImpl implements IAuthRepository {
         email: response.emailVerificationRequired,
         phone: response.phoneVerificationRequired,
       );
+      // Admin-tunable social sign-in visibility (default true when unset).
+      await FeatureFlags.setSocialLoginVisibility(
+        social: response.socialLoginEnabled,
+        google: response.googleLoginEnabled,
+        apple: response.appleLoginEnabled,
+      );
       return Right(mode);
     } on GrpcError catch (e) {
       return Left(ServerFailure(
@@ -1018,7 +1024,16 @@ class AuthRepositoryImpl implements IAuthRepository {
             message: 'Sign-in failed. Please try again.', statusCode: 401));
       }
 
+      // The User proto doesn't carry passcode/PIN/password state — copy the
+      // response's dedicated flags in so a returning social user is routed by
+      // their real account shape (not defaulted into passcode setup), exactly
+      // as _processAuthResponse does with LoginData.
       final userModel = UserModel.fromAuthProto(response.user)
+          .copyWith(
+            hasPasscode: response.hasPasscode,
+            hasTransactionPin: response.hasTransactionPin,
+            hasPassword: response.hasPassword,
+          )
           .withRolesFromAccessToken(response.accessToken);
       final now = DateTime.now();
       final expiresAt = response.expiresIn > 0

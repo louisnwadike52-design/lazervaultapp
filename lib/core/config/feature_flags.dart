@@ -118,6 +118,9 @@ class FeatureFlags {
   // internal endpoint + GetAuthenticationConfig.
   static const String emailVerificationRequired = 'email_verification_required';
   static const String phoneVerificationRequired = 'phone_verification_required';
+  static const String socialLoginEnabledKey = 'social_login_enabled';
+  static const String googleLoginEnabledKey = 'google_login_enabled';
+  static const String appleLoginEnabledKey = 'apple_login_enabled';
 
   // ── Auto-logon (admin-toggled) ────────────────────────────────────────────
   // When ON (DEFAULT), a returning user who has OPTED INTO biometric login and
@@ -848,6 +851,35 @@ class FeatureFlags {
     _prefs = prefs;
     await prefs.setBool(emailVerificationRequired, email);
     await prefs.setBool(phoneVerificationRequired, phone);
+  }
+
+  // ── Social sign-in visibility (admin toggles, from GetAuthenticationConfig) ──
+  /// Whether social sign-in is shown at all (admin master toggle). Default TRUE
+  /// so a fresh install / config-read failure shows it (it is not a security
+  /// control — the server verifies every provider token regardless).
+  static bool get isSocialLoginEnabled =>
+      _prefs?.getBool(socialLoginEnabledKey) ?? true;
+
+  /// Whether the Google button is shown (admin toggle AND the master toggle).
+  static bool get isGoogleLoginEnabled =>
+      isSocialLoginEnabled && (_prefs?.getBool(googleLoginEnabledKey) ?? true);
+
+  /// Whether the Apple button is shown (admin toggle AND the master toggle).
+  static bool get isAppleLoginEnabled =>
+      isSocialLoginEnabled && (_prefs?.getBool(appleLoginEnabledKey) ?? true);
+
+  /// Overwrite the cached social-login visibility flags (from the startup
+  /// GET /api/v1/auth/config refresh, alongside auth_mode + verification).
+  static Future<void> setSocialLoginVisibility({
+    required bool social,
+    required bool google,
+    required bool apple,
+  }) async {
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
+    _prefs = prefs;
+    await prefs.setBool(socialLoginEnabledKey, social);
+    await prefs.setBool(googleLoginEnabledKey, google);
+    await prefs.setBool(appleLoginEnabledKey, apple);
   }
 
   // ── App auto-update (store version check) ─────────────────────────────────

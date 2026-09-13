@@ -466,11 +466,18 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
     );
   }
 
-  /// Platform availability × the Settings toggle. Both must agree — a method
-  /// the OS can't complete is as useless as one the user turned off.
+  /// Shown only when ALL three agree: the OS can complete it
+  /// ([OAuthProviders]), the admin left it enabled ([FeatureFlags], from
+  /// GetAuthenticationConfig), and the user didn't hide it in Settings
+  /// (_googleLoginOn/_appleLoginOn).
   bool get _showGoogleSignIn =>
-      OAuthProviders.googleAvailable && _googleLoginOn;
-  bool get _showAppleSignIn => OAuthProviders.appleAvailable && _appleLoginOn;
+      OAuthProviders.googleAvailable &&
+      FeatureFlags.isGoogleLoginEnabled &&
+      _googleLoginOn;
+  bool get _showAppleSignIn =>
+      OAuthProviders.appleAvailable &&
+      FeatureFlags.isAppleLoginEnabled &&
+      _appleLoginOn;
 
   /// Google/Apple from the lock screen sign in as WHOEVER the provider
   /// verifies — the cubit + backend resolve the account; a mismatch with the
@@ -1129,7 +1136,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                                         size: 40.w,
                                         onPressed: _onGooglePressed,
                                       ),
-                                      SizedBox(width: 24.w),
+                                      SizedBox(width: 14.w),
                                     ],
                                     if ((_canCheckBiometrics &&
                                             _availableBiometricType != null) ||
@@ -1158,7 +1165,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                                             _availableBiometricType != null) ||
                                         (Platform.isAndroid &&
                                             _canEnrollBiometric))
-                                      SizedBox(width: 24.w),
+                                      SizedBox(width: 14.w),
                                     _buildIconButton(
                                       icon: Icons.mic_none_outlined,
                                       onPressed: _onVoicePressed,
@@ -1167,7 +1174,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                                       tooltip: 'Voice login',
                                     ),
                                     if (_showAppleSignIn) ...[
-                                      SizedBox(width: 24.w),
+                                      SizedBox(width: 14.w),
                                       AppleRoundIconButton(
                                         size: 40.w,
                                         onPressed: _onApplePressed,

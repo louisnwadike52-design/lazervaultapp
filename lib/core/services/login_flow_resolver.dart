@@ -113,12 +113,21 @@ class LoginFlowResolver {
     String? preferred,
     bool hasPasscode = false,
     bool hasPassword = false,
+    bool isSocial = false,
   }) {
     final p = (preferred ?? '').toLowerCase().trim();
     if (p == _email && hasPassword) return _email;
     if (p == _phone && hasPasscode) return _phone;
     if (hasPasscode) return _phone;
     if (hasPassword) return _email;
+    // A Google/Apple account has neither a passcode nor a password — its
+    // re-login lives on the email/social screen (which renders the provider
+    // buttons), NOT the passcode lock (a dead-end with nothing to type) nor the
+    // phone+passcode "switch user" screen. Without this a social user who logs
+    // out landed on the passwordless "Switch user" flow. Placed AFTER the
+    // passcode/password checks so a social user who later sets a passcode still
+    // gets the passcode lock.
+    if (isSocial) return _email;
     return _phone;
   }
 
@@ -129,9 +138,15 @@ class LoginFlowResolver {
     String? preferred,
     required bool hasPasscode,
     required bool hasPassword,
+    bool isSocial = false,
   }) async {
     await FeatureFlags.setLoginFlow(
-      compute(preferred: preferred, hasPasscode: hasPasscode, hasPassword: hasPassword),
+      compute(
+        preferred: preferred,
+        hasPasscode: hasPasscode,
+        hasPassword: hasPassword,
+        isSocial: isSocial,
+      ),
     );
   }
 

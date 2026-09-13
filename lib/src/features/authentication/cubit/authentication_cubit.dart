@@ -402,10 +402,16 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       // Resolve + cache the SINGLE canonical login flow from the account's real
       // shape + explicit choice, so every screen/router agrees on the next
       // launch (offline-safe, default phone_passcode). See LoginFlowResolver.
+      // A Google/Apple account (login_method 'social', no passcode/password)
+      // resolves to the email/social screen so logout doesn't dead-end it on
+      // the passcode lock's "Switch user".
+      final loginMethodNow =
+          (await _storage.read(key: 'login_method'))?.toLowerCase().trim();
       await LoginFlowResolver.record(
         preferred: pref,
         hasPasscode: profile.user.hasPasscode,
         hasPassword: profile.user.hasPassword,
+        isSocial: loginMethodNow == 'social',
       );
 
       // Reset locale/currency from registration country (in-memory, derived)

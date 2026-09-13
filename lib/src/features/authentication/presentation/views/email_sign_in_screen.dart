@@ -23,6 +23,7 @@ import 'package:lazervault/core/services/server_status_service.dart';
 import 'package:lazervault/core/services/voice_biometrics_service.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/src/features/widgets/oauth_sign_in_buttons.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -70,8 +71,16 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
   bool _googleLoginOn = true;
   bool _appleLoginOn = true;
 
-  bool get _showGoogle => OAuthProviders.googleAvailable && _googleLoginOn;
-  bool get _showApple => OAuthProviders.appleAvailable && _appleLoginOn;
+  // Shown only when the OS can complete it, the admin left it enabled
+  // (FeatureFlags, from GetAuthenticationConfig), and the user didn't hide it.
+  bool get _showGoogle =>
+      OAuthProviders.googleAvailable &&
+      FeatureFlags.isGoogleLoginEnabled &&
+      _googleLoginOn;
+  bool get _showApple =>
+      OAuthProviders.appleAvailable &&
+      FeatureFlags.isAppleLoginEnabled &&
+      _appleLoginOn;
   bool get _socialSignInEnabled => _showGoogle || _showApple;
 
   Future<void> _loadSocialLoginPrefs() async {

@@ -2248,6 +2248,9 @@ class GetAuthenticationConfigResponse extends $pb.GeneratedMessage {
     $core.String? authenticationMode,
     $core.bool? emailVerificationRequired,
     $core.bool? phoneVerificationRequired,
+    $core.bool? socialLoginEnabled,
+    $core.bool? googleLoginEnabled,
+    $core.bool? appleLoginEnabled,
   }) {
     final result = create();
     if (authenticationMode != null)
@@ -2256,6 +2259,11 @@ class GetAuthenticationConfigResponse extends $pb.GeneratedMessage {
       result.emailVerificationRequired = emailVerificationRequired;
     if (phoneVerificationRequired != null)
       result.phoneVerificationRequired = phoneVerificationRequired;
+    if (socialLoginEnabled != null)
+      result.socialLoginEnabled = socialLoginEnabled;
+    if (googleLoginEnabled != null)
+      result.googleLoginEnabled = googleLoginEnabled;
+    if (appleLoginEnabled != null) result.appleLoginEnabled = appleLoginEnabled;
     return result;
   }
 
@@ -2275,6 +2283,9 @@ class GetAuthenticationConfigResponse extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'authenticationMode')
     ..aOB(2, _omitFieldNames ? '' : 'emailVerificationRequired')
     ..aOB(3, _omitFieldNames ? '' : 'phoneVerificationRequired')
+    ..aOB(4, _omitFieldNames ? '' : 'socialLoginEnabled')
+    ..aOB(5, _omitFieldNames ? '' : 'googleLoginEnabled')
+    ..aOB(6, _omitFieldNames ? '' : 'appleLoginEnabled')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2329,6 +2340,36 @@ class GetAuthenticationConfigResponse extends $pb.GeneratedMessage {
   $core.bool hasPhoneVerificationRequired() => $_has(2);
   @$pb.TagNumber(3)
   void clearPhoneVerificationRequired() => $_clearField(3);
+
+  /// Admin toggles for social sign-in visibility (default TRUE / shown). Apply to
+  /// BOTH the passcode lock screen and the email/password login screen. Not a
+  /// security control — the server verifies every provider token regardless.
+  @$pb.TagNumber(4)
+  $core.bool get socialLoginEnabled => $_getBF(3);
+  @$pb.TagNumber(4)
+  set socialLoginEnabled($core.bool value) => $_setBool(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasSocialLoginEnabled() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSocialLoginEnabled() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get googleLoginEnabled => $_getBF(4);
+  @$pb.TagNumber(5)
+  set googleLoginEnabled($core.bool value) => $_setBool(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasGoogleLoginEnabled() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearGoogleLoginEnabled() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get appleLoginEnabled => $_getBF(5);
+  @$pb.TagNumber(6)
+  set appleLoginEnabled($core.bool value) => $_setBool(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasAppleLoginEnabled() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAppleLoginEnabled() => $_clearField(6);
 }
 
 class RequestSignupPhoneOTPRequest extends $pb.GeneratedMessage {
@@ -6347,6 +6388,9 @@ class SocialLoginResponse extends $pb.GeneratedMessage {
     $core.String? stepUpMethod,
     $core.String? stepUpDestination,
     $fixnum.Int64? stepUpExpiresIn,
+    $core.bool? hasPasscode,
+    $core.bool? hasTransactionPin,
+    $core.bool? hasPassword,
   }) {
     final result = create();
     if (accessToken != null) result.accessToken = accessToken;
@@ -6362,6 +6406,9 @@ class SocialLoginResponse extends $pb.GeneratedMessage {
     if (stepUpMethod != null) result.stepUpMethod = stepUpMethod;
     if (stepUpDestination != null) result.stepUpDestination = stepUpDestination;
     if (stepUpExpiresIn != null) result.stepUpExpiresIn = stepUpExpiresIn;
+    if (hasPasscode != null) result.hasPasscode = hasPasscode;
+    if (hasTransactionPin != null) result.hasTransactionPin = hasTransactionPin;
+    if (hasPassword != null) result.hasPassword = hasPassword;
     return result;
   }
 
@@ -6391,6 +6438,9 @@ class SocialLoginResponse extends $pb.GeneratedMessage {
     ..aOS(11, _omitFieldNames ? '' : 'stepUpMethod')
     ..aOS(12, _omitFieldNames ? '' : 'stepUpDestination')
     ..aInt64(13, _omitFieldNames ? '' : 'stepUpExpiresIn')
+    ..aOB(14, _omitFieldNames ? '' : 'hasPasscode')
+    ..aOB(15, _omitFieldNames ? '' : 'hasTransactionPin')
+    ..aOB(16, _omitFieldNames ? '' : 'hasPassword')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -6536,6 +6586,37 @@ class SocialLoginResponse extends $pb.GeneratedMessage {
   $core.bool hasStepUpExpiresIn() => $_has(12);
   @$pb.TagNumber(13)
   void clearStepUpExpiresIn() => $_clearField(13);
+
+  /// Passcode/PIN/password state — the User message does NOT carry these, so
+  /// without them a social login (like a 2FA login before its fix) defaults all
+  /// to false on the client and misroutes a returning social user into passcode
+  /// setup. Populated via resolvePasscodePinFlags, same as buildLoginData.
+  @$pb.TagNumber(14)
+  $core.bool get hasPasscode => $_getBF(13);
+  @$pb.TagNumber(14)
+  set hasPasscode($core.bool value) => $_setBool(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasHasPasscode() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearHasPasscode() => $_clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.bool get hasTransactionPin => $_getBF(14);
+  @$pb.TagNumber(15)
+  set hasTransactionPin($core.bool value) => $_setBool(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasHasTransactionPin() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearHasTransactionPin() => $_clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.bool get hasPassword => $_getBF(15);
+  @$pb.TagNumber(16)
+  set hasPassword($core.bool value) => $_setBool(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasHasPassword() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearHasPassword() => $_clearField(16);
 }
 
 /// ===== Social Account Linking =====
