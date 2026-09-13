@@ -32,6 +32,9 @@ class _QRPaymentConfirmationScreenState
   final _amountController = TextEditingController();
   Map<String, dynamic> _qrData = {};
   String? _selectedAccountId;
+  // The paying account, formatted "Personal (0123456789)", captured at pay time
+  // and shown on the receipt so it names the actual account, not a bare handle.
+  String? _sourceAccountLabel;
   bool _payerEntersAmount = false;
   bool _isProcessing = false;
   bool _isLoadingDetails = false;
@@ -160,6 +163,16 @@ class _QRPaymentConfirmationScreenState
         return;
       }
       final selectedAccount = matches.first;
+      // Capture the real account label for the receipt: "Personal (number)",
+      // falling back to the masked last-4 when the full NUBAN isn't loaded.
+      final acctNum = (selectedAccount.accountNumber?.isNotEmpty ?? false)
+          ? selectedAccount.accountNumber!
+          : (selectedAccount.accountNumberLast4.isNotEmpty
+              ? '****${selectedAccount.accountNumberLast4}'
+              : '');
+      _sourceAccountLabel = acctNum.isNotEmpty
+          ? '${selectedAccount.accountType} ($acctNum)'
+          : selectedAccount.accountType;
 
       if (selectedAccount.currency.toUpperCase() != currency) {
         Get.snackbar(
@@ -312,6 +325,7 @@ class _QRPaymentConfirmationScreenState
               arguments: {
                 'transaction': state.transaction,
                 'newBalance': state.newBalance,
+                'sourceAccountLabel': _sourceAccountLabel,
               },
             );
           } else if (state is QRPaymentError) {

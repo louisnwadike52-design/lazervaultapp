@@ -34,6 +34,7 @@ class _QRPaymentReceiptScreenState extends State<QRPaymentReceiptScreen> {
     final args = Get.arguments as Map<String, dynamic>?;
     final txn = args?['transaction'] as QRTransactionEntity?;
     final newBalance = args?['newBalance'] as double?;
+    final sourceAccountLabel = args?['sourceAccountLabel'] as String?;
 
     if (txn == null) {
       Get.offAllNamed(AppRoutes.dashboard);
@@ -42,7 +43,11 @@ class _QRPaymentReceiptScreenState extends State<QRPaymentReceiptScreen> {
       return;
     }
 
-    final unified = qrTxnToUnified(txn, newBalance: newBalance);
+    final unified = qrTxnToUnified(
+      txn,
+      newBalance: newBalance,
+      sourceAccountLabel: sourceAccountLabel,
+    );
 
     // Dashboard underneath, rich receipt on top: Back from the receipt lands
     // on the dashboard, exactly like opening it from transaction history.

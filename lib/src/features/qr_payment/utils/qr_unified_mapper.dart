@@ -11,6 +11,11 @@ UnifiedTransaction qrTxnToUnified(
   QRTransactionEntity txn, {
   String? viewerUserId,
   double? newBalance,
+  // The viewer's ACTUAL account used, formatted "Personal (0123456789)".
+  // Shown as the "Account" row instead of the counterparty @handle (which now
+  // gets its own Username row). Only known on the payer's just-paid receipt;
+  // null in history views, where the Account row is simply omitted.
+  String? sourceAccountLabel,
 }) {
   final viewerIsPayer = viewerUserId == null ||
       viewerUserId.isEmpty ||
@@ -37,14 +42,20 @@ UnifiedTransaction qrTxnToUnified(
     flow: viewerIsPayer ? TransactionFlow.outgoing : TransactionFlow.incoming,
     transactionReference: txn.referenceNumber,
     counterpartyName: otherName.isNotEmpty ? otherName : null,
-    counterpartyAccount: otherHandle.isNotEmpty ? '@$otherHandle' : null,
+    // "Account" row = the viewer's real account when known; otherwise omitted
+    // (no longer the counterparty @handle, which now has its own Username row).
+    counterpartyAccount:
+        (sourceAccountLabel != null && sourceAccountLabel.trim().isNotEmpty)
+            ? sourceAccountLabel.trim()
+            : null,
     metadata: {
       if (txn.qrId.isNotEmpty) 'qr_id': txn.qrId,
-      if (txn.payerName.isNotEmpty) 'payer_name': txn.payerName,
-      if (txn.payerUsername.isNotEmpty) 'payer_username': txn.payerUsername,
-      // PDF payload (generateUnifiedTransferReceipt resolves From/To off
-      // these snake_case chains — without them the sender line printed
-      // blank on the Revolut-style receipt).
+      // ONE handle row (with the @). The name is already shown once via
+      // counterpartyName, so this avoids the payer/name/username duplication.
+      if (otherHandle.isNotEmpty) 'username': '@$otherHandle',
+      // PDF payload (generateUnifiedTransferReceipt resolves From/To off these
+      // snake_case chains). Hidden from the widget list (baseHiddenKeys) so they
+      // don't re-print as rows — they exist only for the PDF From/To lines.
       if (txn.payerName.isNotEmpty) 'sender_name': txn.payerName,
       if (txn.recipientName.isNotEmpty) 'recipient_name': txn.recipientName,
       if (newBalance != null)
