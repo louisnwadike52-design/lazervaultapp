@@ -2251,6 +2251,7 @@ class GetAuthenticationConfigResponse extends $pb.GeneratedMessage {
     $core.bool? socialLoginEnabled,
     $core.bool? googleLoginEnabled,
     $core.bool? appleLoginEnabled,
+    $core.bool? voiceLoginEnabled,
   }) {
     final result = create();
     if (authenticationMode != null)
@@ -2264,6 +2265,7 @@ class GetAuthenticationConfigResponse extends $pb.GeneratedMessage {
     if (googleLoginEnabled != null)
       result.googleLoginEnabled = googleLoginEnabled;
     if (appleLoginEnabled != null) result.appleLoginEnabled = appleLoginEnabled;
+    if (voiceLoginEnabled != null) result.voiceLoginEnabled = voiceLoginEnabled;
     return result;
   }
 
@@ -2286,6 +2288,7 @@ class GetAuthenticationConfigResponse extends $pb.GeneratedMessage {
     ..aOB(4, _omitFieldNames ? '' : 'socialLoginEnabled')
     ..aOB(5, _omitFieldNames ? '' : 'googleLoginEnabled')
     ..aOB(6, _omitFieldNames ? '' : 'appleLoginEnabled')
+    ..aOB(7, _omitFieldNames ? '' : 'voiceLoginEnabled')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2370,6 +2373,18 @@ class GetAuthenticationConfigResponse extends $pb.GeneratedMessage {
   $core.bool hasAppleLoginEnabled() => $_has(5);
   @$pb.TagNumber(6)
   void clearAppleLoginEnabled() => $_clearField(6);
+
+  /// Voice sign-in visibility on the passcode lock screen. Default FALSE
+  /// (hidden) — opt-in per deployment; when true the mic button shows (still
+  /// subject to the user's own voice enrolment).
+  @$pb.TagNumber(7)
+  $core.bool get voiceLoginEnabled => $_getBF(6);
+  @$pb.TagNumber(7)
+  set voiceLoginEnabled($core.bool value) => $_setBool(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasVoiceLoginEnabled() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearVoiceLoginEnabled() => $_clearField(7);
 }
 
 class RequestSignupPhoneOTPRequest extends $pb.GeneratedMessage {

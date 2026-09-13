@@ -435,6 +435,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         google: response.googleLoginEnabled,
         apple: response.appleLoginEnabled,
       );
+      // Admin-tunable voice sign-in visibility (default false when unset).
+      await FeatureFlags.setVoiceLoginVisibility(response.voiceLoginEnabled);
       return Right(mode);
     } on GrpcError catch (e) {
       return Left(ServerFailure(

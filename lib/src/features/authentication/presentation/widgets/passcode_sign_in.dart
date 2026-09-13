@@ -69,6 +69,10 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
   // on); platform availability is gated separately by [OAuthProviders].
   bool _googleLoginOn = true;
   bool _appleLoginOn = true;
+  // True while a Google/Apple sign-in is in flight from this screen. The chosen
+  // provider account may be a DIFFERENT user than the cached one, so the loading
+  // scrim drops the personalised greeting while this is set.
+  bool _socialInProgress = false;
   // User's choice in Settings → Biometric Login: fire the OS prompt as this
   // screen appears, or wait for a tap on the biometric button. The stored
   // default is AUTOMATIC; this field starts false only so the first frame,
@@ -479,16 +483,71 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
       FeatureFlags.isAppleLoginEnabled &&
       _appleLoginOn;
 
+  /// Voice sign-in shows only when the admin toggle is ON (default OFF). The
+  /// user's own enrolment is checked when the mic is tapped, not here — an
+  /// enabled-but-unenrolled user is walked through enrolment by _onVoicePressed.
+  bool get _showVoiceSignIn => FeatureFlags.isVoiceLoginEnabled;
+
+  bool get _biometricActionAvailable =>
+      (_canCheckBiometrics && _availableBiometricType != null) ||
+      (Platform.isAndroid && _canEnrollBiometric);
+
+  /// The visible alternate-auth buttons, in display order (Google, biometric,
+  /// voice, Apple). Any may be absent; [_spacedRow] joins them evenly.
+  List<Widget> _alternateAuthActions(ColorScheme colorScheme) {
+    return [
+      if (_showGoogleSignIn)
+        GoogleRoundIconButton(size: 40.w, onPressed: _onGooglePressed),
+      if (_biometricActionAvailable)
+        _buildIconButton(
+          icon: _biometricIcon,
+          child: _availableBiometricType == BiometricType.face
+              ? FaceIdIcon(size: 30.sp, color: Colors.white)
+              : FingerprintIcon(size: 30.sp, color: Colors.white),
+          onPressed: _onBiometricPressed,
+          iconColor: Colors.white,
+          colorScheme: colorScheme,
+          tooltip: _biometricTooltip,
+        ),
+      if (_showVoiceSignIn)
+        _buildIconButton(
+          icon: Icons.mic_none_outlined,
+          onPressed: _onVoicePressed,
+          iconColor: Colors.white,
+          colorScheme: colorScheme,
+          tooltip: 'Voice login',
+        ),
+      if (_showAppleSignIn)
+        AppleRoundIconButton(size: 40.w, onPressed: _onApplePressed),
+    ];
+  }
+
+  /// Interleave a fixed 14.w gap between visible actions (no leading/trailing).
+  List<Widget> _spacedRow(List<Widget> actions) {
+    final out = <Widget>[];
+    for (var i = 0; i < actions.length; i++) {
+      if (i > 0) out.add(SizedBox(width: 14.w));
+      out.add(actions[i]);
+    }
+    return out;
+  }
+
   /// Google/Apple from the lock screen sign in as WHOEVER the provider
   /// verifies — the cubit + backend resolve the account; a mismatch with the
   /// remembered user on this screen simply logs into the verified account.
   /// The AuthenticationLoading/Success/2FA states ride this screen's existing
   /// BlocConsumer, so navigation and gates match a passcode login.
   void _onGooglePressed() {
+    // A social sign-in may resolve to a DIFFERENT account than the cached one on
+    // this lock screen (the user can pick any Google account = a switch), so
+    // from here on the loading scrim must drop the cached "Hey <name>" greeting
+    // until the backend tells us who actually signed in.
+    setState(() => _socialInProgress = true);
     context.read<AuthenticationCubit>().signInWithGoogle();
   }
 
   void _onApplePressed() {
+    setState(() => _socialInProgress = true);
     context.read<AuthenticationCubit>().signInWithApple();
   }
 
@@ -863,7 +922,19 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
           } else {
             Get.offAllNamed(AppRoutes.dashboard);
           }
+        } else if (state is AuthenticationFailure) {
+          // A social sign-in (Google/Apple) failed. The cubit already surfaced
+          // the error snackbar; re-arm the keypad so the lock screen returns
+          // from the loading scrim instead of spinning forever, and clear the
+          // social flag so the cached greeting comes back.
+          if (_socialInProgress) {
+            _socialInProgress = false;
+            context.read<AuthenticationCubit>().startPasscodeLogin();
+          }
         } else if (state is PasscodeLoginInProgress) {
+          // Back on the keypad (e.g. a cancelled social sheet re-emitted this) —
+          // the personalised greeting is correct again.
+          if (_socialInProgress) _socialInProgress = false;
           if (state.errorMessage != null &&
               state.errorMessage != _lastError) {
             _lastError = state.errorMessage;
@@ -912,7 +983,10 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                     const LazerVaultLoader.small(),
                     SizedBox(height: 18.h),
                     Text(
-                      displayName,
+                      // Drop the cached "Hey <name>" during a social sign-in:
+                      // the account isn't known until the provider + backend
+                      // resolve it, and it may be a different user (a switch).
+                      _socialInProgress ? 'Just a moment 👋' : displayName,
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 17.sp,
@@ -921,7 +995,9 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                     ),
                     SizedBox(height: 6.h),
                     Text(
-                      'Signing you in…',
+                      _socialInProgress
+                          ? 'Signing you in with your account…'
+                          : 'Signing you in…',
                       style: GoogleFonts.inter(
                         color: Colors.white.withValues(alpha: 0.72),
                         fontSize: 13.sp,
@@ -1123,64 +1199,14 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
                                   child: const Center(
                                       child: LazerVaultLoader.small()),
                                 )
+                              // Alternate-auth actions: Google, biometric, voice
+                              // (mic), Apple — each optional. Built as a list and
+                              // joined with even 14.w spacers so any subset stays
+                              // centred without stray/double gaps (e.g. voice off
+                              // by admin, or no biometric enrolled).
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    // Google flanks the row on the left,
-                                    // Apple on the right — brand marks in
-                                    // their own official treatments so the
-                                    // store reviews pass, sized to sit as
-                                    // peers of the biometric/mic actions.
-                                    if (_showGoogleSignIn) ...[
-                                      GoogleRoundIconButton(
-                                        size: 40.w,
-                                        onPressed: _onGooglePressed,
-                                      ),
-                                      SizedBox(width: 14.w),
-                                    ],
-                                    if ((_canCheckBiometrics &&
-                                            _availableBiometricType != null) ||
-                                        (Platform.isAndroid &&
-                                            _canEnrollBiometric))
-                                      _buildIconButton(
-                                        icon: _biometricIcon,
-                                        // Both modalities get the drawn glyph
-                                        // now; Icons.fingerprint clogs at this
-                                        // size and did not match the Face ID
-                                        // mark beside it.
-                                        child: _availableBiometricType ==
-                                                BiometricType.face
-                                            ? FaceIdIcon(
-                                                size: 30.sp,
-                                                color: Colors.white)
-                                            : FingerprintIcon(
-                                                size: 30.sp,
-                                                color: Colors.white),
-                                        onPressed: _onBiometricPressed,
-                                        iconColor: Colors.white,
-                                        colorScheme: colorScheme,
-                                        tooltip: _biometricTooltip,
-                                      ),
-                                    if ((_canCheckBiometrics &&
-                                            _availableBiometricType != null) ||
-                                        (Platform.isAndroid &&
-                                            _canEnrollBiometric))
-                                      SizedBox(width: 14.w),
-                                    _buildIconButton(
-                                      icon: Icons.mic_none_outlined,
-                                      onPressed: _onVoicePressed,
-                                      iconColor: Colors.white,
-                                      colorScheme: colorScheme,
-                                      tooltip: 'Voice login',
-                                    ),
-                                    if (_showAppleSignIn) ...[
-                                      SizedBox(width: 14.w),
-                                      AppleRoundIconButton(
-                                        size: 40.w,
-                                        onPressed: _onApplePressed,
-                                      ),
-                                    ],
-                                  ],
+                                  children: _spacedRow(_alternateAuthActions(colorScheme)),
                                 ),
                           SizedBox(height: 14.h),
                           // Sign up — the very bottom action.

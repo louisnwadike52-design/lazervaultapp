@@ -121,6 +121,7 @@ class FeatureFlags {
   static const String socialLoginEnabledKey = 'social_login_enabled';
   static const String googleLoginEnabledKey = 'google_login_enabled';
   static const String appleLoginEnabledKey = 'apple_login_enabled';
+  static const String voiceLoginEnabledKey = 'voice_login_enabled';
 
   // ── Auto-logon (admin-toggled) ────────────────────────────────────────────
   // When ON (DEFAULT), a returning user who has OPTED INTO biometric login and
@@ -868,6 +869,12 @@ class FeatureFlags {
   static bool get isAppleLoginEnabled =>
       isSocialLoginEnabled && (_prefs?.getBool(appleLoginEnabledKey) ?? true);
 
+  /// Whether voice sign-in shows on the passcode screen (admin toggle).
+  /// DEFAULT FALSE (hidden) — opt-in per deployment. Still requires the user's
+  /// own voice enrolment to actually be usable.
+  static bool get isVoiceLoginEnabled =>
+      _prefs?.getBool(voiceLoginEnabledKey) ?? false;
+
   /// Overwrite the cached social-login visibility flags (from the startup
   /// GET /api/v1/auth/config refresh, alongside auth_mode + verification).
   static Future<void> setSocialLoginVisibility({
@@ -880,6 +887,13 @@ class FeatureFlags {
     await prefs.setBool(socialLoginEnabledKey, social);
     await prefs.setBool(googleLoginEnabledKey, google);
     await prefs.setBool(appleLoginEnabledKey, apple);
+  }
+
+  /// Overwrite the cached voice-login visibility flag (same config refresh).
+  static Future<void> setVoiceLoginVisibility(bool enabled) async {
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
+    _prefs = prefs;
+    await prefs.setBool(voiceLoginEnabledKey, enabled);
   }
 
   // ── App auto-update (store version check) ─────────────────────────────────

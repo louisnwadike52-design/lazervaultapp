@@ -747,6 +747,13 @@ const GetAuthenticationConfigResponse$json = {
       '5': 8,
       '10': 'appleLoginEnabled'
     },
+    {
+      '1': 'voice_login_enabled',
+      '3': 7,
+      '4': 1,
+      '5': 8,
+      '10': 'voiceLoginEnabled'
+    },
   ],
 };
 
@@ -758,7 +765,8 @@ final $typed_data.Uint8List getAuthenticationConfigResponseDescriptor = $convert
     '9uX3JlcXVpcmVkGAMgASgIUhlwaG9uZVZlcmlmaWNhdGlvblJlcXVpcmVkEjAKFHNvY2lhbF9s'
     'b2dpbl9lbmFibGVkGAQgASgIUhJzb2NpYWxMb2dpbkVuYWJsZWQSMAoUZ29vZ2xlX2xvZ2luX2'
     'VuYWJsZWQYBSABKAhSEmdvb2dsZUxvZ2luRW5hYmxlZBIuChNhcHBsZV9sb2dpbl9lbmFibGVk'
-    'GAYgASgIUhFhcHBsZUxvZ2luRW5hYmxlZA==');
+    'GAYgASgIUhFhcHBsZUxvZ2luRW5hYmxlZBIuChN2b2ljZV9sb2dpbl9lbmFibGVkGAcgASgIUh'
+    'F2b2ljZUxvZ2luRW5hYmxlZA==');
 
 @$core.Deprecated('Use requestSignupPhoneOTPRequestDescriptor instead')
 const RequestSignupPhoneOTPRequest$json = {
