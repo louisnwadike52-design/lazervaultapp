@@ -225,6 +225,10 @@ class _AddMemberForContributionSheetState
     final result =
         await UnifiedUserSearchSheet.show(context, title: 'Add member');
     if (result == null || !mounted) return;
+    // Reset any lingering inline query FIRST (its clear-listener nulls the
+    // selection), THEN select — so the picked user always lands in the
+    // selected-user preview branch instead of an unrelated results list.
+    if (_searchController.text.isNotEmpty) _searchController.clear();
     _selectUser(result.toUserSearchResultEntity());
   }
 
@@ -539,6 +543,54 @@ class _AddMemberForContributionSheetState
             ),
           ],
         ),
+      );
+    }
+
+    // Picked via the unified search sheet: the readOnly field types nothing,
+    // so _searchQuery stays empty and this used to fall through to the
+    // "Search for users" placeholder — the chosen user was INVISIBLE until
+    // Add was pressed. Preview them here instead (same card the inline
+    // results render), with a Clear affordance to pick someone else.
+    if (_selectedUser != null && _searchQuery.isEmpty) {
+      final user = _selectedUser!;
+      final isAlreadyMember =
+          _isUserAlreadyMember(user.userId, email: user.email);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Selected user',
+                  style: GoogleFonts.inter(
+                      fontSize: 12.sp, color: Colors.grey[500]),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => setState(() => _selectedUser = null),
+                child: Text(
+                  'Clear',
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF4E03D0),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          _buildUserCard(user, isAlreadyMember, true),
+          if (isAlreadyMember) ...[
+            SizedBox(height: 8.h),
+            Text(
+              'Already part of this contribution — pick someone else.',
+              style: GoogleFonts.inter(
+                  fontSize: 12.sp, color: const Color(0xFFF59E0B)),
+            ),
+          ],
+        ],
       );
     }
 
