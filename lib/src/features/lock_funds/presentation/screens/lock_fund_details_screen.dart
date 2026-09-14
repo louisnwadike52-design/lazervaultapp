@@ -223,7 +223,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                     Text(
                       widget.lockFund.lockType.displayName,
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF),
+                        color: const Color(0xFFB7ABDA),
                         fontSize: 14.sp,
                       ),
                     ),
@@ -486,7 +486,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                     'Started',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: const Color(0xFF9CA3AF),
+                      color: const Color(0xFFB7ABDA),
                     ),
                   ),
                   SizedBox(height: 4.h),
@@ -507,7 +507,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                     'Matures',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: const Color(0xFF9CA3AF),
+                      color: const Color(0xFFB7ABDA),
                     ),
                   ),
                   SizedBox(height: 4.h),
@@ -602,7 +602,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
             label,
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: const Color(0xFF9CA3AF),
+              color: const Color(0xFFB7ABDA),
             ),
           ),
           Flexible(
@@ -681,7 +681,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                   'Total at Maturity',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: const Color(0xFF9CA3AF),
+                    color: const Color(0xFFB7ABDA),
                   ),
                 ),
                 Text(
@@ -755,7 +755,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
             label,
             style: GoogleFonts.inter(
               fontSize: 12.sp,
-              color: const Color(0xFF9CA3AF),
+              color: const Color(0xFFB7ABDA),
             ),
           ),
           SizedBox(height: 4.h),
@@ -873,7 +873,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                 Text(
                   DateFormat.yMMMd().add_jm().format(tx.transactionDate),
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF), fontSize: 11.sp),
+                    color: const Color(0xFFB7ABDA), fontSize: 11.sp),
                 ),
               ],
             ),
@@ -1053,7 +1053,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                 SizedBox(height: 6.h),
                 Text(
                   'You\'ll get back ${(lock.amount - estPenalty).toStringAsFixed(2)} ${lock.currency}. Penalty: ${estPenalty.toStringAsFixed(2)} ${lock.currency} (${lock.earlyUnlockPenaltyPercent.toStringAsFixed(1)}%).',
-                  style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                  style: GoogleFonts.inter(color: const Color(0xFFB7ABDA), fontSize: 12.sp),
                 ),
                 SizedBox(height: 18.h),
                 Text('Why are you cancelling?', style: GoogleFonts.inter(
@@ -1275,7 +1275,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                   SizedBox(height: 6.h),
                   Text(
                     'Extend ${lock.displayName} for another term. Upfront interest (if your plan supports it) is paid into your wallet immediately.',
-                    style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                    style: GoogleFonts.inter(color: const Color(0xFFB7ABDA), fontSize: 12.sp),
                   ),
                   SizedBox(height: 18.h),
                   Text('New term', style: GoogleFonts.inter(

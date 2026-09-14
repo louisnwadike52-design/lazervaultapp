@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -69,16 +70,18 @@ class P2PTextBubble extends StatelessWidget {
   /// otherwise a plain (selectable) text run. White foreground for both bubble
   /// colours. Long-press for the action sheet still works because MarkdownBody's
   /// selection defers to the surrounding GestureDetector for long-press.
+  // Bare-URL detector for plain (non-markdown) messages — http(s):// and
+  // www. links. Markdown messages already render + launch [text](url) links via
+  // MarkdownBody.onTapLink, but a plain "check https://lazervault.app" used to
+  // print as dead text. This makes those tappable too.
+  static final RegExp _urlPattern = RegExp(
+    r'((?:https?:\/\/|www\.)[^\s<]+[^\s<.,!?:;)\]}"' "'" r'])',
+    caseSensitive: false,
+  );
+
   Widget _buildBody(BuildContext context, String content) {
     if (!_looksLikeMarkdown(content)) {
-      return Text(
-        content,
-        style: GoogleFonts.inter(
-          color: Colors.white,
-          fontSize: 14.sp,
-          height: 1.4,
-        ),
-      );
+      return _buildLinkifiedText(content);
     }
     final base = GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, height: 1.45);
     return MarkdownBody(
@@ -117,6 +120,50 @@ class P2PTextBubble extends StatelessWidget {
         blockSpacing: 6,
       ),
     );
+  }
+
+  /// Renders plain message text with any embedded URLs styled (light purple +
+  /// underline) and tappable. Falls back to a plain [Text] when there are no
+  /// links, so the common case allocates no gesture recognizers.
+  Widget _buildLinkifiedText(String content) {
+    final baseStyle = GoogleFonts.inter(
+      color: Colors.white,
+      fontSize: 14.sp,
+      height: 1.4,
+    );
+    final matches = _urlPattern.allMatches(content).toList();
+    if (matches.isEmpty) {
+      return Text(content, style: baseStyle);
+    }
+
+    final linkStyle = baseStyle.copyWith(
+      color: const Color(0xFFB794F6),
+      decoration: TextDecoration.underline,
+      decorationColor: const Color(0xFFB794F6),
+      fontWeight: FontWeight.w600,
+    );
+
+    final spans = <InlineSpan>[];
+    var cursor = 0;
+    for (final m in matches) {
+      if (m.start > cursor) {
+        spans.add(TextSpan(text: content.substring(cursor, m.start)));
+      }
+      final raw = m.group(0)!;
+      // www. links need a scheme before launchUrl will open them.
+      final href = raw.startsWith('www.') ? 'https://$raw' : raw;
+      spans.add(TextSpan(
+        text: raw,
+        style: linkStyle,
+        recognizer: TapGestureRecognizer()..onTap = () => _openLink(href),
+      ));
+      cursor = m.end;
+    }
+    if (cursor < content.length) {
+      spans.add(TextSpan(text: content.substring(cursor)));
+    }
+
+    return Text.rich(TextSpan(style: baseStyle, children: spans));
   }
 
   Future<void> _openLink(String? href) async {
