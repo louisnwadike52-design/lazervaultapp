@@ -3341,6 +3341,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
       userId: userId,
       currency: _currency,
       countryCode: _countryCodeForCurrency(_currency),
+      // "I've made the transfer — check now": full screen refresh (accounts,
+      // mandates, balances). The webhook credits automatically; this gives
+      // the user an explicit re-check instead of silent waiting.
+      onCheckNow: _pullToRefresh,
     );
   }
 

@@ -20,6 +20,12 @@ class PayByTransferCard extends StatefulWidget {
   final String countryCode;
   final VoidCallback? onInfoTap;
 
+  /// "I've made the transfer — check now": the host screen's refresh
+  /// (accounts + balances). The credit itself is webhook-driven and lands
+  /// automatically; this gives the user an explicit re-check instead of
+  /// leaving them waiting on the live sync after they've paid.
+  final Future<void> Function()? onCheckNow;
+
   const PayByTransferCard({
     super.key,
     required this.accountNumber,
@@ -30,6 +36,7 @@ class PayByTransferCard extends StatefulWidget {
     this.currency = 'NGN',
     this.countryCode = 'NG',
     this.onInfoTap,
+    this.onCheckNow,
   });
 
   @override
@@ -37,6 +44,32 @@ class PayByTransferCard extends StatefulWidget {
 }
 
 class _PayByTransferCardState extends State<PayByTransferCard> {
+  bool _checkingNow = false;
+
+  Future<void> _handleCheckNow() async {
+    final check = widget.onCheckNow;
+    if (check == null || _checkingNow) return;
+    setState(() => _checkingNow = true);
+    try {
+      await check();
+      if (!mounted) return;
+      Get.snackbar(
+        'Checked',
+        'Your balance updates the moment your transfer lands — usually '
+            'within 1–5 minutes of your bank completing it.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF1F1F1F),
+        colorText: Colors.white,
+        margin: EdgeInsets.all(12.w),
+        borderRadius: 14.r,
+        icon: const Icon(Icons.sync, color: Color(0xFF00D09C)),
+        duration: const Duration(seconds: 4),
+      );
+    } finally {
+      if (mounted) setState(() => _checkingNow = false);
+    }
+  }
+
   void _copyToClipboard(BuildContext context, String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
     Get.snackbar(
@@ -291,6 +324,48 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
               ],
             ),
           ),
+
+          // "I've made the transfer" — explicit re-check. The webhook credits
+          // automatically; this re-pulls accounts/balances right now so the
+          // user isn't left wondering whether anything is happening.
+          if (widget.onCheckNow != null) ...[
+            SizedBox(height: 12.h),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _checkingNow ? null : _handleCheckNow,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF00D09C),
+                  side: BorderSide(
+                    color: const Color(0xFF00D09C).withValues(alpha: 0.6),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                ),
+                icon: _checkingNow
+                    ? SizedBox(
+                        width: 16.sp,
+                        height: 16.sp,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF00D09C),
+                        ),
+                      )
+                    : Icon(Icons.task_alt, size: 18.sp),
+                label: Text(
+                  _checkingNow
+                      ? 'Checking…'
+                      : "I've made the transfer — check now",
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
