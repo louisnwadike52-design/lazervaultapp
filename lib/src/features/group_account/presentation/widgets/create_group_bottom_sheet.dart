@@ -168,7 +168,7 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 24.h),
+                    SizedBox(height: 16.h),
 
                     // Header
                     Row(
@@ -223,7 +223,7 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 32.h),
+                    SizedBox(height: 18.h),
 
                     // Group Name Field
                     Text(
@@ -285,7 +285,7 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                       ),
                       validator: GroupValidators.name,
                     ),
-                    SizedBox(height: 24.h),
+                    SizedBox(height: 16.h),
 
                     // Description Field
                     Text(
@@ -348,7 +348,7 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                       ),
                       validator: GroupValidators.description,
                     ),
-                    SizedBox(height: 24.h),
+                    SizedBox(height: 16.h),
 
                     // Visibility Selection
                     Text(
@@ -459,7 +459,7 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 24.h),
+                    SizedBox(height: 16.h),
 
                     // External Links Section
                     Row(
@@ -517,27 +517,33 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                           color: Colors.grey[500],
                           fontSize: 14.sp,
                         ),
-                        prefixIcon: Icon(
-                          Icons.message,
-                          color: const Color(0xFF25D366),
-                          size: 20.sp,
-                        ),
-                        // Always-visible prefix even when unfocused + empty
-                        // (Material's prefixText hides in that state).
-                        // Focus-aware color: lighter (grey[200]) when the
-                        // field is focused so the active row reads
-                        // brighter, dimmer (grey[500]) when idle so the
-                        // prefix doesn't compete with the user's input.
-                        // Mirrors the create-contribution sheet pattern.
-                        prefix: Text(
-                          whatsappLinkPrefix,
-                          style: GoogleFonts.inter(
-                            color: _whatsappFocus.hasFocus
-                                ? Colors.grey[200]
-                                : Colors.grey[500],
-                            fontSize: 14.sp,
+                        // Always-visible platform + domain lockup. Material's
+                        // prefix/prefixText both hide when the field is empty +
+                        // unfocused (which left just a lone icon + a floating
+                        // hint — the unprofessional look). Rendering it as the
+                        // prefixIcon keeps "chat.whatsapp.com/" permanently
+                        // visible so the field reads as a real labeled input.
+                        prefixIcon: Padding(
+                          padding: EdgeInsets.only(left: 12.w, right: 8.w),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.chat_rounded,
+                                  color: const Color(0xFF25D366), size: 18.sp),
+                              SizedBox(width: 6.w),
+                              Text(
+                                'chat.whatsapp.com/',
+                                style: GoogleFonts.inter(
+                                  color: Colors.grey[400],
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                        prefixIconConstraints:
+                            const BoxConstraints(minWidth: 0, minHeight: 0),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
                           borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
@@ -587,20 +593,29 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                           color: Colors.grey[500],
                           fontSize: 14.sp,
                         ),
-                        prefixIcon: Icon(
-                          Icons.send,
-                          color: const Color(0xFF0088CC),
-                          size: 20.sp,
-                        ),
-                        prefix: Text(
-                          telegramLinkPrefix,
-                          style: GoogleFonts.inter(
-                            color: _telegramFocus.hasFocus
-                                ? Colors.grey[200]
-                                : Colors.grey[500],
-                            fontSize: 14.sp,
+                        // Always-visible platform + domain lockup (see WhatsApp
+                        // field above for why this lives in prefixIcon).
+                        prefixIcon: Padding(
+                          padding: EdgeInsets.only(left: 12.w, right: 8.w),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.send_rounded,
+                                  color: const Color(0xFF0088CC), size: 18.sp),
+                              SizedBox(width: 6.w),
+                              Text(
+                                't.me/',
+                                style: GoogleFonts.inter(
+                                  color: Colors.grey[400],
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                        prefixIconConstraints:
+                            const BoxConstraints(minWidth: 0, minHeight: 0),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
                           borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
@@ -630,7 +645,7 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                         counterText: '',
                       ),
                     ),
-                    SizedBox(height: 32.h),
+                    SizedBox(height: 18.h),
 
                     // Info Card
                     Container(
@@ -660,7 +675,7 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 32.h),
+                    SizedBox(height: 18.h),
 
                     // Create Button
                     SizedBox(
