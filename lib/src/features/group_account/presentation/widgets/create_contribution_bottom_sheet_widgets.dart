@@ -90,12 +90,17 @@ class _AddMemberForContributionSheet extends StatefulWidget {
   final List<GroupMember> existingMembers;
   final List<String> rotationOrder; // User IDs already in rotation
   final void Function(String userId, String userName, String email, String? profileImage) onMemberAdded;
+  /// True only for ROSCA (rotating savings), where members form a payout
+  /// rotation. For every other contribution type the CTA/title say "Add
+  /// Member(s)" — "Add to Rotation" is meaningless for a one-time / target plan.
+  final bool isRotation;
 
   const _AddMemberForContributionSheet({
     required this.group,
     required this.existingMembers,
     required this.rotationOrder,
     required this.onMemberAdded,
+    required this.isRotation,
   });
 
   @override
@@ -390,7 +395,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Add to Rotation',
+                  widget.isRotation ? 'Add to Rotation' : 'Add Member',
                   style: GoogleFonts.inter(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w700,
@@ -794,7 +799,9 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
             child: _isAddingMember
                 ? LazerVaultLoader.small()
                 : Text(
-                    _selectedUser != null ? 'Add to Rotation' : 'Select a User',
+                    _selectedUser != null
+                        ? (widget.isRotation ? 'Add to Rotation' : 'Add Member')
+                        : 'Select a User',
                     style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w600),
                   ),
           ),

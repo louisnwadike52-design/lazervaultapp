@@ -392,8 +392,6 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
 
   void _showRoleDetailsDialog(GroupMember currentMember, GroupAccount group) {
     final role = currentMember.role;
-    final isAdmin = role == GroupMemberRole.admin;
-    final isModerator = role == GroupMemberRole.moderator;
 
     Color roleColor;
     IconData roleIcon;
@@ -412,27 +410,27 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         roleIcon = Icons.visibility;
     }
 
+    // Derive the permission list from the SAME source that gates the actual
+    // buttons (GroupRolePermissions), so the modal never promises something the
+    // role can't do — the old hardcoded lists claimed a Member could "Create
+    // contributions" while the Contributions tab (correctly) only lets a Member
+    // pay into existing ones.
     final permissions = <String>[];
-    if (isAdmin) {
-      permissions.addAll([
-        'Manage all group settings',
-        'Add & remove members',
-        'Manage all contributions',
-        'Change member roles',
-      ]);
-    } else if (isModerator) {
-      permissions.addAll([
-        'Add new members',
-        'Create contributions',
-        'Manage your contributions',
-      ]);
-    } else {
-      permissions.addAll([
-        'View group details',
-        'Create contributions',
-        'Make payments',
-      ]);
+    void addIf(GroupAction action, String label) {
+      if (GroupRolePermissions.canMember(currentMember, action)) {
+        permissions.add(label);
+      }
     }
+    addIf(GroupAction.viewGroup, 'View group details');
+    addIf(GroupAction.createContribution, 'Create contributions');
+    addIf(GroupAction.editContribution, 'Manage contributions');
+    addIf(GroupAction.makeContribution, 'Make payments');
+    addIf(GroupAction.initiatePayout, 'Initiate payouts');
+    addIf(GroupAction.inviteMember, 'Add members');
+    addIf(GroupAction.removeMember, 'Remove members');
+    addIf(GroupAction.changeMemberRole, 'Change member roles');
+    addIf(GroupAction.editGroup, 'Manage group settings');
+    if (permissions.isEmpty) permissions.add('View group details');
 
     showDialog(
       context: context,

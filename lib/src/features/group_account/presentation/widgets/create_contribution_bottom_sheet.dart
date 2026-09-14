@@ -2777,6 +2777,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             group: tempGroup,
             existingMembers: _localGroupMembers,
             rotationOrder: _rotationOrder,
+            isRotation: _selectedType == ContributionType.rotatingSavings,
             onMemberAdded: (String newUserId, String userName, String email, String? profileImage) {
               // Add the new member to local state (with duplicate prevention)
               setState(() {
