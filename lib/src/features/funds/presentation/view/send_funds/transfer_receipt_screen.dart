@@ -450,14 +450,15 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     _qrData = jsonEncode(qrMap);
   }
 
-  /// Ask whether to produce the SENDER's copy (shows the fee + total paid) or the
-  /// RECIPIENT's copy (amount received only — no fee). Only meaningful when a fee
-  /// was charged; for a free (e.g. internal) transfer both copies are identical,
-  /// so we skip the prompt and default to the sender copy. Returns null if the
-  /// user dismisses the sheet (→ caller aborts).
+  /// Ask whether to produce the SENDER's copy (shows the fee + total paid) or
+  /// the RECIPIENT's copy (amount received only — no fee). ALWAYS asked for a
+  /// single transfer — regardless of fee or of where the receipt was opened
+  /// from (user directive: the copy-selection sheet must show no matter the
+  /// source). Batch receipts keep the sender default: their PDF has no
+  /// per-recipient variant. Returns null if the user dismisses the sheet
+  /// (→ caller aborts).
   Future<ReceiptCopyType?> _resolveCopyType() async {
-    final fee = (transferDetails['fee'] as num?)?.toDouble() ?? 0.0;
-    if (_isBatch || fee <= 0) return ReceiptCopyType.sender;
+    if (_isBatch) return ReceiptCopyType.sender;
     return _showCopyTypeSheet();
   }
 

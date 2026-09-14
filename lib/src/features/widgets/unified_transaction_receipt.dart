@@ -566,7 +566,14 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                 ? sendCcy
                 : tx.currency.toUpperCase(),
       ),
-      _DetailEntry('Transaction ID', tx.id, copyable: true),
+      // SendFunds/transfer receipts NEVER print the raw transaction id (user
+      // directive 2026-09-14): the Reference row is the customer-facing
+      // identifier. Other services keep it — except when it merely duplicates
+      // the Reference value (same string under two labels reads broken, as on
+      // invoice receipts whose reference IS the transaction id).
+      if (tx.serviceType != TransactionServiceType.transfer &&
+          tx.id != tx.transactionReference)
+        _DetailEntry('Transaction ID', tx.id, copyable: true),
       if (_isScheduledTransfer)
         _DetailEntry(
           'Scheduled For',
@@ -1100,18 +1107,16 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   ReceiptCopyType _chosenCopy = ReceiptCopyType.sender;
   ReceiptFileFormat _chosenFormat = ReceiptFileFormat.pdf;
 
-  /// The fee on a transfer receipt (parsed from the display metadata). Only a
-  /// fee-bearing transfer offers distinct sender/recipient copies.
-  double get _receiptFee => double.tryParse(
-          (tx.metadata?['Fee'] ?? '').toString().replaceAll(RegExp(r'[^0-9.]'), '')) ??
-      0.0;
-
   /// Ask the user which COPY (sender/recipient — transfers with a fee only)
   /// and which FORMAT (PDF / PNG / JPG) before running [action].
   Future<void> _withReceiptOptions(
       String actionLabel, Future<void> Function() action) async {
-    final offerCopy =
-        tx.serviceType == TransactionServiceType.transfer && _receiptFee > 0;
+    // ALWAYS offer the sender/recipient copy choice on a transfer receipt —
+    // regardless of fee and of where the receipt was opened from (user
+    // directive: the copy sheet must show no matter the source). A zero-fee
+    // transfer still has two meaningfully different documents: whose copy
+    // the headline declares.
+    final offerCopy = tx.serviceType == TransactionServiceType.transfer;
     if (offerCopy) {
       final copy = await _showReceiptCopySheet();
       if (copy == null || !mounted) return;

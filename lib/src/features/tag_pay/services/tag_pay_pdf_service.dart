@@ -734,8 +734,11 @@ class TagPayPdfService {
                 showFee: showFee,
                 totalPaid: showFee ? _amountFormat.format(amount + fee) : null,
                 description: narration ?? '',
-                transferReference: _cleanTransferRef(
-                    reference.isNotEmpty ? reference : transferId),
+                // NEVER fall back to the raw transfer/transaction id — a
+                // customer receipt must not carry the transaction id (user
+                // directive). No reference → the row is omitted by the
+                // builder's empty-guard.
+                transferReference: _cleanTransferRef(reference),
                 extraRows: extraRows,
               ),
               pw.SizedBox(height: 24),
@@ -755,28 +758,32 @@ class TagPayPdfService {
                   ),
                 ),
 
-              // Scannable QR of the transfer reference (same id as the
-              // on-screen receipt) so the PDF carries the barcode too.
-              pw.SizedBox(height: 24),
-              pw.Center(
-                child: pw.Column(
-                  children: [
-                    pw.BarcodeWidget(
-                      barcode: Barcode.qrCode(),
-                      data: reference.isNotEmpty ? reference : transferId,
-                      width: 90,
-                      height: 90,
-                      drawText: false,
-                    ),
-                    pw.SizedBox(height: 6),
-                    pw.Text(
-                      reference.isNotEmpty ? reference : transferId,
-                      style:
-                          _getTextStyle(fontSize: 9, color: PdfColors.grey600),
-                    ),
-                  ],
+              // Scannable QR of the transfer REFERENCE (same id as the
+              // on-screen receipt). Never the raw transaction id — if there
+              // is no reference the QR block is omitted entirely rather than
+              // leaking an internal identifier onto a customer document.
+              if (reference.isNotEmpty) ...[
+                pw.SizedBox(height: 24),
+                pw.Center(
+                  child: pw.Column(
+                    children: [
+                      pw.BarcodeWidget(
+                        barcode: Barcode.qrCode(),
+                        data: reference,
+                        width: 90,
+                        height: 90,
+                        drawText: false,
+                      ),
+                      pw.SizedBox(height: 6),
+                      pw.Text(
+                        reference,
+                        style: _getTextStyle(
+                            fontSize: 9, color: PdfColors.grey600),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
 
               pw.Spacer(),
               _buildFooter(transactionType: 'fund transfer'),
@@ -862,7 +869,9 @@ class TagPayPdfService {
         // one key that was available.
         'sourceAccountInfo':
             sourceAccountInfo == sourceAccountName ? null : sourceAccountInfo,
-        'reference': transaction.transactionReference ?? transaction.id,
+        // NEVER fall back to the raw transaction UUID — receipts must not
+        // carry the transaction id. An absent reference omits the row/QR.
+        'reference': transaction.transactionReference ?? '',
         'narration': transaction.description,
         'status': transaction.status.displayName,
         'transferType': metadata['Transfer Type']?.toString() ??

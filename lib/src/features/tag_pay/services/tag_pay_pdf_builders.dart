@@ -194,7 +194,11 @@ pw.Widget _buildFundTransferDetails({
             ],
             if (description.isNotEmpty)
               _buildDetailRow('Description', description),
-            _buildDetailRow('Transfer Reference', transferReference),
+            // Omitted when empty: the service layer no longer falls back to
+            // the raw transaction id, so an absent reference means NO row —
+            // a customer receipt never prints internal ids.
+            if (transferReference.trim().isNotEmpty)
+              _buildDetailRow('Transfer Reference', transferReference),
             for (final r in extraRows)
               if (r.value.trim().isNotEmpty) _buildDetailRow(r.key, r.value),
           ],
