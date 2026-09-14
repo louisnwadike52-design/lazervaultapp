@@ -1488,6 +1488,11 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      // Exit ONLY through the sheet's own Cancel controls (X on step 1,
+      // top-right Cancel on later steps). A stray swipe-down or barrier
+      // tap must not discard a half-built contribution.
+      isDismissible: false,
+      enableDrag: false,
       backgroundColor: Colors.transparent,
       builder: (context) => BlocProvider.value(
         value: cubit,

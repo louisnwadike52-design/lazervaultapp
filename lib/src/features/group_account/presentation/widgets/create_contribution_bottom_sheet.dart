@@ -624,73 +624,85 @@ class _CreateContributionBottomSheetState
     // PageView uses NeverScrollableScrollPhysics, so without an explicit
     // dismiss the keyboard could otherwise stay up with no way to close it
     // (the reported "keyboard stuck open" in the contribution flow).
+    // Keyboard-aware sizing: shrink the sheet by the keyboard inset and
+    // pad it above the keyboard, so bottom fields (e.g. the social links
+    // at the end of step 2) stay reachable and the focused field can
+    // auto-scroll into view instead of being covered.
+    final media = MediaQuery.of(context);
+    final keyboardInset = media.viewInsets.bottom;
+    double sheetHeight = media.size.height * 0.9 - keyboardInset;
+    final minSheetHeight = media.size.height * 0.4;
+    if (sheetHeight < minSheetHeight) sheetHeight = minSheetHeight;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => FocusScope.of(context).unfocus(),
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.9,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF1F1F1F), Color(0xFF0A0A0A)],
+      child: Padding(
+        padding: EdgeInsets.only(bottom: keyboardInset),
+        child: Container(
+          height: sheetHeight,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF1F1F1F), Color(0xFF0A0A0A)],
+            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
           ),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        ),
-        child: BlocConsumer<GroupAccountCubit, GroupAccountState>(
-          listener: (context, state) {
-            if (state is GroupAccountContributionCreated) {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Contribution created successfully'),
-                  backgroundColor: const Color(0xFF10B981),
-                ),
-              );
-            } else if (state is GroupAccountError) {
-              _showErrorBanner(state.message);
-            } else if (state is GroupAccountSuccess) {
-              // Member was successfully added to the group
-              // Show success message
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: const Color(0xFF10B981),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.r)),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            }
-          },
-          builder: (context, state) {
-            final isLoading = state is GroupAccountLoading;
-
-            return Column(
-              children: [
-                _buildHeader(isLoading),
-                _buildProgressIndicators(),
-                _buildErrorBanner(), // Error banner at top
-                Expanded(
-                  child: PageView(
-                    key: ValueKey('pageview_${_selectedType.name}'),
-                    controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    onPageChanged: (page) {
-                      debugPrint(
-                          '🔵 PageView onPageChanged: $page (was $_currentPage)');
-                      setState(() {
-                        _currentPage = page;
-                        _clearErrors(); // Clear errors when page changes
-                      });
-                    },
-                    children: _buildPages(),
+          child: BlocConsumer<GroupAccountCubit, GroupAccountState>(
+            listener: (context, state) {
+              if (state is GroupAccountContributionCreated) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Contribution created successfully'),
+                    backgroundColor: const Color(0xFF10B981),
                   ),
-                ),
-                _buildNavigationButtons(isLoading),
-              ],
-            );
-          },
+                );
+              } else if (state is GroupAccountError) {
+                _showErrorBanner(state.message);
+              } else if (state is GroupAccountSuccess) {
+                // Member was successfully added to the group
+                // Show success message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: const Color(0xFF10B981),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r)),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            builder: (context, state) {
+              final isLoading = state is GroupAccountLoading;
+
+              return Column(
+                children: [
+                  _buildHeader(isLoading),
+                  _buildProgressIndicators(),
+                  _buildErrorBanner(), // Error banner at top
+                  Expanded(
+                    child: PageView(
+                      key: ValueKey('pageview_${_selectedType.name}'),
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      onPageChanged: (page) {
+                        debugPrint(
+                            '🔵 PageView onPageChanged: $page (was $_currentPage)');
+                        setState(() {
+                          _currentPage = page;
+                          _clearErrors(); // Clear errors when page changes
+                        });
+                      },
+                      children: _buildPages(),
+                    ),
+                  ),
+                  _buildNavigationButtons(isLoading),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -740,6 +752,30 @@ class _CreateContributionBottomSheetState
               ],
             ),
           ),
+          // Top-right Cancel on steps AFTER the first. On step 1 the
+          // top-LEFT button is the cancel (X); once it turns into Back,
+          // this is the only way out — the sheet itself is shown with
+          // isDismissible/enableDrag false so a stray swipe or barrier
+          // tap can't discard a half-built contribution.
+          if (_currentPage > 0)
+            GestureDetector(
+              onTap: isLoading ? null : () => Navigator.pop(context),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2D2D2D),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                    color: isLoading ? Colors.grey : Colors.white,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -1795,6 +1831,10 @@ class _CreateContributionBottomSheetState
       focusNode: focusNode,
       maxLines: maxLines,
       maxLength: maxLength,
+      // When the keyboard opens, ensureVisible scrolls the focused field
+      // this far clear of the keyboard edge — keeps the field (and its
+      // error line) fully readable instead of hugging the keyboard.
+      scrollPadding: EdgeInsets.only(bottom: 140.h),
       style: GoogleFonts.inter(fontSize: 16.sp, color: Colors.white),
       onChanged: (_) {
         // Live-update the character counter (and clear any field error).
@@ -1814,31 +1854,44 @@ class _CreateContributionBottomSheetState
         counterText: showCounter ? null : '',
         counterStyle:
             GoogleFonts.inter(fontSize: 11.sp, color: Colors.grey[500]),
-        prefixIcon: prefixIcon,
-        prefixIconColor: Colors.grey[400],
-        // Render the prefix as a `prefix` widget rather than `prefixText`
-        // so it's ALWAYS visible — including when the field is unfocused
-        // AND empty. Material's prefixText hides in that state, which
-        // would leave the user staring at a blank field with no signal
-        // that it's the WhatsApp / Telegram link slot.
+        // Canonical link prefix (chat.whatsapp.com/ etc.) rendered INSIDE
+        // prefixIcon — the only InputDecoration slot Material shows while
+        // the field is EMPTY AND UNFOCUSED. Both `prefixText` and the
+        // `prefix` widget hide in that state, which left these fields
+        // looking blank by default (the bug this replaces). Focus-aware
+        // colour: light/dim when idle, brighter while focused — the
+        // _whatsappLinkFocus / _telegramLinkFocus listeners call setState
+        // on focus change so this re-evaluates.
         // Empty controller text still round-trips as "no value" through
         // buildSocialFullUrl, so an empty field is NOT sent to the
         // backend even though the prefix is rendered.
-        // Focus-aware prefix color: lighter (grey[200]) when the
-        // field is focused, dimmer (grey[500]) when idle. The
-        // _whatsappLinkFocus / _telegramLinkFocus listeners already
-        // call setState on focus change, so this rebuilds correctly.
-        prefix: prefixText != null
-            ? Text(
-                prefixText,
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  color: (focusNode?.hasFocus ?? false)
-                      ? Colors.grey[200]
-                      : Colors.grey[500],
+        prefixIcon: prefixText != null
+            ? Padding(
+                padding: EdgeInsets.only(left: 14.w, right: 6.w),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (prefixIcon != null) ...[
+                      prefixIcon,
+                      SizedBox(width: 8.w),
+                    ],
+                    Text(
+                      prefixText,
+                      style: GoogleFonts.inter(
+                        fontSize: 15.sp,
+                        color: (focusNode?.hasFocus ?? false)
+                            ? Colors.grey[200]
+                            : Colors.grey[600],
+                      ),
+                    ),
+                  ],
                 ),
               )
+            : prefixIcon,
+        prefixIconConstraints: prefixText != null
+            ? const BoxConstraints(minWidth: 0, minHeight: 0)
             : null,
+        prefixIconColor: Colors.grey[400],
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide(color: hasError ? errorColor : normalColor),
@@ -2878,69 +2931,68 @@ class _CreateContributionBottomSheetState
       backgroundColor: Colors.transparent,
       builder: (bottomSheetContext) => BlocProvider.value(
         value: cubit,
-        child: BlocListener<GroupAccountCubit, GroupAccountState>(
-          listener: (listenerContext, state) {
-            if (state is GroupAccountSuccess) {
-              // Close the add member bottom sheet
-              Navigator.pop(bottomSheetContext);
-            }
-          },
-          child: _AddMemberForContributionSheet(
-            group: tempGroup,
-            existingMembers: _localGroupMembers,
-            rotationOrder: _rotationOrder,
-            isRotation: _selectedType == ContributionType.rotatingSavings,
-            onMemberAdded: (String newUserId, String userName, String email,
-                String? profileImage) {
-              // Add the new member to local state (with duplicate prevention)
-              setState(() {
-                // Generate a unique identifier for this member
-                // Use email hash if userId is null UUID, otherwise use userId
-                final nullUuid = '00000000-0000-0000-0000-000000000000';
-                final isNullUuid = newUserId.isEmpty || newUserId == nullUuid;
-                final uniqueId = isNullUuid
-                    ? 'temp_${email.hashCode}_${DateTime.now().millisecondsSinceEpoch}'
-                    : newUserId;
+        // NOTE: deliberately NO GroupAccountSuccess auto-pop wrapper here.
+        // The old BlocListener popped this sheet the moment the cubit
+        // emitted Success — which UNMOUNTED _AddMemberForContributionSheet
+        // while its _addMember was still awaiting the emission, so its
+        // `mounted` guard swallowed widget.onMemberAdded and the Members
+        // page never re-rendered after an add. The sheet pops ITSELF after
+        // invoking the callback.
+        child: _AddMemberForContributionSheet(
+          group: tempGroup,
+          existingMembers: _localGroupMembers,
+          rotationOrder: _rotationOrder,
+          isRotation: _selectedType == ContributionType.rotatingSavings,
+          onMemberAdded: (String newUserId, String userName, String email,
+              String? profileImage) {
+            // Add the new member to local state (with duplicate prevention)
+            setState(() {
+              // Generate a unique identifier for this member
+              // Use email hash if userId is null UUID, otherwise use userId
+              final nullUuid = '00000000-0000-0000-0000-000000000000';
+              final isNullUuid = newUserId.isEmpty || newUserId == nullUuid;
+              final uniqueId = isNullUuid
+                  ? 'temp_${email.hashCode}_${DateTime.now().millisecondsSinceEpoch}'
+                  : newUserId;
 
-                // Store the mapping from display ID to original ID for backend submission
-                // If the original is a null UUID, we still need to send it to the backend
-                _tempIdToOriginalId[uniqueId] = newUserId;
-                debugPrint('🔵 Stored mapping: $uniqueId -> $newUserId');
+              // Store the mapping from display ID to original ID for backend submission
+              // If the original is a null UUID, we still need to send it to the backend
+              _tempIdToOriginalId[uniqueId] = newUserId;
+              debugPrint('🔵 Stored mapping: $uniqueId -> $newUserId');
 
-                // Check if member already exists to prevent duplicate keys
-                final existsInMembers = _localGroupMembers
-                    .any((m) => m.userId == uniqueId || m.email == email);
-                final existsInRotation = _rotationOrder.contains(uniqueId);
+              // Check if member already exists to prevent duplicate keys
+              final existsInMembers = _localGroupMembers
+                  .any((m) => m.userId == uniqueId || m.email == email);
+              final existsInRotation = _rotationOrder.contains(uniqueId);
 
+              debugPrint(
+                  '🔵 onMemberAdded: originalUserId=$newUserId, uniqueId=$uniqueId, existsInMembers=$existsInMembers, existsInRotation=$existsInRotation');
+
+              if (!existsInMembers) {
+                final newMember = GroupMember(
+                  id: uniqueId, // Use uniqueId as the member's id too
+                  userId: uniqueId, // Use the unique ID instead of null UUID
+                  userName: userName,
+                  email: email,
+                  profileImage: profileImage,
+                  role: GroupMemberRole.member,
+                  status: GroupMemberStatus.active,
+                  joinedAt: DateTime.now(),
+                );
+                _localGroupMembers.add(newMember);
                 debugPrint(
-                    '🔵 onMemberAdded: originalUserId=$newUserId, uniqueId=$uniqueId, existsInMembers=$existsInMembers, existsInRotation=$existsInRotation');
+                    '🟢 Added member to _localGroupMembers: $userName (uniqueId=$uniqueId)');
+              }
 
-                if (!existsInMembers) {
-                  final newMember = GroupMember(
-                    id: uniqueId, // Use uniqueId as the member's id too
-                    userId: uniqueId, // Use the unique ID instead of null UUID
-                    userName: userName,
-                    email: email,
-                    profileImage: profileImage,
-                    role: GroupMemberRole.member,
-                    status: GroupMemberStatus.active,
-                    joinedAt: DateTime.now(),
-                  );
-                  _localGroupMembers.add(newMember);
-                  debugPrint(
-                      '🟢 Added member to _localGroupMembers: $userName (uniqueId=$uniqueId)');
-                }
+              // Add to rotation order at the end (only if not already present)
+              if (!existsInRotation) {
+                _rotationOrder.add(uniqueId);
+                debugPrint('🟢 Added uniqueId to _rotationOrder: $uniqueId');
+              }
 
-                // Add to rotation order at the end (only if not already present)
-                if (!existsInRotation) {
-                  _rotationOrder.add(uniqueId);
-                  debugPrint('🟢 Added uniqueId to _rotationOrder: $uniqueId');
-                }
-
-                debugPrint('🟢 Current rotation order: $_rotationOrder');
-              });
-            },
-          ),
+              debugPrint('🟢 Current rotation order: $_rotationOrder');
+            });
+          },
         ),
       ),
     );

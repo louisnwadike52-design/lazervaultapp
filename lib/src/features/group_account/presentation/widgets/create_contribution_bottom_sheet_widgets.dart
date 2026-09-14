@@ -17,7 +17,8 @@ class _ThousandsAmountFormatter extends TextInputFormatter {
   static final NumberFormat _fmt = NumberFormat.decimalPattern();
 
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
     final raw = newValue.text;
     if (raw.isEmpty) {
       return newValue;
@@ -89,7 +90,10 @@ class _AddMemberForContributionSheet extends StatefulWidget {
   final GroupAccount group;
   final List<GroupMember> existingMembers;
   final List<String> rotationOrder; // User IDs already in rotation
-  final void Function(String userId, String userName, String email, String? profileImage) onMemberAdded;
+  final void Function(
+          String userId, String userName, String email, String? profileImage)
+      onMemberAdded;
+
   /// True only for ROSCA (rotating savings), where members form a payout
   /// rotation. For every other contribution type the CTA/title say "Add
   /// Member(s)" — "Add to Rotation" is meaningless for a one-time / target plan.
@@ -104,10 +108,12 @@ class _AddMemberForContributionSheet extends StatefulWidget {
   });
 
   @override
-  State<_AddMemberForContributionSheet> createState() => _AddMemberForContributionSheetState();
+  State<_AddMemberForContributionSheet> createState() =>
+      _AddMemberForContributionSheetState();
 }
 
-class _AddMemberForContributionSheetState extends State<_AddMemberForContributionSheet> {
+class _AddMemberForContributionSheetState
+    extends State<_AddMemberForContributionSheet> {
   final _searchController = TextEditingController();
   Timer? _debounceTimer;
 
@@ -201,7 +207,8 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
     // Check both existing members and rotation order
     // Also check by email since userId might be null UUID
     final inExistingMembers = widget.existingMembers.any((m) =>
-        m.userId == userId || (email != null && email.isNotEmpty && m.email == email));
+        m.userId == userId ||
+        (email != null && email.isNotEmpty && m.email == email));
     final inRotationOrder = widget.rotationOrder.contains(userId);
     return inExistingMembers || inRotationOrder;
   }
@@ -285,30 +292,40 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
       // The server response may return a null UUID, but the search result has the real user ID
       final originalUserId = _selectedUser!.userId;
 
-      if (addedMember != null && mounted) {
+      // Invoke the parent callback UNCONDITIONALLY. It closes over the
+      // PARENT contribution sheet's setState, which is still alive even
+      // if THIS sheet was popped/unmounted while awaiting the cubit
+      // emission. The old `mounted` guard around the callback swallowed
+      // the enrollment whenever the sheet closed first — the Members
+      // page then never re-rendered after an add (the reported bug).
+      if (addedMember != null) {
         // Use search result data as primary, server response as fallback
-        final memberName = userName.isNotEmpty ? userName : addedMember.userName;
-        final memberEmail = userEmail.isNotEmpty ? userEmail : addedMember.email;
-        debugPrint('🔵 _addMember success: originalUserId=$originalUserId, serverUserId=${addedMember.userId}, name=$memberName');
+        final memberName =
+            userName.isNotEmpty ? userName : addedMember.userName;
+        final memberEmail =
+            userEmail.isNotEmpty ? userEmail : addedMember.email;
+        debugPrint(
+            '🔵 _addMember success: originalUserId=$originalUserId, serverUserId=${addedMember.userId}, name=$memberName');
         widget.onMemberAdded(
           originalUserId, // Use the REAL user ID from search, not the server's null UUID
           memberName,
           memberEmail,
           profilePicture.isNotEmpty ? profilePicture : addedMember.profileImage,
         );
-        Navigator.pop(context);
-      } else if (mounted) {
+      } else {
         // Fallback: member was likely added but listener timed out
         // Use the original user info
-        debugPrint('🟡 _addMember fallback: originalUserId=$originalUserId, name=$userName');
+        debugPrint(
+            '🟡 _addMember fallback: originalUserId=$originalUserId, name=$userName');
         widget.onMemberAdded(
           originalUserId, // Use the REAL user ID from search
           userName,
           userEmail,
           profilePicture.isNotEmpty ? profilePicture : null,
         );
-        Navigator.pop(context);
       }
+      // Pop only if this sheet is still up (it may already be gone).
+      if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
         setState(() => _isAddingMember = false);
@@ -316,7 +333,8 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
           SnackBar(
             content: Text('Failed to add member: ${e.toString()}'),
             backgroundColor: const Color(0xFFEF4444),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r)),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -457,7 +475,8 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
           style: GoogleFonts.inter(fontSize: 16.sp, color: Colors.white),
           decoration: InputDecoration(
             hintText: 'Search people to add',
-            hintStyle: GoogleFonts.inter(fontSize: 16.sp, color: Colors.grey[500]),
+            hintStyle:
+                GoogleFonts.inter(fontSize: 16.sp, color: Colors.grey[500]),
             filled: true,
             fillColor: const Color(0xFF0A0A0A),
             border: OutlineInputBorder(
@@ -472,8 +491,10 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
               borderRadius: BorderRadius.circular(12.r),
               borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-            prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 20.sp),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+            prefixIcon:
+                Icon(Icons.search, color: Colors.grey[500], size: 20.sp),
             suffixIcon: _isSearching
                 ? Padding(
                     padding: EdgeInsets.all(12.w),
@@ -481,7 +502,8 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
                   )
                 : _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: Icon(Icons.clear, color: Colors.grey[500], size: 20.sp),
+                        icon: Icon(Icons.clear,
+                            color: Colors.grey[500], size: 20.sp),
                         onPressed: () {
                           _searchController.clear();
                         },
@@ -501,11 +523,13 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
         decoration: BoxDecoration(
           color: const Color(0xFFEF4444).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+          border:
+              Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
-            Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 24.sp),
+            Icon(Icons.error_outline,
+                color: const Color(0xFFEF4444), size: 24.sp),
             SizedBox(width: 12.w),
             Expanded(
               child: Text(
@@ -537,7 +561,8 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
             SizedBox(height: 4.h),
             Text(
               'Type a name or @username to find Lazervault users',
-              style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[600]),
+              style:
+                  GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
           ],
@@ -555,7 +580,8 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
             SizedBox(height: 12.h),
             Text(
               'Searching...',
-              style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[400]),
+              style:
+                  GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[400]),
             ),
           ],
         ),
@@ -578,7 +604,8 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
             Expanded(
               child: Text(
                 'Type at least 2 characters to search',
-                style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[400]),
+                style:
+                    GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[400]),
               ),
             ),
           ],
@@ -605,7 +632,8 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
             SizedBox(height: 4.h),
             Text(
               'Try a different search term',
-              style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[600]),
+              style:
+                  GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
           ],
@@ -624,7 +652,8 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
         SizedBox(height: 8.h),
         ...List.generate(_searchResults.length, (index) {
           final user = _searchResults[index];
-          final isAlreadyMember = _isUserAlreadyMember(user.userId, email: user.email);
+          final isAlreadyMember =
+              _isUserAlreadyMember(user.userId, email: user.email);
           final isSelected = _selectedUser?.userId == user.userId;
 
           return Padding(
@@ -636,7 +665,8 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
     );
   }
 
-  Widget _buildUserCard(UserSearchResultEntity user, bool isAlreadyMember, bool isSelected) {
+  Widget _buildUserCard(
+      UserSearchResultEntity user, bool isAlreadyMember, bool isSelected) {
     return GestureDetector(
       onTap: isAlreadyMember ? null : () => _selectUser(user),
       child: Container(
@@ -712,7 +742,9 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
                           style: GoogleFonts.inter(
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w600,
-                            color: isAlreadyMember ? Colors.grey[400] : Colors.white,
+                            color: isAlreadyMember
+                                ? Colors.grey[400]
+                                : Colors.white,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -721,9 +753,11 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
                       if (isAlreadyMember) ...[
                         SizedBox(width: 8.w),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                            color:
+                                const Color(0xFFF59E0B).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Text(
@@ -753,9 +787,11 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
             ),
             // Selection indicator
             if (isSelected)
-              Icon(Icons.check_circle, color: const Color(0xFF4E03D0), size: 24.sp)
+              Icon(Icons.check_circle,
+                  color: const Color(0xFF4E03D0), size: 24.sp)
             else if (!isAlreadyMember)
-              Icon(Icons.radio_button_unchecked, color: Colors.grey[600], size: 24.sp),
+              Icon(Icons.radio_button_unchecked,
+                  color: Colors.grey[600], size: 24.sp),
           ],
         ),
       ),
@@ -763,7 +799,9 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
   }
 
   Widget _buildActionButtons() {
-    final canAdd = _selectedUser != null && !_isUserAlreadyMember(_selectedUser!.userId, email: _selectedUser!.email);
+    final canAdd = _selectedUser != null &&
+        !_isUserAlreadyMember(_selectedUser!.userId,
+            email: _selectedUser!.email);
 
     return Row(
       children: [
@@ -773,7 +811,8 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: Colors.grey[700]!),
               padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r)),
             ),
             child: Text(
               'Cancel',
@@ -793,7 +832,8 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
               backgroundColor: const Color(0xFF4E03D0),
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r)),
               disabledBackgroundColor: Colors.grey[800],
             ),
             child: _isAddingMember
@@ -802,7 +842,8 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
                     _selectedUser != null
                         ? (widget.isRotation ? 'Add to Rotation' : 'Add Member')
                         : 'Select a User',
-                    style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.inter(
+                        fontSize: 16.sp, fontWeight: FontWeight.w600),
                   ),
           ),
         ),
