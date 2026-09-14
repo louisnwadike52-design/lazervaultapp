@@ -37,18 +37,18 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
   String _mode = 'full';
 
   bool get _canChooseMode =>
-      !widget.isEarlyWithdrawal && widget.lockFund.accruedInterest > 0;
+      !_isEarly && widget.lockFund.accruedInterest > 0;
 
   bool get _isInterestOnly => _canChooseMode && _mode == 'interest_only';
 
   double get _withdrawalAmount => _isInterestOnly
       ? widget.lockFund.accruedInterest
-      : widget.lockFund.proceedsOnUnlock(early: widget.isEarlyWithdrawal);
+      : widget.lockFund.proceedsOnUnlock(early: _isEarly);
 
   /// Interest that will actually be PAID — zero on an early break, which is
   /// not the same as the interest that has accrued.
   double get _interestPaid => widget.lockFund
-      .interestPayableOnUnlock(early: widget.isEarlyWithdrawal);
+      .interestPayableOnUnlock(early: _isEarly);
 
   /// True when there IS accrued interest but breaking early forfeits it — the
   /// case the breakdown has to state plainly rather than quietly drop.
@@ -69,8 +69,16 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
       widget.lockFund.status == LockStatus.matured ||
       (!_isFlex && !widget.lockFund.unlockAt.isAfter(DateTime.now()));
 
+  /// A term lock withdrawn BEFORE maturity — the penalty path. Flex plans and
+  /// matured locks are never early. Derived from the lock's own state so the
+  /// amount, penalty, force-unlock flag and copy stay consistent regardless of
+  /// what the caller passed; an explicit isEarlyWithdrawal request still forces
+  /// it (e.g. a dedicated Break-Lock entry point).
+  bool get _isEarly =>
+      widget.isEarlyWithdrawal || (!_isFlex && !_isMatured);
+
   double get _penaltyAmount {
-    if (widget.isEarlyWithdrawal) {
+    if (_isEarly) {
       return widget.lockFund.earlyWithdrawalPenalty;
     }
     return 0;
@@ -175,7 +183,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.isEarlyWithdrawal ? 'Break Lock' : 'Withdraw Funds',
+                  _isEarly ? 'Break Lock' : 'Withdraw Funds',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 20.sp,
@@ -293,7 +301,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
 
   Widget _buildSummaryCard() {
     final lock = widget.lockFund;
-    final color = widget.isEarlyWithdrawal
+    final color = _isEarly
         ? const Color(0xFFFB923C)
         : const Color(0xFF10B981);
 
@@ -329,7 +337,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
               color: Colors.white,
             ),
           ),
-          if (widget.isEarlyWithdrawal && _penaltyAmount > 0) ...[
+          if (_isEarly && _penaltyAmount > 0) ...[
             SizedBox(height: 8.h),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
@@ -386,7 +394,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
                 ? const Color(0xFFEF4444)
                 : const Color(0xFF10B981),
           ),
-          if (widget.isEarlyWithdrawal && _penaltyAmount > 0)
+          if (_isEarly && _penaltyAmount > 0)
             _buildBreakdownRow(
               'Early Withdrawal Penalty',
               '-${CurrencySymbols.getSymbol(lock.currency)}${_penaltyAmount.toStringAsFixed(2)}',
@@ -484,7 +492,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
             SizedBox(width: 12.w),
             Expanded(
               child: Text(
-                widget.isEarlyWithdrawal
+                _isEarly
                     ? 'I understand that breaking this lock early will result in a penalty and I want to proceed.'
                     : 'I confirm that I want to withdraw my funds.',
                 style: GoogleFonts.inter(
@@ -510,7 +518,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
             decoration: BoxDecoration(
               gradient: _hasConfirmed
                   ? LinearGradient(
-                      colors: widget.isEarlyWithdrawal
+                      colors: _isEarly
                           ? [const Color(0xFFFB923C), const Color(0xFFF97316)]
                           : [const Color(0xFF10B981), const Color(0xFF059669)],
                     )
@@ -522,7 +530,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
               child: _isProcessing
                   ? LazerVaultLoader.small()
                   : Text(
-                      widget.isEarlyWithdrawal ? 'Break Lock & Withdraw' : 'Withdraw Funds',
+                      _isEarly ? 'Break Lock & Withdraw' : 'Withdraw Funds',
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
@@ -665,7 +673,7 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
 
     context.read<LockFundsCubit>().unlockFund(
           lockFundId: widget.lockFund.id,
-          forceEarlyUnlock: widget.isEarlyWithdrawal || isFlexNoTerm,
+          forceEarlyUnlock: _isEarly || isFlexNoTerm,
           withdrawalMode: _isInterestOnly ? 'interest_only' : 'full',
         );
   }

@@ -198,11 +198,16 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
   /// cancelled) show only the receipt.
   Widget _buildFooterActions() {
     final lock = widget.lockFund;
-    final isFlex = lock.lockDurationDays <= 0; // Flex Savings — no fixed term
-    final matured = lock.isMatured ||
-        lock.status == LockStatus.matured ||
-        (lock.lockDurationDays > 0 && lock.daysRemaining <= 0);
-    final canWithdraw = !lock.isTerminal && (matured || isFlex);
+    // Flex / no-term: no unlock date (epoch sentinel) or zero term. Use BOTH
+    // signals so a stale lock_duration_days can't misclassify a dated lock.
+    final isFlex = lock.unlockAt.year <= 1971 || lock.lockDurationDays <= 0;
+    final matured = lock.status == LockStatus.matured ||
+        (!isFlex && !lock.unlockAt.isAfter(DateTime.now()));
+    // A breakable term lock BEFORE maturity can be withdrawn EARLY (with a
+    // penalty). canUnlockEarly already ANDs the plan's allows_early_withdrawal,
+    // so non-breakable plans (Year Lock, Treasury) stay maturity-gated.
+    final canEarly = !isFlex && !matured && lock.canUnlockEarly;
+    final canWithdraw = !lock.isTerminal && (matured || isFlex || canEarly);
 
     final receipt = _footerButton(
       'View receipt',
@@ -216,6 +221,9 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
     // Terminal locks: nothing to withdraw — just the receipt, full width.
     if (lock.isTerminal) return receipt;
 
+    // Early withdrawal is visually distinct from a normal/matured withdrawal:
+    // amber "Withdraw Early" (penalty applies) vs green "Withdraw".
+    final earlyPenalty = lock.earlyWithdrawalPenalty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -225,18 +233,38 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
             SizedBox(width: 12.w),
             Expanded(
               child: _footerButton(
-                'Withdraw',
-                Icons.account_balance_wallet_outlined,
-                const Color(0xFF10B981),
-                canWithdraw ? _showWithdrawDialog : null,
+                canEarly ? 'Withdraw Early' : 'Withdraw',
+                canEarly
+                    ? Icons.lock_open_outlined
+                    : Icons.account_balance_wallet_outlined,
+                canEarly ? const Color(0xFFFB923C) : const Color(0xFF10B981),
+                canWithdraw ? () => _showWithdrawDialog(early: canEarly) : null,
                 filled: true,
                 enabled: canWithdraw,
               ),
             ),
           ],
         ),
-        // Explain WHY withdraw is disabled — the lock is still maturing.
-        if (!canWithdraw) ...[
+        // Early: state the penalty. Locked (non-breakable, pre-maturity):
+        // explain when it unlocks. Matured/flex: no note needed.
+        if (canEarly && earlyPenalty > 0) ...[
+          SizedBox(height: 8.h),
+          Row(
+            children: [
+              Icon(Icons.warning_amber_rounded,
+                  size: 13.sp, color: const Color(0xFFFB923C)),
+              SizedBox(width: 6.w),
+              Expanded(
+                child: Text(
+                  'Early withdrawal penalty: ${lock.earlyUnlockPenaltyPercent.toStringAsFixed(0)}% '
+                  '(${CurrencySymbols.getSymbol(lock.currency)}${earlyPenalty.toStringAsFixed(2)}).',
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFFFB923C), fontSize: 11.sp),
+                ),
+              ),
+            ],
+          ),
+        ] else if (!canWithdraw) ...[
           SizedBox(height: 8.h),
           Row(
             children: [
@@ -961,7 +989,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
     }
   }
 
-  void _showWithdrawDialog() {
+  void _showWithdrawDialog({bool early = false}) {
     HapticFeedback.mediumImpact();
     final lockFundsCubit = context.read<LockFundsCubit>();
     Navigator.push(
@@ -969,7 +997,11 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
       MaterialPageRoute(
         builder: (context) => BlocProvider.value(
           value: lockFundsCubit,
-          child: LockWithdrawalScreen(lockFund: widget.lockFund, isEarlyWithdrawal: false),
+          // The withdraw screen also self-derives early-vs-matured from the
+          // lock, so this is an explicit hint (breakable term, pre-maturity),
+          // not the sole source of truth.
+          child: LockWithdrawalScreen(
+              lockFund: widget.lockFund, isEarlyWithdrawal: early),
         ),
       ),
     );
