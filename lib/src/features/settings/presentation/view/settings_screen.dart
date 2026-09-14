@@ -479,6 +479,9 @@ class _SettingsViewState extends State<_SettingsView> {
           'fingerprint',
           'face id',
           'voice login',
+          'google sign-in',
+          'apple sign-in',
+          'social login',
           'verify email',
           'verify phone number',
           'two factor',
@@ -1196,7 +1199,22 @@ class _SettingsViewState extends State<_SettingsView> {
           _navTile(
             icon: Icons.fingerprint,
             title: 'Biometric Login',
-            subtitle: 'Use fingerprint, Face ID or voice to unlock',
+            // Names Google/Apple so the search reveals WHY this tile matched —
+            // their Social-login toggles live inside this screen.
+            subtitle: 'Fingerprint, Face ID, voice · Google/Apple sign-in',
+            keywords: const [
+              'google',
+              'apple',
+              'google sign-in',
+              'apple sign-in',
+              'sign in with google',
+              'sign in with apple',
+              'social login',
+              'biometric',
+              'fingerprint',
+              'face id',
+              'voice login',
+            ],
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(
