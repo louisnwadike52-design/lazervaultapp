@@ -18,7 +18,6 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 part 'create_contribution_bottom_sheet_widgets.dart';
 
-
 /// Normalize a deadline date to 23:59:59.999 in the user's local
 /// timezone. The date picker returns midnight (start-of-day), which
 /// would make a contribution "due Apr 28" tip overdue at 00:00 on Apr
@@ -64,10 +63,12 @@ class CreateContributionBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<CreateContributionBottomSheet> createState() => _CreateContributionBottomSheetState();
+  State<CreateContributionBottomSheet> createState() =>
+      _CreateContributionBottomSheetState();
 }
 
-class _CreateContributionBottomSheetState extends State<CreateContributionBottomSheet> {
+class _CreateContributionBottomSheetState
+    extends State<CreateContributionBottomSheet> {
   late PageController _pageController;
   int _currentPage = 0;
 
@@ -97,7 +98,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
   // tipping overdue at 00:00 on Apr 28). The default is +30 days at
   // 23:59:59 local. _endOfDay() applies the same normalization to any
   // value the date picker returns.
-  DateTime _selectedDeadline = _endOfDay(DateTime.now().add(const Duration(days: 30)));
+  DateTime _selectedDeadline =
+      _endOfDay(DateTime.now().add(const Duration(days: 30)));
   DateTime? _selectedStartDate;
   bool _autoPayEnabled = false;
   bool _allowPartialPayments = true;
@@ -159,15 +161,16 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
     _rotationOrder = _localGroupMembers
         .where((m) => m.status == GroupMemberStatus.active)
         .where((m) => m.userId.isNotEmpty && m.userId != nullUuid)
-        .where((m) => seenUserIds.add(m.userId)) // Only adds if not already seen
+        .where(
+            (m) => seenUserIds.add(m.userId)) // Only adds if not already seen
         .map((m) {
-          // For valid UUIDs, the display ID is the same as the original ID
-          _tempIdToOriginalId[m.userId] = m.userId;
-          return m.userId;
-        })
-        .toList();
+      // For valid UUIDs, the display ID is the same as the original ID
+      _tempIdToOriginalId[m.userId] = m.userId;
+      return m.userId;
+    }).toList();
 
-    debugPrint('🔵 initState: _localGroupMembers count=${_localGroupMembers.length}');
+    debugPrint(
+        '🔵 initState: _localGroupMembers count=${_localGroupMembers.length}');
     debugPrint('🔵 initState: _rotationOrder (deduplicated)=$_rotationOrder');
 
     // Re-render the social-link fields when their focus changes so
@@ -228,7 +231,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
   }
 
   bool _validateCurrentPage() {
-    debugPrint('🔵 _validateCurrentPage: currentPage=$_currentPage, type=$_selectedType, totalPages=$_totalPages');
+    debugPrint(
+        '🔵 _validateCurrentPage: currentPage=$_currentPage, type=$_selectedType, totalPages=$_totalPages');
     _clearErrors();
 
     switch (_currentPage) {
@@ -236,7 +240,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         debugPrint('🟢 Page 0 (Type) validation: PASS');
         return true;
       case 1: // Basic info
-        debugPrint('🔵 Page 1 (Details) validation: title="${_titleController.text}", desc="${_descriptionController.text}", amount="${_targetAmountController.text}"');
+        debugPrint(
+            '🔵 Page 1 (Details) validation: title="${_titleController.text}", desc="${_descriptionController.text}", amount="${_targetAmountController.text}"');
         bool hasErrors = false;
 
         if (_titleController.text.trim().isEmpty) {
@@ -253,7 +258,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         // formatted controller text round-trips cleanly.
         final amount = _parseAmount(_targetAmountController.text);
         if (amount <= 0) {
-          debugPrint('🔴 Validation failed: Target amount invalid (parsed: $amount)');
+          debugPrint(
+              '🔴 Validation failed: Target amount invalid (parsed: $amount)');
           _setFieldError('targetAmount', 'Please enter a valid amount');
           hasErrors = true;
         }
@@ -276,7 +282,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           return true;
         }
         // Schedule validation for recurring types
-        debugPrint('🔵 Page 2 (Schedule) validation: frequency=$_selectedFrequency, regularAmount="${_regularAmountController.text}"');
+        debugPrint(
+            '🔵 Page 2 (Schedule) validation: frequency=$_selectedFrequency, regularAmount="${_regularAmountController.text}"');
         bool hasScheduleErrors = false;
 
         if (_selectedFrequency == null) {
@@ -286,8 +293,10 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         }
         final regularAmount = _parseAmount(_regularAmountController.text);
         if (regularAmount <= 0) {
-          debugPrint('🔴 Validation failed: Regular amount invalid (parsed: $regularAmount)');
-          _setFieldError('regularAmount', 'Please enter a valid payment amount');
+          debugPrint(
+              '🔴 Validation failed: Regular amount invalid (parsed: $regularAmount)');
+          _setFieldError(
+              'regularAmount', 'Please enter a valid payment amount');
           hasScheduleErrors = true;
         }
 
@@ -299,7 +308,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         // page they're already on.
         if (_selectedType == ContributionType.rotatingSavings &&
             _rotationOrder.isEmpty) {
-          debugPrint('🔴 Validation failed: ROSCA needs at least one rotation member');
+          debugPrint(
+              '🔴 Validation failed: ROSCA needs at least one rotation member');
           hasScheduleErrors = true;
           _showErrorBanner(
               'Add at least one member to the payout rotation before continuing');
@@ -320,7 +330,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
   }
 
   Future<void> _goToNextPage() async {
-    debugPrint('🔵 _goToNextPage called: currentPage=$_currentPage, totalPages=$_totalPages');
+    debugPrint(
+        '🔵 _goToNextPage called: currentPage=$_currentPage, totalPages=$_totalPages');
     if (!_validateCurrentPage()) {
       debugPrint('🔴 Validation failed, not advancing');
       return;
@@ -360,7 +371,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       decoration: BoxDecoration(
         color: const Color(0xFFEF4444).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.5)),
+        border:
+            Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
@@ -471,8 +483,10 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       return;
     }
 
-    debugPrint('🔵 _submitContribution: cubit.currentUserId=${cubit.currentUserId}');
-    debugPrint('🔵 _submitContribution: groupId=${widget.groupId}, type=${_selectedType}, frequency=$_selectedFrequency');
+    debugPrint(
+        '🔵 _submitContribution: cubit.currentUserId=${cubit.currentUserId}');
+    debugPrint(
+        '🔵 _submitContribution: groupId=${widget.groupId}, type=${_selectedType}, frequency=$_selectedFrequency');
 
     // Convert display IDs back to original user IDs for backend submission
     List<String>? backendRotationOrder;
@@ -489,8 +503,10 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
     // the suffix because the input field bakes the canonical prefix
     // into the InputDecoration; buildSocialFullUrl re-prepends it (and
     // passes through any full URL the user may have pasted).
-    final whatsappFull = buildSocialFullUrl(_whatsappLinkController.text, whatsappLinkPrefix);
-    final telegramFull = buildSocialFullUrl(_telegramLinkController.text, telegramLinkPrefix);
+    final whatsappFull =
+        buildSocialFullUrl(_whatsappLinkController.text, whatsappLinkPrefix);
+    final telegramFull =
+        buildSocialFullUrl(_telegramLinkController.text, telegramLinkPrefix);
     final Map<String, dynamic>? metadata;
     if (whatsappFull != null || telegramFull != null) {
       metadata = {};
@@ -551,10 +567,14 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       totalCycles: effectiveTotalCycles,
       memberRotationOrder: backendRotationOrder,
       autoPayEnabled: _autoPayEnabled,
-      penaltyAmount: _visibleOptionalFields.contains('penalty') ? penaltyAmount : null,
-      gracePeriodDays: _visibleOptionalFields.contains('penalty') ? gracePeriodDays : null,
+      penaltyAmount:
+          _visibleOptionalFields.contains('penalty') ? penaltyAmount : null,
+      gracePeriodDays:
+          _visibleOptionalFields.contains('penalty') ? gracePeriodDays : null,
       allowPartialPayments: _allowPartialPayments,
-      minimumBalance: _visibleOptionalFields.contains('minimumBalance') ? minimumBalance : null,
+      minimumBalance: _visibleOptionalFields.contains('minimumBalance')
+          ? minimumBalance
+          : null,
       autoPayoutEnabled: _autoPayoutEnabled,
       metadata: metadata,
     );
@@ -595,74 +615,83 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
   DateTime? _resolvedRotationEnd() {
     final freq = _selectedFrequency;
     if (freq == null) return null;
-    return _addFrequency(
-        _resolvedStartDate(), freq, _resolvedTotalCycles());
+    return _addFrequency(_resolvedStartDate(), freq, _resolvedTotalCycles());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.9,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF1F1F1F), Color(0xFF0A0A0A)],
+    // Tap anywhere outside a text field to dismiss the soft keyboard. The
+    // PageView uses NeverScrollableScrollPhysics, so without an explicit
+    // dismiss the keyboard could otherwise stay up with no way to close it
+    // (the reported "keyboard stuck open" in the contribution flow).
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF1F1F1F), Color(0xFF0A0A0A)],
+          ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
         ),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      child: BlocConsumer<GroupAccountCubit, GroupAccountState>(
-        listener: (context, state) {
-          if (state is GroupAccountContributionCreated) {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Contribution created successfully'),
-                backgroundColor: const Color(0xFF10B981),
-              ),
-            );
-          } else if (state is GroupAccountError) {
-            _showErrorBanner(state.message);
-          } else if (state is GroupAccountSuccess) {
-            // Member was successfully added to the group
-            // Show success message
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: const Color(0xFF10B981),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          }
-        },
-        builder: (context, state) {
-          final isLoading = state is GroupAccountLoading;
-
-          return Column(
-            children: [
-              _buildHeader(isLoading),
-              _buildProgressIndicators(),
-              _buildErrorBanner(), // Error banner at top
-              Expanded(
-                child: PageView(
-                  key: ValueKey('pageview_${_selectedType.name}'),
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  onPageChanged: (page) {
-                    debugPrint('🔵 PageView onPageChanged: $page (was $_currentPage)');
-                    setState(() {
-                      _currentPage = page;
-                      _clearErrors(); // Clear errors when page changes
-                    });
-                  },
-                  children: _buildPages(),
+        child: BlocConsumer<GroupAccountCubit, GroupAccountState>(
+          listener: (context, state) {
+            if (state is GroupAccountContributionCreated) {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Contribution created successfully'),
+                  backgroundColor: const Color(0xFF10B981),
                 ),
-              ),
-              _buildNavigationButtons(isLoading),
-            ],
-          );
-        },
+              );
+            } else if (state is GroupAccountError) {
+              _showErrorBanner(state.message);
+            } else if (state is GroupAccountSuccess) {
+              // Member was successfully added to the group
+              // Show success message
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: const Color(0xFF10B981),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r)),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            final isLoading = state is GroupAccountLoading;
+
+            return Column(
+              children: [
+                _buildHeader(isLoading),
+                _buildProgressIndicators(),
+                _buildErrorBanner(), // Error banner at top
+                Expanded(
+                  child: PageView(
+                    key: ValueKey('pageview_${_selectedType.name}'),
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    onPageChanged: (page) {
+                      debugPrint(
+                          '🔵 PageView onPageChanged: $page (was $_currentPage)');
+                      setState(() {
+                        _currentPage = page;
+                        _clearErrors(); // Clear errors when page changes
+                      });
+                    },
+                    children: _buildPages(),
+                  ),
+                ),
+                _buildNavigationButtons(isLoading),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -740,7 +769,10 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                   gradient: LinearGradient(
                     colors: _currentPage == _totalPages - 1
                         ? [const Color(0xFF10B981), const Color(0xFF059669)]
-                        : [const Color(0xFF4E03D0), const Color.fromARGB(255, 78, 3, 208)],
+                        : [
+                            const Color(0xFF4E03D0),
+                            const Color.fromARGB(255, 78, 3, 208)
+                          ],
                   ),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
@@ -825,7 +857,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
 
     return GestureDetector(
       onTap: () {
-        debugPrint('🔵 Type card tapped: ${type.displayName}, current type: ${_selectedType.displayName}');
+        debugPrint(
+            '🔵 Type card tapped: ${type.displayName}, current type: ${_selectedType.displayName}');
         final oldType = _selectedType;
         setState(() {
           _selectedType = type;
@@ -845,7 +878,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             _pageController.dispose();
             _pageController = PageController();
           }
-          debugPrint('🟢 Type set to: ${_selectedType.displayName}, totalPages now: $_totalPages, currentPage: $_currentPage');
+          debugPrint(
+              '🟢 Type set to: ${_selectedType.displayName}, totalPages now: $_totalPages, currentPage: $_currentPage');
         });
       },
       child: AnimatedContainer(
@@ -876,7 +910,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                     : Colors.grey.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(iconData, color: isSelected ? color : Colors.grey[500], size: 24.sp),
+              child: Icon(iconData,
+                  color: isSelected ? color : Colors.grey[500], size: 24.sp),
             ),
             SizedBox(width: 16.w),
             Expanded(
@@ -894,7 +929,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                   SizedBox(height: 4.h),
                   Text(
                     type.description,
-                    style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[500]),
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp, color: Colors.grey[500]),
                   ),
                 ],
               ),
@@ -957,6 +993,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             controller: _titleController,
             hint: 'e.g., Monthly Savings Goal',
             maxLength: 100,
+            showCounter: true,
             hasError: _fieldErrors.containsKey('title'),
           ),
           _buildFieldError('title'),
@@ -970,6 +1007,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             hint: 'Describe the purpose of this contribution...',
             maxLines: 3,
             maxLength: 500,
+            showCounter: true,
             hasError: _fieldErrors.containsKey('description'),
           ),
           _buildFieldError('description'),
@@ -1028,7 +1066,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             _buildDatePicker(
               selectedDate: _selectedDeadline,
               includeTime: true,
-              onDateSelected: (date) => setState(() => _selectedDeadline = date),
+              onDateSelected: (date) =>
+                  setState(() => _selectedDeadline = date),
             ),
             SizedBox(height: 24.h),
           ] else ...[
@@ -1071,7 +1110,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             // _onSocialFocusChanged triggers setState on focus change
             // so this conditional is re-evaluated.
             hint: _whatsappLinkFocus.hasFocus ? 'invite-code' : '',
-            prefixIcon: Icon(Icons.message, color: const Color(0xFF25D366), size: 18.sp),
+            prefixIcon: Icon(Icons.message,
+                color: const Color(0xFF25D366), size: 18.sp),
             prefixText: whatsappLinkPrefix,
             focusNode: _whatsappLinkFocus,
           ),
@@ -1079,7 +1119,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           _buildTextField(
             controller: _telegramLinkController,
             hint: _telegramLinkFocus.hasFocus ? 'group-handle' : '',
-            prefixIcon: Icon(Icons.send, color: const Color(0xFF0088CC), size: 18.sp),
+            prefixIcon:
+                Icon(Icons.send, color: const Color(0xFF0088CC), size: 18.sp),
             prefixText: telegramLinkPrefix,
             focusNode: _telegramLinkFocus,
           ),
@@ -1148,7 +1189,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           // Required: Frequency
           _buildFieldLabel('Payment Frequency', required: true),
           SizedBox(height: 8.h),
-          _buildFrequencySelector(hasError: _fieldErrors.containsKey('frequency')),
+          _buildFrequencySelector(
+              hasError: _fieldErrors.containsKey('frequency')),
           _buildFieldError('frequency'),
           SizedBox(height: 20.h),
 
@@ -1186,7 +1228,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                 _ChipField('totalCycles', 'Total Cycles', Icons.repeat),
             ],
             showChips: _showFieldChipsSchedule,
-            onToggle: () => setState(() => _showFieldChipsSchedule = !_showFieldChipsSchedule),
+            onToggle: () => setState(
+                () => _showFieldChipsSchedule = !_showFieldChipsSchedule),
           ),
 
           // Optional: Start Date
@@ -1195,10 +1238,12 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             _buildOptionalFieldContainer(
               title: 'Start Date',
               icon: Icons.event,
-              onRemove: () => setState(() => _visibleOptionalFields.remove('startDate')),
+              onRemove: () =>
+                  setState(() => _visibleOptionalFields.remove('startDate')),
               child: _buildDatePicker(
                 selectedDate: _selectedStartDate ?? DateTime.now(),
-                onDateSelected: (date) => setState(() => _selectedStartDate = date),
+                onDateSelected: (date) =>
+                    setState(() => _selectedStartDate = date),
               ),
             ),
           ],
@@ -1259,7 +1304,9 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                     : const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
-                  color: isSelected ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
+                  color: isSelected
+                      ? const Color(0xFF4E03D0)
+                      : const Color(0xFF2D2D2D),
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -1268,7 +1315,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? const Color(0xFF4E03D0) : Colors.grey[300],
+                  color:
+                      isSelected ? const Color(0xFF4E03D0) : Colors.grey[300],
                 ),
               ),
             ),
@@ -1377,12 +1425,15 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           _buildAddMoreFieldsWidget(
             fields: [
               if (!_visibleOptionalFields.contains('penalty'))
-                _ChipField('penalty', 'Late Penalty', Icons.warning_amber_outlined),
+                _ChipField(
+                    'penalty', 'Late Penalty', Icons.warning_amber_outlined),
               if (!_visibleOptionalFields.contains('minimumBalance'))
-                _ChipField('minimumBalance', 'Min Balance', Icons.account_balance_wallet_outlined),
+                _ChipField('minimumBalance', 'Min Balance',
+                    Icons.account_balance_wallet_outlined),
             ],
             showChips: _showFieldChipsSettings,
-            onToggle: () => setState(() => _showFieldChipsSettings = !_showFieldChipsSettings),
+            onToggle: () => setState(
+                () => _showFieldChipsSettings = !_showFieldChipsSettings),
           ),
 
           // Optional: Penalty fields
@@ -1405,9 +1456,12 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Penalty Amount', style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[400])),
+                        Text('Penalty Amount',
+                            style: GoogleFonts.inter(
+                                fontSize: 12.sp, color: Colors.grey[400])),
                         SizedBox(height: 6.h),
-                        _buildAmountField(controller: _penaltyAmountController, hint: '0.00'),
+                        _buildAmountField(
+                            controller: _penaltyAmountController, hint: '0.00'),
                       ],
                     ),
                   ),
@@ -1416,9 +1470,12 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Grace Period (Days)', style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[400])),
+                        Text('Grace Period (Days)',
+                            style: GoogleFonts.inter(
+                                fontSize: 12.sp, color: Colors.grey[400])),
                         SizedBox(height: 6.h),
-                        _buildIntegerField(controller: _gracePeriodController, hint: '0'),
+                        _buildIntegerField(
+                            controller: _gracePeriodController, hint: '0'),
                       ],
                     ),
                   ),
@@ -1446,7 +1503,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                 children: [
                   Text(
                     'Minimum amount that must be collected before any payout can occur (cannot exceed the target amount)',
-                    style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[500]),
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp, color: Colors.grey[500]),
                   ),
                   SizedBox(height: 8.h),
                   _buildAmountField(
@@ -1472,8 +1530,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                     if (invalid && !hasError) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         if (!mounted) return;
-                        _setFieldError('minimumBalance',
-                            'Cannot exceed target amount');
+                        _setFieldError(
+                            'minimumBalance', 'Cannot exceed target amount');
                       });
                     } else if (!invalid && hasError) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1543,7 +1601,9 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
 
           // Title
           Text(
-            _titleController.text.isNotEmpty ? _titleController.text : 'Untitled',
+            _titleController.text.isNotEmpty
+                ? _titleController.text
+                : 'Untitled',
             style: GoogleFonts.inter(
               fontSize: 20.sp,
               fontWeight: FontWeight.w700,
@@ -1567,7 +1627,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                   : DateFormat('MMM dd, yyyy h:mm a').format(_selectedDeadline),
             ),
             if (_selectedType != ContributionType.oneTime && regularAmount > 0)
-              _ReviewItem('Regular Payment', currencyFormat.format(regularAmount)),
+              _ReviewItem(
+                  'Regular Payment', currencyFormat.format(regularAmount)),
             if (_selectedFrequency != null)
               _ReviewItem('Frequency', _selectedFrequency!.displayName),
             // ROSCA-specific schedule disclosure. The two
@@ -1629,7 +1690,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
 
           _buildReviewCard([
             _ReviewItem('Auto-Pay', _autoPayEnabled ? 'Enabled' : 'Disabled'),
-            _ReviewItem('Partial Payments', _allowPartialPayments ? 'Allowed' : 'Not allowed'),
+            _ReviewItem('Partial Payments',
+                _allowPartialPayments ? 'Allowed' : 'Not allowed'),
             if (_visibleOptionalFields.contains('penalty'))
               _ReviewItem(
                 'Late Penalty',
@@ -1638,7 +1700,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             if (_visibleOptionalFields.contains('minimumBalance'))
               _ReviewItem(
                 'Min Balance',
-                currencyFormat.format(_parseAmount(_minimumBalanceController.text)),
+                currencyFormat
+                    .format(_parseAmount(_minimumBalanceController.text)),
               ),
           ]),
 
@@ -1665,7 +1728,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                 children: [
                   Text(
                     entry.value.label,
-                    style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[400]),
+                    style: GoogleFonts.inter(
+                        fontSize: 14.sp, color: Colors.grey[400]),
                   ),
                   Text(
                     entry.value.value,
@@ -1704,7 +1768,9 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         ),
         if (required) ...[
           SizedBox(width: 4.w),
-          Text('*', style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFFEF4444))),
+          Text('*',
+              style: GoogleFonts.inter(
+                  fontSize: 14.sp, color: const Color(0xFFEF4444))),
         ],
       ],
     );
@@ -1719,6 +1785,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
     Widget? prefixIcon,
     String? prefixText,
     FocusNode? focusNode,
+    bool showCounter = false,
   }) {
     final errorColor = const Color(0xFFEF4444);
     final normalColor = const Color(0xFF2D2D2D);
@@ -1730,15 +1797,23 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       maxLength: maxLength,
       style: GoogleFonts.inter(fontSize: 16.sp, color: Colors.white),
       onChanged: (_) {
-        // Clear error when user starts typing
-        if (hasError) setState(() {});
+        // Live-update the character counter (and clear any field error).
+        if (hasError || showCounter) setState(() {});
       },
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: GoogleFonts.inter(fontSize: 16.sp, color: Colors.grey[600]),
         filled: true,
-        fillColor: hasError ? errorColor.withValues(alpha: 0.1) : const Color(0xFF1F1F1F),
-        counterText: '',
+        fillColor: hasError
+            ? errorColor.withValues(alpha: 0.1)
+            : const Color(0xFF1F1F1F),
+        // Show the live "X/limit" counter only where a length limit is
+        // meaningful to the user (title / description) — matching the
+        // Create-Group sheet. Empty string hides Material's default
+        // counter for the amount / social-link fields.
+        counterText: showCounter ? null : '',
+        counterStyle:
+            GoogleFonts.inter(fontSize: 11.sp, color: Colors.grey[500]),
         prefixIcon: prefixIcon,
         prefixIconColor: Colors.grey[400],
         // Render the prefix as a `prefix` widget rather than `prefixText`
@@ -1770,11 +1845,14 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: hasError ? errorColor : normalColor, width: hasError ? 1.5 : 1),
+          borderSide: BorderSide(
+              color: hasError ? errorColor : normalColor,
+              width: hasError ? 1.5 : 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: hasError ? errorColor : const Color(0xFF4E03D0), width: 2),
+          borderSide: BorderSide(
+              color: hasError ? errorColor : const Color(0xFF4E03D0), width: 2),
         ),
         contentPadding: EdgeInsets.all(16.w),
       ),
@@ -1814,11 +1892,11 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       case ContributionFrequency.biWeekly:
         return start.add(Duration(days: 14 * n));
       case ContributionFrequency.monthly:
-        return DateTime(start.year, start.month + n, start.day,
-            start.hour, start.minute, start.second);
+        return DateTime(start.year, start.month + n, start.day, start.hour,
+            start.minute, start.second);
       case ContributionFrequency.quarterly:
-        return DateTime(start.year, start.month + 3 * n, start.day,
-            start.hour, start.minute, start.second);
+        return DateTime(start.year, start.month + 3 * n, start.day, start.hour,
+            start.minute, start.second);
     }
   }
 
@@ -1952,7 +2030,9 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         hintText: effectiveHint,
         hintStyle: GoogleFonts.inter(fontSize: 16.sp, color: Colors.grey[600]),
         filled: true,
-        fillColor: hasError ? errorColor.withValues(alpha: 0.1) : const Color(0xFF1F1F1F),
+        fillColor: hasError
+            ? errorColor.withValues(alpha: 0.1)
+            : const Color(0xFF1F1F1F),
         prefixIcon: showCurrencyPrefix
             ? Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -1986,11 +2066,14 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: hasError ? errorColor : normalColor, width: hasError ? 1.5 : 1),
+          borderSide: BorderSide(
+              color: hasError ? errorColor : normalColor,
+              width: hasError ? 1.5 : 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: hasError ? errorColor : const Color(0xFF4E03D0), width: 2),
+          borderSide: BorderSide(
+              color: hasError ? errorColor : const Color(0xFF4E03D0), width: 2),
         ),
         contentPadding: EdgeInsets.all(16.w),
       ),
@@ -2033,7 +2116,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
     required ValueChanged<DateTime> onDateSelected,
     bool includeTime = false,
   }) {
-    final hasMeaningfulTime = selectedDate.hour != 0 || selectedDate.minute != 0;
+    final hasMeaningfulTime =
+        selectedDate.hour != 0 || selectedDate.minute != 0;
     final label = includeTime
         ? (hasMeaningfulTime
             ? DateFormat('MMM dd, yyyy h:mm a').format(selectedDate)
@@ -2155,7 +2239,9 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             ),
             child: Icon(
               icon,
-              color: (enabled && value) ? const Color(0xFF4E03D0) : Colors.grey[500],
+              color: (enabled && value)
+                  ? const Color(0xFF4E03D0)
+                  : Colors.grey[500],
               size: 20.sp,
             ),
           ),
@@ -2175,7 +2261,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                 SizedBox(height: 2.h),
                 Text(
                   subtitle,
-                  style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[500]),
+                  style: GoogleFonts.inter(
+                      fontSize: 12.sp, color: Colors.grey[500]),
                 ),
               ],
             ),
@@ -2221,7 +2308,9 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  showChips ? Icons.remove_circle_outline : Icons.add_circle_outline,
+                  showChips
+                      ? Icons.remove_circle_outline
+                      : Icons.add_circle_outline,
                   color: const Color(0xFF60A5FA),
                   size: 22.sp,
                 ),
@@ -2247,7 +2336,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
               runSpacing: 8.h,
               children: fields.map((field) {
                 return ActionChip(
-                  avatar: Icon(field.icon, size: 16.sp, color: const Color(0xFF60A5FA)),
+                  avatar: Icon(field.icon,
+                      size: 16.sp, color: const Color(0xFF60A5FA)),
                   label: Text(
                     field.label,
                     style: GoogleFonts.inter(
@@ -2260,7 +2350,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                   side: BorderSide.none,
                   elevation: 4,
                   shadowColor: Colors.black.withValues(alpha: 0.3),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.r)),
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   onPressed: () {
                     setState(() {
@@ -2271,7 +2362,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
               }).toList(),
             ),
           ),
-          crossFadeState: showChips ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          crossFadeState:
+              showChips ? CrossFadeState.showSecond : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 250),
         ),
       ],
@@ -2290,14 +2382,16 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: iconColor ?? const Color(0xFF4E03D0), size: 20.sp),
+              Icon(icon,
+                  color: iconColor ?? const Color(0xFF4E03D0), size: 20.sp),
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
@@ -2334,28 +2428,33 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         children: [
           Row(
             children: [
-              Icon(Icons.swap_vert, color: const Color(0xFF4E03D0), size: 18.sp),
+              Icon(Icons.swap_vert,
+                  color: const Color(0xFF4E03D0), size: 18.sp),
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
                   'Drag to reorder payout sequence',
-                  style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[400]),
+                  style: GoogleFonts.inter(
+                      fontSize: 12.sp, color: Colors.grey[400]),
                 ),
               ),
               // Add Member button
               GestureDetector(
                 onTap: _showAddMemberForRotation,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.5)),
+                    border: Border.all(
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.person_add_alt_1, color: const Color(0xFF4E03D0), size: 16.sp),
+                      Icon(Icons.person_add_alt_1,
+                          color: const Color(0xFF4E03D0), size: 16.sp),
                       SizedBox(width: 6.w),
                       Text(
                         'Add',
@@ -2375,14 +2474,16 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           ReorderableListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            buildDefaultDragHandles: false, // Disable default drag, we'll add custom
+            buildDefaultDragHandles:
+                false, // Disable default drag, we'll add custom
             itemCount: _rotationOrder.length,
             proxyDecorator: (child, index, animation) {
               // Custom drag feedback with elevation and color
               return AnimatedBuilder(
                 animation: animation,
                 builder: (context, child) {
-                  final double elevation = Tween<double>(begin: 0, end: 8).animate(animation).value;
+                  final double elevation =
+                      Tween<double>(begin: 0, end: 8).animate(animation).value;
                   return Material(
                     elevation: elevation,
                     color: Colors.transparent,
@@ -2408,17 +2509,20 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
 
               // Try to find member by userId first
               try {
-                foundMember = _localGroupMembers.firstWhere((m) => m.userId == rotationId);
+                foundMember = _localGroupMembers
+                    .firstWhere((m) => m.userId == rotationId);
               } catch (_) {
                 // If not found by userId, try to find by member id
                 try {
-                  foundMember = _localGroupMembers.firstWhere((m) => m.id == rotationId);
+                  foundMember =
+                      _localGroupMembers.firstWhere((m) => m.id == rotationId);
                 } catch (_) {
                   foundMember = null;
                 }
               }
 
-              debugPrint('🔵 itemBuilder[$index]: rotationId=$rotationId, foundMember=${foundMember?.userName ?? "null"}, membersCount=${_localGroupMembers.length}');
+              debugPrint(
+                  '🔵 itemBuilder[$index]: rotationId=$rotationId, foundMember=${foundMember?.userName ?? "null"}, membersCount=${_localGroupMembers.length}');
 
               if (foundMember == null) {
                 return SizedBox.shrink(key: ValueKey('empty_$index'));
@@ -2492,7 +2596,9 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                             radius: 18.r,
                             backgroundColor: const Color(0xFF4B5563),
                             child: Text(
-                              member.userName.isNotEmpty ? member.userName[0].toUpperCase() : 'U',
+                              member.userName.isNotEmpty
+                                  ? member.userName[0].toUpperCase()
+                                  : 'U',
                               style: GoogleFonts.inter(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w600,
@@ -2516,11 +2622,17 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                                 ),
                                 SizedBox(height: 2.h),
                                 Text(
-                                  index == 0 ? 'Receives first payout' : 'Payout #${index + 1}',
+                                  index == 0
+                                      ? 'Receives first payout'
+                                      : 'Payout #${index + 1}',
                                   style: GoogleFonts.inter(
                                     fontSize: 12.sp,
-                                    color: index == 0 ? const Color(0xFF10B981) : Colors.grey[500],
-                                    fontWeight: index == 0 ? FontWeight.w500 : FontWeight.w400,
+                                    color: index == 0
+                                        ? const Color(0xFF10B981)
+                                        : Colors.grey[500],
+                                    fontWeight: index == 0
+                                        ? FontWeight.w500
+                                        : FontWeight.w400,
                                   ),
                                 ),
                               ],
@@ -2634,8 +2746,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                 final memberId = _rotationOrder[index];
                 GroupMember? foundMember;
                 try {
-                  foundMember =
-                      _localGroupMembers.firstWhere((m) => m.userId == memberId);
+                  foundMember = _localGroupMembers
+                      .firstWhere((m) => m.userId == memberId);
                 } catch (_) {
                   try {
                     foundMember =
@@ -2778,7 +2890,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             existingMembers: _localGroupMembers,
             rotationOrder: _rotationOrder,
             isRotation: _selectedType == ContributionType.rotatingSavings,
-            onMemberAdded: (String newUserId, String userName, String email, String? profileImage) {
+            onMemberAdded: (String newUserId, String userName, String email,
+                String? profileImage) {
               // Add the new member to local state (with duplicate prevention)
               setState(() {
                 // Generate a unique identifier for this member
@@ -2795,10 +2908,12 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                 debugPrint('🔵 Stored mapping: $uniqueId -> $newUserId');
 
                 // Check if member already exists to prevent duplicate keys
-                final existsInMembers = _localGroupMembers.any((m) => m.userId == uniqueId || m.email == email);
+                final existsInMembers = _localGroupMembers
+                    .any((m) => m.userId == uniqueId || m.email == email);
                 final existsInRotation = _rotationOrder.contains(uniqueId);
 
-                debugPrint('🔵 onMemberAdded: originalUserId=$newUserId, uniqueId=$uniqueId, existsInMembers=$existsInMembers, existsInRotation=$existsInRotation');
+                debugPrint(
+                    '🔵 onMemberAdded: originalUserId=$newUserId, uniqueId=$uniqueId, existsInMembers=$existsInMembers, existsInRotation=$existsInRotation');
 
                 if (!existsInMembers) {
                   final newMember = GroupMember(
@@ -2812,7 +2927,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                     joinedAt: DateTime.now(),
                   );
                   _localGroupMembers.add(newMember);
-                  debugPrint('🟢 Added member to _localGroupMembers: $userName (uniqueId=$uniqueId)');
+                  debugPrint(
+                      '🟢 Added member to _localGroupMembers: $userName (uniqueId=$uniqueId)');
                 }
 
                 // Add to rotation order at the end (only if not already present)
@@ -2837,7 +2953,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: const Color(0xFF0A0A0A),
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+        border:
+            Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
       ),
       child: SafeArea(
         child: Row(
@@ -2851,7 +2968,9 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.5),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          width: 1.5),
                     ),
                     child: Center(
                       child: Text(
@@ -2876,7 +2995,10 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                     gradient: isLoading
                         ? null
                         : const LinearGradient(
-                            colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
+                            colors: [
+                              Color(0xFF4E03D0),
+                              Color.fromARGB(255, 78, 3, 208)
+                            ],
                           ),
                     color: isLoading ? Colors.grey : null,
                     borderRadius: BorderRadius.circular(12.r),
@@ -2897,7 +3019,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                               ),
                               if (!isLastPage) ...[
                                 SizedBox(width: 8.w),
-                                Icon(Icons.arrow_forward, color: Colors.white, size: 20.sp),
+                                Icon(Icons.arrow_forward,
+                                    color: Colors.white, size: 20.sp),
                               ],
                             ],
                           ),
@@ -2910,5 +3033,4 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       ),
     );
   }
-
 }
