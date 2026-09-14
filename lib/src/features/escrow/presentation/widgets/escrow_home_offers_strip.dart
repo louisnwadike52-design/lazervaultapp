@@ -98,7 +98,10 @@ class EscrowHomeOffersStrip extends StatelessWidget {
                   height: 1.4)),
         ),
         SizedBox(
-          height: 92.h,
+          // Tall enough for the card's full stack (title row + subtitle +
+          // direction/fee badges + amount) plus padding — the old 92.h clipped
+          // the bottom (the amount hugged/overflowed the border).
+          height: 118.h,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: 16.w),
