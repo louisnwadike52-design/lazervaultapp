@@ -384,19 +384,25 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
                   value: _voiceOn,
                   onChanged: _toggleVoice,
                 ),
-                // ── Google / Apple sign-in ─────────────────────────────
-                // Entry-point toggles, not security gates: the server
-                // verifies every provider token regardless. Off simply
-                // hides the buttons on the lock and sign-in screens.
-                SizedBox(height: 22.h),
-                Text('Sign-in methods',
+                // ── Social login ───────────────────────────────────────
+                // Its OWN section, set apart from the device-biometric
+                // toggles above by a divider. Same branded logos as the
+                // login screen's Google / Apple buttons; these are
+                // entry-point toggles (not security gates — the server
+                // verifies every provider token regardless): turning one
+                // off hides that provider's button on the sign-in screens.
+                SizedBox(height: 24.h),
+                Divider(color: _divider, height: 1),
+                SizedBox(height: 20.h),
+                Text('Social login',
                     style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w700)),
                 SizedBox(height: 4.h),
                 Text(
-                  'Show or hide Google and Apple sign-in on your login screens.',
+                  'Google and Apple sign-in for your login screens. Turn a '
+                  'method off to hide its button.',
                   style: GoogleFonts.inter(
                       color: _textSecondary, fontSize: 12.sp, height: 1.4),
                 ),
