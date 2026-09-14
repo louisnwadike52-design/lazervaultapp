@@ -1381,15 +1381,101 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
       Navigator.of(context).pop();
     } catch (e) {
       if (!mounted) return;
-      Get.snackbar(
-        'Renewal failed',
-        e.toString().replaceAll('Exception:', '').trim(),
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 5),
+      // Renewal validation/failure states surface in a MODAL, not a fleeting
+      // snackbar — the typed backend reasons (revenue_underfunded,
+      // plan_deactivated, account frozen, below-minimum, etc.) are actionable
+      // and the user needs time to read them.
+      _showRenewOutcomeDialog(
+        success: false,
+        title: 'Renewal not completed',
+        message: e.toString().replaceAll('Exception:', '').trim(),
       );
     }
+  }
+
+  /// Themed modal for renew outcomes. Used for validation/failure states (and
+  /// available for success) so the message persists until dismissed.
+  void _showRenewOutcomeDialog({
+    required bool success,
+    required String title,
+    required String message,
+  }) {
+    final accent =
+        success ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogCtx) => Dialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    success
+                        ? Icons.check_circle_rounded
+                        : Icons.error_outline_rounded,
+                    color: accent,
+                    size: 24.sp,
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+              Text(
+                message,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFB7ABDA),
+                  fontSize: 13.sp,
+                  height: 1.5,
+                ),
+              ),
+              SizedBox(height: 20.h),
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () => Navigator.of(dialogCtx).pop(),
+                  child: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 22.w, vertical: 10.h),
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10.r),
+                      border: Border.all(color: accent.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      'Got it',
+                      style: GoogleFonts.inter(
+                        color: accent,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _showTopUpScreen() {
