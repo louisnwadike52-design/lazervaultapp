@@ -13,6 +13,11 @@ import '../cubit/group_account_state.dart';
 import 'contact_picker_bottom_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
+import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import '../../data/datasources/group_join_link_remote_data_source.dart';
 part 'add_member_bottom_sheet_widgets.dart';
 
 class AddMemberBottomSheet extends StatefulWidget {
@@ -57,6 +62,12 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
   final List<_PendingInvite> _pendingInvites = [];
 
   bool _showInviteUI = false;
+
+  /// Shareable group invite link (see GroupJoinLinkRemoteDataSource). Built
+  /// lazily on first share so opening the sheet costs no network.
+  final GroupJoinLinkRemoteDataSource _joinLinks =
+      GroupJoinLinkRemoteDataSource();
+  bool _isGeneratingInviteLink = false;
 
   // Track add-attempt outcomes so the sheet always pops once every
   // _addMembers awaits Future.wait directly now; no listener-side
@@ -633,8 +644,114 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
             ),
           ],
         ),
+        SizedBox(height: 14.h),
+        _buildShareInviteLinkRow(),
       ],
     );
+  }
+
+  /// Share-a-link row: the third way in, beside search and contacts. Reaches
+  /// people who aren't on LazerVault and aren't in the phone's contacts —
+  /// you just send them the URL. Admin/moderator only (the server enforces
+  /// the same gate; a 403 surfaces as a message rather than a dead tap).
+  Widget _buildShareInviteLinkRow() {
+    return GestureDetector(
+      onTap: _isGeneratingInviteLink ? null : _shareInviteLink,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0A0A0A),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFF2D2D2D)),
+        ),
+        child: Row(
+          children: [
+            _isGeneratingInviteLink
+                ? SizedBox(
+                    width: 20.sp,
+                    height: 20.sp,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFF4E03D0),
+                    ),
+                  )
+                : Icon(Icons.link,
+                    color: const Color(0xFF4E03D0), size: 20.sp),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _isGeneratingInviteLink
+                        ? 'Preparing link…'
+                        : 'Share invite link',
+                    style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    'Anyone with the link can join this group',
+                    style: GoogleFonts.inter(
+                      fontSize: 11.sp,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.ios_share, color: Colors.grey[500], size: 18.sp),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _shareInviteLink() async {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    setState(() => _isGeneratingInviteLink = true);
+    try {
+      final link = await _joinLinks.createOrGetLink(
+        token: authState.profile.session.accessToken,
+        groupId: widget.group.id,
+      );
+      if (!mounted || link.url.isEmpty) return;
+      final expiry = link.expiresAt != null
+          ? ' It expires on ${DateFormat('d MMM').format(link.expiresAt!.toLocal())}.'
+          : '';
+      await SharePlus.instance.share(
+        ShareParams(
+          text: 'Join "${widget.group.name}" on LazerVault: ${link.url}$expiry',
+          subject: 'Join ${widget.group.name} on LazerVault',
+          sharePositionOrigin: _shareOrigin(),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$e'),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isGeneratingInviteLink = false);
+    }
+  }
+
+  /// iPad requires a non-zero source rect for the share popover or the sheet
+  /// throws; derive it from this widget's box.
+  Rect? _shareOrigin() {
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) return null;
+    return box.localToGlobal(Offset.zero) & box.size;
   }
 
   Widget _buildSelectedMembersSection() {

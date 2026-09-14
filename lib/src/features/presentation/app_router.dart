@@ -177,6 +177,7 @@ import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.da
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/src/features/group_account/presentation/views/group_account_list_screen.dart';
 import 'package:lazervault/src/features/group_account/presentation/views/group_details_screen.dart';
+import 'package:lazervault/src/features/group_account/presentation/views/group_join_link_screen.dart';
 import 'package:lazervault/src/features/group_account/presentation/views/contribution_details_screen.dart';
 import 'package:lazervault/src/features/group_account/presentation/views/make_payment_screen.dart';
 import 'package:lazervault/src/features/group_account/presentation/views/public_groups_screen.dart';
@@ -3712,6 +3713,23 @@ GetPage(
         create: (_) => serviceLocator<FamilyAccountCubit>(),
         child: const FamilyAccountsListScreen(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.groupJoinLink,
+      page: () {
+        // Token arrives either as a bare string (deep-link replay) or in an
+        // args map; tolerate both so a caller can't silently open an empty
+        // screen.
+        final args = Get.arguments;
+        final token = args is String
+            ? args
+            : (args is Map ? (args['token']?.toString() ?? '') : '');
+        return BlocProvider.value(
+          value: serviceLocator<GroupAccountCubit>(),
+          child: GroupJoinLinkScreen(token: token),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
     GetPage(

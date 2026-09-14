@@ -762,21 +762,25 @@ class _MyAppState extends State<MyApp> {
 
     switch (data.type) {
       case DeepLinkType.familyInvite:
-        // Defer to a post-frame so we don't race the in-flight build.
-        // Get.toNamed (rather than offNamed) so the user can navigate
-        // back to whatever they were doing if they bail.
+        // A SHARED group invite link (/family/invite/<token>) resolves the
+        // token server-side and shows what you're joining before you commit.
+        // Routed through PendingDeepLink — exactly like the escrow share
+        // link — so opening it while logged OUT stashes the target, survives
+        // the login gate, and replays once the session exists, instead of
+        // dropping the invite on the dashboard.
+        if (data.familyInviteToken != null &&
+            data.familyInviteToken!.isNotEmpty) {
+          PendingDeepLink.instance.push(NotificationTarget(
+            route: AppRoutes.groupJoinLink,
+            arguments: {'token': data.familyInviteToken},
+          ));
+          break;
+        }
+        // No token in the URL: fall back to the user's pending-invites list
+        // (the historical behaviour) rather than opening an empty screen.
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          // Token is informational for now — the screen lists all the
-          // user's pending invites; the deep-linked one will be there.
-          // Future: pass it as args and have the screen highlight/scroll.
-          Get.toNamed(
-            AppRoutes.familyInvitations,
-            arguments: {
-              if (data.familyInviteToken != null)
-                'invitationToken': data.familyInviteToken,
-            },
-          );
+          Get.toNamed(AppRoutes.familyInvitations);
         });
         break;
       case DeepLinkType.escrowOffer:

@@ -620,6 +620,12 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String familyDetails = '/family/details';
   static const String familyEditMemberLimits = '/family/edit-limits';
   static const String familyInvitations = '/family/invitations';
+
+  /// Landing for a SHARED group invite link
+  /// (`https://lazervault.app/family/invite/<token>`). Distinct from
+  /// [familyInvitations], which lists targeted invites already addressed to
+  /// you — this one resolves an open link anyone could have forwarded.
+  static const String groupJoinLink = '/group-account/join';
   static const String familySentInvitations = '/family/sent-invitations';
   static const String familySettings = '/family/settings';
   static const String familyActivationSetup = '/family/activation-setup';
