@@ -265,6 +265,7 @@ class CreateLockCubit extends Cubit<CreateLockState> {
     if (!config.supportsAutoRenew) {
       _autoRenew = false;
     }
+    _autoSelectSingleDuration();
     if (isClosed) return;
     emit(CreateLockState());
   }
@@ -282,8 +283,24 @@ class CreateLockCubit extends Cubit<CreateLockState> {
     if (!getSupportsAutoRenew(type)) {
       _autoRenew = false;
     }
+    _autoSelectSingleDuration();
     if (isClosed) return;
     emit(CreateLockState());
+  }
+
+  /// When the chosen plan offers exactly ONE duration (e.g. Year Lock = a fixed
+  /// 365 days), pre-select it — a single option is not a choice, and this keeps
+  /// the auto-selection at the source (robust even if the duration widget builds
+  /// before configs load). Switching to a multi-duration plan clears the stale
+  /// single-plan pick so the user must choose again.
+  void _autoSelectSingleDuration() {
+    if (_lockType == null) return;
+    final opts = getDurationOptions(_lockType!);
+    if (opts.length == 1) {
+      _lockDurationDays = opts.first;
+    } else if (opts.isNotEmpty && !opts.contains(_lockDurationDays)) {
+      _lockDurationDays = null;
+    }
   }
 
   void updateAmount(double amount) {

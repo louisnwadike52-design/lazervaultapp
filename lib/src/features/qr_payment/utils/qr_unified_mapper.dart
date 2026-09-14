@@ -42,17 +42,21 @@ UnifiedTransaction qrTxnToUnified(
     flow: viewerIsPayer ? TransactionFlow.outgoing : TransactionFlow.incoming,
     transactionReference: txn.referenceNumber,
     counterpartyName: otherName.isNotEmpty ? otherName : null,
-    // "Account" row = the viewer's real account when known; otherwise omitted
-    // (no longer the counterparty @handle, which now has its own Username row).
-    counterpartyAccount:
-        (sourceAccountLabel != null && sourceAccountLabel.trim().isNotEmpty)
-            ? sourceAccountLabel.trim()
-            : null,
+    // Deliberately null: counterpartyAccount feeds the PDF's recipient/
+    // beneficiary block, and QR carries no counterparty account number. The
+    // counterparty @handle is shown on its own Username row, and the viewer's
+    // OWN account is a dedicated 'account' metadata row (below) — so nothing
+    // mislabels the payer's account as the recipient's.
+    counterpartyAccount: null,
     metadata: {
       if (txn.qrId.isNotEmpty) 'qr_id': txn.qrId,
       // ONE handle row (with the @). The name is already shown once via
       // counterpartyName, so this avoids the payer/name/username duplication.
       if (otherHandle.isNotEmpty) 'username': '@$otherHandle',
+      // The viewer's ACTUAL account ("Personal (0123456789)") → renders as the
+      // "Account" row. Only known on the payer's just-paid receipt.
+      if (sourceAccountLabel != null && sourceAccountLabel.trim().isNotEmpty)
+        'account': sourceAccountLabel.trim(),
       // PDF payload (generateUnifiedTransferReceipt resolves From/To off these
       // snake_case chains). Hidden from the widget list (baseHiddenKeys) so they
       // don't re-print as rows — they exist only for the PDF From/To lines.
