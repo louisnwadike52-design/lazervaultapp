@@ -6,14 +6,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/lock_fund_entity.dart';
-import '../../domain/repositories/lock_funds_repository.dart';
-import 'package:lazervault/core/services/injection_container.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
 import '../widgets/lock_funds_empty_state.dart';
 import 'lock_withdrawal_screen.dart';
-import 'lock_fund_topup_screen.dart';
-import 'lock_fund_autosave_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
@@ -49,51 +45,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
     );
     _animationController.forward();
     context.read<LockFundsCubit>().loadLockFundDetails(widget.lockFund.id);
-    _loadPlanConfig();
   }
-
-  /// The plan this lock belongs to, resolved by its config UUID.
-  ///
-  /// Read through the repository rather than the cubit on purpose: the cubit
-  /// signals configs by EMITTING PiggyVaultConfigsLoaded, which would replace
-  /// the lock-details state this screen is built on.
-  ///
-  /// Null until it arrives (and on any failure), which is why every caller
-  /// falls back to the lock-type default rather than assuming a capability is
-  /// off — a slow config fetch must not hide a button the user is entitled to.
-  PiggyVaultConfig? _planConfig;
-
-  Future<void> _loadPlanConfig() async {
-    try {
-      final configs = await serviceLocator<LockFundsRepository>()
-          .getPiggyVaultConfigs(currency: widget.lockFund.currency);
-      if (!mounted) return;
-      final id = widget.lockFund.configId;
-      PiggyVaultConfig? match;
-      for (final c in configs) {
-        // Prefer the stable id. Legacy rows carry no config_id, so fall back
-        // to the lock_type slug — the same denormalized label the screen used
-        // to rely on exclusively.
-        if (id.isNotEmpty ? c.id == id : c.lockType == widget.lockFund.lockType.backendKey) {
-          match = c;
-          break;
-        }
-      }
-      if (match != null) setState(() => _planConfig = match);
-    } catch (_) {
-      // Non-fatal: the lock-type defaults below still render a usable screen.
-    }
-  }
-
-  // Capability gates. The PLAN decides what the backend will accept; the
-  // lock_type enum is only a display label, so it is the fallback and never
-  // the authority. Without this an operator turning a capability off in the
-  // admin console left the button on screen for the backend to reject.
-  bool get _supportsTopUp =>
-      _planConfig?.supportsTopUp ?? widget.lockFund.lockType.defaultSupportsTopUp;
-  bool get _supportsAutoSave =>
-      _planConfig?.supportsAutoSave ??
-      widget.lockFund.lockType.defaultSupportsAutoSave;
 
   @override
   void dispose() {
@@ -159,11 +111,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                           SizedBox(height: 20.h),
                           _buildActivitySection(),
                           SizedBox(height: 20.h),
-                          if (!widget.lockFund.isTerminal) ...[
-                            _buildActionButtons(),
-                            SizedBox(height: 12.h),
-                          ],
-                          _buildReceiptButton(),
+                          _buildFooterActions(),
                           SizedBox(height: 40.h),
                         ],
                       ),
@@ -241,31 +189,127 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
   /// Always-visible "View receipt" CTA on the page (receipt applies to every
   /// lock, active or terminal). Styled as a subtle outlined secondary action so
   /// it reads below the primary withdraw/renew buttons without competing.
-  Widget _buildReceiptButton() {
+  /// The ONLY actions on the details page: View receipt + Withdraw, side by
+  /// side. Every plan is independent — there is no top-up, auto-save, renew,
+  /// break-lock or auto-fund here; funding or renewing means CREATING A NEW
+  /// PLAN. Withdraw is enabled only when the lock has matured (flex/no-term
+  /// plans have no maturity, so they're always withdrawable); it stays disabled
+  /// with a maturity hint until then. Terminal locks (already unlocked/
+  /// cancelled) show only the receipt.
+  Widget _buildFooterActions() {
+    final lock = widget.lockFund;
+    final isFlex = lock.lockDurationDays <= 0; // Flex Savings — no fixed term
+    final matured = lock.isMatured ||
+        lock.status == LockStatus.matured ||
+        (lock.lockDurationDays > 0 && lock.daysRemaining <= 0);
+    final canWithdraw = !lock.isTerminal && (matured || isFlex);
+
+    final receipt = _footerButton(
+      'View receipt',
+      Icons.receipt_long_outlined,
+      const Color(0xFF8B5CF6),
+      _openReceipt,
+      filled: false,
+      enabled: true,
+    );
+
+    // Terminal locks: nothing to withdraw — just the receipt, full width.
+    if (lock.isTerminal) return receipt;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(child: receipt),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: _footerButton(
+                'Withdraw',
+                Icons.account_balance_wallet_outlined,
+                const Color(0xFF10B981),
+                canWithdraw ? _showWithdrawDialog : null,
+                filled: true,
+                enabled: canWithdraw,
+              ),
+            ),
+          ],
+        ),
+        // Explain WHY withdraw is disabled — the lock is still maturing.
+        if (!canWithdraw) ...[
+          SizedBox(height: 8.h),
+          Row(
+            children: [
+              Icon(Icons.lock_clock_outlined,
+                  size: 13.sp, color: const Color(0xFFB7ABDA)),
+              SizedBox(width: 6.w),
+              Expanded(
+                child: Text(
+                  'Withdrawal unlocks at maturity${lock.unlockAt.year > 1971 ? ' on ${DateFormat('MMM dd, yyyy').format(lock.unlockAt)}' : ''}.',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFB7ABDA),
+                    fontSize: 11.sp,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// One footer button. [filled] gives it a solid accent fill (Withdraw);
+  /// otherwise it's an outlined neutral button (Receipt). When [enabled] is
+  /// false it renders greyed and ignores taps.
+  Widget _footerButton(
+    String label,
+    IconData icon,
+    Color accent,
+    VoidCallback? onTap, {
+    required bool filled,
+    required bool enabled,
+  }) {
+    final fg = !enabled
+        ? const Color(0xFF6B7280)
+        : (filled ? Colors.white : Colors.white);
+    final bg = filled
+        ? (enabled ? accent : accent.withValues(alpha: 0.15))
+        : Colors.white.withValues(alpha: 0.04);
+    final border = filled
+        ? Colors.transparent
+        : const Color(0xFF2D2D2D);
     return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        _openReceipt();
-      },
+      onTap: enabled
+          ? () {
+              HapticFeedback.selectionClick();
+              onTap?.call();
+            }
+          : null,
       child: Container(
-        width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: 15.h),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.04),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
+          color: bg,
+          border: Border.all(color: border),
           borderRadius: BorderRadius.circular(14.r),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.receipt_long_outlined, color: const Color(0xFF8B5CF6), size: 18.sp),
+            Icon(icon,
+                color: enabled ? (filled ? Colors.white : accent) : fg,
+                size: 18.sp),
             SizedBox(width: 10.w),
-            Text(
-              'View receipt',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  color: fg,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -917,291 +961,6 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
     }
   }
 
-  /// All lock actions live ON THIS PAGE (there is no overflow menu). Buttons are
-  /// capability-driven off the plan config (supports top-up / auto-save / renewal)
-  /// and lock state, with NO duplication:
-  ///   • Primary: Withdraw (matured / penalty-free) or Break Lock (early, costs a
-  ///     penalty) — full width.
-  ///   • Secondary: Renew / Top Up / Auto-Save, laid out two per row, shown only
-  ///     when the plan supports them. The backend is the authoritative gate; this
-  ///     just avoids rendering buttons the backend would reject.
-  ///   • Cancel: destructive, only for an active penalised lock, at the bottom.
-  Widget _buildActionButtons() {
-    final lock = widget.lockFund;
-    final matured = lock.isMatured || lock.status == LockStatus.matured;
-    final penaltyFree =
-        matured || lock.lockType == LockType.savings || lock.earlyUnlockPenaltyPercent == 0;
-
-    final primary = _buildActionButton(
-      penaltyFree ? 'Withdraw' : 'Break Lock',
-      penaltyFree ? Icons.account_balance_wallet_outlined : Icons.lock_open_outlined,
-      penaltyFree ? const Color(0xFF10B981) : const Color(0xFFFB923C),
-      () => matured ? _showWithdrawDialog() : _showBreakLockDialog(),
-      fullWidth: true,
-    );
-
-    final secondary = <Widget>[
-      // Renew: at maturity ANY plan can re-lock (canRenew), and mid-term for the
-      // plans that allow early renewal (defaultSupportsRenewal).
-      if (lock.canRenew || lock.lockType.defaultSupportsRenewal)
-        _buildActionButton('Renew Lock', Icons.refresh, const Color(0xFF6366F1),
-            () => _showRenewDialog()),
-      if (_supportsTopUp)
-        _buildActionButton('Top Up', Icons.add_circle_outline, const Color(0xFF6366F1),
-            () => _showTopUpScreen()),
-      if (_supportsAutoSave)
-        _buildActionButton('Auto-Save', Icons.autorenew, const Color(0xFF3B82F6),
-            () => _showAutoSaveScreen()),
-    ];
-
-    return Column(
-      children: [
-        primary,
-        if (secondary.isNotEmpty) ...[
-          SizedBox(height: 12.h),
-          ..._pairRows(secondary),
-        ],
-        // canUnlockEarly now carries the PLAN's policy (gateway ANDs
-        // allows_early_withdrawal into it), and the server rejects an early
-        // break on plans that forbid it. Offering the flow anyway would walk
-        // the user through reason + penalty preview + PIN and then fail on
-        // the final call — the worst possible ordering of that news.
-        if (!matured &&
-            lock.canUnlockEarly &&
-            lock.lockType != LockType.savings &&
-            lock.earlyUnlockPenaltyPercent > 0) ...[
-          SizedBox(height: 8.h),
-          _buildActionButton(
-            'Cancel lock',
-            Icons.cancel_outlined,
-            const Color(0xFFEF4444),
-            () => _showCancelLockDialog(),
-            fullWidth: true,
-          ),
-        ],
-      ],
-    );
-  }
-
-  /// Lays a list of equal-width buttons out two per row (last one full width
-  /// when the count is odd), with 12h gaps between rows.
-  List<Widget> _pairRows(List<Widget> items) {
-    final rows = <Widget>[];
-    for (var i = 0; i < items.length; i += 2) {
-      final hasSecond = i + 1 < items.length;
-      rows.add(Row(
-        children: [
-          Expanded(child: items[i]),
-          if (hasSecond) ...[
-            SizedBox(width: 12.w),
-            Expanded(child: items[i + 1]),
-          ],
-        ],
-      ));
-      if (i + 2 < items.length) rows.add(SizedBox(height: 12.h));
-    }
-    return rows;
-  }
-
-  /// Cancel-lock confirmation modal. Two-step: reason picker
-  /// first (close enough to "I changed my mind" / "found a better
-  /// rate" / "need the cash" — short enum so the analytics layer
-  /// can group them), then a destructive confirm with penalty
-  /// preview. Mirrors the production-pattern from the
-  /// transfer-cancel + exchange-cancel flows.
-  void _showCancelLockDialog() {
-    HapticFeedback.mediumImpact();
-    final lock = widget.lockFund;
-    final cubit = context.read<LockFundsCubit>();
-    String selectedReason = 'changed_mind';
-    final reasons = <_CancelReason>[
-      _CancelReason('changed_mind', 'Changed my mind'),
-      _CancelReason('need_funds', 'Need the funds'),
-      _CancelReason('found_better_rate', 'Found a better rate'),
-      _CancelReason('other', 'Other'),
-    ];
-    final estPenalty = lock.amount * (lock.earlyUnlockPenaltyPercent / 100);
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (sheetCtx) => StatefulBuilder(
-        builder: (ctx, setLocal) => Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-            ),
-            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40.w, height: 4.h,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3D3D3D),
-                      borderRadius: BorderRadius.circular(2.r),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                Text('Cancel this lock', style: GoogleFonts.inter(
-                  color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
-                SizedBox(height: 6.h),
-                Text(
-                  'You\'ll get back ${(lock.amount - estPenalty).toStringAsFixed(2)} ${lock.currency}. Penalty: ${estPenalty.toStringAsFixed(2)} ${lock.currency} (${lock.earlyUnlockPenaltyPercent.toStringAsFixed(1)}%).',
-                  style: GoogleFonts.inter(color: const Color(0xFFB7ABDA), fontSize: 12.sp),
-                ),
-                SizedBox(height: 18.h),
-                Text('Why are you cancelling?', style: GoogleFonts.inter(
-                  color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
-                SizedBox(height: 8.h),
-                ...reasons.map((r) {
-                  final selected = r.code == selectedReason;
-                  return GestureDetector(
-                    onTap: () => setLocal(() => selectedReason = r.code),
-                    child: Container(
-                      margin: EdgeInsets.only(bottom: 6.h),
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? const Color(0xFFEF4444).withValues(alpha: 0.18)
-                            : const Color(0xFF0A0A0A),
-                        border: Border.all(
-                          color: selected
-                              ? const Color(0xFFEF4444)
-                              : const Color(0xFF2D2D2D),
-                        ),
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            selected ? Icons.radio_button_checked : Icons.radio_button_off,
-                            color: selected ? const Color(0xFFEF4444) : const Color(0xFF6B7280),
-                            size: 18.sp,
-                          ),
-                          SizedBox(width: 10.w),
-                          Text(r.label, style: GoogleFonts.inter(
-                            color: Colors.white, fontSize: 13.sp,
-                            fontWeight: selected ? FontWeight.w600 : FontWeight.w500)),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-                SizedBox(height: 16.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => Navigator.of(ctx).pop(),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: Center(child: Text('Keep lock', style: GoogleFonts.inter(
-                            color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600))),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () async {
-                          Navigator.of(ctx).pop();
-                          await _executeCancel(cubit, lock.id, selectedReason);
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444),
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: Center(child: Text('Cancel lock',
-                            style: GoogleFonts.inter(
-                              color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700))),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _executeCancel(LockFundsCubit cubit, String lockFundId, String reason) async {
-    try {
-      final result = await cubit.cancelLockFund(
-        lockFundId: lockFundId,
-        reason: reason,
-      );
-      if (!mounted) return;
-      Get.snackbar(
-        'Lock cancelled',
-        'Refunded ${result.refundAmount.toStringAsFixed(2)} to your wallet.',
-        backgroundColor: const Color(0xFF10B981),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
-      Navigator.of(context).pop();
-    } catch (e) {
-      if (!mounted) return;
-      Get.snackbar(
-        'Cancel failed',
-        e.toString().replaceAll('Exception:', '').trim(),
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 5),
-      );
-    }
-  }
-
-  Widget _buildActionButton(
-    String label,
-    IconData icon,
-    Color color,
-    VoidCallback onTap, {
-    bool fullWidth = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: fullWidth ? double.infinity : null,
-        padding: EdgeInsets.symmetric(vertical: 16.h),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 20.sp),
-            SizedBox(width: 8.w),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _showWithdrawDialog() {
     HapticFeedback.mediumImpact();
     final lockFundsCubit = context.read<LockFundsCubit>();
@@ -1216,302 +975,4 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
     );
   }
 
-  void _showBreakLockDialog() {
-    HapticFeedback.mediumImpact();
-    final lockFundsCubit = context.read<LockFundsCubit>();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BlocProvider.value(
-          value: lockFundsCubit,
-          child: LockWithdrawalScreen(lockFund: widget.lockFund, isEarlyWithdrawal: true),
-        ),
-      ),
-    );
-  }
-
-  /// Opens a bottom sheet collecting the new term length, then
-  /// calls RenewLockFund on accept. Re-uses the active lock's
-  /// original duration as the suggested chip + extends from now()
-  /// (server-side semantics — see RenewLockFunds service method).
-  /// Realtime WS lifecycle event refreshes the list automatically;
-  /// this screen reloads details on success.
-  void _showRenewDialog() {
-    HapticFeedback.mediumImpact();
-    final lock = widget.lockFund;
-    final cubit = context.read<LockFundsCubit>();
-    final defaultDays = lock.lockDurationDays > 0 ? lock.lockDurationDays : 90;
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (sheetCtx) {
-        int selectedDays = defaultDays;
-        return StatefulBuilder(
-          builder: (ctx, setState) => Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-              ),
-              padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40.w, height: 4.h,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3D3D3D),
-                        borderRadius: BorderRadius.circular(2.r),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-                  Text('Renew this lock', style: GoogleFonts.inter(
-                    color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
-                  SizedBox(height: 6.h),
-                  Text(
-                    'Extend ${lock.displayName} for another term. Upfront interest (if your plan supports it) is paid into your wallet immediately.',
-                    style: GoogleFonts.inter(color: const Color(0xFFB7ABDA), fontSize: 12.sp),
-                  ),
-                  SizedBox(height: 18.h),
-                  Text('New term', style: GoogleFonts.inter(
-                    color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
-                  SizedBox(height: 8.h),
-                  Wrap(
-                    spacing: 8.w, runSpacing: 8.h,
-                    children: [30, 90, 180, 365].map((d) {
-                      final selected = d == selectedDays;
-                      return GestureDetector(
-                        onTap: () => setState(() => selectedDays = d),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-                          decoration: BoxDecoration(
-                            color: selected
-                                ? const Color(0xFF4E03D0)
-                                : const Color(0xFF0A0A0A),
-                            border: Border.all(
-                              color: selected
-                                  ? const Color(0xFF8B5CF6)
-                                  : const Color(0xFF2D2D2D),
-                            ),
-                            borderRadius: BorderRadius.circular(20.r),
-                          ),
-                          child: Text('$d days', style: GoogleFonts.inter(
-                            color: Colors.white, fontSize: 12.sp,
-                            fontWeight: selected ? FontWeight.w700 : FontWeight.w500)),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  SizedBox(height: 24.h),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => Navigator.of(ctx).pop(),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 14.h),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(12.r),
-                            ),
-                            child: Center(child: Text('Cancel', style: GoogleFonts.inter(
-                              color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600))),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () async {
-                            Navigator.of(ctx).pop();
-                            await _executeRenew(cubit, lock.id, selectedDays);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 14.h),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
-                              ),
-                              borderRadius: BorderRadius.circular(12.r),
-                            ),
-                            child: Center(child: Text('Renew $selectedDays days',
-                              style: GoogleFonts.inter(
-                                color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700))),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// Calls the cubit's renewLockFund and surfaces success / failure
-  /// as a snackbar. The cubit emits LockFundCreated on success +
-  /// reloads the list; we pop back to it so the user sees the
-  /// updated state instead of stale details. Errors bubble up
-  /// from the gRPC layer with the typed message
-  /// (revenue_underfunded, plan_deactivated, frozen, etc).
-  Future<void> _executeRenew(LockFundsCubit cubit, String lockFundId, int days) async {
-    try {
-      final renewed = await cubit.renewLockFund(
-        lockFundId: lockFundId,
-        newDurationDays: days,
-      );
-      if (!mounted) return;
-      Get.snackbar(
-        'Lock renewed',
-        'New maturity: ${DateFormat.yMMMd().format(renewed.unlockAt)}',
-        backgroundColor: const Color(0xFF10B981),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
-      // Pop back to the list so the user sees the fresh unlock
-      // date + the cubit's auto-reload covers other surfaces.
-      Navigator.of(context).pop();
-    } catch (e) {
-      if (!mounted) return;
-      // Renewal validation/failure states surface in a MODAL, not a fleeting
-      // snackbar — the typed backend reasons (revenue_underfunded,
-      // plan_deactivated, account frozen, below-minimum, etc.) are actionable
-      // and the user needs time to read them.
-      _showRenewOutcomeDialog(
-        success: false,
-        title: 'Renewal not completed',
-        message: e.toString().replaceAll('Exception:', '').trim(),
-      );
-    }
-  }
-
-  /// Themed modal for renew outcomes. Used for validation/failure states (and
-  /// available for success) so the message persists until dismissed.
-  void _showRenewOutcomeDialog({
-    required bool success,
-    required String title,
-    required String message,
-  }) {
-    final accent =
-        success ? const Color(0xFF10B981) : const Color(0xFFEF4444);
-    showDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      builder: (dialogCtx) => Dialog(
-        backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(20.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    success
-                        ? Icons.check_circle_rounded
-                        : Icons.error_outline_rounded,
-                    color: accent,
-                    size: 24.sp,
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 12.h),
-              Text(
-                message,
-                style: GoogleFonts.inter(
-                  color: const Color(0xFFB7ABDA),
-                  fontSize: 13.sp,
-                  height: 1.5,
-                ),
-              ),
-              SizedBox(height: 20.h),
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: () => Navigator.of(dialogCtx).pop(),
-                  child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 22.w, vertical: 10.h),
-                    decoration: BoxDecoration(
-                      color: accent.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10.r),
-                      border: Border.all(color: accent.withValues(alpha: 0.4)),
-                    ),
-                    child: Text(
-                      'Got it',
-                      style: GoogleFonts.inter(
-                        color: accent,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showTopUpScreen() {
-    HapticFeedback.mediumImpact();
-    final lockFundsCubit = context.read<LockFundsCubit>();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BlocProvider.value(
-          value: lockFundsCubit,
-          child: LockFundTopUpScreen(lockFund: widget.lockFund),
-        ),
-      ),
-    ).then((result) {
-      if (result == true) {
-        // Refresh the details
-        lockFundsCubit.loadLockFundDetails(widget.lockFund.id);
-      }
-    });
-  }
-
-  void _showAutoSaveScreen() {
-    HapticFeedback.mediumImpact();
-    final lockFundsCubit = context.read<LockFundsCubit>();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BlocProvider.value(
-          value: lockFundsCubit,
-          child: LockFundAutoSaveScreen(lockFund: widget.lockFund),
-        ),
-      ),
-    ).then((result) {
-      if (result == true) {
-        lockFundsCubit.loadLockFundDetails(widget.lockFund.id);
-      }
-    });
-  }
 }
