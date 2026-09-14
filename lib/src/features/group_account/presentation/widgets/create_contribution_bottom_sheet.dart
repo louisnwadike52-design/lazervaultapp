@@ -752,27 +752,26 @@ class _CreateContributionBottomSheetState
               ],
             ),
           ),
-          // Top-right Cancel on steps AFTER the first. On step 1 the
-          // top-LEFT button is the cancel (X); once it turns into Back,
-          // this is the only way out — the sheet itself is shown with
-          // isDismissible/enableDrag false so a stray swipe or barrier
-          // tap can't discard a half-built contribution.
+          // Top-right cancel (styled X icon) on steps AFTER the first. On
+          // step 1 the top-LEFT button is the cancel (X); once it turns into
+          // Back, this icon is the only way out — the sheet is shown with
+          // isDismissible/enableDrag false so a stray swipe or barrier tap
+          // can't discard a half-built contribution. Same square dark chip
+          // styling as the left button so the header reads as one control
+          // family.
           if (_currentPage > 0)
             GestureDetector(
               onTap: isLoading ? null : () => Navigator.pop(context),
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
                   color: const Color(0xFF2D2D2D),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: Text(
-                  'Cancel',
-                  style: GoogleFonts.inter(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                    color: isLoading ? Colors.grey : Colors.white,
-                  ),
+                child: Icon(
+                  Icons.close,
+                  color: isLoading ? Colors.grey : Colors.white,
+                  size: 20.sp,
                 ),
               ),
             ),
