@@ -15,7 +15,6 @@ import '../cubit/crowdfund_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'withdraw_funds_sheet_widgets.dart';
 
-
 /// Bottom sheet the campaign creator uses to move funds out of the
 /// campaign wallet into a destination account. Today the destination
 /// defaults to the user's primary account (server-side fallback);
@@ -309,238 +308,245 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<CrowdfundCubit, CrowdfundState>(
-      // Only listen for transitions while we're actually submitting
-      // a withdrawal, AND only the two terminal outcomes — sibling
-      // cubit operations (a refresh on the details screen, a
-      // donations load, a CrowdfundLoading from a list refetch)
-      // shouldn't pop the sheet or flip our submit flag.
-      listenWhen: (prev, curr) =>
-          _isSubmitting &&
-          (curr is WithdrawalCompleted || curr is CrowdfundError),
-      listener: (context, state) {
-        if (!mounted) return;
-        if (state is WithdrawalCompleted) {
-          // Pop the sheet first so the details screen owns the
-          // remaining UI surface; SnackBar is shown on the route
-          // below the sheet, which the parent context now points
-          // at after the pop.
-          final cf = widget.crowdfund;
-          final amountText =
-              '${cf.currency} ${_formatAmount(state.result.amountWithdrawn)}';
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Withdrew $amountText successfully'),
-              backgroundColor: const Color(0xFF10B981),
-            ),
-          );
-        } else if (state is CrowdfundError) {
-          setState(() => _isSubmitting = false);
-          _showError(state.message);
-        }
-      },
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: BlocListener<CrowdfundCubit, CrowdfundState>(
+        // Only listen for transitions while we're actually submitting
+        // a withdrawal, AND only the two terminal outcomes — sibling
+        // cubit operations (a refresh on the details screen, a
+        // donations load, a CrowdfundLoading from a list refetch)
+        // shouldn't pop the sheet or flip our submit flag.
+        listenWhen: (prev, curr) =>
+            _isSubmitting &&
+            (curr is WithdrawalCompleted || curr is CrowdfundError),
+        listener: (context, state) {
+          if (!mounted) return;
+          if (state is WithdrawalCompleted) {
+            // Pop the sheet first so the details screen owns the
+            // remaining UI surface; SnackBar is shown on the route
+            // below the sheet, which the parent context now points
+            // at after the pop.
+            final cf = widget.crowdfund;
+            final amountText =
+                '${cf.currency} ${_formatAmount(state.result.amountWithdrawn)}';
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Withdrew $amountText successfully'),
+                backgroundColor: const Color(0xFF10B981),
+              ),
+            );
+          } else if (state is CrowdfundError) {
+            setState(() => _isSubmitting = false);
+            _showError(state.message);
+          }
+        },
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40.w,
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3D3D3D),
-                    borderRadius: BorderRadius.circular(2.r),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+            ),
+            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3D3D3D),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'Withdraw funds',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                'Move funds from this campaign into your account.',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 12.sp,
-                ),
-              ),
-              SizedBox(height: 16.h),
-              Container(
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0A0A0A),
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Available',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF6B7280),
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                    Text(
-                      '${widget.crowdfund.currency} ${_formatAmount(widget.crowdfund.currentAmount)}',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF4E03D0),
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 14.h),
-              Text(
-                'Amount',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              TextFormField(
-                controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
-                  _ThousandsSeparatorFormatter(),
-                ],
-                onChanged: _onAmountChanged,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-                decoration: InputDecoration(
-                  hintText: '0',
-                  hintStyle: GoogleFonts.inter(
-                    color: const Color(0xFF6B7280),
+                SizedBox(height: 16.h),
+                Text(
+                  'Withdraw funds',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
                     fontSize: 18.sp,
-                  ),
-                  prefixIcon: Padding(
-                    padding: EdgeInsets.fromLTRB(16.w, 14.h, 8.w, 14.h),
-                    child: Text(
-                      widget.crowdfund.currency,
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF4E03D0),
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  prefixIconConstraints: BoxConstraints(minWidth: 56.w),
-                  filled: true,
-                  fillColor: const Color(0xFF0A0A0A),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide.none,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ),
-              SizedBox(height: 8.h),
-              Wrap(
-                spacing: 8.w,
-                runSpacing: 8.h,
-                children: [25, 50, 75, 100].map((pct) {
-                  final amt =
-                      widget.crowdfund.currentAmount * (pct / 100.0);
-                  final selected = (_amount - amt).abs() < 0.01;
-                  return InkWell(
-                    onTap: () {
-                      final formatted = _formatAmount(amt);
-                      _amountController.value = TextEditingValue(
-                        text: formatted,
-                        selection: TextSelection.collapsed(
-                            offset: formatted.length),
-                      );
-                      setState(() => _amount = amt);
-                      _scheduleQuoteFetch(amt);
-                    },
-                    borderRadius: BorderRadius.circular(20.r),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 14.w, vertical: 8.h),
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? const Color(0xFF4E03D0)
-                            : const Color(0xFF0A0A0A),
-                        borderRadius: BorderRadius.circular(20.r),
-                      ),
-                      child: Text(
-                        pct == 100 ? 'All' : '$pct%',
+                SizedBox(height: 4.h),
+                Text(
+                  'Move funds from this campaign into your account.',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 12.sp,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0A0A0A),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Available',
                         style: GoogleFonts.inter(
-                          color: selected
-                              ? Colors.white
-                              : const Color(0xFF9CA3AF),
+                          color: const Color(0xFF6B7280),
                           fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '${widget.crowdfund.currency} ${_formatAmount(widget.crowdfund.currentAmount)}',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF4E03D0),
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 14.h),
+                Text(
+                  'Amount',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                TextFormField(
+                  controller: _amountController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
+                    _ThousandsSeparatorFormatter(),
+                  ],
+                  onChanged: _onAmountChanged,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: '0',
+                    hintStyle: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280),
+                      fontSize: 18.sp,
+                    ),
+                    prefixIcon: Padding(
+                      padding: EdgeInsets.fromLTRB(16.w, 14.h, 8.w, 14.h),
+                      child: Text(
+                        widget.crowdfund.currency,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF4E03D0),
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
-                  );
-                }).toList(),
-              ),
-              if (_amount > 0) ...[
-                SizedBox(height: 16.h),
-                _buildFeeBreakdown(),
-              ],
-              SizedBox(height: 20.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ? null : _confirm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4E03D0),
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
+                    prefixIconConstraints: BoxConstraints(minWidth: 56.w),
+                    filled: true,
+                    fillColor: const Color(0xFF0A0A0A),
+                    border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide.none,
                     ),
-                    disabledBackgroundColor:
-                        const Color(0xFF4E03D0).withValues(alpha: 0.4),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
-                  child: _isSubmitting
-                      ? LazerVaultLoader(size: 18)
-                      : Text(
-                          'Confirm withdrawal',
+                ),
+                SizedBox(height: 8.h),
+                Wrap(
+                  spacing: 8.w,
+                  runSpacing: 8.h,
+                  children: [25, 50, 75, 100].map((pct) {
+                    final amt = widget.crowdfund.currentAmount * (pct / 100.0);
+                    final selected = (_amount - amt).abs() < 0.01;
+                    return InkWell(
+                      onTap: () {
+                        final formatted = _formatAmount(amt);
+                        _amountController.value = TextEditingValue(
+                          text: formatted,
+                          selection:
+                              TextSelection.collapsed(offset: formatted.length),
+                        );
+                        setState(() => _amount = amt);
+                        _scheduleQuoteFetch(amt);
+                      },
+                      borderRadius: BorderRadius.circular(20.r),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 14.w, vertical: 8.h),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? const Color(0xFF4E03D0)
+                              : const Color(0xFF0A0A0A),
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: Text(
+                          pct == 100 ? 'All' : '$pct%',
                           style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w700,
+                            color: selected
+                                ? Colors.white
+                                : const Color(0xFF9CA3AF),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
+                      ),
+                    );
+                  }).toList(),
                 ),
-              ),
-            ],
+                if (_amount > 0) ...[
+                  SizedBox(height: 16.h),
+                  _buildFeeBreakdown(),
+                ],
+                SizedBox(height: 20.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isSubmitting ? null : _confirm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4E03D0),
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      disabledBackgroundColor:
+                          const Color(0xFF4E03D0).withValues(alpha: 0.4),
+                    ),
+                    child: _isSubmitting
+                        ? LazerVaultLoader(size: 18)
+                        : Text(
+                            'Confirm withdrawal',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

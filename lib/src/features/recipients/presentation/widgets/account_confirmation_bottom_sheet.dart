@@ -73,76 +73,85 @@ class AccountConfirmationBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedPadding(
-      duration: const Duration(milliseconds: 150),
-      curve: Curves.easeOut,
-      // Lift the whole sheet above the keyboard so the alias field is never
-      // covered; the animation keeps it smooth as the keyboard opens/closes.
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20.r),
-          topRight: Radius.circular(20.r),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Drag Handle
-          _buildDragHandle(),
-
-          // Header
-          _buildHeader(),
-
-          // Content — scrollable so that on the smallest screens the content +
-          // keyboard can never exceed the sheet height and throw a RenderFlex
-          // overflow; it just scrolls instead. Flexible bounds it to the space
-          // left above the (keyboard-lifted) bottom actions.
-          Flexible(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(height: 12.h),
-
-                  // Account Details Card — compresses to a compact row while the
-                  // alias field is focused so it (and the field) stay visible.
-                  AnimatedSize(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeInOut,
-                    alignment: Alignment.topCenter,
-                    child: _buildAccountDetailsCard(compact: _aliasEditing),
-                  ),
-
-                  // Warning Info Box — hidden while typing the alias to free the
-                  // vertical room the field needs above the keyboard; reshown after.
-                  if (!_aliasEditing) ...[
-                    SizedBox(height: 16.h),
-                    _buildInfoBox(),
-                  ],
-
-                  SizedBox(height: 16.h),
-
-                  // Favorite Toggle
-                  _buildFavoriteToggle(),
-
-                  // Alias Input (shown when favorite is toggled on)
-                  _buildAliasInput(),
-                ],
-              ),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: AnimatedPadding(
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
+        // Lift the whole sheet above the keyboard so the alias field is never
+        // covered; the animation keeps it smooth as the keyboard opens/closes.
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20.r),
+              topRight: Radius.circular(20.r),
             ),
           ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag Handle
+              _buildDragHandle(),
 
-          SizedBox(height: 12.h),
+              // Header
+              _buildHeader(),
 
-          // Bottom Action Buttons
-          _buildBottomActions(),
-        ],
-      ),
+              // Content — scrollable so that on the smallest screens the content +
+              // keyboard can never exceed the sheet height and throw a RenderFlex
+              // overflow; it just scrolls instead. Flexible bounds it to the space
+              // left above the (keyboard-lifted) bottom actions.
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(height: 12.h),
+
+                      // Account Details Card — compresses to a compact row while the
+                      // alias field is focused so it (and the field) stay visible.
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeInOut,
+                        alignment: Alignment.topCenter,
+                        child: _buildAccountDetailsCard(compact: _aliasEditing),
+                      ),
+
+                      // Warning Info Box — hidden while typing the alias to free the
+                      // vertical room the field needs above the keyboard; reshown after.
+                      if (!_aliasEditing) ...[
+                        SizedBox(height: 16.h),
+                        _buildInfoBox(),
+                      ],
+
+                      SizedBox(height: 16.h),
+
+                      // Favorite Toggle
+                      _buildFavoriteToggle(),
+
+                      // Alias Input (shown when favorite is toggled on)
+                      _buildAliasInput(),
+                    ],
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 12.h),
+
+              // Bottom Action Buttons
+              _buildBottomActions(),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -429,7 +438,9 @@ class AccountConfirmationBottomSheetState
             children: [
               Icon(
                 _isSaved ? Icons.bookmark : Icons.bookmark_outline,
-                color: _isSaved ? const Color(0xFF4E03D0) : const Color(0xFF9CA3AF),
+                color: _isSaved
+                    ? const Color(0xFF4E03D0)
+                    : const Color(0xFF9CA3AF),
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
@@ -541,7 +552,8 @@ class AccountConfirmationBottomSheetState
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 10.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: const Color(0xFFF3F4F6), width: 1)),
+        border:
+            Border(top: BorderSide(color: const Color(0xFFF3F4F6), width: 1)),
       ),
       child: SafeArea(
         child: Row(

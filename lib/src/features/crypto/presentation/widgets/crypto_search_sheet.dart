@@ -53,7 +53,8 @@ class _CryptoSearchSheetState extends State<_CryptoSearchSheet> {
     if (q.isEmpty) return const [];
     // Rank exact-symbol and prefix matches ahead of substring matches.
     final results = widget.assets.where((c) {
-      return c.name.toLowerCase().contains(q) || c.symbol.toLowerCase().contains(q);
+      return c.name.toLowerCase().contains(q) ||
+          c.symbol.toLowerCase().contains(q);
     }).toList();
     results.sort((a, b) {
       int score(Crypto c) {
@@ -73,83 +74,92 @@ class _CryptoSearchSheetState extends State<_CryptoSearchSheet> {
   Widget build(BuildContext context) {
     final h = MediaQuery.of(context).size.height * 0.88;
     final results = _filtered;
-    return Container(
-      height: h,
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      child: Column(
-        children: [
-          SizedBox(height: 12.h),
-          Center(
-            child: Container(
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: _divider,
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 10.h),
-            child: Row(
-              children: [
-                Text('Search crypto',
-                    style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold)),
-                const Spacer(),
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Icon(Icons.close_rounded, color: _sub, size: 22.sp),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        height: h,
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        decoration: BoxDecoration(
+          color: _card,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          children: [
+            SizedBox(height: 12.h),
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: _divider,
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: TextField(
-              controller: _searchCtrl,
-              autofocus: true,
-              onChanged: (v) => setState(() => _query = v),
-              style: _inter(14),
-              textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                hintText: 'Search name or symbol',
-                hintStyle: _inter(14, c: _sub),
-                prefixIcon: Icon(Icons.search, color: _sub, size: 20.sp),
-                suffixIcon: _query.isNotEmpty
-                    ? GestureDetector(
-                        onTap: () {
-                          _searchCtrl.clear();
-                          setState(() => _query = '');
-                        },
-                        child: Icon(Icons.close, color: _sub, size: 18.sp),
-                      )
-                    : null,
-                filled: true,
-                fillColor: _bg,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: const BorderSide(color: _divider)),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: const BorderSide(color: _divider)),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: const BorderSide(color: _accent)),
               ),
             ),
-          ),
-          SizedBox(height: 8.h),
-          Expanded(child: _body(results)),
-        ],
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 10.h),
+              child: Row(
+                children: [
+                  Text('Search crypto',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold)),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Icon(Icons.close_rounded, color: _sub, size: 22.sp),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: TextField(
+                controller: _searchCtrl,
+                autofocus: true,
+                onChanged: (v) => setState(() => _query = v),
+                style: _inter(14),
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  hintText: 'Search name or symbol',
+                  hintStyle: _inter(14, c: _sub),
+                  prefixIcon: Icon(Icons.search, color: _sub, size: 20.sp),
+                  suffixIcon: _query.isNotEmpty
+                      ? GestureDetector(
+                          onTap: () {
+                            _searchCtrl.clear();
+                            setState(() => _query = '');
+                          },
+                          child: Icon(Icons.close, color: _sub, size: 18.sp),
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: _bg,
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: const BorderSide(color: _divider)),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: const BorderSide(color: _divider)),
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: const BorderSide(color: _accent)),
+                ),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Expanded(child: _body(results)),
+          ],
+        ),
       ),
     );
   }
@@ -165,8 +175,7 @@ class _CryptoSearchSheetState extends State<_CryptoSearchSheet> {
             Text('Search Quidax-supported assets',
                 style: _inter(14, c: Colors.white)),
             SizedBox(height: 6.h),
-            Text('Start typing a name or symbol',
-                style: _inter(12, c: _sub)),
+            Text('Start typing a name or symbol', style: _inter(12, c: _sub)),
           ],
         ),
       );
@@ -203,7 +212,9 @@ class _CryptoSearchSheetState extends State<_CryptoSearchSheet> {
               radius: 18.r,
               backgroundColor: _accent.withValues(alpha: 0.15),
               child: Text(
-                c.symbol.isNotEmpty ? c.symbol.substring(0, 1).toUpperCase() : '?',
+                c.symbol.isNotEmpty
+                    ? c.symbol.substring(0, 1).toUpperCase()
+                    : '?',
                 style: _inter(14, w: FontWeight.w700, c: _accent),
               ),
             ),
@@ -232,5 +243,6 @@ class _CryptoSearchSheetState extends State<_CryptoSearchSheet> {
   }
 }
 
-TextStyle _inter(double size, {FontWeight w = FontWeight.w400, Color c = Colors.white}) =>
+TextStyle _inter(double size,
+        {FontWeight w = FontWeight.w400, Color c = Colors.white}) =>
     GoogleFonts.inter(fontSize: size.sp, fontWeight: w, color: c);

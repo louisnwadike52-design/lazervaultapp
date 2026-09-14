@@ -11,7 +11,6 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'stock_action_bottom_sheet_widgets.dart';
 
-
 class StockActionBottomSheet extends StatefulWidget {
   final StockActionType type;
   final String? title;
@@ -71,17 +70,24 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
     setState(() {
       _filteredStocks = stocks.where((stock) {
         final matchesSearch = _searchController.text.isEmpty ||
-            stock.symbol.toLowerCase().contains(_searchController.text.toLowerCase()) ||
-            stock.name.toLowerCase().contains(_searchController.text.toLowerCase());
-        
+            stock.symbol
+                .toLowerCase()
+                .contains(_searchController.text.toLowerCase()) ||
+            stock.name
+                .toLowerCase()
+                .contains(_searchController.text.toLowerCase());
+
         final matchesFilter = _selectedFilter == 'All' ||
             (_selectedFilter == 'Gainers' && stock.changePercent > 0) ||
             (_selectedFilter == 'Losers' && stock.changePercent < 0) ||
             (_selectedFilter == 'Most Active' && stock.volume > 1000000) ||
-            (_selectedFilter == 'Tech' && stock.sector.toLowerCase().contains('tech')) ||
-            (_selectedFilter == 'Healthcare' && stock.sector.toLowerCase().contains('health')) ||
-            (_selectedFilter == 'Finance' && stock.sector.toLowerCase().contains('financ'));
-        
+            (_selectedFilter == 'Tech' &&
+                stock.sector.toLowerCase().contains('tech')) ||
+            (_selectedFilter == 'Healthcare' &&
+                stock.sector.toLowerCase().contains('health')) ||
+            (_selectedFilter == 'Finance' &&
+                stock.sector.toLowerCase().contains('financ'));
+
         return matchesSearch && matchesFilter;
       }).toList();
     });
@@ -89,50 +95,58 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF2A2A3E),
-            const Color(0xFF1F1F35),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.85,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF2A2A3E),
+              const Color(0xFF1F1F35),
+            ],
+          ),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24.r),
+            topRight: Radius.circular(24.r),
+          ),
+        ),
+        child: Column(
+          children: [
+            _buildHandle(),
+            _buildHeader(),
+            _buildSearchBar(),
+            _buildFilterChips(),
+            Expanded(
+              child: BlocConsumer<StockCubit, StockState>(
+                listener: (context, state) {
+                  if (state is StockLoaded) {
+                    _filterStocks(state.stocks);
+                  }
+                },
+                builder: (context, state) {
+                  if (state is StockLoading) {
+                    return _buildLoadingState();
+                  } else if (state is StockLoaded) {
+                    return _buildStocksList();
+                  } else if (state is StockError) {
+                    return _buildErrorState(state.message);
+                  }
+                  // Show stocks list with current filtered stocks
+                  return _buildStocksList();
+                },
+              ),
+            ),
+            _buildPreviousOrders(),
           ],
         ),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24.r),
-          topRight: Radius.circular(24.r),
-        ),
-      ),
-      child: Column(
-        children: [
-          _buildHandle(),
-          _buildHeader(),
-          _buildSearchBar(),
-          _buildFilterChips(),
-          Expanded(
-            child: BlocConsumer<StockCubit, StockState>(
-              listener: (context, state) {
-                if (state is StockLoaded) {
-                  _filterStocks(state.stocks);
-                }
-              },
-              builder: (context, state) {
-                if (state is StockLoading) {
-                  return _buildLoadingState();
-                } else if (state is StockLoaded) {
-                  return _buildStocksList();
-                } else if (state is StockError) {
-                  return _buildErrorState(state.message);
-                }
-                // Show stocks list with current filtered stocks
-                return _buildStocksList();
-              },
-            ),
-          ),
-          _buildPreviousOrders(),
-        ],
       ),
     );
   }
@@ -241,7 +255,6 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Row(
         children: [
@@ -283,8 +296,16 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
   }
 
   Widget _buildFilterChips() {
-    final filters = ['All', 'Gainers', 'Losers', 'Most Active', 'Tech', 'Healthcare', 'Finance'];
-    
+    final filters = [
+      'All',
+      'Gainers',
+      'Losers',
+      'Most Active',
+      'Tech',
+      'Healthcare',
+      'Finance'
+    ];
+
     return Container(
       height: 50.h,
       margin: EdgeInsets.symmetric(vertical: 16.h),
@@ -295,7 +316,7 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
         itemBuilder: (context, index) {
           final filter = filters[index];
           final isSelected = _selectedFilter == filter;
-          
+
           return Container(
             margin: EdgeInsets.only(right: 8.w),
             child: GestureDetector(
@@ -322,16 +343,16 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
                           ],
                         )
                       : null,
-                  color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
+                  color:
+                      isSelected ? null : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
                   boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Text(
                   filter,
@@ -385,7 +406,7 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
 
   Widget _buildStockItem(Stock stock) {
     final isPositive = stock.changePercent >= 0;
-    
+
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
@@ -398,7 +419,6 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Material(
         color: Colors.transparent,
@@ -459,7 +479,8 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      CurrencySymbols.formatAmountWithCurrency(stock.currentPrice, stock.currency),
+                      CurrencySymbols.formatAmountWithCurrency(
+                          stock.currentPrice, stock.currency),
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 14.sp,
@@ -468,9 +489,10 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
                     ),
                     SizedBox(height: 4.h),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
-                        color: isPositive 
+                        color: isPositive
                             ? Colors.green.withValues(alpha: 0.2)
                             : Colors.red.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8.r),
@@ -550,14 +572,32 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
 
   Widget _buildOrderItem(int index) {
     final orders = [
-      {'symbol': 'AAPL', 'type': 'BUY', 'shares': '10', 'price': CurrencySymbols.formatAmountWithCurrency(175.43, 'USD'), 'date': '2 days ago'},
-      {'symbol': 'MSFT', 'type': 'SELL', 'shares': '5', 'price': CurrencySymbols.formatAmountWithCurrency(378.85, 'USD'), 'date': '1 week ago'},
-      {'symbol': 'GOOGL', 'type': 'BUY', 'shares': '2', 'price': CurrencySymbols.formatAmountWithCurrency(2847.63, 'USD'), 'date': '2 weeks ago'},
+      {
+        'symbol': 'AAPL',
+        'type': 'BUY',
+        'shares': '10',
+        'price': CurrencySymbols.formatAmountWithCurrency(175.43, 'USD'),
+        'date': '2 days ago'
+      },
+      {
+        'symbol': 'MSFT',
+        'type': 'SELL',
+        'shares': '5',
+        'price': CurrencySymbols.formatAmountWithCurrency(378.85, 'USD'),
+        'date': '1 week ago'
+      },
+      {
+        'symbol': 'GOOGL',
+        'type': 'BUY',
+        'shares': '2',
+        'price': CurrencySymbols.formatAmountWithCurrency(2847.63, 'USD'),
+        'date': '2 weeks ago'
+      },
     ];
-    
+
     final order = orders[index];
     final isBuy = order['type'] == 'BUY';
-    
+
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
       padding: EdgeInsets.all(12.w),
@@ -571,7 +611,6 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: InkWell(
         onTap: () => _showOrderDetails(order),
@@ -580,7 +619,7 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
               decoration: BoxDecoration(
-                color: isBuy 
+                color: isBuy
                     ? Colors.green.withValues(alpha: 0.2)
                     : Colors.red.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(6.r),
@@ -733,7 +772,8 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
                         ),
                       ),
                       Text(
-                        CurrencySymbols.formatAmountWithCurrency(stock.currentPrice, stock.currency),
+                        CurrencySymbols.formatAmountWithCurrency(
+                            stock.currentPrice, stock.currency),
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 16.sp,
@@ -903,7 +943,9 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
                   Navigator.pop(context);
                   // Create a mock Stock object for repeat order
                   final symbol = order['symbol']!;
-                  final price = double.tryParse(order['price']!.replaceAll(RegExp(r'[^\d.]'), '')) ?? 100.0;
+                  final price = double.tryParse(
+                          order['price']!.replaceAll(RegExp(r'[^\d.]'), '')) ??
+                      100.0;
                   final stock = Stock(
                     symbol: symbol,
                     name: '$symbol Inc.',
@@ -919,7 +961,8 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
                     dividendYield: 2.5,
                     sector: 'Technology',
                     industry: 'Software',
-                    logoUrl: 'https://via.placeholder.com/64x64/4A90E2/FFFFFF?text=${symbol[0]}',
+                    logoUrl:
+                        'https://via.placeholder.com/64x64/4A90E2/FFFFFF?text=${symbol[0]}',
                     priceHistory: [],
                     lastUpdated: DateTime.now(),
                     weekHigh52: price + 50.0,
@@ -991,4 +1034,4 @@ class _StockActionBottomSheetState extends State<StockActionBottomSheet> {
     _searchController.dispose();
     super.dispose();
   }
-} 
+}

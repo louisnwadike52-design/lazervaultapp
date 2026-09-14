@@ -110,109 +110,117 @@ class _SaveMeterSheetBodyState extends State<_SaveMeterSheetBody> {
     // Block back-button / drag-down dismiss while a save is in flight so the
     // user can't strand a pending request and so the controller isn't torn
     // down before the result lands.
-    return PopScope(
-      canPop: !_saving,
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a
+    // tap in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: PopScope(
+        canPop: !_saving,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 40.w,
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4B5563),
-                    borderRadius: BorderRadius.circular(2.r),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4B5563),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'Save Meter',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                '${widget.payment.providerName} · ${widget.payment.meterNumber}',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 12.sp,
-                ),
-              ),
-              SizedBox(height: 20.h),
-              Text(
-                'Name this meter',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              TextField(
-                controller: _controller,
-                autofocus: true,
-                enabled: !_saving,
-                textCapitalization: TextCapitalization.words,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 15.sp,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'e.g. Home meter',
-                  hintStyle: GoogleFonts.inter(
-                    color: const Color(0xFF6B7280),
-                    fontSize: 14.sp,
-                  ),
-                  filled: true,
-                  fillColor: const Color(0xFF0A0A0A),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 14.w,
-                    vertical: 14.h,
-                  ),
-                  errorText: _error,
-                ),
-                onSubmitted: (_) => _submit(),
-              ),
-              SizedBox(height: 20.h),
-              ElevatedButton(
-                onPressed: _saving ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4E03D0),
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor:
-                      const Color(0xFF4E03D0).withValues(alpha: 0.4),
-                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+                SizedBox(height: 16.h),
+                Text(
+                  'Save Meter',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                child: _saving
-                    ? LazerVaultLoader.small()
-                    : Text(
-                        'Save Meter',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w700,
+                SizedBox(height: 4.h),
+                Text(
+                  '${widget.payment.providerName} · ${widget.payment.meterNumber}',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 12.sp,
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                Text(
+                  'Name this meter',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                TextField(
+                  controller: _controller,
+                  autofocus: true,
+                  enabled: !_saving,
+                  textCapitalization: TextCapitalization.words,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 15.sp,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'e.g. Home meter',
+                    hintStyle: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280),
+                      fontSize: 14.sp,
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFF0A0A0A),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 14.w,
+                      vertical: 14.h,
+                    ),
+                    errorText: _error,
+                  ),
+                  onSubmitted: (_) => _submit(),
+                ),
+                SizedBox(height: 20.h),
+                ElevatedButton(
+                  onPressed: _saving ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4E03D0),
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor:
+                        const Color(0xFF4E03D0).withValues(alpha: 0.4),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  child: _saving
+                      ? LazerVaultLoader.small()
+                      : Text(
+                          'Save Meter',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

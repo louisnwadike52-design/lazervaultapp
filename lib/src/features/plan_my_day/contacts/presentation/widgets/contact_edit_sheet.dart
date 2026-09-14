@@ -93,68 +93,76 @@ class _ContactEditSheetState extends State<ContactEditSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Container(
-        decoration: BoxDecoration(
-          color: _card,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        ),
-        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40.w,
-                  height: 4.h,
-                  margin: EdgeInsets.only(bottom: 16.h),
-                  decoration: BoxDecoration(
-                    color: _field,
-                    borderRadius: BorderRadius.circular(2.r),
-                  ),
-                ),
-              ),
-              Text(
-                widget.existing != null ? 'Edit contact' : 'New contact',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 16.h),
-              _tf(_name, 'Name'),
-              _tf(_role, 'Role / title'),
-              _tf(_company, 'Company'),
-              _tf(_email, 'Email', keyboard: TextInputType.emailAddress),
-              _tf(_phone, 'Phone', keyboard: TextInputType.phone),
-              _tf(_notes, 'Notes', maxLines: 3),
-              SizedBox(height: 20.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _purple,
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                  child: Text(
-                    'Save',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
+    // App-root tap-to-dismiss (main.dart GetMaterialApp.builder) is
+    // occluded inside modal sheets; unfocus here so a tap on the
+    // sheet's empty area closes the keyboard.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Container(
+          decoration: BoxDecoration(
+            color: _card,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+          ),
+          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    margin: EdgeInsets.only(bottom: 16.h),
+                    decoration: BoxDecoration(
+                      color: _field,
+                      borderRadius: BorderRadius.circular(2.r),
                     ),
                   ),
                 ),
-              ),
-            ],
+                Text(
+                  widget.existing != null ? 'Edit contact' : 'New contact',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                _tf(_name, 'Name'),
+                _tf(_role, 'Role / title'),
+                _tf(_company, 'Company'),
+                _tf(_email, 'Email', keyboard: TextInputType.emailAddress),
+                _tf(_phone, 'Phone', keyboard: TextInputType.phone),
+                _tf(_notes, 'Notes', maxLines: 3),
+                SizedBox(height: 20.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _purple,
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: Text(
+                      'Save',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

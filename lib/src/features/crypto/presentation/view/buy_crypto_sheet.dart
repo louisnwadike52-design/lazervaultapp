@@ -42,7 +42,8 @@ Future<void> showBuyCryptoSheet(
     builder: (_) => BlocProvider.value(
       value: c,
       child: Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: BuyCryptoSheet(crypto: crypto),
       ),
     ),
@@ -57,7 +58,8 @@ class BuyCryptoSheet extends StatefulWidget {
   State<BuyCryptoSheet> createState() => _BuyCryptoSheetState();
 }
 
-class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixin {
+class _BuyCryptoSheetState extends State<BuyCryptoSheet>
+    with TransactionPinMixin {
   final TextEditingController _amountController = TextEditingController();
   bool _isTransacting = false;
   // Last server rejection (e.g. the min-deliverable message with the exact
@@ -85,7 +87,8 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
   bool _networksLoaded = false;
 
   @override
-  ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
 
   @override
   void initState() {
@@ -190,8 +193,9 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
       // massively understated it (a ₦2.6M attempt's ₦13k fee shrank a ₦19.8k
       // wallet's shown max from ~14 USDT to ~4.8 USDT).
       final feeRate = _fiatAmount > 0 ? _resolveFee() / _fiatAmount : 0.0;
-      final maxFiat =
-          (feeRate >= 0 ? available / (1 + feeRate) : available).clamp(0.0, available).toDouble();
+      final maxFiat = (feeRate >= 0 ? available / (1 + feeRate) : available)
+          .clamp(0.0, available)
+          .toDouble();
       if (_isAmountInCrypto) {
         final r = _rate();
         final maxC = r > 0 ? maxFiat / r : 0.0;
@@ -356,7 +360,8 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
       return _buildReceiveUnsupportedNotice(sym);
     }
     final canChange = _networks.length > 1 && !_switchingNetwork;
-    final canRetry = _networks.isEmpty && !_switchingNetwork && !_loadingNetworks;
+    final canRetry =
+        _networks.isEmpty && !_switchingNetwork && !_loadingNetworks;
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
@@ -419,12 +424,13 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
           ),
           SizedBox(width: 10.w),
           Material(
-            color: (canChange || canRetry) ? accent : accent.withValues(alpha: 0.25),
+            color: (canChange || canRetry)
+                ? accent
+                : accent.withValues(alpha: 0.25),
             borderRadius: BorderRadius.circular(10.r),
             child: InkWell(
-              onTap: canChange
-                  ? _pickNetwork
-                  : (canRetry ? _loadNetworks : null),
+              onTap:
+                  canChange ? _pickNetwork : (canRetry ? _loadNetworks : null),
               borderRadius: BorderRadius.circular(10.r),
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -555,105 +561,117 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
-      builder: (context, acctState) {
-        final personal = _personal(acctState);
-        final available = personal?.availableBalance ?? 0.0;
-        final sym = CurrencySymbols.currentSymbol;
-        // Wallet must cover the TOTAL (subtotal + our fee) — the backend holds
-        // subtotal + fee, so a subtotal-only check would let the hold fail.
-        final totalCost = _fiatAmount + _resolveFee();
-        final canCover = personal != null && available >= totalCost && _fiatAmount > 0;
-        final min = _minFiat();
-        final meetsMin = min <= 0 || _fiatAmount >= min;
-        final enabled = canCover && meetsMin && !_isTransacting;
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+        builder: (context, acctState) {
+          final personal = _personal(acctState);
+          final available = personal?.availableBalance ?? 0.0;
+          final sym = CurrencySymbols.currentSymbol;
+          // Wallet must cover the TOTAL (subtotal + our fee) — the backend holds
+          // subtotal + fee, so a subtotal-only check would let the hold fail.
+          final totalCost = _fiatAmount + _resolveFee();
+          final canCover =
+              personal != null && available >= totalCost && _fiatAmount > 0;
+          final min = _minFiat();
+          final meetsMin = min <= 0 || _fiatAmount >= min;
+          final enabled = canCover && meetsMin && !_isTransacting;
 
-        return Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF0A0A0A),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
-          ),
-          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 44.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2D2D2D),
-                      borderRadius: BorderRadius.circular(2.r),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 18.h),
-                _buildHeader(),
-                SizedBox(height: 16.h),
-                PriceQuoteCard(
-                  cryptoId: widget.crypto.id,
-                  cryptoSymbol: widget.crypto.symbol,
-                  onSwapMarginUpdated: (m) {
-                    if (mounted && m != _swapMargin) {
-                      setState(() => _swapMargin = m);
-                    }
-                  },
-                  onRateUpdated: (r) {
-                    if (mounted && r != _liveRate) setState(() => _liveRate = r);
-                  },
-                ),
-                SizedBox(height: 20.h),
-                _buildAmountField(available),
-                SizedBox(height: 16.h),
-                _buildNetworkAlert(),
-                SizedBox(height: 16.h),
-                if (_fiatAmount > 0) _buildOrderSummary(),
-                SizedBox(height: 12.h),
-                _buildPayFrom(available, canCover, sym, personal),
-                SizedBox(height: 12.h),
-                const CryptoFlowGuidance(
-                  text:
-                      'You pay the total (amount + fee) from this account; the crypto is delivered to your Lazervault crypto wallet as soon as the trade fills.',
-                ),
-                if (_serverError != null) ...[
-                  SizedBox(height: 12.h),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(12.w),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444).withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                          color: const Color(0xFFEF4444).withValues(alpha: 0.5)),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Icons.error_outline,
-                            size: 16.sp, color: const Color(0xFFEF4444)),
-                        SizedBox(width: 8.w),
-                        Expanded(
-                          child: Text(_serverError!,
-                              style: GoogleFonts.inter(
-                                  fontSize: 12.5.sp,
-                                  height: 1.35,
-                                  color: const Color(0xFFFECACA))),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-                SizedBox(height: 18.h),
-                _buildBuyButton(enabled),
-                SizedBox(height: 8.h),
-              ],
+          return Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF0A0A0A),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+              border: Border.all(color: const Color(0xFF2D2D2D)),
             ),
-          ),
-        );
-      },
+            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D2D2D),
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 18.h),
+                  _buildHeader(),
+                  SizedBox(height: 16.h),
+                  PriceQuoteCard(
+                    cryptoId: widget.crypto.id,
+                    cryptoSymbol: widget.crypto.symbol,
+                    onSwapMarginUpdated: (m) {
+                      if (mounted && m != _swapMargin) {
+                        setState(() => _swapMargin = m);
+                      }
+                    },
+                    onRateUpdated: (r) {
+                      if (mounted && r != _liveRate) {
+                        setState(() => _liveRate = r);
+                      }
+                    },
+                  ),
+                  SizedBox(height: 20.h),
+                  _buildAmountField(available),
+                  SizedBox(height: 16.h),
+                  _buildNetworkAlert(),
+                  SizedBox(height: 16.h),
+                  if (_fiatAmount > 0) _buildOrderSummary(),
+                  SizedBox(height: 12.h),
+                  _buildPayFrom(available, canCover, sym, personal),
+                  SizedBox(height: 12.h),
+                  const CryptoFlowGuidance(
+                    text:
+                        'You pay the total (amount + fee) from this account; the crypto is delivered to your Lazervault crypto wallet as soon as the trade fills.',
+                  ),
+                  if (_serverError != null) ...[
+                    SizedBox(height: 12.h),
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
+                            color:
+                                const Color(0xFFEF4444).withValues(alpha: 0.5)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.error_outline,
+                              size: 16.sp, color: const Color(0xFFEF4444)),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: Text(_serverError!,
+                                style: GoogleFonts.inter(
+                                    fontSize: 12.5.sp,
+                                    height: 1.35,
+                                    color: const Color(0xFFFECACA))),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  SizedBox(height: 18.h),
+                  _buildBuyButton(enabled),
+                  SizedBox(height: 8.h),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -666,7 +684,8 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
             color: const Color(0xFF10B981).withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12.r),
           ),
-          child: Icon(Icons.add_circle_outline, color: const Color(0xFF10B981), size: 22.sp),
+          child: Icon(Icons.add_circle_outline,
+              color: const Color(0xFF10B981), size: 22.sp),
         ),
         SizedBox(width: 12.w),
         Expanded(
@@ -675,11 +694,14 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
             children: [
               Text('Buy ${widget.crypto.name}',
                   style: GoogleFonts.inter(
-                      fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white)),
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white)),
               SizedBox(height: 2.h),
               Text('Instant · settled by licensed partner',
                   style: GoogleFonts.inter(
-                      fontSize: 12.sp, color: Colors.white.withValues(alpha: 0.6))),
+                      fontSize: 12.sp,
+                      color: Colors.white.withValues(alpha: 0.6))),
             ],
           ),
         ),
@@ -744,31 +766,34 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
                     if (available > 0) ...[
                       SizedBox(width: 8.w),
                       _maxChip(() => setState(() {
-                        double feeAtFull;
-                        try {
-                          feeAtFull = context
-                              .read<CryptoConfigCubit>()
-                              .config
-                              .feeForOp('buy', available,
-                                  CurrencySymbols.currentCurrency);
-                        } catch (_) {
-                          feeAtFull = available * _feeDisplayRate();
-                        }
-                        final maxSpend =
-                            (available - feeAtFull).clamp(0.0, available);
-                        if (_isAmountInCrypto) {
-                          // Crypto mode: max buyable qty, FLOORED at 6dp so
-                          // rounding never parses back above the balance.
-                          final r = _rate();
-                          if (r > 0) {
-                            final maxC =
-                                ((maxSpend / r) * 1e6).floorToDouble() / 1e6;
-                            _amountController.text = maxC.toStringAsFixed(6);
-                          }
-                        } else {
-                          _amountController.text = maxSpend.toStringAsFixed(2);
-                        }
-                      })),
+                            double feeAtFull;
+                            try {
+                              feeAtFull = context
+                                  .read<CryptoConfigCubit>()
+                                  .config
+                                  .feeForOp('buy', available,
+                                      CurrencySymbols.currentCurrency);
+                            } catch (_) {
+                              feeAtFull = available * _feeDisplayRate();
+                            }
+                            final maxSpend =
+                                (available - feeAtFull).clamp(0.0, available);
+                            if (_isAmountInCrypto) {
+                              // Crypto mode: max buyable qty, FLOORED at 6dp so
+                              // rounding never parses back above the balance.
+                              final r = _rate();
+                              if (r > 0) {
+                                final maxC =
+                                    ((maxSpend / r) * 1e6).floorToDouble() /
+                                        1e6;
+                                _amountController.text =
+                                    maxC.toStringAsFixed(6);
+                              }
+                            } else {
+                              _amountController.text =
+                                  maxSpend.toStringAsFixed(2);
+                            }
+                          })),
                     ],
                   ]),
                 ],
@@ -780,13 +805,16 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
                 Expanded(
                   child: TextField(
                     controller: _amountController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     textAlign: TextAlign.right,
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
                     ],
                     style: GoogleFonts.inter(
-                        fontSize: 26.sp, fontWeight: FontWeight.bold, color: Colors.white),
+                        fontSize: 26.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                     decoration: InputDecoration(
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
@@ -814,7 +842,8 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
                 children: [
                   Text(approx,
                       style: GoogleFonts.inter(
-                          fontSize: 13.sp, color: Colors.white.withValues(alpha: 0.55))),
+                          fontSize: 13.sp,
+                          color: Colors.white.withValues(alpha: 0.55))),
                   _buildLimitsHint(available),
                 ],
               ),
@@ -825,7 +854,8 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
           Padding(
             padding: EdgeInsets.only(top: 8.h, left: 4.w),
             child: Row(children: [
-              Icon(Icons.error_outline, size: 13.sp, color: const Color(0xFFEF4444)),
+              Icon(Icons.error_outline,
+                  size: 13.sp, color: const Color(0xFFEF4444)),
               SizedBox(width: 4.w),
               Flexible(
                 child: Text(_amountError(available)!,
@@ -863,7 +893,9 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
       ),
       child: Text(sym.isNotEmpty ? sym[0] : '?',
           style: GoogleFonts.inter(
-              fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white)),
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.white)),
     );
   }
 
@@ -876,7 +908,8 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
         decoration: BoxDecoration(
           color: const Color(0xFF7C3AED).withValues(alpha: 0.16),
           borderRadius: BorderRadius.circular(9.r),
-          border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.3)),
+          border:
+              Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.3)),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(Icons.swap_vert, size: 14.sp, color: const Color(0xFF9F7AEA)),
@@ -900,7 +933,8 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
         decoration: BoxDecoration(
           color: const Color(0xFF3B82F6).withValues(alpha: 0.16),
           borderRadius: BorderRadius.circular(9.r),
-          border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
+          border:
+              Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
         ),
         child: Text('Max',
             style: GoogleFonts.inter(
@@ -917,7 +951,8 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
     return BlocBuilder<CryptoConfigCubit, CryptoConfigState>(
       bloc: GetIt.I<CryptoConfigCubit>(),
       builder: (context, cfgState) {
-        final loading = cfgState is CryptoConfigInitial || cfgState is CryptoConfigLoading;
+        final loading =
+            cfgState is CryptoConfigInitial || cfgState is CryptoConfigLoading;
         final sym = CurrencySymbols.currentSymbol;
         if (loading) {
           return Text('Loading limits…',
@@ -1001,7 +1036,8 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
             children: [
               Text(l,
                   style: GoogleFonts.inter(
-                      fontSize: 13.sp, color: Colors.white.withValues(alpha: 0.7))),
+                      fontSize: 13.sp,
+                      color: Colors.white.withValues(alpha: 0.7))),
               Text(r,
                   style: GoogleFonts.inter(
                       fontSize: 13.sp,
@@ -1013,7 +1049,8 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F), borderRadius: BorderRadius.circular(14.r)),
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(14.r)),
       child: Column(children: [
         row('You receive',
             '${_trimNum(_cryptoAmount)} ${widget.crypto.symbol.toUpperCase()}'),
@@ -1046,7 +1083,8 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
                 : const Color(0xFF2D2D2D)),
       ),
       child: Row(children: [
-        Icon(Icons.account_balance_wallet, color: const Color(0xFF9F7AEA), size: 20.sp),
+        Icon(Icons.account_balance_wallet,
+            color: const Color(0xFF9F7AEA), size: 20.sp),
         SizedBox(width: 12.w),
         Expanded(
           child: Column(
@@ -1054,11 +1092,14 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
             children: [
               Text(accountLabel,
                   style: GoogleFonts.inter(
-                      fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white)),
               SizedBox(height: 2.h),
               Text('$sym${_formatMoney(available)}',
                   style: GoogleFonts.inter(
-                      fontSize: 13.sp, color: Colors.white.withValues(alpha: 0.7))),
+                      fontSize: 13.sp,
+                      color: Colors.white.withValues(alpha: 0.7))),
             ],
           ),
         ),
@@ -1070,7 +1111,9 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
             style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
-                color: canCover ? const Color(0xFF10B981) : const Color(0xFFEF4444)),
+                color: canCover
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFEF4444)),
           ),
       ]),
     );
@@ -1085,22 +1128,27 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet> with TransactionPinMixi
           backgroundColor: const Color(0xFF10B981),
           disabledBackgroundColor: const Color(0xFF2D2D2D),
           padding: EdgeInsets.symmetric(vertical: 16.h),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         ),
         child: _isTransacting
             ? SizedBox(
                 height: 20.h,
                 width: 20.h,
-                child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                child: const CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white))
             : Text('Buy ${widget.crypto.symbol.toUpperCase()}',
                 style: GoogleFonts.inter(
-                    fontSize: 16.sp, fontWeight: FontWeight.bold, color: Colors.white)),
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
       ),
     );
   }
 
-  String _formatMoney(double v) => v.toStringAsFixed(2).replaceAllMapped(
-      RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},');
+  String _formatMoney(double v) => v
+      .toStringAsFixed(2)
+      .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},');
 
   Future<void> _processBuyOrder() async {
     if (_fiatAmount <= 0 || _isTransacting) return;

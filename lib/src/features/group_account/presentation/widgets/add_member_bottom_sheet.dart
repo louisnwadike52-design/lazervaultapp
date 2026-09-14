@@ -15,10 +15,10 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 part 'add_member_bottom_sheet_widgets.dart';
 
-
 class AddMemberBottomSheet extends StatefulWidget {
   final GroupAccount group;
   final List<GroupMember> existingMembers;
+
   /// Role of the operator opening the sheet. When not admin, the
   /// admin role is hidden from the role picker (the server rejects
   /// promote-to-admin from a moderator anyway; this just keeps the
@@ -361,9 +361,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
       // disambiguation is shown on the member list itself via the
       // membership_status badge per row.
       messenger.showSnackBar(SnackBar(
-        content: Text(total == 1
-            ? 'Invite sent'
-            : '$added invites sent'),
+        content: Text(total == 1 ? 'Invite sent' : '$added invites sent'),
         backgroundColor: const Color(0xFF10B981),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
         behavior: SnackBarBehavior.floating,
@@ -385,7 +383,6 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     // Only listen for cross-cutting flashes that don't gate sheet
@@ -393,66 +390,78 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
     // _addMembers) so the sheet pops itself when its batch resolves.
     // Errors from OTHER flows (e.g. a search call failing while the
     // user has the sheet open) still surface here as a snackbar.
-    return BlocListener<GroupAccountCubit, GroupAccountState>(
-      listenWhen: (prev, curr) =>
-          (curr is GroupAccountError && !_isLoading) ||
-          curr is UserAlreadyMember,
-      listener: (context, state) {
-        if (state is GroupAccountError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: const Color(0xFFEF4444),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-              behavior: SnackBarBehavior.floating,
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: BlocListener<GroupAccountCubit, GroupAccountState>(
+        listenWhen: (prev, curr) =>
+            (curr is GroupAccountError && !_isLoading) ||
+            curr is UserAlreadyMember,
+        listener: (context, state) {
+          if (state is GroupAccountError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: const Color(0xFFEF4444),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r)),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          } else if (state is UserAlreadyMember) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${state.userName} is already a member'),
+                backgroundColor: const Color(0xFFF59E0B),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r)),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        },
+        child: Container(
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20.r),
+              topRight: Radius.circular(20.r),
             ),
-          );
-        } else if (state is UserAlreadyMember) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${state.userName} is already a member'),
-              backgroundColor: const Color(0xFFF59E0B),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      },
-      child: Container(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        height: MediaQuery.of(context).size.height * 0.85,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20.r),
-            topRight: Radius.circular(20.r),
           ),
-        ),
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(20.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSearchField(),
-                    if (_selectedMembers.isNotEmpty || _pendingInvites.isNotEmpty) ...[
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(20.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSearchField(),
+                      if (_selectedMembers.isNotEmpty ||
+                          _pendingInvites.isNotEmpty) ...[
+                        SizedBox(height: 16.h),
+                        _buildSelectedMembersSection(),
+                      ],
                       SizedBox(height: 16.h),
-                      _buildSelectedMembersSection(),
+                      _buildSearchResults(),
+                      SizedBox(height: 20.h),
+                      _buildRoleSelection(),
                     ],
-                    SizedBox(height: 16.h),
-                    _buildSearchResults(),
-                    SizedBox(height: 20.h),
-                    _buildRoleSelection(),
-                  ],
+                  ),
                 ),
               ),
-            ),
-            // Fixed bottom action buttons
-            _buildActionButtons(),
-          ],
+              // Fixed bottom action buttons
+              _buildActionButtons(),
+            ],
+          ),
         ),
       ),
     );
@@ -555,22 +564,27 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                   focusNode: _focusNode,
                   readOnly: true,
                   onTap: _openUnifiedSearch,
-                  style: GoogleFonts.inter(fontSize: 16.sp, color: Colors.white),
+                  style:
+                      GoogleFonts.inter(fontSize: 16.sp, color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'Search people to add',
-                    hintStyle: GoogleFonts.inter(fontSize: 16.sp, color: Colors.grey[500]),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 22.sp),
+                    hintStyle: GoogleFonts.inter(
+                        fontSize: 16.sp, color: Colors.grey[500]),
+                    prefixIcon: Icon(Icons.search,
+                        color: Colors.grey[500], size: 22.sp),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? GestureDetector(
                             onTap: () {
                               _searchController.clear();
                               _onSearchChanged('');
                             },
-                            child: Icon(Icons.clear, color: Colors.grey[500], size: 20.sp),
+                            child: Icon(Icons.clear,
+                                color: Colors.grey[500], size: 20.sp),
                           )
                         : null,
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
                   ),
                   onChanged: _onSearchChanged,
                 ),
@@ -583,9 +597,12 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
               child: Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                  color: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: const Color.fromARGB(255, 78, 3, 208)
+                          .withValues(alpha: 0.3)),
                 ),
                 child: Icon(
                   Icons.contacts,
@@ -687,7 +704,9 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
         children: [
           Icon(
             isOnLazerVault ? Icons.check_circle : Icons.mail_outline,
-            color: isOnLazerVault ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+            color: isOnLazerVault
+                ? const Color(0xFF10B981)
+                : const Color(0xFFF59E0B),
             size: 16.sp,
           ),
           SizedBox(width: 6.w),
@@ -734,7 +753,8 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
               SizedBox(height: 16.h),
               Text(
                 'Searching...',
-                style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[500]),
+                style:
+                    GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[500]),
               ),
             ],
           ),
@@ -781,7 +801,9 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
     }
 
     // Initial empty state (only show if no members selected yet)
-    if (_searchController.text.isEmpty && _selectedMembers.isEmpty && _pendingInvites.isEmpty) {
+    if (_searchController.text.isEmpty &&
+        _selectedMembers.isEmpty &&
+        _pendingInvites.isEmpty) {
       return _buildEmptyState(
         icon: Icons.search,
         title: 'Search for users',
@@ -823,7 +845,8 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
             SizedBox(height: 8.h),
             Text(
               subtitle,
-              style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[500]),
+              style:
+                  GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
           ],
@@ -837,7 +860,9 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
     final isAlreadySelected = _isUserAlreadySelected(user);
 
     return GestureDetector(
-      onTap: (isAlreadyMember || isAlreadySelected) ? null : () => _selectUser(user),
+      onTap: (isAlreadyMember || isAlreadySelected)
+          ? null
+          : () => _selectUser(user),
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
@@ -863,7 +888,8 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
               width: 48.w,
               height: 48.h,
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                color: const Color.fromARGB(255, 78, 3, 208)
+                    .withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: user.profilePicture.isNotEmpty
@@ -871,7 +897,8 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                       child: Image.network(
                         user.profilePicture,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildInitialsAvatar(user),
+                        errorBuilder: (_, __, ___) =>
+                            _buildInitialsAvatar(user),
                       ),
                     )
                   : _buildInitialsAvatar(user),
@@ -895,7 +922,8 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 2.h),
                         decoration: BoxDecoration(
                           color: const Color(0xFF10B981).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4.r),
@@ -945,9 +973,11 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
               ),
             ),
             if (!isAlreadyMember && !isAlreadySelected)
-              Icon(Icons.add_circle_outline, color: const Color.fromARGB(255, 78, 3, 208), size: 24.sp)
+              Icon(Icons.add_circle_outline,
+                  color: const Color.fromARGB(255, 78, 3, 208), size: 24.sp)
             else if (isAlreadySelected)
-              Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 24.sp),
+              Icon(Icons.check_circle,
+                  color: const Color(0xFF10B981), size: 24.sp),
           ],
         ),
       ),
@@ -973,14 +1003,16 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
       decoration: BoxDecoration(
         color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.mail_outline, color: const Color(0xFFF59E0B), size: 24.sp),
+              Icon(Icons.mail_outline,
+                  color: const Color(0xFFF59E0B), size: 24.sp),
               SizedBox(width: 12.w),
               Expanded(
                 child: Column(
@@ -997,7 +1029,8 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                     SizedBox(height: 4.h),
                     Text(
                       'Add them to send an invite',
-                      style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[400]),
+                      style: GoogleFonts.inter(
+                          fontSize: 12.sp, color: Colors.grey[400]),
                     ),
                   ],
                 ),
@@ -1019,11 +1052,13 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
               Expanded(
                 child: TextFormField(
                   controller: _fullNameController,
-                  style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
+                  style:
+                      GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
                     hintText: 'Enter their full name',
-                    hintStyle: GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[600]),
+                    hintStyle: GoogleFonts.inter(
+                        fontSize: 14.sp, color: Colors.grey[600]),
                     filled: true,
                     fillColor: const Color(0xFF0A0A0A),
                     border: OutlineInputBorder(
@@ -1036,16 +1071,21 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
-                      borderSide: const BorderSide(color: Color.fromARGB(255, 78, 3, 208), width: 2),
+                      borderSide: const BorderSide(
+                          color: Color.fromARGB(255, 78, 3, 208), width: 2),
                     ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-                    prefixIcon: Icon(Icons.person_outline, color: Colors.grey[500], size: 18.sp),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                    prefixIcon: Icon(Icons.person_outline,
+                        color: Colors.grey[500], size: 18.sp),
                   ),
                 ),
               ),
               SizedBox(width: 12.w),
               GestureDetector(
-                onTap: _fullNameController.text.trim().isNotEmpty ? _addPendingInvite : null,
+                onTap: _fullNameController.text.trim().isNotEmpty
+                    ? _addPendingInvite
+                    : null,
                 child: Container(
                   padding: EdgeInsets.all(14.w),
                   decoration: BoxDecoration(
@@ -1148,7 +1188,8 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                   ),
                   Text(
                     description,
-                    style: GoogleFonts.inter(fontSize: 11.sp, color: Colors.grey[500]),
+                    style: GoogleFonts.inter(
+                        fontSize: 11.sp, color: Colors.grey[500]),
                   ),
                 ],
               ),
@@ -1156,7 +1197,8 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                color: const Color.fromARGB(255, 78, 3, 208)
+                    .withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(
@@ -1263,15 +1305,20 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
       child: Container(
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.1) : const Color(0xFF0A0A0A),
+          color: isSelected
+              ? color.withValues(alpha: 0.1)
+              : const Color(0xFF0A0A0A),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? color.withValues(alpha: 0.5) : const Color(0xFF2D2D2D),
+            color: isSelected
+                ? color.withValues(alpha: 0.5)
+                : const Color(0xFF2D2D2D),
           ),
         ),
         child: Row(
           children: [
-            Icon(icon, color: isSelected ? color : Colors.grey[500], size: 24.sp),
+            Icon(icon,
+                color: isSelected ? color : Colors.grey[500], size: 24.sp),
             SizedBox(width: 12.w),
             Expanded(
               child: Column(
@@ -1288,13 +1335,13 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                   SizedBox(height: 2.h),
                   Text(
                     description,
-                    style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[400]),
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp, color: Colors.grey[400]),
                   ),
                 ],
               ),
             ),
-            if (isSelected)
-              Icon(Icons.check_circle, color: color, size: 20.sp),
+            if (isSelected) Icon(Icons.check_circle, color: color, size: 20.sp),
           ],
         ),
       ),
@@ -1336,7 +1383,8 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: Colors.grey[700]!),
                   padding: EdgeInsets.symmetric(vertical: 16.h),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
                 ),
                 child: Text(
                   'Cancel',
@@ -1356,14 +1404,16 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                   backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 16.h),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
                   disabledBackgroundColor: Colors.grey[800],
                 ),
                 child: _isLoading
                     ? LazerVaultLoader.small()
                     : Text(
                         buttonText,
-                        style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(
+                            fontSize: 16.sp, fontWeight: FontWeight.w600),
                       ),
               ),
             ),

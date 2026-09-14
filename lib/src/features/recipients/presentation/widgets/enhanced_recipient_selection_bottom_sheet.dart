@@ -21,7 +21,6 @@ import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'enhanced_recipient_selection_bottom_sheet_widgets.dart';
 
-
 class EnhancedRecipientSelectionBottomSheet extends StatefulWidget {
   final Function(RecipientModel) onRecipientSelected;
   final Function(LazertagUser)? onLazertagUserSelected;
@@ -48,10 +47,12 @@ class EnhancedRecipientSelectionBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<EnhancedRecipientSelectionBottomSheet> createState() => _EnhancedRecipientSelectionBottomSheetState();
+  State<EnhancedRecipientSelectionBottomSheet> createState() =>
+      _EnhancedRecipientSelectionBottomSheetState();
 }
 
-class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipientSelectionBottomSheet>
+class _EnhancedRecipientSelectionBottomSheetState
+    extends State<EnhancedRecipientSelectionBottomSheet>
     with TickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
@@ -80,7 +81,8 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
     _tabController.addListener(() {
       setState(() {
         _currentTab = _getTabFromIndex(_tabController.index);
-        if (_currentTab == RecipientSelectionTab.contacts && _deviceContacts.isEmpty) {
+        if (_currentTab == RecipientSelectionTab.contacts &&
+            _deviceContacts.isEmpty) {
           _loadDeviceContacts();
         }
         // Trigger search when switching to lazertag tab with existing query
@@ -102,7 +104,9 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
 
   RecipientSelectionTab _getTabFromIndex(int index) {
     if (index == 0) return RecipientSelectionTab.saved;
-    if (widget.allowLazertagUsers && index == 1) return RecipientSelectionTab.lazertag;
+    if (widget.allowLazertagUsers && index == 1) {
+      return RecipientSelectionTab.lazertag;
+    }
     if (widget.allowContacts) return RecipientSelectionTab.contacts;
     return RecipientSelectionTab.saved;
   }
@@ -126,7 +130,8 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
 
     // Always trigger platform-wide search when query is long enough,
     // regardless of tab. This enables two-tier search: saved first, platform fallback.
-    final normalizedLen = normalizeLazerVaultUserSearchQuery(_searchQuery).length;
+    final normalizedLen =
+        normalizeLazerVaultUserSearchQuery(_searchQuery).length;
     if (widget.allowLazertagUsers && normalizedLen >= 2) {
       _searchDebounce?.cancel();
       _searchDebounce = Timer(const Duration(milliseconds: 300), () {
@@ -152,16 +157,21 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       if (!mounted) return;
 
       setState(() {
-        _lazertagResults = results.map((user) => LazertagUser(
-          id: user.userId,
-          username: user.username,
-          name: '${user.firstName} ${user.lastName}'.trim(),
-          email: user.email.isNotEmpty ? user.email : null,
-          phoneNumber: user.phoneNumber.isNotEmpty ? user.phoneNumber : null,
-          avatar: user.profilePicture.isNotEmpty ? user.profilePicture : null,
-          isVerified: true,
-          searchType: user.searchType, // Track how user was found
-        )).toList();
+        _lazertagResults = results
+            .map((user) => LazertagUser(
+                  id: user.userId,
+                  username: user.username,
+                  name: '${user.firstName} ${user.lastName}'.trim(),
+                  email: user.email.isNotEmpty ? user.email : null,
+                  phoneNumber:
+                      user.phoneNumber.isNotEmpty ? user.phoneNumber : null,
+                  avatar: user.profilePicture.isNotEmpty
+                      ? user.profilePicture
+                      : null,
+                  isVerified: true,
+                  searchType: user.searchType, // Track how user was found
+                ))
+            .toList();
         _isLoadingLazertag = false;
       });
     } catch (e) {
@@ -208,7 +218,6 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
         _deviceContacts = contacts;
         _isLoadingContacts = false;
       });
-
     } catch (e) {
       // Handle error - show empty state
       setState(() {
@@ -240,7 +249,8 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A3E),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Row(
           children: [
             Container(
@@ -312,25 +322,32 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
     var list = recipients;
     if (widget.externalOnly) {
       list = list
-          .where((r) =>
-              !r.isInternalUserRecipient && r.accountNumber.length == 10)
+          .where(
+              (r) => !r.isInternalUserRecipient && r.accountNumber.length == 10)
           .toList();
     }
     if (_searchQuery.isEmpty || _searchQuery.startsWith('@')) return list;
 
     return list.where((recipient) {
-      return recipient.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-             recipient.accountNumber.contains(_searchQuery) ||
-             (recipient.alias?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+      return recipient.name
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase()) ||
+          recipient.accountNumber.contains(_searchQuery) ||
+          (recipient.alias
+                  ?.toLowerCase()
+                  .contains(_searchQuery.toLowerCase()) ??
+              false);
     }).toList();
   }
 
   List<DeviceContact> _filterContacts() {
-    if (_searchQuery.isEmpty || _searchQuery.startsWith('@')) return _deviceContacts;
-    
+    if (_searchQuery.isEmpty || _searchQuery.startsWith('@')) {
+      return _deviceContacts;
+    }
+
     return _deviceContacts.where((contact) {
       return contact.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-             (contact.phoneNumber?.contains(_searchQuery) ?? false);
+          (contact.phoneNumber?.contains(_searchQuery) ?? false);
     }).toList();
   }
 
@@ -340,26 +357,40 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       initialChildSize: 0.8,
       maxChildSize: 0.95,
       minChildSize: 0.5,
-      builder: (context, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20.r),
-            topRight: Radius.circular(20.r),
-          ),
-        ),
-        child: Column(
-          children: [
-            _buildHeader(),
-            _buildSearchBar(),
-            _buildTabBar(),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: _buildTabViews(scrollController),
-              ),
+      // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+      // cannot reach inside modal sheets - the opaque sheet surface
+      // occludes it - so unfocus here to dismiss the keyboard on a tap
+      // in the sheet's empty area. Wrapped inside the builder (not
+      // around the DraggableScrollableSheet) so taps above the sheet
+      // still reach the modal barrier and dismiss it.
+      builder: (context, scrollController) => GestureDetector(
+        // deferToChild (NOT opaque): this sheet is a DraggableScrollableSheet —
+        // an opaque wrapper would claim taps in the transparent region ABOVE
+        // the sheet and break tap-outside-to-close. deferToChild only joins
+        // hits on the painted sheet surface, which is where unfocus belongs.
+        behavior: HitTestBehavior.deferToChild,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20.r),
+              topRight: Radius.circular(20.r),
             ),
-          ],
+          ),
+          child: Column(
+            children: [
+              _buildHeader(),
+              _buildSearchBar(),
+              _buildTabBar(),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: _buildTabViews(scrollController),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -399,7 +430,8 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
                       Get.back();
                       Get.toNamed(AppRoutes.addRecipient);
                     },
-                    icon: Icon(Icons.add, color: const Color(0xFF4E03D0), size: 20.sp),
+                    icon: Icon(Icons.add,
+                        color: const Color(0xFF4E03D0), size: 20.sp),
                     label: Text(
                       'Add New',
                       style: GoogleFonts.inter(
@@ -453,23 +485,24 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
             color: Colors.grey[500],
             size: 18.sp,
           ),
-          prefixIconConstraints: BoxConstraints(minWidth: 38.w, minHeight: 38.w),
+          prefixIconConstraints:
+              BoxConstraints(minWidth: 38.w, minHeight: 38.w),
           suffixIcon: _searchQuery.isNotEmpty
-            ? IconButton(
-                onPressed: () {
-                  _searchController.clear();
-                  setState(() {
-                    _searchQuery = '';
-                    _lazertagResults = [];
-                  });
-                },
-                icon: Icon(
-                  Icons.clear,
-                  color: Colors.grey[500],
-                  size: 20.sp,
-                ),
-              )
-            : null,
+              ? IconButton(
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {
+                      _searchQuery = '';
+                      _lazertagResults = [];
+                    });
+                  },
+                  icon: Icon(
+                    Icons.clear,
+                    color: Colors.grey[500],
+                    size: 20.sp,
+                  ),
+                )
+              : null,
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(vertical: 12.h),
         ),
@@ -632,9 +665,12 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
 
           // Two-tier search: saved recipients first, then platform fallback
           final hasSavedMatches = filteredRecipients.isNotEmpty;
-          final hasPlatformResults = _lazertagResults.isNotEmpty && _searchQuery.isNotEmpty;
+          final hasPlatformResults =
+              _lazertagResults.isNotEmpty && _searchQuery.isNotEmpty;
 
-          if (!hasSavedMatches && !hasPlatformResults && _searchQuery.isNotEmpty) {
+          if (!hasSavedMatches &&
+              !hasPlatformResults &&
+              _searchQuery.isNotEmpty) {
             if (_isLoadingLazertag) {
               return const Center(
                 child: LazerVaultLoader.small(),
@@ -643,7 +679,8 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
             return _buildEmptyState(
               icon: Icons.search_off,
               title: 'No recipients found',
-              subtitle: 'No saved recipients or Lazervault users match "$_searchQuery"',
+              subtitle:
+                  'No saved recipients or Lazervault users match "$_searchQuery"',
             );
           }
 
@@ -654,25 +691,29 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
             children: [
               // Show saved recipients first
               if (hasSavedMatches) ...[
-                if (hasPlatformResults) Padding(
-                  padding: EdgeInsets.only(bottom: 8.h, left: 4.w),
-                  child: Text(
-                    'Saved Recipients',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
+                if (hasPlatformResults)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 8.h, left: 4.w),
+                    child: Text(
+                      'Saved Recipients',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ),
                 ...filteredRecipients.map((r) => _buildRecipientItem(r)),
               ],
               // Show platform results as fallback
               if (hasPlatformResults) ...[
                 Padding(
-                  padding: EdgeInsets.only(top: hasSavedMatches ? 16.h : 0, bottom: 8.h, left: 4.w),
+                  padding: EdgeInsets.only(
+                      top: hasSavedMatches ? 16.h : 0, bottom: 8.h, left: 4.w),
                   child: Text(
-                    hasSavedMatches ? 'Also on Lazervault' : 'Found on Lazervault',
+                    hasSavedMatches
+                        ? 'Also on Lazervault'
+                        : 'Found on Lazervault',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 12.sp,
@@ -754,11 +795,15 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
 
     if (filteredContacts.isEmpty) {
       return _buildEmptyState(
-        icon: _searchQuery.isNotEmpty ? Icons.search_off : Icons.contacts_outlined,
-        title: _searchQuery.isNotEmpty ? 'No contacts found' : 'No contacts available',
-        subtitle: _searchQuery.isNotEmpty 
-          ? 'No contacts match your search'
-          : 'Grant permission to access your contacts',
+        icon: _searchQuery.isNotEmpty
+            ? Icons.search_off
+            : Icons.contacts_outlined,
+        title: _searchQuery.isNotEmpty
+            ? 'No contacts found'
+            : 'No contacts available',
+        subtitle: _searchQuery.isNotEmpty
+            ? 'No contacts match your search'
+            : 'Grant permission to access your contacts',
         actionText: _searchQuery.isEmpty ? 'Reload Contacts' : null,
         onAction: _searchQuery.isEmpty ? _loadDeviceContacts : null,
       );
@@ -892,10 +937,10 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
               if (authState is AuthenticationSuccess) {
                 final localeManager = serviceLocator<LocaleManager>();
                 context.read<RecipientCubit>().getRecipients(
-                  accessToken: authState.profile.session.accessToken,
-                  countryCode: localeManager.currentCountry,
-                  currency: localeManager.currentCurrency,
-                );
+                      accessToken: authState.profile.session.accessToken,
+                      countryCode: localeManager.currentCountry,
+                      currency: localeManager.currentCurrency,
+                    );
               }
             },
             child: Text(
@@ -938,7 +983,9 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
           ),
           child: Center(
             child: Text(
-              recipient.name.isNotEmpty ? recipient.name.substring(0, 1).toUpperCase() : 'R',
+              recipient.name.isNotEmpty
+                  ? recipient.name.substring(0, 1).toUpperCase()
+                  : 'R',
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 14.sp,
@@ -970,8 +1017,8 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
               child: Text(
                 [
                   recipient.accountNumber.length > 4
-                    ? '••• ${recipient.accountNumber.substring(recipient.accountNumber.length - 4)}'
-                    : recipient.accountNumber,
+                      ? '••• ${recipient.accountNumber.substring(recipient.accountNumber.length - 4)}'
+                      : recipient.accountNumber,
                   if (recipient.bankName.isNotEmpty) recipient.displayBankName,
                 ].join(' · '),
                 style: GoogleFonts.inter(
@@ -1029,32 +1076,36 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
             shape: BoxShape.circle,
           ),
           child: user.avatar != null
-            ? ClipOval(
-                child: Image.network(
-                  user.avatar!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Center(
-                    child: Text(
-                      user.name.isNotEmpty ? user.name.substring(0, 1).toUpperCase() : '@',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
+              ? ClipOval(
+                  child: Image.network(
+                    user.avatar!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Center(
+                      child: Text(
+                        user.name.isNotEmpty
+                            ? user.name.substring(0, 1).toUpperCase()
+                            : '@',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              )
-            : Center(
-                child: Text(
-                  user.name.isNotEmpty ? user.name.substring(0, 1).toUpperCase() : '@',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
+                )
+              : Center(
+                  child: Text(
+                    user.name.isNotEmpty
+                        ? user.name.substring(0, 1).toUpperCase()
+                        : '@',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-              ),
         ),
         title: Row(
           children: [
@@ -1189,4 +1240,4 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       ),
     );
   }
-} 
+}

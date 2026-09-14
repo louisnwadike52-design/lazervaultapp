@@ -102,7 +102,8 @@ class _RecipientsContactsSheetState extends State<RecipientsContactsSheet> {
         .map((e) => SmsRecipientEntity(
               phoneNumber: e.key,
               name: e.value.name,
-              variables: e.value.name.isEmpty ? const {} : {'name': e.value.name},
+              variables:
+                  e.value.name.isEmpty ? const {} : {'name': e.value.name},
             ))
         .toList();
     Get.back(result: recipients);
@@ -110,65 +111,72 @@ class _RecipientsContactsSheetState extends State<RecipientsContactsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: BoxDecoration(
-        color: BulkSmsTheme.bg,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      child: Column(
-        children: [
-          SizedBox(height: 10.h),
-          Container(
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: BulkSmsTheme.divider,
-              borderRadius: BorderRadius.circular(2.r),
+    // App-root tap-to-dismiss (main.dart GetMaterialApp.builder) is
+    // occluded inside modal sheets; unfocus here so a tap on the
+    // sheet's empty area closes the keyboard.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.85,
+        decoration: BoxDecoration(
+          color: BulkSmsTheme.bg,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          children: [
+            SizedBox(height: 10.h),
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: BulkSmsTheme.divider,
+                borderRadius: BorderRadius.circular(2.r),
+              ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(16.w),
-            child: Row(
-              children: [
-                Text('Select contacts',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700)),
-                const Spacer(),
-                Text('${_selected.length} selected',
-                    style: TextStyle(
-                        color: BulkSmsTheme.textSecondary, fontSize: 12.sp)),
-              ],
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Row(
+                children: [
+                  Text('Select contacts',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700)),
+                  const Spacer(),
+                  Text('${_selected.length} selected',
+                      style: TextStyle(
+                          color: BulkSmsTheme.textSecondary, fontSize: 12.sp)),
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            child: TextField(
-              controller: _search,
-              style: TextStyle(color: Colors.white, fontSize: 14.sp),
-              decoration: InputDecoration(
-                hintText: 'Search name or number',
-                hintStyle: TextStyle(
-                    color: BulkSmsTheme.textSecondary, fontSize: 14.sp),
-                prefixIcon: const Icon(Icons.search,
-                    color: BulkSmsTheme.textSecondary),
-                filled: true,
-                fillColor: BulkSmsTheme.card,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide.none,
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: TextField(
+                controller: _search,
+                style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                decoration: InputDecoration(
+                  hintText: 'Search name or number',
+                  hintStyle: TextStyle(
+                      color: BulkSmsTheme.textSecondary, fontSize: 14.sp),
+                  prefixIcon: const Icon(Icons.search,
+                      color: BulkSmsTheme.textSecondary),
+                  filled: true,
+                  fillColor: BulkSmsTheme.card,
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
             ),
-          ),
-          SizedBox(height: 8.h),
-          Expanded(child: _list()),
-          _doneBar(),
-        ],
+            SizedBox(height: 8.h),
+            Expanded(child: _list()),
+            _doneBar(),
+          ],
+        ),
       ),
     );
   }
@@ -206,8 +214,8 @@ class _RecipientsContactsSheetState extends State<RecipientsContactsSheet> {
     if (_filtered.isEmpty) {
       return Center(
         child: Text('No contacts with phone numbers',
-            style: TextStyle(
-                color: BulkSmsTheme.textSecondary, fontSize: 13.sp)),
+            style:
+                TextStyle(color: BulkSmsTheme.textSecondary, fontSize: 13.sp)),
       );
     }
     return ListView.builder(
@@ -231,8 +239,7 @@ class _RecipientsContactsSheetState extends State<RecipientsContactsSheet> {
                     : BulkSmsTheme.card,
                 borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
-                  color:
-                      selected ? BulkSmsTheme.primary : BulkSmsTheme.divider,
+                  color: selected ? BulkSmsTheme.primary : BulkSmsTheme.divider,
                 ),
               ),
               child: Row(

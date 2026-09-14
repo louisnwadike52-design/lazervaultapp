@@ -53,32 +53,40 @@ class _TaskOptionsSheetState extends State<TaskOptionsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      padding: EdgeInsets.only(bottom: 16.h + MediaQuery.of(context).padding.bottom),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40.w,
-            height: 4.h,
-            margin: EdgeInsets.symmetric(vertical: 12.h),
-            decoration: BoxDecoration(
-              color: _field,
-              borderRadius: BorderRadius.circular(2.r),
+    // App-root tap-to-dismiss (main.dart GetMaterialApp.builder) is
+    // occluded inside modal sheets; unfocus here so a tap on the
+    // sheet's empty area closes the keyboard.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        decoration: BoxDecoration(
+          color: _card,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        padding: EdgeInsets.only(
+            bottom: 16.h + MediaQuery.of(context).padding.bottom),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              margin: EdgeInsets.symmetric(vertical: 12.h),
+              decoration: BoxDecoration(
+                color: _field,
+                borderRadius: BorderRadius.circular(2.r),
+              ),
             ),
-          ),
-          _header(),
-          const Divider(color: _field, height: 1),
-          switch (_view) {
-            _View.main => _mainMenu(),
-            _View.priority => _priorityMenu(),
-            _View.status => _statusMenu(),
-          },
-        ],
+            _header(),
+            const Divider(color: _field, height: 1),
+            switch (_view) {
+              _View.main => _mainMenu(),
+              _View.priority => _priorityMenu(),
+              _View.status => _statusMenu(),
+            },
+          ],
+        ),
       ),
     );
   }
@@ -245,8 +253,7 @@ class _TaskOptionsSheetState extends State<TaskOptionsSheet> {
                 ),
               ),
             ),
-            if (trailing != null)
-              Icon(trailing, color: _muted, size: 20.sp),
+            if (trailing != null) Icon(trailing, color: _muted, size: 20.sp),
           ],
         ),
       ),

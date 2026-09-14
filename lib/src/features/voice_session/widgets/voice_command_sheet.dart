@@ -42,7 +42,6 @@ import 'package:lazervault/src/features/ai_chats/presentation/widgets/ai_chat_co
     show BubbleTailPainter;
 part 'voice_command_sheet_widgets.dart';
 
-
 class VoiceCommandSheet extends StatefulWidget {
   final String? serviceName;
   final bool skipActivationCheck;
@@ -70,7 +69,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   // Avatar speaking/listening pulse — drives the glow ring + gentle scale
   // around the Nova customer-rep avatar.
   late AnimationController _avatarController;
-  final VoiceActivationManager _voiceActivationManager = VoiceActivationManager();
+  final VoiceActivationManager _voiceActivationManager =
+      VoiceActivationManager();
 
   /// Canonical PIN service for [TransactionPinMixin]. Same instance the chat
   /// path uses, so voice + chat share lockout counters + single-use tokens.
@@ -209,7 +209,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   void _resetIfNeeded() {
     final cubit = context.read<VoiceSessionCubit>();
     final state = cubit.state;
-    print('VoiceCommandSheet: Checking if reset needed, current state: ${state.runtimeType}');
+    print(
+        'VoiceCommandSheet: Checking if reset needed, current state: ${state.runtimeType}');
 
     // Reset if we're in a disconnected state to allow fresh connection
     if (state is VoiceSessionDisconnected) {
@@ -240,14 +241,16 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     print('VoiceCommandSheet: Checking voice activation for user $userId');
 
     // First check if voice service is available
-    final isServiceAvailable = await _voiceActivationManager.isServiceAvailable();
+    final isServiceAvailable =
+        await _voiceActivationManager.isServiceAvailable();
     if (!isServiceAvailable) {
       print('VoiceCommandSheet: Voice service unavailable');
       if (mounted) {
         setState(() => _isCheckingEnrollment = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Voice service is not running. Please start the services with ./start_all_local_no_docker.sh'),
+            content: const Text(
+                'Voice service is not running. Please start the services with ./start_all_local_no_docker.sh'),
             backgroundColor: const Color(0xFFEF4444),
             duration: const Duration(seconds: 5),
           ),
@@ -264,7 +267,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     // (or an ambiguous status) must NEVER fall through to the "set up voice"
     // prompt for an already-enrolled user — it shows the shared
     // temporarily-unavailable modal (Retry re-checks, Later closes the sheet).
-    final outcome = await _voiceActivationManager.checkEnrollmentOutcome(userId);
+    final outcome =
+        await _voiceActivationManager.checkEnrollmentOutcome(userId);
     if (!mounted) return;
 
     if (outcome == VoiceEnrollmentCheck.unavailable) {
@@ -405,8 +409,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     _ratingSubmitted = false;
     _feedbackController.clear();
     context.read<VoiceSessionCubit>().startNewSession(
-      accessToken: authState.profile.session.accessToken,
-    );
+          accessToken: authState.profile.session.accessToken,
+        );
   }
 
   Future<void> _proceedAfterEnrollment() async {
@@ -416,14 +420,16 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
     // Check if we need to reconnect (cubit might be in disconnected state)
     final currentState = cubit.state;
-    print('VoiceCommandSheet: Current cubit state: ${currentState.runtimeType}');
+    print(
+        'VoiceCommandSheet: Current cubit state: ${currentState.runtimeType}');
 
     // Re-opening from the minimized floating bubble: a session is already live,
     // so DON'T start/restart one (startVoiceSession would tear down + rebuild the
     // LiveKit room, re-greet, and lose conversation continuity). Just re-attach —
     // the BlocConsumer below renders the ongoing call's live state as-is.
     if (cubit.hasActiveVoiceSession || cubit.isConnected) {
-      print('VoiceCommandSheet: session already active — re-attaching (no restart)');
+      print(
+          'VoiceCommandSheet: session already active — re-attaching (no restart)');
       return;
     }
 
@@ -436,7 +442,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       cubit.showLanguageSelection();
     } else {
       // Language already selected, start session
-      print('VoiceCommandSheet: Starting voice session with language ${cubit.selectedLanguageCode}');
+      print(
+          'VoiceCommandSheet: Starting voice session with language ${cubit.selectedLanguageCode}');
       _startVoiceSession(authState.profile.session.accessToken);
     }
   }
@@ -464,13 +471,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       userId = authState.profile.userId;
     }
     context.read<VoiceSessionCubit>().startVoiceSession(
-      accessToken: token,
-      serviceName: widget.serviceName,
-      conversationId: widget.conversationId,
-      accountId: activeAccountId,
-      currency: activeCurrency,
-      userId: userId,
-    );
+          accessToken: token,
+          serviceName: widget.serviceName,
+          conversationId: widget.conversationId,
+          accountId: activeAccountId,
+          currency: activeCurrency,
+          userId: userId,
+        );
     // Resolve the interaction mode (admin default → per-user override) and apply
     // it to the cubit so a PTT user isn't auto-listened to before they gesture.
     unawaited(_applyInteractionModeFromSettings());
@@ -481,8 +488,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   Future<void> _applyInteractionModeFromSettings() async {
     try {
       if (!serviceLocator.isRegistered<VoiceSettingsService>()) return;
-      final s =
-          await serviceLocator<VoiceSettingsService>().getTxPinSettings();
+      final s = await serviceLocator<VoiceSettingsService>().getTxPinSettings();
       if (s == null || !mounted) return;
       final mode = s.effectiveInteractionMode;
       setState(() => _interactionMode = mode);
@@ -505,7 +511,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           interactionMode: next,
         );
       }
-    } catch (_) {/* the in-session choice still applies even if the save fails */}
+    } catch (_) {
+      /* the in-session choice still applies even if the save fails */
+    }
   }
 
   /// Human label for an interaction mode (used on the toggle chip + docked bar).
@@ -714,9 +722,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       // During a live call, every tap in the sheet applies INSTANTLY (no Apply
       // button) — push the language/voice swap over the WebSocket so the very
       // next voice reply uses it.
-      onLiveChange: wasActive
-          ? (result) => _applyLiveVoiceLanguage(result)
-          : null,
+      onLiveChange:
+          wasActive ? (result) => _applyLiveVoiceLanguage(result) : null,
       onAdvancedSettings: _openSettings,
     );
     if (result == null || !mounted) return;
@@ -872,7 +879,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     // disconnect, and keeps the session live when the sheet is minimized into
     // the floating bubble).
     if (!_isClosing && !_isMinimizing) {
-      context.read<VoiceSessionCubit>().disconnectFromLiveKitRoom(fullCleanup: true);
+      context
+          .read<VoiceSessionCubit>()
+          .disconnectFromLiveKitRoom(fullCleanup: true);
     }
     super.dispose();
   }
@@ -880,9 +889,18 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// Wrap the static (non-draggable) sub-views at the same default height as the
   /// main session sheet (90%).
   Widget _sizedSheet(Widget child) {
-    return FractionallySizedBox(
-      heightFactor: _kDefaultHeightFactor,
-      child: child,
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area. Wraps every _sizedSheet view (incl. the
+    // call-ended feedback field) without touching the live-call view.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: FractionallySizedBox(
+        heightFactor: _kDefaultHeightFactor,
+        child: child,
+      ),
     );
   }
 
@@ -985,7 +1003,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         } else if (state is VoiceSessionWebSocketFailed) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Visual feedback unavailable. Voice commands still work.'),
+              content: Text(
+                  'Visual feedback unavailable. Voice commands still work.'),
               backgroundColor: Color(0xFFFB923C),
               duration: Duration(seconds: 4),
             ),
@@ -1007,7 +1026,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           final to = _voiceLanguageLabel(state.effectiveLanguage);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('$from is not available right now. Continuing in $to.'),
+              content:
+                  Text('$from is not available right now. Continuing in $to.'),
               backgroundColor: const Color(0xFFFB923C),
               duration: const Duration(seconds: 4),
             ),
@@ -1096,177 +1116,180 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           height: MediaQuery.of(context).size.height * _sheetHeightFactor,
           alignment: Alignment.bottomCenter,
           child: Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF15121F),
-                    Color(0xFF0D0D0F),
-                    Color(0xFF050507),
-                  ],
-                ),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
-                border: Border.all(
-                  color: const Color(0xFF3D2F8B).withValues(alpha: 0.25),
-                  width: 1,
-                ),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF15121F),
+                  Color(0xFF0D0D0F),
+                  Color(0xFF050507),
+                ],
               ),
-              child: Stack(
-                children: [
-                  // Living ambient aura — a soft purple radial glow up top (behind
-                  // the rep) that gently breathes off the continuous _glowController.
-                  // Gives the sheet a "voice conversation" ambiance without competing
-                  // with the text. IgnorePointer so it never absorbs touches.
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: AnimatedBuilder(
-                        animation: _glowController,
-                        builder: (context, _) {
-                          final t = _glowController.value; // 0..1 (reverses)
-                          return DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: RadialGradient(
-                                center: const Alignment(0, -0.55),
-                                radius: 0.95 + 0.12 * t,
-                                colors: [
-                                  const Color(0xFF5B45C9)
-                                      .withValues(alpha: 0.20 + 0.10 * t),
-                                  const Color(0xFF3D2F8B)
-                                      .withValues(alpha: 0.10 + 0.05 * t),
-                                  Colors.transparent,
-                                ],
-                                stops: const [0.0, 0.45, 1.0],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  // Full-bleed watermark BEHIND the content — flowing lavender
-                  // topographic lines. Static (never absorbs touches) so it never
-                  // competes with the conversation.
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: CustomPaint(
-                        painter: const _VoiceWatermarkPainter(),
-                      ),
-                    ),
-                  ),
-                  SafeArea(
-                // We handle the TOP inset explicitly below — SafeArea's top inset
-                // is unreliable inside a modal bottom sheet (the route can zero
-                // out MediaQuery.padding.top), which left the Nova header tucked
-                // under the OS status bar in full screen. Keep bottom/side insets.
-                top: false,
-                child: Column(
-                  children: [
-                    // In full screen the sheet reaches the very top, so reserve the
-                    // real status-bar height (read straight from the FlutterView so
-                    // a zeroed ancestor MediaQuery can't hide it) to push the header
-                    // clear of the clock/battery. No inset at 90%/minimized.
-                    if (_isFullScreen)
-                      SizedBox(
-                        height:
-                            MediaQueryData.fromView(View.of(context)).padding.top,
-                      ),
-                    // Drag handle — drag UP to grow toward full screen, DOWN to
-                    // shrink toward the 90% default; snaps to the nearer on release.
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onVerticalDragUpdate: (details) {
-                        final h = MediaQuery.of(context).size.height;
-                        if (h <= 0) return;
-                        setState(() {
-                          _isDraggingSheet = true;
-                          // Dragging up (negative dy) grows; dragging down shrinks,
-                          // now all the way to the minimized peek (not just 90%).
-                          _sheetHeightFactor =
-                              (_sheetHeightFactor - details.delta.dy / h)
-                                  .clamp(_kMinHeightFactor, 1.0);
-                        });
-                      },
-                      onVerticalDragEnd: (_) {
-                        setState(() {
-                          _isDraggingSheet = false;
-                          // Snap to the NEAREST of min / default / full so the user
-                          // can land on a small, medium, or full height.
-                          const snaps = [
-                            _kMinHeightFactor,
-                            _kDefaultHeightFactor,
-                            1.0,
-                          ];
-                          double nearest = snaps.first;
-                          for (final s in snaps) {
-                            if ((_sheetHeightFactor - s).abs() <
-                                (_sheetHeightFactor - nearest).abs()) {
-                              nearest = s;
-                            }
-                          }
-                          _sheetHeightFactor = nearest;
-                          _isFullScreen = nearest >= 1.0;
-                        });
-                      },
-                      child: Container(
-                        // Pad out the touch target so the thin bar is easy to grab.
-                        padding: EdgeInsets.only(top: 12.h, bottom: 8.h),
-                        alignment: Alignment.center,
-                        child: Container(
-                          width: 36.w,
-                          height: 4.h,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+              border: Border.all(
+                color: const Color(0xFF3D2F8B).withValues(alpha: 0.25),
+                width: 1,
+              ),
+            ),
+            child: Stack(
+              children: [
+                // Living ambient aura — a soft purple radial glow up top (behind
+                // the rep) that gently breathes off the continuous _glowController.
+                // Gives the sheet a "voice conversation" ambiance without competing
+                // with the text. IgnorePointer so it never absorbs touches.
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: AnimatedBuilder(
+                      animation: _glowController,
+                      builder: (context, _) {
+                        final t = _glowController.value; // 0..1 (reverses)
+                        return DecoratedBox(
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(2.r),
+                            gradient: RadialGradient(
+                              center: const Alignment(0, -0.55),
+                              radius: 0.95 + 0.12 * t,
+                              colors: [
+                                const Color(0xFF5B45C9)
+                                    .withValues(alpha: 0.20 + 0.10 * t),
+                                const Color(0xFF3D2F8B)
+                                    .withValues(alpha: 0.10 + 0.05 * t),
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 0.45, 1.0],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                // Full-bleed watermark BEHIND the content — flowing lavender
+                // topographic lines. Static (never absorbs touches) so it never
+                // competes with the conversation.
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: CustomPaint(
+                      painter: const _VoiceWatermarkPainter(),
+                    ),
+                  ),
+                ),
+                SafeArea(
+                  // We handle the TOP inset explicitly below — SafeArea's top inset
+                  // is unreliable inside a modal bottom sheet (the route can zero
+                  // out MediaQuery.padding.top), which left the Nova header tucked
+                  // under the OS status bar in full screen. Keep bottom/side insets.
+                  top: false,
+                  child: Column(
+                    children: [
+                      // In full screen the sheet reaches the very top, so reserve the
+                      // real status-bar height (read straight from the FlutterView so
+                      // a zeroed ancestor MediaQuery can't hide it) to push the header
+                      // clear of the clock/battery. No inset at 90%/minimized.
+                      if (_isFullScreen)
+                        SizedBox(
+                          height: MediaQueryData.fromView(View.of(context))
+                              .padding
+                              .top,
+                        ),
+                      // Drag handle — drag UP to grow toward full screen, DOWN to
+                      // shrink toward the 90% default; snaps to the nearer on release.
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onVerticalDragUpdate: (details) {
+                          final h = MediaQuery.of(context).size.height;
+                          if (h <= 0) return;
+                          setState(() {
+                            _isDraggingSheet = true;
+                            // Dragging up (negative dy) grows; dragging down shrinks,
+                            // now all the way to the minimized peek (not just 90%).
+                            _sheetHeightFactor =
+                                (_sheetHeightFactor - details.delta.dy / h)
+                                    .clamp(_kMinHeightFactor, 1.0);
+                          });
+                        },
+                        onVerticalDragEnd: (_) {
+                          setState(() {
+                            _isDraggingSheet = false;
+                            // Snap to the NEAREST of min / default / full so the user
+                            // can land on a small, medium, or full height.
+                            const snaps = [
+                              _kMinHeightFactor,
+                              _kDefaultHeightFactor,
+                              1.0,
+                            ];
+                            double nearest = snaps.first;
+                            for (final s in snaps) {
+                              if ((_sheetHeightFactor - s).abs() <
+                                  (_sheetHeightFactor - nearest).abs()) {
+                                nearest = s;
+                              }
+                            }
+                            _sheetHeightFactor = nearest;
+                            _isFullScreen = nearest >= 1.0;
+                          });
+                        },
+                        child: Container(
+                          // Pad out the touch target so the thin bar is easy to grab.
+                          padding: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                          alignment: Alignment.center,
+                          child: Container(
+                            width: 36.w,
+                            height: 4.h,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(2.r),
+                            ),
                           ),
                         ),
                       ),
-                    ),
 
-                    // Compact header: avatar + Nova + live status + (fullscreen/close)
-                    _buildSessionHeader(state),
+                      // Compact header: avatar + Nova + live status + (fullscreen/close)
+                      _buildSessionHeader(state),
 
-                    // Always-visible secondary controls (captions, history, settings,
-                    // language, customize voice) — pulled out of the header so none are
-                    // hidden behind a horizontal scroll.
-                    _buildSecondaryControlsRow(state),
+                      // Always-visible secondary controls (captions, history, settings,
+                      // language, customize voice) — pulled out of the header so none are
+                      // hidden behind a horizontal scroll.
+                      _buildSecondaryControlsRow(state),
 
-                    Divider(
-                      color: const Color(0xFF2D2D2D),
-                      height: 1,
-                      thickness: 1,
-                    ),
-
-                    // Conversation / transcript area (scrollable, fills space).
-                    // Rebuilt on EVERY chat-history change (not just VoiceSessionCubit
-                    // state changes) so new messages always appear — even when the
-                    // session state doesn't tick (e.g. after a recipient is selected and
-                    // a transfer becomes active). This is the fix for "new chats stop
-                    // appearing after selecting a recipient": the chat lives in
-                    // _chatHistoryCubit, so the view must watch THAT, not only the session.
-                    Expanded(
-                      child: BlocBuilder<VoiceChatHistoryCubit, VoiceChatHistoryState>(
-                        bloc: context.read<VoiceSessionCubit>().chatHistoryCubit,
-                        builder: (context, _) => _buildConversationArea(state),
+                      Divider(
+                        color: const Color(0xFF2D2D2D),
+                        height: 1,
+                        thickness: 1,
                       ),
-                    ),
 
-                    // Bottom action bar
-                    _buildBottomBar(state),
+                      // Conversation / transcript area (scrollable, fills space).
+                      // Rebuilt on EVERY chat-history change (not just VoiceSessionCubit
+                      // state changes) so new messages always appear — even when the
+                      // session state doesn't tick (e.g. after a recipient is selected and
+                      // a transfer becomes active). This is the fix for "new chats stop
+                      // appearing after selecting a recipient": the chat lives in
+                      // _chatHistoryCubit, so the view must watch THAT, not only the session.
+                      Expanded(
+                        child: BlocBuilder<VoiceChatHistoryCubit,
+                            VoiceChatHistoryState>(
+                          bloc: context
+                              .read<VoiceSessionCubit>()
+                              .chatHistoryCubit,
+                          builder: (context, _) =>
+                              _buildConversationArea(state),
+                        ),
+                      ),
 
-                    SizedBox(height: 12.h),
-                  ],
+                      // Bottom action bar
+                      _buildBottomBar(state),
+
+                      SizedBox(height: 12.h),
+                    ],
+                  ),
                 ),
-              ),
-                  // ── Sci-fi recipient picker, layered OVER the conversation ──
-                  if (_recipientCandidates != null)
-                    _buildRecipientOverlay(),
-                  // ── Transient "Sending to <name>" confirmation ──
-                  if (_recipientConfirm != null)
-                    _buildRecipientConfirmToast(),
-                ],
-              ),
+                // ── Sci-fi recipient picker, layered OVER the conversation ──
+                if (_recipientCandidates != null) _buildRecipientOverlay(),
+                // ── Transient "Sending to <name>" confirmation ──
+                if (_recipientConfirm != null) _buildRecipientConfirmToast(),
+              ],
             ),
+          ),
         );
       },
     );
@@ -1382,9 +1405,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           // talk button is engaged (see _buildPttTalkButton).
           Expanded(
             child: _buildControlChip(
-              icon: _isPtt
-                  ? Icons.touch_app_rounded
-                  : Icons.graphic_eq_rounded,
+              icon: _isPtt ? Icons.touch_app_rounded : Icons.graphic_eq_rounded,
               label: _interactionModeLabel(_interactionMode),
               active: _isPtt,
               activeColor: const Color(0xFF5B45C9),
@@ -1581,9 +1602,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     final messages = cubit.recentConversationMessages;
     final userCaption = cubit.currentUserCaption;
     final agentCaption = cubit.currentAgentCaption;
-    final hasLiveCaption =
-        (userCaption != null && userCaption.isNotEmpty) ||
-            (agentCaption != null && agentCaption.isNotEmpty);
+    final hasLiveCaption = (userCaption != null && userCaption.isNotEmpty) ||
+        (agentCaption != null && agentCaption.isNotEmpty);
 
     if (isPreSession) {
       return Center(
@@ -1665,7 +1685,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         Expanded(
           child: ListView(
             controller: _conversationScrollController,
-            padding: EdgeInsets.symmetric(horizontal: 16.w).copyWith(bottom: 16.h),
+            padding:
+                EdgeInsets.symmetric(horizontal: 16.w).copyWith(bottom: 16.h),
             children: [
               // Transcript per chat mode (continuous = all + scroll; ephemeral =
               // only the current cycle). Accumulates + scrollable in continuous mode.
@@ -1695,8 +1716,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   bool _isAgentThinking(VoiceSessionState state, String? agentCaption) {
     final cubit = context.read<VoiceSessionCubit>();
     final processing = state is VoiceSessionAgentProcessing;
-    final speakingNoText = cubit.isAgentSpeaking &&
-        (agentCaption == null || agentCaption.isEmpty);
+    final speakingNoText =
+        cubit.isAgentSpeaking && (agentCaption == null || agentCaption.isEmpty);
     return (processing || speakingNoText) &&
         (agentCaption == null || agentCaption.isEmpty);
   }
@@ -1820,8 +1841,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           clipBehavior: Clip.none,
           children: [
             Container(
-              padding:
-                  EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
               decoration: BoxDecoration(
                 color: bubbleColor,
                 borderRadius: BorderRadius.only(
@@ -2289,12 +2309,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   Widget _buildLanguageSelectionTile(VoiceLanguage lang) {
     // Get locale manager to check country
     // Edge case: Handle serviceLocator errors gracefully
-    String currentCountry = 'NG';  // Default to Nigeria
+    String currentCountry = 'NG'; // Default to Nigeria
     try {
       final localeManager = serviceLocator<LocaleManager>();
       currentCountry = localeManager.currentCountry?.toUpperCase() ?? 'NG';
     } catch (e) {
-      print('VoiceCommandSheet: LocaleManager not found in serviceLocator, using default NG: $e');
+      print(
+          'VoiceCommandSheet: LocaleManager not found in serviceLocator, using default NG: $e');
       // Use default Nigeria country
     }
 
@@ -2304,7 +2325,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     // Edge case: Validate language object has required fields
     final displayName = lang.nativeName.isNotEmpty
         ? lang.nativeName
-        : lang.name.isNotEmpty ? lang.name : lang.code;
+        : lang.name.isNotEmpty
+            ? lang.name
+            : lang.code;
 
     return GestureDetector(
       onTap: () => _onLanguageSelected(lang),
@@ -2355,15 +2378,18 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                       if (isDomesticEnglish) ...[
                         SizedBox(width: 6.w),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Text(
                             'Domestic',
                             style: GoogleFonts.inter(
-                              color: const Color(0xFF10B981).withValues(alpha: 0.8),
+                              color: const Color(0xFF10B981)
+                                  .withValues(alpha: 0.8),
                               fontSize: 9.sp,
                               fontWeight: FontWeight.w600,
                             ),
@@ -2396,7 +2422,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                             vertical: 2.h,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Text(
@@ -2468,9 +2495,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       builder: (context, child) {
         final t = _avatarController.value; // 0..1 (reverses)
         final scale = animate ? 1.0 + (t * (isSpeaking ? 0.06 : 0.04)) : 1.0;
-        final glowAlpha = animate
-            ? 0.18 + (t * (isSpeaking ? 0.4 : 0.25))
-            : 0.12;
+        final glowAlpha =
+            animate ? 0.18 + (t * (isSpeaking ? 0.4 : 0.25)) : 0.12;
         final ringAlpha = animate ? 0.25 + (t * 0.45) : 0.2;
 
         return SizedBox(
@@ -2614,7 +2640,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             // radiating out to both sides.
             final idx = leftSide ? (barCount - 1 - i) : i;
             final phase = idx * (pi / 3);
-            final wave = sin(phaseT * 2 * pi - phase) * 0.5 + 0.5; // 0..1, travels out
+            final wave =
+                sin(phaseT * 2 * pi - phase) * 0.5 + 0.5; // 0..1, travels out
             // Always animating (never flat): a clearly-visible idle baseline that
             // swells while the rep speaks / the user talks.
             final amp = active ? 1.0 : 0.55;
@@ -2672,8 +2699,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     final isLoading = state is VoiceSessionLoadingCredentials ||
         state is VoiceSessionConnectingToRoom ||
         state is VoiceSessionMicPermissionGranted;
-    final isError = state is VoiceSessionCredentialsError ||
-        state is VoiceSessionError;
+    final isError =
+        state is VoiceSessionCredentialsError || state is VoiceSessionError;
 
     if (isLoading) {
       return SizedBox(
@@ -2765,7 +2792,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     }
 
     return AnimatedBuilder(
-      animation: Listenable.merge([_pulseController, _waveController, _glowController]),
+      animation: Listenable.merge(
+          [_pulseController, _waveController, _glowController]),
       builder: (context, child) {
         final pulseValue = _pulseController.value;
         final waveValue = _waveController.value;
@@ -2780,8 +2808,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               // Outer wave rings
               if (isActive) ...[
                 _buildWaveRing(180.w, waveValue, isSpeaking ? 0.25 : 0.1),
-                _buildWaveRing(160.w, (waveValue + 0.33) % 1.0, isSpeaking ? 0.2 : 0.08),
-                _buildWaveRing(140.w, (waveValue + 0.66) % 1.0, isSpeaking ? 0.15 : 0.06),
+                _buildWaveRing(
+                    160.w, (waveValue + 0.33) % 1.0, isSpeaking ? 0.2 : 0.08),
+                _buildWaveRing(
+                    140.w, (waveValue + 0.66) % 1.0, isSpeaking ? 0.15 : 0.06),
               ],
 
               // Glow
@@ -2805,7 +2835,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
               // Main orb
               Transform.scale(
-                scale: isActive ? 1.0 + (pulseValue * (isSpeaking ? 0.08 : 0.03)) : 1.0,
+                scale: isActive
+                    ? 1.0 + (pulseValue * (isSpeaking ? 0.08 : 0.03))
+                    : 1.0,
                 child: Container(
                   width: 100.w,
                   height: 100.w,
@@ -2863,8 +2895,12 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
   Color _getOrbColor(VoiceSessionState state) {
     if (state is VoiceSessionLocalUserSpeaking) return const Color(0xFF10B981);
-    if (state is VoiceSessionAgentProcessing) return const Color.fromARGB(255, 78, 3, 208);
-    if (state is VoiceSessionLowConfidenceWarning) return const Color(0xFFFB923C);
+    if (state is VoiceSessionAgentProcessing) {
+      return const Color.fromARGB(255, 78, 3, 208);
+    }
+    if (state is VoiceSessionLowConfidenceWarning) {
+      return const Color(0xFFFB923C);
+    }
     return const Color(0xFF5B45C9);
   }
 
@@ -2880,7 +2916,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         state is VoiceSessionMicPermissionGranted) {
       title = 'Connecting';
       subtitle = 'Establishing secure connection';
-    } else if (state is VoiceSessionCredentialsError || state is VoiceSessionError) {
+    } else if (state is VoiceSessionCredentialsError ||
+        state is VoiceSessionError) {
       title = 'Connection Error';
       subtitle = 'Please try again';
       titleColor = const Color(0xFFEF4444);
@@ -2909,9 +2946,12 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       subtitle = 'Complete your transaction';
       titleColor = const Color(0xFF5B45C9);
     } else if (state is VoiceSessionTransactionSuccess) {
-      final success = (state as VoiceSessionTransactionSuccess).result['success'] as bool? ?? true;
+      final success = (state as VoiceSessionTransactionSuccess)
+              .result['success'] as bool? ??
+          true;
       title = success ? 'Transfer Complete' : 'Transfer Failed';
-      subtitle = success ? 'Your transaction was successful' : 'Please try again';
+      subtitle =
+          success ? 'Your transaction was successful' : 'Please try again';
       titleColor = success ? const Color(0xFF10B981) : const Color(0xFFEF4444);
     } else if (state is VoiceSessionTransactionError) {
       title = 'Transaction Failed';
@@ -2925,7 +2965,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       title = 'Security Warning';
       subtitle = 'Voice confidence is low';
       titleColor = const Color(0xFFFB923C);
-    } else if (state is VoiceSessionConnected || state is VoiceSessionLocalUserNotSpeaking) {
+    } else if (state is VoiceSessionConnected ||
+        state is VoiceSessionLocalUserNotSpeaking) {
       title = 'Ready';
       subtitle = 'How can I help you?';
     } else if (state is VoiceSessionDisconnected) {
@@ -3234,7 +3275,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
                         borderSide: BorderSide(
-                          color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.5),
+                          color: const Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.5),
                         ),
                       ),
                       contentPadding: EdgeInsets.symmetric(
@@ -3259,8 +3301,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                         gradient: LinearGradient(
                           colors: _isSubmittingRating
                               ? [
-                                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
-                                  const Color.fromARGB(255, 100, 20, 230).withValues(alpha: 0.3),
+                                  const Color.fromARGB(255, 78, 3, 208)
+                                      .withValues(alpha: 0.3),
+                                  const Color.fromARGB(255, 100, 20, 230)
+                                      .withValues(alpha: 0.3),
                                 ]
                               : [
                                   const Color.fromARGB(255, 78, 3, 208),
@@ -3291,9 +3335,11 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 height: 56.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                  color: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.1),
                   border: Border.all(
-                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.25),
+                    color: const Color.fromARGB(255, 78, 3, 208)
+                        .withValues(alpha: 0.25),
                     width: 1.5,
                   ),
                 ),
@@ -3507,7 +3553,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         backgroundColor: const Color(0xFF1F1F1F),
         title: const Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Color(0xFFFB923C), size: 26),
+            Icon(Icons.warning_amber_rounded,
+                color: Color(0xFFFB923C), size: 26),
             SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -3532,7 +3579,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF6366F1),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('Continue'),
           ),
@@ -3556,7 +3604,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           if (Navigator.of(dialogCtx).canPop()) Navigator.of(dialogCtx).pop();
         });
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           backgroundColor: const Color(0xFF1F1F1F),
           title: const Row(
             children: [
@@ -3585,8 +3634,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
                 foregroundColor: Colors.white,
-                shape:
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
               child: const Text('OK'),
             ),
@@ -3599,7 +3648,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     });
   }
 
-  void _showUserSearchDialog(BuildContext context, List<Map<String, dynamic>> users, String query) {
+  void _showUserSearchDialog(
+      BuildContext context, List<Map<String, dynamic>> users, String query) {
     // Float the sci-fi recipient picker as an IN-SHEET overlay (a Stack layer
     // over the conversation), NOT a nested bottom sheet on top of this one.
     // Any nested AlertDialog/summary is dismissed first so they never stack.
@@ -3646,10 +3696,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// after ~3s so the conversation stays primary. De-duped per recipient so a
   /// re-emitted context doesn't re-trigger the toast.
   void _showRecipientConfirm(Map<String, dynamic> recipient) {
-    final key = (recipient['recipientUsername'] ??
-            recipient['recipientName'] ??
-            '')
-        .toString();
+    final key =
+        (recipient['recipientUsername'] ?? recipient['recipientName'] ?? '')
+            .toString();
     if (key.isEmpty || key == _lastConfirmedRecipientKey) return;
     _lastConfirmedRecipientKey = key;
     _recipientConfirmTimer?.cancel();
@@ -3747,7 +3796,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                                       'Matches for "$_recipientQuery"',
                                       style: GoogleFonts.inter(
                                         fontSize: 12.sp,
-                                        color: Colors.white.withValues(alpha: 0.5),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.5),
                                       ),
                                     ),
                                 ],
@@ -3793,13 +3843,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                             ),
                             itemBuilder: (context, i) {
                               final u = users[i];
-                              final username =
-                                  (u['username'] ?? '').toString();
+                              final username = (u['username'] ?? '').toString();
                               final fullName =
                                   (u['full_name'] ?? username).toString();
-                              final userId = (u['user_id'] ??
-                                      u['userId'] ??
-                                      '')
+                              final userId = (u['user_id'] ?? u['userId'] ?? '')
                                   .toString();
                               return InkWell(
                                 onTap: () {
@@ -3825,14 +3872,15 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                                           shape: BoxShape.circle,
                                           gradient: LinearGradient(
                                             colors: [
-                                              _hudAccent.withValues(alpha: 0.30),
-                                              _hudAccent2
-                                                  .withValues(alpha: 0.20),
+                                              _hudAccent.withValues(
+                                                  alpha: 0.30),
+                                              _hudAccent2.withValues(
+                                                  alpha: 0.20),
                                             ],
                                           ),
                                           border: Border.all(
-                                            color: _hudAccent2
-                                                .withValues(alpha: 0.4),
+                                            color: _hudAccent2.withValues(
+                                                alpha: 0.4),
                                             width: 1,
                                           ),
                                         ),
@@ -3898,7 +3946,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// sheet — keeps the conversation primary rather than appending a bubble.
   Widget _buildRecipientConfirmToast() {
     final r = _recipientConfirm!;
-    final name = (r['recipientName'] ?? r['recipientUsername'] ?? '').toString();
+    final name =
+        (r['recipientName'] ?? r['recipientUsername'] ?? '').toString();
     // Anchor the transient "Sending to <name>" confirmation ABOVE the bottom
     // action bar rather than at a fixed top offset. The old `top: 64.h` ignored
     // the status-bar inset, so in full-screen it overlapped the Nova avatar /
@@ -3941,7 +3990,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     );
   }
 
-  void _showTransferSummaryDialog(BuildContext context, Map<String, dynamic> details) {
+  void _showTransferSummaryDialog(
+      BuildContext context, Map<String, dynamic> details) {
     _dismissActiveDialog();
     _isDialogShowing = true;
 
@@ -4015,8 +4065,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     Widget? receiptWidget;
     final rc = result['receipt_card'];
     if (rc is Map) {
-      receiptWidget =
-          ChatReceiptCardV2(payload: Map<String, dynamic>.from(rc));
+      receiptWidget = ChatReceiptCardV2(payload: Map<String, dynamic>.from(rc));
     } else if (result['type'] != null ||
         result['amount_display'] != null ||
         result['receipt_id'] != null) {
@@ -4032,7 +4081,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            ref.isEmpty ? 'Transfer completed!' : 'Transfer completed! Ref: $ref',
+            ref.isEmpty
+                ? 'Transfer completed!'
+                : 'Transfer completed! Ref: $ref',
           ),
           backgroundColor: const Color(0xFF10B981),
         ),
@@ -4113,9 +4164,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     // Amounts in the payload are already MAJOR units (Naira) — do NOT divide.
     final amount = double.tryParse(payload['amount']?.toString() ?? '0') ?? 0.0;
     final fee = double.tryParse(payload['fee']?.toString() ?? '0') ?? 0.0;
-    final total =
-        double.tryParse(payload['total_amount']?.toString() ?? '') ??
-            (amount + fee);
+    final total = double.tryParse(payload['total_amount']?.toString() ?? '') ??
+        (amount + fee);
     final currency = (payload['currency'] ?? 'NGN').toString();
     final transactionId = (payload['transaction_id'] ?? '').toString();
     final transactionType =
@@ -4183,7 +4233,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       // WHY (from the mixin's lastPinFailureReason) so it speaks the right outcome:
       // a lockout/exhaustion must NOT be offered a retry the server will reject.
       if (!success && !verified) {
-        final reason = lastPinFailureReason; // 'locked' | 'exhausted' | null (cancelled)
+        final reason =
+            lastPinFailureReason; // 'locked' | 'exhausted' | null (cancelled)
         await cubit.notifyPinCompleted(
           false,
           error: reason == 'locked'

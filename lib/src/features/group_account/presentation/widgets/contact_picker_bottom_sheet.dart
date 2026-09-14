@@ -6,7 +6,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'contact_picker_bottom_sheet_widgets.dart';
 
-
 class ContactPickerBottomSheet extends StatefulWidget {
   final Function(String name, String identifier, ContactIdentifierType type)
       onContactSelected;
@@ -126,31 +125,39 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20.r),
-          topRight: Radius.circular(20.r),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.75,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20.r),
+            topRight: Radius.circular(20.r),
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          _buildHeader(),
-          if (_isLoading)
-            Expanded(
-              child: Center(
-                child: LazerVaultLoader.small(),
-              ),
-            )
-          else if (_permissionDenied)
-            Expanded(child: _buildPermissionDeniedView())
-          else ...[
-            _buildSearchBar(),
-            Expanded(child: _buildContactList()),
+        child: Column(
+          children: [
+            _buildHeader(),
+            if (_isLoading)
+              Expanded(
+                child: Center(
+                  child: LazerVaultLoader.small(),
+                ),
+              )
+            else if (_permissionDenied)
+              Expanded(child: _buildPermissionDeniedView())
+            else ...[
+              _buildSearchBar(),
+              Expanded(child: _buildContactList()),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -414,8 +421,8 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: 6.w, vertical: 2.h),
                               decoration: BoxDecoration(
-                                color:
-                                    const Color(0xFF10B981).withValues(alpha: 0.2),
+                                color: const Color(0xFF10B981)
+                                    .withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(4.r),
                               ),
                               child: Text(

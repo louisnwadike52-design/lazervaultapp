@@ -72,12 +72,12 @@ class _RecipientsPickerSheetState extends State<RecipientsPickerSheet> {
     if (parsed.valid.isEmpty) {
       LVSnackbar.showError(
           title: 'No valid numbers',
-          message: 'Enter Nigerian phone numbers separated by commas or lines.');
+          message:
+              'Enter Nigerian phone numbers separated by commas or lines.');
       return;
     }
-    _addAll(parsed.valid
-        .map((n) => SmsRecipientEntity(phoneNumber: n))
-        .toList());
+    _addAll(
+        parsed.valid.map((n) => SmsRecipientEntity(phoneNumber: n)).toList());
     if (parsed.invalidCount > 0) {
       LVSnackbar.showInfo(
           title: 'Some skipped',
@@ -142,59 +142,66 @@ class _RecipientsPickerSheetState extends State<RecipientsPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.9,
-      decoration: BoxDecoration(
-        color: BulkSmsTheme.bg,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      child: Column(
-        children: [
-          SizedBox(height: 10.h),
-          Container(
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-                color: BulkSmsTheme.divider,
-                borderRadius: BorderRadius.circular(2.r)),
-          ),
-          Padding(
-            padding: EdgeInsets.all(16.w),
-            child: Row(
-              children: [
-                Text('Recipients',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700)),
-                const Spacer(),
-                Text('${_recipients.length} added',
-                    style: TextStyle(
-                        color: BulkSmsTheme.primary,
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w700)),
-              ],
+    // App-root tap-to-dismiss (main.dart GetMaterialApp.builder) is
+    // occluded inside modal sheets; unfocus here so a tap on the
+    // sheet's empty area closes the keyboard.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        decoration: BoxDecoration(
+          color: BulkSmsTheme.bg,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          children: [
+            SizedBox(height: 10.h),
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                  color: BulkSmsTheme.divider,
+                  borderRadius: BorderRadius.circular(2.r)),
             ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              children: [
-                _methodGrid(),
-                if (_showPaste) ...[
-                  SizedBox(height: 14.h),
-                  _pasteBox(),
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Row(
+                children: [
+                  Text('Recipients',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700)),
+                  const Spacer(),
+                  Text('${_recipients.length} added',
+                      style: TextStyle(
+                          color: BulkSmsTheme.primary,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w700)),
                 ],
-                SizedBox(height: 18.h),
-                _selectedHeader(),
-                SizedBox(height: 10.h),
-                ..._selectedList(),
-                SizedBox(height: 20.h),
-              ],
+              ),
             ),
-          ),
-          _doneBar(),
-        ],
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                children: [
+                  _methodGrid(),
+                  if (_showPaste) ...[
+                    SizedBox(height: 14.h),
+                    _pasteBox(),
+                  ],
+                  SizedBox(height: 18.h),
+                  _selectedHeader(),
+                  SizedBox(height: 10.h),
+                  ..._selectedList(),
+                  SizedBox(height: 20.h),
+                ],
+              ),
+            ),
+            _doneBar(),
+          ],
+        ),
       ),
     );
   }
@@ -299,8 +306,8 @@ class _RecipientsPickerSheetState extends State<RecipientsPickerSheet> {
             style: TextStyle(color: Colors.white, fontSize: 14.sp),
             decoration: InputDecoration(
               hintText: '0803 123 4567, 0810 987 6543\n0906 555 1212',
-              hintStyle: TextStyle(
-                  color: BulkSmsTheme.textSecondary, fontSize: 13.sp),
+              hintStyle:
+                  TextStyle(color: BulkSmsTheme.textSecondary, fontSize: 13.sp),
               border: InputBorder.none,
             ),
           ),
@@ -369,8 +376,7 @@ class _RecipientsPickerSheetState extends State<RecipientsPickerSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(BulkSmsUtils.pretty(r.phoneNumber),
-                      style:
-                          TextStyle(color: Colors.white, fontSize: 13.sp)),
+                      style: TextStyle(color: Colors.white, fontSize: 13.sp)),
                   if (r.name.isNotEmpty)
                     Text(r.name,
                         style: TextStyle(

@@ -39,7 +39,8 @@ class CountryLocaleBottomSheet extends StatefulWidget {
   }
 
   @override
-  State<CountryLocaleBottomSheet> createState() => _CountryLocaleBottomSheetState();
+  State<CountryLocaleBottomSheet> createState() =>
+      _CountryLocaleBottomSheetState();
 }
 
 class _CountryLocaleBottomSheetState extends State<CountryLocaleBottomSheet> {
@@ -70,160 +71,177 @@ class _CountryLocaleBottomSheetState extends State<CountryLocaleBottomSheet> {
       initialChildSize: 0.8,
       maxChildSize: 0.95,
       minChildSize: 0.4,
+      // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+      // cannot reach inside modal sheets - the opaque sheet surface
+      // occludes it - so unfocus here to dismiss the keyboard on a tap
+      // in the sheet's empty area. Wrapped inside the builder (not
+      // around the DraggableScrollableSheet) so taps above the sheet
+      // still reach the modal barrier and dismiss it.
       builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(24.r),
+        return GestureDetector(
+          // deferToChild (NOT opaque): this sheet is a DraggableScrollableSheet —
+          // an opaque wrapper would claim taps in the transparent region ABOVE
+          // the sheet and break tap-outside-to-close. deferToChild only joins
+          // hits on the painted sheet surface, which is where unfocus belongs.
+          behavior: HitTestBehavior.deferToChild,
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(24.r),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: Offset(0, -4),
+                ),
+              ],
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 20,
-                offset: Offset(0, -4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              // Drag handle
-              Container(
-                margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-
-              // Header
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Select Country',
-                      style: GoogleFonts.inter(
-                        color: Colors.black87,
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: Icon(
-                        Icons.close_rounded,
-                        color: Colors.grey[700],
-                        size: 24.sp,
-                      ),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.grey[100],
-                        shape: CircleBorder(),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Search bar
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-                child: TextField(
-                  controller: _searchController,
-                  style: GoogleFonts.inter(
-                    color: Colors.black87,
-                    fontSize: 15.sp,
+            child: Column(
+              children: [
+                // Drag handle
+                Container(
+                  margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
-                  decoration: InputDecoration(
-                    hintText: 'Search country, code, or locale...',
-                    hintStyle: GoogleFonts.inter(
-                      color: Colors.grey[400],
+                ),
+
+                // Header
+                Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Select Country',
+                        style: GoogleFonts.inter(
+                          color: Colors.black87,
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: Icon(
+                          Icons.close_rounded,
+                          color: Colors.grey[700],
+                          size: 24.sp,
+                        ),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.grey[100],
+                          shape: CircleBorder(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Search bar
+                Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                  child: TextField(
+                    controller: _searchController,
+                    style: GoogleFonts.inter(
+                      color: Colors.black87,
                       fontSize: 15.sp,
                     ),
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      color: Color.fromARGB(255, 78, 3, 208),
-                      size: 22.sp,
-                    ),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(
-                              Icons.clear_rounded,
-                              color: Colors.grey[400],
-                              size: 20.sp,
-                            ),
-                            onPressed: () {
-                              _searchController.clear();
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16.r),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16.r),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16.r),
-                      borderSide: BorderSide(
+                    decoration: InputDecoration(
+                      hintText: 'Search country, code, or locale...',
+                      hintStyle: GoogleFonts.inter(
+                        color: Colors.grey[400],
+                        fontSize: 15.sp,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
                         color: Color.fromARGB(255, 78, 3, 208),
-                        width: 2,
+                        size: 22.sp,
                       ),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 14.h,
-                    ),
-                  ),
-                ),
-              ),
-
-              // Results count
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    '${_filteredCountries.length} ${_filteredCountries.length == 1 ? 'country' : 'countries'}',
-                    style: GoogleFonts.inter(
-                      color: Colors.grey[600],
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-
-              // Country list
-              Expanded(
-                child: _filteredCountries.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.builder(
-                        controller: scrollController,
-                        padding: EdgeInsets.only(
-                          left: 20.w,
-                          right: 20.w,
-                          bottom: 20.h,
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(
+                                Icons.clear_rounded,
+                                color: Colors.grey[400],
+                                size: 20.sp,
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                        borderSide: BorderSide(
+                          color: Color.fromARGB(255, 78, 3, 208),
+                          width: 2,
                         ),
-                        itemCount: _filteredCountries.length,
-                        itemBuilder: (context, index) {
-                          final country = _filteredCountries[index];
-                          final isSelected = country.countryCode ==
-                              widget.selectedCountryCode;
-
-                          return _buildCountryTile(country, isSelected);
-                        },
                       ),
-              ),
-            ],
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 14.h,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Results count
+                Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '${_filteredCountries.length} ${_filteredCountries.length == 1 ? 'country' : 'countries'}',
+                      style: GoogleFonts.inter(
+                        color: Colors.grey[600],
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Country list
+                Expanded(
+                  child: _filteredCountries.isEmpty
+                      ? _buildEmptyState()
+                      : ListView.builder(
+                          controller: scrollController,
+                          padding: EdgeInsets.only(
+                            left: 20.w,
+                            right: 20.w,
+                            bottom: 20.h,
+                          ),
+                          itemCount: _filteredCountries.length,
+                          itemBuilder: (context, index) {
+                            final country = _filteredCountries[index];
+                            final isSelected = country.countryCode ==
+                                widget.selectedCountryCode;
+
+                            return _buildCountryTile(country, isSelected);
+                          },
+                        ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -285,7 +303,8 @@ class _CountryLocaleBottomSheetState extends State<CountryLocaleBottomSheet> {
                           vertical: 3.h,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                          color: const Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6.r),
                         ),
                         child: Text(

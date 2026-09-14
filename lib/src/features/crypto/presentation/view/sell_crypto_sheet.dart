@@ -186,7 +186,8 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
     if (state is CryptosLoaded) {
       for (final h in state.holdings) {
         if (h.cryptoId == widget.crypto.id ||
-            h.cryptoSymbol.toLowerCase() == widget.crypto.symbol.toLowerCase()) {
+            h.cryptoSymbol.toLowerCase() ==
+                widget.crypto.symbol.toLowerCase()) {
           return h;
         }
       }
@@ -267,67 +268,77 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CryptoCubit, CryptoState>(
-      builder: (context, state) {
-        // Keep the resolved holding fresh as live balances land.
-        final resolved = _resolveHolding(state);
-        if (resolved != null) _holding = resolved;
-        final h = _holding;
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: BlocBuilder<CryptoCubit, CryptoState>(
+        builder: (context, state) {
+          // Keep the resolved holding fresh as live balances land.
+          final resolved = _resolveHolding(state);
+          if (resolved != null) _holding = resolved;
+          final h = _holding;
 
-        return Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF0A0A0A),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
-          ),
-          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 44.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2D2D2D),
-                      borderRadius: BorderRadius.circular(2.r),
+          return Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF0A0A0A),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+              border: Border.all(color: const Color(0xFF2D2D2D)),
+            ),
+            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D2D2D),
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(height: 18.h),
-                _buildAssetHeader(h),
-                SizedBox(height: 16.h),
-                PriceQuoteCard(
-                  cryptoId: widget.crypto.id,
-                  cryptoSymbol: widget.crypto.symbol,
-                  onSwapMarginUpdated: (m) {
-                    if (mounted && m != _swapMargin) {
-                      setState(() => _swapMargin = m);
-                    }
-                  },
-                ),
-                SizedBox(height: 20.h),
-                _buildAmountField(h),
-                SizedBox(height: 16.h),
-                if (h != null && _amountController.text.isNotEmpty && _hasValidAmount)
-                  _buildOrderSummary(),
-                SizedBox(height: 12.h),
-                const CryptoFiatWalletPill(caption: 'Proceeds land here'),
-                SizedBox(height: 12.h),
-                const CryptoFlowGuidance(
-                  text:
-                      'Your sale settles on the exchange, then the proceeds (minus the fee shown above) are credited to this account — usually within seconds.',
-                ),
-                SizedBox(height: 20.h),
-                _buildSellButton(h),
-                SizedBox(height: 8.h),
-              ],
+                  SizedBox(height: 18.h),
+                  _buildAssetHeader(h),
+                  SizedBox(height: 16.h),
+                  PriceQuoteCard(
+                    cryptoId: widget.crypto.id,
+                    cryptoSymbol: widget.crypto.symbol,
+                    onSwapMarginUpdated: (m) {
+                      if (mounted && m != _swapMargin) {
+                        setState(() => _swapMargin = m);
+                      }
+                    },
+                  ),
+                  SizedBox(height: 20.h),
+                  _buildAmountField(h),
+                  SizedBox(height: 16.h),
+                  if (h != null &&
+                      _amountController.text.isNotEmpty &&
+                      _hasValidAmount)
+                    _buildOrderSummary(),
+                  SizedBox(height: 12.h),
+                  const CryptoFiatWalletPill(caption: 'Proceeds land here'),
+                  SizedBox(height: 12.h),
+                  const CryptoFlowGuidance(
+                    text:
+                        'Your sale settles on the exchange, then the proceeds (minus the fee shown above) are credited to this account — usually within seconds.',
+                  ),
+                  SizedBox(height: 20.h),
+                  _buildSellButton(h),
+                  SizedBox(height: 8.h),
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -340,7 +351,8 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
             color: Colors.red.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12.r),
           ),
-          child: Icon(Icons.remove_circle_outline, color: Colors.red, size: 22.sp),
+          child:
+              Icon(Icons.remove_circle_outline, color: Colors.red, size: 22.sp),
         ),
         SizedBox(width: 12.w),
         Expanded(
@@ -507,7 +519,8 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
                           const TextInputType.numberWithOptions(decimal: true),
                       textAlign: TextAlign.right,
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d*')),
                       ],
                       style: GoogleFonts.inter(
                         fontSize: 26.sp,
@@ -613,7 +626,8 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
         decoration: BoxDecoration(
           color: const Color(0xFF7C3AED).withValues(alpha: 0.16),
           borderRadius: BorderRadius.circular(9.r),
-          border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.3)),
+          border:
+              Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.3)),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(Icons.swap_vert, size: 14.sp, color: const Color(0xFF9F7AEA)),
@@ -637,7 +651,8 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
         decoration: BoxDecoration(
           color: const Color(0xFF3B82F6).withValues(alpha: 0.16),
           borderRadius: BorderRadius.circular(9.r),
-          border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
+          border:
+              Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
         ),
         child: Text('Max',
             style: GoogleFonts.inter(
@@ -654,7 +669,8 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
     return BlocBuilder<CryptoConfigCubit, CryptoConfigState>(
       bloc: GetIt.I<CryptoConfigCubit>(),
       builder: (context, cfgState) {
-        final loading = cfgState is CryptoConfigInitial || cfgState is CryptoConfigLoading;
+        final loading =
+            cfgState is CryptoConfigInitial || cfgState is CryptoConfigLoading;
         final sym = CurrencySymbols.currentSymbol;
         if (loading) {
           return Text('Loading limits…',
@@ -673,7 +689,8 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
         // Min/Max in the unit being TYPED, with the other in parentheses.
         if (_isAmountInCrypto) {
           if (minC > 0) {
-            parts.add('Min ${_trimNum(minC)} $tkr (≈$sym${min.toStringAsFixed(0)})');
+            parts.add(
+                'Min ${_trimNum(minC)} $tkr (≈$sym${min.toStringAsFixed(0)})');
           }
           if (holdingBelowMin) {
             parts.add('Holding too small to sell');

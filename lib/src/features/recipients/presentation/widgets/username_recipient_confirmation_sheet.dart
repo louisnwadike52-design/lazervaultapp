@@ -73,8 +73,8 @@ class UsernameRecipientConfirmationSheetState
     try {
       final name = widget.user.fullName.trim();
       if (name.isEmpty) return;
-      final page =
-          await serviceLocator<UnifiedUserSearchRepository>().search(name, limit: 20);
+      final page = await serviceLocator<UnifiedUserSearchRepository>()
+          .search(name, limit: 20);
       for (final r in [...page.local, ...page.global]) {
         if (r.userId == widget.user.userId && r.username.trim().isNotEmpty) {
           if (mounted) setState(() => _fetchedUsername = r.username.trim());
@@ -102,51 +102,59 @@ class UsernameRecipientConfirmationSheetState
   Widget build(BuildContext context) {
     // Content-sized sheet — wraps to its content so it stays compact (like the
     // bank confirmation) instead of a fixed 90%+ height.
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20.r),
-          topRight: Radius.circular(20.r),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Drag handle
-          Container(
-            width: 36.w,
-            height: 4.h,
-            margin: EdgeInsets.only(top: 10.h, bottom: 6.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFFD1D5DB),
-              borderRadius: BorderRadius.circular(2.r),
-            ),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20.r),
+            topRight: Radius.circular(20.r),
           ),
-          // Scrolls only if it would overflow (e.g. keyboard open for alias).
-          Flexible(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(height: 6.h),
-                  _buildProfileSection(),
-                  SizedBox(height: 16.h),
-                  _buildAccountCard(),
-                  SizedBox(height: 12.h),
-                  _buildContactAndInfo(),
-                  SizedBox(height: 14.h),
-                  _buildToggles(),
-                  _buildAliasInput(),
-                  SizedBox(height: 8.h),
-                ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            Container(
+              width: 36.w,
+              height: 4.h,
+              margin: EdgeInsets.only(top: 10.h, bottom: 6.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD1D5DB),
+                borderRadius: BorderRadius.circular(2.r),
               ),
             ),
-          ),
-          _buildBottomActions(),
-        ],
+            // Scrolls only if it would overflow (e.g. keyboard open for alias).
+            Flexible(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: 6.h),
+                    _buildProfileSection(),
+                    SizedBox(height: 16.h),
+                    _buildAccountCard(),
+                    SizedBox(height: 12.h),
+                    _buildContactAndInfo(),
+                    SizedBox(height: 14.h),
+                    _buildToggles(),
+                    _buildAliasInput(),
+                    SizedBox(height: 8.h),
+                  ],
+                ),
+              ),
+            ),
+            _buildBottomActions(),
+          ],
+        ),
       ),
     );
   }
@@ -275,7 +283,8 @@ class UsernameRecipientConfirmationSheetState
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: Icon(Icons.account_balance, color: Colors.white, size: 18.sp),
+                child: Icon(Icons.account_balance,
+                    color: Colors.white, size: 18.sp),
               ),
               SizedBox(width: 10.w),
               Text(
@@ -370,7 +379,9 @@ class UsernameRecipientConfirmationSheetState
             children: [
               Icon(
                 _isSaved ? Icons.bookmark : Icons.bookmark_outline,
-                color: _isSaved ? const Color(0xFF4E03D0) : const Color(0xFF9CA3AF),
+                color: _isSaved
+                    ? const Color(0xFF4E03D0)
+                    : const Color(0xFF9CA3AF),
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
@@ -419,7 +430,8 @@ class UsernameRecipientConfirmationSheetState
           hintStyle: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
           counterText: '',
           isDense: true,
-          contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+          contentPadding:
+              EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.r),
             borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -448,7 +460,8 @@ class UsernameRecipientConfirmationSheetState
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 10.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: const Color(0xFFF3F4F6), width: 1)),
+        border:
+            Border(top: BorderSide(color: const Color(0xFFF3F4F6), width: 1)),
       ),
       child: SafeArea(
         child: Row(

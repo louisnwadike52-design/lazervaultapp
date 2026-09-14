@@ -88,164 +88,192 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
       minChildSize: 0.3,
       maxChildSize: 0.95,
       expand: false,
+      // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+      // cannot reach inside modal sheets - the opaque sheet surface
+      // occludes it - so unfocus here to dismiss the keyboard on a tap
+      // in the sheet's empty area. Wrapped inside the builder (not
+      // around the DraggableScrollableSheet) so taps above the sheet
+      // still reach the modal barrier and dismiss it.
       builder: (context, sheetScrollController) {
         final comments = _displayComments;
 
-        return Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A1A1A),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-          ),
-          child: Column(
-            children: [
-              // Handle + header (allows dragging the sheet)
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onVerticalDragUpdate: (_) {},
-                child: Column(
-                  children: [
-                    SizedBox(height: 8.h),
-                    Container(
-                      width: 40.w,
-                      height: 4.h,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF9CA3AF).withValues(alpha: 0.4),
-                        borderRadius: BorderRadius.circular(2.r),
+        return GestureDetector(
+          // deferToChild (NOT opaque): this sheet is a DraggableScrollableSheet —
+          // an opaque wrapper would claim taps in the transparent region ABOVE
+          // the sheet and break tap-outside-to-close. deferToChild only joins
+          // hits on the painted sheet surface, which is where unfocus belongs.
+          behavior: HitTestBehavior.deferToChild,
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1A1A),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+            ),
+            child: Column(
+              children: [
+                // Handle + header (allows dragging the sheet)
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onVerticalDragUpdate: (_) {},
+                  child: Column(
+                    children: [
+                      SizedBox(height: 8.h),
+                      Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF9CA3AF).withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 12.h),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Comments',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          SizedBox(width: 8.w),
-                          Text(
-                            '${widget.comments.length}',
-                            style: TextStyle(
-                              color: const Color(0xFF9CA3AF),
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: () => Navigator.of(context).pop(),
-                            child: Icon(Icons.close, color: const Color(0xFF9CA3AF), size: 22.sp),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Divider(color: const Color(0xFF2D2D2D), height: 1),
-                  ],
-                ),
-              ),
-
-              // Comments list
-              Expanded(
-                child: comments.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                      SizedBox(height: 12.h),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        child: Row(
                           children: [
-                            Icon(Icons.chat_bubble_outline, size: 40.sp, color: const Color(0xFF9CA3AF)),
-                            SizedBox(height: 8.h),
                             Text(
-                              'No comments yet',
-                              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                              'Comments',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                            SizedBox(height: 4.h),
+                            SizedBox(width: 8.w),
                             Text(
-                              'Be the first to say something!',
-                              style: TextStyle(color: const Color(0xFF9CA3AF).withValues(alpha: 0.6), fontSize: 12.sp),
+                              '${widget.comments.length}',
+                              style: TextStyle(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 14.sp,
+                              ),
+                            ),
+                            const Spacer(),
+                            GestureDetector(
+                              onTap: () => Navigator.of(context).pop(),
+                              child: Icon(Icons.close,
+                                  color: const Color(0xFF9CA3AF), size: 22.sp),
                             ),
                           ],
                         ),
-                      )
-                    : ListView.builder(
-                        key: _listScrollKey,
-                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                        itemCount: comments.length,
-                        itemBuilder: (context, index) {
-                          final comment = comments[index];
-                          return _CommentTile(comment: comment);
-                        },
                       ),
-              ),
-
-              // Input bar
-              if (!widget.sessionEnded)
-                Container(
-                  padding: EdgeInsets.fromLTRB(
-                    12.w,
-                    8.h,
-                    12.w,
-                    MediaQuery.of(context).viewInsets.bottom + 12.h,
-                  ),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF111111),
-                    border: Border(top: BorderSide(color: Color(0xFF2D2D2D))),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 38.h,
-                          padding: EdgeInsets.symmetric(horizontal: 12.w),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1F1F1F),
-                            borderRadius: BorderRadius.circular(19.r),
-                            border: Border.all(color: const Color(0xFF2D2D2D)),
-                          ),
-                          child: TextField(
-                            controller: _inputController,
-                            focusNode: _inputFocus,
-                            maxLength: 500,
-                            maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                            onChanged: (v) => setState(() => _hasText = v.trim().isNotEmpty),
-                            onSubmitted: (_) => _submit(),
-                            style: TextStyle(color: Colors.white, fontSize: 13.sp),
-                            decoration: InputDecoration(
-                              counterText: '',
-                              hintText: 'Say something...',
-                              hintStyle: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                fontSize: 13.sp,
-                              ),
-                              border: InputBorder.none,
-                              isDense: true,
-                              contentPadding: EdgeInsets.symmetric(vertical: 8.h),
-                            ),
-                            textInputAction: TextInputAction.send,
-                          ),
-                        ),
-                      ),
-                      if (_hasText) ...[
-                        SizedBox(width: 8.w),
-                        GestureDetector(
-                          onTap: _submit,
-                          child: Container(
-                            width: 38.w,
-                            height: 38.w,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF3B82F6),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Icons.send, color: Colors.white, size: 18.sp),
-                          ),
-                        ),
-                      ],
+                      SizedBox(height: 8.h),
+                      Divider(color: const Color(0xFF2D2D2D), height: 1),
                     ],
                   ),
                 ),
-            ],
+
+                // Comments list
+                Expanded(
+                  child: comments.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.chat_bubble_outline,
+                                  size: 40.sp, color: const Color(0xFF9CA3AF)),
+                              SizedBox(height: 8.h),
+                              Text(
+                                'No comments yet',
+                                style: TextStyle(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 14.sp),
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                'Be the first to say something!',
+                                style: TextStyle(
+                                    color: const Color(0xFF9CA3AF)
+                                        .withValues(alpha: 0.6),
+                                    fontSize: 12.sp),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          key: _listScrollKey,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 8.h),
+                          itemCount: comments.length,
+                          itemBuilder: (context, index) {
+                            final comment = comments[index];
+                            return _CommentTile(comment: comment);
+                          },
+                        ),
+                ),
+
+                // Input bar
+                if (!widget.sessionEnded)
+                  Container(
+                    padding: EdgeInsets.fromLTRB(
+                      12.w,
+                      8.h,
+                      12.w,
+                      MediaQuery.of(context).viewInsets.bottom + 12.h,
+                    ),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF111111),
+                      border: Border(top: BorderSide(color: Color(0xFF2D2D2D))),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 38.h,
+                            padding: EdgeInsets.symmetric(horizontal: 12.w),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1F1F1F),
+                              borderRadius: BorderRadius.circular(19.r),
+                              border:
+                                  Border.all(color: const Color(0xFF2D2D2D)),
+                            ),
+                            child: TextField(
+                              controller: _inputController,
+                              focusNode: _inputFocus,
+                              maxLength: 500,
+                              maxLengthEnforcement:
+                                  MaxLengthEnforcement.enforced,
+                              onChanged: (v) => setState(
+                                  () => _hasText = v.trim().isNotEmpty),
+                              onSubmitted: (_) => _submit(),
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 13.sp),
+                              decoration: InputDecoration(
+                                counterText: '',
+                                hintText: 'Say something...',
+                                hintStyle: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.4),
+                                  fontSize: 13.sp,
+                                ),
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding:
+                                    EdgeInsets.symmetric(vertical: 8.h),
+                              ),
+                              textInputAction: TextInputAction.send,
+                            ),
+                          ),
+                        ),
+                        if (_hasText) ...[
+                          SizedBox(width: 8.w),
+                          GestureDetector(
+                            onTap: _submit,
+                            child: Container(
+                              width: 38.w,
+                              height: 38.w,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF3B82F6),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.send,
+                                  color: Colors.white, size: 18.sp),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ),
         );
       },
@@ -333,7 +361,8 @@ class _CommentTileState extends State<_CommentTile>
                         Text(
                           _formatTime(widget.comment.createdAt),
                           style: TextStyle(
-                            color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
+                            color:
+                                const Color(0xFF9CA3AF).withValues(alpha: 0.6),
                             fontSize: 10.sp,
                           ),
                         ),

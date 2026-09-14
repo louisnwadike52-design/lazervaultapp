@@ -23,7 +23,6 @@ import '../../domain/entities/group_entities.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'contribution_chat_bottom_sheet_widgets.dart';
 
-
 /// Per-contribution chat bottom sheet (90% screen height).
 ///
 /// Renders the message timeline + composer (text, voice note, image) for
@@ -190,10 +189,10 @@ class _ContributionChatBottomSheetState
     // every platform. The server reads X-User-Id from the auth
     // middleware, but the dev fallback (?user_id=) keeps local
     // testing straightforward.
-    final uri = Uri.parse(
-        '$base/ws/contributions/${widget.contribution.id}/messages'
-        '?user_id=${Uri.encodeQueryComponent(widget.currentUserId)}'
-        '&access_token=${Uri.encodeQueryComponent(token)}');
+    final uri =
+        Uri.parse('$base/ws/contributions/${widget.contribution.id}/messages'
+            '?user_id=${Uri.encodeQueryComponent(widget.currentUserId)}'
+            '&access_token=${Uri.encodeQueryComponent(token)}');
     try {
       final channel = WebSocketChannel.connect(uri);
       _wsChannel = channel;
@@ -342,8 +341,7 @@ class _ContributionChatBottomSheetState
     if (token == null) {
       throw 'Not authenticated';
     }
-    var path =
-        '/v1/contributions/${widget.contribution.id}/messages?limit=100';
+    var path = '/v1/contributions/${widget.contribution.id}/messages?limit=100';
     if (since != null && since.isNotEmpty) {
       path += '&sinceRfc3339=${Uri.encodeQueryComponent(since)}';
     }
@@ -390,7 +388,8 @@ class _ContributionChatBottomSheetState
         throw 'Send failed (${resp.statusCode}): ${resp.body}';
       }
       final body = jsonDecode(resp.body) as Map<String, dynamic>;
-      final msg = _ChatMessage.fromJson(body['message'] as Map<String, dynamic>);
+      final msg =
+          _ChatMessage.fromJson(body['message'] as Map<String, dynamic>);
       if (!mounted) return;
       // Funnel into the same dedup helper the WS handler uses. The
       // server publishes the WS frame the moment the row commits, so
@@ -532,7 +531,8 @@ class _ContributionChatBottomSheetState
         kind: p.kind == _MessageKind.image ? 'image' : 'voice',
         body: '',
         mediaUrl: uploaded.url,
-        durationMs: uploaded.durationMs > 0 ? uploaded.durationMs : p.durationMs,
+        durationMs:
+            uploaded.durationMs > 0 ? uploaded.durationMs : p.durationMs,
       );
       if (mounted) setState(() => _pending.remove(p));
     } catch (e) {
@@ -569,7 +569,8 @@ class _ContributionChatBottomSheetState
       _recordingPath =
           '${dir.path}/voice-${DateTime.now().millisecondsSinceEpoch}.m4a';
       await _recorder!.start(
-        const RecordConfig(encoder: AudioEncoder.aacLc, bitRate: 64000, sampleRate: 22050),
+        const RecordConfig(
+            encoder: AudioEncoder.aacLc, bitRate: 64000, sampleRate: 22050),
         path: _recordingPath!,
       );
       setState(() {
@@ -595,8 +596,9 @@ class _ContributionChatBottomSheetState
       path = _recordingPath;
     }
     if (path == null) return;
-    final ms =
-        DateTime.now().difference(_recordingStart ?? DateTime.now()).inMilliseconds;
+    final ms = DateTime.now()
+        .difference(_recordingStart ?? DateTime.now())
+        .inMilliseconds;
     if (ms < 500) {
       // Drop ultra-short accidental taps.
       try {
@@ -743,24 +745,32 @@ class _ContributionChatBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: _chrome,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      child: Column(
-        children: [
-          _buildHeader(),
-          Container(height: 1, color: const Color(0xFF2D2D2D)),
-          Expanded(
-            child: Container(
-              color: _canvas,
-              child: _buildMessageList(),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        decoration: BoxDecoration(
+          color: _chrome,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          children: [
+            _buildHeader(),
+            Container(height: 1, color: const Color(0xFF2D2D2D)),
+            Expanded(
+              child: Container(
+                color: _canvas,
+                child: _buildMessageList(),
+              ),
             ),
-          ),
-          Container(height: 1, color: const Color(0xFF2D2D2D)),
-          _buildComposer(),
-        ],
+            Container(height: 1, color: const Color(0xFF2D2D2D)),
+            _buildComposer(),
+          ],
+        ),
       ),
     );
   }
@@ -1019,8 +1029,7 @@ class _ContributionChatBottomSheetState
                 radius: 14.r,
               ),
               child: Padding(
-                padding:
-                    EdgeInsets.fromLTRB(12.w, 8.h, 12.w + tailSize, 8.h),
+                padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w + tailSize, 8.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisSize: MainAxisSize.min,
@@ -1031,8 +1040,7 @@ class _ContributionChatBottomSheetState
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (p.failed) ...[
-                          Icon(Icons.refresh,
-                              color: Colors.white, size: 12.sp),
+                          Icon(Icons.refresh, color: Colors.white, size: 12.sp),
                           SizedBox(width: 4.w),
                           Text(
                             'Tap to retry',
@@ -1146,16 +1154,14 @@ class _ContributionChatBottomSheetState
                 height: 140.h,
                 color: Colors.black.withValues(alpha: 0.2),
                 child: const Center(
-                  child:
-                      LazerVaultLoader.tiny(),
+                  child: LazerVaultLoader.tiny(),
                 ),
               ),
               errorWidget: (_, __, ___) => Container(
                 width: 220.w,
                 height: 140.h,
                 color: Colors.black.withValues(alpha: 0.3),
-                child: Icon(Icons.broken_image,
-                    color: textColor, size: 32.sp),
+                child: Icon(Icons.broken_image, color: textColor, size: 32.sp),
               ),
             ),
           ),
@@ -1215,8 +1221,7 @@ class _ContributionChatBottomSheetState
             if (_composerBanner != null)
               Container(
                 margin: EdgeInsets.only(bottom: 8.h),
-                padding:
-                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                 decoration: BoxDecoration(
                   color: const Color(0xFF7F1D1D).withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(8.r),
@@ -1285,8 +1290,8 @@ class _ContributionChatBottomSheetState
                       color: const Color(0xFF0A0A0A),
                       borderRadius: BorderRadius.circular(20.r),
                     ),
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 14.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
                     child: TextField(
                       controller: _composer,
                       style: GoogleFonts.inter(
@@ -1300,8 +1305,7 @@ class _ContributionChatBottomSheetState
                         hintStyle: GoogleFonts.inter(
                             color: Colors.grey[600], fontSize: 13.sp),
                         border: InputBorder.none,
-                        contentPadding:
-                            EdgeInsets.symmetric(vertical: 8.h),
+                        contentPadding: EdgeInsets.symmetric(vertical: 8.h),
                         isCollapsed: true,
                       ),
                       enabled: !_recording,

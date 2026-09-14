@@ -90,8 +90,8 @@ class _RecipientsGroupsSheetState extends State<RecipientsGroupsSheet> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: BulkSmsTheme.card,
-        title: const Text('Delete group?',
-            style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Delete group?', style: TextStyle(color: Colors.white)),
         content: Text(
           '“${g.name}” and its ${g.memberCount} saved recipient(s) will be removed. This can’t be undone.',
           style: TextStyle(color: BulkSmsTheme.textSecondary, fontSize: 13.sp),
@@ -166,49 +166,56 @@ class _RecipientsGroupsSheetState extends State<RecipientsGroupsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: BoxDecoration(
-        color: BulkSmsTheme.bg,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      child: Column(
-        children: [
-          SizedBox(height: 10.h),
-          Container(
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: BulkSmsTheme.divider,
-              borderRadius: BorderRadius.circular(2.r),
+    // App-root tap-to-dismiss (main.dart GetMaterialApp.builder) is
+    // occluded inside modal sheets; unfocus here so a tap on the
+    // sheet's empty area closes the keyboard.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.85,
+        decoration: BoxDecoration(
+          color: BulkSmsTheme.bg,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          children: [
+            SizedBox(height: 10.h),
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: BulkSmsTheme.divider,
+                borderRadius: BorderRadius.circular(2.r),
+              ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(16.w),
-            child: Row(
-              children: [
-                Text('Saved groups',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700)),
-                const Spacer(),
-                Icon(Icons.groups_2_outlined,
-                    color: BulkSmsTheme.textSecondary, size: 20.sp),
-              ],
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Row(
+                children: [
+                  Text('Saved groups',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700)),
+                  const Spacer(),
+                  Icon(Icons.groups_2_outlined,
+                      color: BulkSmsTheme.textSecondary, size: 20.sp),
+                ],
+              ),
             ),
-          ),
-          _saveCurrentButton(),
-          SizedBox(height: 8.h),
-          Expanded(
-            child: BlocBuilder<BulkSmsCubit, BulkSmsState>(
-              bloc: widget.cubit,
-              buildWhen: (p, c) =>
-                  p.groupsStatus != c.groupsStatus || p.groups != c.groups,
-              builder: (context, state) => _body(state),
+            _saveCurrentButton(),
+            SizedBox(height: 8.h),
+            Expanded(
+              child: BlocBuilder<BulkSmsCubit, BulkSmsState>(
+                bloc: widget.cubit,
+                buildWhen: (p, c) =>
+                    p.groupsStatus != c.groupsStatus || p.groups != c.groups,
+                builder: (context, state) => _body(state),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -305,8 +312,7 @@ class _RecipientsGroupsSheetState extends State<RecipientsGroupsSheet> {
                   Text(g.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style:
-                          TextStyle(color: Colors.white, fontSize: 14.sp)),
+                      style: TextStyle(color: Colors.white, fontSize: 14.sp)),
                   SizedBox(height: 2.h),
                   Text('${g.memberCount} recipient(s)',
                       style: TextStyle(

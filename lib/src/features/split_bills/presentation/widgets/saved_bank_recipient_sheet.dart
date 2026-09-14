@@ -103,119 +103,127 @@ class _SavedBankRecipientSheetState extends State<SavedBankRecipientSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<RecipientCubit>.value(
-      value: _cubit,
-      // The white surface reaches the physical edge with the inset inside it;
-      // a SafeArea wrapped outside leaves a band of scrim under the sheet.
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF141414),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
-        ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 10),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2D2D2D),
-                  borderRadius: BorderRadius.circular(2),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: BlocProvider<RecipientCubit>.value(
+        value: _cubit,
+        // The white surface reaches the physical edge with the inset inside it;
+        // a SafeArea wrapped outside leaves a band of scrim under the sheet.
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFF141414),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 10),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D2D2D),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-              ),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Saved bank recipients',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Saved bank recipients',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: TextField(
-                  controller: _search,
-                  onChanged: (v) => setState(() => _query = v.trim()),
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                  decoration: InputDecoration(
-                    hintText: 'Search name, bank or account number',
-                    hintStyle: const TextStyle(color: Color(0xFF6B7280)),
-                    prefixIcon:
-                        const Icon(Icons.search, color: Color(0xFF6B7280)),
-                    filled: true,
-                    fillColor: const Color(0xFF1F1F1F),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF4834D4)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: TextField(
+                    controller: _search,
+                    onChanged: (v) => setState(() => _query = v.trim()),
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'Search name, bank or account number',
+                      hintStyle: const TextStyle(color: Color(0xFF6B7280)),
+                      prefixIcon:
+                          const Icon(Icons.search, color: Color(0xFF6B7280)),
+                      filled: true,
+                      fillColor: const Color(0xFF1F1F1F),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFF4834D4)),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Flexible(
-                child: BlocBuilder<RecipientCubit, RecipientState>(
-                  builder: (context, state) {
-                    if (state is RecipientLoading ||
-                        state is RecipientInitial) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 40),
-                        child: Center(child: LazerVaultLoader(size: 24)),
+                Flexible(
+                  child: BlocBuilder<RecipientCubit, RecipientState>(
+                    builder: (context, state) {
+                      if (state is RecipientLoading ||
+                          state is RecipientInitial) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: Center(child: LazerVaultLoader(size: 24)),
+                        );
+                      }
+                      if (state is RecipientError) {
+                        return _message(
+                          'Could not load your saved recipients.',
+                          // Failing here must not dead-end the flow: the account
+                          // number path below still works without this list.
+                          'Enter the account number instead, or try again.',
+                        );
+                      }
+                      final all = state is RecipientLoaded
+                          ? state.recipients.where(_isBankRecipient).toList()
+                          : <RecipientModel>[];
+                      if (all.isEmpty) {
+                        return _message(
+                          'No saved bank recipients yet.',
+                          'Enter the account number below and it will be saved for next time.',
+                        );
+                      }
+                      final shown = all.where(_matches).toList();
+                      if (shown.isEmpty) {
+                        return _message(
+                          'No match for "$_query".',
+                          'Try a name, bank or account number.',
+                        );
+                      }
+                      return ListView.separated(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                        itemCount: shown.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemBuilder: (_, i) => _row(shown[i]),
                       );
-                    }
-                    if (state is RecipientError) {
-                      return _message(
-                        'Could not load your saved recipients.',
-                        // Failing here must not dead-end the flow: the account
-                        // number path below still works without this list.
-                        'Enter the account number instead, or try again.',
-                      );
-                    }
-                    final all = state is RecipientLoaded
-                        ? state.recipients.where(_isBankRecipient).toList()
-                        : <RecipientModel>[];
-                    if (all.isEmpty) {
-                      return _message(
-                        'No saved bank recipients yet.',
-                        'Enter the account number below and it will be saved for next time.',
-                      );
-                    }
-                    final shown = all.where(_matches).toList();
-                    if (shown.isEmpty) {
-                      return _message(
-                        'No match for "$_query".',
-                        'Try a name, bank or account number.',
-                      );
-                    }
-                    return ListView.separated(
-                      shrinkWrap: true,
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                      itemCount: shown.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (_, i) => _row(shown[i]),
-                    );
-                  },
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

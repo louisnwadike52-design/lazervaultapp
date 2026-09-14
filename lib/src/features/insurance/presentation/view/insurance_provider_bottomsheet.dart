@@ -101,8 +101,8 @@ class _InsuranceProviderBottomSheetState
           final description = (method['description'] as String).toLowerCase();
 
           return name.contains(query) ||
-                 description.contains(query) ||
-                 keywords.any((keyword) => keyword.contains(query));
+              description.contains(query) ||
+              keywords.any((keyword) => keyword.contains(query));
         }).toList();
       }
     });
@@ -110,129 +110,138 @@ class _InsuranceProviderBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: BoxDecoration(
-        color: const Color(0xFF0A0A0A),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24.r),
-          topRight: Radius.circular(24.r),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.85,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0A0A0A),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24.r),
+            topRight: Radius.circular(24.r),
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          // Handle bar
-          Container(
-            margin: EdgeInsets.only(top: 12.h),
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(2.r),
-            ),
-          ),
-
-          SizedBox(height: 16.h),
-
-          // Header
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Select Payment Method',
-                  style: GoogleFonts.inter(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(
-                    Icons.close,
-                    color: Colors.white,
-                    size: 24.sp,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          SizedBox(height: 16.h),
-
-          // Search bar
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Container(
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              margin: EdgeInsets.only(top: 12.h),
+              width: 40.w,
+              height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
-                ),
+                color: Colors.white.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2.r),
               ),
-              child: TextField(
-                controller: _searchController,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 15.sp,
+            ),
+
+            SizedBox(height: 16.h),
+
+            // Header
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Select Payment Method',
+                    style: GoogleFonts.inter(
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 24.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 16.h),
+
+            // Search bar
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
                 ),
-                decoration: InputDecoration(
-                  hintText: 'Search payment methods...',
-                  hintStyle: GoogleFonts.inter(
-                    color: Colors.grey[500],
+                child: TextField(
+                  controller: _searchController,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
                     fontSize: 15.sp,
                   ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: Colors.grey[500],
-                    size: 20.sp,
-                  ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: Icon(
-                            Icons.clear,
-                            color: Colors.grey[500],
-                            size: 20.sp,
-                          ),
-                          onPressed: () {
-                            _searchController.clear();
-                          },
-                        )
-                      : null,
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 14.h,
+                  decoration: InputDecoration(
+                    hintText: 'Search payment methods...',
+                    hintStyle: GoogleFonts.inter(
+                      color: Colors.grey[500],
+                      fontSize: 15.sp,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Colors.grey[500],
+                      size: 20.sp,
+                    ),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              color: Colors.grey[500],
+                              size: 20.sp,
+                            ),
+                            onPressed: () {
+                              _searchController.clear();
+                            },
+                          )
+                        : null,
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 14.h,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          SizedBox(height: 20.h),
+            SizedBox(height: 20.h),
 
-          // Payment methods list
-          Expanded(
-            child: _filteredMethods.isEmpty
-                ? _buildEmptyState()
-                : ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    itemCount: _filteredMethods.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 12.h),
-                        child: _buildPaymentMethodCard(_filteredMethods[index]),
-                      );
-                    },
-                  ),
-          ),
+            // Payment methods list
+            Expanded(
+              child: _filteredMethods.isEmpty
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      itemCount: _filteredMethods.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: 12.h),
+                          child:
+                              _buildPaymentMethodCard(_filteredMethods[index]),
+                        );
+                      },
+                    ),
+            ),
 
-          // Confirm button
-          if (_selectedMethod != null) _buildConfirmButton(),
-        ],
+            // Confirm button
+            if (_selectedMethod != null) _buildConfirmButton(),
+          ],
+        ),
       ),
     );
   }

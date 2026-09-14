@@ -79,88 +79,100 @@ class _SetPasswordSheetBodyState extends State<_SetPasswordSheetBody> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 20.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2D2D2D),
-                  borderRadius: BorderRadius.circular(2.r),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 20.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D2D2D),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 20.h),
-            Text(
-              'Set a password',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(height: 6.h),
-            Text(
-              'Add a password so you can sign in with your email or phone and password.',
-              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
-            ),
-            SizedBox(height: 20.h),
-            _field(
-              controller: _passwordController,
-              hint: 'New password',
-              obscure: _obscure,
-              onToggle: () => setState(() => _obscure = !_obscure),
-              onChanged: _validate,
-            ),
-            SizedBox(height: 12.h),
-            _field(
-              controller: _confirmController,
-              hint: 'Confirm new password',
-              obscure: _obscureConfirm,
-              onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm),
-              onChanged: (_) => setState(() => _error = null),
-            ),
-            SizedBox(height: 12.h),
-            Wrap(
-              spacing: 12.w,
-              runSpacing: 4.h,
-              children: [
-                _req('8+ characters', _hasMinLength),
-                _req('Uppercase', _hasUpper),
-                _req('Lowercase', _hasLower),
-                _req('Number', _hasDigit),
-                _req('Special character', _hasSpecial),
-              ],
-            ),
-            if (_error != null) ...[
-              SizedBox(height: 12.h),
+              SizedBox(height: 20.h),
               Text(
-                _error!,
-                style: TextStyle(color: const Color(0xFFEF4444), fontSize: 13.sp),
+                'Set a password',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              SizedBox(height: 6.h),
+              Text(
+                'Add a password so you can sign in with your email or phone and password.',
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+              ),
+              SizedBox(height: 20.h),
+              _field(
+                controller: _passwordController,
+                hint: 'New password',
+                obscure: _obscure,
+                onToggle: () => setState(() => _obscure = !_obscure),
+                onChanged: _validate,
+              ),
+              SizedBox(height: 12.h),
+              _field(
+                controller: _confirmController,
+                hint: 'Confirm new password',
+                obscure: _obscureConfirm,
+                onToggle: () =>
+                    setState(() => _obscureConfirm = !_obscureConfirm),
+                onChanged: (_) => setState(() => _error = null),
+              ),
+              SizedBox(height: 12.h),
+              Wrap(
+                spacing: 12.w,
+                runSpacing: 4.h,
+                children: [
+                  _req('8+ characters', _hasMinLength),
+                  _req('Uppercase', _hasUpper),
+                  _req('Lowercase', _hasLower),
+                  _req('Number', _hasDigit),
+                  _req('Special character', _hasSpecial),
+                ],
+              ),
+              if (_error != null) ...[
+                SizedBox(height: 12.h),
+                Text(
+                  _error!,
+                  style: TextStyle(
+                      color: const Color(0xFFEF4444), fontSize: 13.sp),
+                ),
+              ],
+              SizedBox(height: 24.h),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4834D4),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: const StadiumBorder(),
+                  minimumSize: Size(double.infinity, 48.h),
+                ),
+                onPressed: _submit,
+                child: Text(
+                  'Set password',
+                  style:
+                      TextStyle(fontWeight: FontWeight.bold, fontSize: 15.sp),
+                ),
               ),
             ],
-            SizedBox(height: 24.h),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4834D4),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: const StadiumBorder(),
-                minimumSize: Size(double.infinity, 48.h),
-              ),
-              onPressed: _submit,
-              child: Text(
-                'Set password',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.sp),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

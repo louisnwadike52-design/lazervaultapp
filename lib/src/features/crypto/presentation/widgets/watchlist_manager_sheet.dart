@@ -125,194 +125,205 @@ class _WatchlistManagerSheetState extends State<WatchlistManagerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CryptoCubit, CryptoState>(
-      builder: (context, state) {
-        // Non-loaded states (Loading / Error / Initial) get their own
-        // shells so the sheet doesn't spin forever when the cubit is
-        // in an error state.
-        if (state is CryptoError) {
-          return _shell(
-            child: Padding(
-              padding: EdgeInsets.all(32.w),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _grabHandle(),
-                  SizedBox(height: 16.h),
-                  Icon(Icons.error_outline, color: Colors.red, size: 36.sp),
-                  SizedBox(height: 12.h),
-                  Text(
-                    'Could not load assets',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    state.message,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 13.sp,
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _accent,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () => context.read<CryptoCubit>().loadCryptos(),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-        if (state is! CryptosLoaded) {
-          return _shell(
-              child: const Center(
-            child: Padding(
-              padding: EdgeInsets.all(48),
-              child: LazerVaultLoader.small(),
-            ),
-          ));
-        }
-        // Loaded but cubit is mid-search; cryptos list may still have
-        // values from the previous query, which is fine.
-        if (state.cryptos.isEmpty) {
-          return _shell(
-            child: Padding(
-              padding: EdgeInsets.all(32.w),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _grabHandle(),
-                  SizedBox(height: 16.h),
-                  Icon(Icons.token_outlined,
-                      color: Colors.white.withValues(alpha: 0.4), size: 36.sp),
-                  SizedBox(height: 12.h),
-                  Text(
-                    'No assets to add yet',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'Market data is still loading. Try again in a moment.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontSize: 12.sp,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-        final watchlisted = _watchlistedIds(state);
-        final filtered = state.cryptos.where((c) {
-          if (_query.isEmpty) return true;
-          final q = _query.toLowerCase();
-          return c.name.toLowerCase().contains(q) ||
-              c.symbol.toLowerCase().contains(q);
-        }).toList();
-
-        return _shell(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _grabHandle(),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                child: Row(
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: BlocBuilder<CryptoCubit, CryptoState>(
+        builder: (context, state) {
+          // Non-loaded states (Loading / Error / Initial) get their own
+          // shells so the sheet doesn't spin forever when the cubit is
+          // in an error state.
+          if (state is CryptoError) {
+            return _shell(
+              child: Padding(
+                padding: EdgeInsets.all(32.w),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    _grabHandle(),
+                    SizedBox(height: 16.h),
+                    Icon(Icons.error_outline, color: Colors.red, size: 36.sp),
+                    SizedBox(height: 12.h),
                     Text(
-                      'Manage Watchlist',
+                      'Could not load assets',
                       style: GoogleFonts.inter(
                         color: Colors.white,
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const Spacer(),
-                    if (_ensuringWatchlist) LazerVaultLoader(size: 14),
-                    IconButton(
-                      icon: Icon(Icons.close,
-                          color: Colors.white.withValues(alpha: 0.7),
-                          size: 20.sp),
-                      onPressed: () => Get.back(),
+                    SizedBox(height: 4.h),
+                    Text(
+                      state.message,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 13.sp,
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _accent,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () =>
+                          context.read<CryptoCubit>().loadCryptos(),
+                      child: const Text('Retry'),
                     ),
                   ],
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 8.h),
-                child: TextField(
-                  controller: _searchCtl,
-                  onChanged: (v) => setState(() => _query = v),
-                  style:
-                      GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
-                  decoration: InputDecoration(
-                    hintText: 'Search by name or symbol',
-                    hintStyle: GoogleFonts.inter(
-                        color: Colors.white38, fontSize: 14.sp),
-                    prefixIcon:
-                        Icon(Icons.search, color: Colors.white38, size: 18.sp),
-                    isDense: true,
-                    filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.05),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(color: _divider),
+            );
+          }
+          if (state is! CryptosLoaded) {
+            return _shell(
+                child: const Center(
+              child: Padding(
+                padding: EdgeInsets.all(48),
+                child: LazerVaultLoader.small(),
+              ),
+            ));
+          }
+          // Loaded but cubit is mid-search; cryptos list may still have
+          // values from the previous query, which is fine.
+          if (state.cryptos.isEmpty) {
+            return _shell(
+              child: Padding(
+                padding: EdgeInsets.all(32.w),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _grabHandle(),
+                    SizedBox(height: 16.h),
+                    Icon(Icons.token_outlined,
+                        color: Colors.white.withValues(alpha: 0.4),
+                        size: 36.sp),
+                    SizedBox(height: 12.h),
+                    Text(
+                      'No assets to add yet',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(color: _divider),
+                    SizedBox(height: 4.h),
+                    Text(
+                      'Market data is still loading. Try again in a moment.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 12.sp,
+                      ),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(color: _accent),
+                  ],
+                ),
+              ),
+            );
+          }
+          final watchlisted = _watchlistedIds(state);
+          final filtered = state.cryptos.where((c) {
+            if (_query.isEmpty) return true;
+            final q = _query.toLowerCase();
+            return c.name.toLowerCase().contains(q) ||
+                c.symbol.toLowerCase().contains(q);
+          }).toList();
+
+          return _shell(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _grabHandle(),
+                Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Manage Watchlist',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (_ensuringWatchlist) LazerVaultLoader(size: 14),
+                      IconButton(
+                        icon: Icon(Icons.close,
+                            color: Colors.white.withValues(alpha: 0.7),
+                            size: 20.sp),
+                        onPressed: () => Get.back(),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 8.h),
+                  child: TextField(
+                    controller: _searchCtl,
+                    onChanged: (v) => setState(() => _query = v),
+                    style:
+                        GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                    decoration: InputDecoration(
+                      hintText: 'Search by name or symbol',
+                      hintStyle: GoogleFonts.inter(
+                          color: Colors.white38, fontSize: 14.sp),
+                      prefixIcon: Icon(Icons.search,
+                          color: Colors.white38, size: 18.sp),
+                      isDense: true,
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.05),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(color: _divider),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(color: _divider),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(color: _accent),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const Divider(color: _divider, height: 1),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.55,
-                child: filtered.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No matches',
-                          style: GoogleFonts.inter(
-                              color: Colors.white38, fontSize: 14.sp),
+                const Divider(color: _divider, height: 1),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.55,
+                  child: filtered.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No matches',
+                            style: GoogleFonts.inter(
+                                color: Colors.white38, fontSize: 14.sp),
+                          ),
+                        )
+                      : ListView.separated(
+                          padding: EdgeInsets.symmetric(vertical: 8.h),
+                          itemCount: filtered.length,
+                          separatorBuilder: (_, __) => const Divider(
+                              color: _divider, height: 1, indent: 64),
+                          itemBuilder: (context, i) {
+                            final c = filtered[i];
+                            final inList = watchlisted.contains(c.id);
+                            final busy = _busy.contains(c.id);
+                            return _row(c, inList: inList, busy: busy);
+                          },
                         ),
-                      )
-                    : ListView.separated(
-                        padding: EdgeInsets.symmetric(vertical: 8.h),
-                        itemCount: filtered.length,
-                        separatorBuilder: (_, __) => const Divider(
-                            color: _divider, height: 1, indent: 64),
-                        itemBuilder: (context, i) {
-                          final c = filtered[i];
-                          final inList = watchlisted.contains(c.id);
-                          final busy = _busy.contains(c.id);
-                          return _row(c, inList: inList, busy: busy);
-                        },
-                      ),
-              ),
-              SizedBox(height: MediaQuery.of(context).viewPadding.bottom + 8),
-            ],
-          ),
-        );
-      },
+                ),
+                SizedBox(height: MediaQuery.of(context).viewPadding.bottom + 8),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 

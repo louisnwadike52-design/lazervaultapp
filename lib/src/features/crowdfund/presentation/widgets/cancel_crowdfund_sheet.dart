@@ -71,7 +71,8 @@ class _CancelCrowdfundSheetState extends State<CancelCrowdfundSheet>
             crowdfundId: widget.crowdfund.id,
             reason: reason,
             transactionPin: '',
-            transactionId: 'CF-CANCEL-${widget.crowdfund.id.substring(0, 8)}-${DateTime.now().millisecondsSinceEpoch}',
+            transactionId:
+                'CF-CANCEL-${widget.crowdfund.id.substring(0, 8)}-${DateTime.now().millisecondsSinceEpoch}',
           );
       return;
     }
@@ -107,8 +108,9 @@ class _CancelCrowdfundSheetState extends State<CancelCrowdfundSheet>
   String _fmt(double value) {
     final isInt = value == value.roundToDouble();
     final whole = value.floor();
-    final frac =
-        isInt ? '' : '.${((value - whole) * 100).round().toString().padLeft(2, '0')}';
+    final frac = isInt
+        ? ''
+        : '.${((value - whole) * 100).round().toString().padLeft(2, '0')}';
     final w = whole.toString();
     final buf = StringBuffer();
     for (var i = 0; i < w.length; i++) {
@@ -121,170 +123,178 @@ class _CancelCrowdfundSheetState extends State<CancelCrowdfundSheet>
   @override
   Widget build(BuildContext context) {
     final cf = widget.crowdfund;
-    return BlocListener<CrowdfundCubit, CrowdfundState>(
-      // Pop on success; the parent details screen will push the
-      // progress screen via its own listener.
-      listenWhen: (prev, curr) =>
-          _isSubmitting &&
-          (curr is CancelInitiated || curr is CrowdfundError),
-      listener: (ctx, state) {
-        if (!mounted) return;
-        if (state is CancelInitiated) {
-          Navigator.pop(context);
-          return;
-        }
-        if (state is CrowdfundError) {
-          setState(() {
-            _isSubmitting = false;
-            _coverageWarning =
-                state.message.contains('INSUFFICIENT_FOR_REFUND')
-                    ? state.message
-                    : null;
-          });
-          if (_coverageWarning == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: const Color(0xFFEF4444),
-              ),
-            );
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: BlocListener<CrowdfundCubit, CrowdfundState>(
+        // Pop on success; the parent details screen will push the
+        // progress screen via its own listener.
+        listenWhen: (prev, curr) =>
+            _isSubmitting &&
+            (curr is CancelInitiated || curr is CrowdfundError),
+        listener: (ctx, state) {
+          if (!mounted) return;
+          if (state is CancelInitiated) {
+            Navigator.pop(context);
+            return;
           }
-        }
-      },
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          if (state is CrowdfundError) {
+            setState(() {
+              _isSubmitting = false;
+              _coverageWarning =
+                  state.message.contains('INSUFFICIENT_FOR_REFUND')
+                      ? state.message
+                      : null;
+            });
+            if (_coverageWarning == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: const Color(0xFFEF4444),
+                ),
+              );
+            }
+          }
+        },
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40.w,
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3D3D3D),
-                    borderRadius: BorderRadius.circular(2.r),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+            ),
+            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3D3D3D),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: 16.h),
-              Row(
-                children: [
-                  const Icon(Icons.cancel_outlined,
-                      color: Color(0xFFEF4444), size: 24),
-                  SizedBox(width: 10.w),
-                  Text(
-                    'Cancel & refund all',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w700,
+                SizedBox(height: 16.h),
+                Row(
+                  children: [
+                    const Icon(Icons.cancel_outlined,
+                        color: Color(0xFFEF4444), size: 24),
+                    SizedBox(width: 10.w),
+                    Text(
+                      'Cancel & refund all',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12.h),
+                Text(
+                  'Every contributor will be auto-refunded to their wallet. The campaign cannot be reopened.',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 13.sp,
+                  ),
+                ),
+                SizedBox(height: 14.h),
+                _impactCard(cf),
+                SizedBox(height: 14.h),
+                Text(
+                  'Reason (visible to contributors)',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                TextFormField(
+                  controller: _reasonController,
+                  maxLines: 3,
+                  minLines: 2,
+                  maxLength: 280,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Let your contributors know why',
+                    hintStyle: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280),
+                      fontSize: 13.sp,
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFF0A0A0A),
+                    counterStyle: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280),
+                      fontSize: 11.sp,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                if (_coverageWarning != null) ...[
+                  SizedBox(height: 10.h),
+                  Container(
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFB923C).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10.r),
+                      border: Border.all(
+                        color: const Color(0xFFFB923C).withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Text(
+                      _coverageWarning!,
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFB923C),
+                        fontSize: 12.sp,
+                      ),
                     ),
                   ),
                 ],
-              ),
-              SizedBox(height: 12.h),
-              Text(
-                'Every contributor will be auto-refunded to their wallet. The campaign cannot be reopened.',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 13.sp,
-                ),
-              ),
-              SizedBox(height: 14.h),
-              _impactCard(cf),
-              SizedBox(height: 14.h),
-              Text(
-                'Reason (visible to contributors)',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              TextFormField(
-                controller: _reasonController,
-                maxLines: 3,
-                minLines: 2,
-                maxLength: 280,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 13.sp,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Let your contributors know why',
-                  hintStyle: GoogleFonts.inter(
-                    color: const Color(0xFF6B7280),
-                    fontSize: 13.sp,
-                  ),
-                  filled: true,
-                  fillColor: const Color(0xFF0A0A0A),
-                  counterStyle: GoogleFonts.inter(
-                    color: const Color(0xFF6B7280),
-                    fontSize: 11.sp,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              if (_coverageWarning != null) ...[
-                SizedBox(height: 10.h),
-                Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFB923C).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10.r),
-                    border: Border.all(
-                      color: const Color(0xFFFB923C).withValues(alpha: 0.4),
+                SizedBox(height: 18.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isSubmitting ? null : _confirm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEF4444),
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      disabledBackgroundColor:
+                          const Color(0xFFEF4444).withValues(alpha: 0.4),
                     ),
-                  ),
-                  child: Text(
-                    _coverageWarning!,
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFFFB923C),
-                      fontSize: 12.sp,
-                    ),
+                    child: _isSubmitting
+                        ? LazerVaultLoader(size: 18)
+                        : Text(
+                            'Cancel & refund',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                   ),
                 ),
               ],
-              SizedBox(height: 18.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ? null : _confirm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEF4444),
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    disabledBackgroundColor:
-                        const Color(0xFFEF4444).withValues(alpha: 0.4),
-                  ),
-                  child: _isSubmitting
-                      ? LazerVaultLoader(size: 18)
-                      : Text(
-                          'Cancel & refund',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -300,17 +310,11 @@ class _CancelCrowdfundSheetState extends State<CancelCrowdfundSheet>
       ),
       child: Column(
         children: [
-          _row(
-              'Contributors to refund',
-              cf.donorCount.toString(),
-              const Color(0xFF9CA3AF),
-              Colors.white),
+          _row('Contributors to refund', cf.donorCount.toString(),
+              const Color(0xFF9CA3AF), Colors.white),
           SizedBox(height: 6.h),
-          _row(
-              'Refund total',
-              '${cf.currency} ${_fmt(cf.currentAmount)}',
-              const Color(0xFF9CA3AF),
-              const Color(0xFFEF4444),
+          _row('Refund total', '${cf.currency} ${_fmt(cf.currentAmount)}',
+              const Color(0xFF9CA3AF), const Color(0xFFEF4444),
               bold: true),
         ],
       ),

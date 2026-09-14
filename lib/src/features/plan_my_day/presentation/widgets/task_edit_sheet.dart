@@ -100,120 +100,127 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    return Padding(
-      padding: EdgeInsets.only(bottom: bottomInset),
-      child: Container(
-        decoration: BoxDecoration(
-          color: _card,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        ),
-        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40.w,
-                  height: 4.h,
-                  margin: EdgeInsets.only(bottom: 16.h),
-                  decoration: BoxDecoration(
-                    color: _field,
-                    borderRadius: BorderRadius.circular(2.r),
+    // App-root tap-to-dismiss (main.dart GetMaterialApp.builder) is
+    // occluded inside modal sheets; unfocus here so a tap on the
+    // sheet's empty area closes the keyboard.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Padding(
+        padding: EdgeInsets.only(bottom: bottomInset),
+        child: Container(
+          decoration: BoxDecoration(
+            color: _card,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+          ),
+          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    margin: EdgeInsets.only(bottom: 16.h),
+                    decoration: BoxDecoration(
+                      color: _field,
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
                   ),
                 ),
-              ),
-              Text(
-                'Edit task',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(height: 16.h),
-              _label('Title'),
-              SizedBox(height: 6.h),
-              _textField(_titleController, hint: 'Task title'),
-              SizedBox(height: 14.h),
-              _label('Description'),
-              SizedBox(height: 6.h),
-              _textField(_descriptionController,
-                  hint: 'Optional details', maxLines: 3),
-              SizedBox(height: 14.h),
-              _label('Due date'),
-              SizedBox(height: 6.h),
-              InkWell(
-                onTap: _pickDueDate,
-                borderRadius: BorderRadius.circular(10.r),
-                child: Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-                  decoration: BoxDecoration(
-                    color: _field,
-                    borderRadius: BorderRadius.circular(10.r),
+                Text(
+                  'Edit task',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
                   ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_today_rounded,
-                          color: _muted, size: 18.sp),
-                      SizedBox(width: 10.w),
-                      Text(
-                        _dueDate != null
-                            ? DateFormat('EEE, MMM d, yyyy').format(_dueDate!)
-                            : 'Set a due date',
-                        style: GoogleFonts.inter(
-                          color: _dueDate != null ? Colors.white : _muted,
-                          fontSize: 14.sp,
+                ),
+                SizedBox(height: 16.h),
+                _label('Title'),
+                SizedBox(height: 6.h),
+                _textField(_titleController, hint: 'Task title'),
+                SizedBox(height: 14.h),
+                _label('Description'),
+                SizedBox(height: 6.h),
+                _textField(_descriptionController,
+                    hint: 'Optional details', maxLines: 3),
+                SizedBox(height: 14.h),
+                _label('Due date'),
+                SizedBox(height: 6.h),
+                InkWell(
+                  onTap: _pickDueDate,
+                  borderRadius: BorderRadius.circular(10.r),
+                  child: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                    decoration: BoxDecoration(
+                      color: _field,
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.calendar_today_rounded,
+                            color: _muted, size: 18.sp),
+                        SizedBox(width: 10.w),
+                        Text(
+                          _dueDate != null
+                              ? DateFormat('EEE, MMM d, yyyy').format(_dueDate!)
+                              : 'Set a due date',
+                          style: GoogleFonts.inter(
+                            color: _dueDate != null ? Colors.white : _muted,
+                            fontSize: 14.sp,
+                          ),
                         ),
+                        const Spacer(),
+                        if (_dueDate != null)
+                          GestureDetector(
+                            onTap: () => setState(() => _dueDate = null),
+                            child: Icon(Icons.close_rounded,
+                                color: _muted, size: 18.sp),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 14.h),
+                _label('Priority'),
+                SizedBox(height: 8.h),
+                Wrap(
+                  spacing: 8.w,
+                  children: [
+                    _priorityChip('Low', 1, const Color(0xFF10B981)),
+                    _priorityChip('Medium', 2, const Color(0xFF3B82F6)),
+                    _priorityChip('High', 3, const Color(0xFFFB923C)),
+                    _priorityChip('Urgent', 4, const Color(0xFFEF4444)),
+                  ],
+                ),
+                SizedBox(height: 24.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _purple,
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
-                      const Spacer(),
-                      if (_dueDate != null)
-                        GestureDetector(
-                          onTap: () => setState(() => _dueDate = null),
-                          child: Icon(Icons.close_rounded,
-                              color: _muted, size: 18.sp),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 14.h),
-              _label('Priority'),
-              SizedBox(height: 8.h),
-              Wrap(
-                spacing: 8.w,
-                children: [
-                  _priorityChip('Low', 1, const Color(0xFF10B981)),
-                  _priorityChip('Medium', 2, const Color(0xFF3B82F6)),
-                  _priorityChip('High', 3, const Color(0xFFFB923C)),
-                  _priorityChip('Urgent', 4, const Color(0xFFEF4444)),
-                ],
-              ),
-              SizedBox(height: 24.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _purple,
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
                     ),
-                  ),
-                  child: Text(
-                    'Save changes',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
+                    child: Text(
+                      'Save changes',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -229,8 +236,7 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
         ),
       );
 
-  Widget _textField(TextEditingController c,
-      {String? hint, int maxLines = 1}) {
+  Widget _textField(TextEditingController c, {String? hint, int maxLines = 1}) {
     return TextField(
       controller: c,
       maxLines: maxLines,
@@ -240,8 +246,7 @@ class _TaskEditSheetState extends State<TaskEditSheet> {
         hintStyle: GoogleFonts.inter(color: _muted, fontSize: 14.sp),
         filled: true,
         fillColor: _field,
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+        contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.r),
           borderSide: BorderSide.none,

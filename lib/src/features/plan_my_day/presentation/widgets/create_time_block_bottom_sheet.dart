@@ -22,10 +22,12 @@ class CreateTimeBlockBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<CreateTimeBlockBottomSheet> createState() => _CreateTimeBlockBottomSheetState();
+  State<CreateTimeBlockBottomSheet> createState() =>
+      _CreateTimeBlockBottomSheetState();
 }
 
-class _CreateTimeBlockBottomSheetState extends State<CreateTimeBlockBottomSheet> {
+class _CreateTimeBlockBottomSheetState
+    extends State<CreateTimeBlockBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -40,12 +42,42 @@ class _CreateTimeBlockBottomSheetState extends State<CreateTimeBlockBottomSheet>
 
   // Predefined colors for time blocks
   static const List<Map<String, dynamic>> _blockTypes = [
-    {'type': 'focused_work', 'label': 'Focused Work', 'color': '#3B82F6', 'icon': Icons.work_outline},
-    {'type': 'meeting', 'label': 'Meeting', 'color': '#EF4444', 'icon': Icons.groups},
-    {'type': 'break', 'label': 'Break', 'color': '#10B981', 'icon': Icons.free_breakfast},
-    {'type': 'exercise', 'label': 'Exercise', 'color': '#F59E0B', 'icon': Icons.fitness_center},
-    {'type': 'commute', 'label': 'Commute', 'color': '#8B5CF6', 'icon': Icons.directions_car},
-    {'type': 'other', 'label': 'Other', 'color': '#6B7280', 'icon': Icons.more_horiz},
+    {
+      'type': 'focused_work',
+      'label': 'Focused Work',
+      'color': '#3B82F6',
+      'icon': Icons.work_outline
+    },
+    {
+      'type': 'meeting',
+      'label': 'Meeting',
+      'color': '#EF4444',
+      'icon': Icons.groups
+    },
+    {
+      'type': 'break',
+      'label': 'Break',
+      'color': '#10B981',
+      'icon': Icons.free_breakfast
+    },
+    {
+      'type': 'exercise',
+      'label': 'Exercise',
+      'color': '#F59E0B',
+      'icon': Icons.fitness_center
+    },
+    {
+      'type': 'commute',
+      'label': 'Commute',
+      'color': '#8B5CF6',
+      'icon': Icons.directions_car
+    },
+    {
+      'type': 'other',
+      'label': 'Other',
+      'color': '#6B7280',
+      'icon': Icons.more_horiz
+    },
   ];
 
   @override
@@ -68,210 +100,219 @@ class _CreateTimeBlockBottomSheetState extends State<CreateTimeBlockBottomSheet>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24.h,
-        top: 24.h,
-        left: 24.w,
-        right: 24.w,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Create Time Block',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w600,
+    // App-root tap-to-dismiss (main.dart GetMaterialApp.builder) is
+    // occluded inside modal sheets; unfocus here so a tap on the
+    // sheet's empty area closes the keyboard.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24.h,
+          top: 24.h,
+          left: 24.w,
+          right: 24.w,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Create Time Block',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.grey),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-            SizedBox(height: 24.h),
-
-            // Time Range Picker
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTimePicker(
-                    label: 'Start Time',
-                    time: _startTime,
-                    onTap: () => _selectStartTime(context),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.grey),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                ),
-                SizedBox(width: 16.w),
-                Icon(
-                  Icons.arrow_forward,
-                  color: Colors.grey[600],
-                  size: 20,
-                ),
-                SizedBox(width: 16.w),
-                Expanded(
-                  child: _buildTimePicker(
-                    label: 'End Time',
-                    time: _endTime,
-                    onTap: () => _selectEndTime(context),
+                ],
+              ),
+              SizedBox(height: 24.h),
+
+              // Time Range Picker
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTimePicker(
+                      label: 'Start Time',
+                      time: _startTime,
+                      onTap: () => _selectStartTime(context),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-
-            // Title Input
-            TextFormField(
-              controller: _titleController,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16.sp,
-              ),
-              decoration: InputDecoration(
-                labelText: 'Title (Optional)',
-                labelStyle: TextStyle(color: Colors.grey[400]),
-                hintText: 'e.g., Deep Work',
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                filled: true,
-                fillColor: const Color(0xFF2D2D2D),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: Colors.grey[800]!),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: Colors.grey[800]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: const BorderSide(color: Color(0xFF3B82F6)),
-                ),
-              ),
-            ),
-            SizedBox(height: 16.h),
-
-            // Block Type Selection
-            Text(
-              'Block Type',
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 14.sp,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Wrap(
-              spacing: 8.w,
-              runSpacing: 8.h,
-              children: _blockTypes.map((blockType) {
-                final isSelected = _blockType == blockType['type'];
-                final color = Color(int.parse(blockType['color'].replaceAll('#', '0xFF')));
-                return _buildBlockTypeChip(
-                  blockType['label'],
-                  blockType['type'],
-                  blockType['icon'],
-                  color,
-                  isSelected,
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 16.h),
-
-            // Description (Optional)
-            TextFormField(
-              controller: _descriptionController,
-              maxLines: 2,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16.sp,
-              ),
-              decoration: InputDecoration(
-                labelText: 'Notes (Optional)',
-                labelStyle: TextStyle(color: Colors.grey[400]),
-                hintText: 'Add any notes',
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                filled: true,
-                fillColor: const Color(0xFF2D2D2D),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: Colors.grey[800]!),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: Colors.grey[800]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: const BorderSide(color: Color(0xFF3B82F6)),
-                ),
-              ),
-            ),
-            SizedBox(height: 16.h),
-
-            // Lock Toggle
-            Row(
-              children: [
-                Switch(
-                  value: _isLocked,
-                  onChanged: (value) {
-                    setState(() {
-                      _isLocked = value;
-                    });
-                  },
-                  activeColor: const Color(0xFF3B82F6),
-                ),
-                SizedBox(width: 12.w),
-                Text(
-                  'Lock this time block',
-                  style: TextStyle(
-                    color: Colors.grey[300],
-                    fontSize: 14.sp,
+                  SizedBox(width: 16.w),
+                  Icon(
+                    Icons.arrow_forward,
+                    color: Colors.grey[600],
+                    size: 20,
                   ),
-                ),
-                const Spacer(),
-                Icon(
-                  Icons.lock_outline,
-                  color: _isLocked ? const Color(0xFF3B82F6) : Colors.grey[600],
-                  size: 16,
-                ),
-              ],
-            ),
-            SizedBox(height: 24.h),
-
-            // Create Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _submitTimeBlock,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  minimumSize: Size(double.infinity, 50.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+                  SizedBox(width: 16.w),
+                  Expanded(
+                    child: _buildTimePicker(
+                      label: 'End Time',
+                      time: _endTime,
+                      onTap: () => _selectEndTime(context),
+                    ),
                   ),
+                ],
+              ),
+              SizedBox(height: 16.h),
+
+              // Title Input
+              TextFormField(
+                controller: _titleController,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.sp,
                 ),
-                child: Text(
-                  'Create Time Block',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
+                decoration: InputDecoration(
+                  labelText: 'Title (Optional)',
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  hintText: 'e.g., Deep Work',
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  filled: true,
+                  fillColor: const Color(0xFF2D2D2D),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: BorderSide(color: Colors.grey[800]!),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: BorderSide(color: Colors.grey[800]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: const BorderSide(color: Color(0xFF3B82F6)),
                   ),
                 ),
               ),
-            ),
-          ],
+              SizedBox(height: 16.h),
+
+              // Block Type Selection
+              Text(
+                'Block Type',
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 14.sp,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Wrap(
+                spacing: 8.w,
+                runSpacing: 8.h,
+                children: _blockTypes.map((blockType) {
+                  final isSelected = _blockType == blockType['type'];
+                  final color = Color(
+                      int.parse(blockType['color'].replaceAll('#', '0xFF')));
+                  return _buildBlockTypeChip(
+                    blockType['label'],
+                    blockType['type'],
+                    blockType['icon'],
+                    color,
+                    isSelected,
+                  );
+                }).toList(),
+              ),
+              SizedBox(height: 16.h),
+
+              // Description (Optional)
+              TextFormField(
+                controller: _descriptionController,
+                maxLines: 2,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Notes (Optional)',
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  hintText: 'Add any notes',
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  filled: true,
+                  fillColor: const Color(0xFF2D2D2D),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: BorderSide(color: Colors.grey[800]!),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: BorderSide(color: Colors.grey[800]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+
+              // Lock Toggle
+              Row(
+                children: [
+                  Switch(
+                    value: _isLocked,
+                    onChanged: (value) {
+                      setState(() {
+                        _isLocked = value;
+                      });
+                    },
+                    activeColor: const Color(0xFF3B82F6),
+                  ),
+                  SizedBox(width: 12.w),
+                  Text(
+                    'Lock this time block',
+                    style: TextStyle(
+                      color: Colors.grey[300],
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    Icons.lock_outline,
+                    color:
+                        _isLocked ? const Color(0xFF3B82F6) : Colors.grey[600],
+                    size: 16,
+                  ),
+                ],
+              ),
+              SizedBox(height: 24.h),
+
+              // Create Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _submitTimeBlock,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    minimumSize: Size(double.infinity, 50.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  child: Text(
+                    'Create Time Block',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -306,7 +347,8 @@ class _CreateTimeBlockBottomSheetState extends State<CreateTimeBlockBottomSheet>
               children: [
                 Icon(
                   Icons.access_time,
-                  color: time != null ? const Color(0xFF3B82F6) : Colors.grey[600],
+                  color:
+                      time != null ? const Color(0xFF3B82F6) : Colors.grey[600],
                   size: 18,
                 ),
                 SizedBox(width: 8.w),
@@ -441,23 +483,27 @@ class _CreateTimeBlockBottomSheetState extends State<CreateTimeBlockBottomSheet>
       return;
     }
 
-    final startTimeStr = '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}';
-    final endTimeStr = '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}';
+    final startTimeStr =
+        '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}';
+    final endTimeStr =
+        '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}';
 
     context.read<PlanMyDayCubit>().createTimeBlock(
-      date: widget.selectedDate.toIso8601String().split('T')[0],
-      startTime: startTimeStr,
-      endTime: endTimeStr,
-      title: _titleController.text.isEmpty
-          ? _blockTypes.firstWhere((t) => t['type'] == _blockType)['label']
-          : _titleController.text,
-      description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
-      type: _blockType,
-      color: _color ?? '#3B82F6',
-      isLocked: _isLocked,
-      taskIds: _selectedTaskIds,
-      eventIds: _selectedEventIds,
-    );
+          date: widget.selectedDate.toIso8601String().split('T')[0],
+          startTime: startTimeStr,
+          endTime: endTimeStr,
+          title: _titleController.text.isEmpty
+              ? _blockTypes.firstWhere((t) => t['type'] == _blockType)['label']
+              : _titleController.text,
+          description: _descriptionController.text.isEmpty
+              ? null
+              : _descriptionController.text,
+          type: _blockType,
+          color: _color ?? '#3B82F6',
+          isLocked: _isLocked,
+          taskIds: _selectedTaskIds,
+          eventIds: _selectedEventIds,
+        );
 
     Navigator.pop(context);
     widget.onTimeBlockCreated();

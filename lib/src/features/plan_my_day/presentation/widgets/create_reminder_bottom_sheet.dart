@@ -18,7 +18,8 @@ class CreateReminderBottomSheet extends StatefulWidget {
   const CreateReminderBottomSheet({super.key, this.existing});
 
   @override
-  State<CreateReminderBottomSheet> createState() => _CreateReminderBottomSheetState();
+  State<CreateReminderBottomSheet> createState() =>
+      _CreateReminderBottomSheetState();
 }
 
 class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
@@ -52,13 +53,16 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
   void initState() {
     super.initState();
     final r = widget.existing;
-    final base = r?.eventTime ?? r?.remindAt ?? DateTime.now().add(const Duration(hours: 1));
+    final base = r?.eventTime ??
+        r?.remindAt ??
+        DateTime.now().add(const Duration(hours: 1));
     _date = DateTime(base.year, base.month, base.day);
     _time = TimeOfDay(hour: base.hour, minute: base.minute);
     if (r != null) {
       _titleController.text = r.title;
       _allDay = r.allDay;
-      _repeat = r.reminderType == 'recurring' ? (r.repeatPattern ?? 'daily') : 'once';
+      _repeat =
+          r.reminderType == 'recurring' ? (r.repeatPattern ?? 'daily') : 'once';
       _category = r.category;
       _dayBefore = r.leadOffsets.contains('day_before');
       _hourBefore = r.leadOffsets.contains('hour_before');
@@ -83,68 +87,78 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24.h,
-        top: 20.h,
-        left: 20.w,
-        right: 20.w,
-      ),
-      decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _isEdit ? 'Edit Reminder' : 'New Reminder',
-                    style: TextStyle(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w600),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.grey),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              SizedBox(height: 12.h),
-              _titleField(),
-              SizedBox(height: 16.h),
-              _label('Category'),
-              SizedBox(height: 8.h),
-              _categoryChips(),
-              SizedBox(height: 16.h),
-              _label('When'),
-              SizedBox(height: 8.h),
-              _dateRow(),
-              SizedBox(height: 8.h),
-              _allDaySwitch(),
-              if (!_allDay) ...[
+    // App-root tap-to-dismiss (main.dart GetMaterialApp.builder) is
+    // occluded inside modal sheets; unfocus here so a tap on the
+    // sheet's empty area closes the keyboard.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24.h,
+          top: 20.h,
+          left: 20.w,
+          right: 20.w,
+        ),
+        decoration: BoxDecoration(
+          color: _surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _isEdit ? 'Edit Reminder' : 'New Reminder',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w600),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12.h),
+                _titleField(),
+                SizedBox(height: 16.h),
+                _label('Category'),
                 SizedBox(height: 8.h),
-                _timeRow(),
+                _categoryChips(),
+                SizedBox(height: 16.h),
+                _label('When'),
+                SizedBox(height: 8.h),
+                _dateRow(),
+                SizedBox(height: 8.h),
+                _allDaySwitch(),
+                if (!_allDay) ...[
+                  SizedBox(height: 8.h),
+                  _timeRow(),
+                ],
+                SizedBox(height: 16.h),
+                _label('Repeat'),
+                SizedBox(height: 8.h),
+                _repeatChips(),
+                SizedBox(height: 16.h),
+                _label('Remind me'),
+                SizedBox(height: 4.h),
+                _leadOffsets(),
+                SizedBox(height: 16.h),
+                _label('Notify via'),
+                SizedBox(height: 4.h),
+                _channels(),
+                SizedBox(height: 20.h),
+                _saveButton(),
               ],
-              SizedBox(height: 16.h),
-              _label('Repeat'),
-              SizedBox(height: 8.h),
-              _repeatChips(),
-              SizedBox(height: 16.h),
-              _label('Remind me'),
-              SizedBox(height: 4.h),
-              _leadOffsets(),
-              SizedBox(height: 16.h),
-              _label('Notify via'),
-              SizedBox(height: 4.h),
-              _channels(),
-              SizedBox(height: 20.h),
-              _saveButton(),
-            ],
+            ),
           ),
         ),
       ),
@@ -153,7 +167,10 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
 
   Widget _label(String t) => Text(
         t,
-        style: TextStyle(color: Colors.grey[400], fontSize: 13.sp, fontWeight: FontWeight.w600),
+        style: TextStyle(
+            color: Colors.grey[400],
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w600),
       );
 
   Widget _titleField() {
@@ -161,7 +178,8 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
       controller: _titleController,
       style: TextStyle(color: Colors.white, fontSize: 16.sp),
       textCapitalization: TextCapitalization.sentences,
-      validator: (v) => (v == null || v.trim().isEmpty) ? 'Give your reminder a title' : null,
+      validator: (v) =>
+          (v == null || v.trim().isEmpty) ? 'Give your reminder a title' : null,
       decoration: InputDecoration(
         labelText: 'Title',
         labelStyle: TextStyle(color: Colors.grey[400]),
@@ -214,10 +232,13 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(c[2] as IconData, size: 16.sp, color: selected ? _accent : Colors.grey[400]),
+                Icon(c[2] as IconData,
+                    size: 16.sp, color: selected ? _accent : Colors.grey[400]),
                 SizedBox(width: 6.w),
                 Text(c[1] as String,
-                    style: TextStyle(color: selected ? Colors.white : Colors.grey[400], fontSize: 13.sp)),
+                    style: TextStyle(
+                        color: selected ? Colors.white : Colors.grey[400],
+                        fontSize: 13.sp)),
               ],
             ),
           ),
@@ -237,7 +258,8 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
           firstDate: DateTime.now().subtract(const Duration(days: 1)),
           lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
           builder: (ctx, child) => Theme(
-            data: Theme.of(ctx).copyWith(colorScheme: const ColorScheme.dark(primary: _accent)),
+            data: Theme.of(ctx).copyWith(
+                colorScheme: const ColorScheme.dark(primary: _accent)),
             child: child!,
           ),
         );
@@ -255,7 +277,8 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
           context: context,
           initialTime: _time,
           builder: (ctx, child) => Theme(
-            data: Theme.of(ctx).copyWith(colorScheme: const ColorScheme.dark(primary: _accent)),
+            data: Theme.of(ctx).copyWith(
+                colorScheme: const ColorScheme.dark(primary: _accent)),
             child: child!,
           ),
         );
@@ -264,7 +287,10 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
     );
   }
 
-  Widget _pickerTile({required IconData icon, required String label, required VoidCallback onTap}) {
+  Widget _pickerTile(
+      {required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -318,7 +344,9 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
               border: Border.all(color: selected ? _accent : Colors.grey[800]!),
             ),
             child: Text(r[1],
-                style: TextStyle(color: selected ? Colors.white : Colors.grey[400], fontSize: 13.sp)),
+                style: TextStyle(
+                    color: selected ? Colors.white : Colors.grey[400],
+                    fontSize: 13.sp)),
           ),
         );
       }).toList(),
@@ -366,9 +394,18 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
           onChanged: (v) => setState(() => _useProfileChannels = v),
         ),
         if (!_useProfileChannels) ...[
-          _checkTile(title: 'Push', value: _push, onChanged: (v) => setState(() => _push = v)),
-          _checkTile(title: 'Email', value: _email, onChanged: (v) => setState(() => _email = v)),
-          _checkTile(title: 'SMS', value: _sms, onChanged: (v) => setState(() => _sms = v)),
+          _checkTile(
+              title: 'Push',
+              value: _push,
+              onChanged: (v) => setState(() => _push = v)),
+          _checkTile(
+              title: 'Email',
+              value: _email,
+              onChanged: (v) => setState(() => _email = v)),
+          _checkTile(
+              title: 'SMS',
+              value: _sms,
+              onChanged: (v) => setState(() => _sms = v)),
         ],
       ],
     );
@@ -388,9 +425,12 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+                Text(title,
+                    style: TextStyle(color: Colors.white, fontSize: 15.sp)),
                 if (subtitle != null)
-                  Text(subtitle, style: TextStyle(color: Colors.grey[600], fontSize: 12.sp)),
+                  Text(subtitle,
+                      style:
+                          TextStyle(color: Colors.grey[600], fontSize: 12.sp)),
               ],
             ),
           ),
@@ -400,7 +440,10 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
     );
   }
 
-  Widget _checkTile({required String title, required bool value, required ValueChanged<bool> onChanged}) {
+  Widget _checkTile(
+      {required String title,
+      required bool value,
+      required ValueChanged<bool> onChanged}) {
     return InkWell(
       onTap: () => onChanged(!value),
       child: Padding(
@@ -425,16 +468,21 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
         style: ElevatedButton.styleFrom(
           backgroundColor: _accent,
           padding: EdgeInsets.symmetric(vertical: 14.h),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
         child: _submitting
             ? SizedBox(
                 height: 20.h,
                 width: 20.h,
-                child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: const CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white),
               )
             : Text(_isEdit ? 'Save changes' : 'Create reminder',
-                style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600)),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600)),
       ),
     );
   }
@@ -443,7 +491,9 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (!_dayBefore && !_hourBefore) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pick at least one reminder time (1 day / 1 hour before)')),
+        const SnackBar(
+            content: Text(
+                'Pick at least one reminder time (1 day / 1 hour before)')),
       );
       return;
     }
@@ -456,7 +506,8 @@ class _CreateReminderBottomSheetState extends State<CreateReminderBottomSheet> {
 
     final when = _allDay
         ? DateTime(_date.year, _date.month, _date.day) // local midnight
-        : DateTime(_date.year, _date.month, _date.day, _time.hour, _time.minute);
+        : DateTime(
+            _date.year, _date.month, _date.day, _time.hour, _time.minute);
 
     final offsets = <String>[
       if (_dayBefore) 'day_before',

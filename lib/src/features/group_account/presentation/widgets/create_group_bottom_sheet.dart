@@ -106,605 +106,641 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<GroupAccountCubit, GroupAccountState>(
-      listenWhen: (previous, current) {
-        // Only listen to states relevant to group creation
-        return current is GroupAccountLoading ||
-            current is GroupAccountGroupCreated ||
-            current is GroupAccountError;
-      },
-      listener: (context, state) {
-        if (state is GroupAccountLoading) {
-          setState(() => _isLoading = true);
-        } else if (state is GroupAccountGroupCreated) {
-          setState(() => _isLoading = false);
-          Get.back(); // Close bottom sheet
-        } else if (state is GroupAccountError) {
-          setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: const Color(0xFFEF4444),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-              behavior: SnackBarBehavior.floating,
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: BlocListener<GroupAccountCubit, GroupAccountState>(
+        listenWhen: (previous, current) {
+          // Only listen to states relevant to group creation
+          return current is GroupAccountLoading ||
+              current is GroupAccountGroupCreated ||
+              current is GroupAccountError;
+        },
+        listener: (context, state) {
+          if (state is GroupAccountLoading) {
+            setState(() => _isLoading = true);
+          } else if (state is GroupAccountGroupCreated) {
+            setState(() => _isLoading = false);
+            Get.back(); // Close bottom sheet
+          } else if (state is GroupAccountError) {
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: const Color(0xFFEF4444),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r)),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20.r),
+              topRight: Radius.circular(20.r),
             ),
-          );
-        }
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20.r),
-            topRight: Radius.circular(20.r),
+            border: Border(
+              top: BorderSide(color: const Color(0xFF2D2D2D)),
+              left: BorderSide(color: const Color(0xFF2D2D2D)),
+              right: BorderSide(color: const Color(0xFF2D2D2D)),
+            ),
           ),
-          border: Border(
-            top: BorderSide(color: const Color(0xFF2D2D2D)),
-            left: BorderSide(color: const Color(0xFF2D2D2D)),
-            right: BorderSide(color: const Color(0xFF2D2D2D)),
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.all(24.w),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Handle bar
-                    Center(
-                      child: Container(
-                        width: 40.w,
-                        height: 4.h,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[600],
-                          borderRadius: BorderRadius.circular(2.r),
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Handle bar
+                      Center(
+                        child: Container(
+                          width: 40.w,
+                          height: 4.h,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[600],
+                            borderRadius: BorderRadius.circular(2.r),
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 16.h),
+                      SizedBox(height: 16.h),
 
-                    // Header
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(12.w),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color.fromARGB(255, 78, 3, 208),
-                                const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
+                      // Header
+                      Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(12.w),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color.fromARGB(255, 78, 3, 208),
+                                  const Color.fromARGB(255, 78, 3, 208)
+                                      .withValues(alpha: 0.8),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            child: Icon(
+                              Icons.group_add,
+                              color: Colors.white,
+                              size: 24.sp,
+                            ),
+                          ),
+                          SizedBox(width: 16.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Create New Group',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Text(
+                                  'Start managing shared contributions',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13.sp,
+                                    color: Colors.grey[400],
+                                  ),
+                                ),
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(12.r),
                           ),
-                          child: Icon(
-                            Icons.group_add,
-                            color: Colors.white,
-                            size: 24.sp,
+                          IconButton(
+                            onPressed: () => Get.back(),
+                            icon: Icon(
+                              Icons.close,
+                              color: Colors.grey[400],
+                              size: 24.sp,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 16.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Create New Group',
-                                style: GoogleFonts.inter(
-                                  fontSize: 20.sp,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Text(
-                                'Start managing shared contributions',
-                                style: GoogleFonts.inter(
-                                  fontSize: 13.sp,
-                                  color: Colors.grey[400],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => Get.back(),
-                          icon: Icon(
-                            Icons.close,
-                            color: Colors.grey[400],
-                            size: 24.sp,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 18.h),
+                        ],
+                      ),
+                      SizedBox(height: 18.h),
 
-                    // Group Name Field
-                    Text(
-                      'Group Name',
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    TextFormField(
-                      controller: _nameController,
-                      style: GoogleFonts.inter(color: Colors.white),
-                      // Hard cap at the storage limit. Counter shown so the
-                      // user knows they're approaching the limit.
-                      maxLength: GroupValidators.nameMaxLength,
-                      inputFormatters: [
-                        LengthLimitingTextInputFormatter(GroupValidators.nameMaxLength),
-                      ],
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      textInputAction: TextInputAction.next,
-                      decoration: InputDecoration(
-                        hintText: 'Enter group name',
-                        hintStyle: GoogleFonts.inter(
-                          color: Colors.grey[500],
+                      // Group Name Field
+                      Text(
+                        'Group Name',
+                        style: GoogleFonts.inter(
                           fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
-                        prefixIcon: Icon(
-                          Icons.group,
-                          color: const Color.fromARGB(255, 78, 3, 208),
-                          size: 20.sp,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color.fromARGB(255, 78, 3, 208),
-                            width: 2,
+                      ),
+                      SizedBox(height: 8.h),
+                      TextFormField(
+                        controller: _nameController,
+                        style: GoogleFonts.inter(color: Colors.white),
+                        // Hard cap at the storage limit. Counter shown so the
+                        // user knows they're approaching the limit.
+                        maxLength: GroupValidators.nameMaxLength,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(
+                              GroupValidators.nameMaxLength),
+                        ],
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        textInputAction: TextInputAction.next,
+                        decoration: InputDecoration(
+                          hintText: 'Enter group name',
+                          hintStyle: GoogleFonts.inter(
+                            color: Colors.grey[500],
+                            fontSize: 14.sp,
                           ),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(color: Color(0xFFEF4444)),
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFF0A0A0A),
-                        counterStyle: GoogleFonts.inter(
-                          color: Colors.grey[500],
-                          fontSize: 11.sp,
-                        ),
-                      ),
-                      validator: GroupValidators.name,
-                    ),
-                    SizedBox(height: 16.h),
-
-                    // Description Field
-                    Text(
-                      'Description',
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    TextFormField(
-                      controller: _descriptionController,
-                      maxLines: 3,
-                      maxLength: GroupValidators.descriptionMaxLength,
-                      inputFormatters: [
-                        LengthLimitingTextInputFormatter(GroupValidators.descriptionMaxLength),
-                      ],
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      style: GoogleFonts.inter(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'Describe the purpose of this group...',
-                        hintStyle: GoogleFonts.inter(
-                          color: Colors.grey[500],
-                          fontSize: 14.sp,
-                        ),
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.only(bottom: 40.h),
-                          child: Icon(
-                            Icons.description,
+                          prefixIcon: Icon(
+                            Icons.group,
                             color: const Color.fromARGB(255, 78, 3, 208),
                             size: 20.sp,
                           ),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color.fromARGB(255, 78, 3, 208),
-                            width: 2,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide:
+                                BorderSide(color: const Color(0xFF2D2D2D)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide:
+                                BorderSide(color: const Color(0xFF2D2D2D)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide: const BorderSide(
+                              color: Color.fromARGB(255, 78, 3, 208),
+                              width: 2,
+                            ),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFEF4444)),
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFF0A0A0A),
+                          counterStyle: GoogleFonts.inter(
+                            color: Colors.grey[500],
+                            fontSize: 11.sp,
                           ),
                         ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(color: Color(0xFFEF4444)),
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFF0A0A0A),
-                        counterStyle: GoogleFonts.inter(
-                          color: Colors.grey[500],
-                          fontSize: 11.sp,
-                        ),
+                        validator: GroupValidators.name,
                       ),
-                      validator: GroupValidators.description,
-                    ),
-                    SizedBox(height: 16.h),
+                      SizedBox(height: 16.h),
 
-                    // Visibility Selection
-                    Text(
-                      'Visibility',
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                      // Description Field
+                      Text(
+                        'Description',
+                        style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() => _isPublic = false),
-                            child: Container(
-                              padding: EdgeInsets.all(14.w),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0A0A0A),
-                                borderRadius: BorderRadius.circular(12.r),
-                                border: Border.all(
-                                  color: !_isPublic
-                                      ? const Color.fromARGB(255, 78, 3, 208)
-                                      : const Color(0xFF2D2D2D),
-                                  width: !_isPublic ? 2 : 1,
-                                ),
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.lock_outline,
+                      SizedBox(height: 8.h),
+                      TextFormField(
+                        controller: _descriptionController,
+                        maxLines: 3,
+                        maxLength: GroupValidators.descriptionMaxLength,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(
+                              GroupValidators.descriptionMaxLength),
+                        ],
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        style: GoogleFonts.inter(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Describe the purpose of this group...',
+                          hintStyle: GoogleFonts.inter(
+                            color: Colors.grey[500],
+                            fontSize: 14.sp,
+                          ),
+                          prefixIcon: Padding(
+                            padding: EdgeInsets.only(bottom: 40.h),
+                            child: Icon(
+                              Icons.description,
+                              color: const Color.fromARGB(255, 78, 3, 208),
+                              size: 20.sp,
+                            ),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide:
+                                BorderSide(color: const Color(0xFF2D2D2D)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide:
+                                BorderSide(color: const Color(0xFF2D2D2D)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide: const BorderSide(
+                              color: Color.fromARGB(255, 78, 3, 208),
+                              width: 2,
+                            ),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFEF4444)),
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFF0A0A0A),
+                          counterStyle: GoogleFonts.inter(
+                            color: Colors.grey[500],
+                            fontSize: 11.sp,
+                          ),
+                        ),
+                        validator: GroupValidators.description,
+                      ),
+                      SizedBox(height: 16.h),
+
+                      // Visibility Selection
+                      Text(
+                        'Visibility',
+                        style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => _isPublic = false),
+                              child: Container(
+                                padding: EdgeInsets.all(14.w),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0A0A0A),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: Border.all(
                                     color: !_isPublic
                                         ? const Color.fromARGB(255, 78, 3, 208)
-                                        : const Color(0xFF9CA3AF),
-                                    size: 24.sp,
+                                        : const Color(0xFF2D2D2D),
+                                    width: !_isPublic ? 2 : 1,
                                   ),
-                                  SizedBox(height: 8.h),
-                                  Text(
-                                    'Private',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: !_isPublic ? Colors.white : const Color(0xFF9CA3AF),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.lock_outline,
+                                      color: !_isPublic
+                                          ? const Color.fromARGB(
+                                              255, 78, 3, 208)
+                                          : const Color(0xFF9CA3AF),
+                                      size: 24.sp,
                                     ),
-                                  ),
-                                  SizedBox(height: 4.h),
-                                  Text(
-                                    'Only invited members can see and join',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 11.sp,
-                                      color: Colors.grey[500],
+                                    SizedBox(height: 8.h),
+                                    Text(
+                                      'Private',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: !_isPublic
+                                            ? Colors.white
+                                            : const Color(0xFF9CA3AF),
+                                      ),
                                     ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
+                                    SizedBox(height: 4.h),
+                                    Text(
+                                      'Only invited members can see and join',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 11.sp,
+                                        color: Colors.grey[500],
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() => _isPublic = true),
-                            child: Container(
-                              padding: EdgeInsets.all(14.w),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0A0A0A),
-                                borderRadius: BorderRadius.circular(12.r),
-                                border: Border.all(
-                                  color: _isPublic
-                                      ? const Color.fromARGB(255, 78, 3, 208)
-                                      : const Color(0xFF2D2D2D),
-                                  width: _isPublic ? 2 : 1,
-                                ),
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.public,
-                                    color: _isPublic
-                                        ? const Color.fromARGB(255, 78, 3, 208)
-                                        : const Color(0xFF9CA3AF),
-                                    size: 24.sp,
-                                  ),
-                                  SizedBox(height: 8.h),
-                                  Text(
-                                    'Public',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: _isPublic ? Colors.white : const Color(0xFF9CA3AF),
-                                    ),
-                                  ),
-                                  SizedBox(height: 4.h),
-                                  Text(
-                                    'Anyone can discover and join your group',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 11.sp,
-                                      color: Colors.grey[500],
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16.h),
-
-                    // External Links Section
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.link,
-                          color: const Color.fromARGB(255, 78, 3, 208),
-                          size: 18.sp,
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          'Social Media Links (Optional)',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      'Add WhatsApp or Telegram group links for members',
-                      style: GoogleFonts.inter(
-                        color: Colors.grey[400],
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                    SizedBox(height: 16.h),
-
-                    // WhatsApp Link Field
-                    TextFormField(
-                      controller: _whatsappLinkController,
-                      focusNode: _whatsappFocus,
-                      style: GoogleFonts.inter(color: Colors.white),
-                      keyboardType: TextInputType.url,
-                      maxLength: GroupValidators.linkMaxLength,
-                      inputFormatters: [
-                        LengthLimitingTextInputFormatter(GroupValidators.linkMaxLength),
-                      ],
-                      // The TextFormField has its own validator so it gets
-                      // checked again at form-submit time. The errorText
-                      // below is what drives the focus-aware "show on blur,
-                      // hide on type" behaviour: we set _whatsappError on
-                      // focus loss, clear it as soon as the user starts
-                      // typing again. Both gates the submit button.
-                      // Validator runs against the raw FormField value
-                      // (suffix only). Reconstruct the full URL before
-                      // delegating so the canonical regex still applies.
-                      validator: (v) =>
-                          GroupValidators.whatsappLink(buildSocialFullUrl(v ?? '', whatsappLinkPrefix)),
-                      decoration: InputDecoration(
-                        hintText: 'invite-code',
-                        hintStyle: GoogleFonts.inter(
-                          color: Colors.grey[500],
-                          fontSize: 14.sp,
-                        ),
-                        // Always-visible platform + domain lockup. Material's
-                        // prefix/prefixText both hide when the field is empty +
-                        // unfocused (which left just a lone icon + a floating
-                        // hint — the unprofessional look). Rendering it as the
-                        // prefixIcon keeps "chat.whatsapp.com/" permanently
-                        // visible so the field reads as a real labeled input.
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.only(left: 12.w, right: 8.w),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.chat_rounded,
-                                  color: const Color(0xFF25D366), size: 18.sp),
-                              SizedBox(width: 6.w),
-                              Text(
-                                'chat.whatsapp.com/',
-                                style: GoogleFonts.inter(
-                                  color: Colors.grey[400],
-                                  fontSize: 13.sp,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        prefixIconConstraints:
-                            const BoxConstraints(minWidth: 0, minHeight: 0),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF25D366),
-                            width: 2,
-                          ),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(color: Color(0xFFEF4444)),
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFF0A0A0A),
-                        errorText: _whatsappError,
-                        errorStyle: GoogleFonts.inter(
-                          color: const Color(0xFFEF4444),
-                          fontSize: 12.sp,
-                        ),
-                        counterText: '',
-                      ),
-                    ),
-                    SizedBox(height: 12.h),
-
-                    // Telegram Link Field
-                    TextFormField(
-                      controller: _telegramLinkController,
-                      focusNode: _telegramFocus,
-                      style: GoogleFonts.inter(color: Colors.white),
-                      keyboardType: TextInputType.url,
-                      maxLength: GroupValidators.linkMaxLength,
-                      inputFormatters: [
-                        LengthLimitingTextInputFormatter(GroupValidators.linkMaxLength),
-                      ],
-                      validator: (v) =>
-                          GroupValidators.telegramLink(buildSocialFullUrl(v ?? '', telegramLinkPrefix)),
-                      decoration: InputDecoration(
-                        hintText: 'group-handle',
-                        hintStyle: GoogleFonts.inter(
-                          color: Colors.grey[500],
-                          fontSize: 14.sp,
-                        ),
-                        // Always-visible platform + domain lockup (see WhatsApp
-                        // field above for why this lives in prefixIcon).
-                        prefixIcon: Padding(
-                          padding: EdgeInsets.only(left: 12.w, right: 8.w),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.send_rounded,
-                                  color: const Color(0xFF0088CC), size: 18.sp),
-                              SizedBox(width: 6.w),
-                              Text(
-                                't.me/',
-                                style: GoogleFonts.inter(
-                                  color: Colors.grey[400],
-                                  fontSize: 13.sp,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        prefixIconConstraints:
-                            const BoxConstraints(minWidth: 0, minHeight: 0),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF0088CC),
-                            width: 2,
-                          ),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(color: Color(0xFFEF4444)),
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFF0A0A0A),
-                        errorText: _telegramError,
-                        errorStyle: GoogleFonts.inter(
-                          color: const Color(0xFFEF4444),
-                          fontSize: 12.sp,
-                        ),
-                        counterText: '',
-                      ),
-                    ),
-                    SizedBox(height: 18.h),
-
-                    // Info Card
-                    Container(
-                      padding: EdgeInsets.all(16.w),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: const Color.fromARGB(255, 78, 3, 208),
-                            size: 20.sp,
                           ),
                           SizedBox(width: 12.w),
                           Expanded(
-                            child: Text(
-                              'You will be the admin of this group and can add members and manage contributions.',
-                              style: GoogleFonts.inter(
-                                fontSize: 12.sp,
-                                color: Colors.grey[300],
-                                height: 1.4,
+                            child: GestureDetector(
+                              onTap: () => setState(() => _isPublic = true),
+                              child: Container(
+                                padding: EdgeInsets.all(14.w),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0A0A0A),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: Border.all(
+                                    color: _isPublic
+                                        ? const Color.fromARGB(255, 78, 3, 208)
+                                        : const Color(0xFF2D2D2D),
+                                    width: _isPublic ? 2 : 1,
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.public,
+                                      color: _isPublic
+                                          ? const Color.fromARGB(
+                                              255, 78, 3, 208)
+                                          : const Color(0xFF9CA3AF),
+                                      size: 24.sp,
+                                    ),
+                                    SizedBox(height: 8.h),
+                                    Text(
+                                      'Public',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: _isPublic
+                                            ? Colors.white
+                                            : const Color(0xFF9CA3AF),
+                                      ),
+                                    ),
+                                    SizedBox(height: 4.h),
+                                    Text(
+                                      'Anyone can discover and join your group',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 11.sp,
+                                        color: Colors.grey[500],
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    SizedBox(height: 18.h),
+                      SizedBox(height: 16.h),
 
-                    // Create Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _createGroup,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor: Colors.grey[700],
-                          padding: EdgeInsets.symmetric(vertical: 16.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
+                      // External Links Section
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.link,
+                            color: const Color.fromARGB(255, 78, 3, 208),
+                            size: 18.sp,
                           ),
-                          elevation: 0,
+                          SizedBox(width: 8.w),
+                          Text(
+                            'Social Media Links (Optional)',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'Add WhatsApp or Telegram group links for members',
+                        style: GoogleFonts.inter(
+                          color: Colors.grey[400],
+                          fontSize: 12.sp,
                         ),
-                        child: _isLoading
-                            ? LazerVaultLoader.small()
-                            : Text(
-                                'Create Group',
+                      ),
+                      SizedBox(height: 16.h),
+
+                      // WhatsApp Link Field
+                      TextFormField(
+                        controller: _whatsappLinkController,
+                        focusNode: _whatsappFocus,
+                        style: GoogleFonts.inter(color: Colors.white),
+                        keyboardType: TextInputType.url,
+                        maxLength: GroupValidators.linkMaxLength,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(
+                              GroupValidators.linkMaxLength),
+                        ],
+                        // The TextFormField has its own validator so it gets
+                        // checked again at form-submit time. The errorText
+                        // below is what drives the focus-aware "show on blur,
+                        // hide on type" behaviour: we set _whatsappError on
+                        // focus loss, clear it as soon as the user starts
+                        // typing again. Both gates the submit button.
+                        // Validator runs against the raw FormField value
+                        // (suffix only). Reconstruct the full URL before
+                        // delegating so the canonical regex still applies.
+                        validator: (v) => GroupValidators.whatsappLink(
+                            buildSocialFullUrl(v ?? '', whatsappLinkPrefix)),
+                        decoration: InputDecoration(
+                          hintText: 'invite-code',
+                          hintStyle: GoogleFonts.inter(
+                            color: Colors.grey[500],
+                            fontSize: 14.sp,
+                          ),
+                          // Always-visible platform + domain lockup. Material's
+                          // prefix/prefixText both hide when the field is empty +
+                          // unfocused (which left just a lone icon + a floating
+                          // hint — the unprofessional look). Rendering it as the
+                          // prefixIcon keeps "chat.whatsapp.com/" permanently
+                          // visible so the field reads as a real labeled input.
+                          prefixIcon: Padding(
+                            padding: EdgeInsets.only(left: 12.w, right: 8.w),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.chat_rounded,
+                                    color: const Color(0xFF25D366),
+                                    size: 18.sp),
+                                SizedBox(width: 6.w),
+                                Text(
+                                  'chat.whatsapp.com/',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.grey[400],
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          prefixIconConstraints:
+                              const BoxConstraints(minWidth: 0, minHeight: 0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide:
+                                BorderSide(color: const Color(0xFF2D2D2D)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide:
+                                BorderSide(color: const Color(0xFF2D2D2D)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF25D366),
+                              width: 2,
+                            ),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFEF4444)),
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFF0A0A0A),
+                          errorText: _whatsappError,
+                          errorStyle: GoogleFonts.inter(
+                            color: const Color(0xFFEF4444),
+                            fontSize: 12.sp,
+                          ),
+                          counterText: '',
+                        ),
+                      ),
+                      SizedBox(height: 12.h),
+
+                      // Telegram Link Field
+                      TextFormField(
+                        controller: _telegramLinkController,
+                        focusNode: _telegramFocus,
+                        style: GoogleFonts.inter(color: Colors.white),
+                        keyboardType: TextInputType.url,
+                        maxLength: GroupValidators.linkMaxLength,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(
+                              GroupValidators.linkMaxLength),
+                        ],
+                        validator: (v) => GroupValidators.telegramLink(
+                            buildSocialFullUrl(v ?? '', telegramLinkPrefix)),
+                        decoration: InputDecoration(
+                          hintText: 'group-handle',
+                          hintStyle: GoogleFonts.inter(
+                            color: Colors.grey[500],
+                            fontSize: 14.sp,
+                          ),
+                          // Always-visible platform + domain lockup (see WhatsApp
+                          // field above for why this lives in prefixIcon).
+                          prefixIcon: Padding(
+                            padding: EdgeInsets.only(left: 12.w, right: 8.w),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.send_rounded,
+                                    color: const Color(0xFF0088CC),
+                                    size: 18.sp),
+                                SizedBox(width: 6.w),
+                                Text(
+                                  't.me/',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.grey[400],
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          prefixIconConstraints:
+                              const BoxConstraints(minWidth: 0, minHeight: 0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide:
+                                BorderSide(color: const Color(0xFF2D2D2D)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide:
+                                BorderSide(color: const Color(0xFF2D2D2D)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF0088CC),
+                              width: 2,
+                            ),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFEF4444)),
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFF0A0A0A),
+                          errorText: _telegramError,
+                          errorStyle: GoogleFonts.inter(
+                            color: const Color(0xFFEF4444),
+                            fontSize: 12.sp,
+                          ),
+                          counterText: '',
+                        ),
+                      ),
+                      SizedBox(height: 18.h),
+
+                      // Info Card
+                      Container(
+                        padding: EdgeInsets.all(16.w),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              color: const Color.fromARGB(255, 78, 3, 208),
+                              size: 20.sp,
+                            ),
+                            SizedBox(width: 12.w),
+                            Expanded(
+                              child: Text(
+                                'You will be the admin of this group and can add members and manage contributions.',
                                 style: GoogleFonts.inter(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12.sp,
+                                  color: Colors.grey[300],
+                                  height: 1.4,
                                 ),
                               ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 16.h),
-                  ],
+                      SizedBox(height: 18.h),
+
+                      // Create Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _createGroup,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(255, 78, 3, 208),
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: Colors.grey[700],
+                            padding: EdgeInsets.symmetric(vertical: 16.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: _isLoading
+                              ? LazerVaultLoader.small()
+                              : Text(
+                                  'Create Group',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      SizedBox(height: 16.h),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -724,11 +760,13 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
 
       // Controllers hold suffix only; rebuild full URL with the
       // canonical prefix that was rendered as InputDecoration.prefixText.
-      final whatsappFull = buildSocialFullUrl(_whatsappLinkController.text, whatsappLinkPrefix);
+      final whatsappFull =
+          buildSocialFullUrl(_whatsappLinkController.text, whatsappLinkPrefix);
       if (whatsappFull != null) {
         metadata['whatsapp_group_link'] = whatsappFull;
       }
-      final telegramFull = buildSocialFullUrl(_telegramLinkController.text, telegramLinkPrefix);
+      final telegramFull =
+          buildSocialFullUrl(_telegramLinkController.text, telegramLinkPrefix);
       if (telegramFull != null) {
         metadata['telegram_group_link'] = telegramFull;
       }
@@ -737,8 +775,9 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
             name: _nameController.text.trim(),
             description: _descriptionController.text.trim(),
             metadata: metadata.isEmpty ? null : metadata,
-            visibility: _isPublic ? GroupVisibility.public : GroupVisibility.private,
+            visibility:
+                _isPublic ? GroupVisibility.public : GroupVisibility.private,
           );
     }
   }
-} 
+}

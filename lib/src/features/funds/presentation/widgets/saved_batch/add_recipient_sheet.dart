@@ -18,7 +18,6 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'add_recipient_sheet_widgets.dart';
 
-
 class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
@@ -88,92 +87,100 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Container(
-        constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.92),
-        decoration: BoxDecoration(
-          color: btCard,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle bar
-            Container(
-              margin: EdgeInsets.only(top: 10.h),
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: btBorder,
-                borderRadius: BorderRadius.circular(2.r),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Container(
+          constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.92),
+          decoration: BoxDecoration(
+            color: btCard,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                margin: EdgeInsets.only(top: 10.h),
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: btBorder,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 6.h),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text('Add recipient',
-                        style: GoogleFonts.inter(
-                            color: btTextPrimary,
-                            fontSize: 17.sp,
-                            fontWeight: FontWeight.w700)),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: 32.w,
-                      height: 32.w,
-                      decoration: BoxDecoration(
-                          color: btBackground, shape: BoxShape.circle),
-                      child: Icon(Icons.close,
-                          color: btTextSecondary, size: 16.sp),
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 6.h),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text('Add recipient',
+                          style: GoogleFonts.inter(
+                              color: btTextPrimary,
+                              fontSize: 17.sp,
+                              fontWeight: FontWeight.w700)),
                     ),
-                  ),
-                ],
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Container(
+                        width: 32.w,
+                        height: 32.w,
+                        decoration: BoxDecoration(
+                            color: btBackground, shape: BoxShape.circle),
+                        child: Icon(Icons.close,
+                            color: btTextSecondary, size: 16.sp),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 16.w),
-              decoration: BoxDecoration(
-                color: btBackground,
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                indicatorSize: TabBarIndicatorSize.tab,
-                indicator: BoxDecoration(
-                color: const Color(0xFF9B6DFF),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 16.w),
+                decoration: BoxDecoration(
+                  color: btBackground,
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                indicatorPadding: EdgeInsets.all(3.w),
-                labelColor: Colors.white,
-                unselectedLabelColor: btTextSecondary,
-                labelStyle: GoogleFonts.inter(
-                    fontSize: 12.sp, fontWeight: FontWeight.w600),
-                dividerColor: Colors.transparent,
-                tabs: const [
-                  Tab(text: 'Saved'),
-                  Tab(text: 'Bank'),
-                  Tab(text: 'Tag / Phone'),
-                ],
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicator: BoxDecoration(
+                    color: const Color(0xFF9B6DFF),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  indicatorPadding: EdgeInsets.all(3.w),
+                  labelColor: Colors.white,
+                  unselectedLabelColor: btTextSecondary,
+                  labelStyle: GoogleFonts.inter(
+                      fontSize: 12.sp, fontWeight: FontWeight.w600),
+                  dividerColor: Colors.transparent,
+                  tabs: const [
+                    Tab(text: 'Saved'),
+                    Tab(text: 'Bank'),
+                    Tab(text: 'Tag / Phone'),
+                  ],
+                ),
               ),
-            ),
-            SizedBox(height: 8.h),
-            Flexible(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildSavedTab(),
-                  _buildBankTab(),
-                  _buildTagTab(),
-                ],
+              SizedBox(height: 8.h),
+              Flexible(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildSavedTab(),
+                    _buildBankTab(),
+                    _buildTagTab(),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -185,8 +192,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
     return BlocBuilder<RecipientCubit, RecipientState>(
       builder: (context, state) {
         if (state is RecipientLoading) {
-          return const Center(
-              child: LazerVaultLoader.small());
+          return const Center(child: LazerVaultLoader.small());
         }
         if (state is RecipientError) {
           return Center(
@@ -254,7 +260,8 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
                         ),
                         child: Center(
                           child: already
-                              ? Icon(Icons.done, color: btTextSecondary, size: 16.sp)
+                              ? Icon(Icons.done,
+                                  color: btTextSecondary, size: 16.sp)
                               : Text(
                                   r.name.isNotEmpty
                                       ? r.name[0].toUpperCase()
@@ -279,11 +286,9 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
                                     fontSize: 13.sp,
                                     fontWeight: FontWeight.w600)),
                             SizedBox(height: 2.h),
-                            Text(
-                                '${r.displayBankName} • ${r.accountNumber}',
+                            Text('${r.displayBankName} • ${r.accountNumber}',
                                 style: GoogleFonts.inter(
-                                    color: btTextSecondary,
-                                    fontSize: 11.sp)),
+                                    color: btTextSecondary, fontSize: 11.sp)),
                           ],
                         ),
                       ),
@@ -323,8 +328,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
         content: TextField(
           controller: ctrl,
           autofocus: true,
-          keyboardType:
-              const TextInputType.numberWithOptions(decimal: true),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
           style: GoogleFonts.inter(color: btTextPrimary, fontSize: 17.sp),
           decoration: InputDecoration(
             prefixText: _symbol,
@@ -405,14 +409,13 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Bank',
-                style: GoogleFonts.inter(
-                    color: btTextSecondary, fontSize: 11.sp)),
+                style:
+                    GoogleFonts.inter(color: btTextSecondary, fontSize: 11.sp)),
             SizedBox(height: 6.h),
             GestureDetector(
               onTap: () => _pickBank(banks),
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
                 decoration: BoxDecoration(
                   color: btBackground,
                   borderRadius: BorderRadius.circular(12.r),
@@ -420,8 +423,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text(
-                          _selectedBankName ?? 'Select a bank',
+                      child: Text(_selectedBankName ?? 'Select a bank',
                           style: GoogleFonts.inter(
                               color: _selectedBankName == null
                                   ? btTextTertiary
@@ -436,8 +438,8 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
             ),
             SizedBox(height: 14.h),
             Text('Account number (10 digits)',
-                style: GoogleFonts.inter(
-                    color: btTextSecondary, fontSize: 11.sp)),
+                style:
+                    GoogleFonts.inter(color: btTextSecondary, fontSize: 11.sp)),
             SizedBox(height: 6.h),
             TextField(
               controller: _bankAccountCtrl,
@@ -480,8 +482,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
             if (_verifiedName != null) ...[
               SizedBox(height: 10.h),
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
                 decoration: BoxDecoration(
                   color: btGreen.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10.r),
@@ -504,8 +505,8 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
             ],
             SizedBox(height: 14.h),
             Text('Amount',
-                style: GoogleFonts.inter(
-                    color: btTextSecondary, fontSize: 11.sp)),
+                style:
+                    GoogleFonts.inter(color: btTextSecondary, fontSize: 11.sp)),
             SizedBox(height: 6.h),
             TextField(
               controller: _bankAmountCtrl,
@@ -594,8 +595,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
                 maxHeight: MediaQuery.of(context).size.height * 0.7),
             decoration: BoxDecoration(
               color: btCard,
-              borderRadius:
-                  BorderRadius.vertical(top: Radius.circular(20.r)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
             ),
             child: Column(
               children: [
@@ -617,8 +617,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
                     decoration: InputDecoration(
                       hintText: 'Search banks',
                       hintStyle: GoogleFonts.inter(color: btTextTertiary),
-                      prefixIcon:
-                          Icon(Icons.search, color: btTextSecondary),
+                      prefixIcon: Icon(Icons.search, color: btTextSecondary),
                       filled: true,
                       fillColor: btBackground,
                       border: OutlineInputBorder(
@@ -678,8 +677,8 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Send to a Lazervault user by tag, phone, or email.',
-              style: GoogleFonts.inter(
-                  color: btTextSecondary, fontSize: 12.sp)),
+              style:
+                  GoogleFonts.inter(color: btTextSecondary, fontSize: 12.sp)),
           SizedBox(height: 14.h),
           TextField(
             controller: _tagCtrl,
@@ -717,8 +716,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
           SizedBox(height: 14.h),
           TextField(
             controller: _tagAmountCtrl,
-            keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             style: GoogleFonts.inter(color: btTextPrimary, fontSize: 14.sp),
             decoration: InputDecoration(
               labelText: 'Amount',

@@ -18,7 +18,6 @@ import 'package:lazervault/src/features/transaction_history/utils/transaction_re
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'transfer_history_bottom_sheet_widgets.dart';
 
-
 /// Whether a transaction belongs to the transfer flow. Shared by the transfer
 /// history bottom sheet and the inline "History" filter on the select-recipient
 /// screen so both surfaces classify transfers identically.
@@ -79,7 +78,10 @@ class _TransferHistoryBottomSheetState
       final state = context.read<TransactionHistoryCubit>().state;
       if (state is TransactionHistoryLoaded && state.hasMore) {
         _isLoadingMore = true;
-        context.read<TransactionHistoryCubit>().loadMoreTransactions().then((_) {
+        context
+            .read<TransactionHistoryCubit>()
+            .loadMoreTransactions()
+            .then((_) {
           _isLoadingMore = false;
         });
       }
@@ -106,7 +108,9 @@ class _TransferHistoryBottomSheetState
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((tx) {
         if (tx.title.toLowerCase().contains(_searchQuery)) return true;
-        if (tx.formattedAmount.toLowerCase().contains(_searchQuery)) return true;
+        if (tx.formattedAmount.toLowerCase().contains(_searchQuery)) {
+          return true;
+        }
         if (tx.transactionReference?.toLowerCase().contains(_searchQuery) ==
             true) {
           return true;
@@ -126,122 +130,135 @@ class _TransferHistoryBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Drag handle
-          Container(
-            margin: EdgeInsets.symmetric(vertical: 12.h),
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2.r),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 12.h),
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2.r),
+              ),
             ),
-          ),
 
-          // Header
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Transfer History',
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+            // Header
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Transfer History',
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.close, color: Colors.grey[600], size: 22.sp),
-                  onPressed: () => Get.back(),
-                ),
-              ],
-            ),
-          ),
-
-          SizedBox(height: 8.h),
-
-          // Search bar
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: Colors.grey[300]!),
+                  IconButton(
+                    icon:
+                        Icon(Icons.close, color: Colors.grey[600], size: 22.sp),
+                    onPressed: () => Get.back(),
+                  ),
+                ],
               ),
-              child: TextField(
-                controller: _searchController,
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 14.sp,
+            ),
+
+            SizedBox(height: 8.h),
+
+            // Search bar
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: Colors.grey[300]!),
                 ),
-                decoration: InputDecoration(
-                  hintText: 'Search by name, amount, reference...',
-                  hintStyle: TextStyle(
-                    color: Colors.grey[500],
+                child: TextField(
+                  controller: _searchController,
+                  style: TextStyle(
+                    color: Colors.black87,
                     fontSize: 14.sp,
                   ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: Colors.grey[600],
-                    size: 20.sp,
+                  decoration: InputDecoration(
+                    hintText: 'Search by name, amount, reference...',
+                    hintStyle: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: 14.sp,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Colors.grey[600],
+                      size: 20.sp,
+                    ),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? GestureDetector(
+                            onTap: () {
+                              _searchController.clear();
+                              _onSearchChanged('');
+                            },
+                            child: Icon(
+                              Icons.clear,
+                              color: Colors.grey[600],
+                              size: 18.sp,
+                            ),
+                          )
+                        : null,
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 12.h,
+                    ),
                   ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? GestureDetector(
-                          onTap: () {
-                            _searchController.clear();
-                            _onSearchChanged('');
-                          },
-                          child: Icon(
-                            Icons.clear,
-                            color: Colors.grey[600],
-                            size: 18.sp,
-                          ),
-                        )
-                      : null,
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 12.h,
-                  ),
+                  onChanged: _onSearchChanged,
                 ),
-                onChanged: _onSearchChanged,
               ),
             ),
-          ),
 
-          SizedBox(height: 8.h),
+            SizedBox(height: 8.h),
 
-          // Content
-          Flexible(
-            child: BlocBuilder<TransactionHistoryCubit, TransactionHistoryState>(
-              builder: (context, state) {
-                return switch (state) {
-                  TransactionHistoryLoading() => _buildShimmer(),
-                  TransactionHistoryEmpty() => _buildEmpty(),
-                  TransactionHistoryError(:final message) =>
-                    _buildError(message),
-                  TransactionHistoryLoaded(:final transactions, :final hasMore) =>
-                    _buildList(transactions, hasMore),
-                  _ => _buildShimmer(),
-                };
-              },
+            // Content
+            Flexible(
+              child:
+                  BlocBuilder<TransactionHistoryCubit, TransactionHistoryState>(
+                builder: (context, state) {
+                  return switch (state) {
+                    TransactionHistoryLoading() => _buildShimmer(),
+                    TransactionHistoryEmpty() => _buildEmpty(),
+                    TransactionHistoryError(:final message) =>
+                      _buildError(message),
+                    TransactionHistoryLoaded(
+                      :final transactions,
+                      :final hasMore
+                    ) =>
+                      _buildList(transactions, hasMore),
+                    _ => _buildShimmer(),
+                  };
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -366,9 +383,8 @@ class _TransferHistoryBottomSheetState
             ),
             SizedBox(height: 16.h),
             TextButton(
-              onPressed: () => context
-                  .read<TransactionHistoryCubit>()
-                  .loadAllTransactions(),
+              onPressed: () =>
+                  context.read<TransactionHistoryCubit>().loadAllTransactions(),
               child: Text(
                 'Retry',
                 style: TextStyle(

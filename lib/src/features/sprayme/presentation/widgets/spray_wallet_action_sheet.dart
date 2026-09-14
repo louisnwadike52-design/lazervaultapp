@@ -173,94 +173,102 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
   Widget build(BuildContext context) {
     final spendable = (widget.wallet.balance / 100).toStringAsFixed(0);
     final earnings = (widget.wallet.earningsBalance / 100).toStringAsFixed(0);
-    final accent =
-        _isFund ? const Color(0xFF7C3AED) : const Color(0xFF10B981);
+    final accent = _isFund ? const Color(0xFF7C3AED) : const Color(0xFF10B981);
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Container(
-        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3A3A3A),
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-            ),
-            SizedBox(height: 18.h),
-            Row(
-              children: [
-                Icon(
-                  _isFund ? Icons.add_card_rounded : Icons.savings_outlined,
-                  color: accent,
-                  size: 22.sp,
-                ),
-                SizedBox(width: 10.w),
-                Text(
-                  _isFund ? 'Fund wallet' : 'Withdraw earnings',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 6.h),
-            Text(
-              _isFund
-                  ? 'Top up your spray balance from your account, so you can buy gifts and spray during a session.'
-                  : 'Move your withdrawable earnings back to your account.',
-              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
-            ),
-            SizedBox(height: 16.h),
-            _balanceChip(
-              label: _isFund ? 'Gifts to spray' : 'Earnings (withdrawable)',
-              value: '$_currency ${_isFund ? spendable : earnings}',
-              accent: accent,
-            ),
-            SizedBox(height: 16.h),
-            _accountRow(),
-            SizedBox(height: 16.h),
-            _amountField(accent),
-            SizedBox(height: 20.h),
-            SizedBox(
-              width: double.infinity,
-              height: 52.h,
-              child: ElevatedButton(
-                onPressed: _canContinue && !_submitting ? _continue : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: accent,
-                  disabledBackgroundColor: accent.withValues(alpha: 0.3),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14.r),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  _isFund ? 'Fund wallet' : 'Withdraw',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
+        child: Container(
+          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3A3A3A),
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
               ),
-            ),
-          ],
+              SizedBox(height: 18.h),
+              Row(
+                children: [
+                  Icon(
+                    _isFund ? Icons.add_card_rounded : Icons.savings_outlined,
+                    color: accent,
+                    size: 22.sp,
+                  ),
+                  SizedBox(width: 10.w),
+                  Text(
+                    _isFund ? 'Fund wallet' : 'Withdraw earnings',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 6.h),
+              Text(
+                _isFund
+                    ? 'Top up your spray balance from your account, so you can buy gifts and spray during a session.'
+                    : 'Move your withdrawable earnings back to your account.',
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+              ),
+              SizedBox(height: 16.h),
+              _balanceChip(
+                label: _isFund ? 'Gifts to spray' : 'Earnings (withdrawable)',
+                value: '$_currency ${_isFund ? spendable : earnings}',
+                accent: accent,
+              ),
+              SizedBox(height: 16.h),
+              _accountRow(),
+              SizedBox(height: 16.h),
+              _amountField(accent),
+              SizedBox(height: 20.h),
+              SizedBox(
+                width: double.infinity,
+                height: 52.h,
+                child: ElevatedButton(
+                  onPressed: _canContinue && !_submitting ? _continue : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: accent,
+                    disabledBackgroundColor: accent.withValues(alpha: 0.3),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    _isFund ? 'Fund wallet' : 'Withdraw',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -282,7 +290,8 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+              style:
+                  TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
           Text(value,
               style: TextStyle(
                   color: Colors.white,
@@ -315,7 +324,9 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
                         color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
                 SizedBox(height: 2.h),
                 Text(
-                  _accountDisplay.isEmpty ? 'No account selected' : _accountDisplay,
+                  _accountDisplay.isEmpty
+                      ? 'No account selected'
+                      : _accountDisplay,
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 14.sp,

@@ -163,180 +163,189 @@ class _SelectPayoutReceiverBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.85,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(height: 12.h),
-              Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2D2D2D),
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-              SizedBox(height: 16.h),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      widget.currentReceiverUserId == null
-                          ? 'Set Payout Receiver'
-                          : 'Change Payout Receiver',
-                      style: GoogleFonts.inter(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: Icon(Icons.close, color: Colors.grey[400]),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 12.h),
-                child: Text(
-                  widget.contribution.type == ContributionType.rotatingSavings
-                      ? 'Whoever you pick will receive cycle ${widget.cycleIndex} of this savings rotation. They must already be a contribution member.'
-                      : 'Whoever you pick will receive the full payout when the contribution closes. They must already be a contribution member.',
-                  style: GoogleFonts.inter(
-                    fontSize: 12.sp,
-                    color: Colors.grey[400],
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a tap
+    // in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.85,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(height: 12.h),
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D2D2D),
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: TextField(
-                  controller: _searchController,
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
-                  decoration: InputDecoration(
-                    hintText: 'Search by name or email',
-                    hintStyle: GoogleFonts.inter(
-                      color: Colors.grey[600],
-                      fontSize: 14.sp,
-                    ),
-                    prefixIcon: Icon(Icons.search,
-                        color: Colors.grey[400], size: 20.sp),
-                    filled: true,
-                    fillColor: const Color(0xFF0A0A0A),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                      borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                      borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                      borderSide: const BorderSide(
-                        color: Color.fromARGB(255, 78, 3, 208),
-                        width: 1.5,
-                      ),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(vertical: 12.h),
-                  ),
-                ),
-              ),
-              SizedBox(height: 12.h),
-              Expanded(child: _buildMemberList()),
-              if (_error != null)
+                SizedBox(height: 16.h),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 0),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.currentReceiverUserId == null
+                            ? 'Set Payout Receiver'
+                            : 'Change Payout Receiver',
+                        style: GoogleFonts.inter(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: Icon(Icons.close, color: Colors.grey[400]),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 12.h),
                   child: Text(
-                    _error!,
+                    widget.contribution.type == ContributionType.rotatingSavings
+                        ? 'Whoever you pick will receive cycle ${widget.cycleIndex} of this savings rotation. They must already be a contribution member.'
+                        : 'Whoever you pick will receive the full payout when the contribution closes. They must already be a contribution member.',
                     style: GoogleFonts.inter(
-                      color: const Color(0xFFEF4444),
                       fontSize: 12.sp,
+                      color: Colors.grey[400],
                     ),
                   ),
                 ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 4.h),
-                child: TextField(
-                  controller: _noteController,
-                  style:
-                      GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
-                  maxLength: 200,
-                  decoration: InputDecoration(
-                    hintText: 'Note (optional). Visible to admins',
-                    hintStyle: GoogleFonts.inter(
-                      color: Colors.grey[600],
-                      fontSize: 13.sp,
-                    ),
-                    counterText: '',
-                    filled: true,
-                    fillColor: const Color(0xFF0A0A0A),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                      borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                      borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                      borderSide: const BorderSide(
-                        color: Color.fromARGB(255, 78, 3, 208),
-                        width: 1.5,
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: TextField(
+                    controller: _searchController,
+                    style:
+                        GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                    decoration: InputDecoration(
+                      hintText: 'Search by name or email',
+                      hintStyle: GoogleFonts.inter(
+                        color: Colors.grey[600],
+                        fontSize: 14.sp,
                       ),
+                      prefixIcon: Icon(Icons.search,
+                          color: Colors.grey[400], size: 20.sp),
+                      filled: true,
+                      fillColor: const Color(0xFF0A0A0A),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                        borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                        borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                        borderSide: const BorderSide(
+                          color: Color.fromARGB(255, 78, 3, 208),
+                          width: 1.5,
+                        ),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(vertical: 12.h),
                     ),
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
                   ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isSaving ? null : _save,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: Colors.grey[700],
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
+                SizedBox(height: 12.h),
+                Expanded(child: _buildMemberList()),
+                if (_error != null)
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 0),
+                    child: Text(
+                      _error!,
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFEF4444),
+                        fontSize: 12.sp,
                       ),
                     ),
-                    child: _isSaving
-                        ? LazerVaultLoader.small()
-                        : Text(
-                            widget.currentReceiverUserId == null
-                                ? 'Set Receiver'
-                                : 'Reassign',
-                            style: GoogleFonts.inter(
-                              fontSize: 15.sp,
-                              fontWeight: FontWeight.w600,
+                  ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 4.h),
+                  child: TextField(
+                    controller: _noteController,
+                    style:
+                        GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                    maxLength: 200,
+                    decoration: InputDecoration(
+                      hintText: 'Note (optional). Visible to admins',
+                      hintStyle: GoogleFonts.inter(
+                        color: Colors.grey[600],
+                        fontSize: 13.sp,
+                      ),
+                      counterText: '',
+                      filled: true,
+                      fillColor: const Color(0xFF0A0A0A),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                        borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                        borderSide: BorderSide(color: const Color(0xFF2D2D2D)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                        borderSide: const BorderSide(
+                          color: Color.fromARGB(255, 78, 3, 208),
+                          width: 1.5,
+                        ),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12.w, vertical: 12.h),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isSaving ? null : _save,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: Colors.grey[700],
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                      child: _isSaving
+                          ? LazerVaultLoader.small()
+                          : Text(
+                              widget.currentReceiverUserId == null
+                                  ? 'Set Receiver'
+                                  : 'Reassign',
+                              style: GoogleFonts.inter(
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -388,8 +397,8 @@ class _SelectPayoutReceiverBottomSheetState
               children: [
                 CircleAvatar(
                   radius: 18.r,
-                  backgroundColor:
-                      const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                  backgroundColor: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.2),
                   backgroundImage:
                       (m.profileImage != null && m.profileImage!.isNotEmpty)
                           ? NetworkImage(m.profileImage!)

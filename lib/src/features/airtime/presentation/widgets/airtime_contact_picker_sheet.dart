@@ -57,11 +57,9 @@ class _AirtimeContactPickerSheetState extends State<AirtimeContactPickerSheet> {
         withProperties: true,
         withPhoto: false,
       );
-      final withPhones =
-          list.where((c) => c.phones.isNotEmpty).toList()
-            ..sort((a, b) => a.displayName
-                .toLowerCase()
-                .compareTo(b.displayName.toLowerCase()));
+      final withPhones = list.where((c) => c.phones.isNotEmpty).toList()
+        ..sort((a, b) =>
+            a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
       if (!mounted) return;
       setState(() {
         _contacts = withPhones;
@@ -98,7 +96,8 @@ class _AirtimeContactPickerSheetState extends State<AirtimeContactPickerSheet> {
   /// +234.../234... -> 0..., keep other formats as-is (stripped).
   String _normalizeNg(String raw) {
     var digits = raw.replaceAll(RegExp(r'[^\d+]'), '');
-    if (digits.startsWith('+234')) digits = '0${digits.substring(4)}';
+    if (digits.startsWith('+234'))
+      digits = '0${digits.substring(4)}';
     else if (digits.startsWith('234') && digits.length > 10) {
       digits = '0${digits.substring(3)}';
     }
@@ -107,31 +106,39 @@ class _AirtimeContactPickerSheetState extends State<AirtimeContactPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20.r),
-          topRight: Radius.circular(20.r),
+    // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+    // cannot reach inside modal sheets - the opaque sheet surface
+    // occludes it - so unfocus here to dismiss the keyboard on a
+    // tap in the sheet's empty area.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20.r),
+            topRight: Radius.circular(20.r),
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          _buildHeader(),
-          if (_loading)
-            const Expanded(
-              child: Center(
-                child: LazerVaultLoader.small(),
-              ),
-            )
-          else if (_denied)
-            Expanded(child: _buildPermissionDenied())
-          else ...[
-            _buildSearch(),
-            Expanded(child: _buildList()),
+        child: Column(
+          children: [
+            _buildHeader(),
+            if (_loading)
+              const Expanded(
+                child: Center(
+                  child: LazerVaultLoader.small(),
+                ),
+              )
+            else if (_denied)
+              Expanded(child: _buildPermissionDenied())
+            else ...[
+              _buildSearch(),
+              Expanded(child: _buildList()),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -471,8 +478,8 @@ class _AirtimeContactPickerSheetState extends State<AirtimeContactPickerSheet> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4E03D0),
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 22.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.r),
                     ),

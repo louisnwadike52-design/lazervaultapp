@@ -17,7 +17,6 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 part 'add_members_to_contribution_dialog_widgets.dart';
 
-
 class AddMembersToContributionDialog extends StatefulWidget {
   final Contribution contribution;
   final VoidCallback? onMembersAdded;
@@ -29,10 +28,12 @@ class AddMembersToContributionDialog extends StatefulWidget {
   });
 
   @override
-  State<AddMembersToContributionDialog> createState() => _AddMembersToContributionDialogState();
+  State<AddMembersToContributionDialog> createState() =>
+      _AddMembersToContributionDialogState();
 }
 
-class _AddMembersToContributionDialogState extends State<AddMembersToContributionDialog>
+class _AddMembersToContributionDialogState
+    extends State<AddMembersToContributionDialog>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -410,7 +411,8 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
       debugPrint('🔵 AddMembers: _selectedMemberIds=$_selectedMemberIds');
       debugPrint('🔵 AddMembers: _groupMembers count=${_groupMembers.length}');
       for (final m in _groupMembers) {
-        debugPrint('🔵 AddMembers: Member id=${m.id}, userId=${m.userId}, name=${m.userName}, isPartial=${m.isPartial}');
+        debugPrint(
+            '🔵 AddMembers: Member id=${m.id}, userId=${m.userId}, name=${m.userName}, isPartial=${m.isPartial}');
       }
 
       // Add selected group members - use more robust filtering
@@ -418,16 +420,18 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
           .where((m) => _selectedMemberIds.contains(m.id))
           .toList();
 
-      debugPrint('🔵 AddMembers: selectedMembers (by id) count=${selectedMembers.length}');
+      debugPrint(
+          '🔵 AddMembers: selectedMembers (by id) count=${selectedMembers.length}');
 
       // Filter to only valid user IDs
       final validSelectedUserIds = selectedMembers
           .where((m) {
             final isValid = m.userId.isNotEmpty &&
-                           m.userId != '00000000-0000-0000-0000-000000000000' &&
-                           !m.isPartial;
+                m.userId != '00000000-0000-0000-0000-000000000000' &&
+                !m.isPartial;
             if (!isValid) {
-              debugPrint('🟡 AddMembers: Skipping member ${m.userName} - userId=${m.userId}, isPartial=${m.isPartial}');
+              debugPrint(
+                  '🟡 AddMembers: Skipping member ${m.userName} - userId=${m.userId}, isPartial=${m.isPartial}');
             }
             return isValid;
           })
@@ -458,11 +462,13 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
           setState(() => _isAdding = false);
           Navigator.of(context).pop();
 
-          final inviteCount = _newMembersToAdd.where((m) => m.email != null).length;
+          final inviteCount =
+              _newMembersToAdd.where((m) => m.email != null).length;
           if (inviteCount > 0) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('$inviteCount invite(s) sent. They will be added to the contribution when they join.'),
+                content: Text(
+                    '$inviteCount invite(s) sent. They will be added to the contribution when they join.'),
                 backgroundColor: const Color(0xFF10B981),
               ),
             );
@@ -470,7 +476,8 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
             // Show a message if no members could be added
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Selected members could not be added. They may have invalid user IDs.'),
+                content: Text(
+                    'Selected members could not be added. They may have invalid user IDs.'),
                 backgroundColor: const Color(0xFFF59E0B),
               ),
             );
@@ -495,21 +502,31 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 40.h),
-      child: Container(
-        width: double.infinity,
-        height: 650.h,
-        decoration: BoxDecoration(
-          color: const Color(0xFF0A0A0A),
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
-        ),
-        child: Column(
-          children: [
-            _buildHeader(),
-            _buildTabBar(),
-            Expanded(child: _buildContent()),
-            _buildActions(),
-          ],
+      // The app-root tap-to-dismiss (main.dart GetMaterialApp.builder)
+      // cannot reach inside modal dialogs - the opaque dialog surface
+      // occludes it - so unfocus here to dismiss the keyboard on a tap
+      // in the dialog's empty area. Wrapped inside the Dialog (not
+      // around it) so taps on the barrier outside the card still
+      // dismiss the dialog.
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Container(
+          width: double.infinity,
+          height: 650.h,
+          decoration: BoxDecoration(
+            color: const Color(0xFF0A0A0A),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: const Color(0xFF2D2D2D)),
+          ),
+          child: Column(
+            children: [
+              _buildHeader(),
+              _buildTabBar(),
+              Expanded(child: _buildContent()),
+              _buildActions(),
+            ],
+          ),
         ),
       ),
     );
@@ -669,9 +686,13 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                   width: 20.w,
                   height: 20.w,
                   decoration: BoxDecoration(
-                    color: _selectAll ? const Color.fromARGB(255, 78, 3, 208) : Colors.transparent,
+                    color: _selectAll
+                        ? const Color.fromARGB(255, 78, 3, 208)
+                        : Colors.transparent,
                     border: Border.all(
-                      color: _selectAll ? const Color.fromARGB(255, 78, 3, 208) : Colors.grey[600]!,
+                      color: _selectAll
+                          ? const Color.fromARGB(255, 78, 3, 208)
+                          : Colors.grey[600]!,
                     ),
                     borderRadius: BorderRadius.circular(4.r),
                   ),
@@ -718,7 +739,8 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
 
   Widget _buildGroupMemberItem(GroupMember member) {
     final isAlreadyAdded = _existingMemberUserIds.contains(member.userId);
-    final isSelected = !isAlreadyAdded && _selectedMemberIds.contains(member.id);
+    final isSelected =
+        !isAlreadyAdded && _selectedMemberIds.contains(member.id);
 
     return Opacity(
       opacity: isAlreadyAdded ? 0.5 : 1.0,
@@ -745,9 +767,13 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                 width: 20.w,
                 height: 20.w,
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.transparent,
+                  color: isSelected
+                      ? const Color.fromARGB(255, 78, 3, 208)
+                      : Colors.transparent,
                   border: Border.all(
-                    color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.grey[600]!,
+                    color: isSelected
+                        ? const Color.fromARGB(255, 78, 3, 208)
+                        : Colors.grey[600]!,
                   ),
                   borderRadius: BorderRadius.circular(4.r),
                 ),
@@ -802,7 +828,8 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                           color: Colors.grey[400],
                         ),
                       )
-                    else if (member.userUsername != null && member.userUsername!.isNotEmpty)
+                    else if (member.userUsername != null &&
+                        member.userUsername!.isNotEmpty)
                       Text(
                         '@${member.userUsername}',
                         style: GoogleFonts.inter(
@@ -932,19 +959,23 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
               style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Search people to add',
-                hintStyle: GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[500]),
-                prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 20.sp),
+                hintStyle:
+                    GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[500]),
+                prefixIcon:
+                    Icon(Icons.search, color: Colors.grey[500], size: 20.sp),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? GestureDetector(
                         onTap: () {
                           _searchController.clear();
                           _onSearchChanged('');
                         },
-                        child: Icon(Icons.clear, color: Colors.grey[500], size: 18.sp),
+                        child: Icon(Icons.clear,
+                            color: Colors.grey[500], size: 18.sp),
                       )
                     : null,
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
               ),
               onChanged: _onSearchChanged,
             ),
@@ -992,7 +1023,8 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                 final isOnLazerVault = member.user != null;
 
                 return Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: isOnLazerVault
                         ? const Color(0xFF10B981).withValues(alpha: 0.1)
@@ -1008,7 +1040,9 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        isOnLazerVault ? Icons.check_circle : Icons.mail_outline,
+                        isOnLazerVault
+                            ? Icons.check_circle
+                            : Icons.mail_outline,
                         color: isOnLazerVault
                             ? const Color(0xFF10B981)
                             : const Color(0xFFF59E0B),
@@ -1058,7 +1092,8 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
               SizedBox(height: 12.h),
               Text(
                 'Searching...',
-                style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[500]),
+                style:
+                    GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[500]),
               ),
             ],
           ),
@@ -1094,11 +1129,13 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
           padding: EdgeInsets.symmetric(vertical: 24.h),
           child: Column(
             children: [
-              Icon(Icons.person_off_outlined, color: Colors.grey[500], size: 32.sp),
+              Icon(Icons.person_off_outlined,
+                  color: Colors.grey[500], size: 32.sp),
               SizedBox(height: 8.h),
               Text(
                 _errorMessage!,
-                style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[400]),
+                style:
+                    GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[400]),
               ),
             ],
           ),
@@ -1116,7 +1153,8 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
               SizedBox(height: 8.h),
               Text(
                 'Search for users to add',
-                style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[400]),
+                style:
+                    GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[400]),
               ),
             ],
           ),
@@ -1164,7 +1202,8 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
           children: [
             CircleAvatar(
               radius: 18.r,
-              backgroundColor: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+              backgroundColor:
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
               backgroundImage: user.profilePicture.isNotEmpty
                   ? NetworkImage(user.profilePicture)
                   : null,
@@ -1198,9 +1237,11 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                       ),
                       if (isAlreadyInGroup && !isAlreadyInContribution)
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                            color:
+                                const Color(0xFF3B82F6).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Text(
@@ -1284,14 +1325,16 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
       decoration: BoxDecoration(
         color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.mail_outline, color: const Color(0xFFF59E0B), size: 20.sp),
+              Icon(Icons.mail_outline,
+                  color: const Color(0xFFF59E0B), size: 20.sp),
               SizedBox(width: 10.w),
               Expanded(
                 child: Column(
@@ -1307,7 +1350,8 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                     ),
                     Text(
                       'Add them to send an invite',
-                      style: GoogleFonts.inter(fontSize: 11.sp, color: Colors.grey[400]),
+                      style: GoogleFonts.inter(
+                          fontSize: 11.sp, color: Colors.grey[400]),
                     ),
                   ],
                 ),
@@ -1320,25 +1364,31 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
               Expanded(
                 child: TextFormField(
                   controller: _fullNameController,
-                  style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.white),
+                  style:
+                      GoogleFonts.inter(fontSize: 13.sp, color: Colors.white),
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
                     hintText: 'Full name',
-                    hintStyle: GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[600]),
+                    hintStyle: GoogleFonts.inter(
+                        fontSize: 13.sp, color: Colors.grey[600]),
                     filled: true,
                     fillColor: const Color(0xFF1F1F1F),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8.r),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
-                    prefixIcon: Icon(Icons.person_outline, color: Colors.grey[500], size: 16.sp),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+                    prefixIcon: Icon(Icons.person_outline,
+                        color: Colors.grey[500], size: 16.sp),
                   ),
                 ),
               ),
               SizedBox(width: 10.w),
               GestureDetector(
-                onTap: _fullNameController.text.trim().isNotEmpty ? _addPendingInvite : null,
+                onTap: _fullNameController.text.trim().isNotEmpty
+                    ? _addPendingInvite
+                    : null,
                 child: Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
