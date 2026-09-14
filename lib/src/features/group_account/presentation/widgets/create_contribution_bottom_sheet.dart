@@ -16,6 +16,9 @@ import '../../../tag_pay/presentation/cubit/tag_pay_cubit.dart';
 import '../../../tag_pay/domain/entities/user_search_result_entity.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 part 'create_contribution_bottom_sheet_widgets.dart';
 
 /// Normalize a deadline date to 23:59:59.999 in the user's local
@@ -149,11 +152,29 @@ class _CreateContributionBottomSheetState
 
   int get _totalPages => _pageNames.length;
 
+  /// Logged-in user id — the CREATOR of this contribution. Resolved once so
+  /// the members list can pin their row (never removable) without a lookup
+  /// per build.
+  String? _creatorUserId;
+
+  /// True when [m] is the signed-in creator. Matched on user id (the stable
+  /// identity), falling back to the member row id for rows whose userId was
+  /// never populated.
+  bool _isCreatorRow(GroupMember m) {
+    final me = _creatorUserId;
+    if (me == null || me.isEmpty) return false;
+    return m.userId == me || m.id == me;
+  }
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
     _localGroupMembers = List.from(widget.groupMembers);
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      _creatorUserId = authState.profile.user.id;
+    }
 
     // Build rotation order with unique, valid user IDs only
     final seenUserIds = <String>{};
@@ -2880,23 +2901,46 @@ class _CreateContributionBottomSheetState
                         // the contribution is saved, the same
                         // remove-flow lives on the contribution
                         // details page.
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _rotationOrder.removeAt(index);
-                            });
-                          },
-                          child: Container(
-                            padding: EdgeInsets.all(6.w),
+                        //
+                        // The CREATOR is never removable: they own the
+                        // contribution and must remain a participant, so
+                        // their row shows a "You" chip instead of the X.
+                        if (_isCreatorRow(member))
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8.w, vertical: 4.h),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEF4444)
-                                  .withValues(alpha: 0.1),
+                              color: const Color(0xFF4E03D0)
+                                  .withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(6.r),
                             ),
-                            child: Icon(Icons.close,
-                                color: const Color(0xFFEF4444), size: 16.sp),
+                            child: Text(
+                              'You',
+                              style: GoogleFonts.inter(
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF9B6DFF),
+                              ),
+                            ),
+                          )
+                        else
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _rotationOrder.removeAt(index);
+                              });
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(6.w),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEF4444)
+                                    .withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6.r),
+                              ),
+                              child: Icon(Icons.close,
+                                  color: const Color(0xFFEF4444), size: 16.sp),
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -2944,12 +2988,32 @@ class _CreateContributionBottomSheetState
           isRotation: _selectedType == ContributionType.rotatingSavings,
           onMemberAdded: (String newUserId, String userName, String email,
               String? profileImage) {
+            final nullUuid = '00000000-0000-0000-0000-000000000000';
+            final hasRealId = newUserId.isNotEmpty && newUserId != nullUuid;
+            // IDENTITY GATE: never enroll a participant we can't name. A row
+            // with no real user id AND no email/display name is exactly what
+            // produced the permanent "Unknown User" member — refuse it here
+            // (the backend refuses the same shape) and tell the user to pick
+            // from search again.
+            if (!hasRealId && email.trim().isEmpty && userName.trim().isEmpty) {
+              Get.snackbar(
+                'Could not add member',
+                "We couldn't identify that person. Pick them from search again "
+                    'so we can attach their profile.',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color(0xFF1F1F1F),
+                colorText: Colors.white,
+                margin: EdgeInsets.all(12.w),
+                borderRadius: 14.r,
+                icon: const Icon(Icons.error_outline, color: Color(0xFFEF4444)),
+              );
+              return;
+            }
             // Add the new member to local state (with duplicate prevention)
             setState(() {
               // Generate a unique identifier for this member
               // Use email hash if userId is null UUID, otherwise use userId
-              final nullUuid = '00000000-0000-0000-0000-000000000000';
-              final isNullUuid = newUserId.isEmpty || newUserId == nullUuid;
+              final isNullUuid = !hasRealId;
               final uniqueId = isNullUuid
                   ? 'temp_${email.hashCode}_${DateTime.now().millisecondsSinceEpoch}'
                   : newUserId;
