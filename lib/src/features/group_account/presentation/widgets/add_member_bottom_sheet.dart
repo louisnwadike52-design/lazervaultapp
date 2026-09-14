@@ -130,10 +130,18 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
           _searchResults = results;
           _isSearching = false;
           if (results.isEmpty) {
-            // Check if it looks like an email
-            if (_isValidEmail(query)) {
+            // Offer the INVITE path for any usable contact handle — email OR
+            // phone. It used to require an email, so picking a PHONE contact
+            // who isn't on LazerVault dead-ended at "No users found" with no
+            // invite CTA at all (the reported gap). inviteUserToGroup already
+            // accepts either identifier type.
+            if (_isValidEmail(query) || _isValidPhone(query)) {
               _showInviteUI = true;
-              _fullNameController.clear();
+              // Keep any name the contact picker supplied — clearing it made
+              // the user retype a name they'd just chosen from contacts.
+              if (_fullNameController.text.trim().isEmpty) {
+                _fullNameController.clear();
+              }
               _errorMessage = null;
             } else {
               _showInviteUI = false;
@@ -159,6 +167,13 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
 
   bool _isValidEmail(String value) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value);
+  }
+
+  /// A phone handle we can send an invite to: 7–15 digits, optional leading
+  /// '+', tolerating the spaces/dashes/parens device contacts carry.
+  bool _isValidPhone(String value) {
+    final digits = value.replaceAll(RegExp(r'[^0-9+]'), '');
+    return RegExp(r'^\+?[0-9]{7,15}$').hasMatch(digits);
   }
 
   void _selectUser(UserSearchResultEntity user) {
@@ -318,7 +333,12 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
           groupId: widget.group.id,
           identifier: invite.email,
           fullName: invite.fullName,
-          identifierType: UserSearchType.email,
+          // Derive the handle TYPE from the value. Hardcoding email sent a
+          // phone invite with an empty email field, so the backend had no
+          // contact handle to deliver (or later link) the invitation with.
+          identifierType: _isValidEmail(invite.email)
+              ? UserSearchType.email
+              : UserSearchType.phone,
           role: invite.role,
         ),
     ];
