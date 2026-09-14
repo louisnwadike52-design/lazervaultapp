@@ -55,6 +55,20 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
   bool get _interestForfeited =>
       widget.lockFund.accruedInterest > 0 && _interestPaid <= 0;
 
+  /// Flex / no-fixed-term plan: no unlock date (epoch sentinel) or zero term.
+  /// These have NO maturity, so the header must never claim "Lock Matured!".
+  bool get _isFlex =>
+      widget.lockFund.unlockAt.year <= 1971 ||
+      widget.lockFund.lockDurationDays <= 0;
+
+  /// A real, term-locked plan whose maturity date has actually passed. This is
+  /// the ONLY state that may say "Lock Matured!" — computed from the date, not
+  /// from the caller's isEarlyWithdrawal flag (which used to make every
+  /// non-early withdrawal, including flex, falsely read as matured).
+  bool get _isMatured =>
+      widget.lockFund.status == LockStatus.matured ||
+      (!_isFlex && !widget.lockFund.unlockAt.isAfter(DateTime.now()));
+
   double get _penaltyAmount {
     if (widget.isEarlyWithdrawal) {
       return widget.lockFund.earlyWithdrawalPenalty;
@@ -185,60 +199,53 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
   }
 
   Widget _buildWarningBanner() {
-    if (!widget.isEarlyWithdrawal) {
-      return Container(
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF10B981).withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Icon(
-                Icons.check_circle_outline,
-                color: const Color(0xFF10B981),
-                size: 24.sp,
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Lock Matured!',
-                    style: GoogleFonts.inter(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF10B981),
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'Congratulations! Your lock has matured. Withdraw your funds with full interest.',
-                    style: GoogleFonts.inter(
-                      fontSize: 13.sp,
-                      color: const Color(0xFF9CA3AF),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+    // MATURED term lock — the only state that may congratulate the user on
+    // maturity + full interest.
+    if (_isMatured) {
+      return _bannerCard(
+        color: const Color(0xFF10B981),
+        icon: Icons.check_circle_outline,
+        title: 'Lock Matured!',
+        body:
+            'Congratulations! Your lock has matured. Withdraw your funds with full interest.',
       );
     }
 
+    // FLEX / no-term plan — there is no maturity to reach; withdrawal is always
+    // available and penalty-free. Never say "matured" here.
+    if (_isFlex) {
+      return _bannerCard(
+        color: const Color(0xFF10B981),
+        icon: Icons.lock_open_outlined,
+        title: 'Flexible savings',
+        body:
+            'Withdraw any time with no penalty. Interest is paid up to today.',
+      );
+    }
+
+    // EARLY withdrawal of a term lock before maturity — spell out the penalty.
+    return _bannerCard(
+      color: const Color(0xFFFB923C),
+      icon: Icons.warning_amber_rounded,
+      title: 'Early Withdrawal Warning',
+      body: 'Withdrawing before maturity incurs a '
+          '${widget.lockFund.earlyUnlockPenaltyPercent}% penalty on your principal'
+          '${_interestForfeited ? ', and you will lose the interest earned so far' : ''}.',
+    );
+  }
+
+  /// Shared banner card so the matured / flex / early states render identically
+  /// apart from colour + copy.
+  Widget _bannerCard({
+    required Color color,
+    required IconData icon,
+    required String title,
+    required String body,
+  }) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFFB923C).withValues(alpha: 0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -246,12 +253,12 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFFFB923C).withValues(alpha: 0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(
-              Icons.warning_amber_rounded,
-              color: const Color(0xFFFB923C),
+              icon,
+              color: color,
               size: 24.sp,
             ),
           ),
@@ -261,21 +268,16 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Early Withdrawal Warning',
+                  title,
                   style: GoogleFonts.inter(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFFFB923C),
+                    color: color,
                   ),
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'Breaking your lock early will incur a '
-                  '${widget.lockFund.earlyUnlockPenaltyPercent}% penalty on '
-                  'your principal'
-                  // Naming the second consequence matters: the penalty is the
-                  // one people expect, losing the interest is not.
-                  '${_interestForfeited ? ', and you will lose the interest earned so far' : ''}.',
+                  body,
                   style: GoogleFonts.inter(
                     fontSize: 13.sp,
                     color: const Color(0xFF9CA3AF),
