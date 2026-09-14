@@ -183,77 +183,9 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
               ),
               SizedBox(height: 32.h),
 
-              // Currency Display (user's active currency)
-              Container(
-                padding: EdgeInsets.all(16.w),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFF6366F1).withValues(alpha: 0.15),
-                      const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(10.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Icon(
-                        Icons.account_balance_wallet_outlined,
-                        color: const Color(0xFF6366F1),
-                        size: 20.sp,
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Currency',
-                            style: GoogleFonts.inter(
-                              fontSize: 12.sp,
-                              color: const Color(0xFF9CA3AF),
-                            ),
-                          ),
-                          SizedBox(height: 2.h),
-                          Text(
-                            _userCurrency,
-                            style: GoogleFonts.inter(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(20.r),
-                      ),
-                      child: Text(
-                        'Your account currency',
-                        style: GoogleFonts.inter(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF10B981),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 24.h),
+              // Currency is shown inline in the amount field (prefix) — no
+              // separate currency card. The user's active currency still drives
+              // the prefix + quick-amount formatting below.
 
               // Amount Input
               Text(
@@ -340,9 +272,11 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
-                  // Currency sits INLINE, right beside the amount value (e.g.
-                  // "₦10000") via prefixText — not a faded leading icon floating
-                  // far to the left with a gap. Reads as one consolidated unit.
+                  // Currency sits INLINE, always beside the amount (e.g. "₦0.00").
+                  // Rendered as prefixIcon (not prefixText) because prefixText
+                  // hides when the field is empty + unfocused — which left the
+                  // amount with no currency at all once the separate currency
+                  // card was removed.
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     isCollapsed: true,
@@ -353,12 +287,19 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                       fontWeight: FontWeight.w700,
                       color: Colors.white.withValues(alpha: 0.3),
                     ),
-                    prefixText: CurrencySymbols.getSymbol(_userCurrency),
-                    prefixStyle: GoogleFonts.inter(
-                      fontSize: 24.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white.withValues(alpha: 0.55),
+                    prefixIcon: Padding(
+                      padding: EdgeInsets.only(right: 6.w),
+                      child: Text(
+                        CurrencySymbols.getSymbol(_userCurrency),
+                        style: GoogleFonts.inter(
+                          fontSize: 24.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white.withValues(alpha: 0.6),
+                        ),
+                      ),
                     ),
+                    prefixIconConstraints:
+                        const BoxConstraints(minWidth: 0, minHeight: 0),
                   ),
                   onChanged: (value) {
                     final amount = double.tryParse(value);
