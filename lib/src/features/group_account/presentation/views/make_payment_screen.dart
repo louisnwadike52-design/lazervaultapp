@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
@@ -19,6 +21,8 @@ import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_m
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'contribution_payment_confirmation_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import '../../data/datasources/group_fee_remote_data_source.dart';
 
 class MakePaymentScreen extends StatefulWidget {
   final String contributionId;
@@ -42,6 +46,117 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
 
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
+
+  // ---- Platform fee (admin-tunable; OFF unless an operator enables it) ----
+  // Quoted by the SAME backend code that later charges it, so what the member
+  // reads here is what they are actually debited. Debounced on typing and
+  // failure-tolerant: if the quote can't be fetched we simply show no fee
+  // line rather than blocking the payment.
+  final GroupFeeRemoteDataSource _feeSource = GroupFeeRemoteDataSource();
+  GroupFeeQuote _feeQuote = GroupFeeQuote.none;
+  Timer? _feeDebounce;
+  double _quotedForAmount = -1;
+
+  void _scheduleFeeQuote() {
+    _feeDebounce?.cancel();
+    _feeDebounce = Timer(const Duration(milliseconds: 400), _refreshFeeQuote);
+  }
+
+  Future<void> _refreshFeeQuote() async {
+    final amount = double.tryParse(_amountController.text) ?? 0;
+    if (amount <= 0) {
+      if (_feeQuote.feeApplies && mounted) {
+        setState(() => _feeQuote = GroupFeeQuote.none);
+      }
+      _quotedForAmount = -1;
+      return;
+    }
+    if (amount == _quotedForAmount) return; // already priced
+    final auth = context.read<AuthenticationCubit>().state;
+    if (auth is! AuthenticationSuccess) return;
+    final q = await _feeSource.quote(
+      token: auth.profile.session.accessToken,
+      amount: amount,
+      leg: GroupFeeLeg.contribution,
+    );
+    if (!mounted) return;
+    setState(() {
+      _feeQuote = q;
+      _quotedForAmount = amount;
+    });
+  }
+
+  /// Fee + total line under the amount field. Renders NOTHING when no fee
+  /// applies, so a free group stays visually free.
+  Widget _buildFeeLine() {
+    if (!_feeQuote.feeApplies || _feeQuote.fee <= 0) {
+      return const SizedBox.shrink();
+    }
+    final ccy = widget.contribution?.currency ?? 'NGN';
+    String fmt(double v) => '$ccy ${v.toStringAsFixed(2)}';
+    return Padding(
+      padding: EdgeInsets.only(top: 10.h),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(color: const Color(0xFF2D2D2D)),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(Icons.receipt_long_outlined,
+                    size: 14.sp, color: Colors.grey[500]),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    _feeQuote.description.isNotEmpty
+                        ? 'Platform fee (${_feeQuote.description})'
+                        : 'Platform fee',
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp, color: Colors.grey[400]),
+                  ),
+                ),
+                Text(
+                  fmt(_feeQuote.fee),
+                  style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white),
+                ),
+              ],
+            ),
+            SizedBox(height: 8.h),
+            Divider(color: const Color(0xFF2D2D2D), height: 1),
+            SizedBox(height: 8.h),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Total to pay',
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white),
+                  ),
+                ),
+                Text(
+                  fmt(_feeQuote.total),
+                  style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF4E03D0)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   final _notesController = TextEditingController();
 
   String? _selectedAccountId;
@@ -593,8 +708,10 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             fontWeight: FontWeight.w700,
             color: Colors.white,
           ),
-          onChanged: (_) =>
-              setState(() {}), // Trigger rebuild for balance check
+          onChanged: (_) {
+            setState(() {}); // Trigger rebuild for balance check
+            _scheduleFeeQuote(); // re-price the platform fee (debounced)
+          },
           decoration: InputDecoration(
             hintText: '0.00',
             hintStyle: GoogleFonts.inter(
@@ -696,6 +813,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             return null;
           },
         ),
+        _buildFeeLine(),
         if (_isRotatingSavings) ...[
           SizedBox(height: 8.h),
           Row(
@@ -1733,6 +1851,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
 
   @override
   void dispose() {
+    _feeDebounce?.cancel();
     _amountController.dispose();
     _notesController.dispose();
     super.dispose();
