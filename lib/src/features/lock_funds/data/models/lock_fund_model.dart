@@ -156,6 +156,11 @@ class LockFundModel {
     pb.CalculateInterestResponse proto, {
     double principalAmount = 0.0,
     int lockDurationDays = 0,
+    // The plan's ACTUAL `supports_upfront_interest` config — the same flag the
+    // backend gates on at creation. Threaded in from the selected config so the
+    // receipt/PDF reflect what was really used, not a `>= 180 days` heuristic
+    // (which wrongly flagged accrual Year Locks as upfront-paid).
+    bool supportsUpfrontInterest = false,
   }) {
     return InterestCalculation(
       interestRate: proto.interestRate,
@@ -165,7 +170,7 @@ class LockFundModel {
       principalAmount: principalAmount,
       interestAmount: proto.estimatedInterest,
       totalAmount: proto.totalReturn,
-      isUpfrontInterest: lockDurationDays >= 180,
+      isUpfrontInterest: supportsUpfrontInterest,
       lockDurationDays: lockDurationDays,
     );
   }

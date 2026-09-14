@@ -219,9 +219,17 @@ class LockFundsPdfService {
     return file;
   }
 
-  /// Generate a lock creation confirmation PDF
+  /// Generate a lock creation confirmation PDF.
+  ///
+  /// [expectedInterest]/[expectedTotal] override the projected figures when the
+  /// caller has the backend's own CalculateInterest result (the post-create
+  /// receipt path) so the PDF matches the on-screen numbers exactly. When
+  /// omitted (details/history path) the lock's own projection is used — never
+  /// the accrued-so-far, which is 0 at creation and printed "+0.00".
   static Future<File> generateLockConfirmation({
     required LockFund lockFund,
+    double? expectedInterest,
+    double? expectedTotal,
   }) async {
     await _loadFonts();
     final pdf = pw.Document();
@@ -269,6 +277,10 @@ class LockFundsPdfService {
               _buildLockDetails(
                 lockFund: lockFund,
                 currencySymbol: currencySymbol,
+                expectedInterest:
+                    expectedInterest ?? lockFund.expectedInterestAtMaturity,
+                expectedTotal:
+                    expectedTotal ?? lockFund.expectedTotalAtMaturity,
               ),
               pw.SizedBox(height: 32),
 
@@ -487,6 +499,8 @@ class LockFundsPdfService {
   static pw.Widget _buildLockDetails({
     required LockFund lockFund,
     required String currencySymbol,
+    required double expectedInterest,
+    required double expectedTotal,
   }) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -524,13 +538,13 @@ class LockFundsPdfService {
               ),
               _buildDetailRow(
                 'Expected Interest',
-                '+$currencySymbol${lockFund.accruedInterest.toStringAsFixed(2)}',
+                '+$currencySymbol${expectedInterest.toStringAsFixed(2)}',
                 valueColor: PdfColors.green700,
               ),
               pw.Divider(color: PdfColors.grey300),
               _buildDetailRow(
                 'Expected Total at Maturity',
-                '$currencySymbol${lockFund.totalValue.toStringAsFixed(2)}',
+                '$currencySymbol${expectedTotal.toStringAsFixed(2)}',
                 isBold: true,
                 valueColor: PdfColors.blue800,
               ),
@@ -814,9 +828,15 @@ class LockFundsPdfService {
   /// Download the lock confirmation to device storage
   static Future<String> downloadLockConfirmation({
     required LockFund lockFund,
+    double? expectedInterest,
+    double? expectedTotal,
   }) async {
     try {
-      final file = await generateLockConfirmation(lockFund: lockFund);
+      final file = await generateLockConfirmation(
+        lockFund: lockFund,
+        expectedInterest: expectedInterest,
+        expectedTotal: expectedTotal,
+      );
       final reference = lockFund.transactionId ?? 'LF-${lockFund.id.length > 8 ? lockFund.id.substring(0, 8) : lockFund.id}';
       return await ReceiptDownload.saveAndOpen(
         source: file,
@@ -831,10 +851,16 @@ class LockFundsPdfService {
   /// Share the lock confirmation via system share sheet
   static Future<void> shareLockConfirmation({
     required LockFund lockFund,
+    double? expectedInterest,
+    double? expectedTotal,
     Rect? sharePositionOrigin,
   }) async {
     try {
-      final file = await generateLockConfirmation(lockFund: lockFund);
+      final file = await generateLockConfirmation(
+        lockFund: lockFund,
+        expectedInterest: expectedInterest,
+        expectedTotal: expectedTotal,
+      );
 
       final currencySymbol = _currencySymbolFor(lockFund.currency);
 

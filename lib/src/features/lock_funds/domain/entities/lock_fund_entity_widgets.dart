@@ -377,7 +377,12 @@ class InterestCalculation {
     this.lockDurationDays = 0,
   });
 
-  bool get qualifiesForUpfrontInterest => lockDurationDays >= 180;
+  /// Whether this lock's interest is/was paid UPFRONT — reflects the ACTUAL
+  /// per-plan `supports_upfront_interest` config used at creation (threaded in
+  /// via [isUpfrontInterest]), NOT a duration heuristic. A Year Lock with
+  /// upfront turned OFF (accrual) must return false so the receipt/PDF never
+  /// claim an upfront payout that never happened.
+  bool get qualifiesForUpfrontInterest => isUpfrontInterest;
 
   /// Upfront-interest amount surfaced on the receipt + detail
   /// screens. When isUpfrontInterest is true, this equals

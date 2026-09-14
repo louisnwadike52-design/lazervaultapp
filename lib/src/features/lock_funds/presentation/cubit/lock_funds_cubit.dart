@@ -176,12 +176,14 @@ class LockFundsCubit extends Cubit<LockFundsState> {
     required LockType lockType,
     required double amount,
     required int lockDurationDays,
+    bool supportsUpfrontInterest = false,
   }) async {
     try {
       final calculation = await _repository.calculateInterest(
         lockType: lockType,
         amount: amount,
         lockDurationDays: lockDurationDays,
+        supportsUpfrontInterest: supportsUpfrontInterest,
       );
       if (isClosed) return;
 

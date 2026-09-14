@@ -216,4 +216,23 @@ class LockFund {
 
   /// Amount returned after early withdrawal.
   double get earlyWithdrawalAmount => proceedsOnUnlock(early: true);
+
+  /// Projected interest the lock will have earned AT MATURITY.
+  ///
+  /// A freshly-created lock has `accruedInterest == 0` (nothing has accrued
+  /// yet), so a confirmation receipt/PDF that quotes accruedInterest prints a
+  /// misleading "+0.00". This projects the full-term interest instead
+  /// (principal x rate x term/365), matching the backend's simple-interest
+  /// CalculateInterest math. Uses the larger of projected vs already-accrued so
+  /// an active/matured lock never shows LESS than it has actually earned.
+  /// Flex/no-term locks (0 days) fall back to accruedInterest.
+  double get expectedInterestAtMaturity {
+    final projected = lockDurationDays > 0
+        ? amount * (interestRate / 100) * (lockDurationDays / 365)
+        : accruedInterest;
+    return projected > accruedInterest ? projected : accruedInterest;
+  }
+
+  /// Projected total (principal + expected interest) at maturity.
+  double get expectedTotalAtMaturity => amount + expectedInterestAtMaturity;
 }

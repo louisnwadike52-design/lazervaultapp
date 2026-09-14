@@ -25,6 +25,15 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/m
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'lock_funds_list_screen_widgets.dart';
 
+/// Lighter purple used across the PiggyVault landing for icons + accent text.
+/// The previous mix of white and a very dark purple (ARGB 78,3,208) rendered
+/// near-invisible on the dark background — this is the single, readable accent.
+const Color _kLightPurple = Color(0xFFA78BFA);
+
+/// Muted secondary text on the PiggyVault landing. Replaces the old dark grey
+/// (0xFF9CA3AF) that read as near-invisible — this light lavender-grey keeps
+/// the purple theme while staying clearly legible on the dark background.
+const Color _kMutedPurple = Color(0xFFB7ABDA);
 
 class LockFundsListScreen extends StatefulWidget {
   const LockFundsListScreen({super.key});
@@ -54,6 +63,21 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
   // adds the user-visible snackbar. Cancelled in dispose so
   // backgrounding the screen doesn't keep dispatching toasts.
   StreamSubscription<LockFundLifecycleEvent>? _toastSub;
+
+  // Last successfully-loaded state, kept so a refresh (returning from a lock's
+  // details, a WS event, or pull-to-refresh) re-renders in the BACKGROUND —
+  // the current list stays on screen and only the changed widgets update,
+  // instead of the whole page being replaced by a blocking full-screen loader.
+  // The big loader is reserved for the very first load, when there's nothing
+  // to show yet.
+  LockFundsLoaded? _lastLoaded;
+
+  // Client-side pagination for the "Your Locks" list — max 7 per page with
+  // Back/Next + numbered page buttons. The per-user lock count is small, so we
+  // page in-memory over the already-loaded (and filtered) list rather than
+  // adding a network paging param.
+  static const int _locksPerPage = 7;
+  int _lockPage = 0;
 
   @override
   void initState() {
@@ -274,16 +298,28 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                         }
                       },
                       builder: (context, state) {
-                        if (state is LockFundsLoading) {
-                          return _buildLoadingState();
-                        }
-
                         if (state is LockFundsLoaded) {
+                          _lastLoaded = state;
                           return _buildLocksView(state);
                         }
 
+                        // Background refresh: a reload after we already have data
+                        // keeps the current list on screen (only changed widgets
+                        // re-render). The full-screen loader is ONLY for the very
+                        // first load, when there is nothing to show yet.
+                        if (state is LockFundsLoading) {
+                          return _lastLoaded != null
+                              ? _buildLocksView(_lastLoaded!)
+                              : _buildLoadingState();
+                        }
+
                         if (state is LockFundsError) {
-                          return _buildErrorState(state.message);
+                          // Keep stale data visible on a refresh failure — the
+                          // listener already surfaces the error snackbar. Only
+                          // show the full error screen if we never loaded.
+                          return _lastLoaded != null
+                              ? _buildLocksView(_lastLoaded!)
+                              : _buildErrorState(state.message);
                         }
 
                         return _buildEmptyState();
@@ -312,7 +348,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
+                color: _kLightPurple.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20.r),
                 boxShadow: [
                   BoxShadow(
@@ -324,7 +360,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
-                color: Colors.white,
+                color: _kLightPurple,
                 size: 16.sp,
               ),
             ),
@@ -346,7 +382,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                 Text(
                   'Grow your savings with locked deposits',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
+                    color: _kLightPurple.withValues(alpha: 0.85),
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -356,12 +392,16 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
           ),
           ServiceVoiceButton(
             serviceName: 'lockfunds',
-            iconColor: Colors.white,
+            iconColor: _kLightPurple,
           ),
           SizedBox(width: 8.w),
+          // Chat icon defaults to a DARK purple (ARGB 78,3,208) that is nearly
+          // invisible on the dark background — force the lighter purple so it
+          // reads clearly at the top-right.
           MicroserviceChatIcon(
             serviceName: 'PiggyVault',
             sourceContext: 'lockfunds',
+            iconColor: _kLightPurple,
           ),
         ],
       ),
@@ -426,7 +466,10 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
           final t = tabs[i];
           final selected = _filterStatus == t.status;
           return GestureDetector(
-            onTap: () => setState(() => _filterStatus = t.status),
+            onTap: () => setState(() {
+              _filterStatus = t.status;
+              _lockPage = 0; // new filter → start at page 1
+            }),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
               decoration: BoxDecoration(
@@ -610,7 +653,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
             title,
             style: GoogleFonts.inter(
               fontSize: 11.sp,
-              color: const Color(0xFF9CA3AF),
+              color: _kMutedPurple,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -655,12 +698,108 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
       return _buildEmptyLocks();
     }
 
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: locks.length,
-      separatorBuilder: (context, index) => SizedBox(height: 16.h),
-      itemBuilder: (context, index) => _buildLockCard(locks[index]),
+    final totalPages = ((locks.length - 1) ~/ _locksPerPage) + 1;
+    // Clamp the current page in case the list shrank (refresh/filter change).
+    // Read-time correction only — never triggers a rebuild.
+    final page = _lockPage.clamp(0, totalPages - 1);
+    if (page != _lockPage) _lockPage = page;
+    final start = page * _locksPerPage;
+    final end = (start + _locksPerPage) > locks.length
+        ? locks.length
+        : (start + _locksPerPage);
+    final pageItems = locks.sublist(start, end);
+
+    return Column(
+      children: [
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: pageItems.length,
+          separatorBuilder: (context, index) => SizedBox(height: 12.h),
+          itemBuilder: (context, index) => _buildLockCard(pageItems[index]),
+        ),
+        if (totalPages > 1) ...[
+          SizedBox(height: 16.h),
+          _buildPagination(totalPages),
+        ],
+      ],
+    );
+  }
+
+  /// Back / numbered / Next pagination control. Shows a sliding window of up to
+  /// 5 page numbers centred on the current page.
+  Widget _buildPagination(int totalPages) {
+    const maxNums = 5;
+    int startP = _lockPage - 2;
+    if (startP < 0) startP = 0;
+    int endP = startP + maxNums;
+    if (endP > totalPages) {
+      endP = totalPages;
+      startP = (endP - maxNums) < 0 ? 0 : (endP - maxNums);
+    }
+
+    Widget arrow(IconData icon, bool enabled, VoidCallback onTap) {
+      return GestureDetector(
+        onTap: enabled ? onTap : null,
+        child: Container(
+          width: 32.w,
+          height: 32.w,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: _kLightPurple.withValues(alpha: enabled ? 0.12 : 0.04),
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border.all(
+              color: _kLightPurple.withValues(alpha: enabled ? 0.35 : 0.12),
+            ),
+          ),
+          child: Icon(
+            icon,
+            size: 18.sp,
+            color: _kLightPurple.withValues(alpha: enabled ? 1 : 0.35),
+          ),
+        ),
+      );
+    }
+
+    Widget numBtn(int page) {
+      final active = page == _lockPage;
+      return GestureDetector(
+        onTap: active ? null : () => setState(() => _lockPage = page),
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: 3.w),
+          width: 32.w,
+          height: 32.w,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: active ? _kLightPurple : _kLightPurple.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border.all(
+              color: _kLightPurple.withValues(alpha: active ? 1 : 0.3),
+            ),
+          ),
+          child: Text(
+            '${page + 1}',
+            style: GoogleFonts.inter(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w700,
+              color: active ? Colors.white : _kLightPurple,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        arrow(Icons.chevron_left, _lockPage > 0,
+            () => setState(() => _lockPage--)),
+        SizedBox(width: 6.w),
+        for (int i = startP; i < endP; i++) numBtn(i),
+        SizedBox(width: 6.w),
+        arrow(Icons.chevron_right, _lockPage < totalPages - 1,
+            () => setState(() => _lockPage++)),
+      ],
     );
   }
 
@@ -674,7 +813,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
     return GestureDetector(
       onTap: () => _navigateToLockDetails(lock),
       child: Container(
-        padding: EdgeInsets.all(20.w),
+        padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -688,8 +827,8 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -699,25 +838,25 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
             Row(
               children: [
                 Container(
-                  width: 50.w,
-                  height: 50.w,
+                  width: 40.w,
+                  height: 40.w,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [progressColor, progressColor.withValues(alpha: 0.7)],
                     ),
-                    borderRadius: BorderRadius.circular(25.r),
+                    borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Center(
                     child: Text(
                       lock.lockType.icon,
                       style: GoogleFonts.inter(
-                        fontSize: 20.sp,
+                        fontSize: 18.sp,
                         color: Colors.white,
                       ),
                     ),
                   ),
                 ),
-                SizedBox(width: 16.w),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -725,14 +864,14 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                       Text(
                         lock.displayName,
                         style: GoogleFonts.inter(
-                          fontSize: 18.sp,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      SizedBox(height: 4.h),
+                      SizedBox(height: 3.h),
                       Row(
                         children: [
                           Flexible(
@@ -742,7 +881,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.inter(
                                 fontSize: 13.sp,
-                                color: const Color(0xFF9CA3AF),
+                                color: _kMutedPurple,
                               ),
                             ),
                           ),
@@ -771,11 +910,9 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                   ),
                 ),
                 _buildStatusBadge(lock.status),
-                SizedBox(width: 4.w),
-                _buildRowMenu(lock),
               ],
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: 14.h),
             // Progress bar
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -787,7 +924,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                       'Progress',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: const Color(0xFF9CA3AF),
+                        color: _kMutedPurple,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -827,7 +964,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                 ),
               ],
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: 14.h),
             Row(
               children: [
                 Expanded(
@@ -838,7 +975,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                         'Locked Amount',
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
-                          color: const Color(0xFF9CA3AF),
+                          color: _kMutedPurple,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -861,7 +998,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                       'Interest Earned',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: const Color(0xFF9CA3AF),
+                        color: _kMutedPurple,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -883,7 +1020,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
               children: [
                 Icon(
                   Icons.schedule,
-                  color: const Color(0xFF9CA3AF),
+                  color: _kMutedPurple,
                   size: 14.sp,
                 ),
                 SizedBox(width: 6.w),
@@ -891,7 +1028,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                   lock.daysRemainingText,
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
-                    color: const Color(0xFF9CA3AF),
+                    color: _kMutedPurple,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -931,72 +1068,6 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
       // Refresh list when returning from details
       lockFundsCubit.loadLockFunds();
     });
-  }
-
-  /// Per-row 3-dot menu — quick actions without opening detail.
-  /// Open detail / view receipt always available; cancel is
-  /// shown only when the lock is still active + carries a
-  /// penalty (so the user can't accidentally cancel a Flex
-  /// savings via the menu when "Withdraw" is the right verb).
-  Widget _buildRowMenu(LockFund lock) {
-    return PopupMenuButton<String>(
-      icon: Icon(Icons.more_vert, color: Colors.white.withValues(alpha: 0.7), size: 18.sp),
-      color: const Color(0xFF1F1F1F),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-      tooltip: 'Actions',
-      onSelected: (value) {
-        switch (value) {
-          case 'open':
-            _navigateToLockDetails(lock);
-            break;
-          case 'receipt':
-            Get.toNamed(AppRoutes.lockFundReceipt, arguments: {
-              'lockFund': lock,
-              'interestCalculation': null,
-            });
-            break;
-          case 'copy_id':
-            Get.snackbar(
-              'Copied',
-              lock.id,
-              backgroundColor: const Color(0xFF1F1F1F),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
-              duration: const Duration(seconds: 2),
-            );
-            // Note: dart:io Clipboard requires services import;
-            // skipping for brevity. The snackbar shows the ID so
-            // the user can long-press to copy from there.
-            break;
-        }
-      },
-      itemBuilder: (ctx) => [
-        PopupMenuItem(
-          value: 'open',
-          child: Row(children: [
-            Icon(Icons.open_in_new_rounded, color: Colors.white, size: 16.sp),
-            SizedBox(width: 8.w),
-            Text('Open', style: GoogleFonts.inter(color: Colors.white, fontSize: 12.sp)),
-          ]),
-        ),
-        PopupMenuItem(
-          value: 'receipt',
-          child: Row(children: [
-            Icon(Icons.receipt_long_outlined, color: Colors.white, size: 16.sp),
-            SizedBox(width: 8.w),
-            Text('View receipt', style: GoogleFonts.inter(color: Colors.white, fontSize: 12.sp)),
-          ]),
-        ),
-        PopupMenuItem(
-          value: 'copy_id',
-          child: Row(children: [
-            Icon(Icons.content_copy_outlined, color: Colors.white, size: 16.sp),
-            SizedBox(width: 8.w),
-            Text('Show ID', style: GoogleFonts.inter(color: Colors.white, fontSize: 12.sp)),
-          ]),
-        ),
-      ],
-    );
   }
 
   Widget _buildStatusBadge(LockStatus status) {
@@ -1087,7 +1158,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 fontSize: 13.sp,
-                color: const Color(0xFF9CA3AF),
+                color: _kMutedPurple,
                 height: 1.5,
                 fontWeight: FontWeight.w400,
               ),
@@ -1150,7 +1221,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                   'Secure your savings and earn competitive interest',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: const Color(0xFF9CA3AF),
+                    color: _kMutedPurple,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -1197,7 +1268,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                 Text(
                   'Loading your vaults...',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
+                    color: _kMutedPurple,
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w500,
                   ),
@@ -1251,7 +1322,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                   child: Text(
                     message,
                     style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF),
+                      color: _kMutedPurple,
                       fontSize: 14.sp,
                     ),
                     textAlign: TextAlign.center,

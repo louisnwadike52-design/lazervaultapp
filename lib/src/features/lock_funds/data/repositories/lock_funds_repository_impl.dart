@@ -176,6 +176,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
     required LockType lockType,
     required double amount,
     required int lockDurationDays,
+    bool supportsUpfrontInterest = false,
   }) async {
     try {
       final request = pb.CalculateInterestRequest()
@@ -193,6 +194,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         response,
         principalAmount: amount,
         lockDurationDays: lockDurationDays,
+        supportsUpfrontInterest: supportsUpfrontInterest,
       );
     } catch (e) {
       throw Exception(friendlyLockError(e));

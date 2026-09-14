@@ -104,6 +104,12 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
         lockType: createCubit.lockType!,
         amount: createCubit.amount!,
         lockDurationDays: createCubit.lockDurationDays!,
+        // The plan's real upfront-interest config (reads
+        // config.supportsUpfrontInterest) so the resulting calculation — and
+        // therefore the review + receipt + PDF — reflect exactly what the
+        // backend will do at creation. Accrual plans (upfront OFF) never render
+        // the "Upfront Interest Paid" card.
+        supportsUpfrontInterest: createCubit.qualifiesForUpfrontInterest,
       );
     }
   }
@@ -334,26 +340,25 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
+                  // Currency sits INLINE, right beside the amount value (e.g.
+                  // "₦10000") via prefixText — not a faded leading icon floating
+                  // far to the left with a gap. Reads as one consolidated unit.
                   decoration: InputDecoration(
                     border: InputBorder.none,
+                    isCollapsed: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 14.h),
                     hintText: '0.00',
                     hintStyle: GoogleFonts.inter(
                       fontSize: 24.sp,
                       fontWeight: FontWeight.w700,
                       color: Colors.white.withValues(alpha: 0.3),
                     ),
-                    prefixIcon: Padding(
-                      padding: EdgeInsets.only(left: 8.w, right: 12.w, top: 14.h),
-                      child: Text(
-                        CurrencySymbols.getSymbol(_userCurrency),
-                        style: GoogleFonts.inter(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF9CA3AF),
-                        ),
-                      ),
+                    prefixText: CurrencySymbols.getSymbol(_userCurrency),
+                    prefixStyle: GoogleFonts.inter(
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white.withValues(alpha: 0.55),
                     ),
-                    prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
                   ),
                   onChanged: (value) {
                     final amount = double.tryParse(value);

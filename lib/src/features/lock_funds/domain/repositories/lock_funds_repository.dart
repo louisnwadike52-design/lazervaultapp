@@ -53,6 +53,7 @@ abstract class LockFundsRepository {
     required LockType lockType,
     required double amount,
     required int lockDurationDays,
+    bool supportsUpfrontInterest = false,
   });
 
   /// Renew a matured lock fund

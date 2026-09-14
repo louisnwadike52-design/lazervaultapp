@@ -40,6 +40,11 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
     try {
       final filePath = await LockFundsPdfService.downloadLockConfirmation(
         lockFund: lockFund,
+        // Use the backend's own CalculateInterest figures when we have them
+        // (post-create) so the PDF matches the on-screen numbers instead of
+        // printing the accrued-so-far (0 at creation).
+        expectedInterest: interestCalculation?.estimatedInterest,
+        expectedTotal: interestCalculation?.totalReturn,
       );
 
       if (mounted) {
@@ -72,6 +77,8 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
     try {
       await LockFundsPdfService.shareLockConfirmation(
         lockFund: lockFund,
+        expectedInterest: interestCalculation?.estimatedInterest,
+        expectedTotal: interestCalculation?.totalReturn,
         sharePositionOrigin:
             LockFundsPdfService.shareOriginFromContext(context),
       );
@@ -90,16 +97,6 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
   }
 
-  /// Shortens a UUID-shaped account id into the leading + trailing
-  /// hex chunks ops + users typically reference (e.g.
-  /// `8c89c7d4…0489`). Avoids dumping the full UUID into the
-  /// receipt; the full string lives in the share-PDF metadata if
-  /// needed.
-  String _shortAccountId(String accountId) {
-    if (accountId.length <= 13) return accountId;
-    return '${accountId.substring(0, 8)}…${accountId.substring(accountId.length - 4)}';
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,77 +104,42 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        // The top-left back button is the ONLY navigation affordance now — it
+        // returns to the locks landing, so the old "View My Locks" / "Back to
+        // Home" CTAs are gone (they duplicated this).
         leading: IconButton(
           onPressed: () => Get.offAllNamed(AppRoutes.lockFunds),
           icon: Icon(
             Icons.arrow_back,
-            color: Colors.white,
+            color: const Color(0xFFA78BFA),
             size: 24.sp,
           ),
         ),
-        title: Text(
-          'Lock Confirmation',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
+        // Lazervault brand lockup, top-right — same pattern as the send-funds
+        // receipt so every receipt carries the wordmark.
         actions: [
-          IconButton(
-            onPressed: () => Get.offAllNamed(AppRoutes.lockFunds),
-            icon: Icon(
-              Icons.close,
-              color: Colors.white,
-              size: 24.sp,
-            ),
-            tooltip: 'Close',
-          ),
-          SizedBox(width: 4.w),
+          _buildBrandLockup(),
+          SizedBox(width: 16.w),
         ],
       ),
       body: SafeArea(
         child: Column(
           children: [
+            // Compact, glance-able receipt. A scroll view remains as a safety
+            // net for very small screens, but the content is consolidated so it
+            // fits without scrolling on a normal device — success header,
+            // amount, and ONE merged details+returns card.
             Expanded(
               child: SingleChildScrollView(
-                padding: EdgeInsets.all(20.w),
+                padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 12.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: 8.h),
-                    _buildSuccessIcon(),
-                    SizedBox(height: 24.h),
-                    Text(
-                      'Funds Locked Successfully!',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      'Your funds are now earning interest',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    SizedBox(height: 32.h),
+                    _buildSuccessHeader(),
+                    SizedBox(height: 16.h),
                     _buildAmountCard(),
-                    SizedBox(height: 24.h),
-                    _buildLockDetails(),
-                    if (interestCalculation != null) ...[
-                      SizedBox(height: 24.h),
-                      _buildExpectedReturns(),
-                      if (interestCalculation!.qualifiesForUpfrontInterest) ...[
-                        SizedBox(height: 24.h),
-                        _buildUpfrontInterestCard(),
-                      ],
-                    ],
+                    SizedBox(height: 14.h),
+                    _buildDetailsAndReturns(),
                   ],
                 ),
               ),
@@ -189,26 +151,96 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
     );
   }
 
-  Widget _buildSuccessIcon() {
-    return Container(
-      width: 100.w,
-      height: 100.w,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF10B981).withValues(alpha: 0.2),
-            const Color(0xFF059669).withValues(alpha: 0.1),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+  /// Lazervault brand lockup (logo + wordmark) for the app-bar's top-right —
+  /// mirrors the send-funds receipt so every receipt carries the wordmark.
+  Widget _buildBrandLockup() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 26.w,
+          height: 26.w,
+          padding: EdgeInsets.all(3.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            shape: BoxShape.circle,
+            border: Border.all(color: const Color(0xFF2D2D2D)),
+          ),
+          child: Image.asset(
+            'assets/images/logo.png',
+            errorBuilder: (_, __, ___) => Icon(
+              Icons.lock_rounded,
+              color: const Color(0xFFA78BFA),
+              size: 14.sp,
+            ),
+          ),
         ),
-        shape: BoxShape.circle,
-      ),
-      child: Icon(
-        Icons.lock_rounded,
-        color: const Color(0xFF10B981),
-        size: 50.sp,
-      ),
+        SizedBox(width: 7.w),
+        Text(
+          'Lazervault',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.2,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Compact success header: a small circular icon beside the headline, instead
+  /// of the old 100px circle + 24sp title stack that pushed content off-screen.
+  Widget _buildSuccessHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 40.w,
+          height: 40.w,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF10B981).withValues(alpha: 0.2),
+                const Color(0xFF059669).withValues(alpha: 0.1),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.check_circle_rounded,
+            color: const Color(0xFF10B981),
+            size: 24.sp,
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Funds Locked Successfully',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                'Your funds are now earning interest',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -217,7 +249,7 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
@@ -243,18 +275,18 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 6.h),
           Text(
             '$currencySymbol${lockFund.amount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: Colors.white,
-              fontSize: 40.sp,
+              fontSize: 30.sp,
               fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 10.h),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20.r),
@@ -283,19 +315,22 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
     );
   }
 
-  Widget _buildLockDetails() {
+  /// One consolidated card merging Lock Details + Expected Returns so the whole
+  /// receipt fits at a glance without scrolling. The returns block only renders
+  /// when we have a calculation (post-create). Upfront-vs-accrual is driven by
+  /// the ACTUAL per-plan config (calc.qualifiesForUpfrontInterest, which now
+  /// reflects supports_upfront_interest) — accrual locks never claim an upfront
+  /// payout; they show interest as earned AT MATURITY.
+  Widget _buildDetailsAndReturns() {
+    final currencySymbol = CurrencySymbols.getSymbol(lockFund.currency);
+    final calc = interestCalculation;
+    final isUpfront = calc != null && calc.qualifiesForUpfrontInterest;
+
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -304,127 +339,116 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
             'Lock Details',
             style: GoogleFonts.inter(
               color: Colors.white,
-              fontSize: 16.sp,
+              fontSize: 15.sp,
               fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 12.h),
           _buildDetailRow('Lock Type', lockFund.lockType.displayName),
-          SizedBox(height: 12.h),
+          SizedBox(height: 8.h),
           _buildDetailRow('Duration', lockFund.durationText),
-          SizedBox(height: 12.h),
+          SizedBox(height: 8.h),
           _buildDetailRow('Interest Rate', lockFund.formattedInterestRate),
-          SizedBox(height: 12.h),
-          _buildDetailRow('Locked On', _formatDate(lockFund.lockedAt)),
-          SizedBox(height: 12.h),
+          SizedBox(height: 8.h),
           _buildDetailRow('Matures On', _formatDate(lockFund.unlockAt)),
-          // Maturity countdown — concrete time-until rather than
-          // a static date. Hidden once the lock matures (already
-          // covered by the status pill).
-          if (lockFund.status == LockStatus.active && lockFund.daysRemaining > 0) ...[
-            SizedBox(height: 12.h),
+          if (lockFund.status == LockStatus.active &&
+              lockFund.daysRemaining > 0) ...[
+            SizedBox(height: 8.h),
             _buildDetailRow('Matures In', lockFund.daysRemainingText),
           ],
-          // Upfront-interest disclosure. Only renders when the
-          // wizard's interest calculation flagged the lock as
-          // qualifying for an upfront payout — otherwise it's a
-          // confusing "0 NGN paid upfront" line. The destination
-          // account ID is rendered as a short hint so the user
-          // recognises it without dumping the full UUID.
-          if (interestCalculation != null &&
-              interestCalculation!.qualifiesForUpfrontInterest &&
-              interestCalculation!.upfrontInterestAmount > 0) ...[
-            SizedBox(height: 12.h),
-            _buildDetailRow(
-              'Upfront Interest Paid',
-              '${CurrencySymbols.getSymbol(lockFund.currency)}${interestCalculation!.upfrontInterestAmount.toStringAsFixed(2)}',
-            ),
-            if (lockFund.destinationAccountId != null &&
-                lockFund.destinationAccountId!.isNotEmpty) ...[
-              SizedBox(height: 12.h),
-              _buildDetailRow(
-                'Paid Into',
-                _shortAccountId(lockFund.destinationAccountId!),
-              ),
-            ],
-          ],
           if (lockFund.goalName != null && lockFund.goalName!.isNotEmpty) ...[
-            SizedBox(height: 12.h),
+            SizedBox(height: 8.h),
             _buildDetailRow('Goal', lockFund.goalName!),
           ],
-          SizedBox(height: 12.h),
+          SizedBox(height: 8.h),
           _buildDetailRow(
             'Auto-Renew',
             lockFund.autoRenew ? 'Enabled' : 'Disabled',
           ),
           if (lockFund.transactionId != null &&
               lockFund.transactionId!.isNotEmpty) ...[
-            SizedBox(height: 12.h),
+            SizedBox(height: 8.h),
             _buildDetailRow('Reference', lockFund.transactionId!),
           ],
-          SizedBox(height: 12.h),
+          SizedBox(height: 8.h),
           _buildDetailRow('Status', lockFund.status.displayName),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildExpectedReturns() {
-    final currencySymbol = CurrencySymbols.getSymbol(lockFund.currency);
-    final calc = interestCalculation!;
-
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: const Color(0xFF10B981).withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.trending_up_rounded,
-                color: const Color(0xFF10B981),
-                size: 20.sp,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'Expected Returns',
-                style: GoogleFonts.inter(
+          // Returns — merged into the same card. Only shown post-create.
+          if (calc != null) ...[
+            SizedBox(height: 14.h),
+            Divider(
+              color: const Color(0xFF10B981).withValues(alpha: 0.25),
+              height: 1,
+            ),
+            SizedBox(height: 14.h),
+            Row(
+              children: [
+                Icon(
+                  Icons.trending_up_rounded,
                   color: const Color(0xFF10B981),
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
+                  size: 16.sp,
+                ),
+                SizedBox(width: 6.w),
+                Text(
+                  isUpfront ? 'Interest' : 'Expected Returns',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF10B981),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10.h),
+            _buildReturnRow(
+              'Principal',
+              '$currencySymbol${calc.principalAmount.toStringAsFixed(2)}',
+            ),
+            SizedBox(height: 8.h),
+            _buildReturnRow(
+              isUpfront ? 'Interest Paid Upfront' : 'Interest at Maturity',
+              '+$currencySymbol${calc.estimatedInterest.toStringAsFixed(2)}',
+              isHighlighted: true,
+            ),
+            SizedBox(height: 8.h),
+            _buildReturnRow(
+              isUpfront ? 'Total Value' : 'Total at Maturity',
+              '$currencySymbol${calc.totalReturn.toStringAsFixed(2)}',
+              isBold: true,
+            ),
+            // Upfront-only confirmation note (accrual plans omit this — the
+            // money has NOT been credited yet).
+            if (isUpfront) ...[
+              SizedBox(height: 10.h),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle_outline,
+                      color: const Color(0xFF10B981),
+                      size: 14.sp,
+                    ),
+                    SizedBox(width: 6.w),
+                    Expanded(
+                      child: Text(
+                        'Interest credited to your savings account immediately',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF10B981),
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
-          ),
-          SizedBox(height: 16.h),
-          _buildReturnRow(
-            'Principal',
-            '$currencySymbol${calc.principalAmount.toStringAsFixed(2)}',
-            isHighlighted: false,
-          ),
-          SizedBox(height: 12.h),
-          _buildReturnRow(
-            'Interest Earned',
-            '+$currencySymbol${calc.estimatedInterest.toStringAsFixed(2)}',
-            isHighlighted: true,
-          ),
-          SizedBox(height: 12.h),
-          Divider(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
-          SizedBox(height: 12.h),
-          _buildReturnRow(
-            'Total at Maturity',
-            '$currencySymbol${calc.totalReturn.toStringAsFixed(2)}',
-            isHighlighted: false,
-            isBold: true,
-          ),
+          ],
         ],
       ),
     );
@@ -490,95 +514,13 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
     );
   }
 
-  Widget _buildUpfrontInterestCard() {
-    final currencySymbol = CurrencySymbols.getSymbol(lockFund.currency);
-    final calc = interestCalculation!;
-
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF6366F1).withValues(alpha: 0.15),
-            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.bolt_rounded,
-                color: const Color(0xFF6366F1),
-                size: 20.sp,
-              ),
-              SizedBox(width: 8.w),
-              Expanded(
-                child: Text(
-                  'Upfront Interest Paid',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF6366F1),
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            'Your interest of $currencySymbol${calc.estimatedInterest.toStringAsFixed(2)} has been credited to your savings account immediately.',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w400,
-              height: 1.5,
-            ),
-          ),
-          SizedBox(height: 12.h),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.check_circle_outline,
-                  color: const Color(0xFF10B981),
-                  size: 16.sp,
-                ),
-                SizedBox(width: 6.w),
-                Text(
-                  'Interest credited to savings account',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF10B981),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+  /// Bottom actions — Share + Download ONLY. The old "View My Locks" and "Back
+  /// to Home" CTAs are gone: the top-left back button returns to the locks
+  /// landing, which is the same destination, so those buttons were redundant
+  /// clutter that forced the receipt to scroll.
   Widget _buildActions(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 14.h),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.only(
@@ -586,144 +528,55 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
           topRight: Radius.circular(20.r),
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Row(
         children: [
-          // Share and Download buttons
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: _shareReceipt,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: const Color(0xFF6366F1),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.share,
-                          color: const Color(0xFF6366F1),
-                          size: 20.sp,
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          'Share',
-                          style: GoogleFonts.inter(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF6366F1),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: GestureDetector(
-                  onTap: _downloadReceipt,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: const Color(0xFF6366F1),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _isDownloading
-                            ? LazerVaultLoader.small()
-                            : Icon(
-                                Icons.download,
-                                color: const Color(0xFF6366F1),
-                                size: 20.sp,
-                              ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          'Download',
-                          style: GoogleFonts.inter(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF6366F1),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          // View My Locks button
-          SizedBox(
-            width: double.infinity,
-            child: GestureDetector(
-              onTap: () => Get.offAllNamed(AppRoutes.lockFunds),
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
-                  ),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Center(
-                  child: Text(
-                    'View My Locks',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 12.h),
-          // Back to Home button
-          SizedBox(
-            width: double.infinity,
-            child: GestureDetector(
-              onTap: () => Get.offAllNamed(AppRoutes.home),
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: const Color(0xFF2D2D2D),
-                    width: 1,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    'Back to Home',
-                    style: GoogleFonts.inter(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
+          Expanded(child: _actionButton(Icons.share, 'Share', _shareReceipt)),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: _actionButton(
+              Icons.download,
+              'Download',
+              _downloadReceipt,
+              isLoading: _isDownloading,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _actionButton(
+    IconData icon,
+    String label,
+    VoidCallback onTap, {
+    bool isLoading = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 14.h),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFF8B5CF6), width: 1.5),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            isLoading
+                ? LazerVaultLoader.small()
+                : Icon(icon, color: const Color(0xFFA78BFA), size: 20.sp),
+            SizedBox(width: 8.w),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFFA78BFA),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
