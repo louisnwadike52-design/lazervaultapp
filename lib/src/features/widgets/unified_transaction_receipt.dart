@@ -198,20 +198,20 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
   }
 
   String get _formattedAmount {
+    // NO +/- sign on the headline (user directive 2026-09-14): colour alone
+    // carries direction — green for an inflow, white for an outflow (see
+    // _amountColor). The sign read as noise next to the coloured figure.
     // Crypto-denominated receipts (e.g. a send of "5.000000 USDT") pass a
     // pre-formatted override so we don't force fiat 2-decimal formatting.
     final override = tx.amountDisplayOverride;
-    if (override != null && override.isNotEmpty) {
-      if (tx.flow == TransactionFlow.incoming) return '+$override';
-      if (tx.flow == TransactionFlow.outgoing) return '-$override';
-      return override;
-    }
+    if (override != null && override.isNotEmpty) return override;
     final amt = NumberFormat('#,##0.00').format(tx.amount);
-    if (tx.flow == TransactionFlow.incoming) return '+$_currencySymbol$amt';
     return '$_currencySymbol$amt';
   }
 
   Color get _amountColor {
+    // Direction is carried by colour only: green inflow, white outflow —
+    // matching the history list's convention, minus the signs.
     if (tx.flow == TransactionFlow.incoming) return const Color(0xFF34C759);
     return Colors.white;
   }
@@ -842,7 +842,35 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // movement, and its receipt was falling back to a flat image — so
       // the card details resolved above never reached a saved or shared
       // document at all.
-      tx.serviceType == TransactionServiceType.giftCard;
+      tx.serviceType == TransactionServiceType.giftCard ||
+      // Invoice payments: share/download used to export a flat image of
+      // this page instead of the branded PDF. The invoice identity rows
+      // (_invoiceRows) ride along as extraRows so the document carries
+      // the proper invoice payload, not a bare transfer.
+      tx.serviceType == TransactionServiceType.invoice;
+
+  /// Invoice-payload rows for the PDF body — mirrored from the metadata the
+  /// on-screen receipt shows (set by invoice_payment_receipt_screen), so the
+  /// exported document names the invoice instead of reading as a bare
+  /// transfer. Empty for every other service type.
+  List<MapEntry<String, String>> get _invoiceRows {
+    if (tx.serviceType != TransactionServiceType.invoice) return const [];
+    final md = tx.metadata ?? {};
+    const keys = [
+      'Invoice No.',
+      'Invoice ID',
+      'From',
+      'Bill To',
+      'Invoice Amount',
+      'Exchange Rate',
+      'Message',
+    ];
+    return [
+      for (final k in keys)
+        if ((md[k] ?? '').toString().trim().isNotEmpty)
+          MapEntry(k, md[k].toString()),
+    ];
+  }
 
   Widget _buildActionButtons() {
     final buttons = <Widget>[];
@@ -1291,7 +1319,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
               format: _chosenFormat,
               // The card the on-screen receipt resolved, so the SAVED document
               // names it too rather than being a strictly poorer copy.
-              extraRows: _giftCard?.rows ?? const [],
+              extraRows: _giftCard?.rows ?? _invoiceRows,
             );
 
       _showSnackbar('Receipt saved to $filePath');
@@ -1318,7 +1346,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           transaction: tx,
           copyType: _chosenCopy,
           format: _chosenFormat,
-          extraRows: _giftCard?.rows ?? const [],
+          extraRows: _giftCard?.rows ?? _invoiceRows,
           // Anchors the iPad share popover; omitted it anchored top-left.
           sharePositionOrigin: _shareOrigin(),
         );
