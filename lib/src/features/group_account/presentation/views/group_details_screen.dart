@@ -178,6 +178,26 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                 cubit.lastLoadedContributions!,
               );
             }
+            // FIRST entry into this group: the details RPC is still in
+            // flight, but the groups LIST the user just tapped already
+            // holds this group WITH its members (the list RPC nests them;
+            // only contributions arrive with the details load). Render
+            // instantly from that snapshot instead of a full-screen
+            // spinner — this kills the tap → blank/loader → content
+            // stutter. The GroupAccountGroupLoaded emit then re-renders
+            // with contributions filled in.
+            final cached = cubit.cachedGroups;
+            if (cached != null) {
+              for (final g in cached) {
+                if (g.id == widget.groupId) {
+                  return _buildGroupDetailsView(
+                    g,
+                    g.members,
+                    g.contributions,
+                  );
+                }
+              }
+            }
             if (state is GroupAccountLoading) {
               return _buildLoadingView();
             } else if (state is GroupAccountError) {
