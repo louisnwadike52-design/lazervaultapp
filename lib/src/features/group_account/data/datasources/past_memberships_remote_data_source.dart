@@ -229,8 +229,8 @@ class PastMembershipsRemoteDataSource {
       groupId: (m['groupId'] as String?) ?? '',
       title: (m['title'] as String?) ?? '',
       description: (m['description'] as String?) ?? '',
-      targetAmount: double.tryParse('${m['targetAmount'] ?? 0}') ?? 0,
-      currentAmount: double.tryParse('${m['currentAmount'] ?? 0}') ?? 0,
+      targetAmount: _money(m['targetAmount']),
+      currentAmount: _money(m['currentAmount']),
       currency: (m['currency'] as String?) ?? 'NGN',
       deadline: _ts(m['deadline']) ?? DateTime.now(),
       status: _parseContributionStatus(m['status'] as String?),
@@ -241,7 +241,7 @@ class PastMembershipsRemoteDataSource {
       updatedAt: _ts(m['updatedAt']) ?? DateTime.now(),
       type: type,
       currentCycle: (m['currentCycle'] as num?)?.toInt(),
-      regularAmount: double.tryParse('${m['regularAmount'] ?? 0}'),
+      regularAmount: m['regularAmount'] == null ? null : _money(m['regularAmount']),
       autoPayEnabled: (m['autoPayEnabled'] as bool?) ?? false,
       allowPartialPayments: (m['allowPartialPayments'] as bool?) ?? false,
     );
@@ -256,12 +256,11 @@ class PastMembershipsRemoteDataSource {
       email: (m['email'] as String?) ?? '',
       profileImage: (m['profileImage'] as String?) ?? '',
       joinedAt: _ts(m['joinedAt']) ?? DateTime.now(),
-      totalPaid: double.tryParse('${m['totalPaid'] ?? 0}') ?? 0,
-      expectedAmount: double.tryParse('${m['expectedAmount'] ?? 0}') ?? 0,
+      totalPaid: _money(m['totalPaid']),
+      expectedAmount: _money(m['expectedAmount']),
       hasPaidCurrentCycle:
           (m['hasPaidCurrentCycle'] as bool?) ?? false,
-      cyclePaidAmount:
-          double.tryParse('${m['cyclePaidAmount'] ?? 0}') ?? 0,
+      cyclePaidAmount: _money(m['cyclePaidAmount']),
       missedCycles: (m['missedCycles'] as num?)?.toInt() ?? 0,
       membershipStatus:
           _parseMembershipStatus(m['membershipStatus'] as String?),
@@ -275,7 +274,7 @@ class PastMembershipsRemoteDataSource {
       groupId: (m['groupId'] as String?) ?? '',
       userId: (m['userId'] as String?) ?? '',
       userName: (m['userName'] as String?) ?? '',
-      amount: double.tryParse('${m['amount'] ?? 0}') ?? 0,
+      amount: _money(m['amount']),
       currency: (m['currency'] as String?) ?? 'NGN',
       paymentDate: _ts(m['paymentDate']) ?? DateTime.now(),
       status: _parsePaymentStatus(m['status'] as String?),
@@ -285,7 +284,19 @@ class PastMembershipsRemoteDataSource {
     );
   }
 
-  // ----- enum / timestamp helpers -----
+  // ----- money / enum / timestamp helpers -----
+
+  /// grpc-gateway serializes proto int64 money fields as a JSON string of
+  /// MINOR units (kobo). The shared Contribution / ContributionPayment /
+  /// ContributionMember entities are built for NAIRA — the canonical gRPC path
+  /// converts via `_int64ToAmount` (= value / 100, see
+  /// group_account_grpc_data_source.dart:48). This HTTP past-membership path
+  /// feeds the SAME entities, so it must divide by 100 too; otherwise every
+  /// past-contribution / past-payment amount renders 100x too large.
+  double _money(dynamic v) {
+    final n = num.tryParse('${v ?? 0}') ?? 0;
+    return n.toDouble() / 100.0;
+  }
 
   DateTime? _ts(dynamic v) {
     if (v == null) return null;

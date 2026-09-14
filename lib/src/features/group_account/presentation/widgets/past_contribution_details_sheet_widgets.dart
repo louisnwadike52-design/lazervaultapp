@@ -164,10 +164,13 @@ class _ClosedCycleRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final fmt = NumberFormat('#,##0.##');
     final cycleIndex = (raw['cycleIndex'] as num?)?.toInt() ?? 0;
+    // closedCycles is a raw grpc-gateway JSON passthrough; its int64 money
+    // fields arrive as MINOR units (kobo), so divide by 100 to naira — same
+    // convention the other past-* amounts use (e.g. refundAmount / 100).
     final raisedAmount =
-        double.tryParse('${raw['raisedAmount'] ?? 0}') ?? 0;
+        (double.tryParse('${raw['raisedAmount'] ?? 0}') ?? 0) / 100;
     final targetAmount =
-        double.tryParse('${raw['targetAmount'] ?? 0}') ?? 0;
+        (double.tryParse('${raw['targetAmount'] ?? 0}') ?? 0) / 100;
     final receiverName = (raw['receiverName'] as String?) ?? '';
     final closedAtStr = raw['endedAt'] as String?;
     final closedAt = closedAtStr != null
