@@ -814,6 +814,11 @@ class TagPayPdfService {
     /// today the gift card behind a payout, which is looked up by reference
     /// because the ledger credit stores only a description.
     List<MapEntry<String, String>> extraRows = const [],
+    /// The logged-in user's display name. On an INFLOW they are the
+    /// beneficiary — the entity's counterparty is the SENDER, so without
+    /// this the sender got printed under Beneficiary Details and FROM
+    /// stayed blank (reported from a received-transfer share).
+    String? currentUserName,
   }) async {
     final metadata = transaction.metadata ?? {};
 
@@ -821,12 +826,9 @@ class TagPayPdfService {
     // used to read: the history mapper writes snake_case (`recipient_name`,
     // `sender_name`, `bank_name`) and puts the direction-resolved counterparty
     // on the ENTITY, while the realtime send-funds flow writes
-    // 'Beneficiary Name'/'From'. Every lookup therefore ran off the end of its
-    // chain — FROM printed blank and the beneficiary fell through to
-    // `transaction.title`, i.e. the SCREEN HEADING ("Tag Payment Received")
-    // was printed as the person paid. The entity's counterparty is the last
-    // real source; the title is only a placeholder of last resort.
-    final recipientName = _firstNonEmpty([
+    // 'Beneficiary Name'/'From'. The entity's counterparty is the last real
+    // source; the title is only a placeholder of last resort.
+    final counterparty = _firstNonEmpty([
           metadata['Recipient'],
           metadata['Beneficiary Name'],
           metadata['recipientName'],
@@ -834,16 +836,43 @@ class TagPayPdfService {
           transaction.counterpartyName,
         ]) ??
         transaction.title;
-    final sourceAccountName = _firstNonEmpty([
-      metadata['Source Account'],
-      metadata['From'],
-      metadata['sender_name'],
-      metadata['senderAccount'],
-    ]);
-    final sourceAccountInfo = _firstNonEmpty([
-      metadata['senderAccount'],
-      metadata['sender_account'],
-    ]);
+
+    // DIRECTION-AWARE party mapping. The counterparty is always THE OTHER
+    // party: on an outgoing transfer they are the beneficiary; on an INFLOW
+    // they are the SENDER — they belong in FROM, and the beneficiary is the
+    // logged-in user who received the money.
+    final incoming = transaction.flow == TransactionFlow.incoming;
+    final String recipientName;
+    final String? sourceAccountName;
+    final String? sourceAccountInfo;
+    if (incoming) {
+      recipientName = (currentUserName != null && currentUserName.trim().isNotEmpty)
+          ? currentUserName.trim()
+          : 'You';
+      sourceAccountName = _firstNonEmpty([
+        metadata['From'],
+        metadata['Sender'],
+        metadata['sender_name'],
+        counterparty,
+      ]);
+      sourceAccountInfo = _firstNonEmpty([
+        metadata['senderAccount'],
+        metadata['sender_account'],
+        transaction.counterpartyAccount,
+      ]);
+    } else {
+      recipientName = counterparty;
+      sourceAccountName = _firstNonEmpty([
+        metadata['Source Account'],
+        metadata['From'],
+        metadata['sender_name'],
+        metadata['senderAccount'],
+      ]);
+      sourceAccountInfo = _firstNonEmpty([
+        metadata['senderAccount'],
+        metadata['sender_account'],
+      ]);
+    }
 
     return generateTransferReceiptFile(
       copyType: copyType,
@@ -852,18 +881,29 @@ class TagPayPdfService {
         'amount': transaction.amount,
         'currency': transaction.currency,
         'recipientName': recipientName,
-        'recipientAccountMasked': _firstNonEmpty([
-          metadata['Recipient Account'],
-          metadata['Beneficiary Account'],
-          metadata['recipientAccount'],
-          metadata['recipient_account'],
-          transaction.counterpartyAccount,
-        ]),
-        'recipientBankName': _firstNonEmpty([
-          metadata['recipientBank'],
-          metadata['Beneficiary Bank'],
-          metadata['bank_name'],
-        ]),
+        // On an inflow the entity's counterpartyAccount is the SENDER's
+        // account — it must not appear under Beneficiary Details.
+        'recipientAccountMasked': incoming
+            ? _firstNonEmpty([
+                metadata['Recipient Account'],
+                metadata['recipient_account'],
+                metadata['destination_account'],
+              ])
+            : _firstNonEmpty([
+                metadata['Recipient Account'],
+                metadata['Beneficiary Account'],
+                metadata['recipientAccount'],
+                metadata['recipient_account'],
+                transaction.counterpartyAccount,
+              ]),
+        // Same reasoning: bank_name on an inflow is the sender's bank.
+        'recipientBankName': incoming
+            ? null
+            : _firstNonEmpty([
+                metadata['recipientBank'],
+                metadata['Beneficiary Bank'],
+                metadata['bank_name'],
+              ]),
         'sourceAccountName': sourceAccountName,
         // Don't print the same string twice when both slots resolved from the
         // one key that was available.
@@ -979,10 +1019,12 @@ class TagPayPdfService {
     ReceiptCopyType copyType = ReceiptCopyType.sender,
     ReceiptFileFormat format = ReceiptFileFormat.pdf,
     List<MapEntry<String, String>> extraRows = const [],
+    String? currentUserName,
   }) async {
     try {
       final file = await generateUnifiedTransferReceipt(
           transaction: transaction,
+          currentUserName: currentUserName,
           copyType: copyType,
           format: format,
           extraRows: extraRows);
@@ -1004,10 +1046,12 @@ class TagPayPdfService {
     ReceiptCopyType copyType = ReceiptCopyType.sender,
     ReceiptFileFormat format = ReceiptFileFormat.pdf,
     List<MapEntry<String, String>> extraRows = const [],
+    String? currentUserName,
   }) async {
     try {
       final file = await generateUnifiedTransferReceipt(
           transaction: transaction,
+          currentUserName: currentUserName,
           copyType: copyType,
           format: format,
           extraRows: extraRows);
@@ -1041,8 +1085,12 @@ class TagPayPdfService {
           transaction.counterpartyName,
         ]);
         subject = 'Lazervault Transfer Receipt';
+        // Direction-aware wording: on an inflow the counterparty is the
+        // SENDER — "to <sender>" read as if the receiver had paid them.
+        final preposition =
+            transaction.flow == TransactionFlow.incoming ? 'from' : 'to';
         text = recipient != null
-            ? 'Lazervault Transfer Receipt - $currencySymbol$amount to $recipient'
+            ? 'Lazervault Transfer Receipt - $currencySymbol$amount $preposition $recipient'
             : 'Lazervault Transfer Receipt - $currencySymbol$amount';
       }
 
