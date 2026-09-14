@@ -654,9 +654,16 @@ class _LockWithdrawalScreenState extends State<LockWithdrawalScreen> {
     HapticFeedback.mediumImpact();
     setState(() => _isProcessing = true);
 
+    // Flex / no-fixed-term plans carry no unlock date, so the backend's
+    // CanUnlock() (which keys off the maturity date) refuses a NON-force
+    // withdrawal. They are penalty-free (0% penalty), so force-unlock is a
+    // clean full withdrawal on ANY backend version — this keeps the flow
+    // working whether or not the CanUnlock() flex fix is deployed yet.
+    final isFlexNoTerm = widget.lockFund.lockDurationDays <= 0;
+
     context.read<LockFundsCubit>().unlockFund(
           lockFundId: widget.lockFund.id,
-          forceEarlyUnlock: widget.isEarlyWithdrawal,
+          forceEarlyUnlock: widget.isEarlyWithdrawal || isFlexNoTerm,
           withdrawalMode: _isInterestOnly ? 'interest_only' : 'full',
         );
   }
