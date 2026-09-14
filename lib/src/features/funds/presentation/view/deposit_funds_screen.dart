@@ -2520,7 +2520,19 @@ class _DepositFundsScreenState extends State<DepositFundsScreen>
                 'one-off transfer from your bank app), then choose "Finish Direct '
                 'Debit setup" on your linked account.',
             snackPosition: SnackPosition.BOTTOM,
-            duration: const Duration(seconds: 5),
+            duration: const Duration(seconds: 6),
+            // Default GetX styling rendered dark text on a translucent light
+            // ground — invisible over the dark deposit screen. Force a solid,
+            // high-contrast surface with white text (matches the app's other
+            // snackbars).
+            backgroundColor: const Color(0xFF1F1F1F),
+            colorText: Colors.white,
+            borderColor: Colors.white.withValues(alpha: 0.08),
+            borderWidth: 1,
+            margin: EdgeInsets.all(12.w),
+            borderRadius: 14.r,
+            icon: const Icon(Icons.info_outline, color: Color(0xFF8B5CF6)),
+            snackStyle: SnackStyle.FLOATING,
           );
         }
       }
