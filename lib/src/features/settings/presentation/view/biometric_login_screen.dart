@@ -50,9 +50,12 @@ class _BiometricLoginScreenState extends State<BiometricLoginScreen>
   bool _googleOn = true;
   bool _appleOn = true;
   /// Fire the OS prompt as the lock screen appears, or wait for a tap —
-  /// answered separately per method, since a device can offer both.
-  bool _autoPromptFace = true;
-  bool _autoPromptFingerprint = true;
+  /// answered separately per method, since a device can offer both. Seeded
+  /// to the on-tap default (false) so the toggle never flashes "automatic"
+  /// before the stored value loads; getBiometricAutoPrompt() then applies
+  /// any explicit prior choice.
+  bool _autoPromptFace = false;
+  bool _autoPromptFingerprint = false;
   /// Shake twice on the lock screen to leave automatic mode. One switch for
   /// both methods: it is a property of automatic mode, not of a modality.
   bool _shakeEscape = true;

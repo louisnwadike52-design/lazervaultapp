@@ -174,17 +174,21 @@ class SecureStorageService {
           key: isFace ? _keyAutoPromptFace : _keyAutoPromptFingerprint,
           value: v.toString());
 
-  /// Defaults to TRUE (automatic) when never set — see the key's note. Only an
-  /// explicit 'false' opts out, so an unreadable or half-written value falls
-  /// back to the default rather than silently changing how login behaves.
-  ///
-  /// Falls back to the pre-split key so anyone who already chose "when I tap"
-  /// keeps it instead of being handed the new default.
+  /// Defaults to FALSE (on-tap) when never set: Face ID / fingerprint prompts
+  /// only when the user taps the biometric button on the lock screen, rather
+  /// than firing automatically the moment the screen appears. An explicit
+  /// per-modality value always wins, and we still honour the pre-split key so
+  /// anyone who previously chose automatic (or on-tap) keeps their choice —
+  /// only a never-set state gets the new on-tap default.
   Future<bool> getBiometricAutoPrompt({required bool isFace}) async {
     final own = await _storage.read(
         key: isFace ? _keyAutoPromptFace : _keyAutoPromptFingerprint);
     if (own != null) return own != 'false';
-    return (await _storage.read(key: _keyBiometricAutoPrompt)) != 'false';
+    // Respect a choice made under the old single toggle.
+    final legacy = await _storage.read(key: _keyBiometricAutoPrompt);
+    if (legacy != null) return legacy != 'false';
+    // Never set anywhere → on-tap by default.
+    return false;
   }
 
   /// Store the user's idle-logout choice, or pass null to follow the platform.
