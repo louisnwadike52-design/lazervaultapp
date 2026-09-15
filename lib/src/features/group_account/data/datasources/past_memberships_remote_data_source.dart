@@ -86,10 +86,27 @@ class PastMembershipsRemoteDataSource {
     for (final k in const ['FINANCIAL_GATEWAY_HTTP', 'FINANCIAL_HTTP_URL']) {
       final v = dotenv.maybeGet(k);
       if (v != null && v.trim().isNotEmpty) {
-        return v.trim().replaceAll(RegExp(r'/$'), '');
+        return _stripApiV1(v.trim());
       }
     }
-    return endpointRegistry.httpFinancial;
+    return _stripApiV1(endpointRegistry.httpFinancial);
+  }
+
+  /// Remove a trailing "/api/v1" (and any trailing slash) so callers can append
+  /// the gateway's own "/v1/..." path without doubling it.
+  ///
+  /// endpointRegistry.httpFinancial already ends in "/api/v1", so every request
+  /// here was going out as "/api/v1/v1/me/past-contributions". That matches the
+  /// edge's "^/api/v1(/.*)?$" catch-all, which forwards to core-gateway — whose
+  /// grpc-gateway mux has no such route, so it answered
+  /// {"code":5,"message":"Not Found"} and both Past-contributions tabs showed a
+  /// 404. Same defect (and same fix) as the contribution-chat data source.
+  static String _stripApiV1(String base) {
+    var b = base.replaceAll(RegExp(r'/+$'), '');
+    if (b.endsWith('/api/v1')) {
+      b = b.substring(0, b.length - '/api/v1'.length);
+    }
+    return b;
   }
 
   Map<String, String> _headers(String token) => {

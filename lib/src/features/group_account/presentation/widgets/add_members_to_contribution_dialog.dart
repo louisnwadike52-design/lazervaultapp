@@ -41,6 +41,9 @@ class _AddMembersToContributionDialogState
   // Existing group members tab
   List<GroupMember> _groupMembers = [];
   Set<String> _selectedMemberIds = {};
+  /// Names dropped by the validity filter in the last submit, so the failure
+  /// message can name them instead of blaming "invalid user IDs".
+  final List<String> _skippedPartial = [];
   Set<String> _existingMemberUserIds = {};
   bool _isLoading = true;
   bool _isAdding = false;
@@ -116,10 +119,18 @@ class _AddMembersToContributionDialogState
       // caller handed us, then refresh it from the cubit below.
       _refreshExistingMemberIds(cubit);
 
-      // Fast path: parent already has the group's members in cache.
-      // Avoids a second network round-trip while the dialog is opening
-      // (the parent screen mounts via loadGroupDetails on init).
+      // Paint from the parent's cache when it's for THIS group, but never
+      // trust it as final: someone added to the group moments ago is not in
+      // it yet, and the picker would silently omit the very person the user
+      // came here to add — which surfaced as "could not be added. They may
+      // have invalid user IDs". The BlocListener below swaps in the fresh
+      // roster when loadGroupDetails lands.
       var members = cubit.lastLoadedMembers;
+      final haveUsableCache = members != null &&
+          cubit.lastLoadedGroup?.id == widget.contribution.groupId;
+      if (haveUsableCache) {
+        unawaited(cubit.loadGroupDetails(widget.contribution.groupId));
+      }
       if (members == null ||
           cubit.lastLoadedGroup?.id != widget.contribution.groupId) {
         // Cold path: parent's cache is empty or for a different group.
@@ -460,17 +471,32 @@ class _AddMembersToContributionDialogState
       debugPrint(
           '🔵 AddMembers: selectedMembers (by id) count=${selectedMembers.length}');
 
-      // Filter to only valid user IDs
+      // Filter to only valid user IDs, REMEMBERING why anyone was dropped.
+      // Previously every rejection collapsed into one "they may have invalid
+      // user IDs" snackbar, which is both wrong and unactionable: the real
+      // reasons are distinct and each has a different remedy.
+      _skippedPartial.clear();
       final validSelectedUserIds = selectedMembers
           .where((m) {
-            final isValid = m.userId.isNotEmpty &&
-                m.userId != '00000000-0000-0000-0000-000000000000' &&
-                !m.isPartial;
-            if (!isValid) {
+            final hasUserId = m.userId.isNotEmpty &&
+                m.userId != '00000000-0000-0000-0000-000000000000';
+            if (!hasUserId) {
               debugPrint(
-                  '🟡 AddMembers: Skipping member ${m.userName} - userId=${m.userId}, isPartial=${m.isPartial}');
+                  '🟡 AddMembers: Skipping ${m.userName} — no resolvable user id');
+              _skippedPartial.add(m.userName.trim().isEmpty
+                  ? 'A selected member'
+                  : m.userName);
+              return false;
             }
-            return isValid;
+            if (m.isPartial) {
+              debugPrint(
+                  '🟡 AddMembers: Skipping ${m.userName} — account not completed');
+              _skippedPartial.add(m.userName.trim().isEmpty
+                  ? 'A selected member'
+                  : m.userName);
+              return false;
+            }
+            return true;
           })
           .map((m) => m.userId)
           .toList();
@@ -509,13 +535,26 @@ class _AddMembersToContributionDialogState
                 backgroundColor: const Color(0xFF10B981),
               ),
             );
-          } else {
-            // Show a message if no members could be added
+          } else if (_skippedPartial.isNotEmpty) {
+            // Real reason: the account exists but hasn't finished signing up,
+            // so there is no user to attach to the contribution yet.
+            final names = _skippedPartial.join(', ');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                    'Selected members could not be added. They may have invalid user IDs.'),
+                    '$names hasn\'t finished setting up their LazerVault account, '
+                    'so they can\'t be added yet. They\'ll be able to join once they do.'),
                 backgroundColor: const Color(0xFFF59E0B),
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          } else {
+            // Nothing was selected at all — say that plainly rather than
+            // blaming the data.
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Pick at least one person to add.'),
+                backgroundColor: Color(0xFFF59E0B),
               ),
             );
           }

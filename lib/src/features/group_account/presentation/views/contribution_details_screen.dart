@@ -1615,7 +1615,16 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       allPayments.add(staticPayment);
     }
 
+    // Only money that actually landed counts toward a member's contribution.
+    //
+    // This grouped EVERY payment row regardless of status, so a member whose
+    // payment failed was shown as "1 payment · NGN 100.00" while the pot header
+    // correctly read NGN 0 raised / 0 contributors — the roster claimed someone
+    // had paid when they hadn't, and the two numbers on the same screen
+    // contradicted each other. Terminal-failed and in-flight rows are excluded;
+    // the Payments tab is where attempts and their states belong.
     for (final payment in allPayments) {
+      if (payment.status != PaymentStatus.completed) continue;
       userPayments.putIfAbsent(payment.userId, () => []).add(payment);
     }
 

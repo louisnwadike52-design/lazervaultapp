@@ -1147,13 +1147,31 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
         }
 
         if (state is AccountCardsSummaryLoaded) {
-          // Filter accounts by matching currency if contribution has currency
+          // Which accounts may actually fund this payment.
+          //
+          // Two constraints, both already enforced elsewhere:
+          //   * currency must match the contribution (the server rejects a
+          //     mismatch with ErrCurrencyMismatch), and
+          //   * a contribution payment may only come from the payer's PERSONAL
+          //     account — the picker sheet already refused to select anything
+          //     else.
+          //
+          // Only the first was applied here, so the header advertised
+          // "6 available" and the tile rendered as a dropdown while five of
+          // those six could never be chosen. Applying both makes the source of
+          // truth match the rule: for a contribution the list collapses to the
+          // single personal wallet, the tile stops behaving like a picker, and
+          // the misleading count disappears on its own.
           final contributionCurrency = widget.contribution?.currency;
-          final filteredAccounts = contributionCurrency != null
-              ? state.accountSummaries
-                  .where((a) => a.currency == contributionCurrency)
-                  .toList()
-              : state.accountSummaries;
+          final isContributionPayment = widget.contribution != null;
+          final filteredAccounts = state.accountSummaries.where((a) {
+            if (contributionCurrency != null &&
+                a.currency != contributionCurrency) {
+              return false;
+            }
+            if (isContributionPayment && !a.isPersonalAccount) return false;
+            return true;
+          }).toList();
 
           if (filteredAccounts.isEmpty) {
             return Container(
