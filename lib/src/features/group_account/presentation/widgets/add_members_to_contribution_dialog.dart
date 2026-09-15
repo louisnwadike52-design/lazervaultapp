@@ -15,6 +15,7 @@ import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'add_members_to_contribution_dialog_widgets.dart';
 
 class AddMembersToContributionDialog extends StatefulWidget {
@@ -109,15 +110,11 @@ class _AddMembersToContributionDialogState
     }
 
     try {
-      // Existing contribution members (used to dedupe the Add-New
-      // search results so a user already in the contribution renders
-      // as "Already in contribution" rather than tappable).
-      _existingMemberUserIds = widget.contribution.members
-          .map((m) => m.userId)
-          .where((id) => id.isNotEmpty)
-          .toSet();
-
       final cubit = context.read<GroupAccountCubit>();
+
+      // Seed the "already in this contribution" set from the snapshot the
+      // caller handed us, then refresh it from the cubit below.
+      _refreshExistingMemberIds(cubit);
 
       // Fast path: parent already has the group's members in cache.
       // Avoids a second network round-trip while the dialog is opening
@@ -150,6 +147,9 @@ class _AddMembersToContributionDialogState
       if (!mounted) return;
       setState(() {
         _groupMembers = members ?? const <GroupMember>[];
+        // Re-derive AFTER the (re)load above so the exclusion set reflects
+        // the live roster, not the snapshot we were constructed with.
+        _refreshExistingMemberIds(cubit);
         _isLoading = false;
       });
     } catch (e) {
@@ -159,6 +159,36 @@ class _AddMembersToContributionDialogState
       });
       _showError('Failed to load group members: $e');
     }
+  }
+
+  /// Rebuild the "already in this contribution" exclusion set from the
+  /// CURRENT server state.
+  ///
+  /// This used to read `widget.contribution.members` only — the snapshot
+  /// captured when the dialog was constructed. Removing a member soft-
+  /// deletes their row server-side (`removed_at` + `deleted_at`) and every
+  /// members query filters `deleted_at IS NULL`, so the live list is
+  /// correct; but if the parent screen was holding a pre-removal
+  /// contribution (e.g. the refreshed group page didn't carry this
+  /// contribution, so `_currentContribution` never re-assigned) the sheet
+  /// kept reporting the removed user as "Already in this contribution" and
+  /// they could never be added back.
+  ///
+  /// [GroupAccountCubit.lastLoadedContributions] is refreshed by the
+  /// `loadGroupDetails` that the exit saga fires on success, so it is the
+  /// freshest thing the dialog can see. Falls back to the constructor
+  /// snapshot when the cache holds a different group.
+  ///
+  /// Members are keyed by USER ID only — never name or email.
+  void _refreshExistingMemberIds(GroupAccountCubit cubit) {
+    final live = cubit.lastLoadedContributions
+        ?.where((c) => c.id == widget.contribution.id)
+        .firstOrNull;
+    final source = live?.members ?? widget.contribution.members;
+    _existingMemberUserIds = source
+        .map((m) => m.userId)
+        .where((id) => id.isNotEmpty)
+        .toSet();
   }
 
   void _showError(String message) {
@@ -313,9 +343,16 @@ class _AddMembersToContributionDialogState
 
   /// Opens the shared unified search (saved contacts incl. alias → global),
   /// then adds the picked user to the new-members list.
+  ///
+  /// internalOnly: a contribution participant MUST be a LazerVault user —
+  /// the member row is keyed on their user id and they have to be able to
+  /// sign in and pay. The shared sheet's default (false) also surfaces
+  /// saved EXTERNAL bank beneficiaries, which resolve to an empty userId
+  /// and would enrol an unidentifiable member. Scoped here rather than in
+  /// the sheet so send-funds / split-bill keep their bank results.
   Future<void> _openUnifiedSearch() async {
-    final result =
-        await UnifiedUserSearchSheet.show(context, title: 'Add member');
+    final result = await UnifiedUserSearchSheet.show(context,
+        title: 'Add member', internalOnly: true);
     if (result == null || !mounted) return;
     _selectNewUser(result.toUserSearchResultEntity());
   }
@@ -600,7 +637,7 @@ class _AddMembersToContributionDialogState
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: const Color.fromARGB(255, 78, 3, 208),
+          color: PayFlowTheme.accentCta,
           borderRadius: BorderRadius.circular(10.r),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
@@ -687,11 +724,11 @@ class _AddMembersToContributionDialogState
                   height: 20.w,
                   decoration: BoxDecoration(
                     color: _selectAll
-                        ? const Color.fromARGB(255, 78, 3, 208)
+                        ? PayFlowTheme.accentCta
                         : Colors.transparent,
                     border: Border.all(
                       color: _selectAll
-                          ? const Color.fromARGB(255, 78, 3, 208)
+                          ? PayFlowTheme.accentOnDark
                           : Colors.grey[600]!,
                     ),
                     borderRadius: BorderRadius.circular(4.r),
@@ -752,12 +789,12 @@ class _AddMembersToContributionDialogState
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
             color: isSelected
-                ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1)
+                ? PayFlowTheme.accentOnDark.withValues(alpha: 0.1)
                 : const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
               color: isSelected
-                  ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3)
+                  ? PayFlowTheme.accentOnDark.withValues(alpha: 0.3)
                   : Colors.transparent,
             ),
           ),
@@ -768,11 +805,11 @@ class _AddMembersToContributionDialogState
                 height: 20.w,
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color.fromARGB(255, 78, 3, 208)
+                      ? PayFlowTheme.accentCta
                       : Colors.transparent,
                   border: Border.all(
                     color: isSelected
-                        ? const Color.fromARGB(255, 78, 3, 208)
+                        ? PayFlowTheme.accentOnDark
                         : Colors.grey[600]!,
                   ),
                   borderRadius: BorderRadius.circular(4.r),
@@ -784,7 +821,7 @@ class _AddMembersToContributionDialogState
               SizedBox(width: 12.w),
               CircleAvatar(
                 radius: 18.r,
-                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                backgroundColor: PayFlowTheme.accentCta,
                 backgroundImage: member.profileImage != null
                     ? NetworkImage(member.profileImage!)
                     : null,
@@ -834,7 +871,7 @@ class _AddMembersToContributionDialogState
                         '@${member.userUsername}',
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
-                          color: const Color.fromARGB(255, 78, 3, 208),
+                          color: PayFlowTheme.accentOnDark,
                         ),
                       )
                     else
@@ -999,7 +1036,7 @@ class _AddMembersToContributionDialogState
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 78, 3, 208),
+                    color: PayFlowTheme.accentCta,
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Text(
@@ -1203,7 +1240,7 @@ class _AddMembersToContributionDialogState
             CircleAvatar(
               radius: 18.r,
               backgroundColor:
-                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                  PayFlowTheme.accentOnDark.withValues(alpha: 0.2),
               backgroundImage: user.profilePicture.isNotEmpty
                   ? NetworkImage(user.profilePicture)
                   : null,
@@ -1213,7 +1250,7 @@ class _AddMembersToContributionDialogState
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.bold,
-                        color: const Color.fromARGB(255, 78, 3, 208),
+                        color: PayFlowTheme.accentOnDark,
                       ),
                     )
                   : null,
@@ -1260,7 +1297,7 @@ class _AddMembersToContributionDialogState
                     user.searchMatchInfo,
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: const Color.fromARGB(255, 78, 3, 208),
+                      color: PayFlowTheme.accentOnDark,
                     ),
                   ),
                   if (isAlreadyInContribution) ...[
@@ -1304,7 +1341,7 @@ class _AddMembersToContributionDialogState
             if (!isAlreadyInContribution && !isAlreadySelected)
               Icon(
                 Icons.add_circle_outline,
-                color: const Color.fromARGB(255, 78, 3, 208),
+                color: PayFlowTheme.accentOnDark,
                 size: 22.sp,
               )
             else if (isAlreadySelected)
@@ -1393,7 +1430,7 @@ class _AddMembersToContributionDialogState
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
                     color: _fullNameController.text.trim().isNotEmpty
-                        ? const Color.fromARGB(255, 78, 3, 208)
+                        ? PayFlowTheme.accentCta
                         : Colors.grey[800],
                     borderRadius: BorderRadius.circular(8.r),
                   ),
@@ -1463,7 +1500,7 @@ class _AddMembersToContributionDialogState
             child: ElevatedButton(
               onPressed: _isAdding || !canAdd ? null : _addSelectedMembers,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                backgroundColor: PayFlowTheme.accentCta,
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(

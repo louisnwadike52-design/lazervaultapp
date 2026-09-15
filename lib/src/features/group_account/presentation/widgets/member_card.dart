@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../utils/member_rating_calculator.dart';
 import 'member_star_rating.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 class MemberCard extends StatelessWidget {
   final GroupMember member;
@@ -56,10 +57,10 @@ class MemberCard extends StatelessWidget {
               width: 48.w,
               height: 48.w,
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                color: PayFlowTheme.accentOnDark.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                  color: PayFlowTheme.accentOnDark.withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),
@@ -71,7 +72,7 @@ class MemberCard extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color.fromARGB(255, 78, 3, 208),
+                    color: PayFlowTheme.accentOnDark,
                   ),
                 ),
               ),

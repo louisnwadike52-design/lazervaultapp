@@ -65,7 +65,7 @@ class _MemberDetailsSheet extends StatelessWidget {
           // Avatar
           CircleAvatar(
             radius: 40.r,
-            backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+            backgroundColor: PayFlowTheme.accentCta,
             backgroundImage: member.profileImage != null
                 ? NetworkImage(member.profileImage!)
                 : null,
@@ -107,7 +107,7 @@ class _MemberDetailsSheet extends StatelessWidget {
               '@${member.userUsername}',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: const Color.fromARGB(255, 78, 3, 208),
+                color: PayFlowTheme.accentOnDark,
               ),
             ),
           SizedBox(height: 8.h),
@@ -153,7 +153,7 @@ class _MemberDetailsSheet extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                backgroundColor: PayFlowTheme.accentCta,
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(

@@ -22,7 +22,26 @@ class PayFlowTheme {
   static const Color textSecondary = Color(0xFF9CA3AF);
 
   /// Brand accent — LazerVault purple.
+  ///
+  /// NOTE: [accent] is a BRAND colour, not a legible one on these dark
+  /// surfaces. Measured against [card] it lands at ~1.8:1 — far below the
+  /// 3:1 floor for a UI component and nowhere near 4.5:1 for text. Use it
+  /// for large brand moments only; for anything the user has to *read* or
+  /// *press*, reach for [accentOnDark] / [accentCta] below.
   static const Color accent = Color(0xFF4E03D0);
+
+  /// Purple used as a FOREGROUND on dark: text, icons, selection rings,
+  /// chip labels, low-alpha tint fills. ~6:1 on [card] and ~7:1 on [bg].
+  ///
+  /// Same value EscrowTheme.primaryLight already ships for the identical
+  /// reason ("the full primary reads almost black at chip size"), so the
+  /// pay flows and escrow stay one product.
+  static const Color accentOnDark = Color(0xFFA78BFA);
+
+  /// Filled-CTA purple. A solid [accent] button visually dissolves into
+  /// the sheet it sits on; this lifts the button BODY to ~3.5:1 against
+  /// [bg] while keeping a white label on it at ~5.7:1.
+  static const Color accentCta = Color(0xFF7C3AED);
 
   /// Semantic colors.
   static const Color success = Color(0xFF10B981);

@@ -18,6 +18,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import '../../data/datasources/group_join_link_remote_data_source.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'add_member_bottom_sheet_widgets.dart';
 
 class AddMemberBottomSheet extends StatefulWidget {
@@ -202,9 +203,15 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
 
   /// Opens the shared unified search (saved contacts incl. alias → global),
   /// then adds the picked user to the selection.
+  ///
+  /// internalOnly: a group member MUST be a LazerVault user. The shared
+  /// sheet's default (false) also surfaces saved EXTERNAL bank
+  /// beneficiaries, which resolve to an empty userId — exactly the
+  /// identity-less row that renders as "Unknown User". Scoped here rather
+  /// than in the sheet so send-funds / split-bill keep their bank results.
   Future<void> _openUnifiedSearch() async {
-    final result =
-        await UnifiedUserSearchSheet.show(context, title: 'Add member');
+    final result = await UnifiedUserSearchSheet.show(context,
+        title: 'Add member', internalOnly: true);
     if (result == null || !mounted) return;
     _selectUser(result.toUserSearchResultEntity());
   }
@@ -506,8 +513,8 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color.fromARGB(255, 78, 3, 208),
-            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
+            PayFlowTheme.accentCta,
+            PayFlowTheme.accentCta.withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.only(
@@ -628,16 +635,16 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
               child: Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 78, 3, 208)
+                  color: PayFlowTheme.accentOnDark
                       .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
-                      color: const Color.fromARGB(255, 78, 3, 208)
+                      color: PayFlowTheme.accentOnDark
                           .withValues(alpha: 0.3)),
                 ),
                 child: Icon(
                   Icons.contacts,
-                  color: const Color.fromARGB(255, 78, 3, 208),
+                  color: PayFlowTheme.accentOnDark,
                   size: 22.sp,
                 ),
               ),
@@ -672,11 +679,11 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                     height: 20.sp,
                     child: const CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Color(0xFF4E03D0),
+                      color: PayFlowTheme.accentOnDark,
                     ),
                   )
                 : Icon(Icons.link,
-                    color: const Color(0xFF4E03D0), size: 20.sp),
+                    color: PayFlowTheme.accentOnDark, size: 20.sp),
             SizedBox(width: 12.w),
             Expanded(
               child: Column(
@@ -772,7 +779,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 78, 3, 208),
+                color: PayFlowTheme.accentCta,
                 borderRadius: BorderRadius.circular(10.r),
               ),
               child: Text(
@@ -1025,7 +1032,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
               width: 48.w,
               height: 48.h,
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 78, 3, 208)
+                color: PayFlowTheme.accentOnDark
                     .withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
@@ -1081,7 +1088,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                     user.searchMatchInfo,
                     style: GoogleFonts.inter(
                       fontSize: 13.sp,
-                      color: const Color.fromARGB(255, 78, 3, 208),
+                      color: PayFlowTheme.accentOnDark,
                     ),
                   ),
                   if (isAlreadyMember) ...[
@@ -1111,7 +1118,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
             ),
             if (!isAlreadyMember && !isAlreadySelected)
               Icon(Icons.add_circle_outline,
-                  color: const Color.fromARGB(255, 78, 3, 208), size: 24.sp)
+                  color: PayFlowTheme.accentOnDark, size: 24.sp)
             else if (isAlreadySelected)
               Icon(Icons.check_circle,
                   color: const Color(0xFF10B981), size: 24.sp),
@@ -1128,7 +1135,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
         style: GoogleFonts.inter(
           fontSize: 16.sp,
           fontWeight: FontWeight.bold,
-          color: const Color.fromARGB(255, 78, 3, 208),
+          color: PayFlowTheme.accentOnDark,
         ),
       ),
     );
@@ -1209,7 +1216,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.r),
                       borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 78, 3, 208), width: 2),
+                          color: PayFlowTheme.accentOnDark, width: 2),
                     ),
                     contentPadding:
                         EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
@@ -1227,7 +1234,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                   padding: EdgeInsets.all(14.w),
                   decoration: BoxDecoration(
                     color: _fullNameController.text.trim().isNotEmpty
-                        ? const Color.fromARGB(255, 78, 3, 208)
+                        ? PayFlowTheme.accentCta
                         : Colors.grey[800],
                     borderRadius: BorderRadius.circular(10.r),
                   ),
@@ -1334,7 +1341,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 78, 3, 208)
+                color: PayFlowTheme.accentOnDark
                     .withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
@@ -1343,7 +1350,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
-                  color: const Color.fromARGB(255, 78, 3, 208),
+                  color: PayFlowTheme.accentOnDark,
                 ),
               ),
             ),
@@ -1538,7 +1545,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
               child: ElevatedButton(
                 onPressed: _isLoading || !canAdd ? null : _addMembers,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                  backgroundColor: PayFlowTheme.accentCta,
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   shape: RoundedRectangleBorder(

@@ -203,14 +203,26 @@ class _AddMemberForContributionSheetState
     }
   }
 
+  /// "Already added" for the CURRENT selection only.
+  ///
+  /// [widget.rotationOrder] is the single source of truth for who is
+  /// enrolled — it is what the wizard submits as `memberRotationOrder` and
+  /// it is what the Members page's remove button mutates. It used to also
+  /// consult [widget.existingMembers], which is the group's member ROSTER
+  /// (a name/email lookup table the remove button deliberately never
+  /// touches). That made a removed member look permanently "Already
+  /// added", so they could never be put back — the remove-then-re-add bug.
+  ///
+  /// Identity is by USER ID. The email comparison is only a fallback for
+  /// roster rows enrolled under a synthetic `temp_…` id (no real user id
+  /// yet), and it is narrowed to rows that are STILL selected so a removal
+  /// frees the email too. Never matches on display name.
   bool _isUserAlreadyMember(String userId, {String? email}) {
-    // Check both existing members and rotation order
-    // Also check by email since userId might be null UUID
-    final inExistingMembers = widget.existingMembers.any((m) =>
-        m.userId == userId ||
-        (email != null && email.isNotEmpty && m.email == email));
-    final inRotationOrder = widget.rotationOrder.contains(userId);
-    return inExistingMembers || inRotationOrder;
+    final selected = widget.rotationOrder.toSet();
+    if (userId.isNotEmpty && selected.contains(userId)) return true;
+    if (email == null || email.isEmpty) return false;
+    return widget.existingMembers
+        .any((m) => selected.contains(m.userId) && m.email == email);
   }
 
   void _selectUser(UserSearchResultEntity user) {
@@ -221,9 +233,16 @@ class _AddMemberForContributionSheetState
 
   /// Opens the shared unified search (saved contacts incl. alias → global)
   /// and selects the picked user (the existing Add flow then confirms).
+  ///
+  /// internalOnly: a contribution participant MUST be a LazerVault user —
+  /// the rotation entry is keyed on their user id. The shared sheet's
+  /// default (false) also surfaces saved EXTERNAL bank beneficiaries,
+  /// which resolve to an empty userId and would be refused by the identity
+  /// gate in onMemberAdded anyway. Scoped here rather than in the sheet so
+  /// send-funds / split-bill keep their bank results.
   Future<void> _openUnifiedSearch() async {
-    final result =
-        await UnifiedUserSearchSheet.show(context, title: 'Add member');
+    final result = await UnifiedUserSearchSheet.show(context,
+        title: 'Add member', internalOnly: true);
     if (result == null || !mounted) return;
     // Reset any lingering inline query FIRST (its clear-listener nulls the
     // selection), THEN select — so the picked user always lands in the
@@ -235,13 +254,47 @@ class _AddMemberForContributionSheetState
   Future<void> _addMember() async {
     if (_selectedUser == null) return;
 
-    setState(() => _isAddingMember = true);
-
     // Store user info for fallback if needed
     final userName = _selectedUser!.fullName;
     final userEmail = _selectedUser!.email;
     final profilePicture = _selectedUser!.profilePicture;
     final userUsername = _selectedUser!.username;
+    final pickedUserId = _selectedUser!.userId;
+
+    // RE-ADD SHORT-CIRCUIT.
+    //
+    // The Members page's remove button only drops someone from the
+    // SELECTION (rotationOrder) — they stay a real member of the parent
+    // group. Putting them back used to run the full add-to-group call
+    // again, the server answered "already a member", the cubit turned
+    // that into a GroupAccountError, the completer below errored, and
+    // onMemberAdded NEVER fired. Net effect for the user: a removed
+    // member could not be added back, with an "already a member" toast.
+    //
+    // When the picked user already has a roster row there is nothing to
+    // create server-side — re-enrol them locally and skip the network.
+    // Matched on USER ID only; never on name.
+    GroupMember? rosterRow;
+    if (pickedUserId.isNotEmpty) {
+      for (final m in widget.existingMembers) {
+        if (m.userId.isNotEmpty && m.userId == pickedUserId) {
+          rosterRow = m;
+          break;
+        }
+      }
+    }
+    if (rosterRow != null) {
+      widget.onMemberAdded(
+        pickedUserId,
+        userName.isNotEmpty ? userName : rosterRow.userName,
+        userEmail.isNotEmpty ? userEmail : rosterRow.email,
+        profilePicture.isNotEmpty ? profilePicture : rosterRow.profileImage,
+      );
+      if (mounted) Navigator.pop(context);
+      return;
+    }
+
+    setState(() => _isAddingMember = true);
 
     try {
       final cubit = context.read<GroupAccountCubit>();
@@ -282,7 +335,7 @@ class _AddMemberForContributionSheetState
       // Add member to group - emits MemberAddedSuccess on success
       await cubit.addMemberToGroupAccount(
         groupId: widget.group.id,
-        userId: _selectedUser!.userId,
+        userId: pickedUserId,
         userName: userName,
         email: userEmail,
         username: userUsername,
@@ -292,9 +345,11 @@ class _AddMemberForContributionSheetState
       // Wait for the member to be added
       final addedMember = await completer.future;
 
-      // IMPORTANT: Always use the ORIGINAL user ID from search result (_selectedUser!.userId)
-      // The server response may return a null UUID, but the search result has the real user ID
-      final originalUserId = _selectedUser!.userId;
+      // IMPORTANT: always use the ORIGINAL user ID from the search result,
+      // captured BEFORE the await (the search listener can null
+      // _selectedUser while we're suspended). The server response may
+      // return a null UUID; the search result has the real user ID.
+      final originalUserId = pickedUserId;
 
       // Invoke the parent callback UNCONDITIONALLY. It closes over the
       // PARENT contribution sheet's setState, which is still alive even
@@ -331,6 +386,22 @@ class _AddMemberForContributionSheetState
       // Pop only if this sheet is still up (it may already be gone).
       if (mounted) Navigator.pop(context);
     } catch (e) {
+      // Race backstop for the short-circuit above: the roster we were
+      // handed can be a beat stale (member joined the group from another
+      // surface). "Already a member" is not a failure for THIS flow —
+      // the person exists, so the local enrolment can still proceed.
+      final reason = e.toString().toLowerCase();
+      if (reason.contains('already a member') ||
+          reason.contains('alreadyexists')) {
+        widget.onMemberAdded(
+          pickedUserId,
+          userName,
+          userEmail,
+          profilePicture.isNotEmpty ? profilePicture : null,
+        );
+        if (mounted) Navigator.pop(context);
+        return;
+      }
       if (mounted) {
         setState(() => _isAddingMember = false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -394,7 +465,7 @@ class _AddMemberForContributionSheetState
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
+          colors: [PayFlowTheme.accentCta, PayFlowTheme.accent],
         ),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20.r),
@@ -493,7 +564,7 @@ class _AddMemberForContributionSheetState
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
+              borderSide: const BorderSide(color: PayFlowTheme.accentOnDark, width: 2),
             ),
             contentPadding:
                 EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
@@ -574,7 +645,7 @@ class _AddMemberForContributionSheetState
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF4E03D0),
+                    color: PayFlowTheme.accentOnDark,
                   ),
                 ),
               ),
@@ -725,14 +796,14 @@ class _AddMemberForContributionSheetState
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
+              ? PayFlowTheme.accentOnDark.withValues(alpha: 0.2)
               : isAlreadyMember
                   ? const Color(0xFFF59E0B).withValues(alpha: 0.1)
                   : const Color(0xFF0A0A0A),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF4E03D0)
+                ? PayFlowTheme.accentOnDark
                 : isAlreadyMember
                     ? const Color(0xFFF59E0B).withValues(alpha: 0.3)
                     : const Color(0xFF2D2D2D),
@@ -747,7 +818,7 @@ class _AddMemberForContributionSheetState
               height: 44.w,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
+                  colors: [PayFlowTheme.accentCta, PayFlowTheme.accent],
                 ),
                 borderRadius: BorderRadius.circular(22.r),
               ),
@@ -829,7 +900,7 @@ class _AddMemberForContributionSheetState
                     user.username.isNotEmpty ? '@${user.username}' : user.email,
                     style: GoogleFonts.inter(
                       fontSize: 13.sp,
-                      color: const Color(0xFF4E03D0),
+                      color: PayFlowTheme.accentOnDark,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -840,7 +911,7 @@ class _AddMemberForContributionSheetState
             // Selection indicator
             if (isSelected)
               Icon(Icons.check_circle,
-                  color: const Color(0xFF4E03D0), size: 24.sp)
+                  color: PayFlowTheme.accentOnDark, size: 24.sp)
             else if (!isAlreadyMember)
               Icon(Icons.radio_button_unchecked,
                   color: Colors.grey[600], size: 24.sp),
@@ -881,7 +952,7 @@ class _AddMemberForContributionSheetState
           child: ElevatedButton(
             onPressed: _isAddingMember || !canAdd ? null : _addMember,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4E03D0),
+              backgroundColor: PayFlowTheme.accentCta,
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(

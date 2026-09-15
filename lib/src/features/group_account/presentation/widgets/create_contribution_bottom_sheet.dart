@@ -19,6 +19,7 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/unified_
 import 'package:get/get.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'create_contribution_bottom_sheet_widgets.dart';
 
 /// Normalize a deadline date to 23:59:59.999 in the user's local
@@ -2502,7 +2503,7 @@ class _CreateContributionBottomSheetState
           Row(
             children: [
               Icon(Icons.swap_vert,
-                  color: const Color(0xFF4E03D0), size: 18.sp),
+                  color: PayFlowTheme.accentOnDark, size: 18.sp),
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
@@ -2518,23 +2519,23 @@ class _CreateContributionBottomSheetState
                   padding:
                       EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                    color: PayFlowTheme.accentOnDark.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                     border: Border.all(
-                        color: const Color(0xFF4E03D0).withValues(alpha: 0.5)),
+                        color: PayFlowTheme.accentOnDark.withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.person_add_alt_1,
-                          color: const Color(0xFF4E03D0), size: 16.sp),
+                          color: PayFlowTheme.accentOnDark, size: 16.sp),
                       SizedBox(width: 6.w),
                       Text(
                         'Add',
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF4E03D0),
+                          color: PayFlowTheme.accentOnDark,
                         ),
                       ),
                     ],
@@ -2633,7 +2634,7 @@ class _CreateContributionBottomSheetState
                               ),
                               child: Icon(
                                 Icons.drag_indicator,
-                                color: const Color(0xFF4E03D0),
+                                color: PayFlowTheme.accentOnDark,
                                 size: 20.sp,
                               ),
                             ),
@@ -2646,8 +2647,8 @@ class _CreateContributionBottomSheetState
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  const Color(0xFF4E03D0),
-                                  const Color.fromARGB(255, 78, 3, 208),
+                                  PayFlowTheme.accentCta,
+                                  PayFlowTheme.accent,
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(8.r),
@@ -2745,7 +2746,7 @@ class _CreateContributionBottomSheetState
           Row(
             children: [
               Icon(Icons.group_outlined,
-                  color: const Color(0xFF4E03D0), size: 18.sp),
+                  color: PayFlowTheme.accentOnDark, size: 18.sp),
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
@@ -2762,23 +2763,23 @@ class _CreateContributionBottomSheetState
                   padding:
                       EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                    color: PayFlowTheme.accentOnDark.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                     border: Border.all(
-                        color: const Color(0xFF4E03D0).withValues(alpha: 0.5)),
+                        color: PayFlowTheme.accentOnDark.withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.person_add_alt_1,
-                          color: const Color(0xFF4E03D0), size: 16.sp),
+                          color: PayFlowTheme.accentOnDark, size: 16.sp),
                       SizedBox(width: 6.w),
                       Text(
                         'Add',
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF4E03D0),
+                          color: PayFlowTheme.accentOnDark,
                         ),
                       ),
                     ],
@@ -2910,7 +2911,7 @@ class _CreateContributionBottomSheetState
                             padding: EdgeInsets.symmetric(
                                 horizontal: 8.w, vertical: 4.h),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4E03D0)
+                              color: PayFlowTheme.accentOnDark
                                   .withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(6.r),
                             ),
@@ -2919,7 +2920,7 @@ class _CreateContributionBottomSheetState
                               style: GoogleFonts.inter(
                                 fontSize: 11.sp,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF9B6DFF),
+                                color: PayFlowTheme.accentOnDark,
                               ),
                             ),
                           )
@@ -3011,27 +3012,47 @@ class _CreateContributionBottomSheetState
             }
             // Add the new member to local state (with duplicate prevention)
             setState(() {
-              // Generate a unique identifier for this member
-              // Use email hash if userId is null UUID, otherwise use userId
-              final isNullUuid = !hasRealId;
-              final uniqueId = isNullUuid
-                  ? 'temp_${email.hashCode}_${DateTime.now().millisecondsSinceEpoch}'
-                  : newUserId;
+              // RE-ADD PATH. _localGroupMembers is the name/email ROSTER —
+              // the Members page's remove button only drops the member from
+              // _rotationOrder (the selection), so someone removed earlier
+              // in this session still has a roster row. Re-adding them must
+              // REUSE that row's id: minting a second `temp_…` id would put
+              // an id in _rotationOrder that the roster can't resolve, and
+              // the itemBuilder would render a blank row for them.
+              //
+              // Matched on user id when we have a real one; only rows with
+              // no real id fall back to email. Never on display name — that
+              // is what produced the "Unknown User" ghost member.
+              GroupMember? rosterRow;
+              for (final m in _localGroupMembers) {
+                final matches = hasRealId
+                    ? m.userId == newUserId
+                    : (email.isNotEmpty && m.email == email);
+                if (matches) {
+                  rosterRow = m;
+                  break;
+                }
+              }
+
+              // Display id for this member: the roster row's id if they are
+              // already known, else the real user id, else a synthetic id
+              // for an email-only invitee.
+              final uniqueId = rosterRow?.userId ??
+                  (hasRealId
+                      ? newUserId
+                      : 'temp_${email.hashCode}_${DateTime.now().millisecondsSinceEpoch}');
 
               // Store the mapping from display ID to original ID for backend submission
               // If the original is a null UUID, we still need to send it to the backend
               _tempIdToOriginalId[uniqueId] = newUserId;
               debugPrint('🔵 Stored mapping: $uniqueId -> $newUserId');
 
-              // Check if member already exists to prevent duplicate keys
-              final existsInMembers = _localGroupMembers
-                  .any((m) => m.userId == uniqueId || m.email == email);
               final existsInRotation = _rotationOrder.contains(uniqueId);
 
               debugPrint(
-                  '🔵 onMemberAdded: originalUserId=$newUserId, uniqueId=$uniqueId, existsInMembers=$existsInMembers, existsInRotation=$existsInRotation');
+                  '🔵 onMemberAdded: originalUserId=$newUserId, uniqueId=$uniqueId, inRoster=${rosterRow != null}, existsInRotation=$existsInRotation');
 
-              if (!existsInMembers) {
+              if (rosterRow == null) {
                 final newMember = GroupMember(
                   id: uniqueId, // Use uniqueId as the member's id too
                   userId: uniqueId, // Use the unique ID instead of null UUID

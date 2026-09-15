@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../utils/member_rating_calculator.dart';
 import 'member_star_rating.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'member_detail_dialog_widgets.dart';
 
 
@@ -515,7 +516,7 @@ class MemberDetailDialog extends StatelessWidget {
               valueColor: AlwaysStoppedAnimation<Color>(
                 progress >= 1.0
                     ? const Color(0xFF10B981)
-                    : const Color.fromARGB(255, 78, 3, 208),
+                    : PayFlowTheme.accentOnDark,
               ),
               minHeight: 8.h,
             ),

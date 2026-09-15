@@ -220,7 +220,7 @@ class _ChangeRoleDialogState extends State<ChangeRoleDialog> {
                             }
                           : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                        backgroundColor: PayFlowTheme.accentCta,
                         foregroundColor: Colors.white,
                         disabledBackgroundColor: const Color(0xFF3D3D3D),
                         disabledForegroundColor: Colors.grey,
