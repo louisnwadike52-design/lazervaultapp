@@ -117,6 +117,30 @@ class CrowdfundGrpcDataSource {
     bool myCrowdfundsOnly = false,
     String? sortBy,
   }) async {
+    final result = await listCrowdfundsPage(
+      page: page,
+      pageSize: pageSize,
+      statusFilter: statusFilter,
+      categoryFilter: categoryFilter,
+      myCrowdfundsOnly: myCrowdfundsOnly,
+      sortBy: sortBy,
+    );
+    return result.crowdfunds;
+  }
+
+  /// Same RPC as [listCrowdfunds] but keeps the server's pagination
+  /// block instead of discarding it. `pagination.total_items` is the
+  /// only platform-wide aggregate this endpoint returns, so any caller
+  /// that renders a total has to come through here.
+  Future<({List<CrowdfundModel> crowdfunds, int totalItems, bool hasNext})>
+      listCrowdfundsPage({
+    int page = 1,
+    int pageSize = 20,
+    String? statusFilter,
+    String? categoryFilter,
+    bool myCrowdfundsOnly = false,
+    String? sortBy,
+  }) async {
     try {
       final request = pb.ListCrowdfundsRequest()
         ..page = page
@@ -139,9 +163,20 @@ class CrowdfundGrpcDataSource {
       final response =
           await _client.listCrowdfunds(request, options: callOptions);
 
-      return response.crowdfunds
-          .map((cf) => CrowdfundModel.fromProto(cf))
-          .toList();
+      final rows =
+          response.crowdfunds.map((cf) => CrowdfundModel.fromProto(cf)).toList();
+
+      // Older gateway builds may omit the pagination block entirely.
+      // Fall back to the page-length heuristic ONLY in that case so a
+      // missing aggregate degrades instead of reporting zero campaigns.
+      final hasPagination = response.hasPagination();
+      return (
+        crowdfunds: rows,
+        totalItems:
+            hasPagination ? response.pagination.totalItems : rows.length,
+        hasNext:
+            hasPagination ? response.pagination.hasNext : rows.length >= pageSize,
+      );
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to list crowdfunds'));
     }

@@ -169,6 +169,27 @@ class DonationCompleted extends CrowdfundState {
   List<Object?> get props => [donation, receipt];
 }
 
+/// Donation failed — terminal, and attributable to THIS donation.
+///
+/// Deliberately NOT a [CrowdfundError]: the cubit instance is shared
+/// with the details screen (which refreshes on app-resume), the report
+/// flow and the list refresh, so a generic error emitted by any of those
+/// while a debit is in flight would otherwise be mistaken for the
+/// donation failing and tear down the processing screen. Mirrors
+/// group_account's ContributionPaymentFailed.
+class DonationFailed extends CrowdfundState {
+  final String message;
+  final String? errorCode;
+
+  const DonationFailed({
+    required this.message,
+    this.errorCode,
+  });
+
+  @override
+  List<Object?> get props => [message, errorCode];
+}
+
 /// Receipt generated successfully
 class ReceiptGenerated extends CrowdfundState {
   final CrowdfundReceipt receipt;

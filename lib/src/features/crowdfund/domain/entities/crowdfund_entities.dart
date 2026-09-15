@@ -2,6 +2,26 @@ import 'package:equatable/equatable.dart';
 part 'crowdfund_entities_widgets.dart';
 
 
+/// One page of a ListCrowdfunds call, carrying the SERVER's pagination
+/// block alongside the rows.
+///
+/// `totalItems` is `pagination.total_items` — the true number of
+/// campaigns matching the query across every page, not the length of
+/// this page. It used to be discarded, which made the landing page
+/// present page-1 counts as platform-wide figures. `hasNext` is the
+/// server's own `has_next` rather than the `rows.length >= pageSize`
+/// guess, which mis-reports an exactly-full final page as "has more".
+///
+/// NOTE: the backend exposes NO platform-wide *money* aggregate —
+/// GetCrowdfundStatistics is per-campaign and ListCrowdfunds returns no
+/// summed amount. Any "raised" figure folded on the client is therefore
+/// page-scoped and MUST be labelled as such.
+typedef CrowdfundPage = ({
+  List<Crowdfund> crowdfunds,
+  int totalItems,
+  bool hasNext,
+});
+
 /// Main crowdfund entity
 class Crowdfund extends Equatable {
   final String id;

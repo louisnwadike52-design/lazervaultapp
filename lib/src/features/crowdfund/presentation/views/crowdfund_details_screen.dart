@@ -21,6 +21,7 @@ import '../widgets/cancel_crowdfund_sheet.dart';
 import '../widgets/cancel_progress_screen.dart';
 import '../widgets/delete_confirmation_sheet.dart';
 import '../widgets/edit_crowdfund_screen.dart';
+import '../widgets/crowdfund_shimmer.dart';
 import '../widgets/pause_confirmation_sheet.dart';
 import 'crowdfund_report_screen.dart';
 import 'donation_payment_screen.dart';
@@ -31,9 +32,17 @@ part 'crowdfund_details_screen_widgets.dart';
 class CrowdfundDetailsScreen extends StatefulWidget {
   final String crowdfundId;
 
+  /// Campaign row the caller ALREADY had (list card, quick-view sheet,
+  /// dashboard strip). Seeds the header so title / hero / progress paint
+  /// on the first frame instead of after the detail RPC returns. Null
+  /// when the screen is entered cold (deep link, notification tap), in
+  /// which case the shimmer covers the wait.
+  final Crowdfund? initialCrowdfund;
+
   const CrowdfundDetailsScreen({
     super.key,
     required this.crowdfundId,
+    this.initialCrowdfund,
   });
 
   @override
@@ -56,10 +65,24 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
   /// keeps the page populated until loadCrowdfundDetails refreshes.
   CrowdfundDetailsLoaded? _lastDetails;
 
+  /// Guards the Donate FAB against a double-tap pushing two forms.
+  bool _openingDonationForm = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Paint the header from what the caller already knew. The donations
+    // list stays empty until the real fetch lands, so nothing is
+    // fabricated — only fields the list card had are shown.
+    final seed = widget.initialCrowdfund;
+    if (seed != null) {
+      _lastDetails = CrowdfundDetailsLoaded(
+        crowdfund: seed,
+        donations: const [],
+        isStale: true,
+      );
+    }
     _scrollController.addListener(_onScroll);
     // Data loading is triggered by the route's BlocProvider (..loadCrowdfundDetails())
     // Only reload if the cubit is in initial state (no data loaded yet)
@@ -224,17 +247,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                     crowdfund.isActive &&
                     !crowdfund.isExpired
                 ? FloatingActionButton.extended(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => BlocProvider.value(
-                            value: context.read<CrowdfundCubit>(),
-                            child: DonationPaymentScreen(crowdfund: crowdfund!),
-                          ),
-                        ),
-                      );
-                    },
+                    onPressed: () => _openDonationForm(crowdfund!),
                     backgroundColor: const Color(0xFF4E03D0),
                     icon: const Icon(Icons.volunteer_activism, color: Colors.white),
                     label: Text(
@@ -264,12 +277,9 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
     if (state is CrowdfundError) {
       return _buildErrorBody(state.message);
     }
-    if (state is CrowdfundLoading) {
-      return const Center(child: LazerVaultLoader.small());
-    }
-    return const Center(
-      child: LazerVaultLoader.small(),
-    );
+    // Cold entry (deep link / notification tap): a skeleton in the shape
+    // of the real page, not a bare spinner on an empty scaffold.
+    return const CrowdfundDetailShimmer();
   }
 
   Widget _buildErrorBody(String message) {
@@ -439,6 +449,9 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                   case 'edit':
                     _navigateToEdit(crowdfund);
                     break;
+                  case 'notifications':
+                    _openNotificationChannels(crowdfund);
+                    break;
                   case 'pause':
                     _confirmPause(crowdfund);
                     break;
@@ -492,6 +505,16 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                         value: 'edit',
                         icon: Icons.edit_outlined,
                         label: 'Edit campaign'),
+                  // Donation-alert channels (Telegram / WhatsApp /
+                  // webhook) are creator-only configuration. This is the
+                  // ONLY entry point to AppRoutes.crowdfundNotificationChannels
+                  // — the screen and route existed but nothing linked to
+                  // them, so the feature was unreachable.
+                  if (isOwner && !isMutating)
+                    _menuItem(
+                        value: 'notifications',
+                        icon: Icons.notifications_active_outlined,
+                        label: 'Donation alerts'),
                   if (canPause)
                     _menuItem(
                         value: 'pause',
@@ -603,7 +626,13 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                   trailing: donorCount.toString(),
                 ),
                 SizedBox(height: 8.h),
-                if (donations.isEmpty)
+                // The header can be seeded from the list row before the
+                // donations page arrives. When the server's denormalized
+                // donorCount says donors exist, show placeholder rows —
+                // never "No donations yet", which would be false.
+                if (donations.isEmpty && donorCount > 0 && state.isStale)
+                  const CrowdfundDonorRowsShimmer()
+                else if (donations.isEmpty)
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 18.h),
                     decoration: BoxDecoration(
@@ -754,6 +783,42 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
         value: cubit,
         child: WithdrawFundsSheet(crowdfund: crowdfund),
       ),
+    );
+  }
+
+  /// Open the donation form. `_openingDonationForm` debounces the FAB:
+  /// a double-tap used to push TWO DonationPaymentScreens, leaving an
+  /// orphaned form behind the one the user actually paid from.
+  Future<void> _openDonationForm(Crowdfund crowdfund) async {
+    if (_openingDonationForm) return;
+    _openingDonationForm = true;
+    final cubit = context.read<CrowdfundCubit>();
+    try {
+      await Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => BlocProvider.value(
+            value: cubit,
+            child: DonationPaymentScreen(crowdfund: crowdfund),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) _openingDonationForm = false;
+    }
+  }
+
+  /// Creator-only donation-alert channels. Goes through the named route
+  /// so it gets its OWN CrowdfundCubit (the route builds one) — the
+  /// channel screen drives long-running connect/test calls and must not
+  /// share this screen's cubit.
+  void _openNotificationChannels(Crowdfund crowdfund) {
+    Get.toNamed(
+      AppRoutes.crowdfundNotificationChannels,
+      arguments: {
+        'crowdfundId': crowdfund.id,
+        'crowdfundTitle': crowdfund.title,
+      },
     );
   }
 

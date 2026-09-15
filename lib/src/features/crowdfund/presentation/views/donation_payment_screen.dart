@@ -235,7 +235,11 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
 
     final cubit = context.read<CrowdfundCubit>();
 
-    cubit.makeDonation(
+    // One record describing this single user intent. It is dispatched
+    // now AND handed to the processing screen, so a retry there replays
+    // the identical request — same transactionId, same single-use PIN
+    // token — instead of minting a second intent.
+    final attempt = DonationAttempt(
       crowdfundId: widget.crowdfund.id,
       amount: amount,
       message: _messageController.text.trim().isEmpty
@@ -247,6 +251,16 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
       transactionId: transactionId,
     );
 
+    cubit.makeDonation(
+      crowdfundId: attempt.crowdfundId,
+      amount: attempt.amount,
+      message: attempt.message,
+      isAnonymous: attempt.isAnonymous,
+      sourceAccountId: attempt.sourceAccountId,
+      transactionPin: attempt.transactionPin,
+      transactionId: attempt.transactionId,
+    );
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -254,6 +268,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
           value: cubit,
           child: DonationProcessingScreen(
             crowdfund: widget.crowdfund,
+            attempt: attempt,
           ),
         ),
       ),

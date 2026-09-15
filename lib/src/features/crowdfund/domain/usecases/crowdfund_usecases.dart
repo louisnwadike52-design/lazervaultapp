@@ -68,6 +68,27 @@ class ListCrowdfundsUseCase {
       sortBy: sortBy,
     );
   }
+
+  /// Paged variant that keeps the server's pagination block. Exposed as
+  /// a named method rather than a second use case so DI registration is
+  /// untouched.
+  Future<CrowdfundPage> page({
+    int page = 1,
+    int pageSize = 20,
+    String? statusFilter,
+    String? categoryFilter,
+    bool myCrowdfundsOnly = false,
+    String? sortBy,
+  }) {
+    return repository.listCrowdfundsPage(
+      page: page,
+      pageSize: pageSize,
+      statusFilter: statusFilter,
+      categoryFilter: categoryFilter,
+      myCrowdfundsOnly: myCrowdfundsOnly,
+      sortBy: sortBy,
+    );
+  }
 }
 
 class SearchCrowdfundsUseCase {

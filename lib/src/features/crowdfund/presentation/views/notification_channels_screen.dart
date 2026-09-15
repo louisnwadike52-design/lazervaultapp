@@ -61,6 +61,10 @@ class _AddChannelBottomSheetState extends State<_AddChannelBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<CrowdfundCubit, CrowdfundState>(
+      // The sheet may only close / error on ITS OWN connect attempt —
+      // a channel list refresh failing underneath must not pop it.
+      listenWhen: (previous, current) =>
+          current is NotificationChannelConnected || current is CrowdfundError,
       listener: (context, state) {
         if (state is NotificationChannelConnected) {
           if (mounted) Navigator.pop(context);

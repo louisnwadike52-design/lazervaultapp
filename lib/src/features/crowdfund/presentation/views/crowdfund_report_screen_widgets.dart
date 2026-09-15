@@ -93,6 +93,10 @@ class _CrowdfundReportContentState extends State<_CrowdfundReportContent> {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: BlocConsumer<CrowdfundCubit, CrowdfundState>(
+        // Share feedback only — the report screen must not snackbar for
+        // a details refresh that happens to land while it is open.
+        listenWhen: (prev, curr) =>
+            curr is CrowdfundReportShared || curr is CrowdfundReportShareError,
         listener: (context, state) {
           if (state is CrowdfundReportShared) {
             ScaffoldMessenger.of(context).showSnackBar(

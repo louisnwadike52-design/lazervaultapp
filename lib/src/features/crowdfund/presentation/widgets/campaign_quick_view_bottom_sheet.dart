@@ -261,7 +261,10 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
                       Navigator.pop(context);
                       Get.toNamed(
                         AppRoutes.crowdfundDetails,
-                        arguments: crowdfund.id,
+                        arguments: {
+                          'crowdfundId': crowdfund.id,
+                          'crowdfund': crowdfund,
+                        },
                       );
                     },
                     child: Text(

@@ -217,7 +217,12 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
               setState(() => _isNavigating = true);
               Get.toNamed(
                 AppRoutes.crowdfundDetails,
-                arguments: crowdfund.id,
+                // The leaderboard entry already carries the full row —
+                // hand it over so the detail header paints instantly.
+                arguments: {
+                  'crowdfundId': crowdfund.id,
+                  'crowdfund': crowdfund,
+                },
               )?.then((_) {
                 if (mounted) setState(() => _isNavigating = false);
               });

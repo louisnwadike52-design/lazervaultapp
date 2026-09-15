@@ -28,6 +28,17 @@ abstract class CrowdfundRepository {
     String? sortBy,
   });
 
+  /// [listCrowdfunds] plus the server's pagination block. Any caller
+  /// that renders a total has to use this one — see [CrowdfundPage].
+  Future<CrowdfundPage> listCrowdfundsPage({
+    int page = 1,
+    int pageSize = 20,
+    String? statusFilter,
+    String? categoryFilter,
+    bool myCrowdfundsOnly = false,
+    String? sortBy,
+  });
+
   Future<List<Crowdfund>> searchCrowdfunds({
     required String query,
     int limit = 10,

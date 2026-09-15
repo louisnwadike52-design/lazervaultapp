@@ -66,6 +66,16 @@ class _NotificationChannelsScreenState
         ],
       ),
       body: BlocConsumer<CrowdfundCubit, CrowdfundState>(
+        // Only channel-owned states may drive setState / snackbars here.
+        // Without this guard any unrelated CrowdfundError on the shared
+        // cubit popped an error toast over the channel list.
+        listenWhen: (previous, current) =>
+            current is NotificationChannelsLoaded ||
+            current is NotificationChannelConnected ||
+            current is NotificationChannelDisconnected ||
+            current is NotificationChannelUpdated ||
+            current is NotificationChannelTested ||
+            current is CrowdfundError,
         listener: (context, state) {
           if (state is NotificationChannelsLoaded) {
             setState(() {

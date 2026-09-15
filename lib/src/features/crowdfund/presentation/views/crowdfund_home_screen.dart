@@ -219,6 +219,17 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
 
   Widget _buildMetricsCard(BuildContext context) {
     return BlocBuilder<CrowdfundCubit, CrowdfundState>(
+      // The landing page drives three loads on one cubit
+      // (loadCrowdfunds / loadMyCrowdfunds / loadUserDonations). The
+      // generic CrowdfundLoading + CrowdfundError those siblings emit
+      // used to blank this card back to a spinner (or an error) after
+      // it had already painted real numbers. Accept them only before
+      // the first successful list load.
+      buildWhen: (prev, curr) =>
+          curr is CrowdfundLoaded ||
+          curr is CrowdfundInitial ||
+          ((curr is CrowdfundLoading || curr is CrowdfundError) &&
+              prev is! CrowdfundLoaded),
       builder: (context, state) {
         if (state is CrowdfundLoading) {
           return _buildLoadingCard();
@@ -258,18 +269,32 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
   );
 
   Widget _buildMetricsContent(CrowdfundLoaded state) {
-    final totalCrowdfunds = state.crowdfunds.length;
+    // HONESTY NOTE (do not "simplify" this back):
+    //
+    // The money figure below is a client-side fold over the campaigns
+    // CURRENTLY LOADED — page 1 by default. It is NOT a platform-wide
+    // total, and it must never be labelled as one. The backend exposes
+    // no such aggregate: ListCrowdfunds returns only
+    // `pagination.total_items` (a campaign COUNT) and
+    // GetCrowdfundStatistics is scoped to a single campaign. If a real
+    // platform-wide "total raised" RPC is ever added, swap the fold for
+    // it and the labels can go back to "Total Raised".
+    //
+    // `state.totalCount` IS the server's `pagination.total_items`, so
+    // that one number is a true platform aggregate and is labelled as
+    // such in the caption.
+    final loadedCount = state.crowdfunds.length;
+    final platformCampaignCount = state.totalCount;
     final activeCrowdfunds = state.crowdfunds.where((c) => c.isActive).length;
-    final totalRaised = state.crowdfunds.fold<double>(
+    final raisedInLoaded = state.crowdfunds.fold<double>(
       0.0,
       (sum, crowdfund) => sum + crowdfund.currentAmount,
     );
     final fundedCount = state.crowdfunds
         .where((c) => c.targetAmount > 0 && c.currentAmount >= c.targetAmount)
         .length;
-    final avgPerCampaign = totalCrowdfunds > 0
-        ? totalRaised / totalCrowdfunds
-        : 0.0;
+    final avgPerCampaign =
+        loadedCount > 0 ? raisedInLoaded / loadedCount : 0.0;
 
     return Container(
       padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 18.h),
@@ -306,25 +331,41 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                 ),
               ),
               SizedBox(width: 10.w),
-              Text(
-                'Total Raised',
-                style: GoogleFonts.inter(
-                  color: Colors.white.withValues(alpha: 0.7),
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.4,
+              Expanded(
+                child: Text(
+                  'Raised by campaigns shown',
+                  style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.4,
+                  ),
                 ),
               ),
             ],
           ),
           SizedBox(height: 10.h),
           Text(
-            CurrencySymbols.formatAmount(totalRaised),
+            CurrencySymbols.formatAmount(raisedInLoaded),
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 32.sp,
               fontWeight: FontWeight.w800,
               letterSpacing: -0.5,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          // Scope caption. `platformCampaignCount` is the server's
+          // pagination.total_items — the only genuine platform-wide
+          // number on this card.
+          Text(
+            platformCampaignCount > loadedCount
+                ? 'From $loadedCount of $platformCampaignCount campaigns on Lazervault'
+                : 'From all $loadedCount campaigns on Lazervault',
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w500,
             ),
           ),
           SizedBox(height: 14.h),
@@ -338,8 +379,11 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
               Expanded(
                 child: _buildSubMetric(
                   icon: Icons.campaign_outlined,
-                  label: 'Total',
-                  value: totalCrowdfunds.toString(),
+                  // "Shown", not "Total" — Active / Funded / Avg beside
+                  // it are all folds over the same loaded rows, so every
+                  // number in this row shares one scope.
+                  label: 'Shown',
+                  value: loadedCount.toString(),
                 ),
               ),
               _buildSubMetricDivider(),
@@ -716,7 +760,8 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
     }
 
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.crowdfundDetails, arguments: crowdfund.id),
+      onTap: () => Get.toNamed(AppRoutes.crowdfundDetails,
+          arguments: {'crowdfundId': crowdfund.id, 'crowdfund': crowdfund}),
       child: Container(
         margin: EdgeInsets.only(bottom: 8.h),
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
@@ -1023,7 +1068,8 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
             ? const Color(0xFF4E03D0)
             : const Color(0xFF9CA3AF);
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.crowdfundDetails, arguments: campaign.id),
+      onTap: () => Get.toNamed(AppRoutes.crowdfundDetails,
+          arguments: {'crowdfundId': campaign.id, 'crowdfund': campaign}),
       child: Container(
         margin: EdgeInsets.only(bottom: 8.h),
         padding: EdgeInsets.all(12.w),
@@ -1238,7 +1284,8 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
 
   Widget _buildCrowdfundItem(Crowdfund crowdfund) {
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.crowdfundDetails, arguments: crowdfund.id),
+      onTap: () => Get.toNamed(AppRoutes.crowdfundDetails,
+          arguments: {'crowdfundId': crowdfund.id, 'crowdfund': crowdfund}),
       child: Container(
         margin: EdgeInsets.only(bottom: 8.h),
         padding: EdgeInsets.all(12.w),

@@ -218,7 +218,8 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
 
     return GestureDetector(
       onTap: () =>
-          Get.toNamed(AppRoutes.crowdfundDetails, arguments: campaign.id),
+          Get.toNamed(AppRoutes.crowdfundDetails,
+              arguments: {'crowdfundId': campaign.id, 'crowdfund': campaign}),
       child: Container(
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(

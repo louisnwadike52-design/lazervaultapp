@@ -406,6 +406,24 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
         _socialLinks.isNotEmpty;
   }
 
+  /// Leave the create wizard.
+  ///
+  /// Was `Get.offAllNamed(AppRoutes.crowdfund)`, which tore down the
+  /// WHOLE back stack (app dashboard included) just to abandon a draft,
+  /// and always dumped the user on crowdfund home even when they had
+  /// come from My Campaigns or the browse list. Pop instead, and only
+  /// fall back to a named jump when there is genuinely nothing to pop
+  /// (cold deep link straight into create) — same idiom as
+  /// `_exitToCrowdfundHome` on the details / list screens.
+  void _exitCarousel() {
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+    } else {
+      Get.offAllNamed(AppRoutes.crowdfund);
+    }
+  }
+
   Future<bool> _confirmDiscard() async {
     if (!_hasUnsavedDraft()) return true;
     final confirmed = await showDialog<bool>(
@@ -440,6 +458,10 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<CrowdfundCubit, CrowdfundState>(
+      // Navigate / un-spin only on the create call's own outcome. The
+      // carousel also drives custom-category reads on this cubit.
+      listenWhen: (prev, curr) =>
+          curr is CrowdfundCreated || curr is CrowdfundError,
       listener: (context, state) {
         if (state is CrowdfundCreated) {
           // Keep _isProcessing = true through navigation so the CTA stays
@@ -447,7 +469,10 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           // route mounts. The carousel is destroyed on offNamed.
           Get.offNamed(
             AppRoutes.crowdfundDetails,
-            arguments: state.crowdfund.id,
+            arguments: {
+              'crowdfundId': state.crowdfund.id,
+              'crowdfund': state.crowdfund,
+            },
           );
         } else if (state is CrowdfundError) {
           setState(() {
@@ -462,7 +487,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           if (didPop) return;
           if (_isProcessing) return;
           if (await _confirmDiscard()) {
-            if (mounted) Get.offAllNamed(AppRoutes.crowdfund);
+            if (mounted) _exitCarousel();
           }
         },
         child: Scaffold(
@@ -599,7 +624,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           onPressed: () async {
             if (_isProcessing) return;
             if (await _confirmDiscard()) {
-              if (mounted) Get.offAllNamed(AppRoutes.crowdfund);
+              if (mounted) _exitCarousel();
             }
           },
         ),

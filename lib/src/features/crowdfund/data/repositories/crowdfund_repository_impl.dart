@@ -71,6 +71,34 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
   }
 
   @override
+  Future<CrowdfundPage> listCrowdfundsPage({
+    int page = 1,
+    int pageSize = 20,
+    String? statusFilter,
+    String? categoryFilter,
+    bool myCrowdfundsOnly = false,
+    String? sortBy,
+  }) async {
+    try {
+      final result = await remoteDataSource.listCrowdfundsPage(
+        page: page,
+        pageSize: pageSize,
+        statusFilter: statusFilter,
+        categoryFilter: categoryFilter,
+        myCrowdfundsOnly: myCrowdfundsOnly,
+        sortBy: sortBy,
+      );
+      return (
+        crowdfunds: result.crowdfunds.cast<Crowdfund>(),
+        totalItems: result.totalItems,
+        hasNext: result.hasNext,
+      );
+    } catch (e) {
+      throw Exception('Failed to list crowdfunds: $e');
+    }
+  }
+
+  @override
   Future<List<Crowdfund>> searchCrowdfunds({
     required String query,
     int limit = 10,

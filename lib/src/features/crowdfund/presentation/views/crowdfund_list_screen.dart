@@ -4,13 +4,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:shimmer/shimmer.dart';
 import '../../../../../core/utils/debouncer.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import '../widgets/crowdfund_card.dart';
+import '../widgets/crowdfund_shimmer.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'crowdfund_list_screen_widgets.dart';
 
@@ -547,7 +547,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
           return _buildErrorState(state.message);
         }
         if (render == null) {
-          return _buildCampaignListShimmer();
+          return const CrowdfundListShimmer();
         }
         if (render.crowdfunds.isEmpty) {
           return _buildEmptyState(
@@ -590,7 +590,9 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
                 onTap: () {
                   Get.toNamed(
                     AppRoutes.crowdfundDetails,
-                    arguments: cf.id,
+                    // Hand over the row we already rendered so the
+                    // detail header paints on the first frame.
+                    arguments: {'crowdfundId': cf.id, 'crowdfund': cf},
                   );
                 },
               );
@@ -627,7 +629,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
           return _buildErrorState(state.message);
         }
         if (render == null) {
-          return _buildCampaignListShimmer();
+          return const CrowdfundListShimmer();
         }
         if (render.donations.isEmpty) {
           return _buildEmptyState(
@@ -898,101 +900,6 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     if (diff.inDays < 7) return '${diff.inDays}d ago';
     if (diff.inDays < 30) return '${(diff.inDays / 7).floor()}w ago';
     return '${date.day}/${date.month}/${date.year}';
-  }
-
-  // ---------------------------------------------------------------------------
-  // Shimmer loading
-  // ---------------------------------------------------------------------------
-
-  Widget _buildCampaignListShimmer() {
-    return Shimmer.fromColors(
-      baseColor: const Color(0xFF1F1F1F),
-      highlightColor: const Color(0xFF3D3D3D),
-      period: const Duration(milliseconds: 1200),
-      direction: ShimmerDirection.ltr,
-      child: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: 4,
-        itemBuilder: (context, index) {
-          return Container(
-            margin: EdgeInsets.only(bottom: 16.h),
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Status badge shimmer
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _shimmerBox(width: 70.w, height: 24.h),
-                    _shimmerBox(width: 80.w, height: 20.h),
-                  ],
-                ),
-                SizedBox(height: 12.h),
-                // Creator row shimmer
-                Row(
-                  children: [
-                    Container(
-                      width: 32.w,
-                      height: 32.w,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _shimmerBox(width: 100.w, height: 12.h),
-                        SizedBox(height: 4.h),
-                        _shimmerBox(width: 70.w, height: 10.h),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12.h),
-                // Title shimmer
-                _shimmerBox(width: double.infinity, height: 16.h),
-                SizedBox(height: 8.h),
-                // Description shimmer
-                _shimmerBox(width: double.infinity, height: 12.h),
-                SizedBox(height: 4.h),
-                _shimmerBox(width: 200.w, height: 12.h),
-                SizedBox(height: 16.h),
-                // Progress shimmer
-                _shimmerBox(width: double.infinity, height: 8.h),
-                SizedBox(height: 12.h),
-                // Footer shimmer
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _shimmerBox(width: 80.w, height: 12.h),
-                    _shimmerBox(width: 80.w, height: 12.h),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _shimmerBox({required double width, required double height}) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(4.r),
-      ),
-    );
   }
 
   // ---------------------------------------------------------------------------

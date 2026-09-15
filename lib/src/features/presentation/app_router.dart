@@ -3484,10 +3484,21 @@ GetPage(
     GetPage(
       name: AppRoutes.crowdfundDetails,
       page: () {
-        final crowdfundId = Get.arguments as String;
+        // Callers that already hold the campaign row (list card,
+        // quick-view sheet, dashboard strip) pass a map so the detail
+        // header paints on the first frame. A bare String id is still
+        // accepted for cold entries — deep links, notification taps.
+        final args = Get.arguments;
+        final crowdfundId =
+            args is Map ? args['crowdfundId'] as String : args as String;
+        final initialCrowdfund =
+            args is Map ? args['crowdfund'] as Crowdfund? : null;
         return BlocProvider(
           create: (_) => serviceLocator<CrowdfundCubit>()..loadCrowdfundDetails(crowdfundId),
-          child: CrowdfundDetailsScreen(crowdfundId: crowdfundId),
+          child: CrowdfundDetailsScreen(
+            crowdfundId: crowdfundId,
+            initialCrowdfund: initialCrowdfund,
+          ),
         );
       },
       transition: Transition.rightToLeft,

@@ -111,9 +111,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         // even when fresh data was already on screen.
         bool emittedAnything = false;
 
-        await for (final result in _cacheManager!.get<List<Crowdfund>>(
+        // Cache the whole PAGE (rows + the server's pagination block),
+        // not just the rows. `total_items` is the only platform-wide
+        // aggregate the endpoint returns and it has to survive a cache
+        // hit, otherwise the landing page falls back to page-1 counts
+        // every time it renders from cache.
+        await for (final result in _cacheManager!.get<CrowdfundPage>(
           key: cacheKey,
-          fetcher: () => listCrowdfundsUseCase(
+          fetcher: () => listCrowdfundsUseCase.page(
             page: page,
             pageSize: pageSize,
             statusFilter: statusFilter,
@@ -121,21 +126,31 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
             myCrowdfundsOnly: myCrowdfundsOnly,
           ),
           config: CacheConfig.crowdfunds,
-          serializer: (crowdfunds) =>
-              jsonEncode(crowdfunds.map((c) => c.toJson()).toList()),
-          deserializer: (json) => (jsonDecode(json) as List)
-              .map((j) => Crowdfund.fromJson(j as Map<String, dynamic>))
-              .toList(),
+          serializer: (result) => jsonEncode({
+            'total_items': result.totalItems,
+            'has_next': result.hasNext,
+            'items': result.crowdfunds.map((c) => c.toJson()).toList(),
+          }),
+          deserializer: (json) {
+            final decoded = jsonDecode(json) as Map<String, dynamic>;
+            return (
+              crowdfunds: (decoded['items'] as List)
+                  .map((j) => Crowdfund.fromJson(j as Map<String, dynamic>))
+                  .toList(),
+              totalItems: (decoded['total_items'] as num?)?.toInt() ?? 0,
+              hasNext: decoded['has_next'] as bool? ?? false,
+            );
+          },
         )) {
           if (isClosed || gen != _listGeneration) return;
           if (result.hasData) {
             emittedAnything = true;
             emit(CrowdfundLoaded(
-              crowdfunds: result.data!,
-              totalCount: result.data!.length,
+              crowdfunds: result.data!.crowdfunds,
+              totalCount: result.data!.totalItems,
               currentPage: page,
               isStale: result.isStale,
-              hasMore: result.data!.length >= pageSize,
+              hasMore: result.data!.hasNext,
             ));
           } else if (result.hasError) {
             // Suppress the error if we've already emitted cached data
@@ -151,7 +166,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       } else {
         emit(const CrowdfundLoading(message: 'Loading crowdfunds...'));
 
-        final crowdfunds = await listCrowdfundsUseCase(
+        final result = await listCrowdfundsUseCase.page(
           page: page,
           pageSize: pageSize,
           statusFilter: statusFilter,
@@ -161,10 +176,10 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
 
         if (isClosed || gen != _listGeneration) return;
         emit(CrowdfundLoaded(
-          crowdfunds: crowdfunds,
-          totalCount: crowdfunds.length,
+          crowdfunds: result.crowdfunds,
+          totalCount: result.totalItems,
           currentPage: page,
-          hasMore: crowdfunds.length >= pageSize,
+          hasMore: result.hasNext,
         ));
       }
     } catch (e) {
@@ -198,7 +213,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       final nextPage = currentState.currentPage + 1;
       emit(currentState.copyWith(isLoadingMore: true));
 
-      final crowdfunds = await listCrowdfundsUseCase(
+      final result = await listCrowdfundsUseCase.page(
         page: nextPage,
         pageSize: pageSize,
         statusFilter: statusFilter,
@@ -208,10 +223,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
 
       if (isClosed || gen != _listGeneration) return;
       emit(CrowdfundLoaded(
-        crowdfunds: [...currentState.crowdfunds, ...crowdfunds],
-        totalCount: currentState.totalCount + crowdfunds.length,
+        // totalCount stays the SERVER's total_items for the whole
+        // query — it must not grow as pages are appended, or the
+        // landing page's campaign count would climb while the user
+        // scrolls.
+        crowdfunds: [...currentState.crowdfunds, ...result.crowdfunds],
+        totalCount: result.totalItems,
         currentPage: nextPage,
-        hasMore: crowdfunds.length >= pageSize,
+        hasMore: result.hasNext,
       ));
     } catch (e) {
       if (isClosed || gen != _listGeneration) return;
@@ -787,7 +806,10 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: 'Donation failed. Please try again.')));
+      // DonationFailed, not CrowdfundError: only the processing screen
+      // should react, and it must be able to tell this apart from a
+      // sibling load failing on the same shared cubit.
+      emit(DonationFailed(message: getUserFriendlyErrorMessage(e, fallback: 'Donation failed. Please try again.')));
     }
   }
 
