@@ -620,11 +620,24 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
                   color: Colors.grey[300], fontSize: 12.sp)),
           if (widget.isAdmin) ...[
             SizedBox(height: 10.h),
-            _filledCta(
-              label: _triggering ? 'Retrying…' : 'Retry Now',
-              onPressed: _triggering ? null : _triggerManualPayout,
-              color: const Color(0xFFEF4444),
-            ),
+            // A failed payout is very often failing *because of who it is
+            // paying* — the receiver has no wallet in the contribution's
+            // currency, or their account could not be resolved. Retrying the
+            // same receiver then fails identically until the row exhausts.
+            // The backend allows reassignment from `failed` (only in_flight /
+            // settled / canceled are locked), so offer the fix next to the
+            // retry instead of making Retry Now the only move.
+            Row(children: [
+              Expanded(
+                child: _filledCta(
+                  label: _triggering ? 'Retrying…' : 'Retry Now',
+                  onPressed: _triggering ? null : _triggerManualPayout,
+                  color: const Color(0xFFEF4444),
+                ),
+              ),
+              SizedBox(width: 8.w),
+              _outlineCta(label: 'Change', onPressed: _openReceiverPicker),
+            ]),
           ],
         ],
       ),
