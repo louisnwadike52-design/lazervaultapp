@@ -1467,7 +1467,16 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     final groups = _groupPaymentsByUser(allPayments, contribution);
     // Sort groups so the most recently active payer is on top — same
     // expectation users had from the per-attempt list.
-    groups.sort((a, b) => b.latestPaymentDate.compareTo(a.latestPaymentDate));
+    // Most recently settled payer on top; anyone who hasn't paid sorts below
+    // them (null date) rather than crashing or jumping to the front.
+    groups.sort((a, b) {
+      final ad = a.latestPaymentDate;
+      final bd = b.latestPaymentDate;
+      if (ad == null && bd == null) return a.userName.compareTo(b.userName);
+      if (ad == null) return 1;
+      if (bd == null) return -1;
+      return bd.compareTo(ad);
+    });
 
     return RefreshIndicator(
       onRefresh: _refreshPayments,
@@ -1500,14 +1509,27 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   /// even a payer who's no longer a member still renders cleanly.
   List<_UserPaymentGroup> _groupPaymentsByUser(
       List<ContributionPayment> payments, Contribution contribution) {
-    final byUser = <String, List<ContributionPayment>>{};
-    for (final p in payments) {
-      byUser.putIfAbsent(p.userId, () => []).add(p);
-    }
-
     final memberByUser = <String, ContributionMember>{
       for (final m in contribution.members) m.userId: m,
     };
+
+    // Seed with EVERY active member, then fold the payments in.
+    //
+    // This was keyed off payment rows alone, so the Payments tab only listed
+    // people who had already attempted one — a member who hasn't paid was
+    // simply absent, which reads as "not part of this goal" rather than "owes
+    // their share". The tab is a per-member ledger, so everyone belongs on it;
+    // a payer who has since left the contribution still gets a row because the
+    // payments loop below adds any user id the members map doesn't have.
+    final byUser = <String, List<ContributionPayment>>{};
+    for (final m in contribution.members) {
+      if (m.userId.isEmpty) continue;
+      if (m.membershipStatus == ContributionMembershipStatus.declined) continue;
+      byUser.putIfAbsent(m.userId, () => []);
+    }
+    for (final p in payments) {
+      byUser.putIfAbsent(p.userId, () => []).add(p);
+    }
 
     final out = <_UserPaymentGroup>[];
     byUser.forEach((userId, list) {
@@ -1538,12 +1560,19 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       final member = memberByUser[userId];
       final expected = _expectedShareFor(contribution, member);
       final remaining = (expected - totalPaid).clamp(0.0, double.infinity);
-      final latest = list.first;
+      // `list` can now be empty — members are seeded before payments are
+      // folded in — so nothing here may assume a first element.
+      final latest = list.isNotEmpty ? list.first : null;
+      // Only settled money sets "last paid". A failed attempt used to supply
+      // this date, producing "Last paid <date>" beside a ₦0 total.
+      final lastSettled = list
+          .where((p) => p.status == PaymentStatus.completed)
+          .firstOrNull;
 
       out.add(_UserPaymentGroup(
         userId: userId,
-        userName: latest.userName.isNotEmpty
-            ? latest.userName
+        userName: (latest?.userName.isNotEmpty ?? false)
+            ? latest!.userName
             : (member?.userName ?? ''),
         member: member,
         payments: list,
@@ -1552,8 +1581,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         totalRefunded: totalRefunded,
         expectedAmount: expected,
         remaining: remaining,
-        latestPaymentDate: latest.paymentDate,
-        currency: latest.currency,
+        latestPaymentDate: lastSettled?.paymentDate,
+        currency: latest?.currency ?? contribution.currency,
       ));
     });
     return out;

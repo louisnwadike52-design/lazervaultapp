@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../../../core/services/locale_manager.dart';
 import '../../../../../../core/services/injection_container.dart';
 import '../../../../../../core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 /// Funding goal carousel step.
 ///
@@ -206,7 +207,7 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: const Color(0xFF4E03D0),
+                  color: PayFlowTheme.accentOnDark,
                   size: 20.sp,
                 ),
                 SizedBox(width: 12.w),
@@ -282,7 +283,7 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF4E03D0),
+                    color: PayFlowTheme.accentOnDark,
                   ),
                 ),
                 SizedBox(width: 6.w),
@@ -291,7 +292,7 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF4E03D0),
+                    color: PayFlowTheme.accentOnDark,
                   ),
                 ),
               ],

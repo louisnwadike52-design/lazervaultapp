@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../utils/donor_rating_calculator.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 /// Displays AI-powered star rating for a crowdfund donor.
 ///
@@ -145,7 +146,7 @@ class DonorStarRating extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF4E03D0),
+                    color: PayFlowTheme.accentOnDark,
                   ),
                 ),
               )).toList(growable: false),

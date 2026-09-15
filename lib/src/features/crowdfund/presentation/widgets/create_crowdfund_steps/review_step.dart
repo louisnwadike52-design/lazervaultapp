@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../../../core/services/injection_container.dart';
 import '../../../../../../core/utils/currency_formatter.dart';
 import '../../../data/services/crowdfund_share_service.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 /// Review & Create slide. Designed to fit a single phone screen — every
 /// piece of information the user has entered shows up at a glance, with
@@ -144,7 +145,7 @@ class ReviewStep extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 10.sp,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF4E03D0),
+                      color: PayFlowTheme.accentOnDark,
                     ),
                   ),
                 ),
@@ -239,7 +240,7 @@ class ReviewStep extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, size: 18.sp, color: const Color(0xFF4E03D0)),
+          Icon(icon, size: 18.sp, color: PayFlowTheme.accentOnDark),
           SizedBox(width: 10.w),
           Expanded(
             child: Column(
@@ -284,7 +285,7 @@ class ReviewStep extends StatelessWidget {
       child: Row(
         children: [
           Icon(Icons.menu_book_outlined,
-              size: 16.sp, color: const Color(0xFF4E03D0)),
+              size: 16.sp, color: PayFlowTheme.accentOnDark),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
@@ -314,7 +315,7 @@ class ReviewStep extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.link, size: 16.sp, color: const Color(0xFF4E03D0)),
+          Icon(Icons.link, size: 16.sp, color: PayFlowTheme.accentOnDark),
           SizedBox(width: 10.w),
           Expanded(
             child: Wrap(
@@ -401,7 +402,7 @@ class ReviewStep extends StatelessWidget {
       child: Row(
         children: [
           Icon(Icons.ios_share,
-              size: 16.sp, color: const Color(0xFF4E03D0)),
+              size: 16.sp, color: PayFlowTheme.accentOnDark),
           SizedBox(width: 10.w),
           Expanded(
             child: Column(
@@ -412,7 +413,7 @@ class ReviewStep extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF4E03D0),
+                    color: PayFlowTheme.accentOnDark,
                   ),
                 ),
                 SizedBox(height: 2.h),

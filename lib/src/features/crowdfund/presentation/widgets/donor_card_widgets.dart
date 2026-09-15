@@ -94,7 +94,7 @@ class _DonorCardState extends State<DonorCard> {
                       child: Text(
                         'Campaign Creator',
                         style: TextStyle(
-                          color: const Color(0xFF4E03D0),
+                          color: PayFlowTheme.accentOnDark,
                           fontSize: 10.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -219,7 +219,7 @@ class _DonorCardState extends State<DonorCard> {
             child: Text(
               _showFullMessage ? 'Show less' : 'Read more',
               style: TextStyle(
-                color: const Color(0xFF4E03D0),
+                color: PayFlowTheme.accentOnDark,
                 fontSize: 11.sp,
                 fontWeight: FontWeight.w600,
               ),

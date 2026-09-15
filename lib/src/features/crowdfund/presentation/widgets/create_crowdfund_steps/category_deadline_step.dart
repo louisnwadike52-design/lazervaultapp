@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 class CategoryDeadlineStep extends StatelessWidget {
   final String selectedCategory;
@@ -146,7 +147,7 @@ class CategoryDeadlineStep extends StatelessWidget {
                         ),
                       Icon(
                         Icons.calendar_today,
-                        color: const Color(0xFF4E03D0),
+                        color: PayFlowTheme.accentOnDark,
                         size: 20.sp,
                       ),
                     ],
@@ -177,7 +178,7 @@ class CategoryDeadlineStep extends StatelessWidget {
               children: [
                 Icon(
                   Icons.public,
-                  color: const Color(0xFF4E03D0),
+                  color: PayFlowTheme.accentOnDark,
                   size: 20.sp,
                 ),
                 SizedBox(width: 12.w),

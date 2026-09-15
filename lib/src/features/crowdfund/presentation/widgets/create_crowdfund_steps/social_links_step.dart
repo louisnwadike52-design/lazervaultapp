@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'social_links_step_widgets.dart';
 
 
@@ -283,7 +284,7 @@ class _SocialLinksStepState extends State<SocialLinksStep> {
         children: [
           Row(
             children: [
-              Icon(platform.icon, color: const Color(0xFF4E03D0), size: 18.sp),
+              Icon(platform.icon, color: PayFlowTheme.accentOnDark, size: 18.sp),
               SizedBox(width: 8.w),
               Text(
                 platform.label,
@@ -415,16 +416,16 @@ class _SocialLinksStepState extends State<SocialLinksStep> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.add, size: 14.sp, color: const Color(0xFF4E03D0)),
+            Icon(Icons.add, size: 14.sp, color: PayFlowTheme.accentOnDark),
             SizedBox(width: 6.w),
-            Icon(platform.icon, size: 14.sp, color: const Color(0xFF4E03D0)),
+            Icon(platform.icon, size: 14.sp, color: PayFlowTheme.accentOnDark),
             SizedBox(width: 6.w),
             Text(
               platform.label,
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF4E03D0),
+                color: PayFlowTheme.accentOnDark,
               ),
             ),
           ],
@@ -453,7 +454,7 @@ class _SocialLinksStepState extends State<SocialLinksStep> {
           Row(
             children: [
               Icon(Icons.tips_and_updates_outlined,
-                  color: const Color(0xFF4E03D0), size: 20.sp),
+                  color: PayFlowTheme.accentOnDark, size: 20.sp),
               SizedBox(width: 12.w),
               Text(
                 'Why add social links?',
@@ -481,7 +482,7 @@ class _SocialLinksStepState extends State<SocialLinksStep> {
       child: Row(
         children: [
           Icon(Icons.check_circle_outline,
-              color: const Color(0xFF4E03D0), size: 14.sp),
+              color: PayFlowTheme.accentOnDark, size: 14.sp),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(

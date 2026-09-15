@@ -10,6 +10,7 @@ import '../../data/services/crowdfund_pdf_service.dart';
 import '../../data/services/crowdfund_report_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 class DonationReceiptScreen extends StatefulWidget {
   final CrowdfundDonation donation;
@@ -240,7 +241,7 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
                             Text(
                               'Lazervault',
                               style: TextStyle(
-                                color: const Color(0xFF4E03D0),
+                                color: PayFlowTheme.accentOnDark,
                                 fontSize: 20.sp,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -415,7 +416,7 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
             height: 28.w,
             errorBuilder: (_, __, ___) => Icon(
               Icons.shield_outlined,
-              color: const Color(0xFF4E03D0),
+              color: PayFlowTheme.accentOnDark,
               size: 24.sp,
             ),
           ),
@@ -545,9 +546,9 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
                   value,
                   style: TextStyle(
                     color: isAmount
-                        ? const Color(0xFF4E03D0)
+                        ? PayFlowTheme.accentOnDark
                         : isHighlighted
-                            ? const Color(0xFF4E03D0)
+                            ? PayFlowTheme.accentOnDark
                             : Colors.white,
                     fontSize: isAmount ? 18.sp : 13.sp,
                     fontWeight: isAmount || isHighlighted

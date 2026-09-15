@@ -26,6 +26,7 @@ import '../widgets/pause_confirmation_sheet.dart';
 import 'crowdfund_report_screen.dart';
 import 'donation_payment_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'crowdfund_details_screen_widgets.dart';
 
 
@@ -357,7 +358,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                   child: LinearProgressIndicator(
                     minHeight: 2,
                     valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
+                        AlwaysStoppedAnimation<Color>(PayFlowTheme.accentOnDark),
                     backgroundColor: Color(0xFF1F1F1F),
                   ),
                 )
@@ -589,7 +590,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                           // vs "Medical") doesn't leak into the UI.
                           _formatCategory(crowdfund.category),
                           style: GoogleFonts.inter(
-                              color: const Color(0xFF4E03D0),
+                              color: PayFlowTheme.accentOnDark,
                               fontSize: 11.sp,
                               fontWeight: FontWeight.w600),
                         ),
@@ -656,7 +657,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                           ),
                           child: Icon(
                             Icons.volunteer_activism,
-                            color: const Color(0xFF4E03D0),
+                            color: PayFlowTheme.accentOnDark,
                             size: 18.sp,
                           ),
                         ),
@@ -728,7 +729,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
             onPressed: () =>
                 context.read<CrowdfundCubit>().loadMoreDonations(),
             style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF4E03D0),
+              foregroundColor: PayFlowTheme.accentOnDark,
             ),
             child: Text(
               'Load more',
@@ -911,7 +912,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
       value: value,
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF4E03D0), size: 18.sp),
+          Icon(icon, color: PayFlowTheme.accentOnDark, size: 18.sp),
           SizedBox(width: 12.w),
           Text(
             label,
@@ -956,7 +957,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
       );
     }
     return (
-      color: const Color(0xFF4E03D0),
+      color: PayFlowTheme.accentOnDark,
       label: 'Active',
       icon: Icons.bolt,
     );
@@ -1184,7 +1185,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
             color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(8.r),
           ),
-          child: Icon(icon, color: const Color(0xFF4E03D0), size: 14.sp),
+          child: Icon(icon, color: PayFlowTheme.accentOnDark, size: 14.sp),
         ),
         SizedBox(width: 10.w),
         Expanded(
@@ -1293,7 +1294,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
       ),
       child: Row(
         children: [
-          Icon(Icons.ios_share, size: 18.sp, color: const Color(0xFF4E03D0)),
+          Icon(Icons.ios_share, size: 18.sp, color: PayFlowTheme.accentOnDark),
           SizedBox(width: 10.w),
           Expanded(
             child: Column(
@@ -1304,7 +1305,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                   style: GoogleFonts.inter(
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF4E03D0),
+                    color: PayFlowTheme.accentOnDark,
                   ),
                 ),
                 SizedBox(height: 2.h),
@@ -1324,7 +1325,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
           IconButton(
             tooltip: 'Copy link',
             onPressed: () => _copyShareLink(url),
-            icon: Icon(Icons.copy, size: 18.sp, color: const Color(0xFF4E03D0)),
+            icon: Icon(Icons.copy, size: 18.sp, color: PayFlowTheme.accentOnDark),
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -1333,7 +1334,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
           IconButton(
             tooltip: 'Share',
             onPressed: () => _shareLink(crowdfund, url),
-            icon: Icon(Icons.share, size: 18.sp, color: const Color(0xFF4E03D0)),
+            icon: Icon(Icons.share, size: 18.sp, color: PayFlowTheme.accentOnDark),
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -1449,7 +1450,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                         SizedBox(height: 6.h),
                         Row(
                           children: [
-                            Icon(Icons.face_retouching_natural, color: const Color(0xFF4E03D0), size: 14.sp),
+                            Icon(Icons.face_retouching_natural, color: PayFlowTheme.accentOnDark, size: 14.sp),
                             SizedBox(width: 6.w),
                             Text('Facial Recognition Enabled', style: GoogleFonts.inter(fontSize: 11.sp, color: Colors.grey[400])),
                           ],

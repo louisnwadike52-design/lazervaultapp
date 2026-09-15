@@ -9,6 +9,7 @@ import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 class MyCampaignsScreen extends StatefulWidget {
   const MyCampaignsScreen({super.key});
@@ -140,7 +141,7 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
                 return RefreshIndicator(
                   onRefresh: () async =>
                       context.read<CrowdfundCubit>().loadMyCrowdfunds(),
-                  color: const Color(0xFF4E03D0),
+                  color: PayFlowTheme.accentOnDark,
                   backgroundColor: const Color(0xFF1F1F1F),
                   child: ListView.separated(
                     controller: _tabScrollControllers[tabIndex],

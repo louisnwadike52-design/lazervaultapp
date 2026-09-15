@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 class BasicInfoStep extends StatelessWidget {
   final TextEditingController titleController;
@@ -108,7 +109,7 @@ class BasicInfoStep extends StatelessWidget {
               children: [
                 Icon(
                   Icons.lightbulb_outline,
-                  color: const Color(0xFF4E03D0),
+                  color: PayFlowTheme.accentOnDark,
                   size: 20.sp,
                 ),
                 SizedBox(width: 12.w),

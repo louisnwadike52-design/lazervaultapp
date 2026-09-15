@@ -13,6 +13,7 @@ import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'withdraw_funds_sheet_widgets.dart';
 
 /// Bottom sheet the campaign creator uses to move funds out of the
@@ -407,7 +408,7 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
                       Text(
                         '${widget.crowdfund.currency} ${_formatAmount(widget.crowdfund.currentAmount)}',
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF4E03D0),
+                          color: PayFlowTheme.accentOnDark,
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
                         ),
@@ -450,7 +451,7 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
                       child: Text(
                         widget.crowdfund.currency,
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF4E03D0),
+                          color: PayFlowTheme.accentOnDark,
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
                         ),

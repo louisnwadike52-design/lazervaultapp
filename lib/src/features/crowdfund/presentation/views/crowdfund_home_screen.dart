@@ -16,6 +16,7 @@ import '../widgets/my_donation_detail_bottom_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 class CrowdfundHomeScreen extends StatefulWidget {
   const CrowdfundHomeScreen({super.key});
@@ -129,7 +130,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
               child: ServiceEntranceAnimation(
                 child: RefreshIndicator(
                 onRefresh: _refreshAll,
-                color: const Color(0xFF4E03D0),
+                color: PayFlowTheme.accentOnDark,
                 backgroundColor: const Color(0xFF1F1F1F),
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -202,7 +203,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
           ),
           ServiceVoiceButton(
             serviceName: 'crowdfund',
-            iconColor: const Color(0xFF4E03D0),
+            iconColor: PayFlowTheme.accentOnDark,
             backgroundColor: const Color(0xFF4E03D0),
           ),
           SizedBox(width: 8.w),
@@ -210,7 +211,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
             serviceName: 'Crowdfund',
             sourceContext: 'financial_products',
             icon: Icons.chat_bubble_outline,
-            iconColor: const Color(0xFF4E03D0),
+            iconColor: PayFlowTheme.accentOnDark,
           ),
         ],
       ),
@@ -334,7 +335,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                 child: Icon(
                   Icons.volunteer_activism,
                   size: 18.sp,
-                  color: const Color(0xFF4E03D0),
+                  color: PayFlowTheme.accentOnDark,
                 ),
               ),
               SizedBox(width: 10.w),
@@ -544,7 +545,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
             child: Icon(
               Icons.volunteer_activism,
               size: 26.sp,
-              color: const Color(0xFF4E03D0),
+              color: PayFlowTheme.accentOnDark,
             ),
           ),
           SizedBox(width: 14.w),
@@ -708,7 +709,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                 onTap: () => Get.toNamed(AppRoutes.crowdfundLeaderboard),
                 child: Text(
                   'View All',
-                  style: GoogleFonts.inter(color: const Color(0xFF4E03D0), fontSize: 13.sp, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inter(color: PayFlowTheme.accentOnDark, fontSize: 13.sp, fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -817,7 +818,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
               children: [
                 Text(
                   '${CurrencySymbols.getSymbol(crowdfund.currency)}${crowdfund.currentAmount.toStringAsFixed(0)}',
-                  style: GoogleFonts.inter(color: const Color(0xFF4E03D0), fontSize: 12.sp, fontWeight: FontWeight.w700),
+                  style: GoogleFonts.inter(color: PayFlowTheme.accentOnDark, fontSize: 12.sp, fontWeight: FontWeight.w700),
                 ),
                 Text(
                   '${crowdfund.progressPercentage.toStringAsFixed(0)}%',
@@ -851,7 +852,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                     onTap: () => Get.toNamed(AppRoutes.crowdfundList),
                     child: Text(
                       'View All',
-                      style: GoogleFonts.inter(color: const Color(0xFF4E03D0), fontSize: 13.sp, fontWeight: FontWeight.w600),
+                      style: GoogleFonts.inter(color: PayFlowTheme.accentOnDark, fontSize: 13.sp, fontWeight: FontWeight.w600),
                     ),
                   ),
               ],
@@ -899,7 +900,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
             onTap: () => context.read<CrowdfundCubit>().loadCrowdfunds(),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-              decoration: BoxDecoration(color: const Color(0xFF4E03D0), borderRadius: BorderRadius.circular(8.r)),
+              decoration: BoxDecoration(color: PayFlowTheme.accentOnDark, borderRadius: BorderRadius.circular(8.r)),
               child: Text('Retry', style: GoogleFonts.inter(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.w600)),
             ),
           ),
@@ -959,7 +960,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                 if (campaigns.isNotEmpty)
                   GestureDetector(
                     onTap: () => Get.toNamed(AppRoutes.crowdfundMyCampaigns),
-                    child: Text('View All', style: GoogleFonts.inter(color: const Color(0xFF4E03D0), fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                    child: Text('View All', style: GoogleFonts.inter(color: PayFlowTheme.accentOnDark, fontSize: 13.sp, fontWeight: FontWeight.w600)),
                   ),
               ],
             ),
@@ -1010,7 +1011,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                 color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10.r),
               ),
-              child: Icon(icon, size: 18.sp, color: const Color(0xFF4E03D0)),
+              child: Icon(icon, size: 18.sp, color: PayFlowTheme.accentOnDark),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -1032,7 +1033,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
               ),
               child: Text(
                 ctaLabel,
-                style: GoogleFonts.inter(color: const Color(0xFF4E03D0), fontSize: 11.sp, fontWeight: FontWeight.w700),
+                style: GoogleFonts.inter(color: PayFlowTheme.accentOnDark, fontSize: 11.sp, fontWeight: FontWeight.w700),
               ),
             ),
           ],
@@ -1051,7 +1052,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
             color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(8.r),
           ),
-          child: Icon(icon, color: const Color(0xFF4E03D0), size: 14.sp),
+          child: Icon(icon, color: PayFlowTheme.accentOnDark, size: 14.sp),
         ),
         SizedBox(width: 10.w),
         Text(
@@ -1167,7 +1168,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                 if (donations.isNotEmpty)
                   GestureDetector(
                     onTap: () => Get.toNamed(AppRoutes.crowdfundMyDonations),
-                    child: Text('View All', style: GoogleFonts.inter(color: const Color(0xFF4E03D0), fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                    child: Text('View All', style: GoogleFonts.inter(color: PayFlowTheme.accentOnDark, fontSize: 13.sp, fontWeight: FontWeight.w600)),
                   ),
               ],
             ),
@@ -1344,7 +1345,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                     children: [
                       Text(
                         '${CurrencySymbols.getSymbol(crowdfund.currency)}${crowdfund.currentAmount.toStringAsFixed(0)} raised',
-                        style: GoogleFonts.inter(color: const Color(0xFF4E03D0), fontSize: 12.sp, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(color: PayFlowTheme.accentOnDark, fontSize: 12.sp, fontWeight: FontWeight.w600),
                       ),
                       Text(
                         'of ${CurrencySymbols.getSymbol(crowdfund.currency)}${crowdfund.targetAmount.toStringAsFixed(0)}',

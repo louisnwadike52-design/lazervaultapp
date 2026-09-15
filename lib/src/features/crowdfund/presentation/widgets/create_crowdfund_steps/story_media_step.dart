@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 class StoryMediaStep extends StatefulWidget {
   final TextEditingController storyController;
@@ -124,7 +125,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
             SizedBox(height: 24.h),
             ListTile(
               leading:
-                  Icon(Icons.photo_library, color: const Color(0xFF4E03D0)),
+                  Icon(Icons.photo_library, color: PayFlowTheme.accentOnDark),
               title: Text(
                 'Gallery',
                 style: GoogleFonts.inter(color: Colors.white),
@@ -136,7 +137,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
             ),
             ListTile(
               leading:
-                  Icon(Icons.camera_alt, color: const Color(0xFF4E03D0)),
+                  Icon(Icons.camera_alt, color: PayFlowTheme.accentOnDark),
               title: Text(
                 'Camera',
                 style: GoogleFonts.inter(color: Colors.white),
@@ -147,7 +148,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.link, color: const Color(0xFF4E03D0)),
+              leading: Icon(Icons.link, color: PayFlowTheme.accentOnDark),
               title: Text(
                 'Enter URL',
                 style: GoogleFonts.inter(color: Colors.white),
@@ -249,7 +250,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
               },
               child: Text(
                 'Done',
-                style: GoogleFonts.inter(color: const Color(0xFF4E03D0)),
+                style: GoogleFonts.inter(color: PayFlowTheme.accentOnDark),
               ),
             ),
           ],
@@ -408,7 +409,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
                   children: [
                     Icon(
                       Icons.photo_library_outlined,
-                      color: const Color(0xFF4E03D0),
+                      color: PayFlowTheme.accentOnDark,
                       size: 20.sp,
                     ),
                     SizedBox(width: 12.w),
@@ -541,7 +542,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
               child: Icon(
                 Icons.add_photo_alternate_outlined,
                 size: 30.sp,
-                color: const Color(0xFF4E03D0),
+                color: PayFlowTheme.accentOnDark,
               ),
             ),
             SizedBox(height: 16.h),
@@ -608,7 +609,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
                         child: Text(
                           'Tap to retry',
                           style: GoogleFonts.inter(
-                            color: const Color(0xFF4E03D0),
+                            color: PayFlowTheme.accentOnDark,
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -724,7 +725,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
         children: [
           Icon(
             Icons.check_circle_outline,
-            color: const Color(0xFF4E03D0),
+            color: PayFlowTheme.accentOnDark,
             size: 14.sp,
           ),
           SizedBox(width: 8.w),

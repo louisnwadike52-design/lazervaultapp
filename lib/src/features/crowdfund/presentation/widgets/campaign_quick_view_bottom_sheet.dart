@@ -8,6 +8,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/utils/emulator_url.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import 'progress_indicator_widget.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 final _amountFormat = NumberFormat('#,##0.00');
 
@@ -99,7 +100,7 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
                       child: Text(
                         crowdfund.category,
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF4E03D0),
+                          color: PayFlowTheme.accentOnDark,
                           fontSize: 11.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -122,7 +123,7 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
                           ? Text(
                               _getInitials(crowdfund.creator),
                               style: TextStyle(
-                                color: const Color(0xFF4E03D0),
+                                color: PayFlowTheme.accentOnDark,
                                 fontSize: 11.sp,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -156,7 +157,7 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
                     Text(
                       '${crowdfund.currency} ${_amountFormat.format(crowdfund.currentAmount)}',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF4E03D0),
+                        color: PayFlowTheme.accentOnDark,
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w700,
                       ),
@@ -270,7 +271,7 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
                     child: Text(
                       'View Full Details',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF4E03D0),
+                        color: PayFlowTheme.accentOnDark,
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
                       ),

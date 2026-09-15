@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../../core/utils/emulator_url.dart';
 import '../../domain/entities/crowdfund_entities.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 final _amountFormat = NumberFormat('#,##0.00');
 
@@ -61,7 +62,7 @@ class LeaderboardPreviewCard extends StatelessWidget {
                       child: Text(
                         crowdfund.category,
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF4E03D0),
+                          color: PayFlowTheme.accentOnDark,
                           fontSize: 9.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -118,7 +119,7 @@ class LeaderboardPreviewCard extends StatelessWidget {
               Text(
                 '${crowdfund.currency} ${_amountFormat.format(crowdfund.currentAmount)}',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF4E03D0),
+                  color: PayFlowTheme.accentOnDark,
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -174,7 +175,7 @@ class LeaderboardPreviewCard extends StatelessWidget {
       ),
       child: Icon(
         Icons.volunteer_activism,
-        color: const Color(0xFF4E03D0),
+        color: PayFlowTheme.accentOnDark,
         size: 24.sp,
       ),
     );

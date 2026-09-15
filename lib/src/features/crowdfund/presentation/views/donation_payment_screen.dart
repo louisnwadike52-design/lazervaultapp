@@ -14,6 +14,7 @@ import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import 'donation_processing_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'donation_payment_screen_widgets.dart';
 
 
@@ -444,7 +445,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
                     ? Text(
                         widget.crowdfund.creator.initials,
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF4E03D0),
+                          color: PayFlowTheme.accentOnDark,
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
                         ),
@@ -531,7 +532,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
               Text(
                 '${widget.crowdfund.currency} ${widget.crowdfund.currentAmount.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF4E03D0),
+                  color: PayFlowTheme.accentOnDark,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -582,7 +583,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
           child: Text(
             widget.crowdfund.currency,
             style: GoogleFonts.inter(
-              color: const Color(0xFF4E03D0),
+              color: PayFlowTheme.accentOnDark,
               fontSize: 16.sp,
               fontWeight: FontWeight.w700,
             ),
@@ -740,7 +741,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
             ),
             child: Icon(
               Icons.account_balance_wallet,
-              color: const Color(0xFF4E03D0),
+              color: PayFlowTheme.accentOnDark,
               size: 20.sp,
             ),
           ),
@@ -783,7 +784,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
           ),
           Icon(
             Icons.check_circle,
-            color: const Color(0xFF4E03D0),
+            color: PayFlowTheme.accentOnDark,
             size: 22.sp,
           ),
         ],

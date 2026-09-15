@@ -25,6 +25,7 @@ import 'package:get/get.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/services/locale_manager.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 
 /// Main carousel controller for crowdfund creation
@@ -442,7 +443,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text('Keep editing',
-                style: GoogleFonts.inter(color: const Color(0xFF4E03D0), fontWeight: FontWeight.w600)),
+                style: GoogleFonts.inter(color: PayFlowTheme.accentOnDark, fontWeight: FontWeight.w600)),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),

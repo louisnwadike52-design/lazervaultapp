@@ -12,6 +12,7 @@ import '../cubit/crowdfund_state.dart';
 import '../widgets/crowdfund_card.dart';
 import '../widgets/crowdfund_shimmer.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'crowdfund_list_screen_widgets.dart';
 
 
@@ -490,7 +491,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
                 filter,
                 style: GoogleFonts.inter(
                   color: isSelected
-                      ? const Color(0xFF4E03D0)
+                      ? PayFlowTheme.accentOnDark
                       : const Color(0xFF9CA3AF),
                   fontSize: 13.sp,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
@@ -560,7 +561,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
             (render.isLoadingMore || render.hasMore ? 1 : 0);
         return RefreshIndicator(
           onRefresh: _onRefresh,
-          color: const Color(0xFF4E03D0),
+          color: PayFlowTheme.accentOnDark,
           backgroundColor: const Color(0xFF1F1F1F),
           child: ListView.builder(
             controller: _browseScrollController,
@@ -684,7 +685,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
       onRefresh: () async {
         context.read<CrowdfundCubit>().loadUserDonations();
       },
-      color: const Color(0xFF4E03D0),
+      color: PayFlowTheme.accentOnDark,
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView.builder(
         controller: _fundedScrollController,
@@ -833,7 +834,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
                 Text(
                   '$currency ${totalDonated.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF4E03D0),
+                    color: PayFlowTheme.accentOnDark,
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
                   ),
@@ -880,7 +881,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
               child: Text(
                 'Tap to view details',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF4E03D0),
+                  color: PayFlowTheme.accentOnDark,
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -947,7 +948,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
   }) {
     return RefreshIndicator(
       onRefresh: _onRefresh,
-      color: const Color(0xFF4E03D0),
+      color: PayFlowTheme.accentOnDark,
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -1004,7 +1005,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
   Widget _buildErrorState(String message) {
     return RefreshIndicator(
       onRefresh: _onRefresh,
-      color: const Color(0xFF4E03D0),
+      color: PayFlowTheme.accentOnDark,
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),

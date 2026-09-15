@@ -28,7 +28,12 @@ class UserPaymentGroup {
   final double totalRefunded;
   final double expectedAmount;
   final double remaining;
-  final DateTime latestPaymentDate;
+  /// When this payer last actually PAID — i.e. the newest COMPLETED payment.
+  /// Null when they have none, which is different from "never attempted":
+  /// a failed or in-flight attempt leaves this null on purpose, because
+  /// "Last paid" next to a ₦0 total is a contradiction the user has to
+  /// resolve by guessing.
+  final DateTime? latestPaymentDate;
   final String currency;
 
   const UserPaymentGroup({
@@ -97,6 +102,11 @@ class UserPaymentGroup {
       final expected = expectedAmountByUserId[userId] ?? 0.0;
       final remaining = (expected - totalPaid).clamp(0.0, double.infinity);
       final latest = list.first;
+      // Date of the newest payment that actually moved money. list is already
+      // sorted newest-first, so the first completed entry is the latest one.
+      final lastSettled = list
+          .where((p) => p.status == PaymentStatus.completed)
+          .firstOrNull;
 
       out.add(UserPaymentGroup(
         userId: userId,
@@ -108,7 +118,7 @@ class UserPaymentGroup {
         totalRefunded: totalRefunded,
         expectedAmount: expected,
         remaining: remaining,
-        latestPaymentDate: latest.paymentDate,
+        latestPaymentDate: lastSettled?.paymentDate,
         currency: currency,
       ));
     });
@@ -188,9 +198,7 @@ class PaymentGroupCard extends StatelessWidget {
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        hasMultiple
-                            ? '${group.attemptCount} payments • last ${DateFormat('MMM d').format(group.latestPaymentDate)}'
-                            : 'Last paid ${DateFormat('MMM d, yyyy').format(group.latestPaymentDate)}',
+                        _subtitleFor(group),
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           color: Colors.grey[400],
@@ -437,4 +445,25 @@ class PaymentBreakdownRow extends StatelessWidget {
         return Icons.undo;
     }
   }
+}
+
+
+/// Subtitle under a payer's name on the Payments tab.
+///
+/// Was always "Last paid {date}" using the newest payment row of ANY status, so
+/// a member whose only attempt FAILED read "Last paid Sep 15, 2026" beside a
+/// ₦0 total — two contradictory facts in one row. The date now comes from
+/// settled money only, and when there is none we say so instead of implying a
+/// payment happened.
+String _subtitleFor(UserPaymentGroup group) {
+  final last = group.latestPaymentDate;
+  if (last == null) {
+    if (group.totalInFlight > 0) return 'Payment in progress';
+    if (group.attemptCount > 0) return 'No completed payments yet';
+    return 'Not paid yet';
+  }
+  if (group.attemptCount > 1) {
+    return '${group.attemptCount} payments \u2022 last ${DateFormat('MMM d').format(last)}';
+  }
+  return 'Last paid ${DateFormat('MMM d, yyyy').format(last)}';
 }

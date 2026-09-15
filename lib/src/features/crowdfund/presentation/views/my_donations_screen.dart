@@ -12,6 +12,7 @@ import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import '../widgets/my_donation_detail_bottom_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 /// My Donations — view-all page for the user's crowdfund donations.
 ///
@@ -298,7 +299,7 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
               return RefreshIndicator(
                 onRefresh: () async =>
                     context.read<CrowdfundCubit>().loadUserDonations(),
-                color: const Color(0xFF4E03D0),
+                color: PayFlowTheme.accentOnDark,
                 backgroundColor: const Color(0xFF1F1F1F),
                 child: ListView.separated(
                   controller: _tabScrollControllers[tabIndex],
@@ -342,7 +343,7 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Icon(Icons.favorite_outline,
-                size: 32.sp, color: const Color(0xFF4E03D0)),
+                size: 32.sp, color: PayFlowTheme.accentOnDark),
           ),
           SizedBox(height: 14.h),
           Text(

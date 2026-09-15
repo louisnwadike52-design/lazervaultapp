@@ -9,6 +9,7 @@ import '../../domain/entities/crowdfund_entities.dart';
 import '../../utils/donor_rating_calculator.dart';
 import 'donor_star_rating.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'donor_card_widgets.dart';
 
 
@@ -298,7 +299,7 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
                 style: GoogleFonts.inter(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF4E03D0),
+                  color: PayFlowTheme.accentOnDark,
                 ),
               ),
             ),

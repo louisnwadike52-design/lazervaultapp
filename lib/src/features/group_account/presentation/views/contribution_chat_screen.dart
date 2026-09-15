@@ -139,6 +139,13 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
           backgroundColor: _bg,
           elevation: 0,
           titleSpacing: 0,
+          // The back button and any action icons inherit from the global
+          // AppBarTheme when unset, which resolves dark against this
+          // near-black chat background — the control was there but you
+          // couldn't see it. State the on-dark foreground explicitly.
+          foregroundColor: Colors.white,
+          iconTheme: const IconThemeData(color: Colors.white),
+          actionsIconTheme: const IconThemeData(color: Colors.white),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

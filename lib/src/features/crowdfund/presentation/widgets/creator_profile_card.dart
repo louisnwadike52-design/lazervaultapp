@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/crowdfund_entities.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 class CreatorProfileCard extends StatelessWidget {
   final CrowdfundCreator creator;
@@ -45,7 +46,7 @@ class CreatorProfileCard extends StatelessWidget {
                       ? Text(
                           creator.initials,
                           style: TextStyle(
-                            color: const Color(0xFF4E03D0),
+                            color: PayFlowTheme.accentOnDark,
                             fontSize: 20.sp,
                             fontWeight: FontWeight.bold,
                           ),
@@ -158,7 +159,7 @@ class CreatorProfileCard extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.face_retouching_natural,
-                          color: const Color(0xFF4E03D0),
+                          color: PayFlowTheme.accentOnDark,
                           size: 12.sp,
                         ),
                         SizedBox(width: 4.w),

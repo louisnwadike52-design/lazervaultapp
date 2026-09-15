@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import 'progress_indicator_widget.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 class CrowdfundCard extends StatelessWidget {
   final Crowdfund crowdfund;
@@ -59,7 +60,7 @@ class CrowdfundCard extends StatelessWidget {
                 Text(
                   crowdfund.crowdfundCode,
                   style: TextStyle(
-                    color: const Color(0xFF4E03D0),
+                    color: PayFlowTheme.accentOnDark,
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w600,
                     fontFamily: 'monospace',
@@ -83,7 +84,7 @@ class CrowdfundCard extends StatelessWidget {
                       child: crowdfund.creator.profilePicture == null
                           ? Text(
                               crowdfund.creator.initials,
-                              style: TextStyle(color: const Color(0xFF4E03D0), fontSize: 10.sp, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: PayFlowTheme.accentOnDark, fontSize: 10.sp, fontWeight: FontWeight.bold),
                             )
                           : null,
                     ),
@@ -141,13 +142,13 @@ class CrowdfundCard extends StatelessWidget {
                   ),
                   child: Text(
                     crowdfund.category,
-                    style: TextStyle(color: const Color(0xFF4E03D0), fontSize: 10.sp, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: PayFlowTheme.accentOnDark, fontSize: 10.sp, fontWeight: FontWeight.w600),
                   ),
                 ),
                 const Spacer(),
                 Text(
                   '${crowdfund.currency} ${crowdfund.currentAmount.toStringAsFixed(0)}',
-                  style: TextStyle(color: const Color(0xFF4E03D0), fontSize: 14.sp, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: PayFlowTheme.accentOnDark, fontSize: 14.sp, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   ' / ${crowdfund.targetAmount.toStringAsFixed(0)}',
