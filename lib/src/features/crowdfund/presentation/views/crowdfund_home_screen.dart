@@ -219,27 +219,34 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
 
   Widget _buildMetricsCard(BuildContext context) {
     return BlocBuilder<CrowdfundCubit, CrowdfundState>(
-      // The landing page drives three loads on one cubit
-      // (loadCrowdfunds / loadMyCrowdfunds / loadUserDonations). The
-      // generic CrowdfundLoading + CrowdfundError those siblings emit
-      // used to blank this card back to a spinner (or an error) after
-      // it had already painted real numbers. Accept them only before
-      // the first successful list load.
-      buildWhen: (prev, curr) =>
-          curr is CrowdfundLoaded ||
-          curr is CrowdfundInitial ||
-          ((curr is CrowdfundLoading || curr is CrowdfundError) &&
-              prev is! CrowdfundLoaded),
+      // The landing page drives three loads on one cubit (loadCrowdfunds /
+      // loadMyCrowdfunds / loadUserDonations), so this card sees states that
+      // aren't its own. Once it has real numbers it keeps them (a sibling's
+      // generic Loading/Error must not blank it back to a spinner).
+      //
+      // Rebuild on ANY state while still unresolved, so a sibling load
+      // finishing can take this card off the spinner. Previously buildWhen
+      // accepted only CrowdfundLoaded, so if that particular state never
+      // arrived — while loadMyCrowdfunds / loadUserDonations succeeded — the
+      // card sat on its spinner forever with the rest of the page fully
+      // populated. That is exactly what shipped: campaigns, donations and
+      // leaderboard rendered while the hero span kept spinning.
+      buildWhen: (prev, curr) => prev is! CrowdfundLoaded || curr is CrowdfundLoaded,
       builder: (context, state) {
-        if (state is CrowdfundLoading) {
-          return _buildLoadingCard();
-        }
         if (state is CrowdfundLoaded) {
           return _buildMetricsContent(state);
         }
         if (state is CrowdfundError) {
           return _buildErrorCard(state.message);
         }
+        // Still genuinely in flight — the browse list hasn't resolved yet.
+        if (state is CrowdfundLoading || state is CrowdfundInitial) {
+          return _buildLoadingCard();
+        }
+        // Any OTHER terminal state (a sibling load landing, a create/update
+        // echo, …) means loading has finished without the browse list ever
+        // reaching this card. Show the empty hero rather than implying work is
+        // still happening.
         return _buildEmptyMetricsCard();
       },
     );
