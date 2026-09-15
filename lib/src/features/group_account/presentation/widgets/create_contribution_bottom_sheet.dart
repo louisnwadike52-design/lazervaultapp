@@ -510,16 +510,16 @@ class _CreateContributionBottomSheetState
     debugPrint(
         '🔵 _submitContribution: groupId=${widget.groupId}, type=${_selectedType}, frequency=$_selectedFrequency');
 
-    // Convert display IDs back to original user IDs for backend submission
-    List<String>? backendRotationOrder;
-    if (_selectedType == ContributionType.rotatingSavings) {
-      backendRotationOrder = _rotationOrder.map((displayId) {
-        final originalId = _tempIdToOriginalId[displayId] ?? displayId;
-        debugPrint('🔵 Converting rotation: $displayId -> $originalId');
-        return originalId;
-      }).toList();
-      debugPrint('🔵 Backend rotation order: $backendRotationOrder');
-    }
+    // Convert display IDs back to original user IDs for backend submission.
+    //
+    // Sent for BOTH types. _rotationOrder is the shared member selection the
+    // Members step edits either way (see the shared-state note further down);
+    // it only doubles as the rotation ORDER for rotating savings. Gating this
+    // on rotatingSavings meant a one_time contribution submitted NO members,
+    // so it was created empty and the creator had to add everyone again.
+    final List<String> backendRotationOrder = _rotationOrder
+        .map((displayId) => _tempIdToOriginalId[displayId] ?? displayId)
+        .toList();
 
     // Build metadata with external links. The controllers hold only
     // the suffix because the input field bakes the canonical prefix
@@ -556,7 +556,7 @@ class _CreateContributionBottomSheetState
     if (_selectedType == ContributionType.rotatingSavings) {
       effectiveStartDate ??= DateTime.now();
       if (effectiveTotalCycles == null || effectiveTotalCycles <= 0) {
-        final memberCount = backendRotationOrder?.length ?? 0;
+        final memberCount = backendRotationOrder.length;
         effectiveTotalCycles = memberCount > 0 ? memberCount : 12;
       }
     }

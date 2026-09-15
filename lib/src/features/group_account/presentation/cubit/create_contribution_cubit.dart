@@ -413,7 +413,16 @@ class CreateContributionCubit extends Cubit<CreateContributionState> {
         regularAmount: _regularAmount,
         startDate: _startDate,
         totalCycles: _totalCycles,
-        memberRotationOrder: _type == ContributionType.rotatingSavings ? _memberRotationOrder : null,
+        // Send the selected members for BOTH types.
+        //
+        // This passed null for a one_time contribution, so everyone the
+        // creator picked in the Members step was discarded on the way out and
+        // the contribution was created empty — the creator then had to add
+        // them all again by hand. The field is named for the rotating case
+        // (where it doubles as the rotation ORDER); for a one_time
+        // contribution it is simply the participant list, and the server now
+        // seeds contribution_members from it either way.
+        memberRotationOrder: _memberRotationOrder,
         autoPayEnabled: _autoPayEnabled,
         penaltyAmount: _penaltyAmount,
         gracePeriodDays: _gracePeriodDays,
