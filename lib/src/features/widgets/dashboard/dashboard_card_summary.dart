@@ -361,7 +361,8 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
               ),
               // Notification Screen
               Expanded(
-                child: NotificationScreen(),
+                // Host paints the sheet surface (see embedded).
+                child: NotificationScreen(embedded: true),
               ),
             ],
           ),

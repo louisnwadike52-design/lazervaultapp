@@ -456,7 +456,9 @@ class _DashboardHeaderState extends State<DashboardHeader>
                 ),
               ),
               const Expanded(
-                child: NotificationScreen(),
+                // Host paints the white sheet surface — keep the screen
+                // transparent so its rounded corners show through.
+                child: NotificationScreen(embedded: true),
               ),
             ],
           ),

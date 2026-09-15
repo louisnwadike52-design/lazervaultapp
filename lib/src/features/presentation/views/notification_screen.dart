@@ -22,7 +22,22 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 /// NotificationsBuilder renders. Defaults to a transfer icon for unknown types.
 
 class NotificationScreen extends StatefulWidget {
-  const NotificationScreen({super.key});
+  /// True when this screen is rendered INSIDE a host that already paints a
+  /// surface — the dashboard's notification bottom sheets, which supply their
+  /// own white / dark backdrop. In that case the Scaffold stays transparent so
+  /// the host's colour (and its rounded corners) show through.
+  ///
+  /// Default FALSE, i.e. standalone: the screen paints its own background.
+  /// This matters because the feed is also a ROUTE (deep links and push
+  /// notifications land on `AppRoutes.notificationsFeed`). Pushed as a route
+  /// there is nothing behind it, so a transparent Scaffold revealed the dark
+  /// app canvas — the feed appeared on a black overlay with its black87 title
+  /// nearly invisible, while the same screen looked correct from the
+  /// dashboard. Defaulting to opaque means any future route push is correct
+  /// without the caller having to know this.
+  final bool embedded;
+
+  const NotificationScreen({super.key, this.embedded = false});
 
   @override
   State<NotificationScreen> createState() => _NotificationScreenState();
@@ -268,7 +283,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      // Transparent ONLY when a host paints behind us (see [embedded]).
+      // Standalone — i.e. opened as a route by a deep link / push
+      // notification — we must paint our own surface, or the dark app canvas
+      // shows through behind this screen's light design.
+      backgroundColor: widget.embedded ? Colors.transparent : Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
