@@ -289,12 +289,26 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             userId: userId,
           );
     }
+
+    // Price the PREFILLED amount. A ROSCA share is prefilled and read-only,
+    // so onChanged never fires — without this the fee line would stay hidden
+    // and the balance check would run with fee = 0 on exactly the flow where
+    // the amount is fixed. Post-frame so the auth cubit read happens after
+    // the first build.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _refreshFeeQuote();
+    });
   }
 
   bool get _hasInsufficientBalance {
     if (_selectedAccountBalance == null) return false;
     final amount = double.tryParse(_amountController.text) ?? 0;
-    return amount > _selectedAccountBalance!;
+    // Compare against what actually LEAVES the account: the contribution
+    // PLUS the platform fee (charged as a separate debit from the same
+    // wallet). Checking the bare amount let someone with exactly the
+    // contribution balance pass this gate and then come up short when the
+    // fee was taken. 0 when no fee applies, so free groups are unchanged.
+    return (amount + _feeQuote.fee) > _selectedAccountBalance!;
   }
 
   void _processPayment() async {

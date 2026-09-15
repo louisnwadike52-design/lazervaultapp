@@ -74,6 +74,14 @@ class GroupJoinLinkPreview {
         return 'This invite link was turned off by the group admin.';
       case 'exhausted':
         return 'This invite link has already been used the maximum number of times.';
+      // A link outlives the group it points at: the server reports the
+      // group's state so we can say what actually happened instead of
+      // implying the link itself is bad.
+      case 'group_suspended':
+        return 'This group is suspended right now, so new members can’t join. '
+            'Ask the group admin to check with support.';
+      case 'group_closed':
+        return 'This group has been closed, so it’s no longer accepting members.';
       case 'not_found':
       default:
         return "This invite link isn't valid. Ask the group admin for a new one.";
