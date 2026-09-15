@@ -45,6 +45,30 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
   pb.GetPayoutReceiverResponse? _state;
   bool _loading = true;
   bool _triggering = false;
+
+  /// True when the pot can actually fund a payout.
+  ///
+  /// Mirrors the server's guard (processPayoutCore: current_amount <
+  /// minimum_balance → ErrInsufficientFunds) so the UI doesn't offer an action
+  /// the backend will refuse. minimumBalance null/0 still requires a non-empty
+  /// pot — paying out zero is never meaningful.
+  bool get _potCoversMinimum {
+    final pot = widget.contribution.currentAmount;
+    final min = widget.contribution.minimumBalance ?? 0;
+    return pot > 0 && pot >= min;
+  }
+
+  /// Why the payout CTA is unavailable, in the user's terms.
+  String get _payoutBlockedReason {
+    final pot = widget.contribution.currentAmount;
+    final min = widget.contribution.minimumBalance ?? 0;
+    final ccy = widget.contribution.currency;
+    if (pot <= 0) {
+      return 'Nothing to pay out yet — no one has contributed to this goal.';
+    }
+    return 'Needs at least ${_formatAmount(min)} $ccy before a payout can run '
+        '(currently ${_formatAmount(pot)} $ccy).';
+  }
   String? _error;
   Timer? _pollTimer;
 
@@ -453,12 +477,28 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
             style: GoogleFonts.inter(color: Colors.grey[300], fontSize: 12.sp),
           ),
           if (widget.isAdmin) ...[
+            // The pot must clear the contribution's minimum balance before a
+            // payout can succeed. Offering the CTA regardless meant tapping it
+            // on an empty pot returned a bare "insufficient funds", and the
+            // scheduler then retried it every 30s until it exhausted — which
+            // is how one unfunded goal produced 19 push notifications. Say why
+            // it's unavailable instead of failing after the tap.
+            if (!_potCoversMinimum) ...[
+              SizedBox(height: 10.h),
+              Text(
+                _payoutBlockedReason,
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFF59E0B), fontSize: 12.sp),
+              ),
+            ],
             SizedBox(height: 10.h),
             Row(children: [
               Expanded(
                 child: _filledCta(
                   label: _triggering ? 'Triggering…' : 'Trigger Payout',
-                  onPressed: _triggering ? null : _triggerManualPayout,
+                  onPressed: (_triggering || !_potCoversMinimum)
+                      ? null
+                      : _triggerManualPayout,
                   color: const Color.fromARGB(255, 78, 3, 208),
                 ),
               ),

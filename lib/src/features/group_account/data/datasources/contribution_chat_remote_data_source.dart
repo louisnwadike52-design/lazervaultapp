@@ -200,14 +200,37 @@ class ContributionChatRemoteDataSource {
 
   late final String _base = _resolveBase();
 
+  /// Base for the contribution-chat REST calls.
+  ///
+  /// These endpoints are served by financial-gateway's grpc-gateway mux, and
+  /// the group_account proto annotates them WITHOUT the /api prefix
+  /// ("/v1/contributions/{id}/messages") — unlike giftcards/invoices, which
+  /// annotate "/api/v1/...". endpointRegistry.httpFinancial already ends in
+  /// "/api/v1", so appending "/v1/..." produced "/api/v1/v1/contributions/..."
+  /// — a path no ingress rule matches, so it fell through to the catch-all and
+  /// hit core-gateway, which has no such route. That 404 is what the app
+  /// reported as "Can't open this chat" (confirmed in production logs).
+  ///
+  /// Strip the trailing "/api/v1" so the path we build matches the annotation
+  /// the gateway actually serves.
   String _resolveBase() {
     for (final k in const ['FINANCIAL_GATEWAY_HTTP', 'FINANCIAL_HTTP_URL']) {
       final v = dotenv.maybeGet(k);
       if (v != null && v.trim().isNotEmpty) {
-        return v.trim().replaceAll(RegExp(r'/$'), '');
+        return _stripApiV1(v.trim());
       }
     }
-    return endpointRegistry.httpFinancial;
+    return _stripApiV1(endpointRegistry.httpFinancial);
+  }
+
+  /// Remove a trailing "/api/v1" (and any trailing slash) so callers can append
+  /// the gateway's own "/v1/..." path without doubling it.
+  static String _stripApiV1(String base) {
+    var b = base.replaceAll(RegExp(r'/+$'), '');
+    if (b.endsWith('/api/v1')) {
+      b = b.substring(0, b.length - '/api/v1'.length);
+    }
+    return b;
   }
 
   Map<String, String> _headers(String token) => {
