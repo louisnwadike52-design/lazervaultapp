@@ -985,7 +985,6 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
       fee = fiatValue * 0.005;
     }
     final networkFee = fee * 0.3;
-    final tradingFee = fee * 0.7;
     final effectiveRate = _fromAmount > 0 ? _toAmount / _fromAmount : 0.0;
 
     return Container(
@@ -1033,8 +1032,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           SizedBox(height: 8.h),
           _buildSummaryRow('Network fee', '${CurrencySymbols.currentSymbol}${networkFee.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
-          _buildSummaryRow('Trading fee', '${CurrencySymbols.currentSymbol}${tradingFee.toStringAsFixed(2)}'),
-          SizedBox(height: 8.h),
+          // Trading fee intentionally not shown: it is the spread already
+          // inside the effective rate below. See cryptoPlatformFeePolicy.
           _buildSummaryRow('Effective rate', '1 ${_fromHolding!.cryptoSymbol.toUpperCase()} = ${effectiveRate.toStringAsFixed(6)} ${_toCrypto!.symbol.toUpperCase()}'),
           SizedBox(height: 12.h),
           Container(

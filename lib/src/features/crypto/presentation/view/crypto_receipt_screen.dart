@@ -45,6 +45,8 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
   Timer? _pollTimer;
   Timer? _stopTimer;
   bool _terminal = false;
+  // Captured so dispose() can refresh without a context lookup.
+  CryptoCubit? _cubit;
 
   @override
   void initState() {
@@ -60,9 +62,54 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
       Future<void>.microtask(_pollOnce);
       _pollTimer =
           Timer.periodic(const Duration(seconds: 4), (_) => _pollOnce());
-      // Stop polling after a bounded window; background reconcilers still
-      // settle it and a history refresh will show the terminal state.
-      _stopTimer = Timer(const Duration(minutes: 5), () => _pollTimer?.cancel());
+      // Slow the cadence after a bounded window rather than stopping.
+      //
+      // The old window STOPPED polling at 5 minutes, which is SHORTER than
+      // trades actually take:
+      // a real production buy took 6m08s from creation to completion (Quidax
+      // confirms via webhook, and the forward-completion + delivery legs run
+      // after that). The receipt gave up at 5 minutes still showing
+      // "processing", and because it gave up BEFORE the terminal state
+      // arrived, refreshHoldingsAfterSwap() never fired — so the balance and
+      // the transaction history kept showing the stale in-flight state until
+      // something else happened to refresh them. That is exactly the
+      // "receipt says one thing, history says another" mismatch.
+      _stopTimer = Timer(_fastPollWindow, _slowDownPolling);
+    }
+  }
+
+  /// How long to poll at the responsive 4s cadence. Past this the trade is
+  /// slower than typical, so we keep watching at a slower cadence rather than
+  /// giving up.
+  static const Duration _fastPollWindow = Duration(minutes: 2);
+
+  /// The fast window elapsed with the trade still in flight. Don't abandon it:
+  /// drop to a slow cadence so the badge still resolves on its own if the
+  /// user stays, and refresh holdings/history now so the rest of the app stops
+  /// showing the pre-trade view.
+  void _slowDownPolling() {
+    _pollTimer?.cancel();
+    if (!mounted) return;
+    _pollTimer = Timer.periodic(const Duration(seconds: 20), (_) => _pollOnce());
+    _refreshAfterTrade();
+  }
+
+  /// Pull the wallet/holdings and transaction history back into sync. Safe to
+  /// call more than once and safe when no cubit is in scope.
+  void _refreshAfterTrade() {
+    // Uses the cubit captured in didChangeDependencies, not context.read, so
+    // this is also callable from dispose() — where the element is already
+    // defunct and a lookup would throw.
+    unawaited(_cubit?.refreshHoldingsAfterSwap());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    try {
+      _cubit = context.read<CryptoCubit>();
+    } catch (_) {
+      _cubit = null; // deep-linked receipt: no cubit in scope
     }
   }
 
@@ -70,6 +117,12 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
   void dispose() {
     _pollTimer?.cancel();
     _stopTimer?.cancel();
+    // Leaving a receipt whose trade is STILL in flight used to leave the
+    // wallet and the transaction history holding the pre-trade view, so the
+    // list the user landed back on disagreed with the receipt they had just
+    // been looking at. Refresh on the way out; the cubit was captured above so
+    // this is safe here.
+    if (!_terminal) _refreshAfterTrade();
     super.dispose();
   }
 
@@ -97,6 +150,9 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
       unawaited(cubit.refreshHoldingsAfterSwap());
     } else if (st is SwapFailed && st.transactionId == _receipt.transactionId) {
       _applyTerminal(CryptoTransactionStatus.failed);
+      // A failed trade changes the balance too (the fiat hold is released or
+      // refunded), so the rest of the app must not keep the in-flight view.
+      unawaited(cubit.refreshHoldingsAfterSwap());
     }
   }
 
@@ -214,8 +270,14 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
         assetAmountLabel: '${d.cryptoAmount} ${d.cryptoSymbol}',
       if (d.pricePerUnit > 0)
         'Rate': '1 ${d.cryptoSymbol} = $sym${_money(d.pricePerUnit)}',
-      if (d.fiatAmount > 0) 'Subtotal': '$sym${_money(d.fiatAmount)}',
-      if (d.tradingFee > 0) 'Trading fee': '$sym${_money(d.tradingFee)}',
+      // No 'Subtotal' / 'Trading fee' split: the platform margin is carried in
+      // the RATE the user was quoted and accepted, not charged on top. Showing
+      // it as a separate line implied a second deduction and made the total
+      // look inconsistent with the rate right above it. See
+      // cryptoPlatformFeePolicy.
+      //
+      // Network fee stays: it is a real third-party on-chain cost the user
+      // genuinely pays on a send, not our margin.
       if (d.networkFee > 0) 'Network fee': '$sym${_money(d.networkFee)}',
       if (heroAmount > 0) 'Total': '$sym${_money(heroAmount)}',
       'Payment method': d.paymentMethod,

@@ -289,6 +289,13 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
               border: Border.all(color: const Color(0xFF2D2D2D)),
             ),
             padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+            // Cap the sheet so it SCROLLS instead of overflowing off the top
+            // of the screen when the keyboard is up. viewInsets is already
+            // applied by the caller's padding, so subtract it here too.
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.9 -
+                  MediaQuery.of(context).viewInsets.bottom,
+            ),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -328,7 +335,7 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
                   SizedBox(height: 12.h),
                   const CryptoFlowGuidance(
                     text:
-                        'Your sale settles on the exchange, then the proceeds (minus the fee shown above) are credited to this account — usually within seconds.',
+                        'Your sale settles on the exchange, then the amount shown above is credited to this account — usually within seconds.',
                   ),
                   SizedBox(height: 20.h),
                   _buildSellButton(h),
@@ -396,6 +403,22 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
               ],
             ],
           ),
+        ),
+        // Explicit close. With the keyboard up the drag handle is often off
+        // screen, which left no visible way out of the sheet.
+        IconButton(
+          onPressed: _isTransacting
+              ? null
+              : () {
+                  FocusScope.of(context).unfocus();
+                  Navigator.of(context).maybePop();
+                },
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: BoxConstraints(minWidth: 32.w, minHeight: 32.w),
+          icon: Icon(Icons.close_rounded,
+              size: 20.sp, color: Colors.white.withValues(alpha: 0.7)),
+          tooltip: 'Close',
         ),
       ],
     );
@@ -752,8 +775,9 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
         children: [
           row('You sell',
               '${_cryptoAmount.toStringAsFixed(6)} ${widget.crypto.symbol.toUpperCase()}'),
-          row('Gross', '$sym${_fiatAmount.toStringAsFixed(2)}'),
-          row('Fee (approx)', '$sym${fee.toStringAsFixed(2)}'),
+          // No Gross/Fee split — the platform margin is priced into the rate
+          // the user is accepting, not deducted on top of it. See
+          // cryptoPlatformFeePolicy.
           Divider(color: Colors.white.withValues(alpha: 0.08), height: 16.h),
           row('You receive', '$sym${net.toStringAsFixed(2)}', bold: true),
         ],

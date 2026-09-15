@@ -589,6 +589,14 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
               border: Border.all(color: const Color(0xFF2D2D2D)),
             ),
             padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+            // Cap the sheet so it SCROLLS instead of overflowing off the top
+            // of the screen when the keyboard is up. viewInsets is already
+            // applied by the caller's padding, so subtract it here too or the
+            // cap would be measured against the full screen height.
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.9 -
+                  MediaQuery.of(context).viewInsets.bottom,
+            ),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -632,7 +640,7 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
                   SizedBox(height: 12.h),
                   const CryptoFlowGuidance(
                     text:
-                        'You pay the total (amount + fee) from this account; the crypto is delivered to your Lazervault crypto wallet as soon as the trade fills.',
+                        'The amount shown is what leaves this account. Your crypto is delivered to your Lazervault crypto wallet as soon as the trade fills.',
                   ),
                   if (_serverError != null) ...[
                     SizedBox(height: 12.h),
@@ -705,6 +713,22 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
             ],
           ),
         ),
+        // Explicit close. With the keyboard up the drag handle is often off
+        // screen, which left no visible way out of the sheet.
+        IconButton(
+          onPressed: _isTransacting
+              ? null
+              : () {
+                  FocusScope.of(context).unfocus();
+                  Navigator.of(context).maybePop();
+                },
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: BoxConstraints(minWidth: 32.w, minHeight: 32.w),
+          icon: Icon(Icons.close_rounded,
+              size: 20.sp, color: Colors.white.withValues(alpha: 0.7)),
+          tooltip: 'Close',
+        ),
       ],
     );
   }
@@ -716,8 +740,12 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
     final altLabel = _isAmountInCrypto
         ? CurrencySymbols.currentCurrency.toUpperCase()
         : widget.crypto.symbol.toUpperCase();
+    // When the user types a CRYPTO amount, the fiat hint must be the all-in
+    // cost (what the wallet is debited), not the pre-margin subtotal —
+    // otherwise this line disagrees with the "You pay" total right below it
+    // and with the PIN sheet.
     final approx = _isAmountInCrypto
-        ? '≈ ${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'
+        ? '≈ ${CurrencySymbols.currentSymbol}${(_fiatAmount + _resolveFee()).toStringAsFixed(2)}'
         : '≈ ${_trimNum(_cryptoAmount)} ${widget.crypto.symbol.toUpperCase()}';
     final hasError = _amountError(available) != null;
 
@@ -1051,13 +1079,16 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
       decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(14.r)),
+      // ONE all-in number. The Subtotal / Fee (approx) split is gone: the
+      // platform margin is part of the price of the trade, not a charge the
+      // user is asked to reason about separately. It stays on the row for
+      // admin auditing and is settled to the revenue wallet — it is simply not
+      // a user-facing line. See cryptoPlatformFeePolicy.
       child: Column(children: [
         row('You receive',
             '${_trimNum(_cryptoAmount)} ${widget.crypto.symbol.toUpperCase()}'),
-        row('Subtotal', '$sym${_fiatAmount.toStringAsFixed(2)}'),
-        row('Fee (approx)', '$sym${fee.toStringAsFixed(2)}'),
         Divider(color: Colors.white.withValues(alpha: 0.08), height: 16.h),
-        row('Total', '$sym${total.toStringAsFixed(2)}', bold: true),
+        row('You pay', '$sym${total.toStringAsFixed(2)}', bold: true),
       ]),
     );
   }
@@ -1153,6 +1184,10 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
   Future<void> _processBuyOrder() async {
     if (_fiatAmount <= 0 || _isTransacting) return;
     final fiat = _fiatAmount;
+    // What actually leaves the wallet: subtotal + platform margin. Every
+    // user-facing figure in this flow quotes THIS number so the sheet, the PIN
+    // prompt, the confirm card and the receipt all agree.
+    final payTotal = _fiatAmount + _resolveFee();
     final quantity = _cryptoAmount;
     final intentId = 'CRYPTO-BUY-${DateTime.now().millisecondsSinceEpoch}';
     final cubit = context.read<CryptoCubit>();
@@ -1193,12 +1228,15 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
           context: context,
           transactionId: intentId,
           transactionType: 'buy',
-          amount: fiat,
+          // Authorise the ALL-IN amount: the PIN sheet previously showed the
+          // pre-margin subtotal, so the figure the user approved was lower
+          // than what their wallet was actually debited.
+          amount: payTotal,
           currency: CurrencySymbols.currentCurrency,
           title: 'Confirm Buy Order',
           message:
               'Confirm purchase of ${quantity.toStringAsFixed(6)} ${widget.crypto.symbol.toUpperCase()}',
-          totalAmount: fiat,
+          totalAmount: payTotal,
           showProcessingPhase: true,
           successMessage: 'Order Placed',
           onPinValidated: (verificationToken) => onValidated(verificationToken),

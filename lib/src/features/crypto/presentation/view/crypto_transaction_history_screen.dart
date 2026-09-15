@@ -334,7 +334,6 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
   Widget _buildSummaryStats() {
     final filteredTxns = _filteredTransactions;
     final totalValue = filteredTxns.fold(0.0, (sum, txn) => sum + txn.gbpAmount);
-    final totalFees = filteredTxns.fold(0.0, (sum, txn) => sum + txn.fee);
     
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
@@ -356,7 +355,9 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
         children: [
           _buildStatItem('Transactions', '${filteredTxns.length}'),
           _buildStatItem('Total Value', '${CurrencySymbols.currentSymbol}${totalValue.toStringAsFixed(2)}'),
-          _buildStatItem('Total Fees', '${CurrencySymbols.currentSymbol}${totalFees.toStringAsFixed(2)}'),
+          // 'Total Fees' removed: the platform margin is priced into each
+          // trade's rate and never presented as a fee. See
+          // cryptoPlatformFeePolicy.
         ],
       ),
     );
@@ -600,24 +601,11 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                     ),
                   ],
                 ),
+                // Per-row fee column removed — the margin lives in the rate.
+                // See cryptoPlatformFeePolicy.
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      'Fee',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: Colors.white.withValues(alpha: 0.6),
-                      ),
-                    ),
-                    Text(
-                      '${CurrencySymbols.currentSymbol}${transaction.fee.toStringAsFixed(2)}',
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
                   ],
                 ),
               ],
@@ -741,7 +729,6 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
     final fiatSym = CurrencySymbols.currentSymbol;
     final fiatCode = CurrencySymbols.currentCurrency.toUpperCase();
     final totalValue = txns.fold(0.0, (s, t) => s + t.gbpAmount);
-    final totalFees = txns.fold(0.0, (s, t) => s + t.fee);
     final purple = PdfColor.fromInt(0xFF4E03D0);
     final grey = PdfColors.grey700;
 
@@ -778,7 +765,8 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
         ]),
         pw.SizedBox(height: 12),
         pw.TableHelper.fromTextArray(
-          headers: ['Date', 'Type', 'Asset', 'Amount', 'Value ($fiatSym)', 'Fee', 'Status'],
+          // No 'Fee' column: see cryptoPlatformFeePolicy.
+          headers: ['Date', 'Type', 'Asset', 'Amount', 'Value ($fiatSym)', 'Status'],
           data: txns
               .map((t) => [
                     df.format(t.timestamp),
@@ -786,7 +774,6 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                     t.cryptoSymbol.toUpperCase(),
                     t.amount,
                     '$fiatSym${t.gbpAmount.toStringAsFixed(2)}',
-                    t.fee > 0 ? '$fiatSym${t.fee.toStringAsFixed(2)}' : '-',
                     _pdfLabel(t.status.name),
                   ])
               .toList(),
@@ -803,33 +790,28 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
             2: const pw.FlexColumnWidth(1),
             3: const pw.FlexColumnWidth(1.6),
             4: const pw.FlexColumnWidth(1.6),
-            5: const pw.FlexColumnWidth(1.2),
-            6: const pw.FlexColumnWidth(1.3),
+            // One fewer column now that the Fee column is gone.
+            5: const pw.FlexColumnWidth(1.3),
           },
         ),
         pw.SizedBox(height: 14),
         pw.Container(
           alignment: pw.Alignment.centerRight,
-          child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-            pw.Text('Total value: $fiatSym${totalValue.toStringAsFixed(2)}',
-                style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 2),
-            pw.Text('Total fees: $fiatSym${totalFees.toStringAsFixed(2)}',
-                style: pw.TextStyle(fontSize: 10, color: grey)),
-          ]),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.end,
+            children: [
+              pw.Text('Total value: $fiatSym${totalValue.toStringAsFixed(2)}',
+                  style:
+                      pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+              // No 'Total fees' line — the platform margin is priced into each
+              // trade's rate, never presented to the user as a fee. See
+              // cryptoPlatformFeePolicy.
+            ],
+          ),
         ),
-        pw.SizedBox(height: 16),
-        pw.Text(
-            'This statement was generated by Lazervault for your records. It is not a tax document.',
-            style: pw.TextStyle(fontSize: 8, color: grey)),
       ],
-      footer: (ctx) => pw.Container(
-        alignment: pw.Alignment.centerRight,
-        margin: const pw.EdgeInsets.only(top: 8),
-        child: pw.Text('Page ${ctx.pageNumber} of ${ctx.pagesCount}',
-            style: pw.TextStyle(fontSize: 8, color: grey)),
-      ),
-    ));
+    ),
+  );
     return doc.save();
   }
 

@@ -145,19 +145,15 @@ class _QuoteTimerCardState extends State<QuoteTimerCard> {
                 _buildSummaryRow('You receive',
                     '${_fmt(amounts.receive)} ${state.toCurrency.toUpperCase()}'),
                 _buildSummaryRow('Rate', state.quotedPrice),
-                // Transaction fee — the ONE aggregated fee the user pays. Quidax's
-                // own trading fee is baked into the quoted rate (already reflected
-                // in "You receive"), so the only added, user-facing charge is our
-                // platform fee (the spread). Show it as a concrete AMOUNT in the
-                // pay currency + the %, so the user sees exactly what they're
-                // charged before confirming — never a silent fee.
-                _buildSummaryRow(
-                  'Transaction fee',
-                  state.spreadBps > 0
-                      ? '${_fmt(amounts.feeInFiat)} ${amounts.feeCurrency.toUpperCase()}'
-                          ' (${(state.spreadBps / 100).toStringAsFixed(2)}%)'
-                      : 'Free',
-                ),
+                // No standalone fee row. "You pay" is already the all-in figure
+                // the wallet is debited (the server quotes it as provider cost
+                // + platform margin), so listing the margin again beneath it
+                // invited the reading that it was charged a SECOND time on top
+                // — which is exactly how the flow looked: ₦2,771.44 subtotal,
+                // then a ₦6.93 fee, then a ₦2,780.39 total that matched
+                // neither. The margin is still recorded on the transaction for
+                // admin auditing and settled to the revenue wallet; it is just
+                // not a user-facing line. See cryptoPlatformFeePolicy.
                 const SizedBox(height: 24),
                 Row(
                   children: [

@@ -36,6 +36,11 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
   bool _isProcessing = false;
   bool _isCompleted = false;
   String _transactionId = '';
+  // Raw backend status of the submitted trade. A successful RPC means the
+  // trade was ACCEPTED, not settled — a real production buy took 6m08s to
+  // reach 'completed' via the Quidax webhook — so the receipt must carry the
+  // real status rather than assuming success.
+  String _transactionStatus = '';
 
   // Rate countdown
   int _rateCountdown = 30;
@@ -198,7 +203,9 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
       if (mounted) {
         setState(() {
           _isProcessing = false;
-          _isCompleted = true;
+          _transactionStatus = state.transaction.status;
+          _isCompleted = mapBackendCryptoTxStatus(_transactionStatus) ==
+              CryptoTransactionStatus.completed;
           _transactionId = state.transaction.id;
         });
       }
@@ -225,7 +232,11 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
       transactionId: _transactionId,
       transactionDetails: widget.transactionDetails,
       timestamp: DateTime.now(),
-      status: CryptoTransactionStatus.completed,
+      // Never hard-code completion: an accepted trade is still in flight, and
+      // CryptoReceiptScreen polls a non-terminal receipt to its real outcome.
+      status: _transactionStatus.isEmpty
+          ? CryptoTransactionStatus.pending
+          : mapBackendCryptoTxStatus(_transactionStatus),
     );
     
     Get.off(() => CryptoReceiptScreen(receipt: receipt));
@@ -412,7 +423,8 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           SizedBox(height: 12.h),
           _buildSummaryRow('Network Fee', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.networkFee.toStringAsFixed(2)}', ''),
           SizedBox(height: 12.h),
-          _buildSummaryRow('Lazervault Fee', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.tradingFee.toStringAsFixed(2)}', ''),
+          // Platform margin is inside the quoted rate, never a separate line.
+          // See cryptoPlatformFeePolicy.
           Divider(color: Colors.white.withValues(alpha: 0.2), height: 24.h),
           _buildSummaryRow('Total', '${CurrencySymbols.currentSymbol}${widget.transactionDetails.totalAmount.toStringAsFixed(2)}', '', isTotal: true),
           SizedBox(height: 16.h),

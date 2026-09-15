@@ -145,3 +145,32 @@ class CryptoTransactionDetails {
     this.cryptoQuantity,
   });
 }
+
+/// PLATFORM FEE PRESENTATION POLICY — crypto buy / sell / swap.
+///
+/// The platform margin is taken as a SPREAD on the quoted rate, not as a
+/// charge added on top. The backend already works this way: every
+/// crypto_swap_transactions row carries `spread_bps` / `spread_minor_units`
+/// priced into `quoted_price`, and on completion `creditSpreadIfNotYet` books
+/// that margin to `CRYPTO_REVENUE_<from-currency>` (verified in production: a
+/// ₦2,773.46 buy booked its ₦6.93 spread to CRYPTO_REVENUE_NGN).
+///
+/// So the money is already collected and already recognised as revenue. The UI
+/// must therefore NOT render it as a separate "Trading fee" / "Lazervault fee"
+/// line: doing so implied a second deduction on top of the rate the user had
+/// just accepted, and made the displayed total disagree with the quoted rate
+/// directly above it. The user pays exactly the rate they were shown.
+///
+/// This applies to confirmation sheets, receipts, and shared/exported PDFs.
+///
+/// NETWORK FEES ARE DIFFERENT and must still be shown: an on-chain send costs
+/// the user a real third-party fee that is not our margin, and hiding it would
+/// understate what leaves their wallet.
+///
+/// If a genuine explicit fee is ever introduced (charged in addition to the
+/// rate, not inside it), it should be surfaced — this policy covers the
+/// spread-based model only.
+const String cryptoPlatformFeePolicy =
+    'Platform margin is priced into the quoted rate and booked to '
+    'CRYPTO_REVENUE at settlement; it is never shown as a separate user-facing '
+    'fee line. Network fees are a real third-party cost and ARE shown.';
