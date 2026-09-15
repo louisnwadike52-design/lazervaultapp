@@ -199,14 +199,26 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
   // actually fills about a percent BELOW it. Quoting the ticker is what showed
   // ₦70,344 on a sale that credited ₦69,628.
   double _swapMargin = 0;
+  // Live rate from PriceQuoteCard. Null until the first successful fetch; the
+  // sheet refuses to quote until it arrives rather than using a stale price.
+  double? _liveRate;
 
+  /// Fiat per 1 unit of the asset, from the LIVE rate only.
+  ///
+  /// No fallback to widget.crypto.currentPrice (see buy_crypto_sheet._rate):
+  /// that is a list-load snapshot and can be badly out of date. Without a live
+  /// rate this returns 0 and the sheet refuses to quote or transact rather
+  /// than showing the user proceeds computed from a stale price.
   double _price() {
-    final p = _holding?.currentPrice ?? 0.0;
-    final base = p > 0 ? p : widget.crypto.currentPrice;
+    final p = _liveRate ?? 0.0;
+    if (p <= 0) return 0;
     // A sell hits the swap's bid, so proceeds per unit are BELOW the ticker.
     // Margin 0 (unmeasured) degrades to the previous behaviour.
-    return base * (1 - _swapMargin);
+    return p * (1 - _swapMargin);
   }
+
+  /// True once a live rate is available. Gates the CTA.
+  bool get _hasLiveRate => (_liveRate ?? 0) > 0;
 
   /// The raw number typed in the field, interpreted per the active unit.
   double get _typedAmount => double.tryParse(_amountController.text) ?? 0.0;
@@ -317,6 +329,14 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
                   PriceQuoteCard(
                     cryptoId: widget.crypto.id,
                     cryptoSymbol: widget.crypto.symbol,
+                    // The card already refetches every 30s; listen to it so
+                    // proceeds are computed from the LIVE rate instead of the
+                    // holding's cached currentPrice snapshot.
+                    onRateUpdated: (r) {
+                      if (mounted && r != _liveRate) {
+                        setState(() => _liveRate = r);
+                      }
+                    },
                     onSwapMarginUpdated: (m) {
                       if (mounted && m != _swapMargin) {
                         setState(() => _swapMargin = m);
@@ -786,7 +806,9 @@ class _SellCryptoSheetState extends State<SellCryptoSheet>
   }
 
   Widget _buildSellButton(CryptoHolding? h) {
-    final enabled = h != null && _hasValidAmount && !_isTransacting;
+    // _hasLiveRate: refuse to transact without a current price.
+    final enabled =
+        h != null && _hasValidAmount && !_isTransacting && _hasLiveRate;
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(

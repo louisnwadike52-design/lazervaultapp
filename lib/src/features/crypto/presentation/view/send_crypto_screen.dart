@@ -777,7 +777,11 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
                 // Internal Lazervault transfers are free; an external on-network
                 // send incurs a network fee the provider sets at send time.
                 _reviewRow(
-                  'Transaction fee',
+                  // Named 'Network fee': this is the chain's withdraw cost set
+                  // by the provider, NOT a LazerVault charge. Our margin is in
+                  // the rate and is never a separate line
+                  // (see cryptoPlatformFeePolicy).
+                  'Network fee',
                   (_isInternal && !_advancedOnNetwork)
                       ? 'Free'
                       // The selected network's withdraw fee is already known

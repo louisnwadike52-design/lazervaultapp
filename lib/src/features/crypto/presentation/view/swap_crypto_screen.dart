@@ -972,19 +972,13 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
   }
 
   Widget _buildSwapSummary() {
-    // Lazervault swap fee honoring the admin config (crypto.fee.swap.*).
-    // A crypto→crypto swap has no fiat leg, so it is percentage-only; the basis
-    // is the from-asset's fiat value. Falls back to 0.5% before config loads.
-    final fiatValue = _fromAmount * _fromHolding!.currentPrice;
-    double fee;
-    try {
-      fee = GetIt.I<CryptoConfigCubit>()
-          .config
-          .feeForOp('swap', fiatValue, CurrencySymbols.currentCurrency);
-    } catch (_) {
-      fee = fiatValue * 0.005;
-    }
-    final networkFee = fee * 0.3;
+    // No fee estimate here. Both rows it fed are gone: the trading fee is the
+    // spread inside the effective rate, and the "Network fee" was fabricated —
+    // 30% of our own margin relabelled as a third-party cost, when a
+    // crypto→crypto Quidax swap is an internal book transfer with no on-chain
+    // fee at all. Its basis also used the holding's cached currentPrice, a
+    // stale-price source. The binding numbers come from the server quote on
+    // the confirm card.
     final effectiveRate = _fromAmount > 0 ? _toAmount / _fromAmount : 0.0;
 
     return Container(
@@ -1029,8 +1023,6 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           ),
           SizedBox(height: 16.h),
           _buildSummaryRow('You swap', '${_fromAmount.toStringAsFixed(6)} ${_fromHolding!.cryptoSymbol.toUpperCase()}'),
-          SizedBox(height: 8.h),
-          _buildSummaryRow('Network fee', '${CurrencySymbols.currentSymbol}${networkFee.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
           // Trading fee intentionally not shown: it is the spread already
           // inside the effective rate below. See cryptoPlatformFeePolicy.

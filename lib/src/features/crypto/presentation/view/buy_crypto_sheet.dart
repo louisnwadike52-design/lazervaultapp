@@ -14,8 +14,10 @@ import '../../../account_cards_summary/domain/entities/account_summary_entity.da
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../cubit/crypto_config_cubit.dart';
+import '../../cubit/crypto_state.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../domain/entities/crypto_entity.dart';
+import '../../domain/trade_amounts.dart';
 import '../widgets/price_quote_card.dart';
 import '../widgets/crypto_flow_guidance.dart';
 import '../widgets/network_picker_sheet.dart';
@@ -104,6 +106,23 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
     try {
       GetIt.I<CryptoConfigCubit>().load();
     } catch (_) {}
+  }
+
+  /// The all-in fiat total from the SERVER's locked quote, or null when no
+  /// quote is in state. Uses the same CryptoTradeAmounts derivation the
+  /// confirm card renders, so the PIN prompt and the confirm card can never
+  /// disagree about what the user is approving.
+  double? _quotedPayTotal(CryptoCubit cubit) {
+    final st = cubit.state;
+    if (st is! SwapQuotePending) return null;
+    final amounts = CryptoTradeAmounts.fromQuote(
+      fromCurrency: st.fromCurrency,
+      toCurrency: st.toCurrency,
+      fromAmount: st.fromAmount,
+      toAmount: st.toAmount,
+      spreadMinorUnits: st.spreadMinorUnits,
+    );
+    return amounts.pay > 0 ? amounts.pay : null;
   }
 
   /// Quidax minimum order value for this token, in fiat major units (per-token
@@ -498,13 +517,26 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
     }
   }
 
+  /// Fiat per 1 unit of the asset, from the LIVE rate only.
+  ///
+  /// Returns 0 when no live rate has arrived yet, and the sheet then refuses
+  /// to quote or transact. There is deliberately NO fallback to
+  /// widget.crypto.currentPrice: that value is whatever the asset list held
+  /// when it was last loaded, which can be minutes or hours old. Falling back
+  /// to it is what put two different rates on one screen — a stale header
+  /// figure beside a live calculation — and produced a cost estimate that
+  /// disagreed with what the server actually quoted.
   double _rate() {
     final r = _liveRate ?? 0.0;
-    final base = r > 0 ? r : widget.crypto.currentPrice;
+    if (r <= 0) return 0;
     // A buy lifts the swap's offer, so the naira cost per unit is ABOVE the
     // ticker. Margin 0 (unmeasured) degrades to the previous behaviour.
-    return base * (1 + _swapMargin);
+    return r * (1 + _swapMargin);
   }
+
+  /// True once a live rate is available. Gates the CTA so a trade can never be
+  /// composed against a price we don't currently have.
+  bool get _hasLiveRate => (_liveRate ?? 0) > 0;
 
   double get _typed => double.tryParse(_amountController.text) ?? 0.0;
 
@@ -580,7 +612,9 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
               personal != null && available >= totalCost && _fiatAmount > 0;
           final min = _minFiat();
           final meetsMin = min <= 0 || _fiatAmount >= min;
-          final enabled = canCover && meetsMin && !_isTransacting;
+          // _hasLiveRate: refuse to transact without a current price.
+          final enabled =
+              canCover && meetsMin && !_isTransacting && _hasLiveRate;
 
           return Container(
             decoration: BoxDecoration(
@@ -1228,15 +1262,19 @@ class _BuyCryptoSheetState extends State<BuyCryptoSheet>
           context: context,
           transactionId: intentId,
           transactionType: 'buy',
-          // Authorise the ALL-IN amount: the PIN sheet previously showed the
-          // pre-margin subtotal, so the figure the user approved was lower
-          // than what their wallet was actually debited.
-          amount: payTotal,
+          // Authorise the ALL-IN amount the SERVER quoted, not our local
+          // estimate. The quote is shown and locked before the PIN runs, so
+          // by this point the authoritative figure exists in cubit state —
+          // using the client estimate here would ask the user to approve a
+          // number that drifts from the debit whenever the rate moved between
+          // typing and confirming. Falls back to the local estimate only if
+          // the quote state is somehow absent.
+          amount: _quotedPayTotal(cubit) ?? payTotal,
           currency: CurrencySymbols.currentCurrency,
           title: 'Confirm Buy Order',
           message:
               'Confirm purchase of ${quantity.toStringAsFixed(6)} ${widget.crypto.symbol.toUpperCase()}',
-          totalAmount: payTotal,
+          totalAmount: _quotedPayTotal(cubit) ?? payTotal,
           showProcessingPhase: true,
           successMessage: 'Order Placed',
           onPinValidated: (verificationToken) => onValidated(verificationToken),

@@ -985,24 +985,22 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
       // button so we don't duplicate it.
       body = _buildOrderSummaryError();
     } else {
-      // Loaded — compute against the live rate. Fee is a display
-      // estimate; the real one comes back from CreateSwapQuote.
+      // Loaded — compute against the live rate. The margin is a display
+      // estimate; the binding figure comes back from CreateSwapQuote.
+      //
+      // The old 30/70 split of that estimate into "Network fee" and "Trading
+      // fee" was fabricated — a fiat→crypto buy has no on-chain network fee,
+      // so 30% of our own margin was being presented as a third-party cost.
+      // Both rows are gone: the margin is inside the single "You pay" total.
+      // See cryptoPlatformFeePolicy.
       final fee = _resolveFee();
-      final networkFee = fee * 0.3;
-      final tradingFee = fee * 0.7;
       final total = _fiatAmount + fee;
       body = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSummaryRow('You pay',
-              '${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'),
-          SizedBox(height: 8.h),
-          _buildSummaryRow('Network fee',
-              '${CurrencySymbols.currentSymbol}${networkFee.toStringAsFixed(2)}'),
-          SizedBox(height: 8.h),
-          _buildSummaryRow('Trading fee',
-              '${CurrencySymbols.currentSymbol}${tradingFee.toStringAsFixed(2)}'),
-          SizedBox(height: 8.h),
+          // The emphasised 'Total' below is the single all-in figure (what
+          // leaves the wallet); no separate 'You pay' row, which would print
+          // the same number twice.
           _buildSummaryRow('You receive',
               '${_cryptoAmount.toStringAsFixed(6)} $symbol'),
           SizedBox(height: 12.h),

@@ -100,7 +100,14 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen> {
     // Uses the cubit captured in didChangeDependencies, not context.read, so
     // this is also callable from dispose() — where the element is already
     // defunct and a lookup would throw.
-    unawaited(_cubit?.refreshHoldingsAfterSwap());
+    final c = _cubit;
+    // isClosed guard: when the receipt is popped as part of tearing down the
+    // whole flow, the BlocProvider that owns this cubit can already have
+    // closed it. Emitting on a closed cubit throws, and from dispose() that
+    // surfaces as an unhandled framework error on an otherwise successful
+    // trade.
+    if (c == null || c.isClosed) return;
+    unawaited(c.refreshHoldingsAfterSwap());
   }
 
   @override
