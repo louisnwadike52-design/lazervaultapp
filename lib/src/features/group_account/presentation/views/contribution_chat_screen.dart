@@ -33,7 +33,8 @@ class ContributionChatScreen extends StatefulWidget {
   State<ContributionChatScreen> createState() => _ContributionChatScreenState();
 }
 
-class _ContributionChatScreenState extends State<ContributionChatScreen> {
+class _ContributionChatScreenState extends State<ContributionChatScreen>
+    with WidgetsBindingObserver {
   static const _bg = Color(0xFF0A0A0A);
   static const _card = Color(0xFF1F1F1F);
   static const _border = Color(0xFF2D2D2D);
@@ -43,9 +44,42 @@ class _ContributionChatScreenState extends State<ContributionChatScreen> {
   final _input = TextEditingController();
   final _scroll = ScrollController();
 
+  /// Tracks whether the viewer is parked near the newest message. New
+  /// incoming messages auto-scroll ONLY then — otherwise someone reading
+  /// history would be yanked to the bottom every few seconds.
+  bool _atBottom = true;
+  int _lastCount = 0;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Stop polling (and stop claiming reads) when the app isn't on screen.
+    if (state == AppLifecycleState.resumed) {
+      _chat.resume();
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      _chat.pause();
+    }
+  }
+
+  void _onScroll() {
+    if (!_scroll.hasClients) return;
+    final pos = _scroll.position;
+    // 120px of slack: "near the bottom" counts as at the bottom, so a small
+    // nudge doesn't disable auto-follow.
+    final atBottom = pos.pixels >= pos.maxScrollExtent - 120;
+    if (atBottom != _atBottom) {
+      _atBottom = atBottom;
+      _chat.viewerIsAtBottom = atBottom;
+      setState(() {});
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _scroll.addListener(_onScroll);
     _chat = ContributionChatCubit(
       contributionId: widget.contributionId,
       currentUserId: widget.currentUserId,
@@ -55,11 +89,18 @@ class _ContributionChatScreenState extends State<ContributionChatScreen> {
   }
 
   void _onChatChanged() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    final grew = _chat.messages.length > _lastCount;
+    _lastCount = _chat.messages.length;
+    setState(() {});
+    // Follow the conversation only if the reader is already at the bottom.
+    if (grew && _atBottom) _scrollToBottom();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _scroll.removeListener(_onScroll);
     _chat.removeListener(_onChatChanged);
     _chat.dispose();
     _input.dispose();
@@ -158,6 +199,40 @@ class _ContributionChatScreenState extends State<ContributionChatScreen> {
   Widget _buildList() {
     if (_chat.loading) {
       return const Center(child: CircularProgressIndicator(color: _mine));
+    }
+    // A failure (e.g. you were removed from the contribution → 403) must not
+    // masquerade as an empty conversation: "No messages yet" would be a lie
+    // that hides why the chat is blank.
+    if (_chat.messages.isEmpty && _chat.error != null) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.lock_outline, size: 44.sp, color: Colors.grey[600]),
+              SizedBox(height: 12.h),
+              Text(
+                "Can't open this chat",
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600),
+              ),
+              SizedBox(height: 6.h),
+              Text(
+                _chat.error!.contains('403') ||
+                        _chat.error!.toLowerCase().contains('member')
+                    ? "You're no longer a member of this contribution."
+                    : 'We couldn\'t load the messages. Check your connection and try again.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    color: Colors.grey[500], fontSize: 12.sp, height: 1.4),
+              ),
+            ],
+          ),
+        ),
+      );
     }
     if (_chat.messages.isEmpty) {
       return Center(

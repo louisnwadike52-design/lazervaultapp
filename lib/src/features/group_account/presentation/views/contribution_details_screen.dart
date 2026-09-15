@@ -18,6 +18,7 @@ import '../widgets/add_members_to_contribution_dialog.dart';
 import '../widgets/payout_receiver_banner.dart';
 import 'contribution_payment_confirmation_screen.dart';
 import 'contribution_chat_screen.dart';
+import '../../data/datasources/contribution_chat_remote_data_source.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import '../widgets/exit_contribution_bottom_sheet.dart';
@@ -69,6 +70,33 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     _currentContribution = widget.contribution;
     _loadContributionDetails();
     _loadLocalPayments();
+    _refreshChatUnread(widget.contributionId);
+  }
+
+  /// Unread messages waiting in this contribution's chat. Drives the badge on
+  /// the chat CTA so new messages are discoverable without opening it.
+  int _chatUnread = 0;
+  final ContributionChatRemoteDataSource _chatDs =
+      ContributionChatRemoteDataSource();
+
+  /// Best-effort: a chat-badge failure must never disturb the details screen,
+  /// so every error simply leaves the badge as it was.
+  Future<void> _refreshChatUnread(String contributionId) async {
+    if (contributionId.isEmpty) return;
+    try {
+      final auth = context.read<AuthenticationCubit>().state;
+      if (auth is! AuthenticationSuccess) return;
+      final state = await _chatDs.chatState(
+        token: auth.profile.session.accessToken,
+        contributionId: contributionId,
+      );
+      if (!mounted) return;
+      if (state.unreadCount != _chatUnread) {
+        setState(() => _chatUnread = state.unreadCount);
+      }
+    } catch (_) {
+      // Badge is cosmetic — never surface.
+    }
   }
 
   @override
@@ -694,8 +722,41 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           ),
           IconButton(
             tooltip: 'Chat',
-            icon: Icon(Icons.chat_bubble_outline,
-                color: Colors.white, size: 22.sp),
+            // Unread badge: without it nobody learns there are new messages
+            // until they happen to open the chat. Count comes from the chat
+            // state endpoint (messages from others past the caller's read
+            // watermark) and refreshes whenever this screen rebuilds.
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(Icons.chat_bubble_outline,
+                    color: Colors.white, size: 22.sp),
+                if (_chatUnread > 0)
+                  Positioned(
+                    right: -4.w,
+                    top: -3.h,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: _chatUnread > 9 ? 4.w : 0, vertical: 1.h),
+                      constraints: BoxConstraints(minWidth: 15.w, minHeight: 15.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444),
+                        borderRadius: BorderRadius.circular(9.r),
+                      ),
+                      child: Center(
+                        child: Text(
+                          _chatUnread > 99 ? '99+' : '$_chatUnread',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 9.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             onPressed: () {
               final cubit = context.read<GroupAccountCubit>();
               final me = cubit.currentUserId;
@@ -706,19 +767,23 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               // persisted server-side now, with read receipts, typing presence
               // and replies. Token is read lazily so a refresh mid-conversation
               // is picked up without rebuilding the screen.
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => ContributionChatScreen(
-                  contributionId: contribution.id,
-                  contributionTitle: contribution.title,
-                  currentUserId: me,
-                  tokenProvider: () {
-                    final s = context.read<AuthenticationCubit>().state;
-                    return s is AuthenticationSuccess
-                        ? s.profile.session.accessToken
-                        : '';
-                  },
-                ),
-              ));
+              Navigator.of(context)
+                  .push(MaterialPageRoute(
+                    builder: (_) => ContributionChatScreen(
+                      contributionId: contribution.id,
+                      contributionTitle: contribution.title,
+                      currentUserId: me,
+                      tokenProvider: () {
+                        final s = context.read<AuthenticationCubit>().state;
+                        return s is AuthenticationSuccess
+                            ? s.profile.session.accessToken
+                            : '';
+                      },
+                    ),
+                  ))
+                  // Opening the chat marks it read, so refresh the badge on
+                  // the way back instead of leaving a stale count.
+                  .then((_) => _refreshChatUnread(contribution.id));
             },
           ),
           PopupMenuButton<String>(

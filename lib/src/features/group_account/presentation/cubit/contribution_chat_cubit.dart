@@ -56,6 +56,18 @@ class ContributionChatCubit extends ChangeNotifier {
   bool _typingSignalled = false;
   bool _disposed = false;
 
+  /// False while the app is backgrounded or the screen is covered. Polling a
+  /// chat nobody is looking at burns battery and data for nothing, and
+  /// marking messages READ while the phone is in a pocket is simply untrue —
+  /// both are gated on this.
+  bool _visible = true;
+
+  /// True when the caller is scrolled far enough from the bottom that
+  /// auto-scrolling would yank them away from what they're reading. The
+  /// screen keeps this in sync; the cubit only reports whether it should
+  /// scroll on new content.
+  bool viewerIsAtBottom = true;
+
   /// Newest server-acknowledged message time — the delta-poll cursor.
   DateTime? _cursor;
 
@@ -63,6 +75,29 @@ class ContributionChatCubit extends ChangeNotifier {
 
   Future<void> start() async {
     await _loadInitial();
+    _messageTimer = Timer.periodic(_messageInterval, (_) => _pollMessages());
+    _stateTimer = Timer.periodic(_stateInterval, (_) => _pollState());
+  }
+
+  /// Called when the app backgrounds / the screen is covered. Stops the polls
+  /// and clears our typing ping so the group doesn't see a phantom
+  /// "typing…" from someone who walked away.
+  void pause() {
+    if (!_visible) return;
+    _visible = false;
+    _messageTimer?.cancel();
+    _stateTimer?.cancel();
+    _typingDebounce?.cancel();
+    _clearTyping();
+  }
+
+  /// Called when the chat becomes visible again: catch up immediately rather
+  /// than waiting a full tick, then resume the cadences.
+  void resume() {
+    if (_visible || _disposed) return;
+    _visible = true;
+    _pollMessages();
+    _pollState();
     _messageTimer = Timer.periodic(_messageInterval, (_) => _pollMessages());
     _stateTimer = Timer.periodic(_stateInterval, (_) => _pollState());
   }
@@ -107,7 +142,7 @@ class ContributionChatCubit extends ChangeNotifier {
   }
 
   Future<void> _pollMessages() async {
-    if (_disposed) return;
+    if (_disposed || !_visible) return;
     try {
       final fresh = await _ds.list(
         token: _token(),
@@ -154,7 +189,7 @@ class ContributionChatCubit extends ChangeNotifier {
   }
 
   Future<void> _pollState() async {
-    if (_disposed) return;
+    if (_disposed || !_visible) return;
     try {
       final s = await _ds.chatState(
           token: _token(), contributionId: contributionId);
@@ -172,6 +207,10 @@ class ContributionChatCubit extends ChangeNotifier {
   /// Mark the newest message read. Called on open and whenever new messages
   /// arrive while the screen is visible.
   void _markNewestRead() {
+    // Only claim a read when the user can actually SEE the chat. Marking
+    // messages read from a backgrounded app would tell the sender they were
+    // seen when nobody looked.
+    if (!_visible) return;
     final newest =
         messages.lastWhere((m) => m.id.isNotEmpty, orElse: () => _empty);
     if (newest.id.isEmpty) return;
