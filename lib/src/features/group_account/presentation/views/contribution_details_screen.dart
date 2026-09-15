@@ -17,7 +17,9 @@ import '../widgets/contribution_type_badge.dart';
 import '../widgets/add_members_to_contribution_dialog.dart';
 import '../widgets/payout_receiver_banner.dart';
 import 'contribution_payment_confirmation_screen.dart';
-import '../widgets/contribution_chat_bottom_sheet.dart';
+import 'contribution_chat_screen.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import '../widgets/exit_contribution_bottom_sheet.dart';
 import 'contribution_cycles_history_screen.dart';
 import 'edit_contribution_screen.dart';
@@ -698,17 +700,25 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               final cubit = context.read<GroupAccountCubit>();
               final me = cubit.currentUserId;
               if (me == null) return;
-              final myName = contribution.members
-                      .where((m) => m.userId == me)
-                      .map((m) => m.userName)
-                      .followedBy(['You'])
-                      .first;
-              ContributionChatBottomSheet.show(
-                context,
-                contribution: contribution,
-                currentUserId: me,
-                currentUserName: myName,
-              );
+              final auth = context.read<AuthenticationCubit>().state;
+              if (auth is! AuthenticationSuccess) return;
+              // Full-screen chat (was an in-memory bottom sheet): messages are
+              // persisted server-side now, with read receipts, typing presence
+              // and replies. Token is read lazily so a refresh mid-conversation
+              // is picked up without rebuilding the screen.
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => ContributionChatScreen(
+                  contributionId: contribution.id,
+                  contributionTitle: contribution.title,
+                  currentUserId: me,
+                  tokenProvider: () {
+                    final s = context.read<AuthenticationCubit>().state;
+                    return s is AuthenticationSuccess
+                        ? s.profile.session.accessToken
+                        : '';
+                  },
+                ),
+              ));
             },
           ),
           PopupMenuButton<String>(
