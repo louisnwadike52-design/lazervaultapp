@@ -195,6 +195,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     double? minimumBalance,
     bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
+    String? payoutReceiverUserId,
   }) async {
     try {
       final contributionModel = await remoteDataSource.createContribution(
@@ -218,6 +219,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         minimumBalance: minimumBalance,
         autoPayoutEnabled: autoPayoutEnabled,
         metadata: metadata,
+        payoutReceiverUserId: payoutReceiverUserId,
       );
       return contributionModel;
     } catch (e) {

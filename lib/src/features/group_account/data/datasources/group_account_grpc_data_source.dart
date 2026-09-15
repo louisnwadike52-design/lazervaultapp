@@ -347,6 +347,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     double? minimumBalance,
     bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
+    String? payoutReceiverUserId,
   }) async {
     try {
       final request = pb.CreateContributionRequest()
@@ -390,6 +391,12 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       }
       if (minimumBalance != null) {
         request.minimumBalance = _amountToInt64(minimumBalance);
+      }
+      // Who gets paid when this goal matures. Only sent for one_time — a
+      // rotating contribution's receiver is its rotation order's first
+      // position, and the server ignores the field for that type.
+      if (payoutReceiverUserId != null && payoutReceiverUserId.isNotEmpty) {
+        request.payoutReceiverUserId = payoutReceiverUserId;
       }
 
       final callOptions = await _callOptionsHelper.withAuth();

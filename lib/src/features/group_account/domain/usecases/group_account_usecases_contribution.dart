@@ -51,6 +51,7 @@ class CreateContribution extends UseCase<Contribution, CreateContributionParams>
       minimumBalance: params.minimumBalance,
       autoPayoutEnabled: params.autoPayoutEnabled,
       metadata: params.metadata,
+      payoutReceiverUserId: params.payoutReceiverUserId,
     );
   }
 }
@@ -253,6 +254,9 @@ class CreateContributionParams {
   final double? minimumBalance;
   final bool autoPayoutEnabled;
   final Map<String, dynamic>? metadata;
+  /// Who receives the pot at maturity. one_time only — a rotating
+  /// contribution's receiver comes from memberRotationOrder[0].
+  final String? payoutReceiverUserId;
 
   CreateContributionParams({
     required this.groupId,
@@ -275,6 +279,7 @@ class CreateContributionParams {
     this.minimumBalance,
     this.autoPayoutEnabled = false,
     this.metadata,
+    this.payoutReceiverUserId,
   });
 }
 

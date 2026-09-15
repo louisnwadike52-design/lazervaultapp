@@ -5299,6 +5299,7 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     $fixnum.Int64? minimumBalance,
     $core.String? metadata,
     $core.bool? autoPayoutEnabled,
+    $core.String? payoutReceiverUserId,
   }) {
     final result = create();
     if (groupId != null) result.groupId = groupId;
@@ -5322,6 +5323,8 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     if (minimumBalance != null) result.minimumBalance = minimumBalance;
     if (metadata != null) result.metadata = metadata;
     if (autoPayoutEnabled != null) result.autoPayoutEnabled = autoPayoutEnabled;
+    if (payoutReceiverUserId != null)
+      result.payoutReceiverUserId = payoutReceiverUserId;
     return result;
   }
 
@@ -5376,6 +5379,7 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
         defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(18, _omitFieldNames ? '' : 'metadata')
     ..aOB(19, _omitFieldNames ? '' : 'autoPayoutEnabled')
+    ..aOS(20, _omitFieldNames ? '' : 'payoutReceiverUserId')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -5572,6 +5576,22 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
   $core.bool hasAutoPayoutEnabled() => $_has(18);
   @$pb.TagNumber(19)
   void clearAutoPayoutEnabled() => $_clearField(19);
+
+  /// Who receives the payout for the first cycle. REQUIRED for one_time:
+  /// there is deliberately no server-side fallback — not even the creator —
+  /// because silently choosing a recipient for a money movement hides that
+  /// decision from the person making it. rotating_savings ignores this field:
+  /// its receiver is member_rotation_order[0], so the rotation order IS the
+  /// selection. Empty ⇒ the contribution is created in pending_receiver,
+  /// which is what older app builds will keep doing.
+  @$pb.TagNumber(20)
+  $core.String get payoutReceiverUserId => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set payoutReceiverUserId($core.String value) => $_setString(19, value);
+  @$pb.TagNumber(20)
+  $core.bool hasPayoutReceiverUserId() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearPayoutReceiverUserId() => $_clearField(20);
 }
 
 class CreateContributionResponse extends $pb.GeneratedMessage {

@@ -41,6 +41,12 @@ class CreateContributionCubit extends Cubit<CreateContributionState> {
   double? _minimumBalance;
   bool _showAdvancedFields = false;
   int _currentStep = 0;
+  // Who receives the pot when this goal matures. Required for one_time and
+  // deliberately unset by default: the server has no fallback (not even the
+  // creator), so a goal nobody picked a receiver for cannot pay out. A
+  // rotating contribution doesn't use this — its receiver is the rotation
+  // order's first position.
+  String? _payoutReceiverUserId;
 
   // Getters for current form data
   ContributionType get type => _type;
@@ -54,6 +60,10 @@ class CreateContributionCubit extends Cubit<CreateContributionState> {
   DateTime? get startDate => _startDate;
   int? get totalCycles => _totalCycles;
   List<String> get memberRotationOrder => List.unmodifiable(_memberRotationOrder);
+  String? get payoutReceiverUserId => _payoutReceiverUserId;
+  /// One_time goals must name a receiver; rotating ones derive it from the
+  /// rotation order, so the picker is only shown (and required) for one_time.
+  bool get requiresPayoutReceiver => _type == ContributionType.oneTime;
   bool get autoPayEnabled => _autoPayEnabled;
   bool get allowPartialPayments => _allowPartialPayments;
   double? get penaltyAmount => _penaltyAmount;
@@ -162,6 +172,12 @@ class CreateContributionCubit extends Cubit<CreateContributionState> {
   /// Update member rotation order
   void updateMemberRotationOrder(List<String> order) {
     _memberRotationOrder = List.from(order);
+    _emitFormUpdated();
+  }
+
+  /// Update who receives the payout when the goal matures.
+  void updatePayoutReceiver(String? userId) {
+    _payoutReceiverUserId = (userId != null && userId.isNotEmpty) ? userId : null;
     _emitFormUpdated();
   }
 
@@ -428,6 +444,9 @@ class CreateContributionCubit extends Cubit<CreateContributionState> {
         gracePeriodDays: _gracePeriodDays,
         allowPartialPayments: _allowPartialPayments,
         minimumBalance: _minimumBalance,
+        // Only meaningful for one_time; the server ignores it for rotating
+        // savings, whose receiver is member_rotation_order[0].
+        payoutReceiverUserId: requiresPayoutReceiver ? _payoutReceiverUserId : null,
       );
 
       if (isClosed) return;

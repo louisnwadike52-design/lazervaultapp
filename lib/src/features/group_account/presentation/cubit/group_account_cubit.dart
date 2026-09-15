@@ -718,6 +718,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     double? minimumBalance,
     bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
+    String? payoutReceiverUserId,
   }) async {
     if (isClosed) return;
     if (currentUserId == null) {
@@ -747,6 +748,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         minimumBalance: minimumBalance,
         autoPayoutEnabled: autoPayoutEnabled,
         metadata: metadata,
+        payoutReceiverUserId: payoutReceiverUserId,
       ));
       if (isClosed) return;
 

@@ -1902,6 +1902,13 @@ const CreateContributionRequest$json = {
       '5': 8,
       '10': 'autoPayoutEnabled'
     },
+    {
+      '1': 'payout_receiver_user_id',
+      '3': 20,
+      '4': 1,
+      '5': 9,
+      '10': 'payoutReceiverUserId'
+    },
   ],
 };
 
@@ -1922,7 +1929,8 @@ final $typed_data.Uint8List createContributionRequestDescriptor = $convert.base6
     'ChZhbGxvd19wYXJ0aWFsX3BheW1lbnRzGBAgASgIUhRhbGxvd1BhcnRpYWxQYXltZW50cxInCg'
     '9taW5pbXVtX2JhbGFuY2UYESABKARSDm1pbmltdW1CYWxhbmNlEhoKCG1ldGFkYXRhGBIgASgJ'
     'UghtZXRhZGF0YRIuChNhdXRvX3BheW91dF9lbmFibGVkGBMgASgIUhFhdXRvUGF5b3V0RW5hYm'
-    'xlZA==');
+    'xlZBI1ChdwYXlvdXRfcmVjZWl2ZXJfdXNlcl9pZBgUIAEoCVIUcGF5b3V0UmVjZWl2ZXJVc2Vy'
+    'SWQ=');
 
 @$core.Deprecated('Use createContributionResponseDescriptor instead')
 const CreateContributionResponse$json = {

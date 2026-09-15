@@ -21,6 +21,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'create_contribution_bottom_sheet_widgets.dart';
+part 'create_contribution_payout_receiver.dart';
 
 /// Normalize a deadline date to 23:59:59.999 in the user's local
 /// timezone. The date picker returns midnight (start-of-day), which
@@ -113,6 +114,11 @@ class _CreateContributionBottomSheetState
   // contribution payments.
   bool _autoPayoutEnabled = false;
   List<String> _rotationOrder = [];
+  // Who receives the pot when a one-time goal matures. Required at creation:
+  // the server has no fallback, so leaving this null produces a contribution
+  // that fills up and then stalls at its deadline with nobody to pay.
+  // Unused for rotating savings, whose receiver is _rotationOrder.first.
+  String? _payoutReceiverId;
 
   // Map temp IDs to original user IDs for backend submission
   // Key: display ID (temp_xxx or actual UUID), Value: original user ID from server
@@ -300,6 +306,30 @@ class _CreateContributionBottomSheetState
           // members from the contribution details page later. ROSCA's
           // schedule page below has its own (frequency / regular
           // amount) requirements.
+          //
+          // The payout receiver, however, is REQUIRED. The server has no
+          // fallback for it, so advancing without one produces a goal that
+          // fills up and then stalls at its deadline with nobody to pay.
+          // Gate it here, on the page the picker lives on, rather than
+          // letting submit fail with a generic error.
+          final candidates = _payoutReceiverCandidates();
+          if (candidates.isEmpty) {
+            // Nobody is eligible yet (every selected member is still a
+            // pending invite). Let them through — the contribution is
+            // usable, and the details page prompts for a receiver once
+            // someone accepts.
+            debugPrint(
+                '🟡 Page 2 (Members) : no eligible receiver candidates, allowing');
+            return true;
+          }
+          if (_payoutReceiverId == null ||
+              !candidates.any((m) => m.userId == _payoutReceiverId)) {
+            debugPrint('🔴 Validation failed: no payout receiver selected');
+            _setFieldError(
+                'payoutReceiver', 'Choose who receives the funds at maturity');
+            _showErrorBanner('Choose who receives the funds at maturity');
+            return false;
+          }
           debugPrint('🟢 Page 2 (Members for oneTime) validation: PASS');
           return true;
         }
@@ -599,6 +629,11 @@ class _CreateContributionBottomSheetState
           : null,
       autoPayoutEnabled: _autoPayoutEnabled,
       metadata: metadata,
+      // one_time only. A rotating contribution's receiver is its rotation
+      // order's first position, and the server ignores the field for it.
+      payoutReceiverUserId: _selectedType == ContributionType.oneTime
+          ? _payoutReceiverId
+          : null,
     );
   }
 
@@ -1217,9 +1252,76 @@ class _CreateContributionBottomSheetState
           ),
           SizedBox(height: 24.h),
           _buildMembersListWidget(),
+          SizedBox(height: 28.h),
+          _buildFieldLabel('Who receives the funds?', required: true),
+          SizedBox(height: 6.h),
+          Text(
+            'When this goal matures, the pot is paid into this member\'s '
+            'wallet. You can change it any time before the payout runs.',
+            style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[400]),
+          ),
+          SizedBox(height: 12.h),
+          PayoutReceiverPicker(
+            candidates: _payoutReceiverCandidates(),
+            selectedUserId: _payoutReceiverId,
+            hasError: _fieldErrors.containsKey('payoutReceiver'),
+            onSelected: (userId) {
+              setState(() {
+                _payoutReceiverId = userId;
+                _fieldErrors.remove('payoutReceiver');
+              });
+            },
+          ),
+          _buildFieldError('payoutReceiver'),
         ],
       ),
     );
+  }
+
+  /// Members eligible to be named payout receiver.
+  ///
+  /// Restricted to people already ACTIVE in the group. Anyone being invited by
+  /// this same create is only a pending_invite shadow until they accept, and
+  /// the backend refuses to designate those — offering them here would produce
+  /// a create that fails, or a contribution silently stuck in pending_receiver.
+  ///
+  /// Resolution mirrors the members list: rotation ids are user ids for real
+  /// members and temp ids for freshly-added ones, so try both.
+  List<GroupMember> _payoutReceiverCandidates() {
+    final out = <GroupMember>[];
+    final seen = <String>{};
+    for (final rotationId in _rotationOrder) {
+      final member = _memberForRotationId(rotationId);
+      if (member == null) continue;
+      if (member.status != GroupMemberStatus.active) continue;
+      if (member.userId.isEmpty || !seen.add(member.userId)) continue;
+      out.add(member);
+    }
+    return out;
+  }
+
+  /// Review-page copy for the chosen receiver.
+  String _payoutReceiverSummary() {
+    final id = _payoutReceiverId;
+    if (id == null || id.isEmpty) return 'Not set yet';
+    for (final m in _localGroupMembers) {
+      if (m.userId == id) {
+        return m.userName.trim().isEmpty ? 'Selected member' : m.userName;
+      }
+    }
+    return 'Selected member';
+  }
+
+  /// Resolves a rotation-list entry to its GroupMember, by user id first and
+  /// member-row id second (freshly added rows carry a temp id).
+  GroupMember? _memberForRotationId(String rotationId) {
+    for (final m in _localGroupMembers) {
+      if (m.userId == rotationId) return m;
+    }
+    for (final m in _localGroupMembers) {
+      if (m.id == rotationId) return m;
+    }
+    return null;
   }
 
   Widget _buildSchedulePage() {
@@ -1742,6 +1844,10 @@ class _CreateContributionBottomSheetState
             if (_selectedType == ContributionType.oneTime &&
                 _rotationOrder.isNotEmpty)
               _ReviewItem('Members', '${_rotationOrder.length} participating'),
+            // Show the payout receiver before saving: it decides where the
+            // money ends up, so it belongs on the confirmation screen.
+            if (_selectedType == ContributionType.oneTime)
+              _ReviewItem('Receives funds', _payoutReceiverSummary()),
           ]),
           SizedBox(height: 16.h),
 
@@ -2928,7 +3034,18 @@ class _CreateContributionBottomSheetState
                           GestureDetector(
                             onTap: () {
                               setState(() {
-                                _rotationOrder.removeAt(index);
+                                final removed = _rotationOrder.removeAt(index);
+                                // Dropping the member who was named payout
+                                // receiver must clear the selection, or submit
+                                // would send a receiver who is not in the
+                                // contribution and the server would reject it.
+                                final wasReceiver =
+                                    _memberForRotationId(removed)?.userId ==
+                                        _payoutReceiverId;
+                                if (removed == _payoutReceiverId ||
+                                    wasReceiver) {
+                                  _payoutReceiverId = null;
+                                }
                               });
                             },
                             child: Container(

@@ -59,6 +59,7 @@ abstract class GroupAccountRemoteDataSource {
     double? minimumBalance,
     bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
+    String? payoutReceiverUserId,
   });
   Future<ContributionModel> updateContribution(ContributionModel contribution);
   Future<void> deleteContribution(String contributionId);

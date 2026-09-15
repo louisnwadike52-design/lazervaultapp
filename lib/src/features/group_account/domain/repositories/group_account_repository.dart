@@ -61,6 +61,7 @@ abstract class GroupAccountRepository {
     double? minimumBalance,
     bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
+    String? payoutReceiverUserId,
   });
   Future<Contribution> updateContribution(Contribution contribution);
   Future<void> deleteContribution(String contributionId);
