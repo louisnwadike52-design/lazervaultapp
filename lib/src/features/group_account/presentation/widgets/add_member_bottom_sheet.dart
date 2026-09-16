@@ -271,16 +271,116 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => ContactPickerBottomSheet(
-        onContactSelected: (name, identifier, type) {
-          setState(() {
-            _searchController.text = identifier;
-            _fullNameController.text = name;
-          });
-          // Trigger search for the contact
-          _onSearchChanged(identifier);
-        },
+        onContactSelected: _applyPickedContact,
       ),
     );
+  }
+
+  /// Takes a confirmed contact straight to a staged selection.
+  ///
+  /// Picking a contact used to only FILL the search box and kick off the
+  /// debounced search, leaving the user to hunt for a second control: tap the
+  /// result row if they were on LazerVault, or fill a name and press "+" if
+  /// they weren't. Both are redundant — the contact already told us the handle
+  /// AND the name, and the user already confirmed their intent in the picker.
+  ///
+  /// So resolve it here and stage the outcome directly. The only case that
+  /// still asks the user anything is a genuinely ambiguous one (several
+  /// accounts match the handle), because that IS a real choice.
+  Future<void> _applyPickedContact(
+    String name,
+    String identifier,
+    ContactIdentifierType type,
+  ) async {
+    if (!mounted) return;
+    setState(() {
+      _searchController.text = identifier;
+      _fullNameController.text = name;
+      _isSearching = true;
+      _errorMessage = null;
+      _showInviteUI = false;
+      _searchResults = [];
+    });
+
+    List<UserSearchResultEntity> results = const [];
+    try {
+      results = await serviceLocator<ProfileCubit>()
+          .searchUsers(normalizeLazerVaultUserSearchQuery(identifier));
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isSearching = false;
+        _errorMessage = 'Could not check that contact. Tap search to retry.';
+      });
+      return;
+    }
+    if (!mounted) return;
+
+    // Exactly one match — stage them, no second tap.
+    if (results.length == 1) {
+      final user = results.first;
+      if (_isUserAlreadyMember(user)) {
+        setState(() {
+          _isSearching = false;
+          _searchController.clear();
+          _fullNameController.clear();
+          _errorMessage = '${user.fullName} is already in this group.';
+        });
+        return;
+      }
+      if (_isUserAlreadySelected(user)) {
+        setState(() {
+          _isSearching = false;
+          _searchController.clear();
+          _fullNameController.clear();
+          _errorMessage = '${user.fullName} is already in your list.';
+        });
+        return;
+      }
+      setState(() => _isSearching = false);
+      _selectUser(user);
+      return;
+    }
+
+    // Several accounts share this handle — a real decision, so show them.
+    if (results.length > 1) {
+      setState(() {
+        _isSearching = false;
+        _searchResults = results;
+      });
+      return;
+    }
+
+    // Not on LazerVault. We already have both a name and a reachable handle,
+    // so stage the invite outright instead of rendering the invite form and
+    // waiting for a "+".
+    if (_isValidEmail(identifier) || _isValidPhone(identifier)) {
+      final alreadyStaged =
+          _pendingInvites.any((i) => i.email == identifier);
+      setState(() {
+        _isSearching = false;
+        if (!alreadyStaged) {
+          _pendingInvites.add(_PendingInvite(
+            email: identifier,
+            fullName: name.trim().isEmpty ? identifier : name.trim(),
+            role: _selectedRole,
+          ));
+        }
+        _searchController.clear();
+        _fullNameController.clear();
+        _showInviteUI = false;
+        _errorMessage =
+            alreadyStaged ? '$name is already in your invite list.' : null;
+      });
+      return;
+    }
+
+    // A contact with no usable handle (neither a valid email nor phone).
+    setState(() {
+      _isSearching = false;
+      _errorMessage =
+          "$name has no email or phone we can send an invite to.";
+    });
   }
 
   /// Resilient dismiss. Pops synchronously via Navigator.maybePop so

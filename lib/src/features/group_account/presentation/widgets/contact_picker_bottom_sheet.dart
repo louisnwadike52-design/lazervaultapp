@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'contact_picker_bottom_sheet_widgets.dart';
 
 class ContactPickerBottomSheet extends StatefulWidget {
@@ -477,9 +478,35 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
   void _showContactDetailsDialog(Contact contact) {
     final isOnPlatform = _isContactOnPlatform(contact);
 
+    // Which handle the user has picked, and its type. Held outside the builder
+    // so it survives StatefulBuilder rebuilds.
+    //
+    // Previously each email/phone row committed on tap and popped two routes.
+    // Nothing on the row said it was the confirm action — it carried a
+    // "go deeper" chevron — and the only button-shaped control was Cancel, so
+    // the dialog read as informational and people got stuck. It is now an
+    // explicit select-then-confirm: rows show radio state, and a primary CTA
+    // does the committing.
+    String? selectedLabel;
+    ContactIdentifierType? selectedType;
+
+    // Preselect when there is only one possible handle: with a single option
+    // the choice carries no information, and making the user tap it first is
+    // pure ceremony.
+    final singleEmail = contact.emails.length == 1 && contact.phones.isEmpty;
+    final singlePhone = contact.phones.length == 1 && contact.emails.isEmpty;
+    if (singleEmail) {
+      selectedLabel = contact.emails.first.address;
+      selectedType = ContactIdentifierType.email;
+    } else if (singlePhone) {
+      selectedLabel = contact.phones.first.number;
+      selectedType = ContactIdentifierType.phone;
+    }
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
@@ -559,15 +586,12 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
                     isOnPlatform: widget.platformUsers
                             ?.containsKey(email.address.toLowerCase().trim()) ??
                         false,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pop(context);
-                      widget.onContactSelected(
-                        contact.displayName,
-                        email.address,
-                        ContactIdentifierType.email,
-                      );
-                    },
+                    isSelected: selectedLabel == email.address &&
+                        selectedType == ContactIdentifierType.email,
+                    onTap: () => setDialogState(() {
+                      selectedLabel = email.address;
+                      selectedType = ContactIdentifierType.email;
+                    }),
                   )),
               SizedBox(height: 12.h),
             ],
@@ -587,15 +611,12 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
                     isOnPlatform: widget.platformUsers
                             ?.containsKey(_normalizePhone(phone.number)) ??
                         false,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.pop(context);
-                      widget.onContactSelected(
-                        contact.displayName,
-                        phone.number,
-                        ContactIdentifierType.phone,
-                      );
-                    },
+                    isSelected: selectedLabel == phone.number &&
+                        selectedType == ContactIdentifierType.phone,
+                    onTap: () => setDialogState(() {
+                      selectedLabel = phone.number;
+                      selectedType = ContactIdentifierType.phone;
+                    }),
                   )),
             ],
           ],
@@ -612,7 +633,46 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
               ),
             ),
           ),
+          // The explicit commit. Disabled until a handle is chosen, so the
+          // dialog can never be dismissed into a half-made selection.
+          ElevatedButton(
+            onPressed: selectedLabel == null || selectedType == null
+                ? null
+                : () {
+                    final label = selectedLabel!;
+                    final type = selectedType!;
+                    // Close the details dialog AND the contact list beneath
+                    // it, returning the caller to the add-member sheet with
+                    // the contact applied — same two pops as before, just
+                    // moved behind a deliberate confirm.
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                    widget.onContactSelected(
+                      contact.displayName,
+                      label,
+                      type,
+                    );
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4E03D0),
+              disabledBackgroundColor: const Color(0xFF2D2D2D),
+              foregroundColor: Colors.white,
+              disabledForegroundColor: Colors.grey[600],
+              padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+            ),
+            child: Text(
+              'Use this contact',
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ],
+      ),
       ),
     );
   }
@@ -622,17 +682,22 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
     required String label,
     required VoidCallback onTap,
     bool isOnPlatform = false,
+    bool isSelected = false,
   }) {
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF0A0A0A),
+        color: isSelected
+            ? const Color(0xFF4E03D0).withValues(alpha: 0.14)
+            : const Color(0xFF0A0A0A),
         borderRadius: BorderRadius.circular(8.r),
         border: Border.all(
-          color: isOnPlatform
-              ? const Color(0xFF10B981).withValues(alpha: 0.3)
-              : const Color(0xFF2D2D2D),
-          width: 1,
+          color: isSelected
+              ? PayFlowTheme.accentOnDark
+              : isOnPlatform
+                  ? const Color(0xFF10B981).withValues(alpha: 0.3)
+                  : const Color(0xFF2D2D2D),
+          width: isSelected ? 1.5 : 1,
         ),
       ),
       child: Material(
@@ -674,18 +739,24 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
                     ],
                   ),
                 ),
-                if (isOnPlatform)
-                  Icon(
-                    Icons.check_circle,
-                    color: const Color(0xFF10B981),
-                    size: 16.sp,
-                  )
-                else
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.grey[600],
-                    size: 14.sp,
-                  ),
+                // "Lazervault user" already reads as a badge on the label, so
+                // the trailing slot shows SELECTION state instead. A chevron
+                // here implied "tap to go deeper" when the tap was in fact the
+                // final commit — which is why nobody knew what to press.
+                if (isOnPlatform) ...[
+                  Icon(Icons.verified,
+                      color: const Color(0xFF10B981), size: 15.sp),
+                  SizedBox(width: 8.w),
+                ],
+                Icon(
+                  isSelected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                  color: isSelected
+                      ? PayFlowTheme.accentOnDark
+                      : Colors.grey[600],
+                  size: 18.sp,
+                ),
               ],
             ),
           ),

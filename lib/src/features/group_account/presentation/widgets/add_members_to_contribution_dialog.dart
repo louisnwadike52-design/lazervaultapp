@@ -16,6 +16,7 @@ import '../cubit/group_account_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
+import 'contact_picker_bottom_sheet.dart';
 part 'add_members_to_contribution_dialog_widgets.dart';
 
 class AddMembersToContributionDialog extends StatefulWidget {
@@ -366,6 +367,101 @@ class _AddMembersToContributionDialogState
         title: 'Add member', internalOnly: true);
     if (result == null || !mounted) return;
     _selectNewUser(result.toUserSearchResultEntity());
+  }
+
+  void _openContactPicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ContactPickerBottomSheet(
+        onContactSelected: _applyPickedContact,
+      ),
+    );
+  }
+
+  /// Takes a confirmed contact straight to a staged selection — same contract
+  /// as the group-level sheet, so the two levels behave identically.
+  ///
+  /// The contact already supplied both a handle and a name and the user has
+  /// already confirmed them in the picker, so there is nothing left to ask
+  /// unless the handle is genuinely ambiguous.
+  Future<void> _applyPickedContact(
+    String name,
+    String identifier,
+    ContactIdentifierType type,
+  ) async {
+    if (!mounted) return;
+    setState(() {
+      _searchController.text = identifier;
+      _fullNameController.text = name;
+      _isSearching = true;
+      _errorMessage = null;
+      _showInviteUI = false;
+      _searchResults = [];
+    });
+
+    List<UserSearchResultEntity> results = const [];
+    try {
+      results = await serviceLocator<ProfileCubit>()
+          .searchUsers(normalizeLazerVaultUserSearchQuery(identifier));
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isSearching = false;
+        _errorMessage = 'Could not check that contact. Try searching instead.';
+      });
+      return;
+    }
+    if (!mounted) return;
+
+    if (results.length == 1) {
+      final user = results.first;
+      if (_newMembersToAdd.any((m) => m.user?.userId == user.userId)) {
+        setState(() {
+          _isSearching = false;
+          _searchController.clear();
+          _fullNameController.clear();
+          _errorMessage = '${user.fullName} is already in your list.';
+        });
+        return;
+      }
+      setState(() {
+        _isSearching = false;
+        _searchController.clear();
+        _fullNameController.clear();
+      });
+      _selectNewUser(user);
+      return;
+    }
+
+    if (results.length > 1) {
+      setState(() {
+        _isSearching = false;
+        _searchResults = results;
+      });
+      return;
+    }
+
+    // Not on LazerVault. A contribution participant must be a real user, so we
+    // cannot stage them as a member — but we CAN invite them to the group, and
+    // they join the contribution once they accept. Say that plainly instead of
+    // dead-ending on "no users found".
+    setState(() {
+      _isSearching = false;
+      _showInviteUI = _isValidEmail(identifier) || _isValidPhone(identifier);
+      _errorMessage = _showInviteUI
+          ? null
+          : "$name has no email or phone we can send an invite to.";
+    });
+  }
+
+  /// A phone handle we can send an invite to: 7-15 digits, optional leading
+  /// '+', tolerating the spaces/dashes/parens device contacts carry. Mirrors
+  /// the group-level sheet so both surfaces accept the same handles.
+  bool _isValidPhone(String value) {
+    final digits = value.replaceAll(RegExp(r'[^0-9+]'), '');
+    return RegExp(r'^\+?[0-9]{7,15}$').hasMatch(digits);
   }
 
   void _addPendingInvite() {
@@ -1057,7 +1153,34 @@ class _AddMembersToContributionDialogState
             ),
           ),
 
-          SizedBox(height: 16.h),
+          SizedBox(height: 10.h),
+          // Contacts entry, matching the group-level sheet. Adding someone was
+          // search-only here, so a creator who had the person in their phone
+          // still had to recall their exact handle — the two levels behaved
+          // differently for the same task.
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: _openContactPicker,
+              icon: Icon(Icons.contacts_outlined,
+                  size: 18.sp, color: PayFlowTheme.accentOnDark),
+              label: Text(
+                'Pick from contacts',
+                style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: PayFlowTheme.accentOnDark,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 4.w),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+          ),
+
+          SizedBox(height: 10.h),
 
           // Selected new members
           if (_newMembersToAdd.isNotEmpty) ...[
