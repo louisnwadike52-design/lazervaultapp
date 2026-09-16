@@ -3,15 +3,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/services/crowdfund_report_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
+import 'package:lazervault/src/features/crowdfund/services/crowdfund_report_pdf_service.dart';
 
 /// Bottom sheet for sharing crowdfund report to various platforms
 class ShareReportBottomSheet extends StatelessWidget {
   final CrowdfundReport report;
   final String? campaignUrl;
+  /// Campaign + stats are needed for the PDF: a shareable blurb only needs the
+  /// narrative, but a report document has to state the actual figures.
+  final Crowdfund? crowdfund;
+  final CrowdfundStatistics? statistics;
 
   const ShareReportBottomSheet({
     super.key,
     required this.report,
+    this.crowdfund,
+    this.statistics,
     this.campaignUrl,
   });
 
@@ -121,7 +128,57 @@ class ShareReportBottomSheet extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
+            // Share the REPORT as a document.
+            //
+            // Everything above shares promotional text. A creator accounting to
+            // donors, a sponsor or an auditor needs a record with the figures,
+            // the period and a generated-at stamp — hence a PDF through the
+            // native share sheet rather than another social blurb.
+            if (crowdfund != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      final origin = CrowdfundReportService
+                          .shareOriginFromContext(context);
+                      final messenger = ScaffoldMessenger.of(context);
+                      Navigator.pop(context);
+                      try {
+                        await CrowdfundReportPdfService.shareReport(
+                          crowdfund: crowdfund!,
+                          report: report,
+                          statistics: statistics,
+                          campaignUrl: campaignUrl,
+                          sharePositionOrigin: origin,
+                        );
+                      } catch (_) {
+                        messenger.showSnackBar(const SnackBar(
+                          content: Text('Could not build the report PDF.'),
+                          backgroundColor: Color(0xFFEF4444),
+                        ));
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFFEC4899),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.picture_as_pdf_outlined),
+                    label: const Text(
+                      'Share report PDF',
+                      style: TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 12),
             // General share button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),

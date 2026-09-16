@@ -161,6 +161,10 @@ class _CrowdfundReportContentState extends State<_CrowdfundReportContent> {
       builder: (context) => ShareReportBottomSheet(
         report: report,
         campaignUrl: widget.campaignUrl,
+        // Needed by the PDF path so the document can state real figures
+        // rather than only the AI narrative.
+        crowdfund: widget.crowdfund,
+        statistics: widget.statistics,
       ),
     );
   }
