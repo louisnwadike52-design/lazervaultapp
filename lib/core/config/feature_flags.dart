@@ -32,6 +32,14 @@ class FeatureFlags {
   static const String voiceChatAssistantSectionVisible =
       'voice_chat_assistant_section_visible';
 
+  // Crowdfund "Donation alerts" menu entry (Telegram / WhatsApp / webhook
+  // channel configuration for a campaign creator). HIDDEN by default per the
+  // rule above — the surface is creator-only config that isn't ready to expose,
+  // and the route stays reachable in code so flipping the flag in the admin
+  // dashboard restores it with no redeploy.
+  static const String crowdfundDonationAlertsVisible =
+      'crowdfund_donation_alerts_visible';
+
   // African voice-language master gate (admin). OFF by default → the voice/chat
   // assistant is English-only and African languages (yo/ig/ha/pcm) are HIDDEN in
   // the language pickers. The server /voice/languages already filters by this; this
@@ -359,6 +367,15 @@ class FeatureFlags {
   static bool get voiceChatAssistantVisible {
     return _prefs?.getBool(voiceChatAssistantSectionVisible) ?? true;
   }
+
+  /// Whether the crowdfund "Donation alerts" menu entry is shown.
+  ///
+  /// Defaults to FALSE (hidden) — unlike the other visibility flags, which
+  /// default true. This surface is deliberately off until an admin turns it on.
+  static bool get crowdfundDonationAlerts {
+    return _prefs?.getBool(crowdfundDonationAlertsVisible) ?? false;
+  }
+
 
   // ── Quick-service landing entrance animation ─────────────────────────────
   /// `true` by default — quick-service landing screens animate their content in

@@ -9,6 +9,10 @@ import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_image_upload_service.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 
 /// Edit the editable surface of an active or paused campaign.
 ///
@@ -37,6 +41,16 @@ class _EditCrowdfundScreenState extends State<EditCrowdfundScreen> {
   late DateTime? _deadline;
   late String _category;
   bool _submitting = false;
+  /// A locally picked replacement image, uploaded on save.
+  ///
+  /// Edit offered an "Image URL (optional)" text box only, while CREATE has
+  /// always let you upload a photo or paste a URL. Nobody has a hosted URL for
+  /// a photo on their phone, so editing a campaign's image was effectively
+  /// impossible unless you had already hosted it somewhere.
+  File? _pickedImageFile;
+  bool _uploadingImage = false;
+  final CrowdfundImageUploadService _uploadService =
+      CrowdfundImageUploadService();
 
   // Mirror the seven built-in categories the create wizard uses.
   // User-defined custom categories don't appear here on edit — the
@@ -113,7 +127,101 @@ class _EditCrowdfundScreenState extends State<EditCrowdfundScreen> {
     if (picked != null) setState(() => _deadline = picked);
   }
 
-  void _save() {
+  /// Pick a replacement image from the gallery. Mirrors the create flow: the
+  /// file is only held for preview here and uploaded on save, so abandoning the
+  /// edit never leaves an orphaned blob in storage.
+  Future<void> _pickImage() async {
+    if (_submitting) return;
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        imageQuality: 85,
+      );
+      if (picked == null || !mounted) return;
+      setState(() {
+        _pickedImageFile = File(picked.path);
+        // A picked file supersedes a typed URL — keeping both would leave the
+        // user guessing which one is about to be saved.
+        _imageUrlController.clear();
+      });
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Could not open your photos.'),
+          backgroundColor: Color(0xFFEF4444)));
+    }
+  }
+
+  Widget _buildImagePicker() {
+    final picked = _pickedImageFile;
+    final existing = (widget.crowdfund.imageUrl ?? '').trim();
+    return GestureDetector(
+      onTap: _pickImage,
+      child: Container(
+        height: 132.h,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1A),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFF2D2D2D)),
+          image: picked != null
+              ? DecorationImage(image: FileImage(picked), fit: BoxFit.cover)
+              : (existing.isNotEmpty
+                  ? DecorationImage(
+                      image: NetworkImage(existing), fit: BoxFit.cover)
+                  : null),
+        ),
+        child: (picked == null && existing.isEmpty)
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add_photo_alternate_outlined,
+                      size: 28.sp, color: PayFlowTheme.accentOnDark),
+                  SizedBox(height: 6.h),
+                  Text('Upload an image',
+                      style: GoogleFonts.inter(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                          color: PayFlowTheme.accentOnDark)),
+                ],
+              )
+            : Align(
+                alignment: Alignment.bottomRight,
+                child: Container(
+                  margin: EdgeInsets.all(8.w),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.65),
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_uploadingImage) ...[
+                        SizedBox(
+                            width: 12.sp,
+                            height: 12.sp,
+                            child: const CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white)),
+                        SizedBox(width: 6.w),
+                      ] else ...[
+                        Icon(Icons.edit, size: 13.sp, color: Colors.white),
+                        SizedBox(width: 4.w),
+                      ],
+                      Text(_uploadingImage ? 'Uploading…' : 'Change',
+                          style: GoogleFonts.inter(
+                              fontSize: 12.sp, color: Colors.white)),
+                    ],
+                  ),
+                ),
+              ),
+      ),
+    );
+  }
+
+  Future<void> _save() async {
     final err = _validate();
     if (err != null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -124,6 +232,43 @@ class _EditCrowdfundScreenState extends State<EditCrowdfundScreen> {
     final cf = widget.crowdfund;
     final target = double.parse(_targetController.text.replaceAll(',', '').trim());
     setState(() => _submitting = true);
+
+    // A picked file wins over whatever is in the URL box: it's the more recent
+    // intent. Upload BEFORE the update call so a failed upload leaves the
+    // campaign untouched rather than saving a half-applied edit.
+    String? resolvedImageUrl =
+        _imageUrlController.text.trim() != (cf.imageUrl ?? '')
+            ? _imageUrlController.text.trim()
+            : null;
+    final picked = _pickedImageFile;
+    if (picked != null) {
+      setState(() => _uploadingImage = true);
+      try {
+        resolvedImageUrl = await _uploadService.uploadImage(picked);
+      } on ImageUploadException catch (e) {
+        if (!mounted) return;
+        setState(() {
+          _submitting = false;
+          _uploadingImage = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(e.message),
+            backgroundColor: const Color(0xFFEF4444)));
+        return;
+      } catch (_) {
+        if (!mounted) return;
+        setState(() {
+          _submitting = false;
+          _uploadingImage = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Could not upload image. Please try again.'),
+            backgroundColor: Color(0xFFEF4444)));
+        return;
+      }
+      if (!mounted) return;
+      setState(() => _uploadingImage = false);
+    }
     context.read<CrowdfundCubit>().updateCrowdfund(
           crowdfundId: cf.id,
           title: _titleController.text.trim() != cf.title
@@ -132,9 +277,7 @@ class _EditCrowdfundScreenState extends State<EditCrowdfundScreen> {
           description: _descriptionController.text.trim() != cf.description
               ? _descriptionController.text.trim()
               : null,
-          imageUrl: _imageUrlController.text.trim() != (cf.imageUrl ?? '')
-              ? _imageUrlController.text.trim()
-              : null,
+          imageUrl: resolvedImageUrl,
           category: _category != cf.category ? _category : null,
           targetAmount: target != cf.targetAmount ? target : null,
           deadline: _deadline != null && _deadline != cf.deadline ? _deadline : null,
@@ -269,7 +412,16 @@ class _EditCrowdfundScreenState extends State<EditCrowdfundScreen> {
                   ),
                 ),
                 SizedBox(height: 14.h),
-                _label('Image URL (optional)'),
+                _label('Campaign image (optional)'),
+                SizedBox(height: 8.h),
+                _buildImagePicker(),
+                SizedBox(height: 10.h),
+                Text(
+                  'or paste an image link',
+                  style: GoogleFonts.inter(
+                      fontSize: 12.sp, color: Colors.grey[500]),
+                ),
+                SizedBox(height: 6.h),
                 _textField(_imageUrlController, maxLines: 1),
                 SizedBox(height: 28.h),
                 SizedBox(

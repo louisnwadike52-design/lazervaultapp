@@ -27,6 +27,7 @@ import 'crowdfund_report_screen.dart';
 import 'donation_payment_screen.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 part 'crowdfund_details_screen_widgets.dart';
 
 
@@ -511,7 +512,12 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                   // ONLY entry point to AppRoutes.crowdfundNotificationChannels
                   // — the screen and route existed but nothing linked to
                   // them, so the feature was unreachable.
-                  if (isOwner && !isMutating)
+                  //
+                  // Now admin-gated and HIDDEN by default. The route and screen
+                  // stay in the build, so flipping
+                  // crowdfund_donation_alerts_visible in the dashboard restores
+                  // the entry with no redeploy.
+                  if (isOwner && !isMutating && FeatureFlags.crowdfundDonationAlerts)
                     _menuItem(
                         value: 'notifications',
                         icon: Icons.notifications_active_outlined,
