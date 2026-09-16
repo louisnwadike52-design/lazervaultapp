@@ -33,7 +33,7 @@ extension AppServiceNameMapper on AppServiceName {
       case AppServiceName.crowdfund:
         return TransactionServiceType.crowdfund;
       case AppServiceName.uplift:
-        return TransactionServiceType.unknown;
+        return TransactionServiceType.lazerfunds;
       case AppServiceName.qrPay:
         return TransactionServiceType.qrPayment;
       case AppServiceName.sendFunds:

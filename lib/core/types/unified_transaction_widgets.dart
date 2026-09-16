@@ -49,6 +49,13 @@ enum TransactionServiceType {
   // deliberately: escrow money is HELD, and calling that a completed transfer
   // is a worse lie than the neutral glyph.
   escrow('Escrow', Icons.handshake_outlined, Color(0xFF7C3AED)),
+  // Lazerfunds (code name `uplift`) had the same hole escrow did: its receipts
+  // mapped to `unknown`, so a business that just received investment funding
+  // got the grey help-outline glyph and NO downloadable PDF — on the one
+  // document they would send to an accountant or investor. Own constant rather
+  // than reusing crowdfund: money here is investment against equity, not a
+  // donation, and the receipt says so.
+  lazerfunds('Lazerfunds', Icons.rocket_launch_outlined, Color(0xFF4E03D0)),
   groupFunds('Group Funds', Icons.groups_2_outlined, Color(0xFFA855F7)),
   exchange('Exchange', Icons.currency_exchange, Color(0xFFFB923C)),
 

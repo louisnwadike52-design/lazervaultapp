@@ -866,7 +866,14 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // this page instead of the branded PDF. The invoice identity rows
       // (_invoiceRows) ride along as extraRows so the document carries
       // the proper invoice payload, not a bare transfer.
-      tx.serviceType == TransactionServiceType.invoice;
+      tx.serviceType == TransactionServiceType.invoice ||
+      // Lazerfunds: a milestone disbursement is investment money landing in a
+      // business's wallet, and an escrow refund is it coming back. Both are
+      // exactly the documents a business hands an accountant or an investor,
+      // and both were exporting a flat image because the type wasn't listed
+      // here. The gross / platform-fee / net rows ride along in metadata, so
+      // the document shows what was deducted rather than only the net figure.
+      tx.serviceType == TransactionServiceType.lazerfunds;
 
   /// Invoice-payload rows for the PDF body — mirrored from the metadata the
   /// on-screen receipt shows (set by invoice_payment_receipt_screen), so the

@@ -35,7 +35,7 @@ UnifiedTransaction upliftReceiptToUnified(up.UpliftReceiptMessage r) {
   }
   return UnifiedTransaction(
     id: r.id,
-    serviceType: TransactionServiceType.unknown,
+    serviceType: TransactionServiceType.lazerfunds,
     title: isRelease ? 'Lazerfunds investment received' : 'Lazerfunds refund',
     description: r.fundTitle,
     amount: r.amount.toInt() / 100.0,
