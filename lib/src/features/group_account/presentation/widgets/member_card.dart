@@ -147,12 +147,21 @@ class MemberCard extends StatelessWidget {
               ),
             ),
             
-            // Joined Date
+            // Joined / Invited date.
+            //
+            // joined_at is stamped at row creation for BOTH an accepted member
+            // and a pending invite, so for someone who has not accepted it is
+            // the moment they were INVITED. Labelling it "Joined" told the
+            // group that a person with an outstanding invite had joined today —
+            // the one thing the row is meant to disambiguate, contradicted by
+            // the status badge right next to it.
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  'Joined',
+                  member.status == GroupMemberStatus.pending
+                      ? 'Invited'
+                      : 'Joined',
                   style: GoogleFonts.inter(
                     fontSize: 11.sp,
                     color: Colors.grey[500],

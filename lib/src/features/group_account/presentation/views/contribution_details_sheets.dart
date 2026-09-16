@@ -268,7 +268,14 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
           SizedBox(height: 16.h),
 
           // Details rows
-          _buildDetailRow(Icons.calendar_today, 'Joined', _formatDate(joinedAt)),
+          // "Invited" while the invite is outstanding: joined_at is stamped at
+          // row creation for a pending invite too, so calling it "Joined" says
+          // someone who has not accepted already joined.
+          _buildDetailRow(
+            Icons.calendar_today,
+            (member?.isPendingInvite ?? false) ? 'Invited' : 'Joined',
+            _formatDate(joinedAt),
+          ),
           _buildDetailRow(Icons.payment, 'Payments Made', '$paymentCount payment${paymentCount == 1 ? '' : 's'}'),
           _buildDetailRow(
             Icons.account_balance_wallet,
