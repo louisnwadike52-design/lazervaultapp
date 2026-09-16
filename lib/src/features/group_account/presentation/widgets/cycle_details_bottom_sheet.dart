@@ -8,6 +8,11 @@ import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/group_account/utils/rosca_payout_unified_mapper.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/screens/transaction_detail_screen.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
+import 'package:get/get.dart';
 
 /// Per-cycle detail sheet — opened by tapping a row on
 /// [ContributionCyclesHistoryScreen]. Loads the cycle details bundle
@@ -647,7 +652,39 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
                   tint: const Color(0xFFFB923C)),
             if (s.payoutTransactionId != null &&
                 s.payoutTransactionId!.isNotEmpty)
-              _kvRow('Transaction', _shortId(s.payoutTransactionId!)),
+              // Tappable: collecting the pot is the single most significant
+              // money event in a savings circle, and it was a truncated id you
+              // could not open or share. Routes to the same rich receipt every
+              // other service uses.
+              InkWell(
+                onTap: () {
+                  final viewerId =
+                      context.read<AuthenticationCubit>().userId;
+                  Get.to(() => TransactionDetailScreen(
+                        transaction: roscaPayoutToUnified(
+                          s,
+                          contributionTitle: widget.contribution.title,
+                          viewerUserId: viewerId,
+                        ),
+                      ));
+                },
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _kvRow(
+                          'Transaction', _shortId(s.payoutTransactionId!)),
+                    ),
+                    Icon(Icons.receipt_long_outlined,
+                        size: 15.sp, color: PayFlowTheme.accentOnDark),
+                    SizedBox(width: 4.w),
+                    Text('Receipt',
+                        style: GoogleFonts.inter(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                            color: PayFlowTheme.accentOnDark)),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
