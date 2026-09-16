@@ -413,7 +413,18 @@ class _SessionCard extends StatelessWidget {
     final dateFormat = DateFormat('MMM d, yyyy • h:mm a');
     final statusColor = _getStatusColor(session.status);
 
-    return TweenAnimationBuilder<double>(
+    // The card has always drawn a trailing chevron but carried no tap handler,
+    // so the affordance promised a receipt that never opened. Route to the same
+    // rich receipt (and its PDF/share pipeline) every other service uses.
+    return GestureDetector(
+      onTap: () {
+        final viewerId = context.read<AuthenticationCubit>().userId;
+        Get.to(() => TransactionDetailScreen(
+              transaction:
+                  contactlessSessionToUnified(session, viewerUserId: viewerId),
+            ));
+      },
+      child: TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: Duration(milliseconds: 400 + (index * 80)),
       curve: Curves.easeOut,
@@ -567,6 +578,7 @@ class _SessionCard extends StatelessWidget {
             ],
           ],
         ),
+      ),
       ),
     );
   }

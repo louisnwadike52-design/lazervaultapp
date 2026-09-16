@@ -37,6 +37,13 @@ class CancelCrowdfundSheet extends StatefulWidget {
 class _CancelCrowdfundSheetState extends State<CancelCrowdfundSheet>
     with TransactionPinMixin {
   final _reasonController = TextEditingController();
+  /// Inline validation for the reason field.
+  ///
+  /// The minimum-length rule was enforced with a snackbar. From inside a bottom
+  /// sheet that goes to the ROOT ScaffoldMessenger and lands behind the sheet,
+  /// so the CTA looked simply dead: tap, nothing happens, no reason given. The
+  /// rule now renders where the user is looking.
+  String? _reasonError;
   bool _isSubmitting = false;
   String? _coverageWarning;
 
@@ -54,14 +61,15 @@ class _CancelCrowdfundSheetState extends State<CancelCrowdfundSheet>
     if (_isSubmitting) return;
     final reason = _reasonController.text.trim();
     if (reason.length < 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Reason must be at least 10 characters.'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
+      setState(() {
+        _reasonError = reason.isEmpty
+            ? 'Tell your contributors why — at least 10 characters.'
+            : 'A little more detail please — at least 10 characters '
+                '(${reason.length}/10).';
+      });
       return;
     }
+    if (_reasonError != null) setState(() => _reasonError = null);
     if (widget.crowdfund.donorCount == 0) {
       // Edge case: user opened cancel with zero contributors. Refunds
       // are a no-op, but we still send the cancel through so the
@@ -225,6 +233,11 @@ class _CancelCrowdfundSheetState extends State<CancelCrowdfundSheet>
                   maxLines: 3,
                   minLines: 2,
                   maxLength: 280,
+                  onChanged: (_) {
+                    if (_reasonError != null) {
+                      setState(() => _reasonError = null);
+                    }
+                  },
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 13.sp,
@@ -245,8 +258,34 @@ class _CancelCrowdfundSheetState extends State<CancelCrowdfundSheet>
                       borderRadius: BorderRadius.circular(12.r),
                       borderSide: BorderSide.none,
                     ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: _reasonError == null
+                          ? BorderSide.none
+                          : const BorderSide(color: Color(0xFFEF4444)),
+                    ),
                   ),
                 ),
+                if (_reasonError != null) ...[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.error_outline,
+                          size: 15.sp, color: const Color(0xFFEF4444)),
+                      SizedBox(width: 6.w),
+                      Expanded(
+                        child: Text(
+                          _reasonError!,
+                          style: GoogleFonts.inter(
+                            fontSize: 12.sp,
+                            color: const Color(0xFFEF4444),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 6.h),
+                ],
                 if (_coverageWarning != null) ...[
                   SizedBox(height: 10.h),
                   Container(

@@ -61,10 +61,22 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
     return double.tryParse(cleaned) ?? 0.0;
   }
 
+  /// Inline validation message, shown under the amount field.
+  ///
+  /// This used to be a snackbar. ScaffoldMessenger.of(context) inside a bottom
+  /// sheet resolves to the ROOT messenger, and Flutter QUEUES snackbars — so
+  /// every rejected tap stacked another one, and they kept draining over the
+  /// dashboard long after the sheet was dismissed ("the error that won't stop").
+  /// Validation belongs next to the field it's about.
+  String? _amountError;
+
   void _onAmountChanged(String value) {
     final parsed = _parseAmount(value);
     if (parsed == _amount) return;
-    setState(() => _amount = parsed);
+    setState(() {
+      _amount = parsed;
+      _amountError = null; // typing clears the last complaint
+    });
     _scheduleQuoteFetch(parsed);
   }
 
@@ -127,7 +139,7 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
     if (_isSubmitting) return;
     final error = _validate();
     if (error != null) {
-      _showError(error);
+      setState(() => _amountError = error);
       return;
     }
 
@@ -174,6 +186,9 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
   }
 
   void _showError(String message) {
+    // Clear whatever is queued first: identical errors otherwise pile up and
+    // replay one after another over whatever screen is on top.
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -474,6 +489,26 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
                     ),
                   ),
                 ),
+                if (_amountError != null) ...[
+                  SizedBox(height: 8.h),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.error_outline,
+                          size: 15.sp, color: const Color(0xFFEF4444)),
+                      SizedBox(width: 6.w),
+                      Expanded(
+                        child: Text(
+                          _amountError!,
+                          style: GoogleFonts.inter(
+                            fontSize: 12.sp,
+                            color: const Color(0xFFEF4444),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 SizedBox(height: 8.h),
                 Wrap(
                   spacing: 8.w,

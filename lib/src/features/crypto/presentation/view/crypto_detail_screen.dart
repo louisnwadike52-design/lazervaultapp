@@ -769,14 +769,14 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                       children: [
                         Icon(
                           Icons.fullscreen,
-                          color: _getCryptoColor(),
+                          color: _onDarkCryptoColor(),
                           size: 16.sp,
                         ),
                         SizedBox(width: 4.w),
                         Text(
                           'Expand',
                           style: GoogleFonts.inter(
-                            color: _getCryptoColor(),
+                            color: _onDarkCryptoColor(),
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -2203,6 +2203,23 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
     if (diff.inHours < 24) return '${diff.inHours}h ago';
     if (diff.inDays < 7) return '${diff.inDays}d ago';
     return '${(diff.inDays / 7).floor()}w ago';
+  }
+
+  /// A coin's brand colour, lightened until it is actually readable on this
+  /// screen's near-black surfaces.
+  ///
+  /// The Expand CTA drew its icon and label in the raw brand colour over a
+  /// 20%-alpha tint of that SAME colour. For a dark brand (USDT's deep purple,
+  /// ETH's near-black) the result was text you could not see. Rather than
+  /// hardcode one override, raise lightness only when the colour is too dark
+  /// for the background — bright coins (BTC orange) are left untouched.
+  Color _onDarkCryptoColor() {
+    final base = _getCryptoColor();
+    final hsl = HSLColor.fromColor(base);
+    if (hsl.lightness >= 0.62) return base;
+    return hsl.withLightness(0.72).withSaturation(
+          hsl.saturation < 0.35 ? 0.45 : hsl.saturation,
+        ).toColor();
   }
 
   Color _getCryptoColor() {

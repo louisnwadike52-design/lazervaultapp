@@ -16,6 +16,8 @@ import 'package:get/get.dart';
 
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'payment_success_screen.dart';
+import 'package:lazervault/src/features/contactless_payment/utils/contactless_unified_mapper.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/screens/transaction_detail_screen.dart';
 part 'payment_history_screen_widgets.dart';
 
 class _TransactionCard extends StatelessWidget {
