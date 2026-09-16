@@ -62,7 +62,7 @@ class CrowdfundReportService {
                       'currency': c.currency,
                       'message': c.message,
                       'is_anonymous': c.isAnonymous,
-                      'donor_name': c.isAnonymous ? 'Anonymous' : c.donor.displayName,
+                      'donor_name': c.donor.displayLabel,
                       'date': c.donationDate.toIso8601String(),
                     })
                 .toList() ??

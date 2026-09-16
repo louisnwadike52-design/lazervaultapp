@@ -128,7 +128,7 @@ class _DonorCardState extends State<DonorCard> {
       );
     }
     return _DonorAvatar(
-      displayName: donor.displayName,
+      displayName: donor.displayLabel,
       profilePicture: donor.profilePicture,
       radius: 24.r,
       fontSize: 16.sp,
@@ -148,9 +148,11 @@ class _DonorCardState extends State<DonorCard> {
       );
     }
 
-    // Display name based on privacy (isCreator determines full vs abstracted)
+    // Display name based on privacy (isCreator determines full vs abstracted).
+    // displayLabel, not displayName: an unresolvable donor must not render as
+    // an empty row.
     return Text(
-      donor.displayName,
+      donor.displayLabel,
       style: TextStyle(
         color: Colors.white,
         fontSize: 14.sp,

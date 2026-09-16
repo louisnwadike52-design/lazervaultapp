@@ -977,6 +977,11 @@ message CrowdfundContribution {
   string message = 5;
   bool is_anonymous = 6;
   string created_at = 7;
+  // Donor display name, snapshotted at donation time. The donor feed is
+  // rendered from this message, and without the field there was nothing on the
+  // wire to render a name from at all — every donor showed as a bare initial.
+  // Server-side it is blanked when is_anonymous, alongside user_id.
+  string donor_name = 8;
 }
 
 // ===== CREATE GROUP ACCOUNT =====

@@ -116,6 +116,20 @@ class CrowdfundDonor extends Equatable {
     required this.isCreator,
   });
 
+  /// What to actually paint. Never blank.
+  ///
+  /// [displayName] arrives from the server and may legitimately be empty — a
+  /// donor whose account no longer resolves, or a donation made while the
+  /// identity lookup was unavailable. Rendering it raw produced an empty name
+  /// and a blank avatar initial, which is how the donor feed looked for every
+  /// row before the backend carried a name at all. One getter so no caller has
+  /// to remember the fallback.
+  String get displayLabel {
+    if (isAnonymous) return 'Anonymous Donor';
+    final trimmed = displayName.trim();
+    return trimmed.isEmpty ? 'LazerVault User' : trimmed;
+  }
+
   Map<String, dynamic> toJson() => {
         'userId': userId,
         'displayName': displayName,

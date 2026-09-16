@@ -266,7 +266,7 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
                       color: Colors.grey[400], size: 28.sp),
                 )
               : _DonorAvatar(
-                  displayName: donor.displayName,
+                  displayName: donor.displayLabel,
                   profilePicture: donor.profilePicture,
                   radius: 36.r,
                   fontSize: 24.sp,
@@ -275,7 +275,7 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
           // Names can be long; clamp to 2 lines + ellipsis so the
           // header height stays bounded.
           Text(
-            isAnonymous ? 'Anonymous Donor' : donor.displayName,
+            donor.displayLabel,
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
