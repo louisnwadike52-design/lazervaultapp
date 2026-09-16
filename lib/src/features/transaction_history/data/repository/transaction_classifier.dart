@@ -95,6 +95,28 @@ String classifyDomain(String category, String description, String reference,
     return 'autosave';
   }
 
+  // Crowdfund, for the identical reason. The category accounts-service writes
+  // is already correct and specific — production donations carry
+  // category='crowdfund_contribution' — but nothing read it, so every one fell
+  // through to the financial-products branch below and was labelled
+  // "Insurance Payment" under a shield icon. AutoSave was lifted out of that
+  // branch the same way; crowdfund was left behind in it.
+  if (cat.startsWith('crowdfund') || cat.startsWith('crowd_fund')) {
+    if (cat.contains('refund')) return 'crowdfund_refund';
+    if (cat.contains('withdraw') || cat.contains('payout')) {
+      return 'crowdfund_withdrawal';
+    }
+    if (cat.contains('fee')) return 'crowdfund_fee';
+    return 'crowdfund';
+  }
+  // Lazerfunds (uplift is its internal code name) writes through the same
+  // multi-product service and sits in exactly the same trap.
+  if (cat.startsWith('uplift')) {
+    if (cat.contains('refund')) return 'uplift_refund';
+    if (cat.contains('fee')) return 'uplift_fee';
+    return 'uplift';
+  }
+
   // 1) service_name is authoritative for the shared hold_capture bucket.
   if (svc.contains('giftcard')) return 'giftcard';
   if (svc.contains('crypto')) return 'crypto';
@@ -159,6 +181,22 @@ String? titleForDomain(String domain, String typeLower) {
       // A wallet credit on the insurance domain is a premium refund/reversal,
       // not a payment.
       return credit ? 'Insurance Refund' : 'Insurance Payment';
+    case 'crowdfund':
+      // Both legs of one donation: the donor's wallet is debited, the campaign
+      // wallet credited. Name each from the account the row belongs to.
+      return credit ? 'Crowdfund Received' : 'Crowdfund Donation';
+    case 'crowdfund_refund':
+      return credit ? 'Crowdfund Refund' : 'Crowdfund Refund Sent';
+    case 'crowdfund_withdrawal':
+      return credit ? 'Crowdfund Withdrawal' : 'Crowdfund Payout';
+    case 'crowdfund_fee':
+      return credit ? 'Crowdfund Fee Refund' : 'Crowdfund Fee';
+    case 'uplift':
+      return credit ? 'Lazerfunds Received' : 'Lazerfunds Commitment';
+    case 'uplift_refund':
+      return credit ? 'Lazerfunds Refund' : 'Lazerfunds Refund Sent';
+    case 'uplift_fee':
+      return credit ? 'Lazerfunds Fee Refund' : 'Lazerfunds Fee';
     case 'autosave':
       // Both legs of one save: the source account is debited, the savings
       // destination credited. Name them from the account the row belongs to.
@@ -245,6 +283,18 @@ TransactionServiceType? serviceTypeForDomain(String domain) {
       return TransactionServiceType.exchange;
     case 'insurance':
       return TransactionServiceType.insurance;
+    case 'crowdfund':
+    case 'crowdfund_refund':
+    case 'crowdfund_withdrawal':
+      return TransactionServiceType.crowdfund;
+    case 'crowdfund_fee':
+      // Reuse the EXISTING fee enum value — see the note below.
+      return TransactionServiceType.fee;
+    case 'uplift':
+    case 'uplift_refund':
+      return TransactionServiceType.lazerfunds;
+    case 'uplift_fee':
+      return TransactionServiceType.fee;
     case 'autosave':
     case 'autosave_reversal':
       return TransactionServiceType.autosave;

@@ -873,7 +873,14 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // and both were exporting a flat image because the type wasn't listed
       // here. The gross / platform-fee / net rows ride along in metadata, so
       // the document shows what was deducted rather than only the net figure.
-      tx.serviceType == TransactionServiceType.lazerfunds;
+      tx.serviceType == TransactionServiceType.lazerfunds ||
+      // Crowdfund: a donation leaving a donor's wallet, and the matching credit
+      // landing in the campaign wallet, are both real money movements with a
+      // named counterparty (the campaign) and a reference — and proof of a
+      // donation is the whole point of the document. This was unreachable
+      // before: every crowdfund row classified as `insurance`, so it never
+      // presented as crowdfund here at all.
+      tx.serviceType == TransactionServiceType.crowdfund;
 
   /// Invoice-payload rows for the PDF body — mirrored from the metadata the
   /// on-screen receipt shows (set by invoice_payment_receipt_screen), so the
