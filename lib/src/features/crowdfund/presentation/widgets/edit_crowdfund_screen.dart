@@ -422,7 +422,35 @@ class _EditCrowdfundScreenState extends State<EditCrowdfundScreen> {
                       fontSize: 12.sp, color: Colors.grey[500]),
                 ),
                 SizedBox(height: 6.h),
-                _textField(_imageUrlController, maxLines: 1),
+                TextField(
+                  controller: _imageUrlController,
+                  maxLines: 1,
+                  keyboardType: TextInputType.url,
+                  // Symmetry with picking: choosing a file clears the URL, so
+                  // typing a URL must drop the picked file. Otherwise both are
+                  // set, the file silently wins, and the user watches their
+                  // typed link be ignored with no explanation.
+                  onChanged: (v) {
+                    if (v.trim().isNotEmpty && _pickedImageFile != null) {
+                      setState(() => _pickedImageFile = null);
+                    }
+                  },
+                  style: GoogleFonts.inter(
+                      color: Colors.white, fontSize: 14.sp),
+                  decoration: InputDecoration(
+                    hintText: 'https://…',
+                    hintStyle: GoogleFonts.inter(
+                        color: const Color(0xFF6B7280), fontSize: 14.sp),
+                    filled: true,
+                    fillColor: const Color(0xFF1A1A1A),
+                    contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14.w, vertical: 12.h),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
                 SizedBox(height: 28.h),
                 SizedBox(
                   width: double.infinity,

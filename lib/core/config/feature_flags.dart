@@ -277,6 +277,7 @@ class FeatureFlags {
       phoneVerificationRequired,
       autoBiometricLoginEnabled,
       appUpdateEnabledKey,
+      crowdfundDonationAlertsVisible,
     ]) {
       final v = remote[key];
       if (v == null) continue;

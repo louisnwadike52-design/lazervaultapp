@@ -655,6 +655,25 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                   ),
                 ),
               ),
+            SizedBox(height: 16.h),
+            // A blocked camera does not block these. Decoding a saved image and
+            // typing a code need no camera at all, and this overlay covers the
+            // whole screen — so without them, denying the permission left the
+            // user with no way to pay a QR they already have.
+            Text('Or use a code you already have',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white54, fontSize: 12.sp)),
+            SizedBox(height: 10.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _scanActionChip(Icons.photo_library_outlined, 'Upload QR',
+                    _uploadFromGallery),
+                SizedBox(width: 12.w),
+                _scanActionChip(Icons.keyboard_alt_outlined, 'Enter code',
+                    _enterCodeManually),
+              ],
+            ),
             SizedBox(height: 10.h),
             TextButton(
               onPressed: () => Get.back(),
