@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -158,6 +159,131 @@ class _QRScannerScreenState extends State<QRScannerScreen>
 
       _processQRCode(code);
     }
+  }
+
+  /// Small pill used for the Upload / Enter-code actions under the frame.
+  Widget _scanActionChip(IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(22.r),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16.sp, color: Colors.white),
+            SizedBox(width: 6.w),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Decode a QR from a saved image. Feeds _processQRCode, so an uploaded code
+  /// goes through exactly the same parser, validation and routing as a live
+  /// scan — there is no second, weaker path into a payment.
+  Future<void> _uploadFromGallery() async {
+    if (_isProcessing) return;
+    try {
+      final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (picked == null) return;
+      setState(() => _isProcessing = true);
+      final capture = await cameraController.analyzeImage(picked.path);
+      final raw = capture?.barcodes.firstOrNull?.rawValue;
+      if (raw == null || raw.isEmpty) {
+        setState(() => _isProcessing = false);
+        _showError('No QR code found',
+            'We couldn\'t find a QR code in that image. Try a clearer photo.');
+        return;
+      }
+      _processQRCode(raw);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isProcessing = false);
+      _showError('Could not read that image', 'Try another photo.');
+    }
+  }
+
+  /// Typed fallback for a code that won't scan. Same pipeline again.
+  Future<void> _enterCodeManually() async {
+    if (_isProcessing) return;
+    final ctrl = TextEditingController();
+    final code = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+            left: 20, right: 20, top: 20,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Enter code',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w700)),
+            SizedBox(height: 6.h),
+            Text('Paste a QR reference or @username',
+                style: TextStyle(color: Colors.grey[400], fontSize: 13.sp)),
+            SizedBox(height: 14.h),
+            TextField(
+              controller: ctrl,
+              autofocus: true,
+              style: TextStyle(color: Colors.white, fontSize: 15.sp),
+              textInputAction: TextInputAction.done,
+              onSubmitted: (v) => Navigator.of(ctx).pop(v.trim()),
+              decoration: InputDecoration(
+                hintText: 'QR-XXXX or @username',
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                filled: true,
+                fillColor: const Color(0xFF0A0A0A),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide.none),
+              ),
+            ),
+            SizedBox(height: 14.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(ctrl.text.trim()),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4E03D0),
+                  padding: EdgeInsets.symmetric(vertical: 13.h),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
+                ),
+                child: Text('Continue',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (code == null || code.isEmpty || !mounted) return;
+    setState(() => _isProcessing = true);
+    _processQRCode(code);
   }
 
   void _processQRCode(String code) {
@@ -420,6 +546,22 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                       color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 14.sp,
                     ),
+                  ),
+                  SizedBox(height: 18.h),
+                  // Parity with the standalone QR-pay scanner. A QR you were
+                  // SENT (screenshot, chat image) can't be pointed a camera at,
+                  // and a glare-covered or damaged code needs a typed
+                  // fallback. Send-funds offered neither, so those payments
+                  // dead-ended on this screen.
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _scanActionChip(Icons.photo_library_outlined, 'Upload QR',
+                          _uploadFromGallery),
+                      SizedBox(width: 12.w),
+                      _scanActionChip(Icons.keyboard_alt_outlined, 'Enter code',
+                          _enterCodeManually),
+                    ],
                   ),
                 ],
               ),
