@@ -18,6 +18,14 @@ class UpliftMediaUploadService {
   static const _uploadTimeout = Duration(seconds: 45);
   static const _allowedExtensions = {'.jpg', '.jpeg', '.png', '.webp', '.gif'};
 
+  /// Applications may attach DOCUMENTS as well as images. The apply screen has
+  /// always offered "images/documents", but this service accepted images only,
+  /// so a business could not attach the business plan, financials or CAC
+  /// certificate an investor actually decides on. The gateway accepts PDF on
+  /// the /uplifts route specifically (it still rejects them for crowdfund
+  /// covers, which render what they store).
+  static const _allowedDocumentExtensions = {'.pdf'};
+
   final _storage = kAppSecureStorage;
 
   String get _baseUrl {
@@ -53,9 +61,14 @@ class UpliftMediaUploadService {
       host.startsWith('10.') ||
       host == '::1';
 
-  /// Validates + uploads an image file, returning the hosted public URL.
+  /// Validates + uploads a file, returning the hosted public URL.
   /// Throws [UpliftUploadException] with a user-friendly message on failure.
-  Future<String> uploadImage(File imageFile) async {
+  ///
+  /// [allowDocuments] widens the accepted set to include PDFs — used by the
+  /// application flow, where a business plan or financials matter more than a
+  /// photo. Cover/gallery images leave it false so a PDF can never end up where
+  /// the UI expects something renderable.
+  Future<String> uploadImage(File imageFile, {bool allowDocuments = false}) async {
     if (!imageFile.existsSync()) {
       throw const UpliftUploadException('Selected image no longer exists. Please pick again.');
     }
@@ -69,8 +82,13 @@ class UpliftMediaUploadService {
     }
     final fileName = imageFile.path.split('/').last.toLowerCase();
     final ext = fileName.contains('.') ? '.${fileName.split('.').last}' : '';
-    if (ext.isNotEmpty && !_allowedExtensions.contains(ext)) {
-      throw const UpliftUploadException('Unsupported image format. Use JPEG, PNG, WebP, or GIF.');
+    final accepted = allowDocuments
+        ? {..._allowedExtensions, ..._allowedDocumentExtensions}
+        : _allowedExtensions;
+    if (ext.isNotEmpty && !accepted.contains(ext)) {
+      throw UpliftUploadException(allowDocuments
+          ? 'Unsupported file. Use JPEG, PNG, WebP, GIF, or PDF.'
+          : 'Unsupported image format. Use JPEG, PNG, WebP, or GIF.');
     }
     final token = await _storage.read(key: _accessTokenKey);
     if (token == null || token.isEmpty) {
