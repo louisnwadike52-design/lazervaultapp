@@ -60,6 +60,8 @@ const GroupMemberStatus$json = {
     {'1': 'GROUP_MEMBER_STATUS_SUSPENDED', '2': 3},
     {'1': 'GROUP_MEMBER_STATUS_REMOVED', '2': 4},
     {'1': 'GROUP_MEMBER_STATUS_PENDING', '2': 5},
+    {'1': 'GROUP_MEMBER_STATUS_PENDING_APPROVAL', '2': 6},
+    {'1': 'GROUP_MEMBER_STATUS_REJECTED', '2': 7},
   ],
 };
 
@@ -69,7 +71,8 @@ final $typed_data.Uint8List groupMemberStatusDescriptor = $convert.base64Decode(
     'ASHgoaR1JPVVBfTUVNQkVSX1NUQVRVU19BQ1RJVkUQARIgChxHUk9VUF9NRU1CRVJfU1RBVFVT'
     'X0lOQUNUSVZFEAISIQodR1JPVVBfTUVNQkVSX1NUQVRVU19TVVNQRU5ERUQQAxIfChtHUk9VUF'
     '9NRU1CRVJfU1RBVFVTX1JFTU9WRUQQBBIfChtHUk9VUF9NRU1CRVJfU1RBVFVTX1BFTkRJTkcQ'
-    'BQ==');
+    'BRIoCiRHUk9VUF9NRU1CRVJfU1RBVFVTX1BFTkRJTkdfQVBQUk9WQUwQBhIgChxHUk9VUF9NRU'
+    '1CRVJfU1RBVFVTX1JFSkVDVEVEEAc=');
 
 @$core.Deprecated('Use contributionTypeDescriptor instead')
 const ContributionType$json = {
@@ -324,6 +327,13 @@ const GroupAccountMessage$json = {
       '10': 'contributionCount'
     },
     {'1': 'is_member', '3': 16, '4': 1, '5': 8, '10': 'isMember'},
+    {
+      '1': 'requires_approval',
+      '3': 17,
+      '4': 1,
+      '5': 8,
+      '10': 'requiresApproval'
+    },
   ],
 };
 
@@ -341,7 +351,8 @@ final $typed_data.Uint8List groupAccountMessageDescriptor = $convert.base64Decod
     'dyb3VwVmlzaWJpbGl0eVIKdmlzaWJpbGl0eRIhCgxtZW1iZXJfY291bnQYDCABKAVSC21lbWJl'
     'ckNvdW50EiEKDHRvdGFsX3JhaXNlZBgNIAEoBFILdG90YWxSYWlzZWQSGwoJaW1hZ2VfdXJsGA'
     '4gASgJUghpbWFnZVVybBItChJjb250cmlidXRpb25fY291bnQYDyABKAVSEWNvbnRyaWJ1dGlv'
-    'bkNvdW50EhsKCWlzX21lbWJlchgQIAEoCFIIaXNNZW1iZXI=');
+    'bkNvdW50EhsKCWlzX21lbWJlchgQIAEoCFIIaXNNZW1iZXISKwoRcmVxdWlyZXNfYXBwcm92YW'
+    'wYESABKAhSEHJlcXVpcmVzQXBwcm92YWw=');
 
 @$core.Deprecated('Use groupMemberMessageDescriptor instead')
 const GroupMemberMessage$json = {
@@ -395,6 +406,24 @@ const GroupMemberMessage$json = {
       '5': 8,
       '10': 'phoneMatchesSearchQueryExact'
     },
+    {
+      '1': 'requested_at',
+      '3': 16,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'requestedAt'
+    },
+    {
+      '1': 'decided_at',
+      '3': 17,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'decidedAt'
+    },
+    {'1': 'decided_by', '3': 18, '4': 1, '5': 9, '10': 'decidedBy'},
+    {'1': 'decision_note', '3': 19, '4': 1, '5': 9, '10': 'decisionNote'},
   ],
 };
 
@@ -411,7 +440,10 @@ final $typed_data.Uint8List groupMemberMessageDescriptor = $convert.base64Decode
     'bBIjCg11c2VyX3VzZXJuYW1lGA0gASgJUgx1c2VyVXNlcm5hbWUSOwoaZW1haWxfbWF0Y2hlc1'
     '9zZWFyY2hfcXVlcnkYDiABKAhSF2VtYWlsTWF0Y2hlc1NlYXJjaFF1ZXJ5EkYKIHBob25lX21h'
     'dGNoZXNfc2VhcmNoX3F1ZXJ5X2V4YWN0GA8gASgIUhxwaG9uZU1hdGNoZXNTZWFyY2hRdWVyeU'
-    'V4YWN0');
+    'V4YWN0Ej0KDHJlcXVlc3RlZF9hdBgQIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBS'
+    'C3JlcXVlc3RlZEF0EjkKCmRlY2lkZWRfYXQYESABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZX'
+    'N0YW1wUglkZWNpZGVkQXQSHQoKZGVjaWRlZF9ieRgSIAEoCVIJZGVjaWRlZEJ5EiMKDWRlY2lz'
+    'aW9uX25vdGUYEyABKAlSDGRlY2lzaW9uTm90ZQ==');
 
 @$core.Deprecated('Use contributionMessageDescriptor instead')
 const ContributionMessage$json = {
@@ -3861,6 +3893,7 @@ const JoinPublicGroupResponse$json = {
       '10': 'group'
     },
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'pending_approval', '3': 4, '4': 1, '5': 8, '10': 'pendingApproval'},
   ],
 };
 
@@ -3869,7 +3902,108 @@ final $typed_data.Uint8List joinPublicGroupResponseDescriptor = $convert.base64D
     'ChdKb2luUHVibGljR3JvdXBSZXNwb25zZRI6CgZtZW1iZXIYASABKAsyIi5ncm91cF9hY2NvdW'
     '50cy5Hcm91cE1lbWJlck1lc3NhZ2VSBm1lbWJlchI5CgVncm91cBgCIAEoCzIjLmdyb3VwX2Fj'
     'Y291bnRzLkdyb3VwQWNjb3VudE1lc3NhZ2VSBWdyb3VwEhgKB21lc3NhZ2UYAyABKAlSB21lc3'
-    'NhZ2U=');
+    'NhZ2USKQoQcGVuZGluZ19hcHByb3ZhbBgEIAEoCFIPcGVuZGluZ0FwcHJvdmFs');
+
+@$core.Deprecated('Use listJoinRequestsRequestDescriptor instead')
+const ListJoinRequestsRequest$json = {
+  '1': 'ListJoinRequestsRequest',
+  '2': [
+    {'1': 'group_id', '3': 1, '4': 1, '5': 9, '10': 'groupId'},
+  ],
+};
+
+/// Descriptor for `ListJoinRequestsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listJoinRequestsRequestDescriptor =
+    $convert.base64Decode(
+        'ChdMaXN0Sm9pblJlcXVlc3RzUmVxdWVzdBIZCghncm91cF9pZBgBIAEoCVIHZ3JvdXBJZA==');
+
+@$core.Deprecated('Use listJoinRequestsResponseDescriptor instead')
+const ListJoinRequestsResponse$json = {
+  '1': 'ListJoinRequestsResponse',
+  '2': [
+    {
+      '1': 'requests',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.group_accounts.GroupMemberMessage',
+      '10': 'requests'
+    },
+  ],
+};
+
+/// Descriptor for `ListJoinRequestsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listJoinRequestsResponseDescriptor =
+    $convert.base64Decode(
+        'ChhMaXN0Sm9pblJlcXVlc3RzUmVzcG9uc2USPgoIcmVxdWVzdHMYASADKAsyIi5ncm91cF9hY2'
+        'NvdW50cy5Hcm91cE1lbWJlck1lc3NhZ2VSCHJlcXVlc3Rz');
+
+@$core.Deprecated('Use decideJoinRequestRequestDescriptor instead')
+const DecideJoinRequestRequest$json = {
+  '1': 'DecideJoinRequestRequest',
+  '2': [
+    {'1': 'group_id', '3': 1, '4': 1, '5': 9, '10': 'groupId'},
+    {'1': 'requester_id', '3': 2, '4': 1, '5': 9, '10': 'requesterId'},
+    {'1': 'approve', '3': 3, '4': 1, '5': 8, '10': 'approve'},
+    {'1': 'note', '3': 4, '4': 1, '5': 9, '10': 'note'},
+  ],
+};
+
+/// Descriptor for `DecideJoinRequestRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List decideJoinRequestRequestDescriptor = $convert.base64Decode(
+    'ChhEZWNpZGVKb2luUmVxdWVzdFJlcXVlc3QSGQoIZ3JvdXBfaWQYASABKAlSB2dyb3VwSWQSIQ'
+    'oMcmVxdWVzdGVyX2lkGAIgASgJUgtyZXF1ZXN0ZXJJZBIYCgdhcHByb3ZlGAMgASgIUgdhcHBy'
+    'b3ZlEhIKBG5vdGUYBCABKAlSBG5vdGU=');
+
+@$core.Deprecated('Use decideJoinRequestResponseDescriptor instead')
+const DecideJoinRequestResponse$json = {
+  '1': 'DecideJoinRequestResponse',
+  '2': [
+    {
+      '1': 'member',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.group_accounts.GroupMemberMessage',
+      '10': 'member'
+    },
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `DecideJoinRequestResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List decideJoinRequestResponseDescriptor = $convert.base64Decode(
+    'ChlEZWNpZGVKb2luUmVxdWVzdFJlc3BvbnNlEjoKBm1lbWJlchgBIAEoCzIiLmdyb3VwX2FjY2'
+    '91bnRzLkdyb3VwTWVtYmVyTWVzc2FnZVIGbWVtYmVyEhgKB21lc3NhZ2UYAiABKAlSB21lc3Nh'
+    'Z2U=');
+
+@$core.Deprecated('Use withdrawJoinRequestRequestDescriptor instead')
+const WithdrawJoinRequestRequest$json = {
+  '1': 'WithdrawJoinRequestRequest',
+  '2': [
+    {'1': 'group_id', '3': 1, '4': 1, '5': 9, '10': 'groupId'},
+  ],
+};
+
+/// Descriptor for `WithdrawJoinRequestRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List withdrawJoinRequestRequestDescriptor =
+    $convert.base64Decode(
+        'ChpXaXRoZHJhd0pvaW5SZXF1ZXN0UmVxdWVzdBIZCghncm91cF9pZBgBIAEoCVIHZ3JvdXBJZA'
+        '==');
+
+@$core.Deprecated('Use withdrawJoinRequestResponseDescriptor instead')
+const WithdrawJoinRequestResponse$json = {
+  '1': 'WithdrawJoinRequestResponse',
+  '2': [
+    {'1': 'message', '3': 1, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `WithdrawJoinRequestResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List withdrawJoinRequestResponseDescriptor =
+    $convert.base64Decode(
+        'ChtXaXRoZHJhd0pvaW5SZXF1ZXN0UmVzcG9uc2USGAoHbWVzc2FnZRgBIAEoCVIHbWVzc2FnZQ'
+        '==');
 
 @$core.Deprecated('Use groupPaginationInfoDescriptor instead')
 const GroupPaginationInfo$json = {

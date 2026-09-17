@@ -1091,6 +1091,9 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       // so the UI can render "Joined" vs "Join". Proto default (false)
       // on endpoints that don't resolve membership or on a stale server.
       isMember: group.isMember,
+      // Server-side gate. Read here rather than inferred, so the CTA reflects
+      // the group's actual policy instead of a client guess.
+      requiresApproval: group.requiresApproval,
     );
   }
 
@@ -1815,6 +1818,62 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   }
 
   @override
+  /// The admin's queue of outstanding join requests for one group.
+  ///
+  /// Server-side authorisation: a non-admin gets PERMISSION_DENIED rather than
+  /// an empty list, so the UI can say why instead of implying nobody is
+  /// waiting.
+  Future<List<GroupMemberModel>> listJoinRequests(String groupId) async {
+    try {
+      final request = pb.ListJoinRequestsRequest()..groupId = groupId;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.listJoinRequests(request, options: callOptions);
+      return response.requests.map(_mapMemberFromProto).toList();
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to load join requests'));
+    }
+  }
+
+  /// Approves or rejects one request.
+  ///
+  /// One call with a bool rather than two endpoints, mirroring the server: a
+  /// client cannot approve when it meant to reject by hitting the wrong path.
+  Future<GroupMemberModel> decideJoinRequest({
+    required String groupId,
+    required String requesterId,
+    required bool approve,
+    String note = '',
+  }) async {
+    try {
+      final request = pb.DecideJoinRequestRequest()
+        ..groupId = groupId
+        ..requesterId = requesterId
+        ..approve = approve
+        ..note = note;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.decideJoinRequest(request, options: callOptions);
+      return _mapMemberFromProto(response.member);
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Could not update that request'));
+    }
+  }
+
+  /// Withdraws the CALLER's own request.
+  ///
+  /// Scoped to the caller by the server (the user id comes from the token),
+  /// so this cannot cancel anybody else's.
+  Future<void> withdrawJoinRequest(String groupId) async {
+    try {
+      final request = pb.WithdrawJoinRequestRequest()..groupId = groupId;
+      final callOptions = await _callOptionsHelper.withAuth();
+      await _client.withdrawJoinRequest(request, options: callOptions);
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Could not withdraw your request'));
+    }
+  }
+
   Future<GroupAccountModel> joinPublicGroup(String groupId) async {
     try {
       final request = pb.JoinPublicGroupRequest()..groupId = groupId;

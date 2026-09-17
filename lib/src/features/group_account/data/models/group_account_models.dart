@@ -69,6 +69,7 @@ class GroupAccountModel extends GroupAccount {
     super.imageUrl,
     super.contributionCount,
     super.isMember,
+    super.requiresApproval,
   });
 
   factory GroupAccountModel.fromJson(Map<String, dynamic> json) {

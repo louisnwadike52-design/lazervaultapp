@@ -101,6 +101,14 @@ class GroupAccount extends Equatable {
   // can't be inferred client-side).
   final bool isMember;
 
+  /// True when joining this group needs an admin's decision.
+  ///
+  /// Drives the CTA — "Request to join" versus "Join" — so a user knows before
+  /// tapping whether they are getting in or getting in a queue. Defaults false
+  /// so an older server that does not send the field behaves exactly as before
+  /// rather than showing a gate that is not there.
+  final bool requiresApproval;
+
   const GroupAccount({
     required this.id,
     required this.name,
@@ -118,6 +126,7 @@ class GroupAccount extends Equatable {
     this.imageUrl,
     this.contributionCount = 0,
     this.isMember = false,
+    this.requiresApproval = false,
   });
 
   @override

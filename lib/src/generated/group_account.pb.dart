@@ -40,6 +40,7 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
     $core.String? imageUrl,
     $core.int? contributionCount,
     $core.bool? isMember,
+    $core.bool? requiresApproval,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -58,6 +59,7 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
     if (imageUrl != null) result.imageUrl = imageUrl;
     if (contributionCount != null) result.contributionCount = contributionCount;
     if (isMember != null) result.isMember = isMember;
+    if (requiresApproval != null) result.requiresApproval = requiresApproval;
     return result;
   }
 
@@ -107,6 +109,7 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
     ..a<$core.int>(
         15, _omitFieldNames ? '' : 'contributionCount', $pb.PbFieldType.O3)
     ..aOB(16, _omitFieldNames ? '' : 'isMember')
+    ..aOB(17, _omitFieldNames ? '' : 'requiresApproval')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -273,6 +276,17 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
   $core.bool hasIsMember() => $_has(15);
   @$pb.TagNumber(16)
   void clearIsMember() => $_clearField(16);
+
+  /// Drives the CTA: 'Request to join' versus 'Join', so the user knows
+  /// before tapping whether they are joining or joining a queue.
+  @$pb.TagNumber(17)
+  $core.bool get requiresApproval => $_getBF(16);
+  @$pb.TagNumber(17)
+  set requiresApproval($core.bool value) => $_setBool(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasRequiresApproval() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearRequiresApproval() => $_clearField(17);
 }
 
 class GroupMemberMessage extends $pb.GeneratedMessage {
@@ -292,6 +306,10 @@ class GroupMemberMessage extends $pb.GeneratedMessage {
     $core.String? userUsername,
     $core.bool? emailMatchesSearchQuery,
     $core.bool? phoneMatchesSearchQueryExact,
+    $1.Timestamp? requestedAt,
+    $1.Timestamp? decidedAt,
+    $core.String? decidedBy,
+    $core.String? decisionNote,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -311,6 +329,10 @@ class GroupMemberMessage extends $pb.GeneratedMessage {
       result.emailMatchesSearchQuery = emailMatchesSearchQuery;
     if (phoneMatchesSearchQueryExact != null)
       result.phoneMatchesSearchQueryExact = phoneMatchesSearchQueryExact;
+    if (requestedAt != null) result.requestedAt = requestedAt;
+    if (decidedAt != null) result.decidedAt = decidedAt;
+    if (decidedBy != null) result.decidedBy = decidedBy;
+    if (decisionNote != null) result.decisionNote = decisionNote;
     return result;
   }
 
@@ -350,6 +372,12 @@ class GroupMemberMessage extends $pb.GeneratedMessage {
     ..aOS(13, _omitFieldNames ? '' : 'userUsername')
     ..aOB(14, _omitFieldNames ? '' : 'emailMatchesSearchQuery')
     ..aOB(15, _omitFieldNames ? '' : 'phoneMatchesSearchQueryExact')
+    ..aOM<$1.Timestamp>(16, _omitFieldNames ? '' : 'requestedAt',
+        subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(17, _omitFieldNames ? '' : 'decidedAt',
+        subBuilder: $1.Timestamp.create)
+    ..aOS(18, _omitFieldNames ? '' : 'decidedBy')
+    ..aOS(19, _omitFieldNames ? '' : 'decisionNote')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -510,6 +538,47 @@ class GroupMemberMessage extends $pb.GeneratedMessage {
   $core.bool hasPhoneMatchesSearchQueryExact() => $_has(14);
   @$pb.TagNumber(15)
   void clearPhoneMatchesSearchQueryExact() => $_clearField(15);
+
+  /// Join-request audit. Unset for members who never went through approval.
+  @$pb.TagNumber(16)
+  $1.Timestamp get requestedAt => $_getN(15);
+  @$pb.TagNumber(16)
+  set requestedAt($1.Timestamp value) => $_setField(16, value);
+  @$pb.TagNumber(16)
+  $core.bool hasRequestedAt() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearRequestedAt() => $_clearField(16);
+  @$pb.TagNumber(16)
+  $1.Timestamp ensureRequestedAt() => $_ensure(15);
+
+  @$pb.TagNumber(17)
+  $1.Timestamp get decidedAt => $_getN(16);
+  @$pb.TagNumber(17)
+  set decidedAt($1.Timestamp value) => $_setField(17, value);
+  @$pb.TagNumber(17)
+  $core.bool hasDecidedAt() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearDecidedAt() => $_clearField(17);
+  @$pb.TagNumber(17)
+  $1.Timestamp ensureDecidedAt() => $_ensure(16);
+
+  @$pb.TagNumber(18)
+  $core.String get decidedBy => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set decidedBy($core.String value) => $_setString(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasDecidedBy() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearDecidedBy() => $_clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.String get decisionNote => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set decisionNote($core.String value) => $_setString(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasDecisionNote() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearDecisionNote() => $_clearField(19);
 }
 
 class ContributionMessage extends $pb.GeneratedMessage {
@@ -5577,13 +5646,16 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(19)
   void clearAutoPayoutEnabled() => $_clearField(19);
 
-  /// Who receives the payout for the first cycle. REQUIRED for one_time:
-  /// there is deliberately no server-side fallback — not even the creator —
-  /// because silently choosing a recipient for a money movement hides that
-  /// decision from the person making it. rotating_savings ignores this field:
-  /// its receiver is member_rotation_order[0], so the rotation order IS the
-  /// selection. Empty ⇒ the contribution is created in pending_receiver,
-  /// which is what older app builds will keep doing.
+  /// Who receives the payout, chosen at creation.
+  ///
+  /// Lives in the proto rather than as a hand-edit to the generated Dart: a
+  /// previous edit was applied directly to group_account.pb.dart and a later
+  /// regeneration silently removed it, breaking the build. Field 20 matches the
+  /// service contract.
+  ///
+  /// Empty is meaningful — the contribution is created in pending_receiver,
+  /// which is what older app builds do. For a rotating contribution the
+  /// receiver is member_rotation_order[0], so the order IS the selection.
   @$pb.TagNumber(20)
   $core.String get payoutReceiverUserId => $_getSZ(19);
   @$pb.TagNumber(20)
@@ -12599,11 +12671,13 @@ class JoinPublicGroupResponse extends $pb.GeneratedMessage {
     GroupMemberMessage? member,
     GroupAccountMessage? group,
     $core.String? message,
+    $core.bool? pendingApproval,
   }) {
     final result = create();
     if (member != null) result.member = member;
     if (group != null) result.group = group;
     if (message != null) result.message = message;
+    if (pendingApproval != null) result.pendingApproval = pendingApproval;
     return result;
   }
 
@@ -12625,6 +12699,7 @@ class JoinPublicGroupResponse extends $pb.GeneratedMessage {
     ..aOM<GroupAccountMessage>(2, _omitFieldNames ? '' : 'group',
         subBuilder: GroupAccountMessage.create)
     ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..aOB(4, _omitFieldNames ? '' : 'pendingApproval')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -12680,6 +12755,417 @@ class JoinPublicGroupResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(2);
   @$pb.TagNumber(3)
   void clearMessage() => $_clearField(3);
+
+  /// True when this call filed a REQUEST rather than joining. The member above
+  /// is then the pending row, not a membership — do not navigate into the
+  /// group on the strength of it.
+  @$pb.TagNumber(4)
+  $core.bool get pendingApproval => $_getBF(3);
+  @$pb.TagNumber(4)
+  set pendingApproval($core.bool value) => $_setBool(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasPendingApproval() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPendingApproval() => $_clearField(4);
+}
+
+class ListJoinRequestsRequest extends $pb.GeneratedMessage {
+  factory ListJoinRequestsRequest({
+    $core.String? groupId,
+  }) {
+    final result = create();
+    if (groupId != null) result.groupId = groupId;
+    return result;
+  }
+
+  ListJoinRequestsRequest._();
+
+  factory ListJoinRequestsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListJoinRequestsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListJoinRequestsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'groupId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListJoinRequestsRequest clone() =>
+      ListJoinRequestsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListJoinRequestsRequest copyWith(
+          void Function(ListJoinRequestsRequest) updates) =>
+      super.copyWith((message) => updates(message as ListJoinRequestsRequest))
+          as ListJoinRequestsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListJoinRequestsRequest create() => ListJoinRequestsRequest._();
+  @$core.override
+  ListJoinRequestsRequest createEmptyInstance() => create();
+  static $pb.PbList<ListJoinRequestsRequest> createRepeated() =>
+      $pb.PbList<ListJoinRequestsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListJoinRequestsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListJoinRequestsRequest>(create);
+  static ListJoinRequestsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get groupId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set groupId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasGroupId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGroupId() => $_clearField(1);
+}
+
+class ListJoinRequestsResponse extends $pb.GeneratedMessage {
+  factory ListJoinRequestsResponse({
+    $core.Iterable<GroupMemberMessage>? requests,
+  }) {
+    final result = create();
+    if (requests != null) result.requests.addAll(requests);
+    return result;
+  }
+
+  ListJoinRequestsResponse._();
+
+  factory ListJoinRequestsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListJoinRequestsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListJoinRequestsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..pc<GroupMemberMessage>(
+        1, _omitFieldNames ? '' : 'requests', $pb.PbFieldType.PM,
+        subBuilder: GroupMemberMessage.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListJoinRequestsResponse clone() =>
+      ListJoinRequestsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListJoinRequestsResponse copyWith(
+          void Function(ListJoinRequestsResponse) updates) =>
+      super.copyWith((message) => updates(message as ListJoinRequestsResponse))
+          as ListJoinRequestsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListJoinRequestsResponse create() => ListJoinRequestsResponse._();
+  @$core.override
+  ListJoinRequestsResponse createEmptyInstance() => create();
+  static $pb.PbList<ListJoinRequestsResponse> createRepeated() =>
+      $pb.PbList<ListJoinRequestsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListJoinRequestsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListJoinRequestsResponse>(create);
+  static ListJoinRequestsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<GroupMemberMessage> get requests => $_getList(0);
+}
+
+class DecideJoinRequestRequest extends $pb.GeneratedMessage {
+  factory DecideJoinRequestRequest({
+    $core.String? groupId,
+    $core.String? requesterId,
+    $core.bool? approve,
+    $core.String? note,
+  }) {
+    final result = create();
+    if (groupId != null) result.groupId = groupId;
+    if (requesterId != null) result.requesterId = requesterId;
+    if (approve != null) result.approve = approve;
+    if (note != null) result.note = note;
+    return result;
+  }
+
+  DecideJoinRequestRequest._();
+
+  factory DecideJoinRequestRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DecideJoinRequestRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DecideJoinRequestRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'groupId')
+    ..aOS(2, _omitFieldNames ? '' : 'requesterId')
+    ..aOB(3, _omitFieldNames ? '' : 'approve')
+    ..aOS(4, _omitFieldNames ? '' : 'note')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DecideJoinRequestRequest clone() =>
+      DecideJoinRequestRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DecideJoinRequestRequest copyWith(
+          void Function(DecideJoinRequestRequest) updates) =>
+      super.copyWith((message) => updates(message as DecideJoinRequestRequest))
+          as DecideJoinRequestRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DecideJoinRequestRequest create() => DecideJoinRequestRequest._();
+  @$core.override
+  DecideJoinRequestRequest createEmptyInstance() => create();
+  static $pb.PbList<DecideJoinRequestRequest> createRepeated() =>
+      $pb.PbList<DecideJoinRequestRequest>();
+  @$core.pragma('dart2js:noInline')
+  static DecideJoinRequestRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DecideJoinRequestRequest>(create);
+  static DecideJoinRequestRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get groupId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set groupId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasGroupId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGroupId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get requesterId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set requesterId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasRequesterId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRequesterId() => $_clearField(2);
+
+  /// true approves, false rejects.
+  @$pb.TagNumber(3)
+  $core.bool get approve => $_getBF(2);
+  @$pb.TagNumber(3)
+  set approve($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasApprove() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearApprove() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get note => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set note($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasNote() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearNote() => $_clearField(4);
+}
+
+class DecideJoinRequestResponse extends $pb.GeneratedMessage {
+  factory DecideJoinRequestResponse({
+    GroupMemberMessage? member,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (member != null) result.member = member;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  DecideJoinRequestResponse._();
+
+  factory DecideJoinRequestResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DecideJoinRequestResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DecideJoinRequestResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOM<GroupMemberMessage>(1, _omitFieldNames ? '' : 'member',
+        subBuilder: GroupMemberMessage.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DecideJoinRequestResponse clone() =>
+      DecideJoinRequestResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DecideJoinRequestResponse copyWith(
+          void Function(DecideJoinRequestResponse) updates) =>
+      super.copyWith((message) => updates(message as DecideJoinRequestResponse))
+          as DecideJoinRequestResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DecideJoinRequestResponse create() => DecideJoinRequestResponse._();
+  @$core.override
+  DecideJoinRequestResponse createEmptyInstance() => create();
+  static $pb.PbList<DecideJoinRequestResponse> createRepeated() =>
+      $pb.PbList<DecideJoinRequestResponse>();
+  @$core.pragma('dart2js:noInline')
+  static DecideJoinRequestResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DecideJoinRequestResponse>(create);
+  static DecideJoinRequestResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  GroupMemberMessage get member => $_getN(0);
+  @$pb.TagNumber(1)
+  set member(GroupMemberMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasMember() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMember() => $_clearField(1);
+  @$pb.TagNumber(1)
+  GroupMemberMessage ensureMember() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+}
+
+class WithdrawJoinRequestRequest extends $pb.GeneratedMessage {
+  factory WithdrawJoinRequestRequest({
+    $core.String? groupId,
+  }) {
+    final result = create();
+    if (groupId != null) result.groupId = groupId;
+    return result;
+  }
+
+  WithdrawJoinRequestRequest._();
+
+  factory WithdrawJoinRequestRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory WithdrawJoinRequestRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'WithdrawJoinRequestRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'groupId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  WithdrawJoinRequestRequest clone() =>
+      WithdrawJoinRequestRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  WithdrawJoinRequestRequest copyWith(
+          void Function(WithdrawJoinRequestRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as WithdrawJoinRequestRequest))
+          as WithdrawJoinRequestRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static WithdrawJoinRequestRequest create() => WithdrawJoinRequestRequest._();
+  @$core.override
+  WithdrawJoinRequestRequest createEmptyInstance() => create();
+  static $pb.PbList<WithdrawJoinRequestRequest> createRepeated() =>
+      $pb.PbList<WithdrawJoinRequestRequest>();
+  @$core.pragma('dart2js:noInline')
+  static WithdrawJoinRequestRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<WithdrawJoinRequestRequest>(create);
+  static WithdrawJoinRequestRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get groupId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set groupId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasGroupId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGroupId() => $_clearField(1);
+}
+
+class WithdrawJoinRequestResponse extends $pb.GeneratedMessage {
+  factory WithdrawJoinRequestResponse({
+    $core.String? message,
+  }) {
+    final result = create();
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  WithdrawJoinRequestResponse._();
+
+  factory WithdrawJoinRequestResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory WithdrawJoinRequestResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'WithdrawJoinRequestResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  WithdrawJoinRequestResponse clone() =>
+      WithdrawJoinRequestResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  WithdrawJoinRequestResponse copyWith(
+          void Function(WithdrawJoinRequestResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as WithdrawJoinRequestResponse))
+          as WithdrawJoinRequestResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static WithdrawJoinRequestResponse create() =>
+      WithdrawJoinRequestResponse._();
+  @$core.override
+  WithdrawJoinRequestResponse createEmptyInstance() => create();
+  static $pb.PbList<WithdrawJoinRequestResponse> createRepeated() =>
+      $pb.PbList<WithdrawJoinRequestResponse>();
+  @$core.pragma('dart2js:noInline')
+  static WithdrawJoinRequestResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<WithdrawJoinRequestResponse>(create);
+  static WithdrawJoinRequestResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get message => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set message($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasMessage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMessage() => $_clearField(1);
 }
 
 class GroupPaginationInfo extends $pb.GeneratedMessage {

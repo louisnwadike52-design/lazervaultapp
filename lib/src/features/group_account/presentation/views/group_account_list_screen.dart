@@ -40,6 +40,10 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   final Debouncer _debouncer = Debouncer.search();
   final Set<String> _joiningGroupIds = {};
   final Set<String> _joinedGroupIds = {};
+  // Groups this user has an outstanding request for. Kept beside
+  // _joinedGroupIds because the two are mutually exclusive states of the same
+  // CTA, and a request that is approved moves from one set to the other.
+  final Set<String> _pendingRequestGroupIds = {};
   String _selectedSort = 'most_members';
 
   // Leaderboard tab state
@@ -1196,8 +1200,22 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           child: BlocConsumer<GroupAccountCubit, GroupAccountState>(
             listener: (context, state) {
               if (state is JoinPublicGroupSuccess) {
+                // A successful call means one of two things, and they must not
+                // be conflated: on a group that requires approval the server
+                // filed a REQUEST, and treating that as membership would show
+                // "Joined" to someone who is only queued — and send them into
+                // a group they cannot yet see.
+                //
+                // group.requiresApproval is exact here, not a guess: the
+                // server joins outright only when the flag is false, so for a
+                // successful call the two are the same fact.
+                final queued = state.group.requiresApproval;
                 setState(() {
-                  _joinedGroupIds.add(state.group.id);
+                  if (queued) {
+                    _pendingRequestGroupIds.add(state.group.id);
+                  } else {
+                    _joinedGroupIds.add(state.group.id);
+                  }
                   _joiningGroupIds.clear();
                 });
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -1446,6 +1464,43 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       );
     }
 
+    // Already asked, still waiting. Shown instead of the CTA so the user is
+    // not invited to request a second time — the server would return the same
+    // row, but a button that appears to do nothing reads as broken.
+    if (_pendingRequestGroupIds.contains(group.id)) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(
+            color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.hourglass_top_rounded,
+                color: const Color(0xFFF59E0B), size: 14.sp),
+            SizedBox(width: 4.w),
+            Text(
+              'Awaiting approval',
+              style: GoogleFonts.inter(
+                color: const Color(0xFFF59E0B),
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // The label tells the user what the tap will actually do. A button that
+    // says "Join" and produces a queue entry is a small lie, and it is the
+    // moment they are deciding whether to bother.
+    final needsApproval = group.requiresApproval;
+
     return GestureDetector(
       onTap: isJoining
           ? null
@@ -1464,7 +1519,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
         child: isJoining
             ? LazerVaultLoader.tiny()
             : Text(
-                'Join',
+                needsApproval ? 'Request to join' : 'Join',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 13.sp,

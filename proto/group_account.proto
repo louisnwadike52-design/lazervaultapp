@@ -49,6 +49,16 @@ enum GroupMemberStatus {
   // the "Invite Sent" state. Clients render an Invite Sent badge
   // and gate role/remove actions off until the invite is accepted.
   GROUP_MEMBER_STATUS_PENDING = 5;
+
+  // The PERSON asked to join a public group; an admin has not decided yet.
+  // The opposite direction from PENDING above, which is an invitation the
+  // admin sent. The requester sees "Awaiting approval"; admins see an
+  // approve/reject action.
+  GROUP_MEMBER_STATUS_PENDING_APPROVAL = 6;
+
+  // An admin declined a join request. Distinct from REMOVED, which means
+  // "was a member, is not any more".
+  GROUP_MEMBER_STATUS_REJECTED = 7;
 }
 
 enum ContributionType {
@@ -152,6 +162,9 @@ message GroupAccountMessage {
   // fetch. Defaults false on endpoints that don't resolve membership
   // (and for unauthenticated callers).
   bool is_member = 16;
+  // Drives the CTA: 'Request to join' versus 'Join', so the user knows
+  // before tapping whether they are joining or joining a queue.
+  bool requires_approval = 17;
 }
 
 message GroupMemberMessage {
@@ -171,6 +184,11 @@ message GroupMemberMessage {
   // Propagated from auth SearchUsers: do not infer from masked email/phone strings.
   bool email_matches_search_query = 14;
   bool phone_matches_search_query_exact = 15;
+  // Join-request audit. Unset for members who never went through approval.
+  google.protobuf.Timestamp requested_at = 16;
+  google.protobuf.Timestamp decided_at = 17;
+  string decided_by = 18;
+  string decision_note = 19;
 }
 
 message ContributionMessage {
@@ -601,6 +619,17 @@ message CreateContributionRequest {
   // payout automatically once a receiver is set. When false, the
   // creator must press the manual-trigger CTA.
   bool auto_payout_enabled = 19;
+  // Who receives the payout, chosen at creation.
+  //
+  // Lives in the proto rather than as a hand-edit to the generated Dart: a
+  // previous edit was applied directly to group_account.pb.dart and a later
+  // regeneration silently removed it, breaking the build. Field 20 matches the
+  // service contract.
+  //
+  // Empty is meaningful — the contribution is created in pending_receiver,
+  // which is what older app builds do. For a rotating contribution the
+  // receiver is member_rotation_order[0], so the order IS the selection.
+  string payout_receiver_user_id = 20;
 }
 
 message CreateContributionResponse {
@@ -1170,6 +1199,41 @@ message JoinPublicGroupResponse {
   GroupMemberMessage member = 1;
   GroupAccountMessage group = 2;
   string message = 3;
+  // True when this call filed a REQUEST rather than joining. The member above
+  // is then the pending row, not a membership — do not navigate into the
+  // group on the strength of it.
+  bool pending_approval = 4;
+}
+
+// ---- Join requests (public groups requiring admin approval) ---------------
+
+message ListJoinRequestsRequest {
+  string group_id = 1;
+}
+
+message ListJoinRequestsResponse {
+  repeated GroupMemberMessage requests = 1;
+}
+
+message DecideJoinRequestRequest {
+  string group_id = 1;
+  string requester_id = 2;
+  // true approves, false rejects.
+  bool approve = 3;
+  string note = 4;
+}
+
+message DecideJoinRequestResponse {
+  GroupMemberMessage member = 1;
+  string message = 2;
+}
+
+message WithdrawJoinRequestRequest {
+  string group_id = 1;
+}
+
+message WithdrawJoinRequestResponse {
+  string message = 1;
 }
 
 // ============================================================================
@@ -1632,6 +1696,25 @@ service GroupAccountService {
   rpc GetPublicGroup(GetPublicGroupRequest) returns (GetPublicGroupResponse) {
     option (google.api.http) = {
       get: "/v1/groups/public/{group_id}"
+    };
+  }
+
+  rpc ListJoinRequests(ListJoinRequestsRequest) returns (ListJoinRequestsResponse) {
+    option (google.api.http) = {
+      get: "/v1/groups/{group_id}/join-requests"
+    };
+  }
+
+  rpc DecideJoinRequest(DecideJoinRequestRequest) returns (DecideJoinRequestResponse) {
+    option (google.api.http) = {
+      post: "/v1/groups/{group_id}/join-requests/{requester_id}/decide"
+      body: "*"
+    };
+  }
+
+  rpc WithdrawJoinRequest(WithdrawJoinRequestRequest) returns (WithdrawJoinRequestResponse) {
+    option (google.api.http) = {
+      delete: "/v1/groups/{group_id}/join-request"
     };
   }
 

@@ -463,6 +463,27 @@ class GroupAccountServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getPublicGroup, request, options: options);
   }
 
+  $grpc.ResponseFuture<$0.ListJoinRequestsResponse> listJoinRequests(
+    $0.ListJoinRequestsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$listJoinRequests, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.DecideJoinRequestResponse> decideJoinRequest(
+    $0.DecideJoinRequestRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$decideJoinRequest, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.WithdrawJoinRequestResponse> withdrawJoinRequest(
+    $0.WithdrawJoinRequestRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$withdrawJoinRequest, request, options: options);
+  }
+
   $grpc.ResponseFuture<$0.JoinPublicGroupResponse> joinPublicGroup(
     $0.JoinPublicGroupRequest request, {
     $grpc.CallOptions? options,
@@ -760,6 +781,21 @@ class GroupAccountServiceClient extends $grpc.Client {
           '/group_accounts.GroupAccountService/GetPublicGroup',
           ($0.GetPublicGroupRequest value) => value.writeToBuffer(),
           $0.GetPublicGroupResponse.fromBuffer);
+  static final _$listJoinRequests = $grpc.ClientMethod<
+          $0.ListJoinRequestsRequest, $0.ListJoinRequestsResponse>(
+      '/group_accounts.GroupAccountService/ListJoinRequests',
+      ($0.ListJoinRequestsRequest value) => value.writeToBuffer(),
+      $0.ListJoinRequestsResponse.fromBuffer);
+  static final _$decideJoinRequest = $grpc.ClientMethod<
+          $0.DecideJoinRequestRequest, $0.DecideJoinRequestResponse>(
+      '/group_accounts.GroupAccountService/DecideJoinRequest',
+      ($0.DecideJoinRequestRequest value) => value.writeToBuffer(),
+      $0.DecideJoinRequestResponse.fromBuffer);
+  static final _$withdrawJoinRequest = $grpc.ClientMethod<
+          $0.WithdrawJoinRequestRequest, $0.WithdrawJoinRequestResponse>(
+      '/group_accounts.GroupAccountService/WithdrawJoinRequest',
+      ($0.WithdrawJoinRequestRequest value) => value.writeToBuffer(),
+      $0.WithdrawJoinRequestResponse.fromBuffer);
   static final _$joinPublicGroup =
       $grpc.ClientMethod<$0.JoinPublicGroupRequest, $0.JoinPublicGroupResponse>(
           '/group_accounts.GroupAccountService/JoinPublicGroup',
@@ -1267,6 +1303,33 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetPublicGroupRequest.fromBuffer(value),
         ($0.GetPublicGroupResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListJoinRequestsRequest,
+            $0.ListJoinRequestsResponse>(
+        'ListJoinRequests',
+        listJoinRequests_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ListJoinRequestsRequest.fromBuffer(value),
+        ($0.ListJoinRequestsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DecideJoinRequestRequest,
+            $0.DecideJoinRequestResponse>(
+        'DecideJoinRequest',
+        decideJoinRequest_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.DecideJoinRequestRequest.fromBuffer(value),
+        ($0.DecideJoinRequestResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.WithdrawJoinRequestRequest,
+            $0.WithdrawJoinRequestResponse>(
+        'WithdrawJoinRequest',
+        withdrawJoinRequest_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.WithdrawJoinRequestRequest.fromBuffer(value),
+        ($0.WithdrawJoinRequestResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.JoinPublicGroupRequest,
             $0.JoinPublicGroupResponse>(
         'JoinPublicGroup',
@@ -1770,6 +1833,33 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetPublicGroupResponse> getPublicGroup(
       $grpc.ServiceCall call, $0.GetPublicGroupRequest request);
+
+  $async.Future<$0.ListJoinRequestsResponse> listJoinRequests_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ListJoinRequestsRequest> $request) async {
+    return listJoinRequests($call, await $request);
+  }
+
+  $async.Future<$0.ListJoinRequestsResponse> listJoinRequests(
+      $grpc.ServiceCall call, $0.ListJoinRequestsRequest request);
+
+  $async.Future<$0.DecideJoinRequestResponse> decideJoinRequest_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.DecideJoinRequestRequest> $request) async {
+    return decideJoinRequest($call, await $request);
+  }
+
+  $async.Future<$0.DecideJoinRequestResponse> decideJoinRequest(
+      $grpc.ServiceCall call, $0.DecideJoinRequestRequest request);
+
+  $async.Future<$0.WithdrawJoinRequestResponse> withdrawJoinRequest_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.WithdrawJoinRequestRequest> $request) async {
+    return withdrawJoinRequest($call, await $request);
+  }
+
+  $async.Future<$0.WithdrawJoinRequestResponse> withdrawJoinRequest(
+      $grpc.ServiceCall call, $0.WithdrawJoinRequestRequest request);
 
   $async.Future<$0.JoinPublicGroupResponse> joinPublicGroup_Pre(
       $grpc.ServiceCall $call,
