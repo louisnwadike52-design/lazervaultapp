@@ -169,6 +169,25 @@ class AccountsServiceClient extends $grpc.Client {
     return $createUnaryCall(_$releaseHold, request, options: options);
   }
 
+  /// GetMyAccountHolds - what is holding this user's money, for the user.
+  ///
+  /// Reserved money is the gap between available and total balance, and nothing
+  /// could explain it: the account card showed "Available ₦14,531 / Total
+  /// ₦18,131" with no way to find out what the ₦3,600 was. Holds were reachable
+  /// only through the Admin* RPCs, so a customer asking "why can't I spend this"
+  /// needed a staff member to look it up.
+  ///
+  /// Scoped to the CALLER's own account — this is not the admin endpoint under a
+  /// softer name. The handler rejects the request when the JWT subject does not
+  /// own the account, because an account id is a guessable handle and this
+  /// service has shipped an IDOR on a lookup before.
+  $grpc.ResponseFuture<$0.GetMyAccountHoldsResponse> getMyAccountHolds(
+    $0.GetMyAccountHoldsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getMyAccountHolds, request, options: options);
+  }
+
   /// CreditToClearing - Credit deposit to balance but hold in clearing (not available yet)
   $grpc.ResponseFuture<$0.CreditToClearingResponse> creditToClearing(
     $0.CreditToClearingRequest request, {
@@ -731,6 +750,20 @@ class AccountsServiceClient extends $grpc.Client {
   }
 
   /// Admin: Search accounts by email, phone, user_id, or account_number
+  /// Admin: Investment-wallet sunset sweep. Moves each legacy investment
+  /// wallet's remaining funds into the SAME user's savings wallet (same
+  /// currency) through the normal ledgered TransferBalance path with the
+  /// deterministic idempotency key INVSWEEP-{investment_account_id} — a
+  /// re-run or double-click can never move money twice. dry_run returns the
+  /// full plan without moving anything. Wallets with holds/reserves or no
+  /// savings destination are skipped and reported for manual review.
+  $grpc.ResponseFuture<$0.AdminInvestmentSweepResponse> adminInvestmentSweep(
+    $0.AdminInvestmentSweepRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adminInvestmentSweep, request, options: options);
+  }
+
   $grpc.ResponseFuture<$0.AdminSearchAccountsResponse> adminSearchAccounts(
     $0.AdminSearchAccountsRequest request, {
     $grpc.CallOptions? options,
@@ -1051,6 +1084,11 @@ class AccountsServiceClient extends $grpc.Client {
           '/accounts.AccountsService/ReleaseHold',
           ($0.ReleaseHoldRequest value) => value.writeToBuffer(),
           $0.ReleaseHoldResponse.fromBuffer);
+  static final _$getMyAccountHolds = $grpc.ClientMethod<
+          $0.GetMyAccountHoldsRequest, $0.GetMyAccountHoldsResponse>(
+      '/accounts.AccountsService/GetMyAccountHolds',
+      ($0.GetMyAccountHoldsRequest value) => value.writeToBuffer(),
+      $0.GetMyAccountHoldsResponse.fromBuffer);
   static final _$creditToClearing = $grpc.ClientMethod<
           $0.CreditToClearingRequest, $0.CreditToClearingResponse>(
       '/accounts.AccountsService/CreditToClearing',
@@ -1358,6 +1396,11 @@ class AccountsServiceClient extends $grpc.Client {
       '/accounts.AccountsService/GenerateProofOfFunds',
       ($0.GenerateProofOfFundsRequest value) => value.writeToBuffer(),
       $0.GenerateProofOfFundsResponse.fromBuffer);
+  static final _$adminInvestmentSweep = $grpc.ClientMethod<
+          $0.AdminInvestmentSweepRequest, $0.AdminInvestmentSweepResponse>(
+      '/accounts.AccountsService/AdminInvestmentSweep',
+      ($0.AdminInvestmentSweepRequest value) => value.writeToBuffer(),
+      $0.AdminInvestmentSweepResponse.fromBuffer);
   static final _$adminSearchAccounts = $grpc.ClientMethod<
           $0.AdminSearchAccountsRequest, $0.AdminSearchAccountsResponse>(
       '/accounts.AccountsService/AdminSearchAccounts',
@@ -1645,6 +1688,15 @@ abstract class AccountsServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.ReleaseHoldRequest.fromBuffer(value),
             ($0.ReleaseHoldResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMyAccountHoldsRequest,
+            $0.GetMyAccountHoldsResponse>(
+        'GetMyAccountHolds',
+        getMyAccountHolds_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetMyAccountHoldsRequest.fromBuffer(value),
+        ($0.GetMyAccountHoldsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.CreditToClearingRequest,
             $0.CreditToClearingResponse>(
         'CreditToClearing',
@@ -2172,6 +2224,15 @@ abstract class AccountsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GenerateProofOfFundsRequest.fromBuffer(value),
         ($0.GenerateProofOfFundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminInvestmentSweepRequest,
+            $0.AdminInvestmentSweepResponse>(
+        'AdminInvestmentSweep',
+        adminInvestmentSweep_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminInvestmentSweepRequest.fromBuffer(value),
+        ($0.AdminInvestmentSweepResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.AdminSearchAccountsRequest,
             $0.AdminSearchAccountsResponse>(
         'AdminSearchAccounts',
@@ -2543,6 +2604,15 @@ abstract class AccountsServiceBase extends $grpc.Service {
 
   $async.Future<$0.ReleaseHoldResponse> releaseHold(
       $grpc.ServiceCall call, $0.ReleaseHoldRequest request);
+
+  $async.Future<$0.GetMyAccountHoldsResponse> getMyAccountHolds_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetMyAccountHoldsRequest> $request) async {
+    return getMyAccountHolds($call, await $request);
+  }
+
+  $async.Future<$0.GetMyAccountHoldsResponse> getMyAccountHolds(
+      $grpc.ServiceCall call, $0.GetMyAccountHoldsRequest request);
 
   $async.Future<$0.CreditToClearingResponse> creditToClearing_Pre(
       $grpc.ServiceCall $call,
@@ -3077,6 +3147,15 @@ abstract class AccountsServiceBase extends $grpc.Service {
 
   $async.Future<$0.GenerateProofOfFundsResponse> generateProofOfFunds(
       $grpc.ServiceCall call, $0.GenerateProofOfFundsRequest request);
+
+  $async.Future<$0.AdminInvestmentSweepResponse> adminInvestmentSweep_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.AdminInvestmentSweepRequest> $request) async {
+    return adminInvestmentSweep($call, await $request);
+  }
+
+  $async.Future<$0.AdminInvestmentSweepResponse> adminInvestmentSweep(
+      $grpc.ServiceCall call, $0.AdminInvestmentSweepRequest request);
 
   $async.Future<$0.AdminSearchAccountsResponse> adminSearchAccounts_Pre(
       $grpc.ServiceCall $call,

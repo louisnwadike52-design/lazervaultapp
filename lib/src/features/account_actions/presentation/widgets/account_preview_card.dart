@@ -7,6 +7,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/share_origin.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_pb;
+import 'package:lazervault/src/features/account_actions/presentation/widgets/held_funds_breakdown_sheet.dart';
 
 /// Reusable account/card preview shown at the top of the account-actions bottom
 /// sheet (and anywhere a "card" needs to be previewed with live status).
@@ -245,16 +249,65 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
         duration: const Duration(seconds: 2));
   }
 
-  void _shareDetails() {
-    SharePlus.instance.share(ShareParams(
-        text: _shareableDetails, subject: 'My account details'));
+  /// Share the deposit details via the system sheet.
+  ///
+  /// [origin] is the tapped button's rect. iPad presents the share sheet as a
+  /// popover and UIKit needs something to point it at — without one the sheet
+  /// can fail to present entirely, which is the "share does nothing" symptom:
+  /// the call returns fine and no sheet ever appears.
+  Future<void> _shareDetails(BuildContext context) async {
+    final origin = ShareOrigin.of(context);
+    final text = _shareableDetails;
+
+    // Never open the sheet on nothing. An un-provisioned account has no number
+    // to send, and sharing a block that says "Account number: " is worse than
+    // saying so plainly.
+    if (text.trim().isEmpty || !_hasRealNumber) {
+      Get.snackbar(
+        'Not ready yet',
+        'This account has no number to share yet.',
+        backgroundColor: const Color(0xFFF59E0B),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 3),
+      );
+      return;
+    }
+
+    try {
+      await SharePlus.instance.share(ShareParams(
+        text: text,
+        subject: 'My account details',
+        sharePositionOrigin: origin,
+      ));
+    } catch (e) {
+      // Previously fire-and-forget: a platform failure left the user tapping a
+      // button that gave no sign either way.
+      Get.snackbar(
+        'Could not share',
+        'Your details are copied instead — paste them anywhere.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 3),
+      );
+      await Clipboard.setData(ClipboardData(text: text));
+    }
   }
 
-  Widget _numberActionIcon(IconData icon, String tooltip, VoidCallback onTap) {
+  /// [onTap] receives the icon's own BuildContext so a share sheet can anchor
+  /// to this exact button — the rect has to come from the tapped widget, not
+  /// the card, or the popover points at the wrong place on iPad.
+  Widget _numberActionIcon(
+    IconData icon,
+    String tooltip,
+    void Function(BuildContext) onTap,
+  ) {
     return Tooltip(
       message: tooltip,
-      child: InkWell(
-        onTap: onTap,
+      child: Builder(
+        builder: (iconContext) => InkWell(
+        onTap: () => onTap(iconContext),
         borderRadius: BorderRadius.circular(10.r),
         child: Container(
           padding: EdgeInsets.all(7.w),
@@ -263,6 +316,7 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
             borderRadius: BorderRadius.circular(10.r),
           ),
           child: Icon(icon, color: Colors.white, size: 16.sp),
+        ),
         ),
       ),
     );
@@ -376,7 +430,7 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
                   ),
                 ),
                 if (_hasRealNumber) ...[
-                  _numberActionIcon(Icons.copy_rounded, 'Copy', _copyDetails),
+                  _numberActionIcon(Icons.copy_rounded, 'Copy', (_) => _copyDetails()),
                   SizedBox(width: 8.w),
                   _numberActionIcon(Icons.ios_share_rounded, 'Share', _shareDetails),
                 ],
@@ -385,46 +439,44 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
           SizedBox(height: 14.h),
           _balanceBlock(labelColor: Colors.white.withValues(alpha: 0.65)),
           SizedBox(height: 4.h),
-          _secondaryBalances(),
-          SizedBox(height: 12.h),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // Real NUBAN holder name (provider value) — NOT a mock and NOT the
-              // account type. Blank until the backend provisions it.
-              Expanded(
-                flex: 3,
-                child: Text(
-                  _holderName.toUpperCase(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.85),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.0,
-                  ),
-                ),
+          _secondaryBalances(onTapHeld: () => _openHeldBreakdown(context)),
+          SizedBox(height: 14.h),
+          // Holder and bank are STACKED, not squeezed onto one line.
+          //
+          // They shared a row on a 3:2 split with both capped at a single
+          // ellipsised line, so an ordinary Nigerian bank name — "Flutterwave
+          // MFB (For..." — was cut off mid-word on every card. These are the
+          // two details a payer reads back to confirm they are sending to the
+          // right person, so truncating them is the one thing this block must
+          // not do. Stacking costs a line and lets both render in full.
+          if (_holderName.isNotEmpty)
+            Text(
+              _holderName.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.85),
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 1.0,
               ),
-              SizedBox(width: 8.w),
-              // The deposit bank (provider value) sits where a card would carry
-              // its network/bank mark — never the app's own name.
-              Flexible(
-                flex: 2,
-                child: Text(
-                  _bankName,
-                  textAlign: TextAlign.right,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+            ),
+          if (_bankName.isNotEmpty) ...[
+            SizedBox(height: 3.h),
+            Text(
+              _bankName,
+              // Two lines: bank names here routinely carry a suffix in
+              // parentheses that will not fit on one.
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.9),
+                fontSize: 11.5.sp,
+                fontWeight: FontWeight.w700,
+                height: 1.25,
               ),
-            ],
-          ),
+            ),
+          ],
         ],
       ),
     );
@@ -538,7 +590,7 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
               // the active face's rhythm rather than sitting flush.
               _balanceBlock(labelColor: Colors.white.withValues(alpha: 0.7)),
               SizedBox(height: 4.h),
-              _secondaryBalances(),
+              _secondaryBalances(onTapHeld: () => _openHeldBreakdown(context)),
               SizedBox(height: 6.h),
             ],
           ),
@@ -554,7 +606,12 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
       width: double.infinity,
       // Fixed height so (a) both faces are identical size for a clean flip and
       // (b) the frozen face's Spacers have a bounded parent to centre against.
-      height: 238.h,
+      //
+      // Raised from 238 once holder and bank were stacked rather than
+      // truncated: at the old height the details were pressed against the
+      // balance with no vertical rhythm, which is what made this read as a
+      // cramped card mock rather than a legible list of account details.
+      height: 268.h,
       padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -650,22 +707,118 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
     );
   }
 
-  /// Compact secondary line: total + held/reserved, so no balance info is lost
-  /// even in the card-style layout (shown in both active and frozen faces).
-  Widget _secondaryBalances() {
+  /// Money the user cannot spend right now: the gap between total and
+  /// available.
+  ///
+  /// Derived from the two balances rather than read from `reservedBalance`.
+  /// That field only counts account_reserves, which is 0.00 on the great
+  /// majority of accounts — so the old "Held" line was gated on a number that
+  /// is almost always zero and therefore almost never appeared, even on an
+  /// account with 3,600 locked away in PiggyVault. The gap is the figure the
+  /// user can actually see for themselves by subtracting.
+  double get _unavailable {
+    final gap = _balance - _available;
+    return gap > 0.01 ? gap : 0.0;
+  }
+
+  /// Compact secondary line: total + held, so no balance info is lost even in
+  /// the card-style layout (shown in both active and frozen faces).
+  ///
+  /// When something IS held the line becomes tappable, because "Held ₦3,600"
+  /// raises the question it does not answer. The tap target is the whole line
+  /// rather than a separate icon — the text is what prompts the question.
+  Widget _secondaryBalances({VoidCallback? onTapHeld}) {
+    final held = _unavailable;
     final parts = <String>[
       'Total ${widget.currencySymbol}${_balance.toStringAsFixed(2)}',
-      if (_reserved > 0.01)
-        'Held ${widget.currencySymbol}${_reserved.toStringAsFixed(2)}',
+      if (held > 0)
+        'Held ${widget.currencySymbol}${held.toStringAsFixed(2)}',
     ];
-    return Text(
-      parts.join('   •   '),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        color: Colors.white.withValues(alpha: 0.7),
-        fontSize: 11.sp,
-        fontWeight: FontWeight.w500,
+
+    final line = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(
+          child: Text(
+            parts.join('   •   '),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        if (held > 0 && onTapHeld != null) ...[
+          SizedBox(width: 4.w),
+          Icon(
+            Icons.info_outline_rounded,
+            size: 12.sp,
+            color: Colors.white.withValues(alpha: 0.7),
+          ),
+        ],
+      ],
+    );
+
+    if (held <= 0 || onTapHeld == null) return line;
+
+    return GestureDetector(
+      onTap: onTapHeld,
+      // Opaque so the tap lands on the whole row, including the gaps between
+      // the two figures.
+      behavior: HitTestBehavior.opaque,
+      child: line,
+    );
+  }
+
+  /// Open the itemised explanation of what is holding this money.
+  ///
+  /// Resolved lazily from the service locator rather than threaded through the
+  /// widget: this card is constructed from a plain args map in several places,
+  /// and adding a required client to all of them to support one optional tap
+  /// would be a worse trade than a lookup at the moment of use.
+  void _openHeldBreakdown(BuildContext context) {
+    final accountId = (widget.accountArgs['accountId'] as String?) ??
+        (widget.accountArgs['id'] as String?) ??
+        '';
+    if (accountId.isEmpty) {
+      Get.snackbar(
+        'Not available',
+        "We can't break this down for this account yet.",
+        backgroundColor: const Color(0xFFF59E0B),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 3),
+      );
+      return;
+    }
+
+    if (!serviceLocator.isRegistered<accounts_pb.AccountsServiceClient>()) {
+      Get.snackbar(
+        'Not available',
+        'Please try again in a moment.',
+        backgroundColor: const Color(0xFFF59E0B),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 3),
+      );
+      return;
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      // The list can be long (several locks plus pending payments) but should
+      // never cover the card the user is reading it against.
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.8,
+      ),
+      builder: (_) => HeldFundsBreakdownSheet(
+        accountId: accountId,
+        currencySymbol: widget.currencySymbol,
+        client: serviceLocator<accounts_pb.AccountsServiceClient>(),
       ),
     );
   }

@@ -940,6 +940,7 @@ const LockFunds$json = {
     {'1': 'matured_at', '3': 12, '4': 1, '5': 9, '10': 'maturedAt'},
     {'1': 'auto_renew', '3': 13, '4': 1, '5': 8, '10': 'autoRenew'},
     {'1': 'config_id', '3': 14, '4': 1, '5': 9, '10': 'configId'},
+    {'1': 'interest_rate', '3': 15, '4': 1, '5': 1, '10': 'interestRate'},
   ],
 };
 
@@ -952,7 +953,7 @@ final $typed_data.Uint8List lockFundsDescriptor = $convert.base64Decode(
     'dF9hbW91bnQYCSABKAFSDHRhcmdldEFtb3VudBIhCgxwZW5hbHR5X3JhdGUYCiABKAFSC3Blbm'
     'FsdHlSYXRlEh0KCmNyZWF0ZWRfYXQYCyABKAlSCWNyZWF0ZWRBdBIdCgptYXR1cmVkX2F0GAwg'
     'ASgJUgltYXR1cmVkQXQSHQoKYXV0b19yZW5ldxgNIAEoCFIJYXV0b1JlbmV3EhsKCWNvbmZpZ1'
-    '9pZBgOIAEoCVIIY29uZmlnSWQ=');
+    '9pZBgOIAEoCVIIY29uZmlnSWQSIwoNaW50ZXJlc3RfcmF0ZRgPIAEoAVIMaW50ZXJlc3RSYXRl');
 
 @$core.Deprecated('Use createLockFundsRequestDescriptor instead')
 const CreateLockFundsRequest$json = {
@@ -1105,13 +1106,15 @@ const UnlockFundsRequest$json = {
     {'1': 'lockfunds_id', '3': 1, '4': 1, '5': 9, '10': 'lockfundsId'},
     {'1': 'pin', '3': 2, '4': 1, '5': 9, '10': 'pin'},
     {'1': 'force_unlock', '3': 3, '4': 1, '5': 8, '10': 'forceUnlock'},
+    {'1': 'withdrawal_mode', '3': 4, '4': 1, '5': 9, '10': 'withdrawalMode'},
   ],
 };
 
 /// Descriptor for `UnlockFundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List unlockFundsRequestDescriptor = $convert.base64Decode(
     'ChJVbmxvY2tGdW5kc1JlcXVlc3QSIQoMbG9ja2Z1bmRzX2lkGAEgASgJUgtsb2NrZnVuZHNJZB'
-    'IQCgNwaW4YAiABKAlSA3BpbhIhCgxmb3JjZV91bmxvY2sYAyABKAhSC2ZvcmNlVW5sb2Nr');
+    'IQCgNwaW4YAiABKAlSA3BpbhIhCgxmb3JjZV91bmxvY2sYAyABKAhSC2ZvcmNlVW5sb2NrEicK'
+    'D3dpdGhkcmF3YWxfbW9kZRgEIAEoCVIOd2l0aGRyYXdhbE1vZGU=');
 
 @$core.Deprecated('Use unlockFundsResponseDescriptor instead')
 const UnlockFundsResponse$json = {
@@ -4357,6 +4360,75 @@ final $typed_data.Uint8List reverseClearingDepositResponseDescriptor =
         'VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEo'
         'CVIMZXJyb3JNZXNzYWdlEh8KC25ld19iYWxhbmNlGAQgASgDUgpuZXdCYWxhbmNl');
 
+@$core.Deprecated('Use adminInvestmentSweepRequestDescriptor instead')
+const AdminInvestmentSweepRequest$json = {
+  '1': 'AdminInvestmentSweepRequest',
+  '2': [
+    {'1': 'dry_run', '3': 1, '4': 1, '5': 8, '10': 'dryRun'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `AdminInvestmentSweepRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminInvestmentSweepRequestDescriptor =
+    $convert.base64Decode(
+        'ChtBZG1pbkludmVzdG1lbnRTd2VlcFJlcXVlc3QSFwoHZHJ5X3J1bhgBIAEoCFIGZHJ5UnVuEh'
+        'cKB3VzZXJfaWQYAiABKAlSBnVzZXJJZA==');
+
+@$core.Deprecated('Use adminInvestmentSweepItemDescriptor instead')
+const AdminInvestmentSweepItem$json = {
+  '1': 'AdminInvestmentSweepItem',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
+    {
+      '1': 'savings_account_id',
+      '3': 5,
+      '4': 1,
+      '5': 9,
+      '10': 'savingsAccountId'
+    },
+    {'1': 'action', '3': 6, '4': 1, '5': 9, '10': 'action'},
+    {'1': 'detail', '3': 7, '4': 1, '5': 9, '10': 'detail'},
+  ],
+};
+
+/// Descriptor for `AdminInvestmentSweepItem`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminInvestmentSweepItemDescriptor = $convert.base64Decode(
+    'ChhBZG1pbkludmVzdG1lbnRTd2VlcEl0ZW0SHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3VudE'
+    'lkEhcKB3VzZXJfaWQYAiABKAlSBnVzZXJJZBIaCghjdXJyZW5jeRgDIAEoCVIIY3VycmVuY3kS'
+    'FgoGYW1vdW50GAQgASgBUgZhbW91bnQSLAoSc2F2aW5nc19hY2NvdW50X2lkGAUgASgJUhBzYX'
+    'ZpbmdzQWNjb3VudElkEhYKBmFjdGlvbhgGIAEoCVIGYWN0aW9uEhYKBmRldGFpbBgHIAEoCVIG'
+    'ZGV0YWls');
+
+@$core.Deprecated('Use adminInvestmentSweepResponseDescriptor instead')
+const AdminInvestmentSweepResponse$json = {
+  '1': 'AdminInvestmentSweepResponse',
+  '2': [
+    {
+      '1': 'items',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.accounts.AdminInvestmentSweepItem',
+      '10': 'items'
+    },
+    {'1': 'dry_run', '3': 2, '4': 1, '5': 8, '10': 'dryRun'},
+    {'1': 'sweep_count', '3': 3, '4': 1, '5': 5, '10': 'sweepCount'},
+    {'1': 'skipped_count', '3': 4, '4': 1, '5': 5, '10': 'skippedCount'},
+    {'1': 'failed_count', '3': 5, '4': 1, '5': 5, '10': 'failedCount'},
+  ],
+};
+
+/// Descriptor for `AdminInvestmentSweepResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminInvestmentSweepResponseDescriptor = $convert.base64Decode(
+    'ChxBZG1pbkludmVzdG1lbnRTd2VlcFJlc3BvbnNlEjgKBWl0ZW1zGAEgAygLMiIuYWNjb3VudH'
+    'MuQWRtaW5JbnZlc3RtZW50U3dlZXBJdGVtUgVpdGVtcxIXCgdkcnlfcnVuGAIgASgIUgZkcnlS'
+    'dW4SHwoLc3dlZXBfY291bnQYAyABKAVSCnN3ZWVwQ291bnQSIwoNc2tpcHBlZF9jb3VudBgEIA'
+    'EoBVIMc2tpcHBlZENvdW50EiEKDGZhaWxlZF9jb3VudBgFIAEoBVILZmFpbGVkQ291bnQ=');
+
 @$core.Deprecated('Use adminSearchAccountsRequestDescriptor instead')
 const AdminSearchAccountsRequest$json = {
   '1': 'AdminSearchAccountsRequest',
@@ -4674,6 +4746,77 @@ final $typed_data.Uint8List adminHoldDescriptor = $convert.base64Decode(
     'hwaXJlc0F0Eh8KC2NhcHR1cmVkX2F0GAsgASgJUgpjYXB0dXJlZEF0Eh8KC3JlbGVhc2VkX2F0'
     'GAwgASgJUgpyZWxlYXNlZEF0EicKD2lkZW1wb3RlbmN5X2tleRgNIAEoCVIOaWRlbXBvdGVuY3'
     'lLZXk=');
+
+@$core.Deprecated('Use getMyAccountHoldsRequestDescriptor instead')
+const GetMyAccountHoldsRequest$json = {
+  '1': 'GetMyAccountHoldsRequest',
+  '2': [
+    {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+  ],
+};
+
+/// Descriptor for `GetMyAccountHoldsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMyAccountHoldsRequestDescriptor =
+    $convert.base64Decode(
+        'ChhHZXRNeUFjY291bnRIb2xkc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3VudE'
+        'lk');
+
+@$core.Deprecated('Use myAccountHoldDescriptor instead')
+const MyAccountHold$json = {
+  '1': 'MyAccountHold',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'amount', '3': 2, '4': 1, '5': 3, '10': 'amount'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'reason', '3': 4, '4': 1, '5': 9, '10': 'reason'},
+    {'1': 'service_name', '3': 5, '4': 1, '5': 9, '10': 'serviceName'},
+    {'1': 'created_at', '3': 6, '4': 1, '5': 9, '10': 'createdAt'},
+    {'1': 'expires_at', '3': 7, '4': 1, '5': 9, '10': 'expiresAt'},
+    {'1': 'kind', '3': 8, '4': 1, '5': 9, '10': 'kind'},
+    {'1': 'lock_type', '3': 9, '4': 1, '5': 9, '10': 'lockType'},
+  ],
+};
+
+/// Descriptor for `MyAccountHold`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List myAccountHoldDescriptor = $convert.base64Decode(
+    'Cg1NeUFjY291bnRIb2xkEg4KAmlkGAEgASgJUgJpZBIWCgZhbW91bnQYAiABKANSBmFtb3VudB'
+    'IaCghjdXJyZW5jeRgDIAEoCVIIY3VycmVuY3kSFgoGcmVhc29uGAQgASgJUgZyZWFzb24SIQoM'
+    'c2VydmljZV9uYW1lGAUgASgJUgtzZXJ2aWNlTmFtZRIdCgpjcmVhdGVkX2F0GAYgASgJUgljcm'
+    'VhdGVkQXQSHQoKZXhwaXJlc19hdBgHIAEoCVIJZXhwaXJlc0F0EhIKBGtpbmQYCCABKAlSBGtp'
+    'bmQSGwoJbG9ja190eXBlGAkgASgJUghsb2NrVHlwZQ==');
+
+@$core.Deprecated('Use getMyAccountHoldsResponseDescriptor instead')
+const GetMyAccountHoldsResponse$json = {
+  '1': 'GetMyAccountHoldsResponse',
+  '2': [
+    {
+      '1': 'holds',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.accounts.MyAccountHold',
+      '10': 'holds'
+    },
+    {'1': 'total_held', '3': 2, '4': 1, '5': 3, '10': 'totalHeld'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'reserved_balance', '3': 4, '4': 1, '5': 3, '10': 'reservedBalance'},
+    {
+      '1': 'unavailable_balance',
+      '3': 5,
+      '4': 1,
+      '5': 3,
+      '10': 'unavailableBalance'
+    },
+  ],
+};
+
+/// Descriptor for `GetMyAccountHoldsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMyAccountHoldsResponseDescriptor = $convert.base64Decode(
+    'ChlHZXRNeUFjY291bnRIb2xkc1Jlc3BvbnNlEi0KBWhvbGRzGAEgAygLMhcuYWNjb3VudHMuTX'
+    'lBY2NvdW50SG9sZFIFaG9sZHMSHQoKdG90YWxfaGVsZBgCIAEoA1IJdG90YWxIZWxkEhoKCGN1'
+    'cnJlbmN5GAMgASgJUghjdXJyZW5jeRIpChByZXNlcnZlZF9iYWxhbmNlGAQgASgDUg9yZXNlcn'
+    'ZlZEJhbGFuY2USLwoTdW5hdmFpbGFibGVfYmFsYW5jZRgFIAEoA1ISdW5hdmFpbGFibGVCYWxh'
+    'bmNl');
 
 @$core.Deprecated('Use adminGetAccountClearingRequestDescriptor instead')
 const AdminGetAccountClearingRequest$json = {

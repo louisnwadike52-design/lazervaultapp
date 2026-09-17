@@ -4025,6 +4025,7 @@ class LockFunds extends $pb.GeneratedMessage {
     $core.String? maturedAt,
     $core.bool? autoRenew,
     $core.String? configId,
+    $core.double? interestRate,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -4041,6 +4042,7 @@ class LockFunds extends $pb.GeneratedMessage {
     if (maturedAt != null) result.maturedAt = maturedAt;
     if (autoRenew != null) result.autoRenew = autoRenew;
     if (configId != null) result.configId = configId;
+    if (interestRate != null) result.interestRate = interestRate;
     return result;
   }
 
@@ -4073,6 +4075,8 @@ class LockFunds extends $pb.GeneratedMessage {
     ..aOS(12, _omitFieldNames ? '' : 'maturedAt')
     ..aOB(13, _omitFieldNames ? '' : 'autoRenew')
     ..aOS(14, _omitFieldNames ? '' : 'configId')
+    ..a<$core.double>(
+        15, _omitFieldNames ? '' : 'interestRate', $pb.PbFieldType.OD)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4223,6 +4227,21 @@ class LockFunds extends $pb.GeneratedMessage {
   $core.bool hasConfigId() => $_has(13);
   @$pb.TagNumber(14)
   void clearConfigId() => $_clearField(14);
+
+  /// Annual interest rate FROZEN AT CREATION for this lock (e.g. 0.18 for
+  /// 18%). The plan's live rate can change; this one governs this lock's
+  /// ROI, maturity payout and break settlement for its whole life, so the
+  /// app must display THIS value rather than re-reading the plan config.
+  /// 0 for legacy rows created before the snapshot existed — those fall
+  /// back to the plan's current rate server-side.
+  @$pb.TagNumber(15)
+  $core.double get interestRate => $_getN(14);
+  @$pb.TagNumber(15)
+  set interestRate($core.double value) => $_setDouble(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasInterestRate() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearInterestRate() => $_clearField(15);
 }
 
 /// NOTE: user_id extracted from JWT token, not from request
@@ -4802,11 +4821,13 @@ class UnlockFundsRequest extends $pb.GeneratedMessage {
     $core.String? lockfundsId,
     $core.String? pin,
     $core.bool? forceUnlock,
+    $core.String? withdrawalMode,
   }) {
     final result = create();
     if (lockfundsId != null) result.lockfundsId = lockfundsId;
     if (pin != null) result.pin = pin;
     if (forceUnlock != null) result.forceUnlock = forceUnlock;
+    if (withdrawalMode != null) result.withdrawalMode = withdrawalMode;
     return result;
   }
 
@@ -4826,6 +4847,7 @@ class UnlockFundsRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'lockfundsId')
     ..aOS(2, _omitFieldNames ? '' : 'pin')
     ..aOB(3, _omitFieldNames ? '' : 'forceUnlock')
+    ..aOS(4, _omitFieldNames ? '' : 'withdrawalMode')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4875,6 +4897,20 @@ class UnlockFundsRequest extends $pb.GeneratedMessage {
   $core.bool hasForceUnlock() => $_has(2);
   @$pb.TagNumber(3)
   void clearForceUnlock() => $_clearField(3);
+
+  /// "" or "full"    → principal + any unpaid eligible interest (historic behaviour)
+  /// "interest_only" → pay accrued unpaid interest; principal stays locked.
+  ///                   Rejected for upfront-interest plans (paid at creation).
+  /// "principal_only" is accepted as an alias of "full": interest is never
+  /// stranded when principal leaves (and on upfront plans it already left).
+  @$pb.TagNumber(4)
+  $core.String get withdrawalMode => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set withdrawalMode($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasWithdrawalMode() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearWithdrawalMode() => $_clearField(4);
 }
 
 class UnlockFundsResponse extends $pb.GeneratedMessage {
@@ -18055,6 +18091,312 @@ class ReverseClearingDepositResponse extends $pb.GeneratedMessage {
   void clearNewBalance() => $_clearField(4);
 }
 
+class AdminInvestmentSweepRequest extends $pb.GeneratedMessage {
+  factory AdminInvestmentSweepRequest({
+    $core.bool? dryRun,
+    $core.String? userId,
+  }) {
+    final result = create();
+    if (dryRun != null) result.dryRun = dryRun;
+    if (userId != null) result.userId = userId;
+    return result;
+  }
+
+  AdminInvestmentSweepRequest._();
+
+  factory AdminInvestmentSweepRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminInvestmentSweepRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminInvestmentSweepRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'dryRun')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminInvestmentSweepRequest clone() =>
+      AdminInvestmentSweepRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminInvestmentSweepRequest copyWith(
+          void Function(AdminInvestmentSweepRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as AdminInvestmentSweepRequest))
+          as AdminInvestmentSweepRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminInvestmentSweepRequest create() =>
+      AdminInvestmentSweepRequest._();
+  @$core.override
+  AdminInvestmentSweepRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminInvestmentSweepRequest> createRepeated() =>
+      $pb.PbList<AdminInvestmentSweepRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminInvestmentSweepRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminInvestmentSweepRequest>(create);
+  static AdminInvestmentSweepRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get dryRun => $_getBF(0);
+  @$pb.TagNumber(1)
+  set dryRun($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasDryRun() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDryRun() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => $_clearField(2);
+}
+
+class AdminInvestmentSweepItem extends $pb.GeneratedMessage {
+  factory AdminInvestmentSweepItem({
+    $core.String? accountId,
+    $core.String? userId,
+    $core.String? currency,
+    $core.double? amount,
+    $core.String? savingsAccountId,
+    $core.String? action,
+    $core.String? detail,
+  }) {
+    final result = create();
+    if (accountId != null) result.accountId = accountId;
+    if (userId != null) result.userId = userId;
+    if (currency != null) result.currency = currency;
+    if (amount != null) result.amount = amount;
+    if (savingsAccountId != null) result.savingsAccountId = savingsAccountId;
+    if (action != null) result.action = action;
+    if (detail != null) result.detail = detail;
+    return result;
+  }
+
+  AdminInvestmentSweepItem._();
+
+  factory AdminInvestmentSweepItem.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminInvestmentSweepItem.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminInvestmentSweepItem',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'savingsAccountId')
+    ..aOS(6, _omitFieldNames ? '' : 'action')
+    ..aOS(7, _omitFieldNames ? '' : 'detail')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminInvestmentSweepItem clone() =>
+      AdminInvestmentSweepItem()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminInvestmentSweepItem copyWith(
+          void Function(AdminInvestmentSweepItem) updates) =>
+      super.copyWith((message) => updates(message as AdminInvestmentSweepItem))
+          as AdminInvestmentSweepItem;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminInvestmentSweepItem create() => AdminInvestmentSweepItem._();
+  @$core.override
+  AdminInvestmentSweepItem createEmptyInstance() => create();
+  static $pb.PbList<AdminInvestmentSweepItem> createRepeated() =>
+      $pb.PbList<AdminInvestmentSweepItem>();
+  @$core.pragma('dart2js:noInline')
+  static AdminInvestmentSweepItem getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminInvestmentSweepItem>(create);
+  static AdminInvestmentSweepItem? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get amount => $_getN(3);
+  @$pb.TagNumber(4)
+  set amount($core.double value) => $_setDouble(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get savingsAccountId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set savingsAccountId($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasSavingsAccountId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearSavingsAccountId() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get action => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set action($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasAction() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAction() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get detail => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set detail($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasDetail() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearDetail() => $_clearField(7);
+}
+
+class AdminInvestmentSweepResponse extends $pb.GeneratedMessage {
+  factory AdminInvestmentSweepResponse({
+    $core.Iterable<AdminInvestmentSweepItem>? items,
+    $core.bool? dryRun,
+    $core.int? sweepCount,
+    $core.int? skippedCount,
+    $core.int? failedCount,
+  }) {
+    final result = create();
+    if (items != null) result.items.addAll(items);
+    if (dryRun != null) result.dryRun = dryRun;
+    if (sweepCount != null) result.sweepCount = sweepCount;
+    if (skippedCount != null) result.skippedCount = skippedCount;
+    if (failedCount != null) result.failedCount = failedCount;
+    return result;
+  }
+
+  AdminInvestmentSweepResponse._();
+
+  factory AdminInvestmentSweepResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminInvestmentSweepResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminInvestmentSweepResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..pc<AdminInvestmentSweepItem>(
+        1, _omitFieldNames ? '' : 'items', $pb.PbFieldType.PM,
+        subBuilder: AdminInvestmentSweepItem.create)
+    ..aOB(2, _omitFieldNames ? '' : 'dryRun')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'sweepCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'skippedCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'failedCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminInvestmentSweepResponse clone() =>
+      AdminInvestmentSweepResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminInvestmentSweepResponse copyWith(
+          void Function(AdminInvestmentSweepResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as AdminInvestmentSweepResponse))
+          as AdminInvestmentSweepResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminInvestmentSweepResponse create() =>
+      AdminInvestmentSweepResponse._();
+  @$core.override
+  AdminInvestmentSweepResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminInvestmentSweepResponse> createRepeated() =>
+      $pb.PbList<AdminInvestmentSweepResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminInvestmentSweepResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminInvestmentSweepResponse>(create);
+  static AdminInvestmentSweepResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<AdminInvestmentSweepItem> get items => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.bool get dryRun => $_getBF(1);
+  @$pb.TagNumber(2)
+  set dryRun($core.bool value) => $_setBool(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasDryRun() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDryRun() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get sweepCount => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set sweepCount($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasSweepCount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSweepCount() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get skippedCount => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set skippedCount($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasSkippedCount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSkippedCount() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get failedCount => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set failedCount($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasFailedCount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearFailedCount() => $_clearField(5);
+}
+
 class AdminSearchAccountsRequest extends $pb.GeneratedMessage {
   factory AdminSearchAccountsRequest({
     $core.String? query,
@@ -19477,6 +19819,357 @@ class AdminHold extends $pb.GeneratedMessage {
   $core.bool hasIdempotencyKey() => $_has(12);
   @$pb.TagNumber(13)
   void clearIdempotencyKey() => $_clearField(13);
+}
+
+class GetMyAccountHoldsRequest extends $pb.GeneratedMessage {
+  factory GetMyAccountHoldsRequest({
+    $core.String? accountId,
+  }) {
+    final result = create();
+    if (accountId != null) result.accountId = accountId;
+    return result;
+  }
+
+  GetMyAccountHoldsRequest._();
+
+  factory GetMyAccountHoldsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetMyAccountHoldsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetMyAccountHoldsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetMyAccountHoldsRequest clone() =>
+      GetMyAccountHoldsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetMyAccountHoldsRequest copyWith(
+          void Function(GetMyAccountHoldsRequest) updates) =>
+      super.copyWith((message) => updates(message as GetMyAccountHoldsRequest))
+          as GetMyAccountHoldsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetMyAccountHoldsRequest create() => GetMyAccountHoldsRequest._();
+  @$core.override
+  GetMyAccountHoldsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetMyAccountHoldsRequest> createRepeated() =>
+      $pb.PbList<GetMyAccountHoldsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetMyAccountHoldsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetMyAccountHoldsRequest>(create);
+  static GetMyAccountHoldsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => $_clearField(1);
+}
+
+/// One reason money is unavailable, in terms a customer can act on.
+///
+/// Deliberately NOT AdminHold: that message carries idempotency keys and the
+/// internal reference, which mean nothing to a customer and are exactly the
+/// sort of detail that should not leave the back office.
+///
+/// Covers BOTH things that reduce an available balance, because a customer does
+/// not care which table their money is in:
+///
+///   * a RESERVE (account_reserves) — a payment in flight, resolving shortly;
+///   * a LOCK (lock_funds) — savings the user deliberately locked away.
+///
+/// Reserves alone were the original mistake: the card only ever read
+/// reserved_balance, which is 0 on most accounts, so the commonest case —
+/// PiggyVault locks — showed no explanation at all for a missing balance.
+class MyAccountHold extends $pb.GeneratedMessage {
+  factory MyAccountHold({
+    $core.String? id,
+    $fixnum.Int64? amount,
+    $core.String? currency,
+    $core.String? reason,
+    $core.String? serviceName,
+    $core.String? createdAt,
+    $core.String? expiresAt,
+    $core.String? kind,
+    $core.String? lockType,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (amount != null) result.amount = amount;
+    if (currency != null) result.currency = currency;
+    if (reason != null) result.reason = reason;
+    if (serviceName != null) result.serviceName = serviceName;
+    if (createdAt != null) result.createdAt = createdAt;
+    if (expiresAt != null) result.expiresAt = expiresAt;
+    if (kind != null) result.kind = kind;
+    if (lockType != null) result.lockType = lockType;
+    return result;
+  }
+
+  MyAccountHold._();
+
+  factory MyAccountHold.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory MyAccountHold.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MyAccountHold',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aInt64(2, _omitFieldNames ? '' : 'amount')
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..aOS(4, _omitFieldNames ? '' : 'reason')
+    ..aOS(5, _omitFieldNames ? '' : 'serviceName')
+    ..aOS(6, _omitFieldNames ? '' : 'createdAt')
+    ..aOS(7, _omitFieldNames ? '' : 'expiresAt')
+    ..aOS(8, _omitFieldNames ? '' : 'kind')
+    ..aOS(9, _omitFieldNames ? '' : 'lockType')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MyAccountHold clone() => MyAccountHold()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MyAccountHold copyWith(void Function(MyAccountHold) updates) =>
+      super.copyWith((message) => updates(message as MyAccountHold))
+          as MyAccountHold;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MyAccountHold create() => MyAccountHold._();
+  @$core.override
+  MyAccountHold createEmptyInstance() => create();
+  static $pb.PbList<MyAccountHold> createRepeated() =>
+      $pb.PbList<MyAccountHold>();
+  @$core.pragma('dart2js:noInline')
+  static MyAccountHold getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MyAccountHold>(create);
+  static MyAccountHold? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  /// Minor units (kobo), like every other amount on this service. The app
+  /// divides by 100 once, at the edge.
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get amount => $_getI64(1);
+  @$pb.TagNumber(2)
+  set amount($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => $_clearField(3);
+
+  /// What to call it. For a reserve this is the reserving service's reason
+  /// ("bill payment"); for a lock it is the name the USER gave it ("travel
+  /// lock"), which is far more recognisable than any label we could invent.
+  @$pb.TagNumber(4)
+  $core.String get reason => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set reason($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasReason() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearReason() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get serviceName => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set serviceName($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasServiceName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearServiceName() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get createdAt => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set createdAt($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasCreatedAt() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearCreatedAt() => $_clearField(6);
+
+  /// When it frees up on its own — a reserve's expiry, or a lock's unlock date.
+  /// Empty when there is no date, which the app renders as "until it completes"
+  /// (reserve) or "no fixed date" (flexible lock) rather than inventing one.
+  @$pb.TagNumber(7)
+  $core.String get expiresAt => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set expiresAt($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasExpiresAt() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearExpiresAt() => $_clearField(7);
+
+  /// "hold" or "lock". These need different copy and offer different actions:
+  /// you wait out a hold, but you can often break a lock.
+  @$pb.TagNumber(8)
+  $core.String get kind => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set kind($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasKind() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearKind() => $_clearField(8);
+
+  /// Locks only: savings | investment | goal_based.
+  @$pb.TagNumber(9)
+  $core.String get lockType => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set lockType($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasLockType() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearLockType() => $_clearField(9);
+}
+
+class GetMyAccountHoldsResponse extends $pb.GeneratedMessage {
+  factory GetMyAccountHoldsResponse({
+    $core.Iterable<MyAccountHold>? holds,
+    $fixnum.Int64? totalHeld,
+    $core.String? currency,
+    $fixnum.Int64? reservedBalance,
+    $fixnum.Int64? unavailableBalance,
+  }) {
+    final result = create();
+    if (holds != null) result.holds.addAll(holds);
+    if (totalHeld != null) result.totalHeld = totalHeld;
+    if (currency != null) result.currency = currency;
+    if (reservedBalance != null) result.reservedBalance = reservedBalance;
+    if (unavailableBalance != null)
+      result.unavailableBalance = unavailableBalance;
+    return result;
+  }
+
+  GetMyAccountHoldsResponse._();
+
+  factory GetMyAccountHoldsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetMyAccountHoldsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetMyAccountHoldsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts'),
+      createEmptyInstance: create)
+    ..pc<MyAccountHold>(1, _omitFieldNames ? '' : 'holds', $pb.PbFieldType.PM,
+        subBuilder: MyAccountHold.create)
+    ..aInt64(2, _omitFieldNames ? '' : 'totalHeld')
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..aInt64(4, _omitFieldNames ? '' : 'reservedBalance')
+    ..aInt64(5, _omitFieldNames ? '' : 'unavailableBalance')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetMyAccountHoldsResponse clone() =>
+      GetMyAccountHoldsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetMyAccountHoldsResponse copyWith(
+          void Function(GetMyAccountHoldsResponse) updates) =>
+      super.copyWith((message) => updates(message as GetMyAccountHoldsResponse))
+          as GetMyAccountHoldsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetMyAccountHoldsResponse create() => GetMyAccountHoldsResponse._();
+  @$core.override
+  GetMyAccountHoldsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetMyAccountHoldsResponse> createRepeated() =>
+      $pb.PbList<GetMyAccountHoldsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetMyAccountHoldsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetMyAccountHoldsResponse>(create);
+  static GetMyAccountHoldsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<MyAccountHold> get holds => $_getList(0);
+
+  /// Sum of the holds listed above, in minor units.
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get totalHeld => $_getI64(1);
+  @$pb.TagNumber(2)
+  set totalHeld($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotalHeld() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalHeld() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => $_clearField(3);
+
+  /// The account's reserved_balance as the ledger records it.
+  ///
+  /// Sent ALONGSIDE total_held rather than assumed equal to it. If a row is
+  /// missing or mis-stated, the honest outcome is a visible discrepancy the user
+  /// can report — not a tidy list that quietly disagrees with the balance on the
+  /// card above it.
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get reservedBalance => $_getI64(3);
+  @$pb.TagNumber(4)
+  set reservedBalance($fixnum.Int64 value) => $_setInt64(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasReservedBalance() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearReservedBalance() => $_clearField(4);
+
+  /// balance - available_balance, straight from the account row.
+  ///
+  /// This is the number the customer is actually asking about: the gap between
+  /// the two figures on their card. total_held should equal it; when it does
+  /// not, something is holding money without a row to explain it, and the app
+  /// says so rather than pretending the list is complete.
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get unavailableBalance => $_getI64(4);
+  @$pb.TagNumber(5)
+  set unavailableBalance($fixnum.Int64 value) => $_setInt64(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasUnavailableBalance() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearUnavailableBalance() => $_clearField(5);
 }
 
 class AdminGetAccountClearingRequest extends $pb.GeneratedMessage {
