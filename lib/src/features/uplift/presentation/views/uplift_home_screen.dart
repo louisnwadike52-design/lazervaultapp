@@ -1,3 +1,5 @@
+import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_guide_card.dart';
+import 'package:lazervault/src/features/uplift/data/services/uplift_guide_preference.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -30,10 +32,77 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
   late final UpliftCubit _cubit;
   final _searchCtrl = TextEditingController();
 
+  /// Which tabs should currently show their explainer. Resolved once on load
+  /// rather than per build, so the card cannot flicker in after the tab has
+  /// already been read.
+  final Map<String, bool> _showGuide = {
+    for (final t in UpliftGuidePreference.allTabs) t: false,
+  };
+
   @override
   void initState() {
     super.initState();
     _cubit = serviceLocator<UpliftCubit>()..loadAll();
+    _resolveGuides();
+  }
+
+  /// Asks the preference store which explainers are still due.
+  Future<void> _resolveGuides() async {
+    for (final tab in UpliftGuidePreference.allTabs) {
+      final show = await UpliftGuidePreference.shouldShow(tab);
+      if (!mounted) return;
+      if (show) setState(() => _showGuide[tab] = true);
+    }
+  }
+
+  /// Closes one card. The tab is marked seen so it does not return on its own,
+  /// while the other tabs still get their turn — arriving at My Applications
+  /// for the first time is a first run for that idea even if Discover was read
+  /// weeks ago.
+  Future<void> _dismissGuide(String tab) async {
+    setState(() => _showGuide[tab] = false);
+    await UpliftGuidePreference.markSeen(tab);
+  }
+
+  /// The standing choice. Hides every card and records it, so Settings shows
+  /// the guides as off and the user has a way back.
+  Future<void> _neverShowGuides() async {
+    setState(() {
+      for (final t in UpliftGuidePreference.allTabs) {
+        _showGuide[t] = false;
+      }
+    });
+    await UpliftGuidePreference.setDismissed(true);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+            "Guides hidden. Turn them back on in Settings, or tap the help icon."),
+        backgroundColor: kUpPrimary,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  /// The help icon: show this tab's explanation now.
+  ///
+  /// Deliberately independent of the "don't show again" choice — that choice is
+  /// about UNPROMPTED appearances, not about being refused help when it is
+  /// asked for.
+  Future<void> _replayGuide(String tab) async {
+    await UpliftGuidePreference.replay(tab);
+    if (!mounted) return;
+    setState(() => _showGuide[tab] = true);
+  }
+
+  /// Builds the card for a tab, or nothing when it is not due.
+  Widget _guideFor(String tab) {
+    if (_showGuide[tab] != true) return const SizedBox.shrink();
+    return UpliftGuideCard(
+      tabId: tab,
+      onDismiss: () => _dismissGuide(tab),
+      onNeverShowAgain: _neverShowGuides,
+    );
   }
 
   @override
@@ -57,6 +126,20 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
             foregroundColor: Colors.white,
             title: Text('Lazerfunds', style: GoogleFonts.inter(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
             actions: [
+              // Persistent way back to the explanation. Always present — the
+              // moment someone needs it is exactly the moment they have
+              // already dismissed it.
+              Builder(
+                builder: (ctx) => IconButton(
+                  tooltip: 'How Lazerfunds works',
+                  icon: Icon(Icons.help_outline,
+                      color: kUpPrimary, size: 20.sp),
+                  onPressed: () => _replayGuide(
+                    UpliftGuidePreference
+                        .allTabs[DefaultTabController.of(ctx).index],
+                  ),
+                ),
+              ),
               ServiceVoiceButton(
                 serviceName: 'uplift',
                 iconColor: kUpPrimary,
@@ -125,6 +208,7 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
   Widget _discoverTab(UpliftState state) {
     return Column(
       children: [
+        _guideFor(UpliftGuidePreference.tabDiscover),
         _discoverHeader(state),
         Expanded(child: _discoverBody(state)),
       ],
@@ -246,6 +330,19 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
   }
 
   Widget _myFundsTab(UpliftState state) {
+    // The guide sits above whatever the tab is showing — including the
+    // empty and loading states. A newcomer with nothing here yet is
+    // exactly who the explanation is for, and returning early on empty
+    // would hide it from them.
+    return Column(
+      children: [
+        _guideFor(UpliftGuidePreference.tabMyFunds),
+        Expanded(child: _myFundsTabBody(state)),
+      ],
+    );
+  }
+
+  Widget _myFundsTabBody(UpliftState state) {
     if (state.loading && state.myFunds.isEmpty) return const UpLoading();
     if (state.error != null && state.myFunds.isEmpty) return UpErrorState(message: state.error!, onRetry: _cubit.loadAll);
     if (state.myFunds.isEmpty) {
@@ -284,6 +381,19 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
   }
 
   Widget _myApplicationsTab(UpliftState state) {
+    // The guide sits above whatever the tab is showing — including the
+    // empty and loading states. A newcomer with nothing here yet is
+    // exactly who the explanation is for, and returning early on empty
+    // would hide it from them.
+    return Column(
+      children: [
+        _guideFor(UpliftGuidePreference.tabMyApplications),
+        Expanded(child: _myApplicationsTabBody(state)),
+      ],
+    );
+  }
+
+  Widget _myApplicationsTabBody(UpliftState state) {
     if (state.loading && state.myApplications.isEmpty) return const UpLoading();
     if (state.error != null && state.myApplications.isEmpty) return UpErrorState(message: state.error!, onRetry: _cubit.loadAll);
     if (state.myApplications.isEmpty) {

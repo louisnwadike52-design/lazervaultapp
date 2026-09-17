@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/uplift/data/services/uplift_guide_preference.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/inactivity_preference.dart';
@@ -102,6 +103,10 @@ class _SettingsViewState extends State<_SettingsView> {
   /// matching sections and auto-expands them so the matched item is revealed.
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  /// Mirrors UpliftGuidePreference.isDismissed so the switch renders
+  /// synchronously. Loaded on init and written through on change, so it
+  /// cannot drift from what the Lazerfunds screen actually does.
+  bool _lazerfundsGuidesDismissed = false;
 
   /// Last successfully-loaded profile state. Cached so that a background
   /// ProfileLoading (triggered by a preference toggle) does NOT blank the whole
@@ -151,6 +156,9 @@ class _SettingsViewState extends State<_SettingsView> {
   @override
   void initState() {
     super.initState();
+    UpliftGuidePreference.isDismissed().then((v) {
+      if (mounted) setState(() => _lazerfundsGuidesDismissed = v);
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<ProfileCubit>().getUserProfile();
@@ -962,6 +970,42 @@ class _SettingsViewState extends State<_SettingsView> {
             );
           },
         );
+        // LazerFunds guides: re-enable the per-tab explainers after the user
+        // chose "Don't show these again" on the card. Reads the SAME flag the
+        // card writes, so the switch can never disagree with what the screen
+        // does — the failure the deposit-tips tile above was built to avoid.
+        final lazerfundsGuidesTile = _switchTile(
+          icon: Icons.school_outlined,
+          title: 'Lazerfunds guides',
+          keywords: const [
+            'lazerfunds',
+            'uplift',
+            'guide',
+            'guides',
+            'explainer',
+            'tips',
+            'how it works',
+            'tutorial',
+            'onboarding',
+            'first time',
+          ],
+          subtitle: 'Explain each Lazerfunds tab the first time you open it',
+          value: !_lazerfundsGuidesDismissed,
+          onChanged: (v) async {
+            await UpliftGuidePreference.setDismissed(!v);
+            if (!mounted) return;
+            setState(() => _lazerfundsGuidesDismissed = !v);
+            showAppSnackbar(
+              v ? 'Lazerfunds guides on' : 'Lazerfunds guides off',
+              v
+                  // Turning them back on clears the per-tab "seen" marks, so
+                  // this promise is real rather than a switch that does nothing.
+                  ? 'Each tab will explain itself again next time you open it.'
+                  : 'The help icon on Lazerfunds still brings them back.',
+              type: AppSnackbarType.success,
+            );
+          },
+        );
         // Pending payments: re-enable the launch prompt after the user chose
         // "Don't show this again" on the sheet. Reads the SAME uid-scoped flag
         // the sheet writes, so the switch can never disagree with the sheet.
@@ -1014,6 +1058,7 @@ class _SettingsViewState extends State<_SettingsView> {
             dashboardLayoutTile,
             adaptiveServicesTile,
             depositTipsTile,
+            lazerfundsGuidesTile,
             pendingPromptTile,
             loginMethodTile,
           ]);
@@ -1055,6 +1100,13 @@ class _SettingsViewState extends State<_SettingsView> {
             ),
             SizedBox(height: 10.h),
             pendingPromptTile,
+            SizedBox(height: 18.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: _customizeGroupLabel('Guides'),
+            ),
+            SizedBox(height: 10.h),
+            lazerfundsGuidesTile,
             SizedBox(height: 18.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
