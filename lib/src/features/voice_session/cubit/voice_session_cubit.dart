@@ -16,6 +16,9 @@ import 'package:lazervault/core/services/voice_biometrics_service.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
 import 'voice_session_state.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_customization_sheet.dart'
+    show kMyVoiceSentinelId;
+
 import 'package:lazervault/src/features/voice_session/voice_session_activity.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_language.dart';
@@ -56,6 +59,10 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   static const String _prefKeyLanguage = 'voice_selected_language';
   static const String _prefKeyVoice = 'voice_selected_voice_id';
+
+  /// Set once the user picks a voice THEMSELVES, which stops the cloned-voice
+  /// auto-adoption from overriding them later.
+  static const String _prefKeyVoiceChosenByUser = 'voice_chosen_by_user';
   // Remembers whether THIS user was granted African languages by the server's per-email
   // allowlist (the /voice/languages response includes yo/ig/ha/pcm only for granted
   // users). Used ONLY to gate the OFFLINE fallback picker so a non-granted user never
@@ -704,6 +711,36 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _selectedVoiceId = voiceId;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_prefKeyVoice, voiceId);
+    // An explicit pick ends auto-adoption. Without this, a user who cloned
+    // their voice and then deliberately chose a stock one would be pulled back
+    // to their clone on the next session that saw "ready".
+    await prefs.setBool(_prefKeyVoiceChosenByUser, true);
+  }
+
+  /// Adopt the user's cloned voice as soon as it is ready.
+  ///
+  /// Cloning a voice IS the request to use it — the extra "use my voice for the
+  /// assistant" step was a second confirmation of something the user had just
+  /// spent a minute recording, and until they found it the clone sat unused.
+  ///
+  /// Runs at most once, and never overrides a voice the user picked
+  /// deliberately: [setVoice] marks that, and this checks it. So the sequence
+  /// "clone → auto-adopt → user switches to a stock voice" sticks on the stock
+  /// voice, which is what choosing it meant.
+  Future<void> adoptClonedVoiceIfReady({required bool cloneReady}) async {
+    if (!cloneReady) return;
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_prefKeyVoiceChosenByUser) ?? false) return;
+    if (_selectedVoiceId == kMyVoiceSentinelId) return;
+
+    _selectedVoiceId = kMyVoiceSentinelId;
+    await prefs.setString(_prefKeyVoice, kMyVoiceSentinelId);
+    // NOT marked as a user choice: this was our decision, so a later explicit
+    // pick still wins and we do not re-adopt after one.
+    if (hasActiveVoiceSession) {
+      await notifyCustomVoiceChanged(true);
+    }
+    _emitCaptionUpdate();
   }
 
   /// Check if language has been selected (for gating session start).
@@ -2055,6 +2092,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           // side channel that must never disturb the active conversation UI.
           try {
             customVoiceLive.value = CustomVoiceLiveState.fromJson(eventData);
+            // A clone that just finished IS usable — adopt it now rather than
+            // waiting for the user to find a button. No-ops if they have
+            // already chosen a voice themselves.
+            if (customVoiceLive.value?.status == 'ready') {
+              unawaited(adoptClonedVoiceIfReady(cloneReady: true));
+            }
             print('VoiceSessionCubit: custom_voice_state '
                 'status=${eventData['status']} enabled=${eventData['enabled']} '
                 'progress=${eventData['progress']} score=${eventData['score']}');

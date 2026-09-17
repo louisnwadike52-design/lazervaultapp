@@ -578,9 +578,14 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// the idle pulse; this method just wires it to the cubit.
   Widget _buildPttTalkButton(VoiceSessionState state) {
     final cubit = context.read<VoiceSessionCubit>();
+    // "Live" means the mic is genuinely open, which is a different question in
+    // each mode: a PTT capture window in hold/tap/double-tap, and simply
+    // listening in continuous. Feeding the same flag either way is what lets
+    // the waves mean ONE thing — "I can hear you" — in every mode.
+    final micLive = _isPtt ? cubit.isPttCapturing : cubit.isLocalListening;
     return VoiceTalkButton(
       mode: _interactionMode,
-      capturing: cubit.isPttCapturing,
+      capturing: micLive,
       onBegin: cubit.pttBegin,
       onEnd: cubit.pttEnd,
     );
@@ -2491,7 +2496,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     final bool animate = isSpeaking || isListening;
 
     final Widget avatar = AnimatedBuilder(
-      animation: _avatarController,
+      // BOTH controllers: the scale/glow follow _avatarController, the speaking
+      // waves follow _waveController. Listening to only the first would leave
+      // the waves frozen at whatever value they held when it last ticked.
+      animation: Listenable.merge([_avatarController, _waveController]),
       builder: (context, child) {
         final t = _avatarController.value; // 0..1 (reverses)
         final scale = animate ? 1.0 + (t * (isSpeaking ? 0.06 : 0.04)) : 1.0;
@@ -2505,6 +2513,33 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           child: Stack(
             alignment: Alignment.center,
             children: [
+              // Speaking waves, emanating while the AGENT talks.
+              //
+              // The mirror of the mic's waves: the same visual language on
+              // whichever side currently has the floor, so "who is talking" is
+              // readable without looking at the captions. Staggered so they
+              // chase each other and read as sound leaving the avatar, rather
+              // than one ring breathing — which is what the glow ring below
+              // already does, and means something calmer.
+              if (isSpeaking)
+                ...List.generate(3, (i) {
+                  final phase = (_waveController.value + i / 3) % 1.0;
+                  final w = Curves.easeOut.transform(phase);
+                  return IgnorePointer(
+                    child: Container(
+                      width: size * (1.32 + 0.38 * w),
+                      height: size * (1.32 + 0.38 * w),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: glowColor.withValues(alpha: 0.5 * (1 - w)),
+                          width: compact ? 1.2 : 2,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+
               // Pulsing glow ring (behind the avatar).
               if (animate)
                 Container(
@@ -3053,9 +3088,14 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             ),
           ),
 
-          // Push-to-talk button — only in a PTT interaction mode. The primary
-          // control: the mic opens only while this is engaged (hold) or toggled.
-          if (_isPtt && isActive) ...[
+          // The mic, in EVERY mode.
+          //
+          // It used to render only in push-to-talk modes, so a continuous-mode
+          // user had nothing on screen showing the mic was open — the one mode
+          // where the mic opens by itself and the user never touched anything
+          // to cause it. In continuous the control is a live INDICATOR (its tap
+          // handler no-ops in the cubit); in PTT it is also the button.
+          if (isActive) ...[
             SizedBox(width: 24.w),
             _buildPttTalkButton(state),
           ],

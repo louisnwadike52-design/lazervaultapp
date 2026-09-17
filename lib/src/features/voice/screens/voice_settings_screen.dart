@@ -22,7 +22,8 @@ import 'package:lazervault/src/features/voice_session/widgets/voice_language_voi
 import 'package:lazervault/src/features/voice_session/widgets/voice_customization_sheet.dart'
     show kMyVoiceSentinelId;
 import 'package:lazervault/core/services/locale_manager.dart';
-import 'package:lazervault/core/services/injection_container.dart' show serviceLocator;
+import 'package:lazervault/core/services/injection_container.dart'
+    show serviceLocator;
 
 /// Voice Settings Screen
 ///
@@ -78,6 +79,11 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
   /// progress/score) without a manual refresh or waiting on the poll.
   void _onLiveCustomVoiceState() {
     final live = _voiceSession?.customVoiceLive.value;
+    if (live?.status == 'ready') {
+      // Same reason as the cubit's WS path: ready means usable.
+      unawaited((_voiceSession ?? serviceLocator<VoiceSessionCubit>())
+          .adoptClonedVoiceIfReady(cloneReady: true));
+    }
     if (live == null || !mounted) return;
     // Ignore live pushes while a toggle request is in flight: an older/concurrent
     // push (e.g. enabled=false) could clobber the user's optimistic toggle and
@@ -220,7 +226,8 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
       // Poll every 3s while cloning is processing so the card flips to ready
       // quickly (was 10s, which felt like it "didn't auto-update").
       _pendingStatusTimer?.cancel();
-      _pendingStatusTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      _pendingStatusTimer =
+          Timer.periodic(const Duration(seconds: 3), (timer) async {
         if (!mounted) {
           timer.cancel();
           return;
@@ -275,7 +282,6 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -335,8 +341,7 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.translate_rounded,
-                size: 48.sp, color: Colors.grey[600]),
+            Icon(Icons.translate_rounded, size: 48.sp, color: Colors.grey[600]),
             SizedBox(height: 16.h),
             Text(
               'No voices available yet',
@@ -371,7 +376,8 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 48.sp, color: const Color(0xFFEF4444)),
+            Icon(Icons.error_outline,
+                size: 48.sp, color: const Color(0xFFEF4444)),
             SizedBox(height: 16.h),
             Text(
               message,
@@ -397,9 +403,7 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
   Widget _buildSettings(BuildContext context, VoiceSettingsLoaded state) {
     final languages = state.languages;
     final selectedLang = _selectedLanguageCode != null
-        ? languages
-            .where((l) => l.code == _selectedLanguageCode)
-            .firstOrNull
+        ? languages.where((l) => l.code == _selectedLanguageCode).firstOrNull
         : null;
 
     return ListView(
@@ -474,7 +478,8 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
   /// Opens the central Voice & Language sheet (the single source of truth for
   /// language + voice). Replaces the old inline language/voice pickers so there's
   /// one place to choose them.
-  Widget _buildVoiceLanguageButton(settings_models.VoiceLanguage? selectedLang) {
+  Widget _buildVoiceLanguageButton(
+      settings_models.VoiceLanguage? selectedLang) {
     final langLabel = selectedLang?.nativeName ?? selectedLang?.name;
     final subtitle = langLabel != null
         ? 'Language: $langLabel'
@@ -603,24 +608,6 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
   /// capture) becomes the assistant voice with one tap, without opening the
   /// full Voice & Language sheet. Persists via the cubit (single source of
   /// truth) exactly like the sheet's selection flow.
-  Future<void> _useMyClonedVoiceForAssistant() async {
-    final cubit = _voiceSession ?? serviceLocator<VoiceSessionCubit>();
-    await cubit.setVoice(kMyVoiceSentinelId);
-    if (cubit.hasActiveVoiceSession) {
-      await cubit.notifyCustomVoiceChanged(true);
-    }
-    if (!mounted) return;
-    setState(() => _selectedVoiceId = kMyVoiceSentinelId);
-    Get.snackbar(
-      'Voice updated',
-      'Your assistant will now speak in your voice.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF1F1F1F),
-      colorText: Colors.white,
-      margin: EdgeInsets.all(12.w),
-    );
-  }
-
   /// Re-pull enrolment + clone status from the backend. The profile summary and
   /// cards are driven by locally-held state that only loads on init and (during
   /// a live call) `custom_voice_state` WS pushes. When this screen is opened from
@@ -700,11 +687,13 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
       actionLabel = 'Create your voice clone';
       actionIcon = Icons.graphic_eq_rounded;
       action = _openCloningThenRefresh;
-    } else if (cloneReady && !usingClone) {
-      actionLabel = 'Use my voice for the assistant';
-      actionIcon = Icons.record_voice_over_rounded;
-      action = _useMyClonedVoiceForAssistant;
     }
+    // There is deliberately NO "use my voice for the assistant" action here.
+    // Recording a clone IS the request to use it; the pill was a second
+    // confirmation of something the user had just spent a minute on, and until
+    // they found it the clone sat unused. Adoption now happens automatically
+    // the moment the clone is ready (VoiceSessionCubit.adoptClonedVoiceIfReady),
+    // and the voice picker still lets them choose something else.
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -725,8 +714,7 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.graphic_eq_rounded,
-                  color: Colors.white, size: 18.sp),
+              Icon(Icons.graphic_eq_rounded, color: Colors.white, size: 18.sp),
               SizedBox(width: 8.w),
               Text('Your voice profile',
                   style: GoogleFonts.inter(
@@ -842,7 +830,8 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
                       ? const Color(0xFF10B981).withValues(alpha: 0.15)
                       : hasPartialProgress
                           ? const Color(0xFFFB923C).withValues(alpha: 0.15)
-                          : const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.15),
+                          : const Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -892,8 +881,7 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
                 ),
               ),
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: _isEnrolled
                       ? const Color(0xFF10B981).withValues(alpha: 0.15)
@@ -1032,12 +1020,17 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
         title = 'Cloning Failed';
         // Show user-friendly error instead of raw API error
         final rawError = status?.customVoiceError ?? '';
-        if (rawError.contains('paid_plan_required') || rawError.contains('payment_required')) {
-          subtitle = 'Voice cloning requires a premium provider plan. Try re-enrolling.';
-        } else if (rawError.contains('rate_limit') || rawError.contains('429')) {
+        if (rawError.contains('paid_plan_required') ||
+            rawError.contains('payment_required')) {
+          subtitle =
+              'Voice cloning requires a premium provider plan. Try re-enrolling.';
+        } else if (rawError.contains('rate_limit') ||
+            rawError.contains('429')) {
           subtitle = 'Provider rate limited. Please try again later.';
-        } else if (rawError.contains('timeout') || rawError.contains('unavailable')) {
-          subtitle = 'Provider temporarily unavailable. Tap retry to try again.';
+        } else if (rawError.contains('timeout') ||
+            rawError.contains('unavailable')) {
+          subtitle =
+              'Provider temporarily unavailable. Tap retry to try again.';
         } else {
           subtitle = rawError.isNotEmpty
               ? 'Cloning failed. Tap retry to try again.'
@@ -1122,8 +1115,7 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
                         onChanged: (value) => _toggleCustomVoice(value),
                         activeThumbColor: const Color(0xFF10B981),
                         inactiveThumbColor: const Color(0xFF9CA3AF),
-                        inactiveTrackColor:
-                            Colors.white.withValues(alpha: 0.1),
+                        inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
                       ),
             ],
           ),
@@ -1193,7 +1185,8 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                  backgroundColor:
+                      const Color(0xFFEF4444).withValues(alpha: 0.15),
                   foregroundColor: const Color(0xFFEF4444),
                   padding: EdgeInsets.symmetric(vertical: 12.h),
                   shape: RoundedRectangleBorder(
@@ -1208,7 +1201,6 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
       ),
     );
   }
-
 
   /// Compact clone readiness/quality chip from a 0-1 score (Good/Fair/Poor).
   Widget _buildCloneScoreChip(double score) {
@@ -1347,10 +1339,13 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
     String actionMessage;
 
     if (quality < 0.6) {
-      warningMessage = 'Your voice quality is below optimal. This may affect voice recognition accuracy.';
-      actionMessage = 'Please re-enroll in a quiet environment, speaking clearly.';
+      warningMessage =
+          'Your voice quality is below optimal. This may affect voice recognition accuracy.';
+      actionMessage =
+          'Please re-enroll in a quiet environment, speaking clearly.';
     } else {
-      warningMessage = 'Your voice quality could be improved for better accuracy.';
+      warningMessage =
+          'Your voice quality could be improved for better accuracy.';
       actionMessage = 'Consider re-enrolling with clearer voice samples.';
     }
 

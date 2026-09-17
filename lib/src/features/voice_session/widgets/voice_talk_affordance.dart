@@ -161,16 +161,22 @@ class _VoiceTalkButtonState extends State<VoiceTalkButton>
     if (old.capturing != widget.capturing) _syncPulse();
   }
 
-  /// Pulse only while idle. Once the user is recording they have already found
-  /// the button, and a halo that keeps expanding reads as "still waiting for
-  /// you" at exactly the moment the app IS listening.
+  /// The button animates in BOTH states, but they say different things.
+  ///
+  /// Idle: one slow expanding ring in the accent colour — "press me".
+  /// Capturing: fast staggered waves in the active colour — "I can hear you".
+  ///
+  /// Running the same slow halo while recording was the problem: it reads as
+  /// "still waiting for you" at exactly the moment the mic IS open, so a user
+  /// holding the button had nothing telling them it was working. Speed and
+  /// colour are what separate the two, so they are never mistaken for each
+  /// other even at a glance.
   void _syncPulse() {
-    if (widget.capturing) {
-      _pulse.stop();
-      _pulse.value = 0;
-    } else {
-      _pulse.repeat();
-    }
+    _pulse.stop();
+    _pulse.duration = widget.capturing
+        ? const Duration(milliseconds: 1100)
+        : const Duration(milliseconds: 1600);
+    _pulse.repeat();
   }
 
   @override
@@ -184,7 +190,8 @@ class _VoiceTalkButtonState extends State<VoiceTalkButton>
   @override
   Widget build(BuildContext context) {
     final colour = widget.capturing ? widget.activeColor : widget.accent;
-    final label = VoiceTalkMode.action(widget.mode, capturing: widget.capturing);
+    final label =
+        VoiceTalkMode.action(widget.mode, capturing: widget.capturing);
 
     final core = AnimatedContainer(
       duration: const Duration(milliseconds: 150),
@@ -219,26 +226,43 @@ class _VoiceTalkButtonState extends State<VoiceTalkButton>
       child: Stack(
         alignment: Alignment.center,
         children: [
-          if (!widget.capturing)
-            AnimatedBuilder(
-              animation: _pulse,
-              builder: (_, __) {
-                final t = Curves.easeOut.transform(_pulse.value);
-                return IgnorePointer(
-                  child: Container(
-                    width: (widget.diameter + 28 * t).w,
-                    height: (widget.diameter + 28 * t).w,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: widget.accent.withValues(alpha: 0.45 * (1 - t)),
-                        width: 2,
+          AnimatedBuilder(
+            animation: _pulse,
+            builder: (_, __) {
+              // Three staggered waves while capturing, one ring while idle.
+              // Staggering is what makes it read as sound LEAVING the mic
+              // rather than a single ring breathing.
+              final waves = widget.capturing ? 3 : 1;
+              return IgnorePointer(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: List.generate(waves, (i) {
+                    // Offset each wave through the cycle and wrap, so they
+                    // chase each other continuously instead of restarting
+                    // together.
+                    final phase = (_pulse.value + i / waves) % 1.0;
+                    final t = Curves.easeOut.transform(phase);
+                    return Container(
+                      width: (widget.diameter + 28 * t).w,
+                      height: (widget.diameter + 28 * t).w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: (widget.capturing
+                                  ? widget.activeColor
+                                  : widget.accent)
+                              .withValues(
+                                  alpha: (widget.capturing ? 0.55 : 0.45) *
+                                      (1 - t)),
+                          width: 2,
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              },
-            ),
+                    );
+                  }),
+                ),
+              );
+            },
+          ),
           core,
         ],
       ),
