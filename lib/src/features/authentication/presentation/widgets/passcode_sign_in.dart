@@ -46,7 +46,10 @@ class PasscodeSignIn extends StatefulWidget {
 }
 
 class _PasscodeSignInState extends State<PasscodeSignIn>
-    with WidgetsBindingObserver, SessionLoginCompleter {
+    with
+        WidgetsBindingObserver,
+        SessionLoginCompleter,
+        SingleTickerProviderStateMixin {
   final int _passcodeLength = 6;
 
   // Revolut-style "wrong passcode" shake: the dots row shakes + a heavy haptic
@@ -61,10 +64,13 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
 
   bool _biometricFlowInProgress = false; // guards against re-entrant taps
   bool _autoPromptAttempted = false; // auto-logon fires the OS prompt once only
-  bool _canCheckBiometrics = false; // device supports + has an enrolled biometric
+  bool _canCheckBiometrics =
+      false; // device supports + has an enrolled biometric
   bool _canEnrollBiometric = false; // sensor present but nothing enrolled yet
-  bool _biometricEnabled = false; // opted-in for the device's biometric in Settings
-  bool _voiceEnabled = false; // voice login opted-in via Settings → Biometric Login
+  bool _biometricEnabled =
+      false; // opted-in for the device's biometric in Settings
+  bool _voiceEnabled =
+      false; // voice login opted-in via Settings → Biometric Login
   // Google/Apple sign-in on this lock screen. Settings-toggleable (default
   // on); platform availability is gated separately by [OAuthProviders].
   bool _googleLoginOn = true;
@@ -81,8 +87,27 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
   bool _biometricAutoPrompt = false;
   // Escape hatch for automatic mode — see [_onShakeEscape].
   bool _shakeEscapeEnabled = false;
+
   /// Swipe up on the lock screen to offer the biometric. See [_swipeUpReady].
   bool _swipeUpEnabled = false;
+
+  /// How far the hint has been dragged up, in logical pixels.
+  ///
+  /// The gesture used to bind onVerticalDragEnd ONLY, so nothing moved while
+  /// the finger did — a swipe that fell short of the velocity threshold looked
+  /// identical to a screen that had ignored you, and the natural response is to
+  /// stab at it again rather than swipe harder.
+  double _swipeOffset = 0;
+
+  /// Springs [_swipeOffset] back to rest when a swipe is released without
+  /// completing. Bouncy on purpose: the overshoot is what reads as "I felt
+  /// that, it just wasn't enough".
+  late final AnimationController _swipeSpring;
+  Animation<double>? _swipeSpringAnim;
+
+  /// The furthest the hint travels, however hard the drag. Small — this is an
+  /// acknowledgement, not a drawer being opened.
+  static const double _swipeMaxTravel = 56;
   DoubleShakeDetector? _shakeEscape;
   AppLifecycleState _lifecycle = AppLifecycleState.resumed;
   IconData _biometricIcon = Icons.fingerprint;
@@ -113,6 +138,14 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
   @override
   void initState() {
     super.initState();
+    _swipeSpring = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 420),
+    )..addListener(() {
+        if (_swipeSpringAnim != null) {
+          setState(() => _swipeOffset = _swipeSpringAnim!.value);
+        }
+      });
     WidgetsBinding.instance.addObserver(this);
     // Detect capability first, then (once) auto-fire the OS biometric prompt for
     // opted-in returning users — the admin-toggleable "auto logon". Chained off
@@ -139,6 +172,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
 
   @override
   void dispose() {
+    _swipeSpring.dispose();
     WidgetsBinding.instance.removeObserver(this);
     // Release the accelerometer with the screen. Leaving it subscribed would
     // keep sampling for the rest of the session, and a shake on the dashboard
@@ -252,7 +286,8 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
       final firstName = await _secureStorage.read(key: 'user_first_name');
       final lastName = await _secureStorage.read(key: 'user_last_name');
       final avatarUrl = await _secureStorage.read(key: 'user_avatar_url');
-      final preferred = await _secureStorage.read(key: 'preferred_login_method');
+      final preferred =
+          await _secureStorage.read(key: 'preferred_login_method');
       final hasPassword = await _secureStorage.read(key: 'has_password');
 
       if (mounted) {
@@ -432,12 +467,57 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
       _canCheckBiometrics &&
       _availableBiometricType != null;
 
-  void _onSwipeUp(DragEndDetails d) {
+  /// Follow the finger while it drags upward.
+  ///
+  /// Resistance grows with distance, so the hint eases toward a ceiling rather
+  /// than tracking 1:1 — a control that slides as far as you pull reads as
+  /// draggable furniture, and this is a hint, not a panel.
+  void _onSwipeUpdate(DragUpdateDetails d) {
     if (!_swipeUpReady) return;
+    if (_swipeSpring.isAnimating) _swipeSpring.stop();
+    // Negative dy is up. Downward drags are ignored rather than pushing the
+    // hint below its resting place, which would just look broken.
+    final next = _swipeOffset - d.delta.dy;
+    final clamped = next.clamp(0.0, _swipeMaxTravel * 1.6);
+    // Diminishing returns past the halfway mark.
+    setState(() => _swipeOffset = clamped <= _swipeMaxTravel
+        ? clamped
+        : _swipeMaxTravel + (clamped - _swipeMaxTravel) * 0.35);
+  }
+
+  /// Release without completing: spring back with a bounce.
+  void _springBack() {
+    if (_swipeOffset == 0) return;
+    _swipeSpringAnim = Tween<double>(begin: _swipeOffset, end: 0).animate(
+      // elasticOut overshoots past rest and settles — the "bounce" that tells
+      // the user the gesture was received and simply did not reach far enough.
+      CurvedAnimation(parent: _swipeSpring, curve: Curves.elasticOut),
+    );
+    _swipeSpring
+      ..reset()
+      ..forward();
+  }
+
+  void _onSwipeUp(DragEndDetails d) {
+    if (!_swipeUpReady) {
+      _springBack();
+      return;
+    }
     // Upward only, and fast enough to be deliberate. A slow drift while
     // reaching for a keypad digit must not pop the OS sheet. Negative Y is up.
     const threshold = -320.0;
-    if (d.primaryVelocity == null || d.primaryVelocity! > threshold) return;
+    final fastEnough =
+        d.primaryVelocity != null && d.primaryVelocity! <= threshold;
+    // A slow, DELIBERATE drag past the ceiling counts too. Velocity alone
+    // rejected the careful swipe of someone holding the phone one-handed, who
+    // had clearly asked for the biometric.
+    final farEnough = _swipeOffset >= _swipeMaxTravel;
+    if (!fastEnough && !farEnough) {
+      _springBack();
+      return;
+    }
+    // Settle the hint first so it is not left mid-air behind the OS sheet.
+    _springBack();
     // _onBiometricPressed already guards re-entrancy and in-flight auth.
     _onBiometricPressed();
   }
@@ -449,23 +529,40 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
     final label = _availableBiometricType == BiometricType.face
         ? 'Face ID'
         : 'Fingerprint';
-    return Padding(
-      padding: EdgeInsets.only(bottom: 14.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.keyboard_arrow_up_rounded,
-              color: Colors.white.withValues(alpha: 0.55), size: 18.sp),
-          SizedBox(width: 4.w),
-          Text(
-            'Swipe up for $label',
-            style: GoogleFonts.inter(
-              color: Colors.white.withValues(alpha: 0.55),
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w500,
-            ),
+    // Progress toward the threshold, 0..1 — drives every cue below so they
+    // move together instead of three effects arriving at different moments.
+    final t = (_swipeOffset / _swipeMaxTravel).clamp(0.0, 1.0);
+    return Transform.translate(
+      offset: Offset(0, -_swipeOffset),
+      child: Padding(
+        padding: EdgeInsets.only(bottom: 14.h),
+        child: Opacity(
+          // Brightens as it travels, so the hint confirms the gesture is landing
+          // before the user has committed to it.
+          opacity: 0.55 + 0.45 * t,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Transform.translate(
+                // The chevron leads the label slightly — the same cue a pull-to-
+                // refresh gives, so the direction reads without being labelled.
+                offset: Offset(0, -6 * t),
+                child: Icon(Icons.keyboard_arrow_up_rounded,
+                    color: Colors.white.withValues(alpha: 0.55 + 0.45 * t),
+                    size: 18.sp + 4.sp * t),
+              ),
+              SizedBox(width: 4.w),
+              Text(
+                'Swipe up for $label',
+                style: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.55 + 0.45 * t),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -578,7 +675,8 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
 
     // Observability: record the detection decision so a store device that never
     // reaches the OS prompt is diagnosable in Loki.
-    AppLogger.event('biometric_login', 'flow_start', screen: 'passcode_lock',
+    AppLogger.event('biometric_login', 'flow_start',
+        screen: 'passcode_lock',
         fields: {
           'can_check': _canCheckBiometrics,
           'type': _availableBiometricType?.name ?? 'none',
@@ -663,7 +761,8 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
 
   void _onVoicePressed() async {
     final currentState = context.read<AuthenticationCubit>().state;
-    final isAuthenticating = currentState is PasscodeLoginInProgress && currentState.isAuthenticating;
+    final isAuthenticating = currentState is PasscodeLoginInProgress &&
+        currentState.isAuthenticating;
     if (isAuthenticating) return;
 
     // "Voice = password": the cached identity (from a prior login on this
@@ -721,7 +820,8 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
     // is what makes voice a primary credential — it works even if the old
     // cached session was expired/revoked).
     await _secureStorage.write(key: 'access_token', value: result.accessToken!);
-    await _secureStorage.write(key: 'refresh_token', value: result.refreshToken!);
+    await _secureStorage.write(
+        key: 'refresh_token', value: result.refreshToken!);
     await _secureStorage.write(key: 'user_id', value: result.userId ?? userId);
     if (!mounted) return;
     await _completeBiometricLogin();
@@ -794,7 +894,8 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
     if (_isPasswordless) {
       Get.toNamed(AppRoutes.forgotPasscodePhone);
     } else {
-      Get.toNamed(AppRoutes.emailSignIn, arguments: {'fromForgotPasscode': true});
+      Get.toNamed(AppRoutes.emailSignIn,
+          arguments: {'fromForgotPasscode': true});
     }
   }
 
@@ -836,8 +937,10 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
         // React only on a genuine transition INTO a terminal state, so a re-emit
         // of the same success/failure never re-runs navigation or re-shows the
         // error snackbar (matches email_sign_in_screen).
-        if (curr is AuthenticationSuccess) return prev is! AuthenticationSuccess;
-        if (curr is AuthenticationFailure) return prev is! AuthenticationFailure;
+        if (curr is AuthenticationSuccess)
+          return prev is! AuthenticationSuccess;
+        if (curr is AuthenticationFailure)
+          return prev is! AuthenticationFailure;
         return true;
       },
       listener: (context, state) {
@@ -935,8 +1038,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
           // Back on the keypad (e.g. a cancelled social sheet re-emitted this) —
           // the personalised greeting is correct again.
           if (_socialInProgress) _socialInProgress = false;
-          if (state.errorMessage != null &&
-              state.errorMessage != _lastError) {
+          if (state.errorMessage != null && state.errorMessage != _lastError) {
             _lastError = state.errorMessage;
             // Login blocked because email verification is required + pending →
             // guide to the (public) email-verify screen, which returns to login.
@@ -947,7 +1049,9 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
               showAccountLockedModal(context, lockUntil,
                   selfLock: isSelfLock(state.errorMessage),
                   fraudFreeze: isFraudFreeze(state.errorMessage));
-            } else if (state.errorMessage!.toLowerCase().contains('email_not_verified')) {
+            } else if (state.errorMessage!
+                .toLowerCase()
+                .contains('email_not_verified')) {
               Get.toNamed(AppRoutes.emailVerification, arguments: {
                 'isRequired': true,
                 'codeSent': true,
@@ -1019,246 +1123,257 @@ class _PasscodeSignInState extends State<PasscodeSignIn>
             Positioned.fill(
               child: Container(color: Colors.black.withValues(alpha: 0.65)),
             ),
-          SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: availableHeight,
-                  ),
-                  child: Column(
-                    // OS-lock-screen layout: the identity + passcode dots are
-                    // pinned to the TOP, and the keypad + its actions are
-                    // anchored to the BOTTOM (the keypad sits low like a system
-                    // keyboard). The flexible gap between the two groups is what
-                    // visually separates the "who you are" zone from the "enter
-                    // your code" zone. On short screens the content grows past
-                    // the viewport and the SingleChildScrollView scrolls, so
-                    // nothing is ever clipped.
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // ================= TOP ZONE: identity + dots =================
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Padding(
-                            // Smaller top inset so the identity block sits just
-                            // below the status bar without crowding it.
-                            padding: EdgeInsets.only(top: 16.h),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                // Per spec: passcode screen shows the app logo on
-                                // a brand-purple halo when no profile picture is
-                                // set (NOT initials — we don't want to flash a
-                                // stranger's initials before they've signed in).
-                                // Compact sign-in avatar inside a styled ring so
-                                // it reads as a framed element, not a plain
-                                // circle — consistent with the drawer / account /
-                                // settings avatars.
-                                GestureDetector(
-                                  // Tap the profile picture to view it
-                                  // full-screen (Hero in; tap/close/swipe to
-                                  // animate back). Only when a real avatar is
-                                  // set — no-op for the logo.
-                                  onTap:
-                                      _hasAvatar ? _openAvatarFullScreen : null,
-                                  child: Hero(
-                                    tag: 'passcode-avatar',
-                                    child: Container(
-                                      padding: EdgeInsets.all(3.r),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            Colors.white.withValues(alpha: 0.35),
-                                            const Color(0xFF4834D4)
-                                                .withValues(alpha: 0.5),
-                                          ],
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: availableHeight,
+                    ),
+                    child: Column(
+                      // OS-lock-screen layout: the identity + passcode dots are
+                      // pinned to the TOP, and the keypad + its actions are
+                      // anchored to the BOTTOM (the keypad sits low like a system
+                      // keyboard). The flexible gap between the two groups is what
+                      // visually separates the "who you are" zone from the "enter
+                      // your code" zone. On short screens the content grows past
+                      // the viewport and the SingleChildScrollView scrolls, so
+                      // nothing is ever clipped.
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // ================= TOP ZONE: identity + dots =================
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Padding(
+                              // Smaller top inset so the identity block sits just
+                              // below the status bar without crowding it.
+                              padding: EdgeInsets.only(top: 16.h),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  // Per spec: passcode screen shows the app logo on
+                                  // a brand-purple halo when no profile picture is
+                                  // set (NOT initials — we don't want to flash a
+                                  // stranger's initials before they've signed in).
+                                  // Compact sign-in avatar inside a styled ring so
+                                  // it reads as a framed element, not a plain
+                                  // circle — consistent with the drawer / account /
+                                  // settings avatars.
+                                  GestureDetector(
+                                    // Tap the profile picture to view it
+                                    // full-screen (Hero in; tap/close/swipe to
+                                    // animate back). Only when a real avatar is
+                                    // set — no-op for the logo.
+                                    onTap: _hasAvatar
+                                        ? _openAvatarFullScreen
+                                        : null,
+                                    child: Hero(
+                                      tag: 'passcode-avatar',
+                                      child: Container(
+                                        padding: EdgeInsets.all(3.r),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              Colors.white
+                                                  .withValues(alpha: 0.35),
+                                              const Color(0xFF4834D4)
+                                                  .withValues(alpha: 0.5),
+                                            ],
+                                          ),
+                                          border: Border.all(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.3),
+                                            width: 2,
+                                          ),
                                         ),
-                                        border: Border.all(
-                                          color:
-                                              Colors.white.withValues(alpha: 0.3),
-                                          width: 2,
+                                        child: UserAvatar(
+                                          size: 52.r,
+                                          imageUrl: _storedAvatarUrl,
+                                          firstName: _storedFirstName,
+                                          lastName: _storedLastName,
+                                          fallbackMode:
+                                              UserAvatarFallback.appLogo,
                                         ),
-                                      ),
-                                      child: UserAvatar(
-                                        size: 52.r,
-                                        imageUrl: _storedAvatarUrl,
-                                        firstName: _storedFirstName,
-                                        lastName: _storedLastName,
-                                        fallbackMode: UserAvatarFallback.appLogo,
                                       ),
                                     ),
                                   ),
-                                ),
-                                SizedBox(height: 12.h),
-                                Text(
-                                  displayName,
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 18.sp,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
+                                  SizedBox(height: 12.h),
+                                  Text(
+                                    displayName,
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 15.h),
-                          Text(
-                            'Enter your Passcode',
-                            textAlign: TextAlign.center,
-                            style: textTheme.titleMedium?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.8),
+                            SizedBox(height: 15.h),
+                            Text(
+                              'Enter your Passcode',
+                              textAlign: TextAlign.center,
+                              style: textTheme.titleMedium?.copyWith(
+                                color: Colors.white.withValues(alpha: 0.8),
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 28.h),
-                          ShakeWidget(
-                            key: _passcodeShakeKey,
-                            child: PasscodeDots(
-                              length: _passcodeLength,
-                              filled: enteredPasscode.length,
+                            SizedBox(height: 28.h),
+                            ShakeWidget(
+                              key: _passcodeShakeKey,
+                              child: PasscodeDots(
+                                length: _passcodeLength,
+                                filled: enteredPasscode.length,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
 
-                      // =========== BOTTOM ZONE: keypad + actions ===========
-                      // Kept together at the bottom so the keypad reads as the
-                      // primary, always-at-the-bottom input surface.
-                      //
-                      // SWIPE UP TO UNLOCK is bound to this zone rather than
-                      // the whole screen on purpose: the page body is a
-                      // SingleChildScrollView with bouncing physics, so a
-                      // screen-wide vertical-drag recogniser would compete
-                      // with the scroller in the gesture arena and lose (or
-                      // worse, win intermittently on short screens where the
-                      // content actually scrolls). This zone never scrolls.
-                      //
-                      // Dragging does not conflict with the keypad: digits are
-                      // taps, and a tap never becomes a drag.
-                      GestureDetector(
-                        behavior: HitTestBehavior.translucent,
-                        onVerticalDragEnd: _onSwipeUp,
-                        child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (_swipeUpReady) _swipeUpHint(),
-                          PasscodeKeypad(
-                            onDigit: _onNumberPressed,
-                            onBackspace: _onBackspacePressed,
-                            disabled: isAuthenticating,
-                          ),
-                          SizedBox(height: 16.h),
-                          // "Forgot passcode" (left) and "Switch user" (right)
-                          // flank the keypad's edges — secondary actions that
-                          // belong to the keypad, aligned under its outer
-                          // columns like an OS lock screen's corner actions.
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                        // =========== BOTTOM ZONE: keypad + actions ===========
+                        // Kept together at the bottom so the keypad reads as the
+                        // primary, always-at-the-bottom input surface.
+                        //
+                        // SWIPE UP TO UNLOCK is bound to this zone rather than
+                        // the whole screen on purpose: the page body is a
+                        // SingleChildScrollView with bouncing physics, so a
+                        // screen-wide vertical-drag recogniser would compete
+                        // with the scroller in the gesture arena and lose (or
+                        // worse, win intermittently on short screens where the
+                        // content actually scrolls). This zone never scrolls.
+                        //
+                        // Dragging does not conflict with the keypad: digits are
+                        // taps, and a tap never becomes a drag.
+                        GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onVerticalDragUpdate: _onSwipeUpdate,
+                          onVerticalDragCancel: _springBack,
+                          onVerticalDragEnd: _onSwipeUp,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Flexible(
-                                child: _buildFlankAction(
-                                  text: 'Forgot your passcode?',
-                                  onPressed: isAuthenticating
-                                      ? null
-                                      : _onForgotPasscode,
-                                  align: TextAlign.left,
-                                  isAuthenticating: isAuthenticating,
-                                ),
+                              if (_swipeUpReady) _swipeUpHint(),
+                              PasscodeKeypad(
+                                onDigit: _onNumberPressed,
+                                onBackspace: _onBackspacePressed,
+                                disabled: isAuthenticating,
                               ),
-                              SizedBox(width: 12.w),
-                              Flexible(
-                                child: _buildFlankAction(
-                                  text: _isPasswordless
-                                      ? 'Switch user'
-                                      : 'Use email/password',
-                                  onPressed: isAuthenticating
-                                      ? null
-                                      : _switchToAlternateLogin,
-                                  align: TextAlign.right,
-                                  isAuthenticating: isAuthenticating,
-                                  emphasized: true,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 18.h),
-                          // Alternate auth (biometrics + voice), dropped to the
-                          // lower part of the screen — or the submit loader in
-                          // its place while a passcode is being verified.
-                          isAuthenticating
-                              ? Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 6.h),
-                                  child: const Center(
-                                      child: LazerVaultLoader.small()),
-                                )
-                              // Alternate-auth actions: Google, biometric, voice
-                              // (mic), Apple — each optional. Built as a list and
-                              // joined with even 14.w spacers so any subset stays
-                              // centred without stray/double gaps (e.g. voice off
-                              // by admin, or no biometric enrolled).
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: _spacedRow(_alternateAuthActions(colorScheme)),
-                                ),
-                          SizedBox(height: 14.h),
-                          // Sign up — the very bottom action.
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Don't have an account?",
-                                style: textTheme.bodyMedium?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.7),
-                                ),
-                              ),
-                              SizedBox(width: 4.w),
-                              TextButton(
-                                onPressed: isAuthenticating
-                                    ? null
-                                    : () =>
-                                        Get.offAllNamed(AppRoutes.signupEntry),
-                                // Shrink the tap padding so "Sign Up" sits inline
-                                // with the question text instead of floating high.
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 4.w, vertical: 4.h),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: Text(
-                                  "Sign Up",
-                                  style: textTheme.bodyMedium?.copyWith(
-                                    color:
-                                        isAuthenticating ? Colors.grey : Colors.white,
-                                    fontWeight: FontWeight.bold,
+                              SizedBox(height: 16.h),
+                              // "Forgot passcode" (left) and "Switch user" (right)
+                              // flank the keypad's edges — secondary actions that
+                              // belong to the keypad, aligned under its outer
+                              // columns like an OS lock screen's corner actions.
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Flexible(
+                                    child: _buildFlankAction(
+                                      text: 'Forgot your passcode?',
+                                      onPressed: isAuthenticating
+                                          ? null
+                                          : _onForgotPasscode,
+                                      align: TextAlign.left,
+                                      isAuthenticating: isAuthenticating,
+                                    ),
                                   ),
-                                ),
+                                  SizedBox(width: 12.w),
+                                  Flexible(
+                                    child: _buildFlankAction(
+                                      text: _isPasswordless
+                                          ? 'Switch user'
+                                          : 'Use email/password',
+                                      onPressed: isAuthenticating
+                                          ? null
+                                          : _switchToAlternateLogin,
+                                      align: TextAlign.right,
+                                      isAuthenticating: isAuthenticating,
+                                      emphasized: true,
+                                    ),
+                                  ),
+                                ],
                               ),
+                              SizedBox(height: 18.h),
+                              // Alternate auth (biometrics + voice), dropped to the
+                              // lower part of the screen — or the submit loader in
+                              // its place while a passcode is being verified.
+                              isAuthenticating
+                                  ? Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 6.h),
+                                      child: const Center(
+                                          child: LazerVaultLoader.small()),
+                                    )
+                                  // Alternate-auth actions: Google, biometric, voice
+                                  // (mic), Apple — each optional. Built as a list and
+                                  // joined with even 14.w spacers so any subset stays
+                                  // centred without stray/double gaps (e.g. voice off
+                                  // by admin, or no biometric enrolled).
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: _spacedRow(
+                                          _alternateAuthActions(colorScheme)),
+                                    ),
+                              SizedBox(height: 14.h),
+                              // Sign up — the very bottom action.
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Don't have an account?",
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.7),
+                                    ),
+                                  ),
+                                  SizedBox(width: 4.w),
+                                  TextButton(
+                                    onPressed: isAuthenticating
+                                        ? null
+                                        : () => Get.offAllNamed(
+                                            AppRoutes.signupEntry),
+                                    // Shrink the tap padding so "Sign Up" sits inline
+                                    // with the question text instead of floating high.
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 4.w, vertical: 4.h),
+                                      minimumSize: Size.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: Text(
+                                      "Sign Up",
+                                      style: textTheme.bodyMedium?.copyWith(
+                                        color: isAuthenticating
+                                            ? Colors.grey
+                                            : Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              // Bottom breathing room so the signup row clears the
+                              // device gesture bar / screen edge (outer SafeArea
+                              // already accounts for the system inset).
+                              SizedBox(height: 10.h),
                             ],
                           ),
-                          // Bottom breathing room so the signup row clears the
-                          // device gesture bar / screen edge (outer SafeArea
-                          // already accounts for the system inset).
-                          SizedBox(height: 10.h),
-                        ],
-                      ),
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
           ],
         );
       },
