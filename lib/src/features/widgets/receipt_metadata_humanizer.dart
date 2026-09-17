@@ -66,6 +66,18 @@ HumanizedReceiptEntry? humanizeReceiptMetadataEntry(
   if (_isPartyIdKey(lk)) return null;
   if (_bareUuid.hasMatch(value)) return null;
 
+  // Running-balance snapshots. The transaction-history mapper copies the
+  // proto's balanceBefore/balanceAfter into metadata, so every receipt built
+  // from a history row carries them. They are a ledger position, not part of
+  // the transaction the document describes — and printing them raw
+  // ("balance_before  20911.46") turned a crypto receipt into a statement
+  // fragment, unformatted and unlabelled.
+  //
+  // The on-screen widget already hid these by name; the PDF builders did not,
+  // so the two surfaces disagreed. Dropping them HERE fixes every receipt at
+  // once, including any added later.
+  if (_isRunningBalanceKey(lk)) return null;
+
   if (lk.contains('minor')) {
     // Fiat kobo (NGN) → naira with a human label. Anything else (crypto
     // minor units at unknown per-asset scale) is ledger plumbing — hide it.
@@ -89,4 +101,19 @@ HumanizedReceiptEntry? humanizeReceiptMetadataEntry(
 
   final label = formatKey != null ? formatKey(key) : key;
   return HumanizedReceiptEntry(label, value);
+}
+
+/// Running-balance snapshots (the account's position before/after the entry).
+///
+/// A receipt describes ONE transaction; the surrounding balance belongs on a
+/// statement. Matched by shape rather than an exact list so the various
+/// spellings backends use are all covered.
+bool _isRunningBalanceKey(String lowerKey) {
+  if (!lowerKey.contains('balance')) return false;
+  return lowerKey.contains('before') ||
+      lowerKey.contains('after') ||
+      lowerKey.contains('prev') ||
+      lowerKey.contains('opening') ||
+      lowerKey.contains('closing') ||
+      lowerKey.contains('running');
 }
