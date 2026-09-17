@@ -2018,6 +2018,32 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             unawaited(_handleSpokenPin(eventData));
           }
           break;
+        case 'voice_pin_skipped':
+          // The user's txPIN policy allows this move WITHOUT a PIN, and
+          // auth-service already minted the verification token. Resume through
+          // submitPinVerification — the SAME path a typed PIN takes — so there
+          // is no second contract that only runs for skipped PINs.
+          if (_room != null) {
+            _applyPinPayload(eventData);
+            final token = eventData['verification_token'] as String?;
+            final intent = eventData['callback_intent'] as String?;
+            if (token != null &&
+                token.isNotEmpty &&
+                intent != null &&
+                intent.isNotEmpty) {
+              unawaited(submitPinVerification(
+                verificationToken: token,
+                callbackIntent: intent,
+                callbackArgs: (eventData['callback_args'] as Map?)
+                    ?.cast<String, dynamic>(),
+              ));
+            } else {
+              // Token or intent missing: fall back to asking rather than
+              // silently dropping a money move the user is waiting on.
+              emit(VoiceSessionPinRequired(_room!, eventData));
+            }
+          }
+          break;
         case 'transaction_result':
           if (_room != null) {
             _setVisualFeedbackActive(false);

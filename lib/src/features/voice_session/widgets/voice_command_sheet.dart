@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -30,7 +29,6 @@ import 'package:lazervault/src/features/voice/cubit/per_service_voice_settings_c
 import 'package:lazervault/src/features/voice/screens/per_service_voice_settings_screen.dart';
 import 'package:lazervault/src/features/voice/cubit/voice_settings_cubit.dart';
 import 'package:lazervault/src/features/voice/screens/voice_settings_screen.dart';
-import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -135,7 +133,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   //  • true  = CONTINUOUS — the whole session transcript shows + scrolls in realtime.
   //  • false = EPHEMERAL  — only the current user→AI cycle is shown; it's replaced
   //    by the next cycle (older turns disappear).
-  bool _continuousChat = true;
+  /// Whether the transcript accumulates across turns (true) or shows only the
+  /// current exchange.
+  ///
+  /// Stays TRUE: history that survives the turn and scrolls is the documented
+  /// behaviour (user complaint #1). Nothing toggles it any more — the captions
+  /// chip used to, which was the bug that made transcripts disappear.
+  final bool _continuousChat = true;
   final ScrollController _conversationScrollController = ScrollController();
   int _selectedRating = 0;
   bool _isSubmittingRating = false;
@@ -1398,10 +1402,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               label: 'Captions',
               active: _showCaptions,
               activeColor: const Color(0xFF10B981),
-              onTap: () => setState(() {
-                _showCaptions = !_showCaptions;
-                _continuousChat = _showCaptions;
-              }),
+              // Captions ONLY. This used to also set _continuousChat, which
+              // feeds _displayedMessages — so turning captions off silently
+              // truncated the transcript to the last TWO messages and the
+              // conversation appeared to vanish. One control, two unrelated
+              // effects, and the comment above claimed it "keeps the running
+              // transcript" while the code threw it away.
+              onTap: () => setState(() => _showCaptions = !_showCaptions),
               onLongPress: _showChatHistorySheet,
             ),
           ),
