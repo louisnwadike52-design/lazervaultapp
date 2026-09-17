@@ -198,6 +198,8 @@ class FamilyAccountsServiceClient extends $grpc.Client {
     return $createUnaryCall(_$deleteFamilyAccount, request, options: options);
   }
 
+  /// A non-creator member leaves the family on their own. Their allocation
+  /// returns to the pool; the creator cannot leave (delete instead).
   $grpc.ResponseFuture<$0.LeaveFamilyAccountResponse> leaveFamilyAccount(
     $0.LeaveFamilyAccountRequest request, {
     $grpc.CallOptions? options,
@@ -231,6 +233,59 @@ class FamilyAccountsServiceClient extends $grpc.Client {
     $grpc.CallOptions? options,
   }) {
     return $createUnaryCall(_$updateFundDistributionMode, request,
+        options: options);
+  }
+
+  /// AuthorizeFamilySpend resolves the family + spending member from the family
+  /// virtual account id and verifies the spend against the distribution mode and
+  /// per-member limits. Does NOT move money — call before the real debit.
+  $grpc.ResponseFuture<$0.AuthorizeFamilySpendResponse> authorizeFamilySpend(
+    $0.AuthorizeFamilySpendRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$authorizeFamilySpend, request, options: options);
+  }
+
+  /// RecordFamilySpend updates the family ledger after a successful real debit:
+  /// decrements the pool (shared_pool) or the member allocation, bumps
+  /// spent_today / spent_this_month, and writes a spending FamilyTransaction.
+  /// Idempotent on transaction_id.
+  $grpc.ResponseFuture<$0.RecordFamilySpendResponse> recordFamilySpend(
+    $0.RecordFamilySpendRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$recordFamilySpend, request, options: options);
+  }
+
+  /// ReleaseFamilySpend reverses a still-outstanding reservation when a spend
+  /// FAILS before the real money moved / before capture. Idempotent on reference.
+  $grpc.ResponseFuture<$0.ReleaseFamilySpendResponse> releaseFamilySpend(
+    $0.ReleaseFamilySpendRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$releaseFamilySpend, request, options: options);
+  }
+
+  /// RefundFamilySpend reverses a CAPTURED spend when the provider refunds / the
+  /// transfer is rolled back AFTER the money moved. Writes a refund transaction.
+  /// Idempotent on reference.
+  $grpc.ResponseFuture<$0.RefundFamilySpendResponse> refundFamilySpend(
+    $0.RefundFamilySpendRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$refundFamilySpend, request, options: options);
+  }
+
+  /// GetFamilySpendByReference is a read-only lookup of the family-pool
+  /// reservation(s) for a payment reference (0 or 1 — reference is unique). Used
+  /// by core-payments' admin internal-transfer detail to surface the family
+  /// spend lifecycle. No side effects.
+  $grpc.ResponseFuture<$0.GetFamilySpendByReferenceResponse>
+      getFamilySpendByReference(
+    $0.GetFamilySpendByReferenceRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getFamilySpendByReference, request,
         options: options);
   }
 
@@ -309,6 +364,106 @@ class FamilyAccountsServiceClient extends $grpc.Client {
     $grpc.CallOptions? options,
   }) {
     return $createUnaryCall(_$adminUpdateFamilyAccountNotes, request,
+        options: options);
+  }
+
+  /// Admin: paginated full transaction history (ops view, all members).
+  $grpc.ResponseFuture<$0.AdminGetFamilyTransactionsResponse>
+      adminGetFamilyTransactions(
+    $0.AdminGetFamilyTransactionsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adminGetFamilyTransactions, request,
+        options: options);
+  }
+
+  /// Admin: money-integrity reconciliation (fresh snapshot + recent history).
+  $grpc.ResponseFuture<$0.AdminGetFamilyReconciliationResponse>
+      adminGetFamilyReconciliation(
+    $0.AdminGetFamilyReconciliationRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adminGetFamilyReconciliation, request,
+        options: options);
+  }
+
+  /// Admin: force a reconciliation pass for one family now.
+  $grpc.ResponseFuture<$0.AdminGetFamilyReconciliationResponse>
+      adminReconcileFamilyAccount(
+    $0.AdminReconcileFamilyAccountRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adminReconcileFamilyAccount, request,
+        options: options);
+  }
+
+  /// Admin: immutable audit log of sensitive actions on a family account.
+  $grpc.ResponseFuture<$0.AdminGetFamilyAuditLogResponse>
+      adminGetFamilyAuditLog(
+    $0.AdminGetFamilyAuditLogRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adminGetFamilyAuditLog, request,
+        options: options);
+  }
+
+  /// What the caller may currently create, and what it is costing them.
+  $grpc.ResponseFuture<$0.GetFamilyCapacityResponse> getFamilyCapacity(
+    $0.GetFamilyCapacityRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getFamilyCapacity, request, options: options);
+  }
+
+  /// Buy one extra slot. Charges the first month immediately.
+  $grpc.ResponseFuture<$0.RequestExtraFamilySlotResponse>
+      requestExtraFamilySlot(
+    $0.RequestExtraFamilySlotRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$requestExtraFamilySlot, request,
+        options: options);
+  }
+
+  /// The caller's slots with their billing state.
+  $grpc.ResponseFuture<$0.ListFamilySlotsResponse> listFamilySlots(
+    $0.ListFamilySlotsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$listFamilySlots, request, options: options);
+  }
+
+  /// Give up a slot at the end of the period already paid for.
+  $grpc.ResponseFuture<$0.CancelFamilySlotResponse> cancelFamilySlot(
+    $0.CancelFamilySlotRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$cancelFamilySlot, request, options: options);
+  }
+
+  /// Billing history for one slot — what answers "why was I charged".
+  $grpc.ResponseFuture<$0.GetFamilySlotChargesResponse> getFamilySlotCharges(
+    $0.GetFamilySlotChargesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getFamilySlotCharges, request, options: options);
+  }
+
+  /// Admin: every slot and its billing state, for revenue and dispute work.
+  $grpc.ResponseFuture<$0.AdminListFamilySlotsResponse> adminListFamilySlots(
+    $0.AdminListFamilySlotsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adminListFamilySlots, request, options: options);
+  }
+
+  /// Admin: charge attempts across all slots, successful and failed.
+  $grpc.ResponseFuture<$0.AdminListFamilySlotChargesResponse>
+      adminListFamilySlotCharges(
+    $0.AdminListFamilySlotChargesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$adminListFamilySlotCharges, request,
         options: options);
   }
 
@@ -422,6 +577,32 @@ class FamilyAccountsServiceClient extends $grpc.Client {
       '/accounts.v1.FamilyAccountsService/UpdateFundDistributionMode',
       ($0.UpdateFundDistributionModeRequest value) => value.writeToBuffer(),
       $0.UpdateFundDistributionModeResponse.fromBuffer);
+  static final _$authorizeFamilySpend = $grpc.ClientMethod<
+          $0.AuthorizeFamilySpendRequest, $0.AuthorizeFamilySpendResponse>(
+      '/accounts.v1.FamilyAccountsService/AuthorizeFamilySpend',
+      ($0.AuthorizeFamilySpendRequest value) => value.writeToBuffer(),
+      $0.AuthorizeFamilySpendResponse.fromBuffer);
+  static final _$recordFamilySpend = $grpc.ClientMethod<
+          $0.RecordFamilySpendRequest, $0.RecordFamilySpendResponse>(
+      '/accounts.v1.FamilyAccountsService/RecordFamilySpend',
+      ($0.RecordFamilySpendRequest value) => value.writeToBuffer(),
+      $0.RecordFamilySpendResponse.fromBuffer);
+  static final _$releaseFamilySpend = $grpc.ClientMethod<
+          $0.ReleaseFamilySpendRequest, $0.ReleaseFamilySpendResponse>(
+      '/accounts.v1.FamilyAccountsService/ReleaseFamilySpend',
+      ($0.ReleaseFamilySpendRequest value) => value.writeToBuffer(),
+      $0.ReleaseFamilySpendResponse.fromBuffer);
+  static final _$refundFamilySpend = $grpc.ClientMethod<
+          $0.RefundFamilySpendRequest, $0.RefundFamilySpendResponse>(
+      '/accounts.v1.FamilyAccountsService/RefundFamilySpend',
+      ($0.RefundFamilySpendRequest value) => value.writeToBuffer(),
+      $0.RefundFamilySpendResponse.fromBuffer);
+  static final _$getFamilySpendByReference = $grpc.ClientMethod<
+          $0.GetFamilySpendByReferenceRequest,
+          $0.GetFamilySpendByReferenceResponse>(
+      '/accounts.v1.FamilyAccountsService/GetFamilySpendByReference',
+      ($0.GetFamilySpendByReferenceRequest value) => value.writeToBuffer(),
+      $0.GetFamilySpendByReferenceResponse.fromBuffer);
   static final _$adminListFamilyAccounts = $grpc.ClientMethod<
           $0.AdminListFamilyAccountsRequest,
           $0.AdminListFamilyAccountsResponse>(
@@ -469,6 +650,65 @@ class FamilyAccountsServiceClient extends $grpc.Client {
       '/accounts.v1.FamilyAccountsService/AdminUpdateFamilyAccountNotes',
       ($0.AdminUpdateFamilyAccountNotesRequest value) => value.writeToBuffer(),
       $0.AdminUpdateFamilyAccountNotesResponse.fromBuffer);
+  static final _$adminGetFamilyTransactions = $grpc.ClientMethod<
+          $0.AdminGetFamilyTransactionsRequest,
+          $0.AdminGetFamilyTransactionsResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminGetFamilyTransactions',
+      ($0.AdminGetFamilyTransactionsRequest value) => value.writeToBuffer(),
+      $0.AdminGetFamilyTransactionsResponse.fromBuffer);
+  static final _$adminGetFamilyReconciliation = $grpc.ClientMethod<
+          $0.AdminGetFamilyReconciliationRequest,
+          $0.AdminGetFamilyReconciliationResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminGetFamilyReconciliation',
+      ($0.AdminGetFamilyReconciliationRequest value) => value.writeToBuffer(),
+      $0.AdminGetFamilyReconciliationResponse.fromBuffer);
+  static final _$adminReconcileFamilyAccount = $grpc.ClientMethod<
+          $0.AdminReconcileFamilyAccountRequest,
+          $0.AdminGetFamilyReconciliationResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminReconcileFamilyAccount',
+      ($0.AdminReconcileFamilyAccountRequest value) => value.writeToBuffer(),
+      $0.AdminGetFamilyReconciliationResponse.fromBuffer);
+  static final _$adminGetFamilyAuditLog = $grpc.ClientMethod<
+          $0.AdminGetFamilyAuditLogRequest, $0.AdminGetFamilyAuditLogResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminGetFamilyAuditLog',
+      ($0.AdminGetFamilyAuditLogRequest value) => value.writeToBuffer(),
+      $0.AdminGetFamilyAuditLogResponse.fromBuffer);
+  static final _$getFamilyCapacity = $grpc.ClientMethod<
+          $0.GetFamilyCapacityRequest, $0.GetFamilyCapacityResponse>(
+      '/accounts.v1.FamilyAccountsService/GetFamilyCapacity',
+      ($0.GetFamilyCapacityRequest value) => value.writeToBuffer(),
+      $0.GetFamilyCapacityResponse.fromBuffer);
+  static final _$requestExtraFamilySlot = $grpc.ClientMethod<
+          $0.RequestExtraFamilySlotRequest, $0.RequestExtraFamilySlotResponse>(
+      '/accounts.v1.FamilyAccountsService/RequestExtraFamilySlot',
+      ($0.RequestExtraFamilySlotRequest value) => value.writeToBuffer(),
+      $0.RequestExtraFamilySlotResponse.fromBuffer);
+  static final _$listFamilySlots =
+      $grpc.ClientMethod<$0.ListFamilySlotsRequest, $0.ListFamilySlotsResponse>(
+          '/accounts.v1.FamilyAccountsService/ListFamilySlots',
+          ($0.ListFamilySlotsRequest value) => value.writeToBuffer(),
+          $0.ListFamilySlotsResponse.fromBuffer);
+  static final _$cancelFamilySlot = $grpc.ClientMethod<
+          $0.CancelFamilySlotRequest, $0.CancelFamilySlotResponse>(
+      '/accounts.v1.FamilyAccountsService/CancelFamilySlot',
+      ($0.CancelFamilySlotRequest value) => value.writeToBuffer(),
+      $0.CancelFamilySlotResponse.fromBuffer);
+  static final _$getFamilySlotCharges = $grpc.ClientMethod<
+          $0.GetFamilySlotChargesRequest, $0.GetFamilySlotChargesResponse>(
+      '/accounts.v1.FamilyAccountsService/GetFamilySlotCharges',
+      ($0.GetFamilySlotChargesRequest value) => value.writeToBuffer(),
+      $0.GetFamilySlotChargesResponse.fromBuffer);
+  static final _$adminListFamilySlots = $grpc.ClientMethod<
+          $0.AdminListFamilySlotsRequest, $0.AdminListFamilySlotsResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminListFamilySlots',
+      ($0.AdminListFamilySlotsRequest value) => value.writeToBuffer(),
+      $0.AdminListFamilySlotsResponse.fromBuffer);
+  static final _$adminListFamilySlotCharges = $grpc.ClientMethod<
+          $0.AdminListFamilySlotChargesRequest,
+          $0.AdminListFamilySlotChargesResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminListFamilySlotCharges',
+      ($0.AdminListFamilySlotChargesRequest value) => value.writeToBuffer(),
+      $0.AdminListFamilySlotChargesResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('accounts.v1.FamilyAccountsService')
@@ -666,6 +906,51 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
             $0.UpdateFundDistributionModeRequest.fromBuffer(value),
         ($0.UpdateFundDistributionModeResponse value) =>
             value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AuthorizeFamilySpendRequest,
+            $0.AuthorizeFamilySpendResponse>(
+        'AuthorizeFamilySpend',
+        authorizeFamilySpend_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AuthorizeFamilySpendRequest.fromBuffer(value),
+        ($0.AuthorizeFamilySpendResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RecordFamilySpendRequest,
+            $0.RecordFamilySpendResponse>(
+        'RecordFamilySpend',
+        recordFamilySpend_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.RecordFamilySpendRequest.fromBuffer(value),
+        ($0.RecordFamilySpendResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ReleaseFamilySpendRequest,
+            $0.ReleaseFamilySpendResponse>(
+        'ReleaseFamilySpend',
+        releaseFamilySpend_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ReleaseFamilySpendRequest.fromBuffer(value),
+        ($0.ReleaseFamilySpendResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RefundFamilySpendRequest,
+            $0.RefundFamilySpendResponse>(
+        'RefundFamilySpend',
+        refundFamilySpend_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.RefundFamilySpendRequest.fromBuffer(value),
+        ($0.RefundFamilySpendResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetFamilySpendByReferenceRequest,
+            $0.GetFamilySpendByReferenceResponse>(
+        'GetFamilySpendByReference',
+        getFamilySpendByReference_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetFamilySpendByReferenceRequest.fromBuffer(value),
+        ($0.GetFamilySpendByReferenceResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.AdminListFamilyAccountsRequest,
             $0.AdminListFamilyAccountsResponse>(
         'AdminListFamilyAccounts',
@@ -739,6 +1024,109 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.AdminUpdateFamilyAccountNotesRequest.fromBuffer(value),
         ($0.AdminUpdateFamilyAccountNotesResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminGetFamilyTransactionsRequest,
+            $0.AdminGetFamilyTransactionsResponse>(
+        'AdminGetFamilyTransactions',
+        adminGetFamilyTransactions_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminGetFamilyTransactionsRequest.fromBuffer(value),
+        ($0.AdminGetFamilyTransactionsResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminGetFamilyReconciliationRequest,
+            $0.AdminGetFamilyReconciliationResponse>(
+        'AdminGetFamilyReconciliation',
+        adminGetFamilyReconciliation_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminGetFamilyReconciliationRequest.fromBuffer(value),
+        ($0.AdminGetFamilyReconciliationResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminReconcileFamilyAccountRequest,
+            $0.AdminGetFamilyReconciliationResponse>(
+        'AdminReconcileFamilyAccount',
+        adminReconcileFamilyAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminReconcileFamilyAccountRequest.fromBuffer(value),
+        ($0.AdminGetFamilyReconciliationResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminGetFamilyAuditLogRequest,
+            $0.AdminGetFamilyAuditLogResponse>(
+        'AdminGetFamilyAuditLog',
+        adminGetFamilyAuditLog_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminGetFamilyAuditLogRequest.fromBuffer(value),
+        ($0.AdminGetFamilyAuditLogResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetFamilyCapacityRequest,
+            $0.GetFamilyCapacityResponse>(
+        'GetFamilyCapacity',
+        getFamilyCapacity_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetFamilyCapacityRequest.fromBuffer(value),
+        ($0.GetFamilyCapacityResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RequestExtraFamilySlotRequest,
+            $0.RequestExtraFamilySlotResponse>(
+        'RequestExtraFamilySlot',
+        requestExtraFamilySlot_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.RequestExtraFamilySlotRequest.fromBuffer(value),
+        ($0.RequestExtraFamilySlotResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListFamilySlotsRequest,
+            $0.ListFamilySlotsResponse>(
+        'ListFamilySlots',
+        listFamilySlots_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ListFamilySlotsRequest.fromBuffer(value),
+        ($0.ListFamilySlotsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CancelFamilySlotRequest,
+            $0.CancelFamilySlotResponse>(
+        'CancelFamilySlot',
+        cancelFamilySlot_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.CancelFamilySlotRequest.fromBuffer(value),
+        ($0.CancelFamilySlotResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetFamilySlotChargesRequest,
+            $0.GetFamilySlotChargesResponse>(
+        'GetFamilySlotCharges',
+        getFamilySlotCharges_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetFamilySlotChargesRequest.fromBuffer(value),
+        ($0.GetFamilySlotChargesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminListFamilySlotsRequest,
+            $0.AdminListFamilySlotsResponse>(
+        'AdminListFamilySlots',
+        adminListFamilySlots_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminListFamilySlotsRequest.fromBuffer(value),
+        ($0.AdminListFamilySlotsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminListFamilySlotChargesRequest,
+            $0.AdminListFamilySlotChargesResponse>(
+        'AdminListFamilySlotCharges',
+        adminListFamilySlotCharges_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminListFamilySlotChargesRequest.fromBuffer(value),
+        ($0.AdminListFamilySlotChargesResponse value) =>
             value.writeToBuffer()));
   }
 
@@ -932,6 +1320,51 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
       updateFundDistributionMode(
           $grpc.ServiceCall call, $0.UpdateFundDistributionModeRequest request);
 
+  $async.Future<$0.AuthorizeFamilySpendResponse> authorizeFamilySpend_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.AuthorizeFamilySpendRequest> $request) async {
+    return authorizeFamilySpend($call, await $request);
+  }
+
+  $async.Future<$0.AuthorizeFamilySpendResponse> authorizeFamilySpend(
+      $grpc.ServiceCall call, $0.AuthorizeFamilySpendRequest request);
+
+  $async.Future<$0.RecordFamilySpendResponse> recordFamilySpend_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.RecordFamilySpendRequest> $request) async {
+    return recordFamilySpend($call, await $request);
+  }
+
+  $async.Future<$0.RecordFamilySpendResponse> recordFamilySpend(
+      $grpc.ServiceCall call, $0.RecordFamilySpendRequest request);
+
+  $async.Future<$0.ReleaseFamilySpendResponse> releaseFamilySpend_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ReleaseFamilySpendRequest> $request) async {
+    return releaseFamilySpend($call, await $request);
+  }
+
+  $async.Future<$0.ReleaseFamilySpendResponse> releaseFamilySpend(
+      $grpc.ServiceCall call, $0.ReleaseFamilySpendRequest request);
+
+  $async.Future<$0.RefundFamilySpendResponse> refundFamilySpend_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.RefundFamilySpendRequest> $request) async {
+    return refundFamilySpend($call, await $request);
+  }
+
+  $async.Future<$0.RefundFamilySpendResponse> refundFamilySpend(
+      $grpc.ServiceCall call, $0.RefundFamilySpendRequest request);
+
+  $async.Future<$0.GetFamilySpendByReferenceResponse>
+      getFamilySpendByReference_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetFamilySpendByReferenceRequest> $request) async {
+    return getFamilySpendByReference($call, await $request);
+  }
+
+  $async.Future<$0.GetFamilySpendByReferenceResponse> getFamilySpendByReference(
+      $grpc.ServiceCall call, $0.GetFamilySpendByReferenceRequest request);
+
   $async.Future<$0.AdminListFamilyAccountsResponse> adminListFamilyAccounts_Pre(
       $grpc.ServiceCall $call,
       $async.Future<$0.AdminListFamilyAccountsRequest> $request) async {
@@ -1007,4 +1440,109 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
   $async.Future<$0.AdminUpdateFamilyAccountNotesResponse>
       adminUpdateFamilyAccountNotes($grpc.ServiceCall call,
           $0.AdminUpdateFamilyAccountNotesRequest request);
+
+  $async.Future<$0.AdminGetFamilyTransactionsResponse>
+      adminGetFamilyTransactions_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.AdminGetFamilyTransactionsRequest> $request) async {
+    return adminGetFamilyTransactions($call, await $request);
+  }
+
+  $async.Future<$0.AdminGetFamilyTransactionsResponse>
+      adminGetFamilyTransactions(
+          $grpc.ServiceCall call, $0.AdminGetFamilyTransactionsRequest request);
+
+  $async.Future<$0.AdminGetFamilyReconciliationResponse>
+      adminGetFamilyReconciliation_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.AdminGetFamilyReconciliationRequest>
+              $request) async {
+    return adminGetFamilyReconciliation($call, await $request);
+  }
+
+  $async.Future<$0.AdminGetFamilyReconciliationResponse>
+      adminGetFamilyReconciliation($grpc.ServiceCall call,
+          $0.AdminGetFamilyReconciliationRequest request);
+
+  $async.Future<$0.AdminGetFamilyReconciliationResponse>
+      adminReconcileFamilyAccount_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.AdminReconcileFamilyAccountRequest> $request) async {
+    return adminReconcileFamilyAccount($call, await $request);
+  }
+
+  $async.Future<$0.AdminGetFamilyReconciliationResponse>
+      adminReconcileFamilyAccount($grpc.ServiceCall call,
+          $0.AdminReconcileFamilyAccountRequest request);
+
+  $async.Future<$0.AdminGetFamilyAuditLogResponse> adminGetFamilyAuditLog_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.AdminGetFamilyAuditLogRequest> $request) async {
+    return adminGetFamilyAuditLog($call, await $request);
+  }
+
+  $async.Future<$0.AdminGetFamilyAuditLogResponse> adminGetFamilyAuditLog(
+      $grpc.ServiceCall call, $0.AdminGetFamilyAuditLogRequest request);
+
+  $async.Future<$0.GetFamilyCapacityResponse> getFamilyCapacity_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetFamilyCapacityRequest> $request) async {
+    return getFamilyCapacity($call, await $request);
+  }
+
+  $async.Future<$0.GetFamilyCapacityResponse> getFamilyCapacity(
+      $grpc.ServiceCall call, $0.GetFamilyCapacityRequest request);
+
+  $async.Future<$0.RequestExtraFamilySlotResponse> requestExtraFamilySlot_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.RequestExtraFamilySlotRequest> $request) async {
+    return requestExtraFamilySlot($call, await $request);
+  }
+
+  $async.Future<$0.RequestExtraFamilySlotResponse> requestExtraFamilySlot(
+      $grpc.ServiceCall call, $0.RequestExtraFamilySlotRequest request);
+
+  $async.Future<$0.ListFamilySlotsResponse> listFamilySlots_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ListFamilySlotsRequest> $request) async {
+    return listFamilySlots($call, await $request);
+  }
+
+  $async.Future<$0.ListFamilySlotsResponse> listFamilySlots(
+      $grpc.ServiceCall call, $0.ListFamilySlotsRequest request);
+
+  $async.Future<$0.CancelFamilySlotResponse> cancelFamilySlot_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CancelFamilySlotRequest> $request) async {
+    return cancelFamilySlot($call, await $request);
+  }
+
+  $async.Future<$0.CancelFamilySlotResponse> cancelFamilySlot(
+      $grpc.ServiceCall call, $0.CancelFamilySlotRequest request);
+
+  $async.Future<$0.GetFamilySlotChargesResponse> getFamilySlotCharges_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetFamilySlotChargesRequest> $request) async {
+    return getFamilySlotCharges($call, await $request);
+  }
+
+  $async.Future<$0.GetFamilySlotChargesResponse> getFamilySlotCharges(
+      $grpc.ServiceCall call, $0.GetFamilySlotChargesRequest request);
+
+  $async.Future<$0.AdminListFamilySlotsResponse> adminListFamilySlots_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.AdminListFamilySlotsRequest> $request) async {
+    return adminListFamilySlots($call, await $request);
+  }
+
+  $async.Future<$0.AdminListFamilySlotsResponse> adminListFamilySlots(
+      $grpc.ServiceCall call, $0.AdminListFamilySlotsRequest request);
+
+  $async.Future<$0.AdminListFamilySlotChargesResponse>
+      adminListFamilySlotCharges_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.AdminListFamilySlotChargesRequest> $request) async {
+    return adminListFamilySlotCharges($call, await $request);
+  }
+
+  $async.Future<$0.AdminListFamilySlotChargesResponse>
+      adminListFamilySlotCharges(
+          $grpc.ServiceCall call, $0.AdminListFamilySlotChargesRequest request);
 }

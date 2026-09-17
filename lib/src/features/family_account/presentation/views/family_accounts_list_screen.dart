@@ -9,6 +9,8 @@ import 'package:lazervault/src/features/family_account/domain/entities/family_ac
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/family_account/data/datasources/family_slots_data_source.dart';
+import 'package:lazervault/src/features/family_account/presentation/widgets/family_slots_sheet.dart';
 
 class FamilyAccountsListScreen extends StatefulWidget {
   const FamilyAccountsListScreen({super.key});
@@ -52,6 +54,23 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
   void _loadData() {
     _accountsCubit.loadFamilyAccounts();
     _invitationsCubit.loadPendingInvitations();
+  }
+
+  /// Opens the paid-slot sheet.
+  ///
+  /// Reached from the quota line and from tapping "create" while at the limit —
+  /// the two moments a user learns their capacity is full.
+  void _openSlotsSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => FamilySlotsSheet(
+        dataSource: serviceLocator<FamilySlotsDataSource>(),
+        // Capacity changed, so the quota line above is now stale.
+        onChanged: _onRefresh,
+      ),
+    );
   }
 
   Future<void> _onRefresh() async {
@@ -106,17 +125,12 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
         onPressed: () async {
           // Gate on the SERVER-sent quota (admin-tunable). 0 max = server
           // didn't send it — let the server be the judge on create.
+          //
+          // Hitting the limit opens the slots sheet rather than a snackbar
+          // saying no: extra capacity is purchasable, so a dead end here was
+          // refusing a sale the user was ready to make.
           if (_maxFamilyAccounts > 0 && _createdCount >= _maxFamilyAccounts) {
-            Get.snackbar(
-              'Limit reached',
-              'You\'ve created $_createdCount of $_maxFamilyAccounts '
-                  'Family & Friends account${_maxFamilyAccounts == 1 ? '' : 's'} — '
-                  'that\'s the current maximum.',
-              backgroundColor: const Color(0xFF1F1F1F),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.BOTTOM,
-              margin: EdgeInsets.all(16.w),
-            );
+            _openSlotsSheet();
             return;
           }
           final result = await Get.toNamed(AppRoutes.familyCreate);
@@ -133,21 +147,35 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
             // soon as the list loads so users know how many pools they can
             // still set up. Hidden while unknown (old backend / not loaded).
             if (_maxFamilyAccounts > 0)
-              Padding(
-                padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 0),
-                child: Row(
-                  children: [
-                    Icon(Icons.group_add_outlined,
-                        size: 14.sp, color: const Color(0xFF9CA3AF)),
-                    SizedBox(width: 6.w),
-                    Text(
-                      _createdCount >= _maxFamilyAccounts
-                          ? 'You\'ve created $_createdCount of $_maxFamilyAccounts accounts — limit reached'
-                          : 'You\'ve created $_createdCount of $_maxFamilyAccounts accounts you can set up',
-                      style: TextStyle(
-                          color: const Color(0xFF9CA3AF), fontSize: 12.sp),
-                    ),
-                  ],
+              // Tappable: this line is where someone reads that they are out of
+              // capacity, so it is also where they should be able to buy more.
+              InkWell(
+                onTap: _openSlotsSheet,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.group_add_outlined,
+                          size: 14.sp, color: const Color(0xFF9CA3AF)),
+                      SizedBox(width: 6.w),
+                      Expanded(
+                        child: Text(
+                          _createdCount >= _maxFamilyAccounts
+                              ? 'You\'ve created $_createdCount of $_maxFamilyAccounts accounts — limit reached'
+                              : 'You\'ve created $_createdCount of $_maxFamilyAccounts accounts you can set up',
+                          style: TextStyle(
+                              color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                        ),
+                      ),
+                      Text('Manage slots',
+                          style: TextStyle(
+                              color: const Color(0xFF4E03D0),
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600)),
+                      Icon(Icons.chevron_right,
+                          size: 14.sp, color: const Color(0xFF4E03D0)),
+                    ],
+                  ),
                 ),
               ),
             Expanded(

@@ -12,6 +12,7 @@
 
 import 'dart:core' as $core;
 
+import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'account_card.pb.dart' as $1;
@@ -20,6 +21,2593 @@ import 'family_accounts.pbenum.dart';
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
 export 'family_accounts.pbenum.dart';
+
+class GetFamilyCapacityRequest extends $pb.GeneratedMessage {
+  factory GetFamilyCapacityRequest() => create();
+
+  GetFamilyCapacityRequest._();
+
+  factory GetFamilyCapacityRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetFamilyCapacityRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetFamilyCapacityRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetFamilyCapacityRequest clone() =>
+      GetFamilyCapacityRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetFamilyCapacityRequest copyWith(
+          void Function(GetFamilyCapacityRequest) updates) =>
+      super.copyWith((message) => updates(message as GetFamilyCapacityRequest))
+          as GetFamilyCapacityRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetFamilyCapacityRequest create() => GetFamilyCapacityRequest._();
+  @$core.override
+  GetFamilyCapacityRequest createEmptyInstance() => create();
+  static $pb.PbList<GetFamilyCapacityRequest> createRepeated() =>
+      $pb.PbList<GetFamilyCapacityRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetFamilyCapacityRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetFamilyCapacityRequest>(create);
+  static GetFamilyCapacityRequest? _defaultInstance;
+}
+
+class GetFamilyCapacityResponse extends $pb.GeneratedMessage {
+  factory GetFamilyCapacityResponse({
+    $core.int? freeAllowance,
+    $core.int? paidSlots,
+    $core.int? suspendedSlots,
+    $core.int? total,
+    $core.int? used,
+    $core.int? chargeableSlots,
+    $fixnum.Int64? extraSlotFeeMinor,
+    $core.String? currency,
+  }) {
+    final result = create();
+    if (freeAllowance != null) result.freeAllowance = freeAllowance;
+    if (paidSlots != null) result.paidSlots = paidSlots;
+    if (suspendedSlots != null) result.suspendedSlots = suspendedSlots;
+    if (total != null) result.total = total;
+    if (used != null) result.used = used;
+    if (chargeableSlots != null) result.chargeableSlots = chargeableSlots;
+    if (extraSlotFeeMinor != null) result.extraSlotFeeMinor = extraSlotFeeMinor;
+    if (currency != null) result.currency = currency;
+    return result;
+  }
+
+  GetFamilyCapacityResponse._();
+
+  factory GetFamilyCapacityResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetFamilyCapacityResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetFamilyCapacityResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..a<$core.int>(
+        1, _omitFieldNames ? '' : 'freeAllowance', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'paidSlots', $pb.PbFieldType.O3)
+    ..a<$core.int>(
+        3, _omitFieldNames ? '' : 'suspendedSlots', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'used', $pb.PbFieldType.O3)
+    ..a<$core.int>(
+        6, _omitFieldNames ? '' : 'chargeableSlots', $pb.PbFieldType.O3)
+    ..aInt64(7, _omitFieldNames ? '' : 'extraSlotFeeMinor')
+    ..aOS(8, _omitFieldNames ? '' : 'currency')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetFamilyCapacityResponse clone() =>
+      GetFamilyCapacityResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetFamilyCapacityResponse copyWith(
+          void Function(GetFamilyCapacityResponse) updates) =>
+      super.copyWith((message) => updates(message as GetFamilyCapacityResponse))
+          as GetFamilyCapacityResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetFamilyCapacityResponse create() => GetFamilyCapacityResponse._();
+  @$core.override
+  GetFamilyCapacityResponse createEmptyInstance() => create();
+  static $pb.PbList<GetFamilyCapacityResponse> createRepeated() =>
+      $pb.PbList<GetFamilyCapacityResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetFamilyCapacityResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetFamilyCapacityResponse>(create);
+  static GetFamilyCapacityResponse? _defaultInstance;
+
+  /// Accounts nobody pays for (the admin tunable).
+  @$pb.TagNumber(1)
+  $core.int get freeAllowance => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set freeAllowance($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFreeAllowance() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFreeAllowance() => $_clearField(1);
+
+  /// Slots currently granting capacity.
+  @$pb.TagNumber(2)
+  $core.int get paidSlots => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set paidSlots($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPaidSlots() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPaidSlots() => $_clearField(2);
+
+  /// Slots that exist but grant nothing because a fee could not be collected.
+  /// Surfaced so the app can explain a capacity that dropped, rather than the
+  /// user discovering it at the moment of creating.
+  @$pb.TagNumber(3)
+  $core.int get suspendedSlots => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set suspendedSlots($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasSuspendedSlots() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSuspendedSlots() => $_clearField(3);
+
+  /// free_allowance + paid_slots.
+  @$pb.TagNumber(4)
+  $core.int get total => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set total($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasTotal() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTotal() => $_clearField(4);
+
+  /// How many family accounts exist.
+  @$pb.TagNumber(5)
+  $core.int get used => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set used($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasUsed() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearUsed() => $_clearField(5);
+
+  /// Paid slots actually being billed. NOT the same as paid_slots: if an admin
+  /// RAISES the free allowance, slots it now covers stop being billed.
+  @$pb.TagNumber(6)
+  $core.int get chargeableSlots => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set chargeableSlots($core.int value) => $_setSignedInt32(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasChargeableSlots() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearChargeableSlots() => $_clearField(6);
+
+  /// Price of one more slot per month, in kobo.
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get extraSlotFeeMinor => $_getI64(6);
+  @$pb.TagNumber(7)
+  set extraSlotFeeMinor($fixnum.Int64 value) => $_setInt64(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasExtraSlotFeeMinor() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearExtraSlotFeeMinor() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get currency => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set currency($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasCurrency() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCurrency() => $_clearField(8);
+}
+
+class RequestExtraFamilySlotRequest extends $pb.GeneratedMessage {
+  factory RequestExtraFamilySlotRequest({
+    $core.String? idempotencyKey,
+  }) {
+    final result = create();
+    if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    return result;
+  }
+
+  RequestExtraFamilySlotRequest._();
+
+  factory RequestExtraFamilySlotRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RequestExtraFamilySlotRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RequestExtraFamilySlotRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'idempotencyKey')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RequestExtraFamilySlotRequest clone() =>
+      RequestExtraFamilySlotRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RequestExtraFamilySlotRequest copyWith(
+          void Function(RequestExtraFamilySlotRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as RequestExtraFamilySlotRequest))
+          as RequestExtraFamilySlotRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RequestExtraFamilySlotRequest create() =>
+      RequestExtraFamilySlotRequest._();
+  @$core.override
+  RequestExtraFamilySlotRequest createEmptyInstance() => create();
+  static $pb.PbList<RequestExtraFamilySlotRequest> createRepeated() =>
+      $pb.PbList<RequestExtraFamilySlotRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RequestExtraFamilySlotRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RequestExtraFamilySlotRequest>(create);
+  static RequestExtraFamilySlotRequest? _defaultInstance;
+
+  /// Client-supplied key so a retry after a timeout returns the slot already
+  /// bought instead of selling a second one.
+  @$pb.TagNumber(1)
+  $core.String get idempotencyKey => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set idempotencyKey($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasIdempotencyKey() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearIdempotencyKey() => $_clearField(1);
+}
+
+class RequestExtraFamilySlotResponse extends $pb.GeneratedMessage {
+  factory RequestExtraFamilySlotResponse({
+    $core.bool? success,
+    FamilyPaidSlot? slot,
+    $core.String? message,
+    GetFamilyCapacityResponse? capacity,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (slot != null) result.slot = slot;
+    if (message != null) result.message = message;
+    if (capacity != null) result.capacity = capacity;
+    return result;
+  }
+
+  RequestExtraFamilySlotResponse._();
+
+  factory RequestExtraFamilySlotResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RequestExtraFamilySlotResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RequestExtraFamilySlotResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOM<FamilyPaidSlot>(2, _omitFieldNames ? '' : 'slot',
+        subBuilder: FamilyPaidSlot.create)
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..aOM<GetFamilyCapacityResponse>(4, _omitFieldNames ? '' : 'capacity',
+        subBuilder: GetFamilyCapacityResponse.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RequestExtraFamilySlotResponse clone() =>
+      RequestExtraFamilySlotResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RequestExtraFamilySlotResponse copyWith(
+          void Function(RequestExtraFamilySlotResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as RequestExtraFamilySlotResponse))
+          as RequestExtraFamilySlotResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RequestExtraFamilySlotResponse create() =>
+      RequestExtraFamilySlotResponse._();
+  @$core.override
+  RequestExtraFamilySlotResponse createEmptyInstance() => create();
+  static $pb.PbList<RequestExtraFamilySlotResponse> createRepeated() =>
+      $pb.PbList<RequestExtraFamilySlotResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RequestExtraFamilySlotResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RequestExtraFamilySlotResponse>(create);
+  static RequestExtraFamilySlotResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  FamilyPaidSlot get slot => $_getN(1);
+  @$pb.TagNumber(2)
+  set slot(FamilyPaidSlot value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasSlot() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSlot() => $_clearField(2);
+  @$pb.TagNumber(2)
+  FamilyPaidSlot ensureSlot() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.String get message => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set message($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessage() => $_clearField(3);
+
+  /// Capacity AFTER the purchase, so the app does not need a second round trip
+  /// to redraw the screen the user is looking at.
+  @$pb.TagNumber(4)
+  GetFamilyCapacityResponse get capacity => $_getN(3);
+  @$pb.TagNumber(4)
+  set capacity(GetFamilyCapacityResponse value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasCapacity() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCapacity() => $_clearField(4);
+  @$pb.TagNumber(4)
+  GetFamilyCapacityResponse ensureCapacity() => $_ensure(3);
+}
+
+class ListFamilySlotsRequest extends $pb.GeneratedMessage {
+  factory ListFamilySlotsRequest() => create();
+
+  ListFamilySlotsRequest._();
+
+  factory ListFamilySlotsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListFamilySlotsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListFamilySlotsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListFamilySlotsRequest clone() =>
+      ListFamilySlotsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListFamilySlotsRequest copyWith(
+          void Function(ListFamilySlotsRequest) updates) =>
+      super.copyWith((message) => updates(message as ListFamilySlotsRequest))
+          as ListFamilySlotsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListFamilySlotsRequest create() => ListFamilySlotsRequest._();
+  @$core.override
+  ListFamilySlotsRequest createEmptyInstance() => create();
+  static $pb.PbList<ListFamilySlotsRequest> createRepeated() =>
+      $pb.PbList<ListFamilySlotsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListFamilySlotsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListFamilySlotsRequest>(create);
+  static ListFamilySlotsRequest? _defaultInstance;
+}
+
+class ListFamilySlotsResponse extends $pb.GeneratedMessage {
+  factory ListFamilySlotsResponse({
+    $core.Iterable<FamilyPaidSlot>? slots,
+  }) {
+    final result = create();
+    if (slots != null) result.slots.addAll(slots);
+    return result;
+  }
+
+  ListFamilySlotsResponse._();
+
+  factory ListFamilySlotsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListFamilySlotsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListFamilySlotsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..pc<FamilyPaidSlot>(1, _omitFieldNames ? '' : 'slots', $pb.PbFieldType.PM,
+        subBuilder: FamilyPaidSlot.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListFamilySlotsResponse clone() =>
+      ListFamilySlotsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListFamilySlotsResponse copyWith(
+          void Function(ListFamilySlotsResponse) updates) =>
+      super.copyWith((message) => updates(message as ListFamilySlotsResponse))
+          as ListFamilySlotsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListFamilySlotsResponse create() => ListFamilySlotsResponse._();
+  @$core.override
+  ListFamilySlotsResponse createEmptyInstance() => create();
+  static $pb.PbList<ListFamilySlotsResponse> createRepeated() =>
+      $pb.PbList<ListFamilySlotsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListFamilySlotsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListFamilySlotsResponse>(create);
+  static ListFamilySlotsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<FamilyPaidSlot> get slots => $_getList(0);
+}
+
+class CancelFamilySlotRequest extends $pb.GeneratedMessage {
+  factory CancelFamilySlotRequest({
+    $core.String? slotId,
+  }) {
+    final result = create();
+    if (slotId != null) result.slotId = slotId;
+    return result;
+  }
+
+  CancelFamilySlotRequest._();
+
+  factory CancelFamilySlotRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CancelFamilySlotRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CancelFamilySlotRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'slotId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CancelFamilySlotRequest clone() =>
+      CancelFamilySlotRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CancelFamilySlotRequest copyWith(
+          void Function(CancelFamilySlotRequest) updates) =>
+      super.copyWith((message) => updates(message as CancelFamilySlotRequest))
+          as CancelFamilySlotRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CancelFamilySlotRequest create() => CancelFamilySlotRequest._();
+  @$core.override
+  CancelFamilySlotRequest createEmptyInstance() => create();
+  static $pb.PbList<CancelFamilySlotRequest> createRepeated() =>
+      $pb.PbList<CancelFamilySlotRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CancelFamilySlotRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CancelFamilySlotRequest>(create);
+  static CancelFamilySlotRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get slotId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set slotId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSlotId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSlotId() => $_clearField(1);
+}
+
+class CancelFamilySlotResponse extends $pb.GeneratedMessage {
+  factory CancelFamilySlotResponse({
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  CancelFamilySlotResponse._();
+
+  factory CancelFamilySlotResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CancelFamilySlotResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CancelFamilySlotResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CancelFamilySlotResponse clone() =>
+      CancelFamilySlotResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CancelFamilySlotResponse copyWith(
+          void Function(CancelFamilySlotResponse) updates) =>
+      super.copyWith((message) => updates(message as CancelFamilySlotResponse))
+          as CancelFamilySlotResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CancelFamilySlotResponse create() => CancelFamilySlotResponse._();
+  @$core.override
+  CancelFamilySlotResponse createEmptyInstance() => create();
+  static $pb.PbList<CancelFamilySlotResponse> createRepeated() =>
+      $pb.PbList<CancelFamilySlotResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CancelFamilySlotResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CancelFamilySlotResponse>(create);
+  static CancelFamilySlotResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+}
+
+class GetFamilySlotChargesRequest extends $pb.GeneratedMessage {
+  factory GetFamilySlotChargesRequest({
+    $core.String? slotId,
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final result = create();
+    if (slotId != null) result.slotId = slotId;
+    if (limit != null) result.limit = limit;
+    if (offset != null) result.offset = offset;
+    return result;
+  }
+
+  GetFamilySlotChargesRequest._();
+
+  factory GetFamilySlotChargesRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetFamilySlotChargesRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetFamilySlotChargesRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'slotId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetFamilySlotChargesRequest clone() =>
+      GetFamilySlotChargesRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetFamilySlotChargesRequest copyWith(
+          void Function(GetFamilySlotChargesRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetFamilySlotChargesRequest))
+          as GetFamilySlotChargesRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetFamilySlotChargesRequest create() =>
+      GetFamilySlotChargesRequest._();
+  @$core.override
+  GetFamilySlotChargesRequest createEmptyInstance() => create();
+  static $pb.PbList<GetFamilySlotChargesRequest> createRepeated() =>
+      $pb.PbList<GetFamilySlotChargesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetFamilySlotChargesRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetFamilySlotChargesRequest>(create);
+  static GetFamilySlotChargesRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get slotId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set slotId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSlotId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSlotId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get limit => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set limit($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLimit() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLimit() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get offset => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set offset($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasOffset() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearOffset() => $_clearField(3);
+}
+
+class GetFamilySlotChargesResponse extends $pb.GeneratedMessage {
+  factory GetFamilySlotChargesResponse({
+    $core.Iterable<FamilySlotCharge>? charges,
+    $core.int? total,
+  }) {
+    final result = create();
+    if (charges != null) result.charges.addAll(charges);
+    if (total != null) result.total = total;
+    return result;
+  }
+
+  GetFamilySlotChargesResponse._();
+
+  factory GetFamilySlotChargesResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetFamilySlotChargesResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetFamilySlotChargesResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..pc<FamilySlotCharge>(
+        1, _omitFieldNames ? '' : 'charges', $pb.PbFieldType.PM,
+        subBuilder: FamilySlotCharge.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetFamilySlotChargesResponse clone() =>
+      GetFamilySlotChargesResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetFamilySlotChargesResponse copyWith(
+          void Function(GetFamilySlotChargesResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetFamilySlotChargesResponse))
+          as GetFamilySlotChargesResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetFamilySlotChargesResponse create() =>
+      GetFamilySlotChargesResponse._();
+  @$core.override
+  GetFamilySlotChargesResponse createEmptyInstance() => create();
+  static $pb.PbList<GetFamilySlotChargesResponse> createRepeated() =>
+      $pb.PbList<GetFamilySlotChargesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetFamilySlotChargesResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetFamilySlotChargesResponse>(create);
+  static GetFamilySlotChargesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<FamilySlotCharge> get charges => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => $_clearField(2);
+}
+
+class FamilyPaidSlot extends $pb.GeneratedMessage {
+  factory FamilyPaidSlot({
+    $core.String? id,
+    $core.String? creatorUserId,
+    $core.String? status,
+    $fixnum.Int64? feeMinor,
+    $core.String? currency,
+    $core.String? periodStart,
+    $core.String? nextChargeAt,
+    $core.String? lastChargedAt,
+    $core.int? failureCount,
+    $core.String? lastFailureReason,
+    $core.String? cancelledAt,
+    $core.String? createdAt,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (creatorUserId != null) result.creatorUserId = creatorUserId;
+    if (status != null) result.status = status;
+    if (feeMinor != null) result.feeMinor = feeMinor;
+    if (currency != null) result.currency = currency;
+    if (periodStart != null) result.periodStart = periodStart;
+    if (nextChargeAt != null) result.nextChargeAt = nextChargeAt;
+    if (lastChargedAt != null) result.lastChargedAt = lastChargedAt;
+    if (failureCount != null) result.failureCount = failureCount;
+    if (lastFailureReason != null) result.lastFailureReason = lastFailureReason;
+    if (cancelledAt != null) result.cancelledAt = cancelledAt;
+    if (createdAt != null) result.createdAt = createdAt;
+    return result;
+  }
+
+  FamilyPaidSlot._();
+
+  factory FamilyPaidSlot.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory FamilyPaidSlot.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FamilyPaidSlot',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'creatorUserId')
+    ..aOS(3, _omitFieldNames ? '' : 'status')
+    ..aInt64(4, _omitFieldNames ? '' : 'feeMinor')
+    ..aOS(5, _omitFieldNames ? '' : 'currency')
+    ..aOS(6, _omitFieldNames ? '' : 'periodStart')
+    ..aOS(7, _omitFieldNames ? '' : 'nextChargeAt')
+    ..aOS(8, _omitFieldNames ? '' : 'lastChargedAt')
+    ..a<$core.int>(9, _omitFieldNames ? '' : 'failureCount', $pb.PbFieldType.O3)
+    ..aOS(10, _omitFieldNames ? '' : 'lastFailureReason')
+    ..aOS(11, _omitFieldNames ? '' : 'cancelledAt')
+    ..aOS(12, _omitFieldNames ? '' : 'createdAt')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FamilyPaidSlot clone() => FamilyPaidSlot()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FamilyPaidSlot copyWith(void Function(FamilyPaidSlot) updates) =>
+      super.copyWith((message) => updates(message as FamilyPaidSlot))
+          as FamilyPaidSlot;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static FamilyPaidSlot create() => FamilyPaidSlot._();
+  @$core.override
+  FamilyPaidSlot createEmptyInstance() => create();
+  static $pb.PbList<FamilyPaidSlot> createRepeated() =>
+      $pb.PbList<FamilyPaidSlot>();
+  @$core.pragma('dart2js:noInline')
+  static FamilyPaidSlot getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FamilyPaidSlot>(create);
+  static FamilyPaidSlot? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get creatorUserId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set creatorUserId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCreatorUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCreatorUserId() => $_clearField(2);
+
+  /// active | suspended | cancelled
+  @$pb.TagNumber(3)
+  $core.String get status => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set status($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasStatus() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearStatus() => $_clearField(3);
+
+  /// The price AGREED at purchase, held per slot so a later price change never
+  /// silently re-prices what somebody already signed up for.
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get feeMinor => $_getI64(3);
+  @$pb.TagNumber(4)
+  set feeMinor($fixnum.Int64 value) => $_setInt64(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasFeeMinor() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearFeeMinor() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get periodStart => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set periodStart($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasPeriodStart() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPeriodStart() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get nextChargeAt => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set nextChargeAt($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasNextChargeAt() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearNextChargeAt() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get lastChargedAt => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set lastChargedAt($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasLastChargedAt() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearLastChargedAt() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.int get failureCount => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set failureCount($core.int value) => $_setSignedInt32(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasFailureCount() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearFailureCount() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get lastFailureReason => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set lastFailureReason($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasLastFailureReason() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearLastFailureReason() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get cancelledAt => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set cancelledAt($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasCancelledAt() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCancelledAt() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get createdAt => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set createdAt($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasCreatedAt() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearCreatedAt() => $_clearField(12);
+}
+
+class FamilySlotCharge extends $pb.GeneratedMessage {
+  factory FamilySlotCharge({
+    $core.String? id,
+    $core.String? slotId,
+    $fixnum.Int64? amountMinor,
+    $core.String? currency,
+    $core.String? status,
+    $core.String? failureReason,
+    $core.String? periodStart,
+    $core.String? periodEnd,
+    $core.String? createdAt,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (slotId != null) result.slotId = slotId;
+    if (amountMinor != null) result.amountMinor = amountMinor;
+    if (currency != null) result.currency = currency;
+    if (status != null) result.status = status;
+    if (failureReason != null) result.failureReason = failureReason;
+    if (periodStart != null) result.periodStart = periodStart;
+    if (periodEnd != null) result.periodEnd = periodEnd;
+    if (createdAt != null) result.createdAt = createdAt;
+    return result;
+  }
+
+  FamilySlotCharge._();
+
+  factory FamilySlotCharge.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory FamilySlotCharge.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FamilySlotCharge',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'slotId')
+    ..aInt64(3, _omitFieldNames ? '' : 'amountMinor')
+    ..aOS(4, _omitFieldNames ? '' : 'currency')
+    ..aOS(5, _omitFieldNames ? '' : 'status')
+    ..aOS(6, _omitFieldNames ? '' : 'failureReason')
+    ..aOS(7, _omitFieldNames ? '' : 'periodStart')
+    ..aOS(8, _omitFieldNames ? '' : 'periodEnd')
+    ..aOS(9, _omitFieldNames ? '' : 'createdAt')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FamilySlotCharge clone() => FamilySlotCharge()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FamilySlotCharge copyWith(void Function(FamilySlotCharge) updates) =>
+      super.copyWith((message) => updates(message as FamilySlotCharge))
+          as FamilySlotCharge;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static FamilySlotCharge create() => FamilySlotCharge._();
+  @$core.override
+  FamilySlotCharge createEmptyInstance() => create();
+  static $pb.PbList<FamilySlotCharge> createRepeated() =>
+      $pb.PbList<FamilySlotCharge>();
+  @$core.pragma('dart2js:noInline')
+  static FamilySlotCharge getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FamilySlotCharge>(create);
+  static FamilySlotCharge? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get slotId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set slotId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasSlotId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSlotId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get amountMinor => $_getI64(2);
+  @$pb.TagNumber(3)
+  set amountMinor($fixnum.Int64 value) => $_setInt64(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasAmountMinor() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmountMinor() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get currency => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set currency($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasCurrency() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCurrency() => $_clearField(4);
+
+  /// succeeded | failed
+  @$pb.TagNumber(5)
+  $core.String get status => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set status($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasStatus() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearStatus() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get failureReason => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set failureReason($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasFailureReason() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearFailureReason() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get periodStart => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set periodStart($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasPeriodStart() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPeriodStart() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get periodEnd => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set periodEnd($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasPeriodEnd() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearPeriodEnd() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get createdAt => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set createdAt($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasCreatedAt() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearCreatedAt() => $_clearField(9);
+}
+
+class AdminListFamilySlotsRequest extends $pb.GeneratedMessage {
+  factory AdminListFamilySlotsRequest({
+    $core.String? status,
+    $core.String? creatorUserId,
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final result = create();
+    if (status != null) result.status = status;
+    if (creatorUserId != null) result.creatorUserId = creatorUserId;
+    if (limit != null) result.limit = limit;
+    if (offset != null) result.offset = offset;
+    return result;
+  }
+
+  AdminListFamilySlotsRequest._();
+
+  factory AdminListFamilySlotsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminListFamilySlotsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminListFamilySlotsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'status')
+    ..aOS(2, _omitFieldNames ? '' : 'creatorUserId')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListFamilySlotsRequest clone() =>
+      AdminListFamilySlotsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListFamilySlotsRequest copyWith(
+          void Function(AdminListFamilySlotsRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as AdminListFamilySlotsRequest))
+          as AdminListFamilySlotsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminListFamilySlotsRequest create() =>
+      AdminListFamilySlotsRequest._();
+  @$core.override
+  AdminListFamilySlotsRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminListFamilySlotsRequest> createRepeated() =>
+      $pb.PbList<AdminListFamilySlotsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminListFamilySlotsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminListFamilySlotsRequest>(create);
+  static AdminListFamilySlotsRequest? _defaultInstance;
+
+  /// Optional filters.
+  @$pb.TagNumber(1)
+  $core.String get status => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set status($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasStatus() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStatus() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get creatorUserId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set creatorUserId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCreatorUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCreatorUserId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get limit => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set limit($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasLimit() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLimit() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get offset => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set offset($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasOffset() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearOffset() => $_clearField(4);
+}
+
+class AdminListFamilySlotsResponse extends $pb.GeneratedMessage {
+  factory AdminListFamilySlotsResponse({
+    $core.Iterable<AdminFamilySlot>? slots,
+    $core.int? total,
+    $core.int? activeCount,
+    $core.int? suspendedCount,
+    $core.int? cancelledCount,
+    $fixnum.Int64? monthlyRevenueMinor,
+  }) {
+    final result = create();
+    if (slots != null) result.slots.addAll(slots);
+    if (total != null) result.total = total;
+    if (activeCount != null) result.activeCount = activeCount;
+    if (suspendedCount != null) result.suspendedCount = suspendedCount;
+    if (cancelledCount != null) result.cancelledCount = cancelledCount;
+    if (monthlyRevenueMinor != null)
+      result.monthlyRevenueMinor = monthlyRevenueMinor;
+    return result;
+  }
+
+  AdminListFamilySlotsResponse._();
+
+  factory AdminListFamilySlotsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminListFamilySlotsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminListFamilySlotsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..pc<AdminFamilySlot>(1, _omitFieldNames ? '' : 'slots', $pb.PbFieldType.PM,
+        subBuilder: AdminFamilySlot.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'activeCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(
+        4, _omitFieldNames ? '' : 'suspendedCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(
+        5, _omitFieldNames ? '' : 'cancelledCount', $pb.PbFieldType.O3)
+    ..aInt64(6, _omitFieldNames ? '' : 'monthlyRevenueMinor')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListFamilySlotsResponse clone() =>
+      AdminListFamilySlotsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListFamilySlotsResponse copyWith(
+          void Function(AdminListFamilySlotsResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as AdminListFamilySlotsResponse))
+          as AdminListFamilySlotsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminListFamilySlotsResponse create() =>
+      AdminListFamilySlotsResponse._();
+  @$core.override
+  AdminListFamilySlotsResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminListFamilySlotsResponse> createRepeated() =>
+      $pb.PbList<AdminListFamilySlotsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminListFamilySlotsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminListFamilySlotsResponse>(create);
+  static AdminListFamilySlotsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<AdminFamilySlot> get slots => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => $_clearField(2);
+
+  /// Roll-up so the console can lead with the number ops actually care about.
+  @$pb.TagNumber(3)
+  $core.int get activeCount => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set activeCount($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasActiveCount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearActiveCount() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get suspendedCount => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set suspendedCount($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasSuspendedCount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSuspendedCount() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get cancelledCount => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set cancelledCount($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasCancelledCount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCancelledCount() => $_clearField(5);
+
+  /// Recurring revenue these slots represent per month, in kobo.
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get monthlyRevenueMinor => $_getI64(5);
+  @$pb.TagNumber(6)
+  set monthlyRevenueMinor($fixnum.Int64 value) => $_setInt64(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasMonthlyRevenueMinor() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearMonthlyRevenueMinor() => $_clearField(6);
+}
+
+class AdminFamilySlot extends $pb.GeneratedMessage {
+  factory AdminFamilySlot({
+    FamilyPaidSlot? slot,
+    $fixnum.Int64? collectedMinor,
+    $core.int? chargeCount,
+  }) {
+    final result = create();
+    if (slot != null) result.slot = slot;
+    if (collectedMinor != null) result.collectedMinor = collectedMinor;
+    if (chargeCount != null) result.chargeCount = chargeCount;
+    return result;
+  }
+
+  AdminFamilySlot._();
+
+  factory AdminFamilySlot.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminFamilySlot.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminFamilySlot',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOM<FamilyPaidSlot>(1, _omitFieldNames ? '' : 'slot',
+        subBuilder: FamilyPaidSlot.create)
+    ..aInt64(2, _omitFieldNames ? '' : 'collectedMinor')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'chargeCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminFamilySlot clone() => AdminFamilySlot()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminFamilySlot copyWith(void Function(AdminFamilySlot) updates) =>
+      super.copyWith((message) => updates(message as AdminFamilySlot))
+          as AdminFamilySlot;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminFamilySlot create() => AdminFamilySlot._();
+  @$core.override
+  AdminFamilySlot createEmptyInstance() => create();
+  static $pb.PbList<AdminFamilySlot> createRepeated() =>
+      $pb.PbList<AdminFamilySlot>();
+  @$core.pragma('dart2js:noInline')
+  static AdminFamilySlot getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminFamilySlot>(create);
+  static AdminFamilySlot? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  FamilyPaidSlot get slot => $_getN(0);
+  @$pb.TagNumber(1)
+  set slot(FamilyPaidSlot value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSlot() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSlot() => $_clearField(1);
+  @$pb.TagNumber(1)
+  FamilyPaidSlot ensureSlot() => $_ensure(0);
+
+  /// Total successfully collected against this slot, in kobo.
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get collectedMinor => $_getI64(1);
+  @$pb.TagNumber(2)
+  set collectedMinor($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCollectedMinor() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCollectedMinor() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get chargeCount => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set chargeCount($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasChargeCount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearChargeCount() => $_clearField(3);
+}
+
+class AdminListFamilySlotChargesRequest extends $pb.GeneratedMessage {
+  factory AdminListFamilySlotChargesRequest({
+    $core.String? status,
+    $core.String? creatorUserId,
+    $core.String? slotId,
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final result = create();
+    if (status != null) result.status = status;
+    if (creatorUserId != null) result.creatorUserId = creatorUserId;
+    if (slotId != null) result.slotId = slotId;
+    if (limit != null) result.limit = limit;
+    if (offset != null) result.offset = offset;
+    return result;
+  }
+
+  AdminListFamilySlotChargesRequest._();
+
+  factory AdminListFamilySlotChargesRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminListFamilySlotChargesRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminListFamilySlotChargesRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'status')
+    ..aOS(2, _omitFieldNames ? '' : 'creatorUserId')
+    ..aOS(3, _omitFieldNames ? '' : 'slotId')
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListFamilySlotChargesRequest clone() =>
+      AdminListFamilySlotChargesRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListFamilySlotChargesRequest copyWith(
+          void Function(AdminListFamilySlotChargesRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as AdminListFamilySlotChargesRequest))
+          as AdminListFamilySlotChargesRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminListFamilySlotChargesRequest create() =>
+      AdminListFamilySlotChargesRequest._();
+  @$core.override
+  AdminListFamilySlotChargesRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminListFamilySlotChargesRequest> createRepeated() =>
+      $pb.PbList<AdminListFamilySlotChargesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminListFamilySlotChargesRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminListFamilySlotChargesRequest>(
+          create);
+  static AdminListFamilySlotChargesRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get status => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set status($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasStatus() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStatus() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get creatorUserId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set creatorUserId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCreatorUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCreatorUserId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get slotId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set slotId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasSlotId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSlotId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get limit => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set limit($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasLimit() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLimit() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get offset => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set offset($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasOffset() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearOffset() => $_clearField(5);
+}
+
+class AdminListFamilySlotChargesResponse extends $pb.GeneratedMessage {
+  factory AdminListFamilySlotChargesResponse({
+    $core.Iterable<AdminFamilySlotCharge>? charges,
+    $core.int? total,
+    $fixnum.Int64? collectedMinor,
+    $fixnum.Int64? failedMinor,
+  }) {
+    final result = create();
+    if (charges != null) result.charges.addAll(charges);
+    if (total != null) result.total = total;
+    if (collectedMinor != null) result.collectedMinor = collectedMinor;
+    if (failedMinor != null) result.failedMinor = failedMinor;
+    return result;
+  }
+
+  AdminListFamilySlotChargesResponse._();
+
+  factory AdminListFamilySlotChargesResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminListFamilySlotChargesResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminListFamilySlotChargesResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..pc<AdminFamilySlotCharge>(
+        1, _omitFieldNames ? '' : 'charges', $pb.PbFieldType.PM,
+        subBuilder: AdminFamilySlotCharge.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..aInt64(3, _omitFieldNames ? '' : 'collectedMinor')
+    ..aInt64(4, _omitFieldNames ? '' : 'failedMinor')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListFamilySlotChargesResponse clone() =>
+      AdminListFamilySlotChargesResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListFamilySlotChargesResponse copyWith(
+          void Function(AdminListFamilySlotChargesResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as AdminListFamilySlotChargesResponse))
+          as AdminListFamilySlotChargesResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminListFamilySlotChargesResponse create() =>
+      AdminListFamilySlotChargesResponse._();
+  @$core.override
+  AdminListFamilySlotChargesResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminListFamilySlotChargesResponse> createRepeated() =>
+      $pb.PbList<AdminListFamilySlotChargesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminListFamilySlotChargesResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminListFamilySlotChargesResponse>(
+          create);
+  static AdminListFamilySlotChargesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<AdminFamilySlotCharge> get charges => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get collectedMinor => $_getI64(2);
+  @$pb.TagNumber(3)
+  set collectedMinor($fixnum.Int64 value) => $_setInt64(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCollectedMinor() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCollectedMinor() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get failedMinor => $_getI64(3);
+  @$pb.TagNumber(4)
+  set failedMinor($fixnum.Int64 value) => $_setInt64(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasFailedMinor() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearFailedMinor() => $_clearField(4);
+}
+
+class AdminFamilySlotCharge extends $pb.GeneratedMessage {
+  factory AdminFamilySlotCharge({
+    FamilySlotCharge? charge,
+    $core.String? creatorUserId,
+  }) {
+    final result = create();
+    if (charge != null) result.charge = charge;
+    if (creatorUserId != null) result.creatorUserId = creatorUserId;
+    return result;
+  }
+
+  AdminFamilySlotCharge._();
+
+  factory AdminFamilySlotCharge.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminFamilySlotCharge.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminFamilySlotCharge',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOM<FamilySlotCharge>(1, _omitFieldNames ? '' : 'charge',
+        subBuilder: FamilySlotCharge.create)
+    ..aOS(2, _omitFieldNames ? '' : 'creatorUserId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminFamilySlotCharge clone() =>
+      AdminFamilySlotCharge()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminFamilySlotCharge copyWith(
+          void Function(AdminFamilySlotCharge) updates) =>
+      super.copyWith((message) => updates(message as AdminFamilySlotCharge))
+          as AdminFamilySlotCharge;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminFamilySlotCharge create() => AdminFamilySlotCharge._();
+  @$core.override
+  AdminFamilySlotCharge createEmptyInstance() => create();
+  static $pb.PbList<AdminFamilySlotCharge> createRepeated() =>
+      $pb.PbList<AdminFamilySlotCharge>();
+  @$core.pragma('dart2js:noInline')
+  static AdminFamilySlotCharge getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminFamilySlotCharge>(create);
+  static AdminFamilySlotCharge? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  FamilySlotCharge get charge => $_getN(0);
+  @$pb.TagNumber(1)
+  set charge(FamilySlotCharge value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasCharge() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCharge() => $_clearField(1);
+  @$pb.TagNumber(1)
+  FamilySlotCharge ensureCharge() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get creatorUserId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set creatorUserId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCreatorUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCreatorUserId() => $_clearField(2);
+}
+
+/// Admin: transactions
+class AdminGetFamilyTransactionsRequest extends $pb.GeneratedMessage {
+  factory AdminGetFamilyTransactionsRequest({
+    $core.String? familyId,
+    $core.String? memberId,
+    $core.String? type,
+    $core.String? startDate,
+    $core.String? endDate,
+    $core.int? page,
+    $core.int? pageSize,
+  }) {
+    final result = create();
+    if (familyId != null) result.familyId = familyId;
+    if (memberId != null) result.memberId = memberId;
+    if (type != null) result.type = type;
+    if (startDate != null) result.startDate = startDate;
+    if (endDate != null) result.endDate = endDate;
+    if (page != null) result.page = page;
+    if (pageSize != null) result.pageSize = pageSize;
+    return result;
+  }
+
+  AdminGetFamilyTransactionsRequest._();
+
+  factory AdminGetFamilyTransactionsRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminGetFamilyTransactionsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminGetFamilyTransactionsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'familyId')
+    ..aOS(2, _omitFieldNames ? '' : 'memberId')
+    ..aOS(3, _omitFieldNames ? '' : 'type')
+    ..aOS(4, _omitFieldNames ? '' : 'startDate')
+    ..aOS(5, _omitFieldNames ? '' : 'endDate')
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(7, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminGetFamilyTransactionsRequest clone() =>
+      AdminGetFamilyTransactionsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminGetFamilyTransactionsRequest copyWith(
+          void Function(AdminGetFamilyTransactionsRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as AdminGetFamilyTransactionsRequest))
+          as AdminGetFamilyTransactionsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyTransactionsRequest create() =>
+      AdminGetFamilyTransactionsRequest._();
+  @$core.override
+  AdminGetFamilyTransactionsRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminGetFamilyTransactionsRequest> createRepeated() =>
+      $pb.PbList<AdminGetFamilyTransactionsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyTransactionsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminGetFamilyTransactionsRequest>(
+          create);
+  static AdminGetFamilyTransactionsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get memberId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set memberId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMemberId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMemberId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get type => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set type($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearType() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get startDate => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set startDate($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasStartDate() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearStartDate() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get endDate => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set endDate($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasEndDate() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearEndDate() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get page => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set page($core.int value) => $_setSignedInt32(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasPage() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPage() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get pageSize => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set pageSize($core.int value) => $_setSignedInt32(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasPageSize() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPageSize() => $_clearField(7);
+}
+
+class AdminGetFamilyTransactionsResponse extends $pb.GeneratedMessage {
+  factory AdminGetFamilyTransactionsResponse({
+    $core.Iterable<FamilyTransaction>? transactions,
+    $core.int? totalCount,
+    $core.int? page,
+    $core.int? pageSize,
+    $core.int? totalPages,
+  }) {
+    final result = create();
+    if (transactions != null) result.transactions.addAll(transactions);
+    if (totalCount != null) result.totalCount = totalCount;
+    if (page != null) result.page = page;
+    if (pageSize != null) result.pageSize = pageSize;
+    if (totalPages != null) result.totalPages = totalPages;
+    return result;
+  }
+
+  AdminGetFamilyTransactionsResponse._();
+
+  factory AdminGetFamilyTransactionsResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminGetFamilyTransactionsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminGetFamilyTransactionsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..pc<FamilyTransaction>(
+        1, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.PM,
+        subBuilder: FamilyTransaction.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminGetFamilyTransactionsResponse clone() =>
+      AdminGetFamilyTransactionsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminGetFamilyTransactionsResponse copyWith(
+          void Function(AdminGetFamilyTransactionsResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as AdminGetFamilyTransactionsResponse))
+          as AdminGetFamilyTransactionsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyTransactionsResponse create() =>
+      AdminGetFamilyTransactionsResponse._();
+  @$core.override
+  AdminGetFamilyTransactionsResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminGetFamilyTransactionsResponse> createRepeated() =>
+      $pb.PbList<AdminGetFamilyTransactionsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyTransactionsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminGetFamilyTransactionsResponse>(
+          create);
+  static AdminGetFamilyTransactionsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<FamilyTransaction> get transactions => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get totalCount => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set totalCount($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotalCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalCount() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get totalPages => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set totalPages($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasTotalPages() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTotalPages() => $_clearField(5);
+}
+
+/// Admin: reconciliation
+class AdminGetFamilyReconciliationRequest extends $pb.GeneratedMessage {
+  factory AdminGetFamilyReconciliationRequest({
+    $core.String? familyId,
+  }) {
+    final result = create();
+    if (familyId != null) result.familyId = familyId;
+    return result;
+  }
+
+  AdminGetFamilyReconciliationRequest._();
+
+  factory AdminGetFamilyReconciliationRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminGetFamilyReconciliationRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminGetFamilyReconciliationRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'familyId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminGetFamilyReconciliationRequest clone() =>
+      AdminGetFamilyReconciliationRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminGetFamilyReconciliationRequest copyWith(
+          void Function(AdminGetFamilyReconciliationRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as AdminGetFamilyReconciliationRequest))
+          as AdminGetFamilyReconciliationRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyReconciliationRequest create() =>
+      AdminGetFamilyReconciliationRequest._();
+  @$core.override
+  AdminGetFamilyReconciliationRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminGetFamilyReconciliationRequest> createRepeated() =>
+      $pb.PbList<AdminGetFamilyReconciliationRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyReconciliationRequest getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          AdminGetFamilyReconciliationRequest>(create);
+  static AdminGetFamilyReconciliationRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => $_clearField(1);
+}
+
+class AdminReconcileFamilyAccountRequest extends $pb.GeneratedMessage {
+  factory AdminReconcileFamilyAccountRequest({
+    $core.String? familyId,
+  }) {
+    final result = create();
+    if (familyId != null) result.familyId = familyId;
+    return result;
+  }
+
+  AdminReconcileFamilyAccountRequest._();
+
+  factory AdminReconcileFamilyAccountRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminReconcileFamilyAccountRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminReconcileFamilyAccountRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'familyId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminReconcileFamilyAccountRequest clone() =>
+      AdminReconcileFamilyAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminReconcileFamilyAccountRequest copyWith(
+          void Function(AdminReconcileFamilyAccountRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as AdminReconcileFamilyAccountRequest))
+          as AdminReconcileFamilyAccountRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminReconcileFamilyAccountRequest create() =>
+      AdminReconcileFamilyAccountRequest._();
+  @$core.override
+  AdminReconcileFamilyAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminReconcileFamilyAccountRequest> createRepeated() =>
+      $pb.PbList<AdminReconcileFamilyAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminReconcileFamilyAccountRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminReconcileFamilyAccountRequest>(
+          create);
+  static AdminReconcileFamilyAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => $_clearField(1);
+}
+
+class FamilyReconciliationResult extends $pb.GeneratedMessage {
+  factory FamilyReconciliationResult({
+    $core.String? familyId,
+    $core.String? currency,
+    $core.double? vaAvailable,
+    $core.double? ledgerPoolPlusAlloc,
+    $core.double? driftAmount,
+    $core.String? status,
+    $core.String? notes,
+    $core.String? reconAt,
+  }) {
+    final result = create();
+    if (familyId != null) result.familyId = familyId;
+    if (currency != null) result.currency = currency;
+    if (vaAvailable != null) result.vaAvailable = vaAvailable;
+    if (ledgerPoolPlusAlloc != null)
+      result.ledgerPoolPlusAlloc = ledgerPoolPlusAlloc;
+    if (driftAmount != null) result.driftAmount = driftAmount;
+    if (status != null) result.status = status;
+    if (notes != null) result.notes = notes;
+    if (reconAt != null) result.reconAt = reconAt;
+    return result;
+  }
+
+  FamilyReconciliationResult._();
+
+  factory FamilyReconciliationResult.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory FamilyReconciliationResult.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FamilyReconciliationResult',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'familyId')
+    ..aOS(2, _omitFieldNames ? '' : 'currency')
+    ..a<$core.double>(
+        3, _omitFieldNames ? '' : 'vaAvailable', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        4, _omitFieldNames ? '' : 'ledgerPoolPlusAlloc', $pb.PbFieldType.OD)
+    ..a<$core.double>(
+        5, _omitFieldNames ? '' : 'driftAmount', $pb.PbFieldType.OD)
+    ..aOS(6, _omitFieldNames ? '' : 'status')
+    ..aOS(7, _omitFieldNames ? '' : 'notes')
+    ..aOS(8, _omitFieldNames ? '' : 'reconAt')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FamilyReconciliationResult clone() =>
+      FamilyReconciliationResult()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FamilyReconciliationResult copyWith(
+          void Function(FamilyReconciliationResult) updates) =>
+      super.copyWith(
+              (message) => updates(message as FamilyReconciliationResult))
+          as FamilyReconciliationResult;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static FamilyReconciliationResult create() => FamilyReconciliationResult._();
+  @$core.override
+  FamilyReconciliationResult createEmptyInstance() => create();
+  static $pb.PbList<FamilyReconciliationResult> createRepeated() =>
+      $pb.PbList<FamilyReconciliationResult>();
+  @$core.pragma('dart2js:noInline')
+  static FamilyReconciliationResult getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FamilyReconciliationResult>(create);
+  static FamilyReconciliationResult? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get currency => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set currency($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCurrency() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCurrency() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get vaAvailable => $_getN(2);
+  @$pb.TagNumber(3)
+  set vaAvailable($core.double value) => $_setDouble(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasVaAvailable() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearVaAvailable() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get ledgerPoolPlusAlloc => $_getN(3);
+  @$pb.TagNumber(4)
+  set ledgerPoolPlusAlloc($core.double value) => $_setDouble(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasLedgerPoolPlusAlloc() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLedgerPoolPlusAlloc() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get driftAmount => $_getN(4);
+  @$pb.TagNumber(5)
+  set driftAmount($core.double value) => $_setDouble(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasDriftAmount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDriftAmount() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get status => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set status($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasStatus() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearStatus() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get notes => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set notes($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasNotes() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearNotes() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get reconAt => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set reconAt($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasReconAt() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearReconAt() => $_clearField(8);
+}
+
+class AdminGetFamilyReconciliationResponse extends $pb.GeneratedMessage {
+  factory AdminGetFamilyReconciliationResponse({
+    FamilyReconciliationResult? latest,
+    $core.Iterable<FamilyReconciliationResult>? history,
+  }) {
+    final result = create();
+    if (latest != null) result.latest = latest;
+    if (history != null) result.history.addAll(history);
+    return result;
+  }
+
+  AdminGetFamilyReconciliationResponse._();
+
+  factory AdminGetFamilyReconciliationResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminGetFamilyReconciliationResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminGetFamilyReconciliationResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOM<FamilyReconciliationResult>(1, _omitFieldNames ? '' : 'latest',
+        subBuilder: FamilyReconciliationResult.create)
+    ..pc<FamilyReconciliationResult>(
+        2, _omitFieldNames ? '' : 'history', $pb.PbFieldType.PM,
+        subBuilder: FamilyReconciliationResult.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminGetFamilyReconciliationResponse clone() =>
+      AdminGetFamilyReconciliationResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminGetFamilyReconciliationResponse copyWith(
+          void Function(AdminGetFamilyReconciliationResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as AdminGetFamilyReconciliationResponse))
+          as AdminGetFamilyReconciliationResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyReconciliationResponse create() =>
+      AdminGetFamilyReconciliationResponse._();
+  @$core.override
+  AdminGetFamilyReconciliationResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminGetFamilyReconciliationResponse> createRepeated() =>
+      $pb.PbList<AdminGetFamilyReconciliationResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyReconciliationResponse getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          AdminGetFamilyReconciliationResponse>(create);
+  static AdminGetFamilyReconciliationResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  FamilyReconciliationResult get latest => $_getN(0);
+  @$pb.TagNumber(1)
+  set latest(FamilyReconciliationResult value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLatest() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLatest() => $_clearField(1);
+  @$pb.TagNumber(1)
+  FamilyReconciliationResult ensureLatest() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $pb.PbList<FamilyReconciliationResult> get history => $_getList(1);
+}
+
+/// Admin: audit log
+class AdminGetFamilyAuditLogRequest extends $pb.GeneratedMessage {
+  factory AdminGetFamilyAuditLogRequest({
+    $core.String? familyId,
+    $core.int? page,
+    $core.int? pageSize,
+  }) {
+    final result = create();
+    if (familyId != null) result.familyId = familyId;
+    if (page != null) result.page = page;
+    if (pageSize != null) result.pageSize = pageSize;
+    return result;
+  }
+
+  AdminGetFamilyAuditLogRequest._();
+
+  factory AdminGetFamilyAuditLogRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminGetFamilyAuditLogRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminGetFamilyAuditLogRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'familyId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminGetFamilyAuditLogRequest clone() =>
+      AdminGetFamilyAuditLogRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminGetFamilyAuditLogRequest copyWith(
+          void Function(AdminGetFamilyAuditLogRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as AdminGetFamilyAuditLogRequest))
+          as AdminGetFamilyAuditLogRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyAuditLogRequest create() =>
+      AdminGetFamilyAuditLogRequest._();
+  @$core.override
+  AdminGetFamilyAuditLogRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminGetFamilyAuditLogRequest> createRepeated() =>
+      $pb.PbList<AdminGetFamilyAuditLogRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyAuditLogRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminGetFamilyAuditLogRequest>(create);
+  static AdminGetFamilyAuditLogRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get page => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set page($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPage() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get pageSize => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set pageSize($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPageSize() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPageSize() => $_clearField(3);
+}
+
+class FamilyAuditLogEntry extends $pb.GeneratedMessage {
+  factory FamilyAuditLogEntry({
+    $core.String? id,
+    $core.String? familyId,
+    $core.String? action,
+    $core.String? actorId,
+    $core.String? actorType,
+    $core.String? targetId,
+    $core.String? reason,
+    $core.String? metadataJson,
+    $core.String? createdAt,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (familyId != null) result.familyId = familyId;
+    if (action != null) result.action = action;
+    if (actorId != null) result.actorId = actorId;
+    if (actorType != null) result.actorType = actorType;
+    if (targetId != null) result.targetId = targetId;
+    if (reason != null) result.reason = reason;
+    if (metadataJson != null) result.metadataJson = metadataJson;
+    if (createdAt != null) result.createdAt = createdAt;
+    return result;
+  }
+
+  FamilyAuditLogEntry._();
+
+  factory FamilyAuditLogEntry.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory FamilyAuditLogEntry.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FamilyAuditLogEntry',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'familyId')
+    ..aOS(3, _omitFieldNames ? '' : 'action')
+    ..aOS(4, _omitFieldNames ? '' : 'actorId')
+    ..aOS(5, _omitFieldNames ? '' : 'actorType')
+    ..aOS(6, _omitFieldNames ? '' : 'targetId')
+    ..aOS(7, _omitFieldNames ? '' : 'reason')
+    ..aOS(8, _omitFieldNames ? '' : 'metadataJson')
+    ..aOS(9, _omitFieldNames ? '' : 'createdAt')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FamilyAuditLogEntry clone() => FamilyAuditLogEntry()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FamilyAuditLogEntry copyWith(void Function(FamilyAuditLogEntry) updates) =>
+      super.copyWith((message) => updates(message as FamilyAuditLogEntry))
+          as FamilyAuditLogEntry;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static FamilyAuditLogEntry create() => FamilyAuditLogEntry._();
+  @$core.override
+  FamilyAuditLogEntry createEmptyInstance() => create();
+  static $pb.PbList<FamilyAuditLogEntry> createRepeated() =>
+      $pb.PbList<FamilyAuditLogEntry>();
+  @$core.pragma('dart2js:noInline')
+  static FamilyAuditLogEntry getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FamilyAuditLogEntry>(create);
+  static FamilyAuditLogEntry? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get familyId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set familyId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasFamilyId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFamilyId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get action => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set action($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasAction() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAction() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get actorId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set actorId($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasActorId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearActorId() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get actorType => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set actorType($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasActorType() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearActorType() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get targetId => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set targetId($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasTargetId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearTargetId() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get reason => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set reason($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasReason() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearReason() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get metadataJson => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set metadataJson($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasMetadataJson() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearMetadataJson() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get createdAt => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set createdAt($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasCreatedAt() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearCreatedAt() => $_clearField(9);
+}
+
+class AdminGetFamilyAuditLogResponse extends $pb.GeneratedMessage {
+  factory AdminGetFamilyAuditLogResponse({
+    $core.Iterable<FamilyAuditLogEntry>? entries,
+    $core.int? totalCount,
+    $core.int? page,
+    $core.int? pageSize,
+    $core.int? totalPages,
+  }) {
+    final result = create();
+    if (entries != null) result.entries.addAll(entries);
+    if (totalCount != null) result.totalCount = totalCount;
+    if (page != null) result.page = page;
+    if (pageSize != null) result.pageSize = pageSize;
+    if (totalPages != null) result.totalPages = totalPages;
+    return result;
+  }
+
+  AdminGetFamilyAuditLogResponse._();
+
+  factory AdminGetFamilyAuditLogResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AdminGetFamilyAuditLogResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AdminGetFamilyAuditLogResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..pc<FamilyAuditLogEntry>(
+        1, _omitFieldNames ? '' : 'entries', $pb.PbFieldType.PM,
+        subBuilder: FamilyAuditLogEntry.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminGetFamilyAuditLogResponse clone() =>
+      AdminGetFamilyAuditLogResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminGetFamilyAuditLogResponse copyWith(
+          void Function(AdminGetFamilyAuditLogResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as AdminGetFamilyAuditLogResponse))
+          as AdminGetFamilyAuditLogResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyAuditLogResponse create() =>
+      AdminGetFamilyAuditLogResponse._();
+  @$core.override
+  AdminGetFamilyAuditLogResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminGetFamilyAuditLogResponse> createRepeated() =>
+      $pb.PbList<AdminGetFamilyAuditLogResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyAuditLogResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AdminGetFamilyAuditLogResponse>(create);
+  static AdminGetFamilyAuditLogResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<FamilyAuditLogEntry> get entries => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get totalCount => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set totalCount($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotalCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalCount() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get totalPages => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set totalPages($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasTotalPages() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTotalPages() => $_clearField(5);
+}
 
 /// Admin: list
 class AdminListFamilyAccountsRequest extends $pb.GeneratedMessage {
@@ -5357,6 +7945,919 @@ class ProcessMemberContributionResponse extends $pb.GeneratedMessage {
   void clearMessage() => $_clearField(3);
 }
 
+/// Service-internal: authorize a member spend from the family virtual account.
+class AuthorizeFamilySpendRequest extends $pb.GeneratedMessage {
+  factory AuthorizeFamilySpendRequest({
+    $core.String? virtualAccountId,
+    $core.String? spenderUserId,
+    $core.double? amount,
+    $core.String? reference,
+  }) {
+    final result = create();
+    if (virtualAccountId != null) result.virtualAccountId = virtualAccountId;
+    if (spenderUserId != null) result.spenderUserId = spenderUserId;
+    if (amount != null) result.amount = amount;
+    if (reference != null) result.reference = reference;
+    return result;
+  }
+
+  AuthorizeFamilySpendRequest._();
+
+  factory AuthorizeFamilySpendRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AuthorizeFamilySpendRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AuthorizeFamilySpendRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'virtualAccountId')
+    ..aOS(2, _omitFieldNames ? '' : 'spenderUserId')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(4, _omitFieldNames ? '' : 'reference')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AuthorizeFamilySpendRequest clone() =>
+      AuthorizeFamilySpendRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AuthorizeFamilySpendRequest copyWith(
+          void Function(AuthorizeFamilySpendRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as AuthorizeFamilySpendRequest))
+          as AuthorizeFamilySpendRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AuthorizeFamilySpendRequest create() =>
+      AuthorizeFamilySpendRequest._();
+  @$core.override
+  AuthorizeFamilySpendRequest createEmptyInstance() => create();
+  static $pb.PbList<AuthorizeFamilySpendRequest> createRepeated() =>
+      $pb.PbList<AuthorizeFamilySpendRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AuthorizeFamilySpendRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AuthorizeFamilySpendRequest>(create);
+  static AuthorizeFamilySpendRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get virtualAccountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set virtualAccountId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasVirtualAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearVirtualAccountId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get spenderUserId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set spenderUserId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasSpenderUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSpenderUserId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get amount => $_getN(2);
+  @$pb.TagNumber(3)
+  set amount($core.double value) => $_setDouble(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get reference => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set reference($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasReference() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearReference() => $_clearField(4);
+}
+
+class AuthorizeFamilySpendResponse extends $pb.GeneratedMessage {
+  factory AuthorizeFamilySpendResponse({
+    $core.bool? authorized,
+    $core.String? reason,
+    $core.String? familyId,
+    $core.String? memberId,
+    $core.String? distributionMode,
+  }) {
+    final result = create();
+    if (authorized != null) result.authorized = authorized;
+    if (reason != null) result.reason = reason;
+    if (familyId != null) result.familyId = familyId;
+    if (memberId != null) result.memberId = memberId;
+    if (distributionMode != null) result.distributionMode = distributionMode;
+    return result;
+  }
+
+  AuthorizeFamilySpendResponse._();
+
+  factory AuthorizeFamilySpendResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AuthorizeFamilySpendResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AuthorizeFamilySpendResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'authorized')
+    ..aOS(2, _omitFieldNames ? '' : 'reason')
+    ..aOS(3, _omitFieldNames ? '' : 'familyId')
+    ..aOS(4, _omitFieldNames ? '' : 'memberId')
+    ..aOS(5, _omitFieldNames ? '' : 'distributionMode')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AuthorizeFamilySpendResponse clone() =>
+      AuthorizeFamilySpendResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AuthorizeFamilySpendResponse copyWith(
+          void Function(AuthorizeFamilySpendResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as AuthorizeFamilySpendResponse))
+          as AuthorizeFamilySpendResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AuthorizeFamilySpendResponse create() =>
+      AuthorizeFamilySpendResponse._();
+  @$core.override
+  AuthorizeFamilySpendResponse createEmptyInstance() => create();
+  static $pb.PbList<AuthorizeFamilySpendResponse> createRepeated() =>
+      $pb.PbList<AuthorizeFamilySpendResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AuthorizeFamilySpendResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AuthorizeFamilySpendResponse>(create);
+  static AuthorizeFamilySpendResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get authorized => $_getBF(0);
+  @$pb.TagNumber(1)
+  set authorized($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasAuthorized() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAuthorized() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get familyId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set familyId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasFamilyId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFamilyId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get memberId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set memberId($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasMemberId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMemberId() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get distributionMode => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set distributionMode($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasDistributionMode() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDistributionMode() => $_clearField(5);
+}
+
+/// Service-internal: record a completed family spend (after the real debit).
+class RecordFamilySpendRequest extends $pb.GeneratedMessage {
+  factory RecordFamilySpendRequest({
+    $core.String? familyId,
+    $core.String? memberId,
+    $core.double? amount,
+    $core.String? merchantName,
+    $core.String? transactionId,
+  }) {
+    final result = create();
+    if (familyId != null) result.familyId = familyId;
+    if (memberId != null) result.memberId = memberId;
+    if (amount != null) result.amount = amount;
+    if (merchantName != null) result.merchantName = merchantName;
+    if (transactionId != null) result.transactionId = transactionId;
+    return result;
+  }
+
+  RecordFamilySpendRequest._();
+
+  factory RecordFamilySpendRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RecordFamilySpendRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RecordFamilySpendRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'familyId')
+    ..aOS(2, _omitFieldNames ? '' : 'memberId')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(4, _omitFieldNames ? '' : 'merchantName')
+    ..aOS(5, _omitFieldNames ? '' : 'transactionId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RecordFamilySpendRequest clone() =>
+      RecordFamilySpendRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RecordFamilySpendRequest copyWith(
+          void Function(RecordFamilySpendRequest) updates) =>
+      super.copyWith((message) => updates(message as RecordFamilySpendRequest))
+          as RecordFamilySpendRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RecordFamilySpendRequest create() => RecordFamilySpendRequest._();
+  @$core.override
+  RecordFamilySpendRequest createEmptyInstance() => create();
+  static $pb.PbList<RecordFamilySpendRequest> createRepeated() =>
+      $pb.PbList<RecordFamilySpendRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RecordFamilySpendRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RecordFamilySpendRequest>(create);
+  static RecordFamilySpendRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get memberId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set memberId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMemberId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMemberId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get amount => $_getN(2);
+  @$pb.TagNumber(3)
+  set amount($core.double value) => $_setDouble(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get merchantName => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set merchantName($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasMerchantName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMerchantName() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get transactionId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set transactionId($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasTransactionId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTransactionId() => $_clearField(5);
+}
+
+class RecordFamilySpendResponse extends $pb.GeneratedMessage {
+  factory RecordFamilySpendResponse({
+    $core.bool? recorded,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (recorded != null) result.recorded = recorded;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  RecordFamilySpendResponse._();
+
+  factory RecordFamilySpendResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RecordFamilySpendResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RecordFamilySpendResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'recorded')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RecordFamilySpendResponse clone() =>
+      RecordFamilySpendResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RecordFamilySpendResponse copyWith(
+          void Function(RecordFamilySpendResponse) updates) =>
+      super.copyWith((message) => updates(message as RecordFamilySpendResponse))
+          as RecordFamilySpendResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RecordFamilySpendResponse create() => RecordFamilySpendResponse._();
+  @$core.override
+  RecordFamilySpendResponse createEmptyInstance() => create();
+  static $pb.PbList<RecordFamilySpendResponse> createRepeated() =>
+      $pb.PbList<RecordFamilySpendResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RecordFamilySpendResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RecordFamilySpendResponse>(create);
+  static RecordFamilySpendResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get recorded => $_getBF(0);
+  @$pb.TagNumber(1)
+  set recorded($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasRecorded() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRecorded() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+}
+
+/// Service-internal: release a pre-capture reservation (spend failed).
+class ReleaseFamilySpendRequest extends $pb.GeneratedMessage {
+  factory ReleaseFamilySpendRequest({
+    $core.String? reference,
+  }) {
+    final result = create();
+    if (reference != null) result.reference = reference;
+    return result;
+  }
+
+  ReleaseFamilySpendRequest._();
+
+  factory ReleaseFamilySpendRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ReleaseFamilySpendRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ReleaseFamilySpendRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'reference')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ReleaseFamilySpendRequest clone() =>
+      ReleaseFamilySpendRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ReleaseFamilySpendRequest copyWith(
+          void Function(ReleaseFamilySpendRequest) updates) =>
+      super.copyWith((message) => updates(message as ReleaseFamilySpendRequest))
+          as ReleaseFamilySpendRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ReleaseFamilySpendRequest create() => ReleaseFamilySpendRequest._();
+  @$core.override
+  ReleaseFamilySpendRequest createEmptyInstance() => create();
+  static $pb.PbList<ReleaseFamilySpendRequest> createRepeated() =>
+      $pb.PbList<ReleaseFamilySpendRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ReleaseFamilySpendRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ReleaseFamilySpendRequest>(create);
+  static ReleaseFamilySpendRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get reference => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set reference($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasReference() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReference() => $_clearField(1);
+}
+
+class ReleaseFamilySpendResponse extends $pb.GeneratedMessage {
+  factory ReleaseFamilySpendResponse({
+    $core.bool? released,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (released != null) result.released = released;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  ReleaseFamilySpendResponse._();
+
+  factory ReleaseFamilySpendResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ReleaseFamilySpendResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ReleaseFamilySpendResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'released')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ReleaseFamilySpendResponse clone() =>
+      ReleaseFamilySpendResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ReleaseFamilySpendResponse copyWith(
+          void Function(ReleaseFamilySpendResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as ReleaseFamilySpendResponse))
+          as ReleaseFamilySpendResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ReleaseFamilySpendResponse create() => ReleaseFamilySpendResponse._();
+  @$core.override
+  ReleaseFamilySpendResponse createEmptyInstance() => create();
+  static $pb.PbList<ReleaseFamilySpendResponse> createRepeated() =>
+      $pb.PbList<ReleaseFamilySpendResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ReleaseFamilySpendResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ReleaseFamilySpendResponse>(create);
+  static ReleaseFamilySpendResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get released => $_getBF(0);
+  @$pb.TagNumber(1)
+  set released($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasReleased() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReleased() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+}
+
+class GetFamilySpendByReferenceRequest extends $pb.GeneratedMessage {
+  factory GetFamilySpendByReferenceRequest({
+    $core.String? reference,
+  }) {
+    final result = create();
+    if (reference != null) result.reference = reference;
+    return result;
+  }
+
+  GetFamilySpendByReferenceRequest._();
+
+  factory GetFamilySpendByReferenceRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetFamilySpendByReferenceRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetFamilySpendByReferenceRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'reference')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetFamilySpendByReferenceRequest clone() =>
+      GetFamilySpendByReferenceRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetFamilySpendByReferenceRequest copyWith(
+          void Function(GetFamilySpendByReferenceRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetFamilySpendByReferenceRequest))
+          as GetFamilySpendByReferenceRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetFamilySpendByReferenceRequest create() =>
+      GetFamilySpendByReferenceRequest._();
+  @$core.override
+  GetFamilySpendByReferenceRequest createEmptyInstance() => create();
+  static $pb.PbList<GetFamilySpendByReferenceRequest> createRepeated() =>
+      $pb.PbList<GetFamilySpendByReferenceRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetFamilySpendByReferenceRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetFamilySpendByReferenceRequest>(
+          create);
+  static GetFamilySpendByReferenceRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get reference => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set reference($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasReference() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReference() => $_clearField(1);
+}
+
+class FamilySpendRecord extends $pb.GeneratedMessage {
+  factory FamilySpendRecord({
+    $core.String? reference,
+    $core.String? familyId,
+    $core.String? memberId,
+    $core.double? amount,
+    $core.String? currency,
+    $core.String? status,
+    $core.String? mode,
+    $core.String? createdAt,
+  }) {
+    final result = create();
+    if (reference != null) result.reference = reference;
+    if (familyId != null) result.familyId = familyId;
+    if (memberId != null) result.memberId = memberId;
+    if (amount != null) result.amount = amount;
+    if (currency != null) result.currency = currency;
+    if (status != null) result.status = status;
+    if (mode != null) result.mode = mode;
+    if (createdAt != null) result.createdAt = createdAt;
+    return result;
+  }
+
+  FamilySpendRecord._();
+
+  factory FamilySpendRecord.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory FamilySpendRecord.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FamilySpendRecord',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'reference')
+    ..aOS(2, _omitFieldNames ? '' : 'familyId')
+    ..aOS(3, _omitFieldNames ? '' : 'memberId')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'currency')
+    ..aOS(6, _omitFieldNames ? '' : 'status')
+    ..aOS(7, _omitFieldNames ? '' : 'mode')
+    ..aOS(8, _omitFieldNames ? '' : 'createdAt')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FamilySpendRecord clone() => FamilySpendRecord()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FamilySpendRecord copyWith(void Function(FamilySpendRecord) updates) =>
+      super.copyWith((message) => updates(message as FamilySpendRecord))
+          as FamilySpendRecord;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static FamilySpendRecord create() => FamilySpendRecord._();
+  @$core.override
+  FamilySpendRecord createEmptyInstance() => create();
+  static $pb.PbList<FamilySpendRecord> createRepeated() =>
+      $pb.PbList<FamilySpendRecord>();
+  @$core.pragma('dart2js:noInline')
+  static FamilySpendRecord getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FamilySpendRecord>(create);
+  static FamilySpendRecord? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get reference => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set reference($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasReference() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReference() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get familyId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set familyId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasFamilyId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFamilyId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get memberId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set memberId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMemberId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMemberId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get amount => $_getN(3);
+  @$pb.TagNumber(4)
+  set amount($core.double value) => $_setDouble(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get status => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set status($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasStatus() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearStatus() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get mode => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set mode($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasMode() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearMode() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get createdAt => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set createdAt($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasCreatedAt() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCreatedAt() => $_clearField(8);
+}
+
+class GetFamilySpendByReferenceResponse extends $pb.GeneratedMessage {
+  factory GetFamilySpendByReferenceResponse({
+    $core.Iterable<FamilySpendRecord>? records,
+  }) {
+    final result = create();
+    if (records != null) result.records.addAll(records);
+    return result;
+  }
+
+  GetFamilySpendByReferenceResponse._();
+
+  factory GetFamilySpendByReferenceResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetFamilySpendByReferenceResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetFamilySpendByReferenceResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..pc<FamilySpendRecord>(
+        1, _omitFieldNames ? '' : 'records', $pb.PbFieldType.PM,
+        subBuilder: FamilySpendRecord.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetFamilySpendByReferenceResponse clone() =>
+      GetFamilySpendByReferenceResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetFamilySpendByReferenceResponse copyWith(
+          void Function(GetFamilySpendByReferenceResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as GetFamilySpendByReferenceResponse))
+          as GetFamilySpendByReferenceResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetFamilySpendByReferenceResponse create() =>
+      GetFamilySpendByReferenceResponse._();
+  @$core.override
+  GetFamilySpendByReferenceResponse createEmptyInstance() => create();
+  static $pb.PbList<GetFamilySpendByReferenceResponse> createRepeated() =>
+      $pb.PbList<GetFamilySpendByReferenceResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetFamilySpendByReferenceResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetFamilySpendByReferenceResponse>(
+          create);
+  static GetFamilySpendByReferenceResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<FamilySpendRecord> get records => $_getList(0);
+}
+
+/// Service-internal: refund a captured spend (post-charge reversal).
+class RefundFamilySpendRequest extends $pb.GeneratedMessage {
+  factory RefundFamilySpendRequest({
+    $core.String? reference,
+    $core.double? amount,
+  }) {
+    final result = create();
+    if (reference != null) result.reference = reference;
+    if (amount != null) result.amount = amount;
+    return result;
+  }
+
+  RefundFamilySpendRequest._();
+
+  factory RefundFamilySpendRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RefundFamilySpendRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RefundFamilySpendRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'reference')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RefundFamilySpendRequest clone() =>
+      RefundFamilySpendRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RefundFamilySpendRequest copyWith(
+          void Function(RefundFamilySpendRequest) updates) =>
+      super.copyWith((message) => updates(message as RefundFamilySpendRequest))
+          as RefundFamilySpendRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RefundFamilySpendRequest create() => RefundFamilySpendRequest._();
+  @$core.override
+  RefundFamilySpendRequest createEmptyInstance() => create();
+  static $pb.PbList<RefundFamilySpendRequest> createRepeated() =>
+      $pb.PbList<RefundFamilySpendRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RefundFamilySpendRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RefundFamilySpendRequest>(create);
+  static RefundFamilySpendRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get reference => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set reference($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasReference() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReference() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get amount => $_getN(1);
+  @$pb.TagNumber(2)
+  set amount($core.double value) => $_setDouble(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => $_clearField(2);
+}
+
+class RefundFamilySpendResponse extends $pb.GeneratedMessage {
+  factory RefundFamilySpendResponse({
+    $core.bool? refunded,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (refunded != null) result.refunded = refunded;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  RefundFamilySpendResponse._();
+
+  factory RefundFamilySpendResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RefundFamilySpendResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RefundFamilySpendResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'refunded')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RefundFamilySpendResponse clone() =>
+      RefundFamilySpendResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RefundFamilySpendResponse copyWith(
+          void Function(RefundFamilySpendResponse) updates) =>
+      super.copyWith((message) => updates(message as RefundFamilySpendResponse))
+          as RefundFamilySpendResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RefundFamilySpendResponse create() => RefundFamilySpendResponse._();
+  @$core.override
+  RefundFamilySpendResponse createEmptyInstance() => create();
+  static $pb.PbList<RefundFamilySpendResponse> createRepeated() =>
+      $pb.PbList<RefundFamilySpendResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RefundFamilySpendResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RefundFamilySpendResponse>(create);
+  static RefundFamilySpendResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get refunded => $_getBF(0);
+  @$pb.TagNumber(1)
+  set refunded($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasRefunded() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRefunded() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+}
+
 /// Setup Family Account
 class SetupFamilyAccountRequest extends $pb.GeneratedMessage {
   factory SetupFamilyAccountRequest({
@@ -5475,7 +8976,10 @@ class SetupFamilyAccountRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $pb.PbList<$core.String> get specificMemberIds => $_getList(5);
 
-  /// Optional display name applied during activation (empty = keep current).
+  /// Optional display name applied during activation. Every family account is
+  /// named (user request 2026-09-07): the FIRST account is auto-created as
+  /// "Family & Friends", and this lets the user name it while setting it up.
+  /// Empty = keep the current name. Trimmed; max 50 chars server-side.
   @$pb.TagNumber(7)
   $core.String get accountName => $_getSZ(6);
   @$pb.TagNumber(7)

@@ -584,6 +584,7 @@ import 'package:lazervault/src/features/group_account/presentation/views/group_a
 // Family Account Imports
 import 'package:lazervault/src/features/family_account/data/datasources/family_account_remote_data_source.dart';
 import 'package:lazervault/src/features/family_account/data/datasources/family_account_grpc_data_source.dart';
+import 'package:lazervault/src/features/family_account/data/datasources/family_slots_data_source.dart';
 import 'package:lazervault/src/features/family_account/data/repositories/family_account_repository_impl.dart';
 import 'package:lazervault/src/features/family_account/domain/repositories/family_account_repository.dart';
 import 'package:lazervault/src/features/family_account/domain/usecases/family_account_usecases.dart';
@@ -3519,6 +3520,15 @@ Future<void> init() async {
   // Remote Data Source (gRPC implementation)
   serviceLocator.registerLazySingleton<FamilyAccountRemoteDataSource>(
     () => FamilyAccountGrpcDataSource(
+      client: serviceLocator<family_accounts_grpc.FamilyAccountsServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Paid family slots — capacity beyond the free allowance, billed monthly.
+  // Separate from the family data source: this is billing, not family data.
+  serviceLocator.registerLazySingleton<FamilySlotsDataSource>(
+    () => FamilySlotsDataSource(
       client: serviceLocator<family_accounts_grpc.FamilyAccountsServiceClient>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
