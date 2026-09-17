@@ -121,6 +121,33 @@ class _VoiceDockedBarState extends State<_VoiceDockedBar> {
   /// rather than a guess that goes wrong when the text wraps.
   final GlobalKey _barKey = GlobalKey();
 
+  /// The LIVE talk mode.
+  ///
+  /// widget.interactionMode is only the value captured when the overlay was
+  /// inserted. Change the mode from Settings while minimized and the bar would
+  /// keep offering the old gesture — a "hold to talk" bar wired to a session
+  /// that had moved to tap — so it subscribes rather than trusting the snapshot.
+  late String _mode = widget.interactionMode;
+  StreamSubscription<String>? _modeSub;
+
+  @override
+  void initState() {
+    super.initState();
+    if (serviceLocator.isRegistered<VoiceTalkModeController>()) {
+      final controller = serviceLocator<VoiceTalkModeController>();
+      _mode = controller.mode;
+      _modeSub = controller.modeStream.listen((m) {
+        if (mounted) setState(() => _mode = m);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _modeSub?.cancel();
+    super.dispose();
+  }
+
   /// Measured height, falling back to the design height before first layout.
   double get _barHeight {
     final box = _barKey.currentContext?.findRenderObject() as RenderBox?;
@@ -190,7 +217,7 @@ class _VoiceDockedBarState extends State<_VoiceDockedBar> {
   /// cannot drift — this file used to say "Double-tap to talk" while the sheet
   /// said "Double-tap" for the very same mode.
   String _hintFor({required bool capturing}) =>
-      VoiceTalkMode.action(widget.interactionMode, capturing: capturing);
+      VoiceTalkMode.action(_mode, capturing: capturing);
 
   @override
   Widget build(BuildContext context) {
@@ -266,7 +293,7 @@ class _VoiceDockedBarState extends State<_VoiceDockedBar> {
                       // floating bubble where the whole surface is also tappable
                       // (a tap anywhere else reopens the call).
                       final talkButton = VoiceTalkButton(
-                        mode: widget.interactionMode,
+                        mode: _mode,
                         capturing: capturing,
                         onBegin: widget.cubit.pttBegin,
                         onEnd: widget.cubit.pttEnd,

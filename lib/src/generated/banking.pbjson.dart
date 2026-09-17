@@ -31,6 +31,194 @@ final $typed_data.Uint8List creditScoreSourceDescriptor = $convert.base64Decode(
     'ASIgoeQ1JFRElUX1NDT1JFX1NPVVJDRV9MQVpFUlZBVUxUEAESIAocQ1JFRElUX1NDT1JFX1NP'
     'VVJDRV9FWFRFUk5BTBACEiAKHENSRURJVF9TQ09SRV9TT1VSQ0VfQ09NQklORUQQAw==');
 
+@$core.Deprecated('Use createCardChargeRequestDescriptor instead')
+const CreateCardChargeRequest$json = {
+  '1': 'CreateCardChargeRequest',
+  '2': [
+    {'1': 'reference', '3': 1, '4': 1, '5': 9, '10': 'reference'},
+    {'1': 'amount_minor', '3': 2, '4': 1, '5': 3, '10': 'amountMinor'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'terminal_id', '3': 5, '4': 1, '5': 9, '10': 'terminalId'},
+    {'1': 'staff_user_id', '3': 6, '4': 1, '5': 9, '10': 'staffUserId'},
+    {'1': 'device_payload', '3': 7, '4': 1, '5': 9, '10': 'devicePayload'},
+  ],
+};
+
+/// Descriptor for `CreateCardChargeRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createCardChargeRequestDescriptor = $convert.base64Decode(
+    'ChdDcmVhdGVDYXJkQ2hhcmdlUmVxdWVzdBIcCglyZWZlcmVuY2UYASABKAlSCXJlZmVyZW5jZR'
+    'IhCgxhbW91bnRfbWlub3IYAiABKANSC2Ftb3VudE1pbm9yEhoKCGN1cnJlbmN5GAMgASgJUghj'
+    'dXJyZW5jeRIgCgtkZXNjcmlwdGlvbhgEIAEoCVILZGVzY3JpcHRpb24SHwoLdGVybWluYWxfaW'
+    'QYBSABKAlSCnRlcm1pbmFsSWQSIgoNc3RhZmZfdXNlcl9pZBgGIAEoCVILc3RhZmZVc2VySWQS'
+    'JQoOZGV2aWNlX3BheWxvYWQYByABKAlSDWRldmljZVBheWxvYWQ=');
+
+@$core.Deprecated('Use getCardChargeRequestDescriptor instead')
+const GetCardChargeRequest$json = {
+  '1': 'GetCardChargeRequest',
+  '2': [
+    {'1': 'reference', '3': 1, '4': 1, '5': 9, '10': 'reference'},
+  ],
+};
+
+/// Descriptor for `GetCardChargeRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCardChargeRequestDescriptor = $convert.base64Decode(
+    'ChRHZXRDYXJkQ2hhcmdlUmVxdWVzdBIcCglyZWZlcmVuY2UYASABKAlSCXJlZmVyZW5jZQ==');
+
+@$core.Deprecated('Use listMyCardChargesRequestDescriptor instead')
+const ListMyCardChargesRequest$json = {
+  '1': 'ListMyCardChargesRequest',
+  '2': [
+    {'1': 'status', '3': 1, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
+    {'1': 'offset', '3': 3, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `ListMyCardChargesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listMyCardChargesRequestDescriptor =
+    $convert.base64Decode(
+        'ChhMaXN0TXlDYXJkQ2hhcmdlc1JlcXVlc3QSFgoGc3RhdHVzGAEgASgJUgZzdGF0dXMSFAoFbG'
+        'ltaXQYAiABKAVSBWxpbWl0EhYKBm9mZnNldBgDIAEoBVIGb2Zmc2V0');
+
+@$core.Deprecated('Use listMyCardChargesResponseDescriptor instead')
+const ListMyCardChargesResponse$json = {
+  '1': 'ListMyCardChargesResponse',
+  '2': [
+    {
+      '1': 'charges',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.banking.CardCharge',
+      '10': 'charges'
+    },
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+    {
+      '1': 'unsettled_amount_minor',
+      '3': 3,
+      '4': 1,
+      '5': 3,
+      '10': 'unsettledAmountMinor'
+    },
+  ],
+};
+
+/// Descriptor for `ListMyCardChargesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listMyCardChargesResponseDescriptor = $convert.base64Decode(
+    'ChlMaXN0TXlDYXJkQ2hhcmdlc1Jlc3BvbnNlEi0KB2NoYXJnZXMYASADKAsyEy5iYW5raW5nLk'
+    'NhcmRDaGFyZ2VSB2NoYXJnZXMSFAoFdG90YWwYAiABKAVSBXRvdGFsEjQKFnVuc2V0dGxlZF9h'
+    'bW91bnRfbWlub3IYAyABKANSFHVuc2V0dGxlZEFtb3VudE1pbm9y');
+
+@$core.Deprecated('Use cardChargeResponseDescriptor instead')
+const CardChargeResponse$json = {
+  '1': 'CardChargeResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {
+      '1': 'charge',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.banking.CardCharge',
+      '10': 'charge'
+    },
+    {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `CardChargeResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cardChargeResponseDescriptor = $convert.base64Decode(
+    'ChJDYXJkQ2hhcmdlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIrCgZjaGFyZ2'
+    'UYAiABKAsyEy5iYW5raW5nLkNhcmRDaGFyZ2VSBmNoYXJnZRIYCgdtZXNzYWdlGAMgASgJUgdt'
+    'ZXNzYWdl');
+
+@$core.Deprecated('Use cardChargeDescriptor instead')
+const CardCharge$json = {
+  '1': 'CardCharge',
+  '2': [
+    {'1': 'reference', '3': 1, '4': 1, '5': 9, '10': 'reference'},
+    {'1': 'provider', '3': 2, '4': 1, '5': 9, '10': 'provider'},
+    {
+      '1': 'provider_reference',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '10': 'providerReference'
+    },
+    {'1': 'status', '3': 4, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'amount_minor', '3': 5, '4': 1, '5': 3, '10': 'amountMinor'},
+    {'1': 'fee_minor', '3': 6, '4': 1, '5': 3, '10': 'feeMinor'},
+    {'1': 'currency', '3': 7, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'description', '3': 8, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'terminal_id', '3': 9, '4': 1, '5': 9, '10': 'terminalId'},
+    {'1': 'staff_user_id', '3': 10, '4': 1, '5': 9, '10': 'staffUserId'},
+    {'1': 'card_last4', '3': 11, '4': 1, '5': 9, '10': 'cardLast4'},
+    {'1': 'card_brand', '3': 12, '4': 1, '5': 9, '10': 'cardBrand'},
+    {'1': 'auth_code', '3': 13, '4': 1, '5': 9, '10': 'authCode'},
+    {'1': 'failure_reason', '3': 14, '4': 1, '5': 9, '10': 'failureReason'},
+    {
+      '1': 'settlement_reference',
+      '3': 15,
+      '4': 1,
+      '5': 9,
+      '10': 'settlementReference'
+    },
+    {'1': 'authorised_at', '3': 16, '4': 1, '5': 9, '10': 'authorisedAt'},
+    {'1': 'settled_at', '3': 17, '4': 1, '5': 9, '10': 'settledAt'},
+    {'1': 'created_at', '3': 18, '4': 1, '5': 9, '10': 'createdAt'},
+  ],
+};
+
+/// Descriptor for `CardCharge`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cardChargeDescriptor = $convert.base64Decode(
+    'CgpDYXJkQ2hhcmdlEhwKCXJlZmVyZW5jZRgBIAEoCVIJcmVmZXJlbmNlEhoKCHByb3ZpZGVyGA'
+    'IgASgJUghwcm92aWRlchItChJwcm92aWRlcl9yZWZlcmVuY2UYAyABKAlSEXByb3ZpZGVyUmVm'
+    'ZXJlbmNlEhYKBnN0YXR1cxgEIAEoCVIGc3RhdHVzEiEKDGFtb3VudF9taW5vchgFIAEoA1ILYW'
+    '1vdW50TWlub3ISGwoJZmVlX21pbm9yGAYgASgDUghmZWVNaW5vchIaCghjdXJyZW5jeRgHIAEo'
+    'CVIIY3VycmVuY3kSIAoLZGVzY3JpcHRpb24YCCABKAlSC2Rlc2NyaXB0aW9uEh8KC3Rlcm1pbm'
+    'FsX2lkGAkgASgJUgp0ZXJtaW5hbElkEiIKDXN0YWZmX3VzZXJfaWQYCiABKAlSC3N0YWZmVXNl'
+    'cklkEh0KCmNhcmRfbGFzdDQYCyABKAlSCWNhcmRMYXN0NBIdCgpjYXJkX2JyYW5kGAwgASgJUg'
+    'ljYXJkQnJhbmQSGwoJYXV0aF9jb2RlGA0gASgJUghhdXRoQ29kZRIlCg5mYWlsdXJlX3JlYXNv'
+    'bhgOIAEoCVINZmFpbHVyZVJlYXNvbhIxChRzZXR0bGVtZW50X3JlZmVyZW5jZRgPIAEoCVITc2'
+    'V0dGxlbWVudFJlZmVyZW5jZRIjCg1hdXRob3Jpc2VkX2F0GBAgASgJUgxhdXRob3Jpc2VkQXQS'
+    'HQoKc2V0dGxlZF9hdBgRIAEoCVIJc2V0dGxlZEF0Eh0KCmNyZWF0ZWRfYXQYEiABKAlSCWNyZW'
+    'F0ZWRBdA==');
+
+@$core.Deprecated('Use getCardAcceptanceStatusRequestDescriptor instead')
+const GetCardAcceptanceStatusRequest$json = {
+  '1': 'GetCardAcceptanceStatusRequest',
+};
+
+/// Descriptor for `GetCardAcceptanceStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCardAcceptanceStatusRequestDescriptor =
+    $convert.base64Decode('Ch5HZXRDYXJkQWNjZXB0YW5jZVN0YXR1c1JlcXVlc3Q=');
+
+@$core.Deprecated('Use getCardAcceptanceStatusResponseDescriptor instead')
+const GetCardAcceptanceStatusResponse$json = {
+  '1': 'GetCardAcceptanceStatusResponse',
+  '2': [
+    {'1': 'available', '3': 1, '4': 1, '5': 8, '10': 'available'},
+    {'1': 'active_provider', '3': 2, '4': 1, '5': 9, '10': 'activeProvider'},
+    {'1': 'usable_providers', '3': 3, '4': 3, '5': 9, '10': 'usableProviders'},
+    {
+      '1': 'unavailable_reason',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '10': 'unavailableReason'
+    },
+  ],
+};
+
+/// Descriptor for `GetCardAcceptanceStatusResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCardAcceptanceStatusResponseDescriptor =
+    $convert.base64Decode(
+        'Ch9HZXRDYXJkQWNjZXB0YW5jZVN0YXR1c1Jlc3BvbnNlEhwKCWF2YWlsYWJsZRgBIAEoCFIJYX'
+        'ZhaWxhYmxlEicKD2FjdGl2ZV9wcm92aWRlchgCIAEoCVIOYWN0aXZlUHJvdmlkZXISKQoQdXNh'
+        'YmxlX3Byb3ZpZGVycxgDIAMoCVIPdXNhYmxlUHJvdmlkZXJzEi0KEnVuYXZhaWxhYmxlX3JlYX'
+        'NvbhgEIAEoCVIRdW5hdmFpbGFibGVSZWFzb24=');
+
 @$core.Deprecated('Use createVirtualAccountRequestDescriptor instead')
 const CreateVirtualAccountRequest$json = {
   '1': 'CreateVirtualAccountRequest',

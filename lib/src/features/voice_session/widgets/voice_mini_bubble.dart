@@ -1,4 +1,7 @@
 import 'dart:math';
+import 'package:lazervault/src/features/voice/services/voice_talk_mode_controller.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,7 +13,6 @@ import 'package:lazervault/src/features/voice_session/cubit/voice_session_state.
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_talk_affordance.dart';
 part 'voice_mini_bubble_widgets.dart';
-
 
 class _VoiceMiniBubbleState extends State<_VoiceMiniBubble>
     with SingleTickerProviderStateMixin {
@@ -69,7 +71,8 @@ class _VoiceMiniBubbleState extends State<_VoiceMiniBubble>
     final center = pos.dx + size / 2;
     final toLeft = center < screen.width / 2;
     final x = toLeft ? _margin : screen.width - size - _margin;
-    final y = pos.dy.clamp(topInset, bottomBound.clamp(topInset, screen.height));
+    final y =
+        pos.dy.clamp(topInset, bottomBound.clamp(topInset, screen.height));
     setState(() => _pos = Offset(x, y));
   }
 
@@ -158,11 +161,13 @@ class _VoiceMiniBubbleState extends State<_VoiceMiniBubble>
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _buildWaves(leftSide: true, color: color, active: active, size: size),
+              _buildWaves(
+                  leftSide: true, color: color, active: active, size: size),
               SizedBox(width: size * 0.05),
               _buildOrb(color, size),
               SizedBox(width: size * 0.05),
-              _buildWaves(leftSide: false, color: color, active: active, size: size),
+              _buildWaves(
+                  leftSide: false, color: color, active: active, size: size),
             ],
           ),
         );
@@ -227,7 +232,8 @@ class _VoiceMiniBubbleState extends State<_VoiceMiniBubble>
             height: d,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: color.withValues(alpha: 0.7), width: 1.5),
+              border:
+                  Border.all(color: color.withValues(alpha: 0.7), width: 1.5),
             ),
             child: ClipOval(
               child: SvgPicture.asset(

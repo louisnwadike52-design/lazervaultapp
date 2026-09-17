@@ -75,6 +75,14 @@ const RequestExtraFamilySlotRequest$json = {
   '1': 'RequestExtraFamilySlotRequest',
   '2': [
     {'1': 'idempotency_key', '3': 1, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'pin_token', '3': 2, '4': 1, '5': 9, '10': 'pinToken'},
+    {
+      '1': 'pin_transaction_id',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '10': 'pinTransactionId'
+    },
   ],
 };
 
@@ -82,7 +90,8 @@ const RequestExtraFamilySlotRequest$json = {
 final $typed_data.Uint8List requestExtraFamilySlotRequestDescriptor =
     $convert.base64Decode(
         'Ch1SZXF1ZXN0RXh0cmFGYW1pbHlTbG90UmVxdWVzdBInCg9pZGVtcG90ZW5jeV9rZXkYASABKA'
-        'lSDmlkZW1wb3RlbmN5S2V5');
+        'lSDmlkZW1wb3RlbmN5S2V5EhsKCXBpbl90b2tlbhgCIAEoCVIIcGluVG9rZW4SLAoScGluX3Ry'
+        'YW5zYWN0aW9uX2lkGAMgASgJUhBwaW5UcmFuc2FjdGlvbklk');
 
 @$core.Deprecated('Use requestExtraFamilySlotResponseDescriptor instead')
 const RequestExtraFamilySlotResponse$json = {
@@ -1733,6 +1742,14 @@ const AllocateFundsRequest$json = {
     {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
     {'1': 'idempotency_key', '3': 5, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'pin_token', '3': 6, '4': 1, '5': 9, '10': 'pinToken'},
+    {
+      '1': 'pin_transaction_id',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'pinTransactionId'
+    },
   ],
 };
 
@@ -1741,7 +1758,8 @@ final $typed_data.Uint8List allocateFundsRequestDescriptor = $convert.base64Deco
     'ChRBbGxvY2F0ZUZ1bmRzUmVxdWVzdBIbCglmYW1pbHlfaWQYASABKAlSCGZhbWlseUlkEhsKCW'
     '1lbWJlcl9pZBgCIAEoCVIIbWVtYmVySWQSFgoGYW1vdW50GAMgASgBUgZhbW91bnQSIAoLZGVz'
     'Y3JpcHRpb24YBCABKAlSC2Rlc2NyaXB0aW9uEicKD2lkZW1wb3RlbmN5X2tleRgFIAEoCVIOaW'
-    'RlbXBvdGVuY3lLZXk=');
+    'RlbXBvdGVuY3lLZXkSGwoJcGluX3Rva2VuGAYgASgJUghwaW5Ub2tlbhIsChJwaW5fdHJhbnNh'
+    'Y3Rpb25faWQYByABKAlSEHBpblRyYW5zYWN0aW9uSWQ=');
 
 @$core.Deprecated('Use allocateFundsResponseDescriptor instead')
 const AllocateFundsResponse$json = {
@@ -1983,16 +2001,24 @@ const ProcessMemberContributionRequest$json = {
     {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
     {'1': 'idempotency_key', '3': 5, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    {'1': 'pin_token', '3': 6, '4': 1, '5': 9, '10': 'pinToken'},
+    {
+      '1': 'pin_transaction_id',
+      '3': 7,
+      '4': 1,
+      '5': 9,
+      '10': 'pinTransactionId'
+    },
   ],
 };
 
 /// Descriptor for `ProcessMemberContributionRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List processMemberContributionRequestDescriptor =
-    $convert.base64Decode(
-        'CiBQcm9jZXNzTWVtYmVyQ29udHJpYnV0aW9uUmVxdWVzdBIbCglmYW1pbHlfaWQYASABKAlSCG'
-        'ZhbWlseUlkEhsKCW1lbWJlcl9pZBgCIAEoCVIIbWVtYmVySWQSFgoGYW1vdW50GAMgASgBUgZh'
-        'bW91bnQSIAoLZGVzY3JpcHRpb24YBCABKAlSC2Rlc2NyaXB0aW9uEicKD2lkZW1wb3RlbmN5X2'
-        'tleRgFIAEoCVIOaWRlbXBvdGVuY3lLZXk=');
+final $typed_data.Uint8List processMemberContributionRequestDescriptor = $convert.base64Decode(
+    'CiBQcm9jZXNzTWVtYmVyQ29udHJpYnV0aW9uUmVxdWVzdBIbCglmYW1pbHlfaWQYASABKAlSCG'
+    'ZhbWlseUlkEhsKCW1lbWJlcl9pZBgCIAEoCVIIbWVtYmVySWQSFgoGYW1vdW50GAMgASgBUgZh'
+    'bW91bnQSIAoLZGVzY3JpcHRpb24YBCABKAlSC2Rlc2NyaXB0aW9uEicKD2lkZW1wb3RlbmN5X2'
+    'tleRgFIAEoCVIOaWRlbXBvdGVuY3lLZXkSGwoJcGluX3Rva2VuGAYgASgJUghwaW5Ub2tlbhIs'
+    'ChJwaW5fdHJhbnNhY3Rpb25faWQYByABKAlSEHBpblRyYW5zYWN0aW9uSWQ=');
 
 @$core.Deprecated('Use processMemberContributionResponseDescriptor instead')
 const ProcessMemberContributionResponse$json = {

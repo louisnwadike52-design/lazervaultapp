@@ -139,7 +139,8 @@ class _VoiceCaptionBoxState extends State<VoiceCaptionBox>
     if (text.isEmpty) return text;
 
     // Remove null characters and invalid Unicode
-    final sanitized = text.replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F]'), '');
+    final sanitized =
+        text.replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F]'), '');
 
     // Truncate if too long (max 200 chars for display)
     const maxLength = 200;
@@ -177,13 +178,16 @@ class _VoiceCaptionBoxState extends State<VoiceCaptionBox>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            (isAgent ? const Color(0xFF4E03D0) : const Color(0xFF10B981)).withValues(alpha: 0.15),
-            (isAgent ? const Color(0xFF4E03D0) : const Color(0xFF10B981)).withValues(alpha: 0.05),
+            (isAgent ? const Color(0xFF4E03D0) : const Color(0xFF10B981))
+                .withValues(alpha: 0.15),
+            (isAgent ? const Color(0xFF4E03D0) : const Color(0xFF10B981))
+                .withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: (isAgent ? const Color(0xFF4E03D0) : const Color(0xFF10B981)).withValues(alpha: 0.3),
+          color: (isAgent ? const Color(0xFF4E03D0) : const Color(0xFF10B981))
+              .withValues(alpha: 0.3),
           width: 1,
         ),
         boxShadow: [
@@ -206,7 +210,9 @@ class _VoiceCaptionBoxState extends State<VoiceCaptionBox>
                 height: 6.r,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isAgent ? const Color(0xFF4E03D0) : const Color(0xFF10B981),
+                  color: isAgent
+                      ? const Color(0xFF4E03D0)
+                      : const Color(0xFF10B981),
                 ),
               ),
               SizedBox(width: 8.w),
@@ -215,7 +221,9 @@ class _VoiceCaptionBoxState extends State<VoiceCaptionBox>
                 style: GoogleFonts.inter(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w600,
-                  color: (isAgent ? const Color(0xFFB4A0FF) : const Color(0xFF34D399)),
+                  color: (isAgent
+                      ? const Color(0xFFB4A0FF)
+                      : const Color(0xFF34D399)),
                   letterSpacing: 0.5,
                 ),
               ),
@@ -283,17 +291,30 @@ class TransferStep {
 
   const TransferStep({required this.type, required this.status});
 
-  static const searching = TransferStep(type: StepType.search, status: StepStatus.inProgress);
-  static const searchComplete = TransferStep(type: StepType.search, status: StepStatus.complete);
-  static const reviewPending = TransferStep(type: StepType.review, status: StepStatus.pending);
-  static const reviewing = TransferStep(type: StepType.review, status: StepStatus.inProgress);
-  static const reviewComplete = TransferStep(type: StepType.review, status: StepStatus.complete);
-  static const pinPending = TransferStep(type: StepType.pin, status: StepStatus.pending);
-  static const enteringPin = TransferStep(type: StepType.pin, status: StepStatus.inProgress);
-  static const pinComplete = TransferStep(type: StepType.pin, status: StepStatus.complete);
-  static const processingPending = TransferStep(type: StepType.processing, status: StepStatus.pending);
-  static const processing = TransferStep(type: StepType.processing, status: StepStatus.inProgress);
-  static const processingComplete = TransferStep(type: StepType.processing, status: StepStatus.complete);
-  static const completePending = TransferStep(type: StepType.complete, status: StepStatus.pending);
-  static const complete = TransferStep(type: StepType.complete, status: StepStatus.complete);
+  static const searching =
+      TransferStep(type: StepType.search, status: StepStatus.inProgress);
+  static const searchComplete =
+      TransferStep(type: StepType.search, status: StepStatus.complete);
+  static const reviewPending =
+      TransferStep(type: StepType.review, status: StepStatus.pending);
+  static const reviewing =
+      TransferStep(type: StepType.review, status: StepStatus.inProgress);
+  static const reviewComplete =
+      TransferStep(type: StepType.review, status: StepStatus.complete);
+  static const pinPending =
+      TransferStep(type: StepType.pin, status: StepStatus.pending);
+  static const enteringPin =
+      TransferStep(type: StepType.pin, status: StepStatus.inProgress);
+  static const pinComplete =
+      TransferStep(type: StepType.pin, status: StepStatus.complete);
+  static const processingPending =
+      TransferStep(type: StepType.processing, status: StepStatus.pending);
+  static const processing =
+      TransferStep(type: StepType.processing, status: StepStatus.inProgress);
+  static const processingComplete =
+      TransferStep(type: StepType.processing, status: StepStatus.complete);
+  static const completePending =
+      TransferStep(type: StepType.complete, status: StepStatus.pending);
+  static const complete =
+      TransferStep(type: StepType.complete, status: StepStatus.complete);
 }

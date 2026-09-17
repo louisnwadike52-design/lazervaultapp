@@ -88,14 +88,14 @@ class _VoicePinSheetLauncherState extends State<VoicePinSheetLauncher>
     _launched = true;
 
     final payload = widget.transactionPayload;
-    final amount =
-        double.tryParse(payload['amount']?.toString() ?? '0') ?? 0.0;
+    final amount = double.tryParse(payload['amount']?.toString() ?? '0') ?? 0.0;
     final fee = double.tryParse(payload['fee']?.toString() ?? '0') ?? 0.0;
     final total = double.tryParse(payload['total_amount']?.toString() ?? '') ??
         (amount + fee);
     final currency = (payload['currency'] ?? 'NGN').toString();
     final transactionId = (payload['transaction_id'] ?? '').toString();
-    final transactionType = (payload['transaction_type'] ?? 'transfer').toString();
+    final transactionType =
+        (payload['transaction_type'] ?? 'transfer').toString();
     final recipientSummary =
         (payload['recipient_summary'] ?? '').toString().trim();
     final title = _titleForType(transactionType);

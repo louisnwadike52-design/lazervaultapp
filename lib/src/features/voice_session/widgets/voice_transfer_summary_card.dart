@@ -42,7 +42,8 @@ class VoiceTransferSummaryCard extends StatelessWidget {
     final amount = (transferDetails['amount'] as num?) ?? 0;
     final currency = transferDetails['currency'] as String? ?? 'NGN';
     final recipient = transferDetails['recipient'] as String? ?? 'Unknown';
-    final transferType = transferDetails['transfer_type'] as String? ?? 'internal';
+    final transferType =
+        transferDetails['transfer_type'] as String? ?? 'internal';
     final fee = (transferDetails['fee'] as num?) ?? 0;
     final total = (transferDetails['total'] as num?) ?? amount;
 
@@ -50,17 +51,22 @@ class VoiceTransferSummaryCard extends StatelessWidget {
     if (amount <= 0) {
       return Dialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         child: Padding(
           padding: EdgeInsets.all(24.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 48.sp),
+              Icon(Icons.error_outline,
+                  color: const Color(0xFFEF4444), size: 48.sp),
               SizedBox(height: 16.h),
               Text(
                 'Invalid transfer amount',
-                style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white),
               ),
               SizedBox(height: 16.h),
               SizedBox(
@@ -71,9 +77,12 @@ class VoiceTransferSummaryCard extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2D2D2D),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
                   ),
-                  child: Text('Cancel', style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                  child: Text('Cancel',
+                      style: GoogleFonts.inter(
+                          fontSize: 15.sp, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
@@ -82,7 +91,8 @@ class VoiceTransferSummaryCard extends StatelessWidget {
       );
     }
     final username = transferDetails['username'] as String?;
-    final bankName = (transferDetails['beneficiary_bank'] ?? transferDetails['bank_name']) as String?;
+    final bankName = (transferDetails['beneficiary_bank'] ??
+        transferDetails['bank_name']) as String?;
     final exchangeRate = transferDetails['exchange_rate'] as String?;
     final narration = transferDetails['narration'] as String?;
 
@@ -179,7 +189,8 @@ class VoiceTransferSummaryCard extends StatelessWidget {
                       ),
                       child: Text(
                         'Cancel',
-                        style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(
+                            fontSize: 15.sp, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -199,7 +210,8 @@ class VoiceTransferSummaryCard extends StatelessWidget {
                       ),
                       child: Text(
                         'Confirm',
-                        style: GoogleFonts.inter(fontSize: 15.sp, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(
+                            fontSize: 15.sp, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -212,7 +224,8 @@ class VoiceTransferSummaryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {bool isBold = false, bool isSubtle = false}) {
+  Widget _buildDetailRow(String label, String value,
+      {bool isBold = false, bool isSubtle = false}) {
     return Padding(
       // Tighter rows so the whole summary stays compact (was 10.h per row).
       padding: EdgeInsets.symmetric(vertical: isSubtle ? 2.h : 5.h),

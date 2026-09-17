@@ -96,7 +96,8 @@ import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/initiat
 import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/verify_linking_usecase.dart';
 import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/unlink_account_usecase.dart';
 import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/get_security_settings_usecase.dart';
-import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/update_security_settings_usecase.dart' as whatsapp_usecases;
+import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/update_security_settings_usecase.dart'
+    as whatsapp_usecases;
 import 'package:lazervault/src/features/whatsapp_banking/cubit/whatsapp_banking_cubit.dart';
 import 'package:lazervault/src/features/channel_management/domain/repositories/i_channel_repository.dart';
 import 'package:lazervault/src/features/channel_management/data/repositories/channel_repository_impl.dart';
@@ -153,6 +154,7 @@ import 'package:lazervault/src/features/kyc/data/services/prove_kyc_http_service
 import 'package:lazervault/src/features/voice_enrollment/domain/repositories/voice_enrollment_repository.dart';
 import 'package:lazervault/src/generated/recipient.pbgrpc.dart';
 import 'package:lazervault/src/generated/banking.pbgrpc.dart' as banking_grpc;
+import 'package:lazervault/src/features/card_acceptance/data/datasources/card_acceptance_data_source.dart';
 import 'package:lazervault/src/generated/user.pbgrpc.dart' as user_grpc;
 import 'package:lazervault/src/generated/transaction_pin.pbgrpc.dart';
 import 'package:lazervault/src/generated/deposit.pbgrpc.dart';
@@ -163,7 +165,8 @@ import 'package:lazervault/src/generated/referral.pbgrpc.dart';
 import 'package:lazervault/src/generated/exchange.pbgrpc.dart';
 import 'package:lazervault/src/generated/voice-biometrics.pbgrpc.dart';
 import 'package:lazervault/src/generated/payments.pbgrpc.dart' as payments_grpc;
-import 'package:lazervault/src/generated/statistics.pbgrpc.dart' as statistics_grpc;
+import 'package:lazervault/src/generated/statistics.pbgrpc.dart'
+    as statistics_grpc;
 // Account Actions Imports
 import 'package:lazervault/src/features/account_actions/domain/repositories/i_account_actions_repository.dart';
 import 'package:lazervault/src/features/account_actions/data/repositories/account_actions_repository_impl.dart';
@@ -251,7 +254,8 @@ import 'package:lazervault/src/features/account_cards_summary/domain/repositorie
 import 'package:lazervault/src/features/account_cards_summary/domain/usecases/get_account_summaries_usecase.dart';
 import 'package:lazervault/src/generated/account.pbgrpc.dart' as account_grpc;
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
-import 'package:lazervault/src/generated/multi_country.pbgrpc.dart' as multi_country_grpc;
+import 'package:lazervault/src/generated/multi_country.pbgrpc.dart'
+    as multi_country_grpc;
 import 'package:lazervault/src/features/multi_country/domain/repositories/i_multi_country_repository.dart';
 import 'package:lazervault/src/features/multi_country/data/repositories/multi_country_repository_impl.dart';
 import 'package:lazervault/src/features/multi_country/cubit/multi_country_cubit.dart';
@@ -304,7 +308,8 @@ import 'package:lazervault/src/features/microservice_chat/domain/usecases/load_d
 // Multi-tab chat sessions (ChatGPT-style drawer)
 import 'package:lazervault/src/features/microservice_chat/data/datasources/chat_sessions_datasource.dart';
 import 'package:lazervault/src/features/microservice_chat/cubit/chat_sessions_cubit.dart';
-import 'package:lazervault/src/generated/direct_chat.pbgrpc.dart' as direct_chat_grpc;
+import 'package:lazervault/src/generated/direct_chat.pbgrpc.dart'
+    as direct_chat_grpc;
 import 'package:lazervault/core/services/chat_session_manager.dart';
 // End Microservice Chat Imports
 
@@ -361,13 +366,15 @@ import 'package:lazervault/src/features/rmb/data/rmb_grpc_client.dart';
 import 'package:lazervault/src/features/rmb/cubit/rmb_cubit.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_config_cubit.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_withdraw_cubit.dart';
-import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.dart' as CryptoFeature;
+import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.dart'
+    as CryptoFeature;
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_chart_details_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_detail_screen.dart';
 // End Crypto Imports
 
 // Crowdfund Imports
-import 'package:lazervault/src/generated/crowdfund.pbgrpc.dart' as crowdfund_grpc;
+import 'package:lazervault/src/generated/crowdfund.pbgrpc.dart'
+    as crowdfund_grpc;
 import 'package:lazervault/src/features/crowdfund/data/datasources/crowdfund_grpc_data_source.dart';
 import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as uplift_grpc;
 import 'package:lazervault/src/features/uplift/data/uplift_repository.dart';
@@ -590,7 +597,8 @@ import 'package:lazervault/src/features/family_account/data/repositories/family_
 import 'package:lazervault/src/features/family_account/domain/repositories/family_account_repository.dart';
 import 'package:lazervault/src/features/family_account/domain/usecases/family_account_usecases.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
-import 'package:lazervault/src/generated/family_accounts.pbgrpc.dart' as family_accounts_grpc;
+import 'package:lazervault/src/generated/family_accounts.pbgrpc.dart'
+    as family_accounts_grpc;
 import 'package:dio/dio.dart';
 
 // Move Money Imports
@@ -598,7 +606,6 @@ import 'package:lazervault/src/features/move_money/data/datasources/move_money_g
 import 'package:lazervault/src/features/move_money/cubit/move_money_cubit.dart';
 import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
 import 'package:lazervault/src/features/move_money/cubit/wallet_transfer_cubit.dart';
-
 
 // Plan My Day Imports
 import 'package:lazervault/src/features/plan_my_day/data/repositories/plan_my_day_repository_impl.dart';
@@ -769,7 +776,8 @@ Future<void> init() async {
   // Register Voice Biometrics Service
   serviceLocator.registerLazySingleton<VoiceBiometricsService>(
     () => VoiceBiometricsService(
-      baseUrl: dotenv.env['VOICE_AGENT_GATEWAY_URL'] ?? endpointRegistry.httpVoiceAgent,
+      baseUrl: dotenv.env['VOICE_AGENT_GATEWAY_URL'] ??
+          endpointRegistry.httpVoiceAgent,
       client: serviceLocator<http.Client>(),
     ),
   );
@@ -1015,7 +1023,8 @@ Future<void> init() async {
     () => TransactionPinServiceClient(serviceLocator<ClientChannel>()),
   );
   serviceLocator.registerLazySingleton<DepositServiceClient>(
-    () => DepositServiceClient(serviceLocator<ClientChannel>(instanceName: 'bankingChannel')),
+    () => DepositServiceClient(
+        serviceLocator<ClientChannel>(instanceName: 'bankingChannel')),
   );
   serviceLocator.registerLazySingleton<account_grpc.AccountServiceClient>(
     () => account_grpc.AccountServiceClient(serviceLocator<ClientChannel>()),
@@ -1023,19 +1032,33 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<accounts_grpc.AccountsServiceClient>(
     () => accounts_grpc.AccountsServiceClient(serviceLocator<ClientChannel>()),
   );
-  serviceLocator.registerLazySingleton<family_accounts_grpc.FamilyAccountsServiceClient>(
-    () => family_accounts_grpc.FamilyAccountsServiceClient(serviceLocator<ClientChannel>()),
+  serviceLocator
+      .registerLazySingleton<family_accounts_grpc.FamilyAccountsServiceClient>(
+    () => family_accounts_grpc.FamilyAccountsServiceClient(
+        serviceLocator<ClientChannel>()),
   );
   serviceLocator.registerLazySingleton<RecipientServiceClient>(
-    () => RecipientServiceClient(serviceLocator<ClientChannel>(instanceName: 'coreChannel')),
+    () => RecipientServiceClient(
+        serviceLocator<ClientChannel>(instanceName: 'coreChannel')),
   );
   serviceLocator.registerLazySingleton<WithdrawServiceClient>(
-    () => WithdrawServiceClient(serviceLocator<ClientChannel>(instanceName: 'bankingChannel')),
+    () => WithdrawServiceClient(
+        serviceLocator<ClientChannel>(instanceName: 'bankingChannel')),
   );
   // Banking Service Client - For production-grade transfers via banking-service
   serviceLocator.registerLazySingleton<banking_grpc.BankingServiceClient>(
     () => banking_grpc.BankingServiceClient(
       serviceLocator<ClientChannel>(instanceName: 'bankingChannel'),
+    ),
+  );
+
+  // Card acceptance (SoftPOS). The merchant's phone as the terminal — the
+  // reader SDK is vendor-supplied, but the charge/status/history calls run
+  // through here.
+  serviceLocator.registerLazySingleton<CardAcceptanceDataSource>(
+    () => CardAcceptanceDataSource(
+      client: serviceLocator<banking_grpc.BankingServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
   serviceLocator.registerLazySingleton<AIChatServiceClient>(
@@ -1089,7 +1112,6 @@ Future<void> init() async {
     () => ReferralServiceClient(serviceLocator<ClientChannel>()),
   );
 
-
   // Voice Biometrics Service Channel - Direct connection to voice-biometrics-service (port 50060)
   serviceLocator.registerLazySingleton<ClientChannel>(
     () => GrpcChannelFactory.createVoiceBiometricsChannel(),
@@ -1097,7 +1119,8 @@ Future<void> init() async {
   );
   // Voice Biometrics Service Client
   serviceLocator.registerLazySingleton<VoiceBiometricsServiceClient>(
-    () => VoiceBiometricsServiceClient(serviceLocator<ClientChannel>(instanceName: 'voiceBiometricsChannel')),
+    () => VoiceBiometricsServiceClient(
+        serviceLocator<ClientChannel>(instanceName: 'voiceBiometricsChannel')),
   );
 
   // Notifications Service Client - Uses Core Gateway (50070)
@@ -1130,60 +1153,76 @@ Future<void> init() async {
     ),
   );
 
-
   // ================== Feature: Authentication ==================
 
   // Data Sources
-  serviceLocator.registerLazySingleton
-  <AuthenticationRemoteDataSource>(
+  serviceLocator.registerLazySingleton<AuthenticationRemoteDataSource>(
       () => AuthenticationRemoteDataSourceImpl(serviceLocator<http.Client>()));
 
   // Repositories
-  serviceLocator.registerLazySingleton<IAuthRepository>(
-      () {
-        final authRepo = AuthRepositoryImpl(
-          userServiceClient: serviceLocator<user_grpc.UserServiceClient>(),
-          authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
-          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-          deviceService: serviceLocator<DeviceService>(),
-        );
+  serviceLocator.registerLazySingleton<IAuthRepository>(() {
+    final authRepo = AuthRepositoryImpl(
+      userServiceClient: serviceLocator<user_grpc.UserServiceClient>(),
+      authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+      deviceService: serviceLocator<DeviceService>(),
+    );
 
-        // Wire up automatic token rotation callback
-        // This allows all gRPC calls to automatically refresh tokens when they expire
-        serviceLocator<GrpcCallOptionsHelper>().onTokenRefreshNeeded = () async {
-          print('🔄 Token rotation triggered by expired token');
-          return await authRepo.refreshTokensSimple();
-        };
+    // Wire up automatic token rotation callback
+    // This allows all gRPC calls to automatically refresh tokens when they expire
+    serviceLocator<GrpcCallOptionsHelper>().onTokenRefreshNeeded = () async {
+      print('🔄 Token rotation triggered by expired token');
+      return await authRepo.refreshTokensSimple();
+    };
 
-        print('✅ Token rotation callback wired up successfully');
-        return authRepo;
-      });
+    print('✅ Token rotation callback wired up successfully');
+    return authRepo;
+  });
 
   serviceLocator.registerLazySingleton<IFaceRecognitionRepository>(
       () => FaceRecognitionRepositoryImpl(
-          facialRecognitionServiceClient: serviceLocator<FacialRecognitionServiceClient>(),
-          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-        ));
+            facialRecognitionServiceClient:
+                serviceLocator<FacialRecognitionServiceClient>(),
+            callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+          ));
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => SignUpUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => LoginUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => LoginWithPasscodeUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => RegisterPasscodeUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => ChangePasscodeUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => SignInWithGoogleUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => SignInWithAppleUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => ForgotPasswordUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => VerifyEmailUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => ResendVerificationUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => ResetPasswordUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => CheckEmailAvailabilityUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => RegisterFaceUseCase(serviceLocator<IFaceRecognitionRepository>()));
-  serviceLocator.registerLazySingleton(() => VerifyFaceUseCase(serviceLocator<IFaceRecognitionRepository>()));
-  serviceLocator.registerLazySingleton(() => RequestPhoneVerificationUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => VerifyPhoneNumberUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => VerifyIdentityUseCase(serviceLocator<IAuthRepository>()));
-  serviceLocator.registerLazySingleton(() => ValidateTokenUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => SignUpUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => LoginUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => LoginWithPasscodeUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => RegisterPasscodeUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ChangePasscodeUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => SignInWithGoogleUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => SignInWithAppleUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ForgotPasswordUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => VerifyEmailUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ResendVerificationUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ResetPasswordUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => CheckEmailAvailabilityUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => RegisterFaceUseCase(serviceLocator<IFaceRecognitionRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => VerifyFaceUseCase(serviceLocator<IFaceRecognitionRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => RequestPhoneVerificationUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => VerifyPhoneNumberUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => VerifyIdentityUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ValidateTokenUseCase(serviceLocator<IAuthRepository>()));
 
   // Blocs/Cubits
   // LAZY SINGLETON, not a factory.
@@ -1249,10 +1288,10 @@ Future<void> init() async {
       ));
 
   serviceLocator.registerFactory(() => PhoneVerificationCubit(
-        requestPhoneVerificationUseCase: serviceLocator<RequestPhoneVerificationUseCase>(),
+        requestPhoneVerificationUseCase:
+            serviceLocator<RequestPhoneVerificationUseCase>(),
         verifyPhoneNumberUseCase: serviceLocator<VerifyPhoneNumberUseCase>(),
       ));
-
 
   // ================== Feature: Profile ==================
 
@@ -1277,14 +1316,14 @@ Future<void> init() async {
   );
 
   // Repositories
-  serviceLocator.registerLazySingleton<IProfileRepository>(
-      () => ProfileRepositoryImpl(
-          userServiceClient: serviceLocator<user_grpc.UserServiceClient>(),
-          authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
-          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-          profilePictureUploadService:
-              serviceLocator<ProfilePictureUploadService>(),
-        ));
+  serviceLocator
+      .registerLazySingleton<IProfileRepository>(() => ProfileRepositoryImpl(
+            userServiceClient: serviceLocator<user_grpc.UserServiceClient>(),
+            authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
+            callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+            profilePictureUploadService:
+                serviceLocator<ProfilePictureUploadService>(),
+          ));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => ProfileCubit(
@@ -1295,12 +1334,12 @@ Future<void> init() async {
   // ================== Feature: Identity Verification ==================
 
   // Repositories
-  serviceLocator.registerLazySingleton<IIdentityRepository>(
-      () => IdentityRepositoryImpl(
-          userServiceClient: serviceLocator<user_grpc.UserServiceClient>(),
-          authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
-          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-        ));
+  serviceLocator
+      .registerLazySingleton<IIdentityRepository>(() => IdentityRepositoryImpl(
+            userServiceClient: serviceLocator<user_grpc.UserServiceClient>(),
+            authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
+            callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+          ));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => IdentityCubit(
@@ -1311,17 +1350,16 @@ Future<void> init() async {
 
   // gRPC Data Source (All KYC RPCs on AuthServiceClient)
   serviceLocator.registerLazySingleton<KYCGrpcDataSource>(
-      () => KYCGrpcDataSource(
-          authClient: serviceLocator<auth_proto.AuthServiceClient>(),
-          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-        ),
-      );
+    () => KYCGrpcDataSource(
+      authClient: serviceLocator<auth_proto.AuthServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
 
   // Repositories (Now using gRPC instead of HTTP)
-  serviceLocator.registerLazySingleton<KYCRepository>(
-      () => KYCRepositoryImpl(
-          grpcDataSource: serviceLocator<KYCGrpcDataSource>(),
-        ));
+  serviceLocator.registerLazySingleton<KYCRepository>(() => KYCRepositoryImpl(
+        grpcDataSource: serviceLocator<KYCGrpcDataSource>(),
+      ));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => KYCCubit(
@@ -1340,39 +1378,43 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => SocialLinkingCubit(
-    serviceLocator<SocialLinkingGrpcDataSource>(),
-  ));
+        serviceLocator<SocialLinkingGrpcDataSource>(),
+      ));
 
   // ================== Feature: Support & Help ==================
 
   // Repositories
-  serviceLocator.registerLazySingleton<ISupportRepository>(
-      () => SupportRepositoryImpl(
-          supportServiceClient: serviceLocator<support_grpc.SupportServiceClient>(),
-          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-        ));
+  serviceLocator
+      .registerLazySingleton<ISupportRepository>(() => SupportRepositoryImpl(
+            supportServiceClient:
+                serviceLocator<support_grpc.SupportServiceClient>(),
+            callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+          ));
 
   // ================== Feature: Statements ==================
 
   // Repositories
-  serviceLocator.registerLazySingleton<IStatementRepository>(
-      () => StatementRepositoryImpl(
-            accountsClient: serviceLocator<accounts_grpc.AccountsServiceClient>(),
-            secureStorage: serviceLocator<SecureStorageService>(),
-          ));
+  serviceLocator.registerLazySingleton<IStatementRepository>(() =>
+      StatementRepositoryImpl(
+        accountsClient: serviceLocator<accounts_grpc.AccountsServiceClient>(),
+        secureStorage: serviceLocator<SecureStorageService>(),
+      ));
 
   // File service (download + open + print of the rendered statement)
   serviceLocator.registerLazySingleton<StatementFileService>(
       () => StatementFileService());
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => DownloadStatementUseCase(serviceLocator<IStatementRepository>()));
-  serviceLocator.registerLazySingleton(() => GetStatementHistoryUseCase(serviceLocator<IStatementRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => DownloadStatementUseCase(serviceLocator<IStatementRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetStatementHistoryUseCase(serviceLocator<IStatementRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => StatementCubit(
         downloadStatementUseCase: serviceLocator<DownloadStatementUseCase>(),
-        getStatementHistoryUseCase: serviceLocator<GetStatementHistoryUseCase>(),
+        getStatementHistoryUseCase:
+            serviceLocator<GetStatementHistoryUseCase>(),
       ));
 
   // ================== Feature: Currency Exchange ==================
@@ -1380,7 +1422,8 @@ Future<void> init() async {
   // Register Exchange Service Client — routes through Financial Gateway
   // (50071) which proxies to exchange-service (50081) via gRPC.
   serviceLocator.registerLazySingleton<ExchangeServiceClient>(
-    () => ExchangeServiceClient(serviceLocator<ClientChannel>(instanceName: 'exchangeChannel')),
+    () => ExchangeServiceClient(
+        serviceLocator<ClientChannel>(instanceName: 'exchangeChannel')),
   );
 
   // Exchange Feature Config
@@ -1440,13 +1483,13 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => ExchangeCubit(
-    repository: serviceLocator<IExchangeRepository>(),
-    wsService: serviceLocator<ExchangeWebSocketService>(),
-  ));
+        repository: serviceLocator<IExchangeRepository>(),
+        wsService: serviceLocator<ExchangeWebSocketService>(),
+      ));
 
   serviceLocator.registerFactory(() => DashboardRatesCubit(
-    repository: serviceLocator<IExchangeRepository>(),
-  ));
+        repository: serviceLocator<IExchangeRepository>(),
+      ));
 
   // Exchange-recipient trust / prediction (informational, READ-ONLY).
   // Mirrors the transfer prediction shape: the data source returns null on
@@ -1469,8 +1512,10 @@ Future<void> init() async {
   // ================== Feature: Multi-Country ==================
 
   // gRPC Client - routes through core-gateway (default channel)
-  serviceLocator.registerLazySingleton<multi_country_grpc.MultiCountryAccountServiceClient>(
-    () => multi_country_grpc.MultiCountryAccountServiceClient(serviceLocator<ClientChannel>()),
+  serviceLocator.registerLazySingleton<
+      multi_country_grpc.MultiCountryAccountServiceClient>(
+    () => multi_country_grpc.MultiCountryAccountServiceClient(
+        serviceLocator<ClientChannel>()),
   );
 
   // Repository
@@ -1489,21 +1534,29 @@ Future<void> init() async {
   // ================== Feature: Referral ==================
 
   // Repositories
-  serviceLocator.registerLazySingleton<IReferralRepository>(
-      () => ReferralRepositoryImpl(
-          referralServiceClient: serviceLocator<ReferralServiceClient>(),
-          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-        ));
+  serviceLocator
+      .registerLazySingleton<IReferralRepository>(() => ReferralRepositoryImpl(
+            referralServiceClient: serviceLocator<ReferralServiceClient>(),
+            callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+          ));
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => ValidateReferralCodeUseCase(serviceLocator<IReferralRepository>()));
-  serviceLocator.registerLazySingleton(() => GetMyReferralCodeUseCase(serviceLocator<IReferralRepository>()));
-  serviceLocator.registerLazySingleton(() => GetMyReferralStatsUseCase(serviceLocator<IReferralRepository>()));
-  serviceLocator.registerLazySingleton(() => GetMyReferralsUseCase(serviceLocator<IReferralRepository>()));
-  serviceLocator.registerLazySingleton(() => GetReferralLeaderboardUseCase(serviceLocator<IReferralRepository>()));
-  serviceLocator.registerLazySingleton(() => GetMyPointsBalanceUseCase(serviceLocator<IReferralRepository>()));
-  serviceLocator.registerLazySingleton(() => GetMyPointsHistoryUseCase(serviceLocator<IReferralRepository>()));
-  serviceLocator.registerLazySingleton(() => GetPointsConfigUseCase(serviceLocator<IReferralRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ValidateReferralCodeUseCase(serviceLocator<IReferralRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetMyReferralCodeUseCase(serviceLocator<IReferralRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetMyReferralStatsUseCase(serviceLocator<IReferralRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetMyReferralsUseCase(serviceLocator<IReferralRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetReferralLeaderboardUseCase(serviceLocator<IReferralRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetMyPointsBalanceUseCase(serviceLocator<IReferralRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetMyPointsHistoryUseCase(serviceLocator<IReferralRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetPointsConfigUseCase(serviceLocator<IReferralRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => ReferralCubit(
@@ -1525,19 +1578,26 @@ Future<void> init() async {
   );
 
   // Repositories
-  serviceLocator.registerLazySingleton<IWhatsAppRepository>(
-      () => WhatsAppRepositoryImpl(
-          serviceClient: serviceLocator<WhatsAppServiceClient>(),
-          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-        ));
+  serviceLocator
+      .registerLazySingleton<IWhatsAppRepository>(() => WhatsAppRepositoryImpl(
+            serviceClient: serviceLocator<WhatsAppServiceClient>(),
+            callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+          ));
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => GetLinkStatusUseCase(serviceLocator<IWhatsAppRepository>()));
-  serviceLocator.registerLazySingleton(() => InitiateLinkingUseCase(serviceLocator<IWhatsAppRepository>()));
-  serviceLocator.registerLazySingleton(() => VerifyLinkingUseCase(serviceLocator<IWhatsAppRepository>()));
-  serviceLocator.registerLazySingleton(() => UnlinkAccountUseCase(serviceLocator<IWhatsAppRepository>()));
-  serviceLocator.registerLazySingleton(() => GetSecuritySettingsUseCase(serviceLocator<IWhatsAppRepository>()));
-  serviceLocator.registerLazySingleton(() => whatsapp_usecases.UpdateSecuritySettingsUseCase(serviceLocator<IWhatsAppRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetLinkStatusUseCase(serviceLocator<IWhatsAppRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => InitiateLinkingUseCase(serviceLocator<IWhatsAppRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => VerifyLinkingUseCase(serviceLocator<IWhatsAppRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => UnlinkAccountUseCase(serviceLocator<IWhatsAppRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetSecuritySettingsUseCase(serviceLocator<IWhatsAppRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      whatsapp_usecases.UpdateSecuritySettingsUseCase(
+          serviceLocator<IWhatsAppRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => WhatsAppBankingCubit(
@@ -1546,18 +1606,19 @@ Future<void> init() async {
         verifyLinking: serviceLocator<VerifyLinkingUseCase>(),
         unlinkAccount: serviceLocator<UnlinkAccountUseCase>(),
         getSecuritySettings: serviceLocator<GetSecuritySettingsUseCase>(),
-        updateSecuritySettings: serviceLocator<whatsapp_usecases.UpdateSecuritySettingsUseCase>(),
+        updateSecuritySettings:
+            serviceLocator<whatsapp_usecases.UpdateSecuritySettingsUseCase>(),
       ));
 
   // ================== Feature: Channel Management ==================
 
   // Repository (reuses TransactionPinServiceClient from Transaction PIN feature)
-  serviceLocator.registerLazySingleton<IChannelRepository>(
-      () => ChannelRepositoryImpl(
-          pinClient: serviceLocator<TransactionPinServiceClient>(),
-          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-          secureStorage: serviceLocator<SecureStorageService>(),
-        ));
+  serviceLocator
+      .registerLazySingleton<IChannelRepository>(() => ChannelRepositoryImpl(
+            pinClient: serviceLocator<TransactionPinServiceClient>(),
+            callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+            secureStorage: serviceLocator<SecureStorageService>(),
+          ));
 
   // Cubit
   serviceLocator.registerFactory(() => ChannelManagementCubit(
@@ -1569,55 +1630,59 @@ Future<void> init() async {
   // Repositories
   serviceLocator.registerLazySingleton<IAccountSummaryRepository>(
       () => AccountSummaryRepositoryImpl(
-        serviceLocator<accounts_grpc.AccountsServiceClient>(),
-        serviceLocator<family_accounts_grpc.FamilyAccountsServiceClient>(),
-        serviceLocator<GrpcCallOptionsHelper>(),
-      ));
+            serviceLocator<accounts_grpc.AccountsServiceClient>(),
+            serviceLocator<family_accounts_grpc.FamilyAccountsServiceClient>(),
+            serviceLocator<GrpcCallOptionsHelper>(),
+          ));
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => GetAccountSummariesUseCase(serviceLocator<IAccountSummaryRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetAccountSummariesUseCase(serviceLocator<IAccountSummaryRepository>()));
 
   // Blocs/Cubits
   // WebSocket Balance Update Service (register before cubit that depends on it)
   serviceLocator.registerLazySingleton(() => BalanceWebSocketService(
-    secureStorage: serviceLocator<SecureStorageService>(),
-    accountManager: serviceLocator<AccountManager>(),
-  ));
+        secureStorage: serviceLocator<SecureStorageService>(),
+        accountManager: serviceLocator<AccountManager>(),
+      ));
 
-  serviceLocator.registerFactory<AccountCardsSummaryCubit>(() => AccountCardsSummaryCubit(
-    serviceLocator<GetAccountSummariesUseCase>(),
-    accountManager: serviceLocator<AccountManager>(),
-    localeManager: serviceLocator<LocaleManager>(),
-    wsService: serviceLocator<BalanceWebSocketService>(),
-  ));
-  serviceLocator.registerLazySingleton(() => BalanceWebSocketCubit(serviceLocator<BalanceWebSocketService>()));
+  serviceLocator
+      .registerFactory<AccountCardsSummaryCubit>(() => AccountCardsSummaryCubit(
+            serviceLocator<GetAccountSummariesUseCase>(),
+            accountManager: serviceLocator<AccountManager>(),
+            localeManager: serviceLocator<LocaleManager>(),
+            wsService: serviceLocator<BalanceWebSocketService>(),
+          ));
+  serviceLocator.registerLazySingleton(
+      () => BalanceWebSocketCubit(serviceLocator<BalanceWebSocketService>()));
   serviceLocator.registerLazySingleton(() => BankingWebSocketService(
-    secureStorage: serviceLocator<SecureStorageService>(),
-    accountManager: serviceLocator<AccountManager>(),
-  ));
-
+        secureStorage: serviceLocator<SecureStorageService>(),
+        accountManager: serviceLocator<AccountManager>(),
+      ));
 
   // ================== Feature: Card Settings ==================
 
   // Repositories
   serviceLocator.registerLazySingleton<ICardSettingsRepository>(
       () => CardSettingsRepositoryImpl(
-        serviceLocator<account_grpc.AccountServiceClient>(),
-        serviceLocator<GrpcCallOptionsHelper>(),
-      ));
+            serviceLocator<account_grpc.AccountServiceClient>(),
+            serviceLocator<GrpcCallOptionsHelper>(),
+          ));
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => GetAccountDetailsUseCase(serviceLocator<ICardSettingsRepository>()));
-  serviceLocator.registerLazySingleton(() => UpdateSecuritySettingsUseCase(serviceLocator<ICardSettingsRepository>()));
-  serviceLocator.registerLazySingleton(() => UpdateAccountStatusUseCase(serviceLocator<ICardSettingsRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetAccountDetailsUseCase(serviceLocator<ICardSettingsRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      UpdateSecuritySettingsUseCase(serviceLocator<ICardSettingsRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      UpdateAccountStatusUseCase(serviceLocator<ICardSettingsRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => CardSettingsCubit(
-    serviceLocator<GetAccountDetailsUseCase>(),
-    serviceLocator<UpdateSecuritySettingsUseCase>(),
-    serviceLocator<UpdateAccountStatusUseCase>(),
-  ));
-
+        serviceLocator<GetAccountDetailsUseCase>(),
+        serviceLocator<UpdateSecuritySettingsUseCase>(),
+        serviceLocator<UpdateAccountStatusUseCase>(),
+      ));
 
   // ================== Feature: Account Actions ==================
   // Registered below near line ~2766 (requires account_grpc, accounts_grpc, SecureStorageService)
@@ -1633,11 +1698,16 @@ Future<void> init() async {
   );
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => GetRecipientsUseCase(serviceLocator<IRecipientRepository>()));
-  serviceLocator.registerLazySingleton(() => AddRecipientUseCase(serviceLocator<IRecipientRepository>()));
-  serviceLocator.registerLazySingleton(() => ToggleFavoriteUseCase(serviceLocator<IRecipientRepository>()));
-  serviceLocator.registerLazySingleton(() => UpdateAliasUseCase(serviceLocator<IRecipientRepository>()));
-  serviceLocator.registerLazySingleton(() => DeleteRecipientUseCase(serviceLocator<IRecipientRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetRecipientsUseCase(serviceLocator<IRecipientRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => AddRecipientUseCase(serviceLocator<IRecipientRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ToggleFavoriteUseCase(serviceLocator<IRecipientRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => UpdateAliasUseCase(serviceLocator<IRecipientRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => DeleteRecipientUseCase(serviceLocator<IRecipientRepository>()));
 
   // Unified user search (local saved recipients incl. alias → global users).
   serviceLocator.registerLazySingleton(() => UnifiedUserSearchRepository(
@@ -1649,35 +1719,35 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => RecipientCubit(
-    getRecipientsUseCase: serviceLocator<GetRecipientsUseCase>(),
-    addRecipientUseCase: serviceLocator<AddRecipientUseCase>(),
-    toggleFavoriteUseCase: serviceLocator<ToggleFavoriteUseCase>(),
-    updateAliasUseCase: serviceLocator<UpdateAliasUseCase>(),
-    deleteRecipientUseCase: serviceLocator<DeleteRecipientUseCase>(),
-    cacheManager: serviceLocator<SWRCacheManager>(),
-  ));
-
+        getRecipientsUseCase: serviceLocator<GetRecipientsUseCase>(),
+        addRecipientUseCase: serviceLocator<AddRecipientUseCase>(),
+        toggleFavoriteUseCase: serviceLocator<ToggleFavoriteUseCase>(),
+        updateAliasUseCase: serviceLocator<UpdateAliasUseCase>(),
+        deleteRecipientUseCase: serviceLocator<DeleteRecipientUseCase>(),
+        cacheManager: serviceLocator<SWRCacheManager>(),
+      ));
 
   // ================== Feature: Funds (Deposit) ==================
 
   // Repositories
-  serviceLocator.registerLazySingleton<IDepositRepository>(
-      () => DepositRepositoryImpl(
-        serviceLocator<DepositServiceClient>(),
-        serviceLocator<GrpcCallOptionsHelper>(),
-      ));
+  serviceLocator
+      .registerLazySingleton<IDepositRepository>(() => DepositRepositoryImpl(
+            serviceLocator<DepositServiceClient>(),
+            serviceLocator<GrpcCallOptionsHelper>(),
+          ));
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => InitiateDepositUseCase(serviceLocator<IDepositRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => InitiateDepositUseCase(serviceLocator<IDepositRepository>()));
 
   // Blocs/Cubits
   // Lazy singleton (not factory) so the deposit screen + its modal sheets all
   // resolve the SAME instance via serviceLocator — the modal CTAs run from a
   // context above the screen's BlocProvider, so context.read would miss it.
   serviceLocator.registerLazySingleton(() => DepositCubit(
-    serviceLocator<InitiateDepositUseCase>(),
-    bankingWebSocketService: serviceLocator<BankingWebSocketService>(),
-  ));
+        serviceLocator<InitiateDepositUseCase>(),
+        bankingWebSocketService: serviceLocator<BankingWebSocketService>(),
+      ));
 
   // Holds the in-flight deposit context across a KYC detour so a no-KYC user
   // who must verify mid-deposit returns and resumes the deposit. Singleton so
@@ -1712,7 +1782,8 @@ Future<void> init() async {
 
   // Blocs/Cubits - Using gRPC for better performance
   // Lazy singleton: shared state (linked accounts, credit score) persists across tab switches
-  serviceLocator.registerLazySingleton(() => OpenBankingCubit.withGrpc(serviceLocator<OpenBankingGrpcDataSource>()));
+  serviceLocator.registerLazySingleton(() =>
+      OpenBankingCubit.withGrpc(serviceLocator<OpenBankingGrpcDataSource>()));
 
   // Credit Score AI Insights Service
   serviceLocator.registerLazySingleton<CreditScoreAIService>(
@@ -1720,28 +1791,29 @@ Future<void> init() async {
       dio: serviceLocator<Dio>(),
       baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent,
       getAccessToken: () async {
-        final token = await serviceLocator<SecureStorageService>().getAccessToken();
+        final token =
+            await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
       },
     ),
   );
-
 
   // ================== Feature: Funds (Withdrawal) ==================
 
   // Repositories
   serviceLocator.registerLazySingleton<IWithdrawalRepository>(
       () => WithdrawalRepositoryImpl(
-        serviceLocator<WithdrawServiceClient>(),
-        serviceLocator<GrpcCallOptionsHelper>(),
-      ));
+            serviceLocator<WithdrawServiceClient>(),
+            serviceLocator<GrpcCallOptionsHelper>(),
+          ));
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => InitiateWithdrawalUseCase(serviceLocator<IWithdrawalRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => InitiateWithdrawalUseCase(serviceLocator<IWithdrawalRepository>()));
 
   // Blocs/Cubits
-   serviceLocator.registerFactory(() => WithdrawalCubit(serviceLocator<InitiateWithdrawalUseCase>()));
-
+  serviceLocator.registerFactory(
+      () => WithdrawalCubit(serviceLocator<InitiateWithdrawalUseCase>()));
 
   // ================== Feature: Funds (Transfer) ==================
 
@@ -1755,15 +1827,16 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => TransferCubit(
-    paymentsTransferDataSource: serviceLocator<IPaymentsTransferDataSource>(),
-    mutationQueue: serviceLocator<MutationQueue>(),
-  ));
+        paymentsTransferDataSource:
+            serviceLocator<IPaymentsTransferDataSource>(),
+        mutationQueue: serviceLocator<MutationQueue>(),
+      ));
 
   // Informational, READ-ONLY transfer success prediction (non-blocking).
   serviceLocator.registerFactory(() => TransferPredictionCubit(
-    paymentsTransferDataSource: serviceLocator<IPaymentsTransferDataSource>(),
-  ));
-
+        paymentsTransferDataSource:
+            serviceLocator<IPaymentsTransferDataSource>(),
+      ));
 
   // ================== Feature: Funds (Batch Transfer) ==================
 
@@ -1777,29 +1850,33 @@ Future<void> init() async {
 
   // Repositories
   serviceLocator.registerLazySingleton<IBatchTransferRepository>(
-    () => BatchTransferRepositoryImpl(remoteDataSource: serviceLocator<IBatchTransferRemoteDataSource>()),
+    () => BatchTransferRepositoryImpl(
+        remoteDataSource: serviceLocator<IBatchTransferRemoteDataSource>()),
   );
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => InitiateBatchTransferUseCase(serviceLocator<IBatchTransferRepository>()));
-  serviceLocator.registerLazySingleton(() => GetBatchTransfersUseCase(serviceLocator<IBatchTransferRepository>()));
-  serviceLocator.registerLazySingleton(() => GetBatchTransferDetailUseCase(serviceLocator<IBatchTransferRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      InitiateBatchTransferUseCase(serviceLocator<IBatchTransferRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetBatchTransfersUseCase(serviceLocator<IBatchTransferRepository>()));
+  serviceLocator.registerLazySingleton(() => GetBatchTransferDetailUseCase(
+      serviceLocator<IBatchTransferRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => BatchTransferCubit(
-    initiateBatchTransferUseCase: serviceLocator<InitiateBatchTransferUseCase>(),
-    getBatchTransfersUseCase: serviceLocator<GetBatchTransfersUseCase>(),
-    getBatchTransferDetailUseCase: serviceLocator<GetBatchTransferDetailUseCase>(),
-  ));
-
+        initiateBatchTransferUseCase:
+            serviceLocator<InitiateBatchTransferUseCase>(),
+        getBatchTransfersUseCase: serviceLocator<GetBatchTransfersUseCase>(),
+        getBatchTransferDetailUseCase:
+            serviceLocator<GetBatchTransferDetailUseCase>(),
+      ));
 
   // ================== Feature: Saved Batches (drafts) + Batch Receipts ==================
 
   // gRPC client (saved-batches RPCs live on the same PaymentsService —
   // see proto. Registered separately because the existing generated
   // PaymentsServiceClient does not yet include these methods.)
-  serviceLocator
-      .registerLazySingleton<saved_batches_grpc.SavedBatchesClient>(
+  serviceLocator.registerLazySingleton<saved_batches_grpc.SavedBatchesClient>(
     () => saved_batches_grpc.SavedBatchesClient(
       serviceLocator<ClientChannel>(instanceName: 'transferChannel'),
     ),
@@ -1821,18 +1898,17 @@ Future<void> init() async {
 
   // Cubits (factories — each screen instance gets its own)
   serviceLocator.registerFactory(
-    () => SavedBatchesCubit(
-        repository: serviceLocator<ISavedBatchRepository>()),
+    () =>
+        SavedBatchesCubit(repository: serviceLocator<ISavedBatchRepository>()),
   );
   serviceLocator.registerFactory(
     () => SavedBatchDetailCubit(
         repository: serviceLocator<ISavedBatchRepository>()),
   );
   serviceLocator.registerFactory(
-    () => BatchReceiptCubit(
-        repository: serviceLocator<ISavedBatchRepository>()),
+    () =>
+        BatchReceiptCubit(repository: serviceLocator<ISavedBatchRepository>()),
   );
-
 
   // ================== Feature: Recurring Transfers ==================
 
@@ -1846,14 +1922,14 @@ Future<void> init() async {
 
   // Repositories
   serviceLocator.registerLazySingleton<IRecurringTransferRepository>(
-    () => RecurringTransferRepositoryImpl(serviceLocator<IRecurringTransferDataSource>()),
+    () => RecurringTransferRepositoryImpl(
+        serviceLocator<IRecurringTransferDataSource>()),
   );
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => RecurringTransferCubit(
-    repository: serviceLocator<IRecurringTransferRepository>(),
-  ));
-
+        repository: serviceLocator<IRecurringTransferRepository>(),
+      ));
 
   // ================== Feature: AI Chat ==================
 
@@ -1891,9 +1967,11 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<IAiChatDataSource>(
     () => HttpAiChatDataSource(
       dio: Dio(BaseOptions(
-        baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent,
+        baseUrl:
+            dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent,
         connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 75), // Agent may take 55s (tool calls + OpenAI retries)
+        receiveTimeout: const Duration(
+            seconds: 75), // Agent may take 55s (tool calls + OpenAI retries)
         sendTimeout: const Duration(seconds: 30),
         headers: {'Content-Type': 'application/json'},
       )),
@@ -1909,8 +1987,10 @@ Future<void> init() async {
   );
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => ProcessChatUseCase(serviceLocator<IAiChatRepository>()));
-  serviceLocator.registerLazySingleton(() => GetAIChatHistoryUseCase(serviceLocator<IAiChatRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ProcessChatUseCase(serviceLocator<IAiChatRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetAIChatHistoryUseCase(serviceLocator<IAiChatRepository>()));
 
   // Blocs/Cubits
   // Register as Factory because it depends on another Cubit (Auth)
@@ -1919,7 +1999,6 @@ Future<void> init() async {
         getAIChatHistoryUseCase: serviceLocator<GetAIChatHistoryUseCase>(),
         chatSessionManager: serviceLocator<ChatSessionManager>(),
       ));
-
 
   // ================== Feature: Gift Cards ==================
 
@@ -1960,7 +2039,6 @@ Future<void> init() async {
     ),
   );
 
-
   // ================== Feature: Stocks ==================
 
   // Stocks gRPC Channel Manager - Uses Investment Gateway (see PORTS_CONFIG investment_gateway_grpc)
@@ -1994,25 +2072,29 @@ Future<void> init() async {
 
   // Repositories
   serviceLocator.registerLazySingleton<IStockRepository>(
-    () => StockRepositoryImpl(remoteDataSource: serviceLocator<IStockRemoteDataSource>()),
+    () => StockRepositoryImpl(
+        remoteDataSource: serviceLocator<IStockRemoteDataSource>()),
   );
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => GetStocksUseCase(serviceLocator<IStockRepository>()));
-  serviceLocator.registerLazySingleton(() => GetPortfolioUseCase(serviceLocator<IStockRepository>()));
-  serviceLocator.registerLazySingleton(() => PlaceOrderUseCase(serviceLocator<IStockRepository>()));
-  serviceLocator.registerLazySingleton(() => GetWatchlistsUseCase(serviceLocator<IStockRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetStocksUseCase(serviceLocator<IStockRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetPortfolioUseCase(serviceLocator<IStockRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => PlaceOrderUseCase(serviceLocator<IStockRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetWatchlistsUseCase(serviceLocator<IStockRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => StockCubit(
-    getStocksUseCase: serviceLocator<GetStocksUseCase>(),
-    getPortfolioUseCase: serviceLocator<GetPortfolioUseCase>(),
-    placeOrderUseCase: serviceLocator<PlaceOrderUseCase>(),
-    getWatchlistsUseCase: serviceLocator<GetWatchlistsUseCase>(),
-    repository: serviceLocator<IStockRepository>(),
-    cacheManager: serviceLocator<SWRCacheManager>(),
-  ));
-
+        getStocksUseCase: serviceLocator<GetStocksUseCase>(),
+        getPortfolioUseCase: serviceLocator<GetPortfolioUseCase>(),
+        placeOrderUseCase: serviceLocator<PlaceOrderUseCase>(),
+        getWatchlistsUseCase: serviceLocator<GetWatchlistsUseCase>(),
+        repository: serviceLocator<IStockRepository>(),
+        cacheManager: serviceLocator<SWRCacheManager>(),
+      ));
 
   // ================== Feature: Crypto ==================
 
@@ -2043,23 +2125,23 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => CryptoCubit(
-    repository: serviceLocator<CryptoRepository>(),
-  ));
+        repository: serviceLocator<CryptoRepository>(),
+      ));
 
   // Crypto runtime config cubit — single source of truth for min orders,
   // currency decimals, quick amounts, default spread, supported currencies.
   // Lazy singleton so any screen can `read<CryptoConfigCubit>()` and get the
   // same snapshot (PR5d.5).
-  serviceLocator.registerLazySingleton<CryptoConfigCubit>(() => CryptoConfigCubit(
-    client: serviceLocator<CryptoGrpcClient>(),
-  ));
+  serviceLocator
+      .registerLazySingleton<CryptoConfigCubit>(() => CryptoConfigCubit(
+            client: serviceLocator<CryptoGrpcClient>(),
+          ));
 
   // PR6 — Send-crypto cubit. Factory because each Send flow gets its own
   // state machine; screens dispose on pop.
   serviceLocator.registerFactory<CryptoWithdrawCubit>(() => CryptoWithdrawCubit(
-    client: serviceLocator<CryptoGrpcClient>(),
-  ));
-
+        client: serviceLocator<CryptoGrpcClient>(),
+      ));
 
   // ================== Feature: Multi-Asset (T-Bills, Mutual Funds, FX Quotes) ==================
 
@@ -2067,15 +2149,16 @@ Future<void> init() async {
     () => MultiAssetDataSourceImpl(
       client: serviceLocator<http.Client>(),
       getToken: () async {
-        final token = await serviceLocator<SecureStorageService>().getAccessToken();
+        final token =
+            await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
       },
     ),
   );
 
   serviceLocator.registerFactory(() => MultiAssetCubit(
-    dataSource: serviceLocator<IMultiAssetDataSource>(),
-  ));
+        dataSource: serviceLocator<IMultiAssetDataSource>(),
+      ));
 
   // ================== Feature: Crowdfund ==================
 
@@ -2113,7 +2196,8 @@ Future<void> init() async {
       dio: serviceLocator<Dio>(),
       baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent,
       getAccessToken: () async {
-        final token = await serviceLocator<SecureStorageService>().getAccessToken();
+        final token =
+            await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
       },
     ),
@@ -2125,7 +2209,8 @@ Future<void> init() async {
       dio: serviceLocator<Dio>(),
       baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent,
       getAccessToken: () async {
-        final token = await serviceLocator<SecureStorageService>().getAccessToken();
+        final token =
+            await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
       },
       getUserId: () => '', // User ID is extracted from auth token server-side
@@ -2138,7 +2223,8 @@ Future<void> init() async {
       dio: serviceLocator<Dio>(),
       baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent,
       getAccessToken: () async {
-        final token = await serviceLocator<SecureStorageService>().getAccessToken();
+        final token =
+            await serviceLocator<SecureStorageService>().getAccessToken();
         return token ?? '';
       },
       getUserId: () => '', // User ID is extracted from auth token server-side
@@ -2146,71 +2232,117 @@ Future<void> init() async {
   );
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => CreateCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => GetCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => ListCrowdfundsUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => SearchCrowdfundsUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => UpdateCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => DeleteCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => CancelCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => ListCrowdfundRefundsUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => MakeDonationUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => GetCrowdfundDonationsUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => GetUserDonationsUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => GenerateDonationReceiptUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => GetUserReceiptsUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => GetCrowdfundStatisticsUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => GetCrowdfundLeaderboardUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => GetMyCrowdfundsUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => WithdrawFromCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => GetCrowdfundWithdrawalFeeQuoteUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => GetCampaignWalletBalanceUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => ListCrowdfundCustomCategoriesUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => AddCrowdfundCustomCategoryUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => DeleteCrowdfundCustomCategoryUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => ConnectNotificationChannelUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => DisconnectNotificationChannelUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => GetNotificationChannelsUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => UpdateNotificationChannelUseCase(serviceLocator<CrowdfundRepository>()));
-  serviceLocator.registerLazySingleton(() => TestNotificationChannelUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => CreateCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ListCrowdfundsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => SearchCrowdfundsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => UpdateCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => DeleteCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => CancelCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ListCrowdfundRefundsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => MakeDonationUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetCrowdfundDonationsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetUserDonationsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GenerateDonationReceiptUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetUserReceiptsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetCrowdfundStatisticsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetCrowdfundLeaderboardUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetMyCrowdfundsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      WithdrawFromCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetCrowdfundWithdrawalFeeQuoteUseCase(
+          serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetCampaignWalletBalanceUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      ListCrowdfundCustomCategoriesUseCase(
+          serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      AddCrowdfundCustomCategoryUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      DeleteCrowdfundCustomCategoryUseCase(
+          serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      ConnectNotificationChannelUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      DisconnectNotificationChannelUseCase(
+          serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetNotificationChannelsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      UpdateNotificationChannelUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      TestNotificationChannelUseCase(serviceLocator<CrowdfundRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => LeaderboardCubit(
-    getCrowdfundLeaderboardUseCase: serviceLocator<GetCrowdfundLeaderboardUseCase>(),
-    cacheManager: serviceLocator<SWRCacheManager>(),
-  ));
+        getCrowdfundLeaderboardUseCase:
+            serviceLocator<GetCrowdfundLeaderboardUseCase>(),
+        cacheManager: serviceLocator<SWRCacheManager>(),
+      ));
 
   serviceLocator.registerFactory(() => CrowdfundCubit(
-    createCrowdfundUseCase: serviceLocator<CreateCrowdfundUseCase>(),
-    getCrowdfundUseCase: serviceLocator<GetCrowdfundUseCase>(),
-    listCrowdfundsUseCase: serviceLocator<ListCrowdfundsUseCase>(),
-    searchCrowdfundsUseCase: serviceLocator<SearchCrowdfundsUseCase>(),
-    updateCrowdfundUseCase: serviceLocator<UpdateCrowdfundUseCase>(),
-    deleteCrowdfundUseCase: serviceLocator<DeleteCrowdfundUseCase>(),
-    cancelCrowdfundUseCase: serviceLocator<CancelCrowdfundUseCase>(),
-    listCrowdfundRefundsUseCase: serviceLocator<ListCrowdfundRefundsUseCase>(),
-    makeDonationUseCase: serviceLocator<MakeDonationUseCase>(),
-    getCrowdfundDonationsUseCase: serviceLocator<GetCrowdfundDonationsUseCase>(),
-    getUserDonationsUseCase: serviceLocator<GetUserDonationsUseCase>(),
-    generateDonationReceiptUseCase: serviceLocator<GenerateDonationReceiptUseCase>(),
-    getUserReceiptsUseCase: serviceLocator<GetUserReceiptsUseCase>(),
-    getCrowdfundStatisticsUseCase: serviceLocator<GetCrowdfundStatisticsUseCase>(),
-    getMyCrowdfundsUseCase: serviceLocator<GetMyCrowdfundsUseCase>(),
-    withdrawFromCrowdfundUseCase: serviceLocator<WithdrawFromCrowdfundUseCase>(),
-    getCrowdfundWithdrawalFeeQuoteUseCase: serviceLocator<GetCrowdfundWithdrawalFeeQuoteUseCase>(),
-    getCampaignWalletBalanceUseCase: serviceLocator<GetCampaignWalletBalanceUseCase>(),
-    listCrowdfundCustomCategoriesUseCase: serviceLocator<ListCrowdfundCustomCategoriesUseCase>(),
-    addCrowdfundCustomCategoryUseCase: serviceLocator<AddCrowdfundCustomCategoryUseCase>(),
-    deleteCrowdfundCustomCategoryUseCase: serviceLocator<DeleteCrowdfundCustomCategoryUseCase>(),
-    connectNotificationChannelUseCase: serviceLocator<ConnectNotificationChannelUseCase>(),
-    disconnectNotificationChannelUseCase: serviceLocator<DisconnectNotificationChannelUseCase>(),
-    getNotificationChannelsUseCase: serviceLocator<GetNotificationChannelsUseCase>(),
-    updateNotificationChannelUseCase: serviceLocator<UpdateNotificationChannelUseCase>(),
-    testNotificationChannelUseCase: serviceLocator<TestNotificationChannelUseCase>(),
-    reportService: serviceLocator<CrowdfundReportService>(),
-    cacheManager: serviceLocator<SWRCacheManager>(),
-  ));
-
+        createCrowdfundUseCase: serviceLocator<CreateCrowdfundUseCase>(),
+        getCrowdfundUseCase: serviceLocator<GetCrowdfundUseCase>(),
+        listCrowdfundsUseCase: serviceLocator<ListCrowdfundsUseCase>(),
+        searchCrowdfundsUseCase: serviceLocator<SearchCrowdfundsUseCase>(),
+        updateCrowdfundUseCase: serviceLocator<UpdateCrowdfundUseCase>(),
+        deleteCrowdfundUseCase: serviceLocator<DeleteCrowdfundUseCase>(),
+        cancelCrowdfundUseCase: serviceLocator<CancelCrowdfundUseCase>(),
+        listCrowdfundRefundsUseCase:
+            serviceLocator<ListCrowdfundRefundsUseCase>(),
+        makeDonationUseCase: serviceLocator<MakeDonationUseCase>(),
+        getCrowdfundDonationsUseCase:
+            serviceLocator<GetCrowdfundDonationsUseCase>(),
+        getUserDonationsUseCase: serviceLocator<GetUserDonationsUseCase>(),
+        generateDonationReceiptUseCase:
+            serviceLocator<GenerateDonationReceiptUseCase>(),
+        getUserReceiptsUseCase: serviceLocator<GetUserReceiptsUseCase>(),
+        getCrowdfundStatisticsUseCase:
+            serviceLocator<GetCrowdfundStatisticsUseCase>(),
+        getMyCrowdfundsUseCase: serviceLocator<GetMyCrowdfundsUseCase>(),
+        withdrawFromCrowdfundUseCase:
+            serviceLocator<WithdrawFromCrowdfundUseCase>(),
+        getCrowdfundWithdrawalFeeQuoteUseCase:
+            serviceLocator<GetCrowdfundWithdrawalFeeQuoteUseCase>(),
+        getCampaignWalletBalanceUseCase:
+            serviceLocator<GetCampaignWalletBalanceUseCase>(),
+        listCrowdfundCustomCategoriesUseCase:
+            serviceLocator<ListCrowdfundCustomCategoriesUseCase>(),
+        addCrowdfundCustomCategoryUseCase:
+            serviceLocator<AddCrowdfundCustomCategoryUseCase>(),
+        deleteCrowdfundCustomCategoryUseCase:
+            serviceLocator<DeleteCrowdfundCustomCategoryUseCase>(),
+        connectNotificationChannelUseCase:
+            serviceLocator<ConnectNotificationChannelUseCase>(),
+        disconnectNotificationChannelUseCase:
+            serviceLocator<DisconnectNotificationChannelUseCase>(),
+        getNotificationChannelsUseCase:
+            serviceLocator<GetNotificationChannelsUseCase>(),
+        updateNotificationChannelUseCase:
+            serviceLocator<UpdateNotificationChannelUseCase>(),
+        testNotificationChannelUseCase:
+            serviceLocator<TestNotificationChannelUseCase>(),
+        reportService: serviceLocator<CrowdfundReportService>(),
+        cacheManager: serviceLocator<SWRCacheManager>(),
+      ));
 
   // ================== Feature: Portfolio ==================
 
@@ -2219,15 +2351,16 @@ Future<void> init() async {
     () => PortfolioRepositoryGrpcImpl(
       // PortfolioService is registered on the investment-gateway (50072), not
       // commerce — it aggregates the user's stocks + crypto + investments.
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'investmentGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'investmentGrpcClient'),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => PortfolioCubit(
-    repository: serviceLocator<PortfolioRepository>(),
-  ));
+        repository: serviceLocator<PortfolioRepository>(),
+      ));
 
   // ================== Feature: Invoice ==================
   // Invoice services now route through Banking Gateway (50077) instead of Commerce Gateway (50071)
@@ -2248,7 +2381,8 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<InvoiceRepository>(
     () => InvoiceRepositoryGrpcImpl(
       grpcClient: serviceLocator<GrpcClient>(instanceName: 'invoiceGrpcClient'),
-      currentUserId: '', // User ID is extracted from auth token in grpcClient.callOptions
+      currentUserId:
+          '', // User ID is extracted from auth token in grpcClient.callOptions
     ),
   );
 
@@ -2257,11 +2391,11 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => InvoiceCubit(
-    repository: serviceLocator<InvoiceRepository>(),
-    cacheManager: serviceLocator<SWRCacheManager>(),
-    mutationQueue: serviceLocator<MutationQueue>(),
-    // User ID is now set dynamically via setUserId() from auth state
-  ));
+        repository: serviceLocator<InvoiceRepository>(),
+        cacheManager: serviceLocator<SWRCacheManager>(),
+        mutationQueue: serviceLocator<MutationQueue>(),
+        // User ID is now set dynamically via setUserId() from auth state
+      ));
 
   // ================== Feature: Tagged Invoice ==================
 
@@ -2274,8 +2408,8 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => TaggedInvoiceCubit(
-    repository: serviceLocator<TaggedInvoiceRepository>(),
-  ));
+        repository: serviceLocator<TaggedInvoiceRepository>(),
+      ));
 
   // ================== Feature: Tag Pay ==================
 
@@ -2283,7 +2417,8 @@ Future<void> init() async {
   // User search is decoupled from TagPay - uses AuthServiceClient via core-gateway
   serviceLocator.registerLazySingleton<TagPayRepository>(
     () => TagPayRepositoryGrpcImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
       authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
@@ -2291,21 +2426,23 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => TagPayCubit(
-    repository: serviceLocator<TagPayRepository>(),
-    mutationQueue: serviceLocator<MutationQueue>(),
-  ));
+        repository: serviceLocator<TagPayRepository>(),
+        mutationQueue: serviceLocator<MutationQueue>(),
+      ));
 
   // ================== Feature: Escrow ==================
   // Routed via commerce-gateway (EscrowService). Buyer funds a deal into the
   // ESCROW_POOL; seller delivers; buyer validates → release to seller.
   serviceLocator.registerLazySingleton<EscrowRepository>(
     () => EscrowRepositoryGrpcImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
   serviceLocator.registerFactory(() => EscrowCubit(
         repository: serviceLocator<EscrowRepository>(),
-        grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+        grpcClient:
+            serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
       ));
 
   // ================== Financial Gateway GrpcClient (50071) ==================
@@ -2334,13 +2471,14 @@ Future<void> init() async {
 
   serviceLocator.registerLazySingleton<SplitBillRepository>(
     () => SplitBillRepositoryGrpcImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
   serviceLocator.registerFactory(() => SplitBillCubit(
-    repository: serviceLocator<SplitBillRepository>(),
-  ));
+        repository: serviceLocator<SplitBillRepository>(),
+      ));
 
   // Singleton count cubit backing the "Split Bills" quick-action badge. Counts
   // incoming active split bills where the current user is a pending co-payer.
@@ -2384,15 +2522,17 @@ Future<void> init() async {
   // ================== Feature: Wallet Transfer (own accounts) ==================
 
   serviceLocator.registerFactory(() => WalletTransferCubit(
-    paymentsTransferDataSource: serviceLocator<IPaymentsTransferDataSource>(),
-  ));
+        paymentsTransferDataSource:
+            serviceLocator<IPaymentsTransferDataSource>(),
+      ));
 
   // ================== Feature: QR Pay ==================
 
   // Data Sources
   serviceLocator.registerLazySingleton<QRPaymentRemoteDataSource>(
     () => QRPaymentRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient'),
     ),
   );
 
@@ -2412,9 +2552,9 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => QRPaymentCubit(
-    repository: serviceLocator<QRPaymentRepository>(),
-    wsService: serviceLocator<QrPayWebSocketService>(),
-  ));
+        repository: serviceLocator<QRPaymentRepository>(),
+        wsService: serviceLocator<QrPayWebSocketService>(),
+      ));
 
   // ================== Feature: IDPay ==================
 
@@ -2426,7 +2566,8 @@ Future<void> init() async {
   // unavailable" → all ID-pay screens broken in production.
   serviceLocator.registerLazySingleton<IDPayRemoteDataSource>(
     () => IDPayRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2447,9 +2588,9 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => IDPayCubit(
-    repository: serviceLocator<IDPayRepository>(),
-    wsService: serviceLocator<IDPayWebSocketService>(),
-  ));
+        repository: serviceLocator<IDPayRepository>(),
+        wsService: serviceLocator<IDPayWebSocketService>(),
+      ));
 
   // ================== Feature: Contactless Payment (NFC) ==================
   // Uses dedicated Contactless Payment Gateway (port 50075)
@@ -2477,9 +2618,9 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => ContactlessPaymentCubit(
-    repository: serviceLocator<ContactlessPaymentRepository>(),
-    wsService: serviceLocator<ContactlessWebSocketService>(),
-  ));
+        repository: serviceLocator<ContactlessPaymentRepository>(),
+        wsService: serviceLocator<ContactlessWebSocketService>(),
+      ));
 
   // ================== Feature: Airtime ==================
 
@@ -2490,13 +2631,15 @@ Future<void> init() async {
 
   serviceLocator.registerLazySingleton<AirtimeRemoteDataSource>(
     () => AirtimeRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
   serviceLocator.registerLazySingleton<AirtimeBeneficiaryRemoteDataSource>(
     () => AirtimeBeneficiaryRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2512,21 +2655,22 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => AirtimeCubit(
-    repository: serviceLocator<AirtimeRepository>(),
-    secureStorage: serviceLocator<SecureStorageService>(),
-    cacheManager: serviceLocator<SWRCacheManager>(),
-    accountManager: serviceLocator<AccountManager>(),
-  ));
+        repository: serviceLocator<AirtimeRepository>(),
+        secureStorage: serviceLocator<SecureStorageService>(),
+        cacheManager: serviceLocator<SWRCacheManager>(),
+        accountManager: serviceLocator<AccountManager>(),
+      ));
 
   serviceLocator.registerFactory(() => AirtimeReminderCubit(
-    repository: serviceLocator<AirtimeRepository>(),
-  ));
+        repository: serviceLocator<AirtimeRepository>(),
+      ));
 
   // ================== Feature: ePIN (Recharge card printing) ==================
 
   serviceLocator.registerLazySingleton<EPinRemoteDataSource>(
     () => EPinRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2545,7 +2689,8 @@ Future<void> init() async {
 
   serviceLocator.registerLazySingleton<BettingRemoteDataSource>(
     () => BettingRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2565,7 +2710,8 @@ Future<void> init() async {
   // campaigns are the only money moves — both PIN-gated.
   serviceLocator.registerLazySingleton<BulkSmsRemoteDataSource>(
     () => BulkSmsRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2583,20 +2729,22 @@ Future<void> init() async {
 
   serviceLocator.registerLazySingleton<IntlAirtimeRemoteDatasource>(
     () => IntlAirtimeRemoteDatasourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
   serviceLocator.registerFactory(() => IntlAirtimeCubit(
-    datasource: serviceLocator<IntlAirtimeRemoteDatasource>(),
-  ));
+        datasource: serviceLocator<IntlAirtimeRemoteDatasource>(),
+      ));
 
   // ================== Feature: Airtime to Cash ==================
 
   // Data Sources
   serviceLocator.registerLazySingleton<AirtimeToCashRemoteDataSource>(
     () => AirtimeToCashRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2609,17 +2757,18 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => AirtimeToCashCubit(
-    repository: serviceLocator<AirtimeToCashRepository>(),
-    secureStorage: serviceLocator<SecureStorageService>(),
-    accountManager: serviceLocator<AccountManager>(),
-  ));
+        repository: serviceLocator<AirtimeToCashRepository>(),
+        secureStorage: serviceLocator<SecureStorageService>(),
+        accountManager: serviceLocator<AccountManager>(),
+      ));
 
   // ================== Feature: Electricity Bill Payment ==================
 
   // Data Sources
   serviceLocator.registerLazySingleton<ElectricityBillRemoteDataSource>(
     () => ElectricityBillRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2632,28 +2781,29 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => ElectricityBillCubit(
-    repository: serviceLocator<ElectricityBillRepository>(),
-    cacheManager: serviceLocator<SWRCacheManager>(),
-  ));
+        repository: serviceLocator<ElectricityBillRepository>(),
+        cacheManager: serviceLocator<SWRCacheManager>(),
+      ));
 
   serviceLocator.registerFactory(() => BeneficiaryCubit(
-    repository: serviceLocator<ElectricityBillRepository>(),
-  ));
+        repository: serviceLocator<ElectricityBillRepository>(),
+      ));
 
   serviceLocator.registerFactory(() => AutoRechargeCubit(
-    repository: serviceLocator<ElectricityBillRepository>(),
-  ));
+        repository: serviceLocator<ElectricityBillRepository>(),
+      ));
 
   serviceLocator.registerFactory(() => ReminderCubit(
-    repository: serviceLocator<ElectricityBillRepository>(),
-  ));
+        repository: serviceLocator<ElectricityBillRepository>(),
+      ));
 
   // ================== Feature: Cable TV ==================
 
   // Data Sources
   serviceLocator.registerLazySingleton<CableTVRemoteDataSource>(
     () => CableTVRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2666,47 +2816,50 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => CableTVCubit(
-    repository: serviceLocator<CableTVRepository>(),
-  ));
+        repository: serviceLocator<CableTVRepository>(),
+      ));
 
   // Cable TV Beneficiaries / Auto-Recharge / Reminders
   serviceLocator.registerLazySingleton<CableTVBeneficiaryRemoteDataSource>(
     () => CableTVBeneficiaryRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
   serviceLocator.registerFactory(() => CableTVBeneficiaryCubit(
         datasource: serviceLocator<CableTVBeneficiaryRemoteDataSource>(),
-  ));
+      ));
   serviceLocator.registerFactory(() => CableTVAutoRechargeCubit(
         datasource: serviceLocator<CableTVBeneficiaryRemoteDataSource>(),
-  ));
+      ));
   serviceLocator.registerFactory(() => CableTVReminderCubit(
         datasource: serviceLocator<CableTVBeneficiaryRemoteDataSource>(),
-  ));
+      ));
 
   // Water Bill Beneficiaries / Auto-Recharge / Reminders
   serviceLocator.registerLazySingleton<WaterBeneficiaryRemoteDataSource>(
     () => WaterBeneficiaryRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
   serviceLocator.registerFactory(() => WaterBeneficiaryCubit(
         datasource: serviceLocator<WaterBeneficiaryRemoteDataSource>(),
-  ));
+      ));
   serviceLocator.registerFactory(() => WaterAutoRechargeCubit(
         datasource: serviceLocator<WaterBeneficiaryRemoteDataSource>(),
-  ));
+      ));
   serviceLocator.registerFactory(() => WaterReminderCubit(
         datasource: serviceLocator<WaterBeneficiaryRemoteDataSource>(),
-  ));
+      ));
 
   // ================== Feature: Education PINs ==================
 
   // Data Sources
   serviceLocator.registerLazySingleton<EducationRemoteDataSource>(
     () => EducationRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2719,8 +2872,8 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => EducationCubit(
-    repository: serviceLocator<EducationRepository>(),
-  ));
+        repository: serviceLocator<EducationRepository>(),
+      ));
 
   // Education beneficiaries + reminders — separate gRPC surface sharing
   // the commerce channel. Datasource is a lazy singleton so the two
@@ -2743,7 +2896,8 @@ Future<void> init() async {
   // Data Sources
   serviceLocator.registerLazySingleton<WaterBillRemoteDataSource>(
     () => WaterBillRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2756,15 +2910,16 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => WaterBillCubit(
-    repository: serviceLocator<WaterBillRepository>(),
-  ));
+        repository: serviceLocator<WaterBillRepository>(),
+      ));
 
   // ================== Feature: Internet Bill ==================
 
   // Data Sources
   serviceLocator.registerLazySingleton<InternetBillRemoteDataSource>(
     () => InternetBillRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2777,8 +2932,8 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => InternetBillCubit(
-    repository: serviceLocator<InternetBillRepository>(),
-  ));
+        repository: serviceLocator<InternetBillRepository>(),
+      ));
 
   // Internet-scoped beneficiaries + rollover (auto-recharge). Mirrors the
   // data-bundle DI shape — single shared datasource feeds two focused
@@ -2805,7 +2960,8 @@ Future<void> init() async {
   // Data Sources
   serviceLocator.registerLazySingleton<DataBundlesRemoteDataSource>(
     () => DataBundlesRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2818,11 +2974,11 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => DataBundlesCubit(
-    repository: serviceLocator<DataBundlesRepository>(),
-  ));
+        repository: serviceLocator<DataBundlesRepository>(),
+      ));
   serviceLocator.registerFactory(() => AutoRenewCubit(
-    repository: serviceLocator<DataBundlesRepository>(),
-  ));
+        repository: serviceLocator<DataBundlesRepository>(),
+      ));
 
   // Data-scoped beneficiaries / rollover (auto-recharge) / reminders.
   // Mirrors the airtime feature DI shape — single shared datasource feeds
@@ -2861,7 +3017,8 @@ Future<void> init() async {
   // Data Sources
   serviceLocator.registerLazySingleton<SubscriptionRemoteDataSource>(
     () => SubscriptionRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2874,92 +3031,96 @@ Future<void> init() async {
 
   // Use Cases
   serviceLocator.registerLazySingleton(
-    () => GetActiveSubscriptionsUsecase(serviceLocator<ISubscriptionRepository>()),
+    () => GetActiveSubscriptionsUsecase(
+        serviceLocator<ISubscriptionRepository>()),
   );
   serviceLocator.registerLazySingleton(
-    () => GetSubscriptionSummaryUsecase(serviceLocator<ISubscriptionRepository>()),
+    () => GetSubscriptionSummaryUsecase(
+        serviceLocator<ISubscriptionRepository>()),
   );
   serviceLocator.registerLazySingleton(
-    () => GetSubscriptionSpendingUsecase(serviceLocator<ISubscriptionRepository>()),
+    () => GetSubscriptionSpendingUsecase(
+        serviceLocator<ISubscriptionRepository>()),
   );
 
   // Cubits
   serviceLocator.registerFactory(() => SubscriptionTrackerCubit(
-    getActiveSubscriptions: serviceLocator<GetActiveSubscriptionsUsecase>(),
-    getSubscriptionSummary: serviceLocator<GetSubscriptionSummaryUsecase>(),
-    getSubscriptionSpending: serviceLocator<GetSubscriptionSpendingUsecase>(),
-  ));
+        getActiveSubscriptions: serviceLocator<GetActiveSubscriptionsUsecase>(),
+        getSubscriptionSummary: serviceLocator<GetSubscriptionSummaryUsecase>(),
+        getSubscriptionSpending:
+            serviceLocator<GetSubscriptionSpendingUsecase>(),
+      ));
 
   // ================== Screens / Presentation ==================
   serviceLocator
-      ..registerFactory(() => DashboardScreen())
-      ..registerFactory(() => NewCardScreen())
-      ..registerFactory(() => CameraScanScreen())
-      ..registerFactory(() => UploadImageScreen())
-      ..registerFactory(() => SelectRecipientScreen())
-      ..registerFactory(() => AddRecipientScreen())
-      ..registerFactory(() => InvoiceListScreen())
-      ..registerFactory(() => const CreateInvoiceCarousel())
-      ..registerFactory(() => PayInvoiceScreen())
-      ..registerFactoryParam<InvoiceDetailsScreen, String, void>(
-          (invoiceId, _) => InvoiceDetailsScreen(invoiceId: invoiceId))
-      ..registerFactoryParam<InputPinScreen, User, void>(
-          (recipient, _) => InputPinScreen(recipient: recipient))
-
-      ..registerFactory(() => LanguagesScreen())
-      ..registerFactory(() => MyAccountScreen())
-      ..registerFactory(() => SetFingerPrintScreen())
-      ..registerFactory(() => ChangePinScreen())
-      ..registerFactory(() => SignUpScreen())
-      ..registerFactory(() => EmailSignInScreen())
-      ..registerFactory(() => PasscodeSignInScreen())
-      ..registerFactory(() => OTPVerificationScreen())
-      ..registerFactory(() => EnableBiometricAccessScreen())
-      ..registerFactory(() => PasswordRecoveryScreen())
-      ..registerFactory(() => CreateNewPasswordScreen())
-      ..registerFactory(() => SelectCountryScreen())
-      ..registerFactory(() => FacialBiometricVerificationScreen())
-      ..registerFactory(() => FaceScanScreen())
-      ..registerFactory(() => FacialLoginScreen())
-      ..registerFactory(() => FlightsScreen())
-      ..registerFactory(() => StocksScreen())
-      ..registerFactory(() => CBCurrencyExchangeScreen())
-      ..registerFactory(() => CryptoFeature.CryptoScreen())
-      ..registerFactoryParam<CryptoDetailScreen, Crypto, void>(
-          (crypto, _) => CryptoDetailScreen(crypto: crypto))
-      ..registerFactoryParam<CryptoChartDetailsScreen, Crypto, void>(
-          (crypto, _) => CryptoChartDetailsScreen(crypto: crypto))
-      ..registerFactoryParam<CurrencyDepositScreen, String, void>(
-          (currencyCode, _) => CurrencyDepositScreen(currencyCode: currencyCode))
-      ..registerFactory(() => GiftCardsScreen())
-      ..registerFactory(() => MyGiftCardsScreen())
-      ..registerFactoryParam<StockDetailsScreen, Stock, String?>(
-          (stock, investCollectionId) => StockDetailsScreen(
-                stock: stock,
-                investCollectionId: investCollectionId,
-              ))
-      ..registerFactory(() => StockTradePaymentScreen())
-      ..registerFactory(() => StockTradeReviewScreen())
-      ..registerFactory(() => StockTradeReceiptScreen())
-      ..registerFactoryParam<ReviewFundsTransferScreen, core_recipient.Recipient, void>(
-          (recipient, _) => ReviewFundsTransferScreen(recipient: recipient))
-      ..registerFactoryParam<InitiateSendFundsScreen, RecipientModel, void>(
-          (recipient, _) => InitiateSendFundsScreen(recipient:  recipient))
-      ..registerFactoryParam<TransferProofScreen, Map<String, dynamic>, void>(
-          (transferDetails, _) => TransferProofScreen(transferDetails: transferDetails))
-      ..registerFactoryParam<SendFundReceiptScreen, Transaction, void>(
-          (transaction, _) => SendFundReceiptScreen(transaction: transaction))
-      ..registerFactory(() => ChatbotTransferScreen())
-      ..registerFactory(() => TransferProcessingScreen())
-      ..registerFactoryParam<DepositFundsScreen, Map<String, dynamic>, void>(
-        (selectedCard, _) => DepositFundsScreen(selectedCard: selectedCard),
-      )
-      ..registerFactoryParam<WithdrawFundsScreen, Map<String, dynamic>, void>(
-        (selectedCard, _) => WithdrawFundsScreen(selectedCard: selectedCard),
-      )
-      ..registerFactoryParam<StockChartDetailsScreen, Stock, void>(
-          (stock, _) => StockChartDetailsScreen(stock: stock))
-      ..registerFactory(() => InvestmentsScreen());
+    ..registerFactory(() => DashboardScreen())
+    ..registerFactory(() => NewCardScreen())
+    ..registerFactory(() => CameraScanScreen())
+    ..registerFactory(() => UploadImageScreen())
+    ..registerFactory(() => SelectRecipientScreen())
+    ..registerFactory(() => AddRecipientScreen())
+    ..registerFactory(() => InvoiceListScreen())
+    ..registerFactory(() => const CreateInvoiceCarousel())
+    ..registerFactory(() => PayInvoiceScreen())
+    ..registerFactoryParam<InvoiceDetailsScreen, String, void>(
+        (invoiceId, _) => InvoiceDetailsScreen(invoiceId: invoiceId))
+    ..registerFactoryParam<InputPinScreen, User, void>(
+        (recipient, _) => InputPinScreen(recipient: recipient))
+    ..registerFactory(() => LanguagesScreen())
+    ..registerFactory(() => MyAccountScreen())
+    ..registerFactory(() => SetFingerPrintScreen())
+    ..registerFactory(() => ChangePinScreen())
+    ..registerFactory(() => SignUpScreen())
+    ..registerFactory(() => EmailSignInScreen())
+    ..registerFactory(() => PasscodeSignInScreen())
+    ..registerFactory(() => OTPVerificationScreen())
+    ..registerFactory(() => EnableBiometricAccessScreen())
+    ..registerFactory(() => PasswordRecoveryScreen())
+    ..registerFactory(() => CreateNewPasswordScreen())
+    ..registerFactory(() => SelectCountryScreen())
+    ..registerFactory(() => FacialBiometricVerificationScreen())
+    ..registerFactory(() => FaceScanScreen())
+    ..registerFactory(() => FacialLoginScreen())
+    ..registerFactory(() => FlightsScreen())
+    ..registerFactory(() => StocksScreen())
+    ..registerFactory(() => CBCurrencyExchangeScreen())
+    ..registerFactory(() => CryptoFeature.CryptoScreen())
+    ..registerFactoryParam<CryptoDetailScreen, Crypto, void>(
+        (crypto, _) => CryptoDetailScreen(crypto: crypto))
+    ..registerFactoryParam<CryptoChartDetailsScreen, Crypto, void>(
+        (crypto, _) => CryptoChartDetailsScreen(crypto: crypto))
+    ..registerFactoryParam<CurrencyDepositScreen, String, void>(
+        (currencyCode, _) => CurrencyDepositScreen(currencyCode: currencyCode))
+    ..registerFactory(() => GiftCardsScreen())
+    ..registerFactory(() => MyGiftCardsScreen())
+    ..registerFactoryParam<StockDetailsScreen, Stock, String?>(
+        (stock, investCollectionId) => StockDetailsScreen(
+              stock: stock,
+              investCollectionId: investCollectionId,
+            ))
+    ..registerFactory(() => StockTradePaymentScreen())
+    ..registerFactory(() => StockTradeReviewScreen())
+    ..registerFactory(() => StockTradeReceiptScreen())
+    ..registerFactoryParam<ReviewFundsTransferScreen, core_recipient.Recipient,
+        void>((recipient, _) => ReviewFundsTransferScreen(recipient: recipient))
+    ..registerFactoryParam<InitiateSendFundsScreen, RecipientModel, void>(
+        (recipient, _) => InitiateSendFundsScreen(recipient: recipient))
+    ..registerFactoryParam<TransferProofScreen, Map<String, dynamic>, void>(
+        (transferDetails, _) =>
+            TransferProofScreen(transferDetails: transferDetails))
+    ..registerFactoryParam<SendFundReceiptScreen, Transaction, void>(
+        (transaction, _) => SendFundReceiptScreen(transaction: transaction))
+    ..registerFactory(() => ChatbotTransferScreen())
+    ..registerFactory(() => TransferProcessingScreen())
+    ..registerFactoryParam<DepositFundsScreen, Map<String, dynamic>, void>(
+      (selectedCard, _) => DepositFundsScreen(selectedCard: selectedCard),
+    )
+    ..registerFactoryParam<WithdrawFundsScreen, Map<String, dynamic>, void>(
+      (selectedCard, _) => WithdrawFundsScreen(selectedCard: selectedCard),
+    )
+    ..registerFactoryParam<StockChartDetailsScreen, Stock, void>(
+        (stock, _) => StockChartDetailsScreen(stock: stock))
+    ..registerFactory(() => InvestmentsScreen());
 
   // ================== Screens / Presentation - Group Account ==================
   serviceLocator.registerFactory(() => GroupAccountListScreen());
@@ -3028,8 +3189,10 @@ Future<void> init() async {
   // Repositories - Using gRPC implementation for backend integration (Financial Gateway)
   serviceLocator.registerLazySingleton<PayInvoiceRepository>(
     () => PayInvoiceRepositoryGrpcImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient'),
-      currentUserId: '', // User ID is extracted from auth token in grpcClient.callOptions
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient'),
+      currentUserId:
+          '', // User ID is extracted from auth token in grpcClient.callOptions
       invoiceRepository: serviceLocator<InvoiceRepository>(),
     ),
   );
@@ -3044,7 +3207,8 @@ Future<void> init() async {
   // Data Sources - Using Remote (gRPC) implementation
   serviceLocator.registerLazySingleton<AiScanRemoteDataSource>(
     () => AiScanRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
       httpClient: serviceLocator<http.Client>(),
       secureStorage: serviceLocator<SecureStorageService>(),
       // Host-only base: the bank-scan OCR route is `/scan/bank-details` at the
@@ -3074,38 +3238,49 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<AiScanRepository>(
     () => AiScanRepositoryImpl(
       remoteDataSource: serviceLocator<AiScanRemoteDataSource>(),
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
       secureStorage: serviceLocator<SecureStorageService>(),
     ),
   );
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => StartScanSessionUseCase(serviceLocator<AiScanRepository>()));
-  serviceLocator.registerLazySingleton(() => ProcessScanUseCase(serviceLocator<AiScanRepository>()));
-  serviceLocator.registerLazySingleton(() => AiChatUseCase(serviceLocator<AiScanRepository>()));
-  serviceLocator.registerLazySingleton(() => GeneratePaymentUseCase(serviceLocator<AiScanRepository>()));
-  serviceLocator.registerLazySingleton(() => ProcessPaymentUseCase(serviceLocator<AiScanRepository>()));
-  serviceLocator.registerLazySingleton(() => GetScanHistoryUseCase(serviceLocator<AiScanRepository>()));
-  serviceLocator.registerLazySingleton(() => ScanBankDetailsUseCase(serviceLocator<AiScanRepository>()));
-  serviceLocator.registerLazySingleton(() => ProcessBankDetailsPaymentUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => StartScanSessionUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ProcessScanUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => AiChatUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GeneratePaymentUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ProcessPaymentUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetScanHistoryUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ScanBankDetailsUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      ProcessBankDetailsPaymentUseCase(serviceLocator<AiScanRepository>()));
 
   // Cubit
   serviceLocator.registerFactory(() => AiScanCubit(
-    startScanSessionUseCase: serviceLocator<StartScanSessionUseCase>(),
-    processScanUseCase: serviceLocator<ProcessScanUseCase>(),
-    aiChatUseCase: serviceLocator<AiChatUseCase>(),
-    generatePaymentUseCase: serviceLocator<GeneratePaymentUseCase>(),
-    processPaymentUseCase: serviceLocator<ProcessPaymentUseCase>(),
-    getScanHistoryUseCase: serviceLocator<GetScanHistoryUseCase>(),
-    scanBankDetailsUseCase: serviceLocator<ScanBankDetailsUseCase>(),
-    processBankDetailsPaymentUseCase: serviceLocator<ProcessBankDetailsPaymentUseCase>(),
-    // Unified intelligent-scan dependencies.
-    aiScanRepository: serviceLocator<AiScanRepository>(),
-    qrPaymentRepository: serviceLocator<QRPaymentRepository>(),
-    payInvoiceRepository: serviceLocator<PayInvoiceRepository>(),
-    paymentsTransferDataSource: serviceLocator<IPaymentsTransferDataSource>(),
-    profileRepository: serviceLocator<IProfileRepository>(),
-  ));
+        startScanSessionUseCase: serviceLocator<StartScanSessionUseCase>(),
+        processScanUseCase: serviceLocator<ProcessScanUseCase>(),
+        aiChatUseCase: serviceLocator<AiChatUseCase>(),
+        generatePaymentUseCase: serviceLocator<GeneratePaymentUseCase>(),
+        processPaymentUseCase: serviceLocator<ProcessPaymentUseCase>(),
+        getScanHistoryUseCase: serviceLocator<GetScanHistoryUseCase>(),
+        scanBankDetailsUseCase: serviceLocator<ScanBankDetailsUseCase>(),
+        processBankDetailsPaymentUseCase:
+            serviceLocator<ProcessBankDetailsPaymentUseCase>(),
+        // Unified intelligent-scan dependencies.
+        aiScanRepository: serviceLocator<AiScanRepository>(),
+        qrPaymentRepository: serviceLocator<QRPaymentRepository>(),
+        payInvoiceRepository: serviceLocator<PayInvoiceRepository>(),
+        paymentsTransferDataSource:
+            serviceLocator<IPaymentsTransferDataSource>(),
+        profileRepository: serviceLocator<IProfileRepository>(),
+      ));
 
   // ================== Feature: Group Account ==================
 
@@ -3129,108 +3304,154 @@ Future<void> init() async {
 
   // Repositories
   serviceLocator.registerLazySingleton<GroupAccountRepository>(
-    () => GroupAccountRepositoryImpl(remoteDataSource: serviceLocator<GroupAccountRemoteDataSource>()),
+    () => GroupAccountRepositoryImpl(
+        remoteDataSource: serviceLocator<GroupAccountRemoteDataSource>()),
   );
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => GetUserGroups(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetGroupById(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => CreateGroup(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => UpdateGroup(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => DeleteGroup(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetGroupMembers(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => AddMemberToGroup(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => UpdateMemberRole(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => RemoveMemberFromGroup(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => SearchUsers(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetGroupContributions(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetContributionById(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => CreateContribution(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => UpdateContribution(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => DeleteContribution(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => AddMembersToContribution(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetContributionMembers(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetContributionPayments(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => MakeContributionPayment(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => UpdatePaymentStatus(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GenerateReceipt(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetUserReceipts(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GenerateContributionTranscript(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetGroupStatistics(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetUserContributionStats(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetGroupActivityLogs(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetContributionActivityLogs(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => RemoveMemberFromContribution(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => RemoveContributionShadow(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => PreviewMemberExit(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetUserGroups(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetGroupById(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => CreateGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => UpdateGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => DeleteGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetGroupMembers(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => AddMemberToGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => UpdateMemberRole(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => RemoveMemberFromGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => SearchUsers(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetGroupContributions(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetContributionById(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => CreateContribution(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => UpdateContribution(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => DeleteContribution(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => AddMembersToContribution(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetContributionMembers(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetContributionPayments(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => MakeContributionPayment(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => UpdatePaymentStatus(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GenerateReceipt(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetUserReceipts(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GenerateContributionTranscript(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetGroupStatistics(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetUserContributionStats(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetGroupActivityLogs(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetContributionActivityLogs(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      RemoveMemberFromContribution(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => RemoveContributionShadow(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => PreviewMemberExit(serviceLocator<GroupAccountRepository>()));
   // Cycle history use cases.
-  serviceLocator.registerLazySingleton(() => ListContributionCycles(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetContributionCycleDetails(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => RestartContribution(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ListContributionCycles(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetContributionCycleDetails(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => RestartContribution(serviceLocator<GroupAccountRepository>()));
   // Invite-first membership use cases (slice 5).
-  serviceLocator.registerLazySingleton(() => InviteToGroup(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => RespondToGroupInvite(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => CancelGroupInvite(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => ListMyInvitations(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => ListGroupInvitations(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => ListPublicGroups(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetPublicGroup(serviceLocator<GroupAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => JoinPublicGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => InviteToGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => RespondToGroupInvite(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => CancelGroupInvite(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ListMyInvitations(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ListGroupInvitations(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ListPublicGroups(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetPublicGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => JoinPublicGroup(serviceLocator<GroupAccountRepository>()));
 
   // Blocs/Cubits - Use singleton to preserve user ID across screens
   serviceLocator.registerLazySingleton(() => GroupAccountCubit(
-    getUserGroups: serviceLocator<GetUserGroups>(),
-    getGroupById: serviceLocator<GetGroupById>(),
-    createGroup: serviceLocator<CreateGroup>(),
-    updateGroup: serviceLocator<UpdateGroup>(),
-    deleteGroup: serviceLocator<DeleteGroup>(),
-    getGroupMembers: serviceLocator<GetGroupMembers>(),
-    addMemberToGroup: serviceLocator<AddMemberToGroup>(),
-    updateMemberRole: serviceLocator<UpdateMemberRole>(),
-    removeMemberFromGroup: serviceLocator<RemoveMemberFromGroup>(),
-    searchUsers: serviceLocator<SearchUsers>(),
-    getGroupContributions: serviceLocator<GetGroupContributions>(),
-    getContributionById: serviceLocator<GetContributionById>(),
-    createContribution: serviceLocator<CreateContribution>(),
-    updateContribution: serviceLocator<UpdateContribution>(),
-    deleteContribution: serviceLocator<DeleteContribution>(),
-    addMembersToContribution: serviceLocator<AddMembersToContribution>(),
-    getContributionMembers: serviceLocator<GetContributionMembers>(),
-    getContributionPayments: serviceLocator<GetContributionPayments>(),
-    makeContributionPayment: serviceLocator<MakeContributionPayment>(),
-    updatePaymentStatus: serviceLocator<UpdatePaymentStatus>(),
-    generateReceipt: serviceLocator<GenerateReceipt>(),
-    getUserReceipts: serviceLocator<GetUserReceipts>(),
-    generateContributionTranscript: serviceLocator<GenerateContributionTranscript>(),
-    getGroupStatistics: serviceLocator<GetGroupStatistics>(),
-    getUserContributionStats: serviceLocator<GetUserContributionStats>(),
-    getGroupActivityLogs: serviceLocator<GetGroupActivityLogs>(),
-    getContributionActivityLogs: serviceLocator<GetContributionActivityLogs>(),
-    removeMemberFromContribution: serviceLocator<RemoveMemberFromContribution>(),
-    removeContributionShadow: serviceLocator<RemoveContributionShadow>(),
-    previewMemberExit: serviceLocator<PreviewMemberExit>(),
-    listContributionCycles: serviceLocator<ListContributionCycles>(),
-    getContributionCycleDetails: serviceLocator<GetContributionCycleDetails>(),
-    restartContribution: serviceLocator<RestartContribution>(),
-    inviteToGroup: serviceLocator<InviteToGroup>(),
-    respondToGroupInvite: serviceLocator<RespondToGroupInvite>(),
-    cancelGroupInvite: serviceLocator<CancelGroupInvite>(),
-    listMyInvitations: serviceLocator<ListMyInvitations>(),
-    listGroupInvitations: serviceLocator<ListGroupInvitations>(),
-    listPublicGroups: serviceLocator<ListPublicGroups>(),
-    getPublicGroup: serviceLocator<GetPublicGroup>(),
-    joinPublicGroup: serviceLocator<JoinPublicGroup>(),
-    reportService: serviceLocator<GroupAccountReportService>(),
-  ));
+        getUserGroups: serviceLocator<GetUserGroups>(),
+        getGroupById: serviceLocator<GetGroupById>(),
+        createGroup: serviceLocator<CreateGroup>(),
+        updateGroup: serviceLocator<UpdateGroup>(),
+        deleteGroup: serviceLocator<DeleteGroup>(),
+        getGroupMembers: serviceLocator<GetGroupMembers>(),
+        addMemberToGroup: serviceLocator<AddMemberToGroup>(),
+        updateMemberRole: serviceLocator<UpdateMemberRole>(),
+        removeMemberFromGroup: serviceLocator<RemoveMemberFromGroup>(),
+        searchUsers: serviceLocator<SearchUsers>(),
+        getGroupContributions: serviceLocator<GetGroupContributions>(),
+        getContributionById: serviceLocator<GetContributionById>(),
+        createContribution: serviceLocator<CreateContribution>(),
+        updateContribution: serviceLocator<UpdateContribution>(),
+        deleteContribution: serviceLocator<DeleteContribution>(),
+        addMembersToContribution: serviceLocator<AddMembersToContribution>(),
+        getContributionMembers: serviceLocator<GetContributionMembers>(),
+        getContributionPayments: serviceLocator<GetContributionPayments>(),
+        makeContributionPayment: serviceLocator<MakeContributionPayment>(),
+        updatePaymentStatus: serviceLocator<UpdatePaymentStatus>(),
+        generateReceipt: serviceLocator<GenerateReceipt>(),
+        getUserReceipts: serviceLocator<GetUserReceipts>(),
+        generateContributionTranscript:
+            serviceLocator<GenerateContributionTranscript>(),
+        getGroupStatistics: serviceLocator<GetGroupStatistics>(),
+        getUserContributionStats: serviceLocator<GetUserContributionStats>(),
+        getGroupActivityLogs: serviceLocator<GetGroupActivityLogs>(),
+        getContributionActivityLogs:
+            serviceLocator<GetContributionActivityLogs>(),
+        removeMemberFromContribution:
+            serviceLocator<RemoveMemberFromContribution>(),
+        removeContributionShadow: serviceLocator<RemoveContributionShadow>(),
+        previewMemberExit: serviceLocator<PreviewMemberExit>(),
+        listContributionCycles: serviceLocator<ListContributionCycles>(),
+        getContributionCycleDetails:
+            serviceLocator<GetContributionCycleDetails>(),
+        restartContribution: serviceLocator<RestartContribution>(),
+        inviteToGroup: serviceLocator<InviteToGroup>(),
+        respondToGroupInvite: serviceLocator<RespondToGroupInvite>(),
+        cancelGroupInvite: serviceLocator<CancelGroupInvite>(),
+        listMyInvitations: serviceLocator<ListMyInvitations>(),
+        listGroupInvitations: serviceLocator<ListGroupInvitations>(),
+        listPublicGroups: serviceLocator<ListPublicGroups>(),
+        getPublicGroup: serviceLocator<GetPublicGroup>(),
+        joinPublicGroup: serviceLocator<JoinPublicGroup>(),
+        reportService: serviceLocator<GroupAccountReportService>(),
+      ));
 
   // DiscoveryCubit - Dashboard discovery carousel
   serviceLocator.registerFactory(() => DiscoveryCubit(
-    listCrowdfunds: serviceLocator<ListCrowdfundsUseCase>(),
-    listPublicGroups: serviceLocator<ListPublicGroups>(),
-    getPublicGroup: serviceLocator<GetPublicGroup>(),
-    joinPublicGroup: serviceLocator<JoinPublicGroup>(),
-    cacheManager: serviceLocator<SWRCacheManager>(),
-  ));
+        listCrowdfunds: serviceLocator<ListCrowdfundsUseCase>(),
+        listPublicGroups: serviceLocator<ListPublicGroups>(),
+        getPublicGroup: serviceLocator<GetPublicGroup>(),
+        joinPublicGroup: serviceLocator<JoinPublicGroup>(),
+        cacheManager: serviceLocator<SWRCacheManager>(),
+      ));
 
   // ================== Feature: Insurance ==================
 
@@ -3249,7 +3470,8 @@ Future<void> init() async {
   // Data Sources - Using gRPC via Products Gateway
   serviceLocator.registerLazySingleton<InsuranceRemoteDataSource>(
     () => InsuranceRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(instanceName: 'insuranceGrpcClient'),
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'insuranceGrpcClient'),
     ),
   );
 
@@ -3288,7 +3510,6 @@ Future<void> init() async {
     () => PurchaseHistoryCubit(serviceLocator<InsuranceRepository>()),
   );
 
-
   // ================== Feature: Contact Sync ==================
 
   // Services
@@ -3302,10 +3523,14 @@ Future<void> init() async {
   );
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => SyncContactsUseCase(serviceLocator<ContactSyncRepository>()));
-  serviceLocator.registerLazySingleton(() => GetSyncedContactsUseCase(serviceLocator<ContactSyncRepository>()));
-  serviceLocator.registerLazySingleton(() => FindLazerVaultUsersUseCase(serviceLocator<ContactSyncRepository>()));
-  serviceLocator.registerLazySingleton(() => ConvertContactToRecipientUseCase(serviceLocator<ContactSyncRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => SyncContactsUseCase(serviceLocator<ContactSyncRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetSyncedContactsUseCase(serviceLocator<ContactSyncRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      FindLazerVaultUsersUseCase(serviceLocator<ContactSyncRepository>()));
+  serviceLocator.registerLazySingleton(() => ConvertContactToRecipientUseCase(
+      serviceLocator<ContactSyncRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory<ContactSyncCubit>(
@@ -3313,7 +3538,8 @@ Future<void> init() async {
       syncContactsUseCase: serviceLocator<SyncContactsUseCase>(),
       getSyncedContactsUseCase: serviceLocator<GetSyncedContactsUseCase>(),
       findLazerVaultUsersUseCase: serviceLocator<FindLazerVaultUsersUseCase>(),
-      convertContactToRecipientUseCase: serviceLocator<ConvertContactToRecipientUseCase>(),
+      convertContactToRecipientUseCase:
+          serviceLocator<ConvertContactToRecipientUseCase>(),
       repository: serviceLocator<ContactSyncRepository>(),
       contactService: serviceLocator<ContactService>(),
     ),
@@ -3330,28 +3556,37 @@ Future<void> init() async {
   );
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => CreateAutoSaveRuleUseCase(serviceLocator<IAutoSaveRepository>()));
-  serviceLocator.registerLazySingleton(() => GetAutoSaveRulesUseCase(serviceLocator<IAutoSaveRepository>()));
-  serviceLocator.registerLazySingleton(() => UpdateAutoSaveRuleUseCase(serviceLocator<IAutoSaveRepository>()));
-  serviceLocator.registerLazySingleton(() => ToggleAutoSaveRuleUseCase(serviceLocator<IAutoSaveRepository>()));
-  serviceLocator.registerLazySingleton(() => DeleteAutoSaveRuleUseCase(serviceLocator<IAutoSaveRepository>()));
-  serviceLocator.registerLazySingleton(() => GetAutoSaveTransactionsUseCase(serviceLocator<IAutoSaveRepository>()));
-  serviceLocator.registerLazySingleton(() => GetAutoSaveStatisticsUseCase(serviceLocator<IAutoSaveRepository>()));
-  serviceLocator.registerLazySingleton(() => TriggerAutoSaveUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => CreateAutoSaveRuleUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetAutoSaveRulesUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => UpdateAutoSaveRuleUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => ToggleAutoSaveRuleUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => DeleteAutoSaveRuleUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetAutoSaveTransactionsUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetAutoSaveStatisticsUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => TriggerAutoSaveUseCase(serviceLocator<IAutoSaveRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => AutoSaveCubit(
-    createAutoSaveRuleUseCase: serviceLocator<CreateAutoSaveRuleUseCase>(),
-    getAutoSaveRulesUseCase: serviceLocator<GetAutoSaveRulesUseCase>(),
-    updateAutoSaveRuleUseCase: serviceLocator<UpdateAutoSaveRuleUseCase>(),
-    toggleAutoSaveRuleUseCase: serviceLocator<ToggleAutoSaveRuleUseCase>(),
-    deleteAutoSaveRuleUseCase: serviceLocator<DeleteAutoSaveRuleUseCase>(),
-    getAutoSaveTransactionsUseCase: serviceLocator<GetAutoSaveTransactionsUseCase>(),
-    getAutoSaveStatisticsUseCase: serviceLocator<GetAutoSaveStatisticsUseCase>(),
-    triggerAutoSaveUseCase: serviceLocator<TriggerAutoSaveUseCase>(),
-    autoSaveRepository: serviceLocator<IAutoSaveRepository>(),
-  ));
-
+        createAutoSaveRuleUseCase: serviceLocator<CreateAutoSaveRuleUseCase>(),
+        getAutoSaveRulesUseCase: serviceLocator<GetAutoSaveRulesUseCase>(),
+        updateAutoSaveRuleUseCase: serviceLocator<UpdateAutoSaveRuleUseCase>(),
+        toggleAutoSaveRuleUseCase: serviceLocator<ToggleAutoSaveRuleUseCase>(),
+        deleteAutoSaveRuleUseCase: serviceLocator<DeleteAutoSaveRuleUseCase>(),
+        getAutoSaveTransactionsUseCase:
+            serviceLocator<GetAutoSaveTransactionsUseCase>(),
+        getAutoSaveStatisticsUseCase:
+            serviceLocator<GetAutoSaveStatisticsUseCase>(),
+        triggerAutoSaveUseCase: serviceLocator<TriggerAutoSaveUseCase>(),
+        autoSaveRepository: serviceLocator<IAutoSaveRepository>(),
+      ));
 
   // ================== Feature: Statistics ==================
 
@@ -3434,7 +3669,6 @@ Future<void> init() async {
     ),
   );
 
-
   // ================== Feature: Cards ==================
 
   // Cards use Banking Gateway (port 50077) — create dedicated GrpcClient on bankingChannel
@@ -3451,39 +3685,58 @@ Future<void> init() async {
   );
   // Repositories
   serviceLocator.registerLazySingleton<ICardRepository>(
-    () => CardRepositoryImpl(remoteDataSource: serviceLocator<ICardRemoteDataSource>()),
+    () => CardRepositoryImpl(
+        remoteDataSource: serviceLocator<ICardRemoteDataSource>()),
   );
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => CreateVirtualCardUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => CreateDisposableCardUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => GetUserCardsUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => GetCardDetailsUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => FreezeCardUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => UnfreezeCardUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => CancelCardUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => UpdateCardNicknameUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => UpdateCardSpendingLimitUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => SetDefaultCardUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => RequestPhysicalCardUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => SetCardPINUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => RevealCardPINUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => RevealCardDetailsUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => FundCardUseCase(serviceLocator<ICardRepository>()));
-  serviceLocator.registerLazySingleton(() => WithdrawFromCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => CreateVirtualCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => CreateDisposableCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetUserCardsUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetCardDetailsUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => FreezeCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => UnfreezeCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => CancelCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => UpdateCardNicknameUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => UpdateCardSpendingLimitUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => SetDefaultCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => RequestPhysicalCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => SetCardPINUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => RevealCardPINUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => RevealCardDetailsUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => FundCardUseCase(serviceLocator<ICardRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => WithdrawFromCardUseCase(serviceLocator<ICardRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory<CardCubit>(
     () => CardCubit(
       createVirtualCardUseCase: serviceLocator<CreateVirtualCardUseCase>(),
-      createDisposableCardUseCase: serviceLocator<CreateDisposableCardUseCase>(),
+      createDisposableCardUseCase:
+          serviceLocator<CreateDisposableCardUseCase>(),
       getUserCardsUseCase: serviceLocator<GetUserCardsUseCase>(),
       getCardDetailsUseCase: serviceLocator<GetCardDetailsUseCase>(),
       freezeCardUseCase: serviceLocator<FreezeCardUseCase>(),
       unfreezeCardUseCase: serviceLocator<UnfreezeCardUseCase>(),
       cancelCardUseCase: serviceLocator<CancelCardUseCase>(),
       updateCardNicknameUseCase: serviceLocator<UpdateCardNicknameUseCase>(),
-      updateCardSpendingLimitUseCase: serviceLocator<UpdateCardSpendingLimitUseCase>(),
+      updateCardSpendingLimitUseCase:
+          serviceLocator<UpdateCardSpendingLimitUseCase>(),
       setDefaultCardUseCase: serviceLocator<SetDefaultCardUseCase>(),
       requestPhysicalCardUseCase: serviceLocator<RequestPhysicalCardUseCase>(),
       setCardPINUseCase: serviceLocator<SetCardPINUseCase>(),
@@ -3494,12 +3747,13 @@ Future<void> init() async {
     ),
   );
 
-
   // ================== Feature: Lock Funds ==================
 
   // Repositories
   serviceLocator.registerLazySingleton<LockFundsRepository>(
-    () => LockFundsRepositoryImpl(grpcClient: serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient')),
+    () => LockFundsRepositoryImpl(
+        grpcClient:
+            serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient')),
   );
 
   // Blocs/Cubits
@@ -3513,7 +3767,6 @@ Future<void> init() async {
   serviceLocator.registerFactory<CreateLockCubit>(
     () => CreateLockCubit(),
   );
-
 
   // ================== Feature: Family & Friends Account ==================
 
@@ -3529,7 +3782,8 @@ Future<void> init() async {
   // Remote Data Source (gRPC implementation)
   serviceLocator.registerLazySingleton<FamilyAccountRemoteDataSource>(
     () => FamilyAccountGrpcDataSource(
-      client: serviceLocator<family_accounts_grpc.FamilyAccountsServiceClient>(),
+      client:
+          serviceLocator<family_accounts_grpc.FamilyAccountsServiceClient>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
@@ -3538,7 +3792,8 @@ Future<void> init() async {
   // Separate from the family data source: this is billing, not family data.
   serviceLocator.registerLazySingleton<FamilySlotsDataSource>(
     () => FamilySlotsDataSource(
-      client: serviceLocator<family_accounts_grpc.FamilyAccountsServiceClient>(),
+      client:
+          serviceLocator<family_accounts_grpc.FamilyAccountsServiceClient>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
@@ -3552,27 +3807,48 @@ Future<void> init() async {
   );
 
   // Use Cases
-  serviceLocator.registerLazySingleton(() => GetFamilyAccountsUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => CreateFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => AddFamilyMemberUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => UpdateFamilyMemberUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => RemoveFamilyMemberUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => AcceptFamilyInvitationUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => DeclineFamilyInvitationUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetPendingInvitationsUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetFamilyTransactionsUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => AllocateFundsUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GenerateMemberCardUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => FreezeFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => UnfreezeFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => DeleteFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => LeaveFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => ProcessMemberContributionUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => SetupFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => UpdateFundDistributionModeUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetMyInvitationHistoryUseCase(serviceLocator<FamilyAccountRepository>()));
-  serviceLocator.registerLazySingleton(() => GetSentInvitationsUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetFamilyAccountsUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => GetFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      CreateFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => AddFamilyMemberUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      UpdateFamilyMemberUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      RemoveFamilyMemberUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      AcceptFamilyInvitationUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => DeclineFamilyInvitationUseCase(
+      serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetPendingInvitationsUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetFamilyTransactionsUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(
+      () => AllocateFundsUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GenerateMemberCardUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      FreezeFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      UnfreezeFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      DeleteFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      LeaveFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => ProcessMemberContributionUseCase(
+      serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      SetupFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdateFundDistributionModeUseCase(
+      serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetMyInvitationHistoryUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() =>
+      GetSentInvitationsUseCase(serviceLocator<FamilyAccountRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory<FamilyAccountCubit>(
@@ -3584,7 +3860,8 @@ Future<void> init() async {
       updateFamilyMember: serviceLocator<UpdateFamilyMemberUseCase>(),
       removeFamilyMember: serviceLocator<RemoveFamilyMemberUseCase>(),
       acceptInvitationUseCase: serviceLocator<AcceptFamilyInvitationUseCase>(),
-      declineInvitationUseCase: serviceLocator<DeclineFamilyInvitationUseCase>(),
+      declineInvitationUseCase:
+          serviceLocator<DeclineFamilyInvitationUseCase>(),
       getPendingInvitations: serviceLocator<GetPendingInvitationsUseCase>(),
       getFamilyTransactions: serviceLocator<GetFamilyTransactionsUseCase>(),
       allocateFunds: serviceLocator<AllocateFundsUseCase>(),
@@ -3593,14 +3870,15 @@ Future<void> init() async {
       unfreezeFamilyAccount: serviceLocator<UnfreezeFamilyAccountUseCase>(),
       deleteFamilyAccount: serviceLocator<DeleteFamilyAccountUseCase>(),
       leaveFamilyAccount: serviceLocator<LeaveFamilyAccountUseCase>(),
-      processMemberContribution: serviceLocator<ProcessMemberContributionUseCase>(),
+      processMemberContribution:
+          serviceLocator<ProcessMemberContributionUseCase>(),
       setupFamilyAccount: serviceLocator<SetupFamilyAccountUseCase>(),
-      updateFundDistributionMode: serviceLocator<UpdateFundDistributionModeUseCase>(),
+      updateFundDistributionMode:
+          serviceLocator<UpdateFundDistributionModeUseCase>(),
       getMyInvitationHistory: serviceLocator<GetMyInvitationHistoryUseCase>(),
       getSentInvitations: serviceLocator<GetSentInvitationsUseCase>(),
     ),
   );
-
 
   // ================== Feature: General Chat ==================
   // Uses Enhanced Chat Gateway with LLM-based intent classification
@@ -3611,7 +3889,8 @@ Future<void> init() async {
     () => HttpGeneralChatDataSource(
       dio: serviceLocator<Dio>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? endpointRegistry.httpChatAgent, // Enhanced Gateway
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ??
+          endpointRegistry.httpChatAgent, // Enhanced Gateway
     ),
   );
 
@@ -3631,16 +3910,16 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => GeneralChatCubit(
-    sendMessageUseCase: serviceLocator<SendGeneralChatMessageUseCase>(),
-    loadHistoryUseCase: serviceLocator<LoadMicroserviceChatHistoryUseCase>(),
-    authCubit: serviceLocator<AuthenticationCubit>(),
-    // Multi-tab session manager — wires session-switching to history reload.
-    sessionManager: serviceLocator<ChatSessionManager>(),
-  ));
+        sendMessageUseCase: serviceLocator<SendGeneralChatMessageUseCase>(),
+        loadHistoryUseCase:
+            serviceLocator<LoadMicroserviceChatHistoryUseCase>(),
+        authCubit: serviceLocator<AuthenticationCubit>(),
+        // Multi-tab session manager — wires session-switching to history reload.
+        sessionManager: serviceLocator<ChatSessionManager>(),
+      ));
 
   // Screens
   serviceLocator.registerFactory(() => GeneralChatScreen());
-
 
   // ================== Feature: Microservice Chat (Per-Service Bottom Sheet) ==================
 
@@ -3651,7 +3930,8 @@ Future<void> init() async {
     () => HttpMicroserviceChatDataSource(
       dio: Dio(BaseOptions(
         connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 75), // Agent may take 55s (tool calls + OpenAI retries)
+        receiveTimeout: const Duration(
+            seconds: 75), // Agent may take 55s (tool calls + OpenAI retries)
         sendTimeout: const Duration(seconds: 30),
       )),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
@@ -3666,7 +3946,8 @@ Future<void> init() async {
   );
 
   // gRPC Client — DirectChatService
-  serviceLocator.registerLazySingleton<direct_chat_grpc.DirectChatServiceClient>(
+  serviceLocator
+      .registerLazySingleton<direct_chat_grpc.DirectChatServiceClient>(
     () => direct_chat_grpc.DirectChatServiceClient(
       serviceLocator<ClientChannel>(instanceName: 'chatProxyChannel'),
     ),
@@ -3712,7 +3993,6 @@ Future<void> init() async {
     ),
   );
 
-
   // ================== Feature: Transaction History ==================
 
   // gRPC Client - Connects to Accounts Service on Core Gateway
@@ -3732,7 +4012,8 @@ Future<void> init() async {
     ),
   );
   serviceLocator.registerLazySingleton<CreateVirtualAccountUseCase>(
-    () => CreateVirtualAccountUseCase(serviceLocator<IVirtualAccountRepository>()),
+    () => CreateVirtualAccountUseCase(
+        serviceLocator<IVirtualAccountRepository>()),
   );
   // Proactive VA provisioning (dashboard-on-land + deposit fallback).
   serviceLocator.registerLazySingleton<VaProvisioningService>(
@@ -3761,19 +4042,21 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => TransactionHistoryCubit(
-    repository: serviceLocator<TransactionHistoryRepository>(),
-  ));
+        repository: serviceLocator<TransactionHistoryRepository>(),
+      ));
 
   serviceLocator.registerFactory(() => RecipientTransactionHistoryCubit(
-    repository: serviceLocator<TransactionHistoryRepository>(),
-    paymentsDataSource: serviceLocator<IPaymentsTransferDataSource>(),
-    accountManager: serviceLocator<AccountManager>(),
-  ));
+        repository: serviceLocator<TransactionHistoryRepository>(),
+        paymentsDataSource: serviceLocator<IPaymentsTransferDataSource>(),
+        accountManager: serviceLocator<AccountManager>(),
+      ));
 
   // Screens
   serviceLocator.registerFactory(() => DashboardTransactionHistoryScreen());
-  serviceLocator.registerFactoryParam<ServiceTransactionHistoryScreen, TransactionServiceType, void>(
-    (serviceType, _) => ServiceTransactionHistoryScreen(serviceType: serviceType),
+  serviceLocator.registerFactoryParam<ServiceTransactionHistoryScreen,
+      TransactionServiceType, void>(
+    (serviceType, _) =>
+        ServiceTransactionHistoryScreen(serviceType: serviceType),
   );
 
   // ================== Network Optimization: Cache & Offline Queue ==================
@@ -3781,13 +4064,13 @@ Future<void> init() async {
 
   // SWR Cache Manager - Stale-While-Revalidate caching for list data
   serviceLocator.registerLazySingleton<SWRCacheManager>(() => SWRCacheManager(
-    storage: serviceLocator<FlutterSecureStorage>(),
-  ));
+        storage: serviceLocator<FlutterSecureStorage>(),
+      ));
 
   // Mutation Queue - Queues failed operations for retry when online
   serviceLocator.registerLazySingleton<MutationQueue>(() => MutationQueue(
-    storage: serviceLocator<FlutterSecureStorage>(),
-  ));
+        storage: serviceLocator<FlutterSecureStorage>(),
+      ));
 
   // Mutation Executor - Processes queued mutations using registered handlers
   serviceLocator.registerLazySingleton<MutationExecutor>(() {
@@ -3816,7 +4099,9 @@ Future<void> init() async {
         final repository = serviceLocator<InvoiceRepository>();
         // Reconstruct items from payload
         final itemsJson = mutation.payload['items'] as List;
-        final items = itemsJson.map((item) => InvoiceItem.fromJson(item as Map<String, dynamic>)).toList();
+        final items = itemsJson
+            .map((item) => InvoiceItem.fromJson(item as Map<String, dynamic>))
+            .toList();
 
         final typeStr = mutation.payload['type'] as String;
         final type = InvoiceType.values.firstWhere(
@@ -3841,7 +4126,8 @@ Future<void> init() async {
               ? DateTime.parse(mutation.payload['dueDate'] as String)
               : null,
           taxAmount: (mutation.payload['taxAmount'] as num?)?.toDouble(),
-          discountAmount: (mutation.payload['discountAmount'] as num?)?.toDouble(),
+          discountAmount:
+              (mutation.payload['discountAmount'] as num?)?.toDouble(),
           notes: mutation.payload['notes'] as String?,
           toEmail: mutation.payload['toEmail'] as String?,
           toName: mutation.payload['toName'] as String?,
@@ -3884,8 +4170,8 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => PayrollCubit(
-    repository: serviceLocator<PayrollRepository>(),
-  ));
+        repository: serviceLocator<PayrollRepository>(),
+      ));
 
   // ================== Feature: Inventory (Business) ==================
 
@@ -3906,8 +4192,8 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => InventoryCubit(
-    repository: serviceLocator<InventoryRepository>(),
-  ));
+        repository: serviceLocator<InventoryRepository>(),
+      ));
 
   // ================== Feature: Customer CRM (Business) ==================
 
@@ -3928,8 +4214,8 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => CustomerCubit(
-    repository: serviceLocator<CustomerRepository>(),
-  ));
+        repository: serviceLocator<CustomerRepository>(),
+      ));
 
   // ================== Feature: Expenses (Business — Phase 5) ==================
 
@@ -3950,8 +4236,8 @@ Future<void> init() async {
 
   // Cubit
   serviceLocator.registerFactory(() => ExpenseCubit(
-    repository: serviceLocator<ExpenseRepository>(),
-  ));
+        repository: serviceLocator<ExpenseRepository>(),
+      ));
 
   // ================== Feature: Tax Management (Business) ==================
 
@@ -3972,13 +4258,14 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => TaxCubit(
-    repository: serviceLocator<TaxRepository>(),
-  ));
+        repository: serviceLocator<TaxRepository>(),
+      ));
 
   // ================== Feature: Inventory Enhanced (Business) ==================
 
   // InventoryEnhancedServiceClient - via Business Gateway (shared connection)
-  serviceLocator.registerLazySingleton<payroll_pb.InventoryEnhancedServiceClient>(
+  serviceLocator
+      .registerLazySingleton<payroll_pb.InventoryEnhancedServiceClient>(
     () => payroll_pb.InventoryEnhancedServiceClient(
       serviceLocator<ClientChannel>(instanceName: 'businessChannel'),
     ),
@@ -3994,15 +4281,15 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => InventoryEnhancedCubit(
-    repository: serviceLocator<InventoryEnhancedRepository>(),
-  ));
+        repository: serviceLocator<InventoryEnhancedRepository>(),
+      ));
 
   // ================== Feature: Business Analytics ==================
 
   serviceLocator.registerFactory(() => BusinessAnalyticsCubit(
-    accountsClient: serviceLocator<accounts_grpc.AccountsServiceClient>(),
-    callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-  ));
+        accountsClient: serviceLocator<accounts_grpc.AccountsServiceClient>(),
+        callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+      ));
 
   // ================== Feature: Account Actions ==================
   // Manages card/account actions: freeze/unfreeze, security settings, limits, documents
@@ -4032,7 +4319,8 @@ Future<void> init() async {
       // Plan My Day rides the SAME gateway as LazerSpray (lifestyle-gateway);
       // the standalone planning-gateway was removed. Falls back to the lifestyle
       // REST base which the tunnel routes and which does real JWKS auth.
-      baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
+      baseUrl:
+          dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
       accountManager: serviceLocator<AccountManager>(),
       // Active dashboard region — planning-service scopes Plan My Day by locale.
@@ -4050,7 +4338,8 @@ Future<void> init() async {
       // Plan My Day rides the SAME gateway as LazerSpray (lifestyle-gateway);
       // the standalone planning-gateway was removed. Falls back to the lifestyle
       // REST base which the tunnel routes and which does real JWKS auth.
-      baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
+      baseUrl:
+          dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
       accountManager: serviceLocator<AccountManager>(),
       localeManager: serviceLocator<LocaleManager>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
@@ -4072,7 +4361,8 @@ Future<void> init() async {
   // Plan My Day. See EmailRepository (mirrors PlanMyDayRepository).
   serviceLocator.registerLazySingleton<EmailRepository>(
     () => EmailRepository(
-      baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
+      baseUrl:
+          dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
       accountManager: serviceLocator<AccountManager>(),
       storage: serviceLocator<FlutterSecureStorage>(),
@@ -4081,7 +4371,8 @@ Future<void> init() async {
 
   // Realtime WS consumer (factory — one per cubit; disposed with the cubit).
   serviceLocator.registerFactory<EmailWebSocketService>(
-    () => EmailWebSocketService(storage: serviceLocator<FlutterSecureStorage>()),
+    () =>
+        EmailWebSocketService(storage: serviceLocator<FlutterSecureStorage>()),
   );
 
   // Cubit (factory — fresh instance per email flow navigation)
@@ -4095,7 +4386,8 @@ Future<void> init() async {
   // ── CRM contacts inside Plan My Day (People view) ─────────────────────
   serviceLocator.registerLazySingleton<ContactRepository>(
     () => ContactRepository(
-      baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
+      baseUrl:
+          dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
       accountManager: serviceLocator<AccountManager>(),
       localeManager: serviceLocator<LocaleManager>(),
       storage: serviceLocator<FlutterSecureStorage>(),
@@ -4108,7 +4400,8 @@ Future<void> init() async {
   // ── Notes & Habits inside Plan My Day ─────────────────────────────────
   serviceLocator.registerLazySingleton<NoteRepository>(
     () => NoteRepository(
-      baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
+      baseUrl:
+          dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
       accountManager: serviceLocator<AccountManager>(),
       localeManager: serviceLocator<LocaleManager>(),
       storage: serviceLocator<FlutterSecureStorage>(),
@@ -4119,7 +4412,8 @@ Future<void> init() async {
   );
   serviceLocator.registerLazySingleton<HabitRepository>(
     () => HabitRepository(
-      baseUrl: dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
+      baseUrl:
+          dotenv.env['LIFESTYLE_GATEWAY_URL'] ?? endpointRegistry.httpLifestyle,
       accountManager: serviceLocator<AccountManager>(),
       localeManager: serviceLocator<LocaleManager>(),
       storage: serviceLocator<FlutterSecureStorage>(),
@@ -4281,7 +4575,7 @@ Future<void> init() async {
       accountsClient: serviceLocator<AccountsGrpcClient>(),
       accountManager: serviceLocator<AccountManager>(),
       localeManager: serviceLocator<LocaleManager>(),
-      currentUserId: '',  // Set at runtime via cubit
+      currentUserId: '', // Set at runtime via cubit
     ),
   );
 

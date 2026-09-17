@@ -23,7 +23,8 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 class VoicePinEnhancedDialog extends StatefulWidget {
   final Map<String, dynamic> transactionPayload;
   final String accessToken;
-  final void Function(bool success, {String? reference, String? error}) onComplete;
+  final void Function(bool success, {String? reference, String? error})
+      onComplete;
 
   const VoicePinEnhancedDialog({
     super.key,
@@ -37,7 +38,8 @@ class VoicePinEnhancedDialog extends StatefulWidget {
 }
 
 class _VoicePinEnhancedDialogState extends State<VoicePinEnhancedDialog> {
-  final List<TextEditingController> _controllers = List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> _controllers =
+      List.generate(4, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
 
   bool _isProcessing = false;
@@ -57,7 +59,8 @@ class _VoicePinEnhancedDialogState extends State<VoicePinEnhancedDialog> {
     // strip any trailing slash and DON'T let the route re-prefix `/api/v1` —
     // that doubled to `/api/v1/api/v1/transfers/...` and 404'd every voice
     // transfer.
-    final base = dotenv.env['TRANSFER_GATEWAY_URL'] ?? endpointRegistry.httpTransfer;
+    final base =
+        dotenv.env['TRANSFER_GATEWAY_URL'] ?? endpointRegistry.httpTransfer;
     return base.replaceAll(RegExp(r'/+$'), '');
   }
 
@@ -89,7 +92,8 @@ class _VoicePinEnhancedDialogState extends State<VoicePinEnhancedDialog> {
     _timeoutTimer?.cancel();
     _timeoutTimer = Timer(const Duration(minutes: 3), () {
       if (mounted && !_isProcessing) {
-        widget.onComplete(false, error: 'PIN entry timed out. Please try again.');
+        widget.onComplete(false,
+            error: 'PIN entry timed out. Please try again.');
         Navigator.of(context).pop();
       }
     });
@@ -154,7 +158,8 @@ class _VoicePinEnhancedDialogState extends State<VoicePinEnhancedDialog> {
 
     try {
       // Edge case: Validate transaction payload before making request
-      final validationError = _validateTransactionPayload(widget.transactionPayload);
+      final validationError =
+          _validateTransactionPayload(widget.transactionPayload);
       if (validationError != null) {
         throw Exception(validationError);
       }
@@ -193,22 +198,25 @@ class _VoicePinEnhancedDialogState extends State<VoicePinEnhancedDialog> {
           'amount': amountMinor,
           'currency': payload['currency'] ?? 'NGN',
           'narration': payload['narration'] ?? 'Voice transfer',
-          if (payload['category_id'] != null) 'category_id': payload['category_id'],
+          if (payload['category_id'] != null)
+            'category_id': payload['category_id'],
         };
       }
 
       // Edge case: Check for mounted before processing response
       if (!mounted) return;
 
-      final response = await http.post(
-        Uri.parse('$_transferGatewayUrl$endpoint'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${widget.accessToken}',
-          'X-Account-Id': payload['account_id'] as String? ?? '',
-        },
-        body: jsonEncode(body),
-      ).timeout(_requestTimeout);
+      final response = await http
+          .post(
+            Uri.parse('$_transferGatewayUrl$endpoint'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${widget.accessToken}',
+              'X-Account-Id': payload['account_id'] as String? ?? '',
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(_requestTimeout);
 
       if (!mounted) return;
 
@@ -229,7 +237,8 @@ class _VoicePinEnhancedDialogState extends State<VoicePinEnhancedDialog> {
         final data = jsonDecode(response.body);
         final isLocked = data['is_locked'] as bool? ?? false;
         if (isLocked) {
-          widget.onComplete(false, error: 'Account locked due to too many failed attempts');
+          widget.onComplete(false,
+              error: 'Account locked due to too many failed attempts');
           if (mounted) Navigator.of(context).pop();
           return;
         }
@@ -243,14 +252,16 @@ class _VoicePinEnhancedDialogState extends State<VoicePinEnhancedDialog> {
         final isLocked = data['is_locked'] as bool? ?? false;
 
         if (isLocked || _attempts >= _maxAttempts) {
-          widget.onComplete(false, error: isLocked
-              ? 'Account locked due to too many failed attempts'
-              : 'Maximum PIN attempts exceeded');
+          widget.onComplete(false,
+              error: isLocked
+                  ? 'Account locked due to too many failed attempts'
+                  : 'Maximum PIN attempts exceeded');
           if (mounted) Navigator.of(context).pop();
         } else {
           setState(() {
             _isProcessing = false;
-            _errorMessage = '$errorMsg (${_maxAttempts - _attempts} attempts remaining)';
+            _errorMessage =
+                '$errorMsg (${_maxAttempts - _attempts} attempts remaining)';
           });
           _clearPin();
           _focusNodes[0].requestFocus();
@@ -263,9 +274,11 @@ class _VoicePinEnhancedDialogState extends State<VoicePinEnhancedDialog> {
       _networkRetries++;
 
       String errorMsg;
-      if (e.toString().contains('TimeoutException') || e.toString().contains('Timeout')) {
+      if (e.toString().contains('TimeoutException') ||
+          e.toString().contains('Timeout')) {
         errorMsg = 'Request timed out. Please try again.';
-      } else if (e.toString().contains('SocketException') || e.toString().contains('Connection')) {
+      } else if (e.toString().contains('SocketException') ||
+          e.toString().contains('Connection')) {
         errorMsg = 'Connection error. Please check your internet.';
       } else if (e.toString().contains('Session expired')) {
         errorMsg = 'Session expired. Please login again.';
@@ -284,7 +297,8 @@ class _VoicePinEnhancedDialogState extends State<VoicePinEnhancedDialog> {
 
       setState(() {
         _isProcessing = false;
-        _errorMessage = '$errorMsg (Retry $_networkRetries/$_maxNetworkRetries)';
+        _errorMessage =
+            '$errorMsg (Retry $_networkRetries/$_maxNetworkRetries)';
       });
       _clearPin();
       _focusNodes[0].requestFocus();
@@ -356,7 +370,8 @@ class _VoicePinEnhancedDialogState extends State<VoicePinEnhancedDialog> {
       },
       child: Dialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         child: Padding(
           padding: EdgeInsets.all(24.w),
           child: Column(
@@ -444,7 +459,8 @@ class _VoicePinEnhancedDialogState extends State<VoicePinEnhancedDialog> {
                           onChanged: (value) => _onDigitChanged(index, value),
                           decoration: InputDecoration(
                             counterText: '',
-                            contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+                            contentPadding:
+                                EdgeInsets.symmetric(vertical: 12.h),
                             filled: true,
                             fillColor: _controllers[index].text.isNotEmpty
                                 ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
@@ -485,7 +501,8 @@ class _VoicePinEnhancedDialogState extends State<VoicePinEnhancedDialog> {
               if (_errorMessage != null) ...[
                 SizedBox(height: 16.h),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.r),

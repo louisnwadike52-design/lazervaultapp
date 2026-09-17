@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/voice_session/models/voice_transfer_context.dart';
 part 'voice_transfer_hud_widgets.dart';
 
-
 /// Persistent, boxed "sci-fi" transfer HUD that renders the accumulated
 /// [VoiceTransferContext] and updates progressively per state.
 ///

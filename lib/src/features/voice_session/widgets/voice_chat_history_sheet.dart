@@ -149,7 +149,9 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
 
                 final messages = state.conversation?.messages ?? [];
 
-                if (messages.isEmpty && widget.currentUserCaption == null && widget.currentAgentCaption == null) {
+                if (messages.isEmpty &&
+                    widget.currentUserCaption == null &&
+                    widget.currentAgentCaption == null) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -181,12 +183,15 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
                 }
 
                 return ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-                  itemCount: messages.length + 1, // +1 for potential current caption
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                  itemCount:
+                      messages.length + 1, // +1 for potential current caption
                   itemBuilder: (context, index) {
                     // Show current caption as pending message at top
                     if (index == messages.length) {
-                      final currentCaption = widget.currentUserCaption ?? widget.currentAgentCaption;
+                      final currentCaption = widget.currentUserCaption ??
+                          widget.currentAgentCaption;
                       final isAgent = widget.currentAgentCaption != null;
 
                       if (currentCaption != null) {
@@ -223,7 +228,8 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
                       label: Text('Export'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white.withValues(alpha: 0.7),
-                        side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                        side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.1)),
                         padding: EdgeInsets.symmetric(vertical: 12.h),
                       ),
                     ),
@@ -256,7 +262,8 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: Row(
-        mainAxisAlignment: isAgent ? MainAxisAlignment.start : MainAxisAlignment.end,
+        mainAxisAlignment:
+            isAgent ? MainAxisAlignment.start : MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (isAgent) ...[
@@ -285,10 +292,12 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
           ],
           Flexible(
             child: Column(
-              crossAxisAlignment: isAgent ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+              crossAxisAlignment:
+                  isAgent ? CrossAxisAlignment.start : CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                   decoration: BoxDecoration(
                     color: isAgent
                         ? const Color(0xFF2D2D30)
@@ -310,7 +319,7 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
                       // Show metadata if present (e.g., transaction receipt)
                       if (message.metadata != null &&
                           (message.metadata!.type != null ||
-                           message.metadata!.fileUrl != null))
+                              message.metadata!.fileUrl != null))
                         _buildMetadataWidget(message.metadata!),
                     ],
                   ),
@@ -354,7 +363,8 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: Row(
-        mainAxisAlignment: isAgent ? MainAxisAlignment.start : MainAxisAlignment.end,
+        mainAxisAlignment:
+            isAgent ? MainAxisAlignment.start : MainAxisAlignment.end,
         children: [
           if (isAgent) ...[
             Container(
@@ -440,10 +450,9 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              success
-                  ? Icons.check_circle_rounded
-                  : Icons.error_rounded,
-              color: success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+              success ? Icons.check_circle_rounded : Icons.error_rounded,
+              color:
+                  success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
               size: 16.sp,
             ),
             SizedBox(width: 8.w),
@@ -456,7 +465,9 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
-                      color: success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                      color: success
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFEF4444),
                     ),
                   ),
                   if (data['reference'] != null)

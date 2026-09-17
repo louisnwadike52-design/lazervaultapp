@@ -25,10 +25,12 @@ class VoiceConversationContextBar extends StatefulWidget {
   });
 
   @override
-  State<VoiceConversationContextBar> createState() => _VoiceConversationContextBarState();
+  State<VoiceConversationContextBar> createState() =>
+      _VoiceConversationContextBarState();
 }
 
-class _VoiceConversationContextBarState extends State<VoiceConversationContextBar>
+class _VoiceConversationContextBarState
+    extends State<VoiceConversationContextBar>
     with SingleTickerProviderStateMixin {
   bool _isExpanded = false;
   Timer? _collapseTimer;
@@ -125,7 +127,8 @@ class _VoiceConversationContextBarState extends State<VoiceConversationContextBa
                   // Messages list
                   Expanded(
                     child: ListView.builder(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                       itemCount: displayMessages.length,
                       itemBuilder: (context, index) {
                         final message = displayMessages[index];
@@ -193,9 +196,8 @@ class _VoiceConversationContextBarState extends State<VoiceConversationContextBa
     final backgroundColor = isUser
         ? const Color(0xFF10B981).withValues(alpha: 0.15)
         : const Color(0xFF3B82F6).withValues(alpha: 0.15);
-    final textColor = isUser
-        ? const Color(0xFF10B981)
-        : const Color(0xFF3B82F6);
+    final textColor =
+        isUser ? const Color(0xFF10B981) : const Color(0xFF3B82F6);
 
     // Edge case: Sanitize and truncate text
     final sanitizedText = _sanitizeMessageText(message.text);
@@ -242,7 +244,8 @@ class _VoiceConversationContextBarState extends State<VoiceConversationContextBa
     if (text.isEmpty) return '';
 
     // Remove null characters and control chars (except newline/tab)
-    final sanitized = text.replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F]'), '');
+    final sanitized =
+        text.replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F]'), '');
 
     // Remove excessive newlines (more than 2 in a row)
     final collapsedNewlines = sanitized.replaceAll(RegExp(r'\n{3,}'), '\n\n');

@@ -156,7 +156,8 @@ class VoiceCustomizationSheet extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: _accentColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12.r),
@@ -182,7 +183,8 @@ class VoiceCustomizationSheet extends StatelessWidget {
                     ? _buildEmptyState()
                     : ListView.builder(
                         controller: scrollController,
-                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16.w, vertical: 8.h),
                         itemCount: voices.length + (showYourVoice ? 1 : 0),
                         itemBuilder: (context, index) {
                           if (showYourVoice && index == 0) {
@@ -190,8 +192,7 @@ class VoiceCustomizationSheet extends StatelessWidget {
                                 selectedVoiceId == kMyVoiceSentinelId;
                             return _buildYourVoiceTile(isSelected);
                           }
-                          final voice =
-                              voices[index - (showYourVoice ? 1 : 0)];
+                          final voice = voices[index - (showYourVoice ? 1 : 0)];
                           final isSelected = voice.id == selectedVoiceId;
                           return _buildVoiceTile(voice, isSelected);
                         },
@@ -297,10 +298,12 @@ class VoiceCustomizationSheet extends StatelessWidget {
                           vertical: 2.h,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFF10B981).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(4.r),
                           border: Border.all(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.3),
                             width: 1,
                           ),
                         ),
@@ -600,9 +603,7 @@ class VoiceCustomizationSheet extends StatelessWidget {
 
     return Icon(
       iconData,
-      color: isSelected
-          ? _accentColor
-          : Colors.white.withValues(alpha: 0.4),
+      color: isSelected ? _accentColor : Colors.white.withValues(alpha: 0.4),
       size: 22.sp,
     );
   }

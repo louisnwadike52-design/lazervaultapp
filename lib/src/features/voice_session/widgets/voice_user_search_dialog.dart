@@ -21,7 +21,8 @@ class VoiceUserSearchDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.5),
+      constraints:
+          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.5),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.only(
@@ -50,7 +51,8 @@ class VoiceUserSearchDialog extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Row(
               children: [
-                Icon(Icons.person_search_rounded, color: const Color(0xFF3B82F6), size: 24.sp),
+                Icon(Icons.person_search_rounded,
+                    color: const Color(0xFF3B82F6), size: 24.sp),
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
@@ -64,7 +66,8 @@ class VoiceUserSearchDialog extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: onCancel,
-                  child: Icon(Icons.close, color: const Color(0xFF9CA3AF), size: 22.sp),
+                  child: Icon(Icons.close,
+                      color: const Color(0xFF9CA3AF), size: 22.sp),
                 ),
               ],
             ),
@@ -77,7 +80,8 @@ class VoiceUserSearchDialog extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Results for "$query"',
-                  style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
+                  style: GoogleFonts.inter(
+                      fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
                 ),
               ),
             ),
@@ -92,7 +96,8 @@ class VoiceUserSearchDialog extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 20.w),
               child: Column(
                 children: [
-                  Icon(Icons.search_off_rounded, color: const Color(0xFF9CA3AF), size: 48.sp),
+                  Icon(Icons.search_off_rounded,
+                      color: const Color(0xFF9CA3AF), size: 48.sp),
                   SizedBox(height: 12.h),
                   Text(
                     'No users found',
@@ -105,70 +110,73 @@ class VoiceUserSearchDialog extends StatelessWidget {
                   SizedBox(height: 4.h),
                   Text(
                     'Try saying the name again more clearly',
-                    style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
+                    style: GoogleFonts.inter(
+                        fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
                     textAlign: TextAlign.center,
                   ),
                 ],
               ),
             )
           else
-          Flexible(
-            child: ListView.separated(
-              shrinkWrap: true,
-              padding: EdgeInsets.symmetric(vertical: 8.h),
-              itemCount: users.length,
-              separatorBuilder: (_, __) => Divider(
-                color: const Color(0xFF2D2D2D),
-                height: 1,
-                indent: 60.w,
-              ),
-              itemBuilder: (context, index) {
-                final user = users[index];
-                final username = user['username'] as String? ?? '';
-                final fullName = user['full_name'] as String? ?? username;
-                final userId = user['user_id'] as String? ?? '';
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                padding: EdgeInsets.symmetric(vertical: 8.h),
+                itemCount: users.length,
+                separatorBuilder: (_, __) => Divider(
+                  color: const Color(0xFF2D2D2D),
+                  height: 1,
+                  indent: 60.w,
+                ),
+                itemBuilder: (context, index) {
+                  final user = users[index];
+                  final username = user['username'] as String? ?? '';
+                  final fullName = user['full_name'] as String? ?? username;
+                  final userId = user['user_id'] as String? ?? '';
 
-                return ListTile(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
-                  leading: CircleAvatar(
-                    radius: 20.r,
-                    backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                    child: Text(
-                      fullName.isNotEmpty ? fullName[0].toUpperCase() : '?',
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF3B82F6),
+                  return ListTile(
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+                    leading: CircleAvatar(
+                      radius: 20.r,
+                      backgroundColor:
+                          const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                      child: Text(
+                        fullName.isNotEmpty ? fullName[0].toUpperCase() : '?',
+                        style: GoogleFonts.inter(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF3B82F6),
+                        ),
                       ),
                     ),
-                  ),
-                  title: Text(
-                    fullName,
-                    style: GoogleFonts.inter(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white,
+                    title: Text(
+                      fullName,
+                      style: GoogleFonts.inter(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  subtitle: username.isNotEmpty
-                      ? Text(
-                          '@$username',
-                          style: GoogleFonts.inter(
-                            fontSize: 13.sp,
-                            color: const Color(0xFF9CA3AF),
-                          ),
-                        )
-                      : null,
-                  trailing: Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 16.sp,
-                    color: const Color(0xFF9CA3AF),
-                  ),
-                  onTap: () => onUserSelected(userId, username),
-                );
-              },
+                    subtitle: username.isNotEmpty
+                        ? Text(
+                            '@$username',
+                            style: GoogleFonts.inter(
+                              fontSize: 13.sp,
+                              color: const Color(0xFF9CA3AF),
+                            ),
+                          )
+                        : null,
+                    trailing: Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 16.sp,
+                      color: const Color(0xFF9CA3AF),
+                    ),
+                    onTap: () => onUserSelected(userId, username),
+                  );
+                },
+              ),
             ),
-          ),
 
           SizedBox(height: MediaQuery.of(context).padding.bottom + 8.h),
         ],

@@ -210,6 +210,17 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
           _liveScore = status?.score ?? _liveScore;
           _loadingCustomVoice = false;
         });
+        // Adopt a clone that is ALREADY ready.
+        //
+        // The WS push only fires during a live call, so a user whose clone
+        // finished in an earlier session would never hit that path — the clone
+        // would sit ready and unused until they happened to be on a call. This
+        // is the non-live route to the same decision, and it no-ops if they
+        // have since chosen a voice themselves.
+        if (status?.customVoiceStatus == 'ready') {
+          unawaited((_voiceSession ?? serviceLocator<VoiceSessionCubit>())
+              .adoptClonedVoiceIfReady(cloneReady: true));
+        }
         // Auto-refresh while status is pending
         _managePendingPoll();
       }

@@ -7,7 +7,6 @@ import 'package:lazervault/src/features/voice_session/widgets/voice_customizatio
     show kMyVoiceSentinelId;
 part 'voice_language_voice_sheet_widgets.dart';
 
-
 /// ONE central in-call control consolidating language + voice selection.
 ///
 /// Replaces the separate "Language" and "Voice" chips/sheets: pick a language
@@ -21,7 +20,8 @@ class VoiceLanguageVoiceSheet extends StatefulWidget {
 
   /// Resolve the user's cloned voice for a given language (null when none/not
   /// supported). Called again whenever the language changes inside the sheet.
-  final Future<YourVoiceInfo?> Function(VoiceLanguage language) resolveYourVoice;
+  final Future<YourVoiceInfo?> Function(VoiceLanguage language)
+      resolveYourVoice;
 
   /// Whether a call is live. When true the sheet applies every language/voice
   /// tap INSTANTLY via [onLiveChange] (no Apply button); when false the user
@@ -132,7 +132,9 @@ class _VoiceLanguageVoiceSheetState extends State<VoiceLanguageVoiceSheet> {
       return; // preset valid here
     }
     _voiceId = lang.defaultVoiceOption?.id ??
-        (lang.availableVoices.isNotEmpty ? lang.availableVoices.first.id : null);
+        (lang.availableVoices.isNotEmpty
+            ? lang.availableVoices.first.id
+            : null);
   }
 
   void _onLanguageTap(VoiceLanguage lang) async {
@@ -154,7 +156,8 @@ class _VoiceLanguageVoiceSheetState extends State<VoiceLanguageVoiceSheet> {
     } else {
       voice = lang.availableVoices.firstWhere(
         (v) => v.id == _voiceId,
-        orElse: () => lang.defaultVoiceOption ??
+        orElse: () =>
+            lang.defaultVoiceOption ??
             (lang.availableVoices.isNotEmpty
                 ? lang.availableVoices.first
                 : const VoiceOption(id: '', name: 'Default')),
@@ -295,8 +298,8 @@ class _VoiceLanguageVoiceSheetState extends State<VoiceLanguageVoiceSheet> {
                       },
                       borderRadius: BorderRadius.circular(12.r),
                       child: Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 12.h),
                         child: Row(
                           children: [
                             Icon(Icons.settings_rounded,
@@ -334,7 +337,8 @@ class _VoiceLanguageVoiceSheetState extends State<VoiceLanguageVoiceSheet> {
                   child: widget.isSessionActive
                       ? Row(
                           children: [
-                            Icon(Icons.bolt_rounded, color: _clone, size: 16.sp),
+                            Icon(Icons.bolt_rounded,
+                                color: _clone, size: 16.sp),
                             SizedBox(width: 8.w),
                             Expanded(
                               child: Text(
@@ -456,7 +460,9 @@ class _VoiceLanguageVoiceSheetState extends State<VoiceLanguageVoiceSheet> {
             Text(
               l.nativeName,
               style: GoogleFonts.inter(
-                color: selected ? Colors.white : Colors.white.withValues(alpha: 0.7),
+                color: selected
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.7),
                 fontSize: 13.sp,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               ),
@@ -579,8 +585,8 @@ class _VoiceLanguageVoiceSheetState extends State<VoiceLanguageVoiceSheet> {
                       ),
                       SizedBox(width: 8.w),
                       Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 2.h),
                         decoration: BoxDecoration(
                           color: _clone.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(4.r),
@@ -723,6 +729,5 @@ class _VoiceLanguageVoiceSheetState extends State<VoiceLanguageVoiceSheet> {
         ),
       );
 
-  String _cap(String s) =>
-      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+  String _cap(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 }

@@ -8,7 +8,6 @@ import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_state.dart';
 part 'voice_caption_box_widgets.dart';
 
-
 /// Visual feedback state indicator for transfer flow.
 ///
 /// Shows animated progress through the transfer stages:
@@ -32,10 +31,12 @@ class VoiceTransferVisualFeedback extends StatefulWidget {
   });
 
   @override
-  State<VoiceTransferVisualFeedback> createState() => _VoiceTransferVisualFeedbackState();
+  State<VoiceTransferVisualFeedback> createState() =>
+      _VoiceTransferVisualFeedbackState();
 }
 
-class _VoiceTransferVisualFeedbackState extends State<VoiceTransferVisualFeedback>
+class _VoiceTransferVisualFeedbackState
+    extends State<VoiceTransferVisualFeedback>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _progressAnimation;
@@ -47,7 +48,8 @@ class _VoiceTransferVisualFeedbackState extends State<VoiceTransferVisualFeedbac
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
+    _progressAnimation =
+        Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
     _animationController.forward();
   }
 
@@ -139,7 +141,9 @@ class _VoiceTransferVisualFeedbackState extends State<VoiceTransferVisualFeedbac
         TransferStep.completePending,
       ];
     } else if (state is VoiceSessionTransactionSuccess) {
-      final success = (state as VoiceSessionTransactionSuccess).result['success'] as bool? ?? true;
+      final success = (state as VoiceSessionTransactionSuccess)
+              .result['success'] as bool? ??
+          true;
       if (success) {
         return [
           TransferStep.searchComplete,
@@ -194,9 +198,11 @@ class _VoiceTransferVisualFeedbackState extends State<VoiceTransferVisualFeedbac
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(2.r),
                   child: LinearProgressIndicator(
-                    value: _progressAnimation.value * (currentStepIndex / (steps.length - 1)),
+                    value: _progressAnimation.value *
+                        (currentStepIndex / (steps.length - 1)),
                     backgroundColor: Colors.transparent,
-                    valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF3B82F6)),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(const Color(0xFF3B82F6)),
                   ),
                 ),
               ),
@@ -216,7 +222,8 @@ class _VoiceTransferVisualFeedbackState extends State<VoiceTransferVisualFeedbac
                               height: 2,
                               margin: EdgeInsets.symmetric(horizontal: 4.w),
                               decoration: BoxDecoration(
-                                color: _getStepColor(step).withValues(alpha: 0.3),
+                                color:
+                                    _getStepColor(step).withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(1),
                               ),
                             ),

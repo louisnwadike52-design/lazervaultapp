@@ -16,7 +16,8 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 class VoicePinEntryDialog extends StatefulWidget {
   final Map<String, dynamic> transactionPayload;
   final String accessToken;
-  final void Function(bool success, {String? reference, String? error}) onComplete;
+  final void Function(bool success, {String? reference, String? error})
+      onComplete;
 
   const VoicePinEntryDialog({
     super.key,
@@ -30,7 +31,8 @@ class VoicePinEntryDialog extends StatefulWidget {
 }
 
 class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
-  final List<TextEditingController> _controllers = List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> _controllers =
+      List.generate(4, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
 
   bool _isProcessing = false;
@@ -46,7 +48,8 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
     // strip any trailing slash and DON'T let the route re-prefix `/api/v1` —
     // that doubled to `/api/v1/api/v1/transfers/...` and 404'd every voice
     // transfer.
-    final base = dotenv.env['TRANSFER_GATEWAY_URL'] ?? endpointRegistry.httpTransfer;
+    final base =
+        dotenv.env['TRANSFER_GATEWAY_URL'] ?? endpointRegistry.httpTransfer;
     return base.replaceAll(RegExp(r'/+$'), '');
   }
 
@@ -132,19 +135,22 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
           'amount': amountMinor,
           'currency': payload['currency'] ?? 'NGN',
           'narration': payload['narration'] ?? 'Voice transfer',
-          if (payload['category_id'] != null) 'category_id': payload['category_id'],
+          if (payload['category_id'] != null)
+            'category_id': payload['category_id'],
         };
       }
 
-      final response = await http.post(
-        Uri.parse('$_transferGatewayUrl$endpoint'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${widget.accessToken}',
-          'X-Account-Id': payload['account_id'] as String? ?? '',
-        },
-        body: jsonEncode(body),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(
+            Uri.parse('$_transferGatewayUrl$endpoint'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${widget.accessToken}',
+              'X-Account-Id': payload['account_id'] as String? ?? '',
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (!mounted) return;
 
@@ -161,13 +167,15 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
         final isLocked = data['is_locked'] as bool? ?? false;
 
         if (isLocked || _attempts >= _maxAttempts) {
-          widget.onComplete(false, error: isLocked
-              ? 'Account locked due to too many failed attempts'
-              : 'Maximum PIN attempts exceeded');
+          widget.onComplete(false,
+              error: isLocked
+                  ? 'Account locked due to too many failed attempts'
+                  : 'Maximum PIN attempts exceeded');
         } else {
           setState(() {
             _isProcessing = false;
-            _errorMessage = '$errorMsg (${_maxAttempts - _attempts} attempts remaining)';
+            _errorMessage =
+                '$errorMsg (${_maxAttempts - _attempts} attempts remaining)';
             for (final c in _controllers) {
               c.clear();
             }
@@ -181,7 +189,8 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
       _networkRetries++;
       if (_networkRetries >= _maxNetworkRetries) {
         // Too many network failures — notify caller so session can continue
-        widget.onComplete(false, error: 'Network error. Please try again later.');
+        widget.onComplete(false,
+            error: 'Network error. Please try again later.');
         return;
       }
       setState(() {
@@ -203,7 +212,8 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
       canPop: false, // barrierDismissible: false equivalent
       child: Dialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         child: Padding(
           padding: EdgeInsets.all(24.w),
           child: Column(
@@ -308,14 +318,16 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
               if (_errorMessage != null) ...[
                 SizedBox(height: 16.h),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 18.sp),
+                      Icon(Icons.error_outline,
+                          color: const Color(0xFFEF4444), size: 18.sp),
                       SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
@@ -340,7 +352,8 @@ class _VoicePinEntryDialogState extends State<VoicePinEntryDialog> {
                 child: TextButton(
                   onPressed: _isProcessing
                       ? null
-                      : () => widget.onComplete(false, error: 'Cancelled by user'),
+                      : () =>
+                          widget.onComplete(false, error: 'Cancelled by user'),
                   child: Text(
                     'Cancel',
                     style: GoogleFonts.inter(

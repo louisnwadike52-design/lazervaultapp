@@ -49,7 +49,8 @@ class _TypingDotsState extends State<_TypingDots>
                   width: 6.w,
                   height: 6.w,
                   decoration: BoxDecoration(
-                    color: widget.color.withValues(alpha: 0.45 + (lift / 4.0) * 0.55),
+                    color: widget.color
+                        .withValues(alpha: 0.45 + (lift / 4.0) * 0.55),
                     shape: BoxShape.circle,
                   ),
                 ),
