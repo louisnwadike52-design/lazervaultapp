@@ -636,6 +636,23 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       final domainType = _serviceTypeForDomain(domain);
       if (domainType != null) {
         serviceType = domainType;
+      } else {
+        // The domain resolver deals in the shared hold_capture bucket and
+        // returns '' for anything it has no rule for — including an ordinary
+        // account deposit, whose service_name (banking-service) has no
+        // AppServiceName mapping either. Both paths shrug, so the row kept
+        // `unknown` and rendered the grey question-mark glyph.
+        //
+        // The CATEGORY is informative here ('deposit'), and
+        // inferServiceTypeFromCategory already knows what to do with it — it
+        // was simply unreachable, because it only runs when service_name is
+        // absent. Fall back to it rather than leaving the row unclassified.
+        serviceType = _inferServiceTypeFromCategory(
+            protoTx.category,
+            protoTx.type,
+            protoTx.description,
+            protoTx.reference,
+            protoTx.serviceName);
       }
     }
 

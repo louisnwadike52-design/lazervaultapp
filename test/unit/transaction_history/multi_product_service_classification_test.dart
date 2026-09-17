@@ -105,4 +105,44 @@ void main() {
           TransactionServiceType.insurance);
     });
   });
+
+  depositClassificationTests();
+}
+
+/// Account deposits rendered the grey question-mark glyph.
+///
+/// banking-service has no AppServiceName mapping, so the service_name path
+/// answered `unknown`; the domain resolver deals in the shared hold_capture
+/// bucket and returns '' for an ordinary deposit, so the recovery path shrugged
+/// too. The row stayed unclassified even though its CATEGORY says `deposit` and
+/// inferServiceTypeFromCategory has always known what to do with it — that
+/// function was simply unreachable while service_name was present.
+void depositClassificationTests() {
+  group('account deposits resolve to the deposit identity', () {
+    test('a banking-service deposit is not unknown', () {
+      expect(
+        inferServiceTypeFromCategory(
+            'deposit', 'credit', 'Deposit from Nnaemeka Ezeke', '', 'banking-service'),
+        TransactionServiceType.deposit,
+      );
+    });
+
+    test('the domain resolver genuinely has no answer for it', () {
+      // Documents WHY the fallback is needed: if this ever starts returning a
+      // domain, the recovery path changes shape and this test should be
+      // revisited rather than silently diverging.
+      expect(
+        classifyDomain('deposit', 'Deposit from Nnaemeka Ezeke', '', 'banking-service'),
+        '',
+      );
+    });
+
+    test('a withdrawal still resolves to withdrawal, not deposit', () {
+      expect(
+        inferServiceTypeFromCategory(
+            'withdrawal', 'debit', 'Withdrawal to bank', '', 'banking-service'),
+        TransactionServiceType.withdrawal,
+      );
+    });
+  });
 }

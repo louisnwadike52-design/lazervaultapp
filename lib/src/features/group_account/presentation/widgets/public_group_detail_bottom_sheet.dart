@@ -152,8 +152,30 @@ class _PublicGroupDetailBottomSheetState
             );
           }
 
-          // Either PublicGroupDetailLoading or initial — show spinner.
-          return LazerVaultLoader(size: 300);
+          // Either PublicGroupDetailLoading or initial.
+          //
+          // size: 300 painted the app logo at 300pt — a full-width badge that
+          // covered the sheet and the button behind it, reading as a broken
+          // screen rather than as loading. The loader is a SPINNER; it wants
+          // spinner proportions, with the height coming from padding so the
+          // sheet does not snap open and collapse.
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 56.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const LazerVaultLoader.medium(),
+                SizedBox(height: 14.h),
+                Text(
+                  'Loading group…',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    color: Colors.grey[400],
+                  ),
+                ),
+              ],
+            ),
+          );
         },
       ),
     );
