@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import '../../domain/entities/redemption_entities.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/core/errors/failures.dart' show friendlyGrpcError;
@@ -331,4 +332,73 @@ class ReferralRepositoryImpl implements IReferralRepository {
       ));
     }
   }
+
+  @override
+  Future<Either<Failure, RedemptionQuoteEntity>> getRedemptionQuote({int points = 0}) async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _referralServiceClient.getRedemptionQuote(
+        referral_pb.GetRedemptionQuoteRequest(points: points),
+        options: callOptions,
+      );
+      return Right(RedemptionQuoteEntity(
+        points: response.points,
+        cashMinor: response.cashMinor.toInt(),
+        currency: response.currency.isNotEmpty ? response.currency : 'NGN',
+        pointsPerMajorUnit: response.pointsPerMajorUnit,
+        minRedeemPoints: response.minRedeemPoints,
+        canRedeem: response.canRedeem,
+        reason: response.reason,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not price that conversion'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, RedemptionResultEntity>> redeemPoints({
+    required int points,
+    required String idempotencyKey,
+  }) async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _referralServiceClient.redeemPoints(
+        referral_pb.RedeemPointsRequest(
+          points: points,
+          idempotencyKey: idempotencyKey,
+        ),
+        options: callOptions,
+      );
+      return Right(RedemptionResultEntity(
+        pointsRedeemed: response.pointsRedeemed,
+        cashMinor: response.cashMinor.toInt(),
+        currency: response.currency.isNotEmpty ? response.currency : 'NGN',
+        newBalance: response.newBalance,
+        reference: response.reference,
+      ));
+    } on GrpcError catch (e) {
+      // The server already phrases the actionable ones ("You don't have enough
+      // points", "need at least N") — friendlyGrpcError surfaces those rather
+      // than replacing them, which matters on the one screen where the user
+      // can actually act on what it says.
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not convert your points'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred',
+        statusCode: 500,
+      ));
+    }
+  }
+
 }

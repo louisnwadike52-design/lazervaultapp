@@ -8,6 +8,7 @@ import '../entities/leaderboard_entry_entity.dart';
 import '../entities/points_balance_entity.dart';
 import '../entities/point_transaction_entity.dart';
 import '../entities/points_config_entity.dart';
+import '../entities/redemption_entities.dart';
 
 abstract class IReferralRepository {
   /// Validate a referral code (used during signup)
@@ -50,4 +51,17 @@ abstract class IReferralRepository {
 
   /// Get LazerPoints earn rules/configuration
   Future<Either<Failure, List<PointsConfigEntity>>> getPointsConfig();
+
+  /// What converting [points] would be worth. 0 quotes the whole balance,
+  /// which is what the screen opens on.
+  Future<Either<Failure, RedemptionQuoteEntity>> getRedemptionQuote({int points});
+
+  /// Convert points to cash.
+  ///
+  /// [idempotencyKey] must be stable across retries of the SAME attempt: a
+  /// timeout that is retried has to convert once, not twice.
+  Future<Either<Failure, RedemptionResultEntity>> redeemPoints({
+    required int points,
+    required String idempotencyKey,
+  });
 }

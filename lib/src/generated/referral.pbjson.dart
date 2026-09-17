@@ -727,3 +727,77 @@ final $typed_data.Uint8List getPointsConfigResponseDescriptor =
     $convert.base64Decode(
         'ChdHZXRQb2ludHNDb25maWdSZXNwb25zZRIvCgdjb25maWdzGAEgAygLMhUucGIuUG9pbnRzQ2'
         '9uZmlnRW50cnlSB2NvbmZpZ3M=');
+
+@$core.Deprecated('Use redeemPointsRequestDescriptor instead')
+const RedeemPointsRequest$json = {
+  '1': 'RedeemPointsRequest',
+  '2': [
+    {'1': 'points', '3': 1, '4': 1, '5': 5, '10': 'points'},
+    {'1': 'idempotency_key', '3': 2, '4': 1, '5': 9, '10': 'idempotencyKey'},
+  ],
+};
+
+/// Descriptor for `RedeemPointsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List redeemPointsRequestDescriptor = $convert.base64Decode(
+    'ChNSZWRlZW1Qb2ludHNSZXF1ZXN0EhYKBnBvaW50cxgBIAEoBVIGcG9pbnRzEicKD2lkZW1wb3'
+    'RlbmN5X2tleRgCIAEoCVIOaWRlbXBvdGVuY3lLZXk=');
+
+@$core.Deprecated('Use redeemPointsResponseDescriptor instead')
+const RedeemPointsResponse$json = {
+  '1': 'RedeemPointsResponse',
+  '2': [
+    {'1': 'points_redeemed', '3': 1, '4': 1, '5': 5, '10': 'pointsRedeemed'},
+    {'1': 'cash_minor', '3': 2, '4': 1, '5': 3, '10': 'cashMinor'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'new_balance', '3': 4, '4': 1, '5': 5, '10': 'newBalance'},
+    {'1': 'reference', '3': 5, '4': 1, '5': 9, '10': 'reference'},
+  ],
+};
+
+/// Descriptor for `RedeemPointsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List redeemPointsResponseDescriptor = $convert.base64Decode(
+    'ChRSZWRlZW1Qb2ludHNSZXNwb25zZRInCg9wb2ludHNfcmVkZWVtZWQYASABKAVSDnBvaW50c1'
+    'JlZGVlbWVkEh0KCmNhc2hfbWlub3IYAiABKANSCWNhc2hNaW5vchIaCghjdXJyZW5jeRgDIAEo'
+    'CVIIY3VycmVuY3kSHwoLbmV3X2JhbGFuY2UYBCABKAVSCm5ld0JhbGFuY2USHAoJcmVmZXJlbm'
+    'NlGAUgASgJUglyZWZlcmVuY2U=');
+
+@$core.Deprecated('Use getRedemptionQuoteRequestDescriptor instead')
+const GetRedemptionQuoteRequest$json = {
+  '1': 'GetRedemptionQuoteRequest',
+  '2': [
+    {'1': 'points', '3': 1, '4': 1, '5': 5, '10': 'points'},
+  ],
+};
+
+/// Descriptor for `GetRedemptionQuoteRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getRedemptionQuoteRequestDescriptor =
+    $convert.base64Decode(
+        'ChlHZXRSZWRlbXB0aW9uUXVvdGVSZXF1ZXN0EhYKBnBvaW50cxgBIAEoBVIGcG9pbnRz');
+
+@$core.Deprecated('Use getRedemptionQuoteResponseDescriptor instead')
+const GetRedemptionQuoteResponse$json = {
+  '1': 'GetRedemptionQuoteResponse',
+  '2': [
+    {'1': 'points', '3': 1, '4': 1, '5': 5, '10': 'points'},
+    {'1': 'cash_minor', '3': 2, '4': 1, '5': 3, '10': 'cashMinor'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    {
+      '1': 'points_per_major_unit',
+      '3': 4,
+      '4': 1,
+      '5': 5,
+      '10': 'pointsPerMajorUnit'
+    },
+    {'1': 'min_redeem_points', '3': 5, '4': 1, '5': 5, '10': 'minRedeemPoints'},
+    {'1': 'can_redeem', '3': 6, '4': 1, '5': 8, '10': 'canRedeem'},
+    {'1': 'reason', '3': 7, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `GetRedemptionQuoteResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getRedemptionQuoteResponseDescriptor = $convert.base64Decode(
+    'ChpHZXRSZWRlbXB0aW9uUXVvdGVSZXNwb25zZRIWCgZwb2ludHMYASABKAVSBnBvaW50cxIdCg'
+    'pjYXNoX21pbm9yGAIgASgDUgljYXNoTWlub3ISGgoIY3VycmVuY3kYAyABKAlSCGN1cnJlbmN5'
+    'EjEKFXBvaW50c19wZXJfbWFqb3JfdW5pdBgEIAEoBVIScG9pbnRzUGVyTWFqb3JVbml0EioKEW'
+    '1pbl9yZWRlZW1fcG9pbnRzGAUgASgFUg9taW5SZWRlZW1Qb2ludHMSHQoKY2FuX3JlZGVlbRgG'
+    'IAEoCFIJY2FuUmVkZWVtEhYKBnJlYXNvbhgHIAEoCVIGcmVhc29u');

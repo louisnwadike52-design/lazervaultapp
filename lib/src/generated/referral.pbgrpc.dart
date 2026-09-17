@@ -125,6 +125,31 @@ class ReferralServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getPointsConfig, request, options: options);
   }
 
+  /// Convert LazerPoints into cash in the caller's wallet.
+  ///
+  /// Idempotent on (caller, idempotency_key): a phone that times out and retries
+  /// must convert once, not twice. The cash is paid from a funded platform
+  /// wallet, so a redemption is real money leaving the business rather than a
+  /// number being minted.
+  $grpc.ResponseFuture<$0.RedeemPointsResponse> redeemPoints(
+    $0.RedeemPointsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$redeemPoints, request, options: options);
+  }
+
+  /// What a conversion would be worth, without performing it.
+  ///
+  /// Exists so the app can show the cash value and the minimum BEFORE the user
+  /// commits. Quoting client-side would duplicate the rate and the rounding
+  /// rule, and the two would drift.
+  $grpc.ResponseFuture<$0.GetRedemptionQuoteResponse> getRedemptionQuote(
+    $0.GetRedemptionQuoteRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getRedemptionQuote, request, options: options);
+  }
+
   // method descriptors
 
   static final _$validateReferralCode = $grpc.ClientMethod<
@@ -182,6 +207,16 @@ class ReferralServiceClient extends $grpc.Client {
           '/pb.ReferralService/GetPointsConfig',
           ($0.GetPointsConfigRequest value) => value.writeToBuffer(),
           $0.GetPointsConfigResponse.fromBuffer);
+  static final _$redeemPoints =
+      $grpc.ClientMethod<$0.RedeemPointsRequest, $0.RedeemPointsResponse>(
+          '/pb.ReferralService/RedeemPoints',
+          ($0.RedeemPointsRequest value) => value.writeToBuffer(),
+          $0.RedeemPointsResponse.fromBuffer);
+  static final _$getRedemptionQuote = $grpc.ClientMethod<
+          $0.GetRedemptionQuoteRequest, $0.GetRedemptionQuoteResponse>(
+      '/pb.ReferralService/GetRedemptionQuote',
+      ($0.GetRedemptionQuoteRequest value) => value.writeToBuffer(),
+      $0.GetRedemptionQuoteResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('pb.ReferralService')
@@ -288,6 +323,24 @@ abstract class ReferralServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetPointsConfigRequest.fromBuffer(value),
         ($0.GetPointsConfigResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.RedeemPointsRequest, $0.RedeemPointsResponse>(
+            'RedeemPoints',
+            redeemPoints_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.RedeemPointsRequest.fromBuffer(value),
+            ($0.RedeemPointsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetRedemptionQuoteRequest,
+            $0.GetRedemptionQuoteResponse>(
+        'GetRedemptionQuote',
+        getRedemptionQuote_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetRedemptionQuoteRequest.fromBuffer(value),
+        ($0.GetRedemptionQuoteResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.ValidateReferralCodeResponse> validateReferralCode_Pre(
@@ -388,4 +441,22 @@ abstract class ReferralServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetPointsConfigResponse> getPointsConfig(
       $grpc.ServiceCall call, $0.GetPointsConfigRequest request);
+
+  $async.Future<$0.RedeemPointsResponse> redeemPoints_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.RedeemPointsRequest> $request) async {
+    return redeemPoints($call, await $request);
+  }
+
+  $async.Future<$0.RedeemPointsResponse> redeemPoints(
+      $grpc.ServiceCall call, $0.RedeemPointsRequest request);
+
+  $async.Future<$0.GetRedemptionQuoteResponse> getRedemptionQuote_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetRedemptionQuoteRequest> $request) async {
+    return getRedemptionQuote($call, await $request);
+  }
+
+  $async.Future<$0.GetRedemptionQuoteResponse> getRedemptionQuote(
+      $grpc.ServiceCall call, $0.GetRedemptionQuoteRequest request);
 }

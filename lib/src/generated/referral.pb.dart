@@ -2567,6 +2567,379 @@ class GetPointsConfigResponse extends $pb.GeneratedMessage {
   $pb.PbList<PointsConfigEntry> get configs => $_getList(0);
 }
 
+class RedeemPointsRequest extends $pb.GeneratedMessage {
+  factory RedeemPointsRequest({
+    $core.int? points,
+    $core.String? idempotencyKey,
+  }) {
+    final result = create();
+    if (points != null) result.points = points;
+    if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    return result;
+  }
+
+  RedeemPointsRequest._();
+
+  factory RedeemPointsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RedeemPointsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RedeemPointsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'points', $pb.PbFieldType.O3)
+    ..aOS(2, _omitFieldNames ? '' : 'idempotencyKey')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RedeemPointsRequest clone() => RedeemPointsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RedeemPointsRequest copyWith(void Function(RedeemPointsRequest) updates) =>
+      super.copyWith((message) => updates(message as RedeemPointsRequest))
+          as RedeemPointsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RedeemPointsRequest create() => RedeemPointsRequest._();
+  @$core.override
+  RedeemPointsRequest createEmptyInstance() => create();
+  static $pb.PbList<RedeemPointsRequest> createRepeated() =>
+      $pb.PbList<RedeemPointsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RedeemPointsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RedeemPointsRequest>(create);
+  static RedeemPointsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get points => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set points($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPoints() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPoints() => $_clearField(1);
+
+  /// Caller-generated, stable across retries of the SAME attempt.
+  @$pb.TagNumber(2)
+  $core.String get idempotencyKey => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set idempotencyKey($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasIdempotencyKey() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearIdempotencyKey() => $_clearField(2);
+}
+
+class RedeemPointsResponse extends $pb.GeneratedMessage {
+  factory RedeemPointsResponse({
+    $core.int? pointsRedeemed,
+    $fixnum.Int64? cashMinor,
+    $core.String? currency,
+    $core.int? newBalance,
+    $core.String? reference,
+  }) {
+    final result = create();
+    if (pointsRedeemed != null) result.pointsRedeemed = pointsRedeemed;
+    if (cashMinor != null) result.cashMinor = cashMinor;
+    if (currency != null) result.currency = currency;
+    if (newBalance != null) result.newBalance = newBalance;
+    if (reference != null) result.reference = reference;
+    return result;
+  }
+
+  RedeemPointsResponse._();
+
+  factory RedeemPointsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RedeemPointsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RedeemPointsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..a<$core.int>(
+        1, _omitFieldNames ? '' : 'pointsRedeemed', $pb.PbFieldType.O3)
+    ..aInt64(2, _omitFieldNames ? '' : 'cashMinor')
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'newBalance', $pb.PbFieldType.O3)
+    ..aOS(5, _omitFieldNames ? '' : 'reference')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RedeemPointsResponse clone() =>
+      RedeemPointsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RedeemPointsResponse copyWith(void Function(RedeemPointsResponse) updates) =>
+      super.copyWith((message) => updates(message as RedeemPointsResponse))
+          as RedeemPointsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RedeemPointsResponse create() => RedeemPointsResponse._();
+  @$core.override
+  RedeemPointsResponse createEmptyInstance() => create();
+  static $pb.PbList<RedeemPointsResponse> createRepeated() =>
+      $pb.PbList<RedeemPointsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RedeemPointsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RedeemPointsResponse>(create);
+  static RedeemPointsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get pointsRedeemed => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set pointsRedeemed($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPointsRedeemed() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPointsRedeemed() => $_clearField(1);
+
+  /// Kobo, like every amount crossing a service boundary here.
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get cashMinor => $_getI64(1);
+  @$pb.TagNumber(2)
+  set cashMinor($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCashMinor() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCashMinor() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get newBalance => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set newBalance($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasNewBalance() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearNewBalance() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get reference => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set reference($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasReference() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearReference() => $_clearField(5);
+}
+
+class GetRedemptionQuoteRequest extends $pb.GeneratedMessage {
+  factory GetRedemptionQuoteRequest({
+    $core.int? points,
+  }) {
+    final result = create();
+    if (points != null) result.points = points;
+    return result;
+  }
+
+  GetRedemptionQuoteRequest._();
+
+  factory GetRedemptionQuoteRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetRedemptionQuoteRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetRedemptionQuoteRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'points', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetRedemptionQuoteRequest clone() =>
+      GetRedemptionQuoteRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetRedemptionQuoteRequest copyWith(
+          void Function(GetRedemptionQuoteRequest) updates) =>
+      super.copyWith((message) => updates(message as GetRedemptionQuoteRequest))
+          as GetRedemptionQuoteRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetRedemptionQuoteRequest create() => GetRedemptionQuoteRequest._();
+  @$core.override
+  GetRedemptionQuoteRequest createEmptyInstance() => create();
+  static $pb.PbList<GetRedemptionQuoteRequest> createRepeated() =>
+      $pb.PbList<GetRedemptionQuoteRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetRedemptionQuoteRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetRedemptionQuoteRequest>(create);
+  static GetRedemptionQuoteRequest? _defaultInstance;
+
+  /// 0 quotes the caller's WHOLE balance, which is what the screen opens on.
+  @$pb.TagNumber(1)
+  $core.int get points => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set points($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPoints() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPoints() => $_clearField(1);
+}
+
+class GetRedemptionQuoteResponse extends $pb.GeneratedMessage {
+  factory GetRedemptionQuoteResponse({
+    $core.int? points,
+    $fixnum.Int64? cashMinor,
+    $core.String? currency,
+    $core.int? pointsPerMajorUnit,
+    $core.int? minRedeemPoints,
+    $core.bool? canRedeem,
+    $core.String? reason,
+  }) {
+    final result = create();
+    if (points != null) result.points = points;
+    if (cashMinor != null) result.cashMinor = cashMinor;
+    if (currency != null) result.currency = currency;
+    if (pointsPerMajorUnit != null)
+      result.pointsPerMajorUnit = pointsPerMajorUnit;
+    if (minRedeemPoints != null) result.minRedeemPoints = minRedeemPoints;
+    if (canRedeem != null) result.canRedeem = canRedeem;
+    if (reason != null) result.reason = reason;
+    return result;
+  }
+
+  GetRedemptionQuoteResponse._();
+
+  factory GetRedemptionQuoteResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetRedemptionQuoteResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetRedemptionQuoteResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'points', $pb.PbFieldType.O3)
+    ..aInt64(2, _omitFieldNames ? '' : 'cashMinor')
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..a<$core.int>(
+        4, _omitFieldNames ? '' : 'pointsPerMajorUnit', $pb.PbFieldType.O3)
+    ..a<$core.int>(
+        5, _omitFieldNames ? '' : 'minRedeemPoints', $pb.PbFieldType.O3)
+    ..aOB(6, _omitFieldNames ? '' : 'canRedeem')
+    ..aOS(7, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetRedemptionQuoteResponse clone() =>
+      GetRedemptionQuoteResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetRedemptionQuoteResponse copyWith(
+          void Function(GetRedemptionQuoteResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetRedemptionQuoteResponse))
+          as GetRedemptionQuoteResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetRedemptionQuoteResponse create() => GetRedemptionQuoteResponse._();
+  @$core.override
+  GetRedemptionQuoteResponse createEmptyInstance() => create();
+  static $pb.PbList<GetRedemptionQuoteResponse> createRepeated() =>
+      $pb.PbList<GetRedemptionQuoteResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetRedemptionQuoteResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetRedemptionQuoteResponse>(create);
+  static GetRedemptionQuoteResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get points => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set points($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPoints() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPoints() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get cashMinor => $_getI64(1);
+  @$pb.TagNumber(2)
+  set cashMinor($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCashMinor() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCashMinor() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => $_clearField(3);
+
+  /// How many points buy one major unit. Shown so the rate is visible rather
+  /// than implied by a number the user has to reverse-engineer.
+  @$pb.TagNumber(4)
+  $core.int get pointsPerMajorUnit => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pointsPerMajorUnit($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasPointsPerMajorUnit() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPointsPerMajorUnit() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get minRedeemPoints => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set minRedeemPoints($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasMinRedeemPoints() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearMinRedeemPoints() => $_clearField(5);
+
+  /// False when the balance is under the minimum or the rate is unset. Carries
+  /// the reason so the button can explain itself instead of being inert.
+  @$pb.TagNumber(6)
+  $core.bool get canRedeem => $_getBF(5);
+  @$pb.TagNumber(6)
+  set canRedeem($core.bool value) => $_setBool(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasCanRedeem() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearCanRedeem() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get reason => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set reason($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasReason() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearReason() => $_clearField(7);
+}
+
 const $core.bool _omitFieldNames =
     $core.bool.fromEnvironment('protobuf.omit_field_names');
 const $core.bool _omitMessageNames =

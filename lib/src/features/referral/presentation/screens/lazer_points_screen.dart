@@ -9,6 +9,9 @@ import '../../domain/entities/points_config_entity.dart';
 import '../cubit/referral_cubit.dart';
 import '../cubit/referral_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../widgets/convert_points_sheet.dart';
+import '../../domain/repositories/i_referral_repository.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 part 'lazer_points_screen_widgets.dart';
 
 
@@ -224,7 +227,58 @@ class _LazerPointsScreenState extends State<LazerPointsScreen> {
               ),
             ],
           ),
+          SizedBox(height: 16.h),
+          // The action the screen was missing. A balance and a "Redeemed"
+          // figure with no way to redeem made the number decorative.
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _openConvertSheet(balance.currentBalance),
+              icon: Icon(Icons.savings_outlined, size: 18.sp),
+              label: Text(
+                'Convert to cash',
+                style: TextStyle(
+                    fontSize: 14.sp, fontWeight: FontWeight.w600),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.15),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                elevation: 0,
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  /// Open the conversion sheet.
+  ///
+  /// Shown even when the balance is below the minimum: the sheet explains WHY
+  /// in the server's own words ("you need at least N points"), which teaches
+  /// the threshold. Hiding the button instead would leave someone wondering
+  /// whether conversion exists at all.
+  void _openConvertSheet(int currentBalance) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => ConvertPointsSheet(
+        repository: serviceLocator<IReferralRepository>(),
+        currentBalance: currentBalance,
+        // Refresh from the server rather than adjusting locally: the
+        // authoritative balance is the one that just changed, and a local
+        // subtraction would drift if the server paid out a different number of
+        // points than requested (the remainder rule).
+        onConverted: () {
+          if (!mounted) return;
+          context.read<ReferralCubit>().loadPointsBalance();
+          context.read<ReferralCubit>().loadPointsHistory();
+        },
       ),
     );
   }

@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/plan_my_day/presentation/screens/plan_my
 import 'package:lazervault/src/features/sprayme/presentation/cubit/sprayme_cubit.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/sprayme_home_screen.dart';
 import 'package:lazervault/src/features/support/presentation/support_tickets_screen.dart';
+import 'package:lazervault/src/features/referral/presentation/widgets/lazer_points_nav_widget.dart';
 
 // ─── Main Screen ───────────────────────────────────────────────────────────────
 class NewLifestyleScreen extends StatefulWidget {
@@ -33,6 +34,13 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
           children: [
+            // Rewards, above the fold. LazerPoints were reachable only through
+            // the referral dashboard, so a reward earned on ordinary spending
+            // sat behind a feature about inviting friends — and a balance
+            // nobody sees is a balance nobody converts. The widget hides itself
+            // if it cannot load, rather than holding the top of the screen with
+            // an error the user cannot act on from here.
+            const LazerPointsNavWidget(),
             // Title row — support entry pinned to the header's top right.
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
