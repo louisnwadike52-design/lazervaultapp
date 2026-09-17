@@ -45,6 +45,10 @@ class ContributionMessage {
   final String replyToBody;
   final String replyToSender;
 
+  /// Ids @-mentioned in [body]. Server-validated against active membership, so
+  /// anything here is a real member of this group.
+  final List<String> mentionedUserIds;
+
   /// Non-null ⇒ show an "edited" marker.
   final DateTime? editedAt;
 
@@ -75,6 +79,7 @@ class ContributionMessage {
     this.deletedForEveryone = false,
     this.status = ChatDeliveryStatus.sent,
     this.localMediaPath,
+      this.mentionedUserIds = const [],
   });
 
   bool get isText => kind == 'text';
@@ -128,6 +133,14 @@ class ContributionMessage {
       replyToMessageId:
           (j['replyToMessageId'] ?? j['reply_to_message_id']) as String? ?? '',
       replyToBody: (j['replyToBody'] ?? j['reply_to_body']) as String? ?? '',
+      // Tolerates both spellings and a null: an older server simply sends
+      // nothing, and a message with no mentions is the common case.
+      mentionedUserIds:
+          ((j['mentionedUserIds'] ?? j['mentioned_user_ids']) as List<dynamic>?)
+                  ?.map((e) => '$e')
+                  .where((e) => e.isNotEmpty)
+                  .toList() ??
+              const [],
       replyToSender:
           (j['replyToSender'] ?? j['reply_to_sender']) as String? ?? '',
       editedAt: ts(j['editedAt'] ?? j['edited_at']),
@@ -335,6 +348,7 @@ class ContributionChatRemoteDataSource {
     String mediaUrl = '',
     int durationMs = 0,
     String replyToMessageId = '',
+    List<String> mentionedUserIds = const [],
   }) async {
     final uri = Uri.parse('$_base/v1/contributions/$contributionId/messages');
     final res = await _client.post(
@@ -348,6 +362,10 @@ class ContributionChatRemoteDataSource {
         'duration_ms': durationMs,
         'client_message_id': clientMessageId,
         'reply_to_message_id': replyToMessageId,
+        // Omitted when empty so an older gateway that does not know the field
+        // is never sent a null it has to interpret.
+        if (mentionedUserIds.isNotEmpty)
+          'mentioned_user_ids': mentionedUserIds,
       }),
     );
     if (res.statusCode < 200 || res.statusCode >= 300) {

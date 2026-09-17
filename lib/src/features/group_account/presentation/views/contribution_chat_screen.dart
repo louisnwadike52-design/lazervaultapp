@@ -12,6 +12,8 @@ import 'package:intl/intl.dart';
 
 import '../../data/datasources/contribution_chat_remote_data_source.dart';
 import '../cubit/contribution_chat_cubit.dart';
+import '../../utils/mention_text.dart';
+import '../widgets/mention_picker.dart';
 
 /// Full-screen group chat for one contribution.
 ///
@@ -34,7 +36,13 @@ class ContributionChatScreen extends StatefulWidget {
     required this.contributionTitle,
     required this.currentUserId,
     required this.tokenProvider,
+    this.mentionCandidates = const [],
   });
+
+  /// Members who can be @-mentioned. Supplied by the caller because the chat
+  /// screen has no member list of its own, and deriving candidates from who has
+  /// spoken would make a quiet member impossible to tag.
+  final List<MentionCandidate> mentionCandidates;
 
   @override
   State<ContributionChatScreen> createState() => _ContributionChatScreenState();
@@ -145,11 +153,73 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
     });
   }
 
+  /// Ids picked from the picker, mapped to the display name inserted for them.
+  ///
+  /// The name is kept so the text can be re-checked at send time: a mention is
+  /// only real while its text is, and someone who picks Ada then deletes her
+  /// name must not still notify her.
+  final Map<String, String> _pickedMentions = {};
+
+  /// End of the most recently completed mention. Names contain spaces, so a
+  /// trailing space cannot close a token — this boundary is what does.
+  int _mentionBoundary = 0;
+
+  MentionQuery? _mentionQuery;
+
+  List<MentionCandidate> get _mentionMatches {
+    final q = _mentionQuery;
+    if (q == null) return const [];
+    return MentionText.rank(
+      widget.mentionCandidates.where((c) => c.userId != widget.currentUserId),
+      q.term,
+      nameOf: (c) => c.name,
+    ).take(12).toList();
+  }
+
+  void _onComposerChanged(String value) {
+    final sel = _input.selection;
+    final caret = sel.isValid ? sel.baseOffset : value.length;
+    // Editing BEFORE the boundary invalidates it — otherwise deleting an
+    // earlier mention would leave the scan refusing to look at text that is
+    // now live again.
+    if (_mentionBoundary > value.length) _mentionBoundary = 0;
+    final q = MentionText.queryAt(value, caret, notBefore: _mentionBoundary);
+    if (q?.term != _mentionQuery?.term || (q == null) != (_mentionQuery == null)) {
+      setState(() => _mentionQuery = q);
+    } else {
+      _mentionQuery = q;
+    }
+  }
+
+  void _applyMention(MentionCandidate c) {
+    final q = _mentionQuery;
+    if (q == null) return;
+    final r = MentionText.applyMention(_input.text, q, c.name);
+    _input.value = TextEditingValue(
+      text: r.text,
+      selection: TextSelection.collapsed(offset: r.caret),
+    );
+    setState(() {
+      _pickedMentions[c.userId] = c.name;
+      _mentionBoundary = r.caret;
+      _mentionQuery = null;
+      _hasText = r.text.trim().isNotEmpty;
+    });
+  }
+
   Future<void> _send() async {
     final text = _input.text;
     if (text.trim().isEmpty) return;
+    // Re-derived from the final text, not from what was picked: a name deleted
+    // after selection must not still notify that person.
+    final mentions = MentionText.survivingMentions(text, _pickedMentions);
     _input.clear();
-    await _chat.send(text);
+    setState(() {
+      _pickedMentions.clear();
+      _mentionBoundary = 0;
+      _mentionQuery = null;
+    });
+    await _chat.send(text, mentionedUserIds: mentions);
     _scrollToBottom();
   }
 
@@ -207,6 +277,14 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
               Expanded(child: _buildList()),
               if (_chat.typing.isNotEmpty) _buildTypingRow(),
               if (_chat.replyingTo != null) _buildReplyPreview(),
+              // Directly above the composer: the choice is about the word under
+              // the caret, so it belongs next to it. The picker hides itself
+              // when nothing matches, so an '@' that means nothing costs no UI.
+              if (_mentionQuery != null)
+                MentionPicker(
+                  candidates: _mentionMatches,
+                  onSelected: _applyMention,
+                ),
               _buildComposer(),
             ],
           ),
@@ -618,6 +696,7 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
               controller: _input,
               onChanged: (v) {
                 _chat.onTypingChanged(v);
+                _onComposerChanged(v);
                 final has = v.trim().isNotEmpty;
                 if (has != _hasText) setState(() => _hasText = has);
               },

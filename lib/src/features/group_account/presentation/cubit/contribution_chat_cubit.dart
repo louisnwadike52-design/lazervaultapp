@@ -307,7 +307,10 @@ class ContributionChatCubit extends ChangeNotifier {
   /// poll can reconcile rather than duplicate. On failure the bubble stays
   /// with a `failed` status so the user can retry instead of losing what they
   /// typed.
-  Future<void> send(String body) async {
+  /// [mentionedUserIds] are people @-tagged in [body]. Already reconciled
+  /// against the final text by the composer, so a name deleted after being
+  /// picked is not in this list.
+  Future<void> send(String body, {List<String> mentionedUserIds = const []}) async {
     final text = body.trim();
     if (text.isEmpty) return;
     final clientId = _uuid.v4();
@@ -341,6 +344,7 @@ class ContributionChatCubit extends ChangeNotifier {
         body: text,
         clientMessageId: clientId,
         replyToMessageId: reply?.id ?? '',
+        mentionedUserIds: mentionedUserIds,
       );
       final i = messages
           .indexWhere((m) => m.clientMessageId == clientId && m.id.isEmpty);

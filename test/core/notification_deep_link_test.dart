@@ -100,6 +100,20 @@ void main() {
       expect(t.precision, TargetPrecision.record);
     });
 
+    // A mention push is a different event type but the same destination. It
+    // shares the group_chat_ prefix deliberately, so it must not fall through
+    // to the generic group branch and land on the group instead of the thread.
+    test('a mention opens the same thread as an ordinary chat message', () {
+      final t = NotificationRouteResolver.resolve('group_chat_mention', {
+        'contribution_id': 'contrib-42',
+        'group_id': 'group-7',
+        'mention': 'true',
+      });
+      expect(t!.route, AppRoutes.contributionDetails);
+      expect((t.arguments as Map)['contributionId'], 'contrib-42');
+      expect(t.precision, TargetPrecision.record);
+    });
+
     // group_id is always present in the payload, so the fallback has to be
     // driven by the MISSING contribution id rather than by an empty payload —
     // otherwise a publisher that drops the thread id silently keeps working

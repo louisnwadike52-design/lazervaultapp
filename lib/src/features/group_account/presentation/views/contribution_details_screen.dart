@@ -27,6 +27,7 @@ import 'edit_contribution_screen.dart';
 import 'past_contributions_screen.dart';
 import '../widgets/payment_group_widgets.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../widgets/mention_picker.dart';
 part 'contribution_details_sheets.dart';
 part 'contribution_details_banners.dart';
 part 'contribution_details_payment_widgets.dart';
@@ -773,6 +774,26 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                       contributionId: contribution.id,
                       contributionTitle: contribution.title,
                       currentUserId: me,
+                      // Supplied from here because the chat screen has no
+                      // member list of its own. ACTIVE members only — the
+                      // server rejects anyone else anyway, and offering a name
+                      // that silently fails to tag is worse than not offering
+                      // it. Deriving candidates from who has spoken would make
+                      // a quiet member impossible to mention.
+                      mentionCandidates: cubit.state is GroupAccountGroupLoaded
+                          ? (cubit.state as GroupAccountGroupLoaded)
+                              .members
+                              .where((m) =>
+                                  m.status == GroupMemberStatus.active)
+                              .map((m) => MentionCandidate(
+                                    userId: m.userId,
+                                    name: m.userName.trim().isNotEmpty
+                                        ? m.userName.trim()
+                                        : 'Member',
+                                    username: m.userUsername,
+                                  ))
+                              .toList()
+                          : const [],
                       tokenProvider: () {
                         final s = context.read<AuthenticationCubit>().state;
                         return s is AuthenticationSuccess
