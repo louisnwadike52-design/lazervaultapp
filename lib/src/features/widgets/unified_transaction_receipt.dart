@@ -880,7 +880,17 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // donation is the whole point of the document. This was unreachable
       // before: every crowdfund row classified as `insurance`, so it never
       // presented as crowdfund here at all.
-      tx.serviceType == TransactionServiceType.crowdfund;
+      tx.serviceType == TransactionServiceType.crowdfund ||
+      // Deposits and withdrawals: money actually entering or leaving the
+      // account, with a named counterparty and a bank reference. These are the
+      // receipts people forward to prove a payment landed, and Share/Download
+      // were handing them a flat screenshot instead of the document.
+      //
+      // Deposits were unreachable here until their classification was fixed —
+      // banking-service has no AppServiceName mapping, so every deposit
+      // resolved to `unknown` and could never match this list.
+      tx.serviceType == TransactionServiceType.deposit ||
+      tx.serviceType == TransactionServiceType.withdrawal;
 
   /// Invoice-payload rows for the PDF body — mirrored from the metadata the
   /// on-screen receipt shows (set by invoice_payment_receipt_screen), so the

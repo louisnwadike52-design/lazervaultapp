@@ -797,6 +797,17 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
         : (metadata['recipient_account'] as String?
             ?? metadata['counterparty_account'] as String?);
 
+    // Deposits name the sender in the DESCRIPTION and nowhere else.
+    //
+    // banking-service writes "Deposit from Praiz Onah" but leaves
+    // counterparty_name empty, so a deposit receipt had no one to put on its
+    // From line — the document proving money arrived could not say who sent
+    // it. The name is right there in the text; recover it rather than shipping
+    // a receipt with a blank counterparty.
+    if (counterpartyName == null || counterpartyName.isEmpty) {
+      counterpartyName = _senderFromDepositDescription(protoTx.description);
+    }
+
     // Crypto sends name their recipient in metadata (username or truncated
     // address) — surface it as the counterparty so the receipt shows "To".
     if (isCryptoSend && (counterpartyName == null || counterpartyName.isEmpty)) {
@@ -1113,4 +1124,37 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     }
     return UnifiedTransactionStatus.pending;
   }
+}
+
+/// Recovers the sender's name from a deposit description.
+///
+/// banking-service writes "Deposit from {name}" and leaves counterparty_name
+/// empty, so this is the only place the payer is recorded. Returns null when
+/// there is no real name to show — including for the provider's own
+/// placeholders, which must never be printed on a receipt as though they were
+/// a person.
+String? _senderFromDepositDescription(String description) {
+  final text = description.trim();
+  if (text.isEmpty) return null;
+
+  final match = RegExp(r'^deposit\s+from\s+(.+)$', caseSensitive: false)
+      .firstMatch(text);
+  if (match == null) return null;
+
+  final name = match.group(1)?.trim() ?? '';
+  if (name.isEmpty) return null;
+
+  // "Deposit from Anonymous customer" / "Unknown" are provider placeholders,
+  // not people. A receipt naming them reads as a real counterparty.
+  const placeholders = {
+    'anonymous customer',
+    'anonymous',
+    'unknown',
+    'unknown customer',
+    'n/a',
+    'null',
+  };
+  if (placeholders.contains(name.toLowerCase())) return null;
+
+  return name;
 }
