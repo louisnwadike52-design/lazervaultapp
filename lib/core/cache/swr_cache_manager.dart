@@ -9,7 +9,6 @@ import 'cache_entry.dart';
 export 'cache_entry.dart' show SWRResult, CacheResultSource;
 part 'swr_cache_manager_widgets.dart';
 
-
 /// Stale-While-Revalidate cache manager for network optimization.
 ///
 /// This manager implements the SWR pattern with comprehensive edge case handling:
@@ -514,7 +513,8 @@ class SWRCacheManager {
           await _storage.delete(key: key);
         }
       }
-      _emit('[SWRCache] Invalidated pattern: $pattern (${keysToRemove.length} entries)');
+      _emit(
+          '[SWRCache] Invalidated pattern: $pattern (${keysToRemove.length} entries)');
     } catch (e) {
       _emit('[SWRCache] Error invalidating pattern $pattern: $e');
     }

@@ -361,6 +361,7 @@ import 'package:lazervault/src/features/id_pay/presentation/view/id_pay_organiza
 // Contactless Payment imports
 import 'package:lazervault/src/features/contactless_payment/presentation/cubit/contactless_payment_cubit.dart';
 import 'package:lazervault/src/features/contactless_payment/presentation/view/contactless_payment_home_screen.dart';
+import 'package:lazervault/src/features/card_acceptance/presentation/view/card_acceptance_screen.dart';
 import 'package:lazervault/src/features/contactless_payment/presentation/view/create_payment_session_screen.dart';
 import 'package:lazervault/src/features/contactless_payment/presentation/view/nfc_reader_screen.dart';
 import 'package:lazervault/src/features/contactless_payment/presentation/view/payment_history_screen.dart' as contactless_history;
@@ -3304,6 +3305,11 @@ GetPage(
       // getMyContactlessPayments), so no BlocProvider wrapper is needed here.
       name: AppRoutes.contactlessPay,
       page: () => const ContactlessPaymentHomeScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.cardAcceptance,
+      page: () => const CardAcceptanceScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(

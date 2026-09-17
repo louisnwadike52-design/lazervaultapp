@@ -100,13 +100,17 @@ enum IdentityDocumentType {
   // Nigeria
   bvn('BVN', 'Bank Verification Number', 11, 'numeric', '12345678901'),
   nin('NIN', 'National Identification Number', 11, 'numeric', '12345678901'),
-  intlPassport('INTL_PASSPORT', 'International Passport', 9, 'alphanumeric', 'A12345678'),
-  driverLicense('DRIVER_LICENSE', "Driver's License", 11, 'alphanumeric', 'ABC12345678'),
+  intlPassport('INTL_PASSPORT', 'International Passport', 9, 'alphanumeric',
+      'A12345678'),
+  driverLicense(
+      'DRIVER_LICENSE', "Driver's License", 11, 'alphanumeric', 'ABC12345678'),
 
   // UK
   ukPassport('UK_PASSPORT', 'UK Passport', 9, 'numeric', '123456789'),
-  ukDriverLicense('UK_DRIVER_LICENSE', 'UK Driving Licence', 16, 'alphanumeric', 'MORGA657054SM9IJ'),
-  niNumber('NI_NUMBER', 'National Insurance Number', 9, 'alphanumeric', 'QQ123456C'),
+  ukDriverLicense('UK_DRIVER_LICENSE', 'UK Driving Licence', 16, 'alphanumeric',
+      'MORGA657054SM9IJ'),
+  niNumber(
+      'NI_NUMBER', 'National Insurance Number', 9, 'alphanumeric', 'QQ123456C'),
 
   // US
   ssn('SSN', 'Social Security Number', 9, 'numeric', '123456789'),
@@ -117,19 +121,24 @@ enum IdentityDocumentType {
 
   // Ghana
   ghanaCard('GHANA_CARD', 'Ghana Card', 15, 'alphanumeric', 'GHA-123456789-1'),
-  ghanaVoterCard('GHANA_VOTER_CARD', "Voter's Card", 10, 'numeric', '1234567890'),
-  ghanaSsnit('GHANA_SSNIT', 'SSNIT Number', 13, 'alphanumeric', 'A123456789012'),
-  ghanaPassport('GHANA_PASSPORT', 'Ghana Passport', 8, 'alphanumeric', 'G1234567'),
+  ghanaVoterCard(
+      'GHANA_VOTER_CARD', "Voter's Card", 10, 'numeric', '1234567890'),
+  ghanaSsnit(
+      'GHANA_SSNIT', 'SSNIT Number', 13, 'alphanumeric', 'A123456789012'),
+  ghanaPassport(
+      'GHANA_PASSPORT', 'Ghana Passport', 8, 'alphanumeric', 'G1234567'),
 
   // Kenya
   kenyaNationalId('KENYA_NATIONAL_ID', 'National ID', 8, 'numeric', '12345678'),
   kenyaKraPin('KENYA_KRA_PIN', 'KRA PIN', 11, 'alphanumeric', 'A123456789B'),
-  kenyaPassport('KENYA_PASSPORT', 'Kenya Passport', 9, 'alphanumeric', 'AB1234567'),
+  kenyaPassport(
+      'KENYA_PASSPORT', 'Kenya Passport', 9, 'alphanumeric', 'AB1234567'),
   kenyaAlienId('KENYA_ALIEN_ID', 'Alien ID', 8, 'numeric', '12345678'),
 
   // South Africa
   saId('SA_ID', 'South African ID', 13, 'numeric', '9001015009087'),
-  saPassport('SA_PASSPORT', 'South African Passport', 9, 'alphanumeric', 'A12345678');
+  saPassport(
+      'SA_PASSPORT', 'South African Passport', 9, 'alphanumeric', 'A12345678');
 
   final String id;
   final String displayName;
@@ -193,6 +202,7 @@ class CountryConfig {
   final List<String> regulatoryNotes;
   final bool isActive;
   final bool isBeta;
+
   /// Tier-specific mandatory ID types (CBN compliance)
   /// Maps KYC level to the ONLY accepted ID types for that tier
   final Map<KycLevel, List<IdentityDocumentType>> tierIdTypes;

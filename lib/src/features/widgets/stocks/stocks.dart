@@ -7,7 +7,6 @@ import 'package:get/get.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
 part 'stocks_widgets.dart';
 
-
 class Stocks extends StatefulWidget {
   const Stocks({super.key});
 
@@ -19,7 +18,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
-  
+
   final List<String> timeFrames = ['1D', '1W', '1M', '3M', '1Y', 'All'];
   int selectedTimeFrame = 0;
   bool isWatchlist = true;
@@ -148,22 +147,22 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
           // Main content
           Expanded(
             child: DefaultTabController(
-      length: 4,
-      child: Column(
-        children: [
+              length: 4,
+              child: Column(
+                children: [
                   _buildModernHeader(),
                   _buildPortfolioSummaryCard(),
                   _buildQuickActions(),
                   SizedBox(height: 16.h),
                   _buildTabBar(),
-          Expanded(
-            child: TabBarView(
-              children: [
-                _buildStocksTab(),
-                _buildComingSoonTab('Crypto'),
-                _buildComingSoonTab('ETFs'),
-                _buildNewsTab(),
-              ],
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _buildStocksTab(),
+                        _buildComingSoonTab('Crypto'),
+                        _buildComingSoonTab('ETFs'),
+                        _buildNewsTab(),
+                      ],
                     ),
                   ),
                 ],
@@ -177,17 +176,18 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
 
   Widget _buildModernHeader() {
     return Container(
-      padding: EdgeInsets.fromLTRB(16.w, MediaQuery.of(context).padding.top + 16.h, 16.w, 16.h),
+      padding: EdgeInsets.fromLTRB(
+          16.w, MediaQuery.of(context).padding.top + 16.h, 16.w, 16.h),
       child: FadeTransition(
         opacity: _fadeAnimation,
         child: ScaleTransition(
           scale: _scaleAnimation,
           child: Row(
-      children: [
-        Container(
+            children: [
+              Container(
                 height: 40.h,
                 width: 40.w,
-          decoration: BoxDecoration(
+                decoration: BoxDecoration(
                   color: Colors.grey[900],
                   borderRadius: BorderRadius.circular(12.r),
                 ),
@@ -233,8 +233,8 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: IconButton(
-                  icon: Icon(Icons.mic_rounded, 
-                    color: Colors.blue, size: 20.sp),
+                  icon:
+                      Icon(Icons.mic_rounded, color: Colors.blue, size: 20.sp),
                   onPressed: () => _showVoiceAgentSheet(),
                 ),
               ),
@@ -247,8 +247,8 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: IconButton(
-                  icon: Icon(Icons.notifications_outlined, 
-                    color: Colors.white, size: 20.sp),
+                  icon: Icon(Icons.notifications_outlined,
+                      color: Colors.white, size: 20.sp),
                   onPressed: () {},
                 ),
               ),
@@ -270,7 +270,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
       'Set price alert',
       'View my watchlist',
     ];
-    
+
     // Self-sizing sheet (DraggableScrollableSheet: 90% → full screen).
     Get.bottomSheet(
       VoiceCommandSheet(),
@@ -286,13 +286,13 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
             const Color(0xFF2C3E50),
             const Color(0xFF3498DB),
-              ],
-            ),
+          ],
+        ),
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
@@ -301,10 +301,10 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
             offset: Offset(0, 10),
           ),
         ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Text(
             'Portfolio Value',
             style: TextStyle(
@@ -314,16 +314,16 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
           ),
           SizedBox(height: 8.h),
           Row(
-                children: [
-                  Text(
+            children: [
+              Text(
                 '\$${NumberFormat('#,##0.00').format(portfolioData['totalValue'])}',
-                    style: TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 32.sp,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -1,
-                    ),
-                  ),
+                ),
+              ),
               SizedBox(width: 12.w),
               Container(
                 padding: EdgeInsets.symmetric(
@@ -331,7 +331,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                   vertical: 6.h,
                 ),
                 decoration: BoxDecoration(
-                  color: portfolioData['todayPercentage'] >= 0 
+                  color: portfolioData['todayPercentage'] >= 0
                       ? Colors.green.withValues(alpha: 0.2)
                       : Colors.red.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20.r),
@@ -339,10 +339,10 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                 child: Row(
                   children: [
                     Icon(
-                      portfolioData['todayPercentage'] >= 0 
+                      portfolioData['todayPercentage'] >= 0
                           ? Icons.arrow_upward_rounded
                           : Icons.arrow_downward_rounded,
-                      color: portfolioData['todayPercentage'] >= 0 
+                      color: portfolioData['todayPercentage'] >= 0
                           ? Colors.green
                           : Colors.red,
                       size: 16.sp,
@@ -351,15 +351,15 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                     Text(
                       '${portfolioData['todayPercentage'].toStringAsFixed(2)}%',
                       style: TextStyle(
-                        color: portfolioData['todayPercentage'] >= 0 
+                        color: portfolioData['todayPercentage'] >= 0
                             ? Colors.green
                             : Colors.red,
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                       ),
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -367,10 +367,10 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildPortfolioStat('Today\'s Change', 
-                '\$${NumberFormat('#,##0.00').format(portfolioData['todayChange'])}'),
-              _buildPortfolioStat('Total Return', 
-                '\$${NumberFormat('#,##0.00').format(portfolioData['totalReturn'])}'),
+              _buildPortfolioStat('Today\'s Change',
+                  '\$${NumberFormat('#,##0.00').format(portfolioData['todayChange'])}'),
+              _buildPortfolioStat('Total Return',
+                  '\$${NumberFormat('#,##0.00').format(portfolioData['totalReturn'])}'),
               _buildPortfolioStat('Holdings', '12'),
             ],
           ),
@@ -383,7 +383,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-              Text(
+        Text(
           label,
           style: TextStyle(
             color: Colors.white.withValues(alpha: 0.7),
@@ -393,12 +393,12 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
         SizedBox(height: 4.h),
         Text(
           value,
-                style: TextStyle(
-                  color: Colors.white,
+          style: TextStyle(
+            color: Colors.white,
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,
-                ),
-              ),
+          ),
+        ),
       ],
     );
   }
@@ -410,7 +410,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
       child: ListView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
-                children: [
+        children: [
           _buildQuickActionButton(
             'Buy Stock',
             Icons.add_circle_outline,
@@ -430,7 +430,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
             Icons.visibility_outlined,
             Colors.blue,
             () => _toggleWatchlist(),
-                  ),
+          ),
           SizedBox(width: 12.w),
           _buildQuickActionButton(
             'Analysis',
@@ -462,7 +462,6 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Material(
         color: Colors.transparent,
@@ -484,14 +483,14 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                       color: color,
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
-                  ),
+                    ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );
@@ -593,9 +592,9 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
-      ),
         child,
       ],
     );
@@ -618,7 +617,8 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
             padding: EdgeInsets.all(16.r),
             decoration: BoxDecoration(
               color: Colors.grey[900],
-              borderRadius: BorderRadius.circular(16.r),              boxShadow: [
+              borderRadius: BorderRadius.circular(16.r),
+              boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 8,
@@ -631,20 +631,20 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  mover['symbol'],
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      mover['symbol'],
                       style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Container(
                       padding: EdgeInsets.all(4.r),
                       decoration: BoxDecoration(
-                        color: isPositive 
+                        color: isPositive
                             ? Colors.green.withValues(alpha: 0.2)
                             : Colors.red.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
@@ -692,13 +692,12 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
             color: Colors.grey[900],
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -727,17 +726,17 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: isPositive 
+                  color: isPositive
                       ? Colors.green.withValues(alpha: 0.2)
                       : Colors.red.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
-                '${isPositive ? '+' : ''}${sector['change']}%',
+                  '${isPositive ? '+' : ''}${sector['change']}%',
                   style: GoogleFonts.inter(
-                  color: isPositive ? Colors.green : Colors.red,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
+                    color: isPositive ? Colors.green : Colors.red,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -749,11 +748,11 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
   }
 
   Widget _buildWatchlistToggle() {
-        return Container(
+    return Container(
       margin: EdgeInsets.all(16.r),
-          decoration: BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.grey[900],
-            borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -761,8 +760,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
             offset: Offset(0, 2),
           ),
         ],
-        
-                        ),
+      ),
       child: Row(
         children: [
           Expanded(
@@ -820,7 +818,8 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: Colors.white,
-                    fontWeight: !isWatchlist ? FontWeight.w600 : FontWeight.w500,
+                    fontWeight:
+                        !isWatchlist ? FontWeight.w600 : FontWeight.w500,
                     fontSize: 14.sp,
                   ),
                 ),
@@ -890,17 +889,18 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
       child: AnimatedContainer(
         duration: Duration(milliseconds: 600 + (index * 100)),
         curve: Curves.easeOut,
-          margin: EdgeInsets.only(bottom: 12.h),
-          decoration: BoxDecoration(
+        margin: EdgeInsets.only(bottom: 12.h),
+        decoration: BoxDecoration(
           color: Colors.grey[900],
-          borderRadius: BorderRadius.circular(16.r),            boxShadow: [
-              BoxShadow(
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
               color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
@@ -908,8 +908,8 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
             onTap: () => _showStockDetails(stock),
             child: Padding(
               padding: EdgeInsets.all(16.w),
-          child: Row(
-            children: [
+              child: Row(
+                children: [
                   // Stock Logo/Symbol
                   Container(
                     width: 48.w,
@@ -935,80 +935,81 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                     ),
                   ),
                   SizedBox(width: 12.w),
-                  
-              // Stock Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      stock['symbol'],
+
+                  // Stock Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          stock['symbol'],
                           style: GoogleFonts.inter(
-                        color: Colors.white,
+                            color: Colors.white,
                             fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      stock['name'],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          stock['name'],
                           style: GoogleFonts.inter(
                             color: Colors.grey[400],
                             fontSize: 12.sp,
-                      ),
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
 
                   // Mini Chart
                   SizedBox(
                     width: 60.w,
                     height: 30.h,
-                  child: CustomPaint(
-                    painter: MiniChartPainter(
-                      points: stock['chart'],
-                      isUp: stock['isUp'],
-                  ),
-                ),
-              ),
-                  
-                  SizedBox(width: 12.w),
-
-              // Price Info
-                  Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '\$${stock['price'].toStringAsFixed(2)}',
-                        style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
+                    child: CustomPaint(
+                      painter: MiniChartPainter(
+                        points: stock['chart'],
+                        isUp: stock['isUp'],
                       ),
                     ),
-                    SizedBox(height: 4.h),
+                  ),
+
+                  SizedBox(width: 12.w),
+
+                  // Price Info
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '\$${stock['price'].toStringAsFixed(2)}',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 2.h),
                         decoration: BoxDecoration(
-                          color: stock['isUp'] 
+                          color: stock['isUp']
                               ? Colors.green.withValues(alpha: 0.2)
                               : Colors.red.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
-                      '${stock['isUp'] ? '+' : ''}${stock['changePercentage'].toStringAsFixed(2)}%',
+                          '${stock['isUp'] ? '+' : ''}${stock['changePercentage'].toStringAsFixed(2)}%',
                           style: GoogleFonts.inter(
-                        color: stock['isUp'] ? Colors.green : Colors.red,
+                            color: stock['isUp'] ? Colors.green : Colors.red,
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w600,
                           ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -1031,16 +1032,15 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
             color: Colors.grey[900],
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
-      children: [
+            children: [
               Container(
                 width: 60.w,
                 height: 60.h,
@@ -1058,31 +1058,31 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                     news['relatedSymbol'],
                     style: GoogleFonts.inter(
                       color: Colors.white,
-            fontSize: 14.sp,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-          ),
-        ),
+                ),
+              ),
               SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-        Text(
+                    Text(
                       news['title'],
                       style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 16.sp,
+                        color: Colors.white,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
-          ),
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-        ),
+                    ),
                     SizedBox(height: 8.h),
                     Row(
                       children: [
-        Text(
+                        Text(
                           news['source'],
                           style: GoogleFonts.inter(
                             color: Colors.grey[400],
@@ -1103,9 +1103,9 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                           style: GoogleFonts.inter(
                             color: Colors.grey[400],
                             fontSize: 12.sp,
-          ),
-        ),
-      ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -1121,20 +1121,19 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-      children: [
+        children: [
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24.r),
               boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             child: Icon(
               Icons.upcoming,
@@ -1143,23 +1142,23 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
             ),
           ),
           SizedBox(height: 16.h),
-              Text(
+          Text(
             '$feature Coming Soon',
             style: GoogleFonts.inter(
-                  color: Colors.white,
+              color: Colors.white,
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
-                ),
-              ),
+            ),
+          ),
           SizedBox(height: 8.h),
           Text(
             "We're working on bringing you the best $feature trading experience",
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 14.sp,
-                  ),
-                ),
+              fontSize: 14.sp,
+            ),
+          ),
         ],
       ),
     );
@@ -1175,9 +1174,9 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
             const Color(0xFF1A1A3E),
             const Color(0xFF0F0F23),
             const Color(0xFF0A0A1A),
-            ],
-          ),
+          ],
         ),
+      ),
       child: Column(
         children: [
           // Main content
@@ -1202,7 +1201,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
               },
             ),
           ),
-      ],
+        ],
       ),
     );
   }
@@ -1226,36 +1225,35 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
           _buildModernHeader(),
           Expanded(
             child: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                   Container(
                     padding: EdgeInsets.all(24.w),
                     decoration: BoxDecoration(
                       color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(24.r),
                       boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Icon(
                       Icons.error_outline_rounded,
                       size: 48.sp,
                       color: Colors.red.shade400,
                     ),
-          ),
-          SizedBox(height: 16.h),
-          Text(
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
                     'Something went wrong',
                     style: GoogleFonts.inter(
                       fontSize: 20.sp,
                       fontWeight: FontWeight.w700,
-              color: Colors.white,
+                      color: Colors.white,
                     ),
                   ),
                   SizedBox(height: 8.h),
@@ -1267,9 +1265,9 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                         fontSize: 14.sp,
                         color: Colors.white.withValues(alpha: 0.7),
                         fontWeight: FontWeight.w400,
-            ),
-            textAlign: TextAlign.center,
-          ),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                   SizedBox(height: 24.h),
                   Container(
@@ -1290,20 +1288,21 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                       ],
                     ),
                     child: ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _error = null;
-              });
-            },
+                      onPressed: () {
+                        setState(() {
+                          _error = null;
+                        });
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
                         shadowColor: Colors.transparent,
-                        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 24.w, vertical: 12.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
-            child: Text(
+                      child: Text(
                         'Try Again',
                         style: GoogleFonts.inter(
                           fontSize: 14.sp,
@@ -1321,8 +1320,6 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
       ),
     );
   }
-
-
 
   // Action methods
   void _showBuyStockDialog() {
@@ -1378,6 +1375,4 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
       margin: EdgeInsets.all(16.w),
     );
   }
-
-
 }

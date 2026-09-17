@@ -196,7 +196,8 @@ class PanicBalanceService extends ChangeNotifier {
       try {
         final list = jsonDecode(raw) as List;
         _presets = list
-            .map((e) => PanicPreset.fromJson(Map<String, dynamic>.from(e as Map)))
+            .map((e) =>
+                PanicPreset.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList();
       } catch (_) {
         _presets = <PanicPreset>[];
@@ -300,7 +301,8 @@ class PanicBalanceService extends ChangeNotifier {
 
   Future<void> setEnabled(bool value) async {
     _enabled = value;
-    if (!value) _visible = false; // turning the feature off also hides the decoy
+    if (!value)
+      _visible = false; // turning the feature off also hides the decoy
     await _persist();
     notifyListeners();
     unawaited(_pushToServer());
@@ -350,7 +352,8 @@ class PanicBalanceService extends ChangeNotifier {
   }) async {
     _enabled = enabled;
     _presets = List<PanicPreset>.from(presets);
-    if (activeLabel != null && activeLabel.isNotEmpty) _activeLabel = activeLabel;
+    if (activeLabel != null && activeLabel.isNotEmpty)
+      _activeLabel = activeLabel;
     if (!_enabled || activePreset == null) _visible = false;
     await _persist();
     notifyListeners();

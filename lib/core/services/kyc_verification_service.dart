@@ -6,13 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import '../config/country_config.dart'
-    show
-        CountryConfigs,
-        KycLevel,
-        IdentityDocumentType,
-        DocumentRequirement;
+    show CountryConfigs, KycLevel, IdentityDocumentType, DocumentRequirement;
 part 'kyc_verification_service_widgets.dart';
-
 
 /// Service for KYC verification operations
 class KycVerificationService {
@@ -22,9 +17,7 @@ class KycVerificationService {
       endpointRegistry.httpCore;
 
   static String get _defaultApiKey =>
-      dotenv.env['KYC_API_KEY'] ??
-      dotenv.env['API_KEY'] ??
-      '';
+      dotenv.env['KYC_API_KEY'] ?? dotenv.env['API_KEY'] ?? '';
 
   final String baseUrl;
   final String apiKey;
@@ -50,7 +43,8 @@ class KycVerificationService {
 
       // Check if country is active for signup
       if (!countryConfig.isAvailableForSignup) {
-        return KycVerificationResult.failure('Country not available for signup');
+        return KycVerificationResult.failure(
+            'Country not available for signup');
       }
 
       final response = await http.post(
@@ -89,10 +83,11 @@ class KycVerificationService {
       }
       // Only use mock in development mode
       final isDev = dotenv.env['ENVIRONMENT'] == 'development' ||
-                   dotenv.env['ENVIRONMENT'] == 'dev';
+          dotenv.env['ENVIRONMENT'] == 'dev';
       if (isDev) {
         return KycVerificationResult.pending(
-          verificationId: 'mock_verification_${DateTime.now().millisecondsSinceEpoch}',
+          verificationId:
+              'mock_verification_${DateTime.now().millisecondsSinceEpoch}',
           currentLevel: KycLevel.basic,
         );
       }
@@ -156,7 +151,7 @@ class KycVerificationService {
       }
       // Only use mock in development mode
       final isDev = dotenv.env['ENVIRONMENT'] == 'development' ||
-                   dotenv.env['ENVIRONMENT'] == 'dev';
+          dotenv.env['ENVIRONMENT'] == 'dev';
       if (isDev) {
         return DocumentUploadResult.success(
           'mock_doc_${DateTime.now().millisecondsSinceEpoch}',
@@ -212,7 +207,7 @@ class KycVerificationService {
       }
       // Only use mock in development mode
       final isDev = dotenv.env['ENVIRONMENT'] == 'development' ||
-                   dotenv.env['ENVIRONMENT'] == 'dev';
+          dotenv.env['ENVIRONMENT'] == 'dev';
       if (isDev) {
         return DocumentUploadResult.success(
           'mock_selfie_${DateTime.now().millisecondsSinceEpoch}',
@@ -413,7 +408,7 @@ class KycVerificationService {
       }
       // Only use mock in development mode
       final isDev = dotenv.env['ENVIRONMENT'] == 'development' ||
-                   dotenv.env['ENVIRONMENT'] == 'dev';
+          dotenv.env['ENVIRONMENT'] == 'dev';
       if (isDev) {
         return DocumentUploadResult.success(
           'mock_address_${DateTime.now().millisecondsSinceEpoch}',
@@ -497,16 +492,20 @@ class KycVerificationService {
       'IMAGE_BLURRY': 'The image is blurry. Please take a clearer photo.',
       'IMAGE_DARK': 'The image is too dark. Please retake in better lighting.',
       'IMAGE_GLARE': 'There\'s glare on the document. Please retake.',
-      'DOCUMENT_NOT_VISIBLE': 'Please ensure all corners of the document are visible.',
-      'FACE_NOT_DETECTED': 'We couldn\'t detect a face. Please retake the selfie.',
+      'DOCUMENT_NOT_VISIBLE':
+          'Please ensure all corners of the document are visible.',
+      'FACE_NOT_DETECTED':
+          'We couldn\'t detect a face. Please retake the selfie.',
       'FACE_MULTIPLE': 'Multiple faces detected. Please take the photo alone.',
-      'DOCUMENT_TYPE_MISMATCH': 'The document doesn\'t match the selected type.',
-      'EXPIRED_DOCUMENT': 'This document has expired. Please use a valid document.',
+      'DOCUMENT_TYPE_MISMATCH':
+          'The document doesn\'t match the selected type.',
+      'EXPIRED_DOCUMENT':
+          'This document has expired. Please use a valid document.',
       'COUNTRY_NOT_SUPPORTED': 'This country is not currently supported.',
-      'NETWORK_ERROR': 'Network error. Please check your connection and try again.',
+      'NETWORK_ERROR':
+          'Network error. Please check your connection and try again.',
     };
 
-    return errorMessages[errorCode] ??
-        'Verification failed. Please try again.';
+    return errorMessages[errorCode] ?? 'Verification failed. Please try again.';
   }
 }

@@ -49,7 +49,8 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
       final args = Get.arguments as Map<String, dynamic>?;
       if (args != null) {
         setState(() {
-          _resetToken = args['resetToken'] as String? ?? args['token'] as String? ?? '';
+          _resetToken =
+              args['resetToken'] as String? ?? args['token'] as String? ?? '';
           _requireToken = args['requireToken'] as bool? ?? false;
           _deliveryMethod = args['deliveryMethod'] as String? ?? 'email';
 
@@ -96,7 +97,11 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
   }
 
   bool _isPasswordValid() {
-    return _hasMinimumLength && _hasUppercase && _hasLowercase && _hasDigit && _hasSpecialChar;
+    return _hasMinimumLength &&
+        _hasUppercase &&
+        _hasLowercase &&
+        _hasDigit &&
+        _hasSpecialChar;
   }
 
   String _getPasswordStrengthText() {
@@ -138,7 +143,8 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
     // Validate passwords
     final newPassword = _newPasswordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
-    final tokenToUse = _requireToken ? _tokenController.text.trim() : _resetToken;
+    final tokenToUse =
+        _requireToken ? _tokenController.text.trim() : _resetToken;
 
     // Validation
     if (newPassword.isEmpty) {
@@ -171,7 +177,8 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
 
     if (_requireToken && tokenToUse.isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter the reset token from your ${_deliveryMethod == 'sms' ? 'SMS verification' : 'email'}';
+        _errorMessage =
+            'Please enter the reset token from your ${_deliveryMethod == 'sms' ? 'SMS verification' : 'email'}';
       });
       return;
     }
@@ -192,16 +199,17 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
     if (effectiveToken.isEmpty) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Reset token is missing. Please restart the reset flow.';
+        _errorMessage =
+            'Reset token is missing. Please restart the reset flow.';
       });
       return;
     }
 
     try {
       await context.read<AuthenticationCubit>().resetPasswordWithToken(
-        resetToken: effectiveToken,
-        newPassword: newPassword,
-      );
+            resetToken: effectiveToken,
+            newPassword: newPassword,
+          );
     } finally {
       if (mounted) {
         setState(() {
@@ -265,7 +273,8 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
           if (_requireToken) ...[
             BuildFormField(
               name: 'resetToken',
-              placeholder: 'Reset Token from ${_deliveryMethod == 'sms' ? 'SMS Verification' : 'Email'}',
+              placeholder:
+                  'Reset Token from ${_deliveryMethod == 'sms' ? 'SMS Verification' : 'Email'}',
               textInputType: TextInputType.text,
               prefixIcon: const Icon(
                 Icons.key,
@@ -297,11 +306,13 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
                 _isNewPasswordVisible ? Icons.visibility : Icons.visibility_off,
                 color: Colors.grey,
               ),
-              onPressed: _isLoading ? null : () {
-                setState(() {
-                  _isNewPasswordVisible = !_isNewPasswordVisible;
-                });
-              },
+              onPressed: _isLoading
+                  ? null
+                  : () {
+                      setState(() {
+                        _isNewPasswordVisible = !_isNewPasswordVisible;
+                      });
+                    },
             ),
             controller: _newPasswordController,
             onChanged: (password) {
@@ -369,11 +380,15 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
                   spacing: 12.w,
                   runSpacing: 4.h,
                   children: [
-                    _buildRequirementItem('At least 8 characters', _hasMinimumLength),
-                    _buildRequirementItem('One uppercase letter', _hasUppercase),
-                    _buildRequirementItem('One lowercase letter', _hasLowercase),
+                    _buildRequirementItem(
+                        'At least 8 characters', _hasMinimumLength),
+                    _buildRequirementItem(
+                        'One uppercase letter', _hasUppercase),
+                    _buildRequirementItem(
+                        'One lowercase letter', _hasLowercase),
                     _buildRequirementItem('One number', _hasDigit),
-                    _buildRequirementItem('One special character', _hasSpecialChar),
+                    _buildRequirementItem(
+                        'One special character', _hasSpecialChar),
                   ],
                 ),
               ],
@@ -392,14 +407,18 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
             ),
             suffixIcon: IconButton(
               icon: Icon(
-                _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                _isConfirmPasswordVisible
+                    ? Icons.visibility
+                    : Icons.visibility_off,
                 color: Colors.grey,
               ),
-              onPressed: _isLoading ? null : () {
-                setState(() {
-                  _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                });
-              },
+              onPressed: _isLoading
+                  ? null
+                  : () {
+                      setState(() {
+                        _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                      });
+                    },
             ),
             controller: _confirmPasswordController,
             onChanged: (_) {
@@ -445,7 +464,8 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4834D4),
               foregroundColor: Colors.white,
-              disabledBackgroundColor: const Color(0xFF4834D4).withValues(alpha: 0.4),
+              disabledBackgroundColor:
+                  const Color(0xFF4834D4).withValues(alpha: 0.4),
               disabledForegroundColor: Colors.white70,
               elevation: 0,
               shape: const StadiumBorder(),
@@ -485,7 +505,9 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
           text,
           style: TextStyle(
             fontSize: 11.sp,
-            color: satisfied ? AppColors.primaryFont : AppColors.secondaryFont.withValues(alpha: 0.7),
+            color: satisfied
+                ? AppColors.primaryFont
+                : AppColors.secondaryFont.withValues(alpha: 0.7),
           ),
         ),
       ],

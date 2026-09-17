@@ -128,7 +128,8 @@ class GrpcErrorHandler {
       return PinFailureInfo(
         isLocked: false,
         attemptsRemaining: null,
-        message: message.isNotEmpty ? message : 'Incorrect PIN. Please try again.',
+        message:
+            message.isNotEmpty ? message : 'Incorrect PIN. Please try again.',
       );
     }
 

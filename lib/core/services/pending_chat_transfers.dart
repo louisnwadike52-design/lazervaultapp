@@ -73,7 +73,8 @@ class PendingChatTransfers {
       currency: currency,
       reference: reference,
       note: (note != null && note.trim().isNotEmpty) ? note.trim() : null,
-      status: (status != null && status.trim().isNotEmpty) ? status.trim() : null,
+      status:
+          (status != null && status.trim().isNotEmpty) ? status.trim() : null,
       scheduledAt: scheduledAt,
       createdAt: createdAt ?? DateTime.now(),
     ));

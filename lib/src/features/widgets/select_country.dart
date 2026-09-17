@@ -24,11 +24,11 @@ class _SelectCountryState extends State<SelectCountry> {
   // Country data derived from CountryLocales to stay in sync with backend
   List<Map<String, String>> countries = CountryLocales.all
       .map((c) => <String, String>{
-        "name": c.countryName,
-        "code": c.dialCode,
-        "flag": c.flag,
-        "countryCode": c.countryCode,
-      })
+            "name": c.countryName,
+            "code": c.dialCode,
+            "flag": c.flag,
+            "countryCode": c.countryCode,
+          })
       .toList();
 
   List<Map<String, String>> filteredCountries = [];

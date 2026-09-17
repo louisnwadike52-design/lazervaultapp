@@ -127,7 +127,8 @@ class QueuedMutation {
   }
 
   /// Whether this mutation can be retried.
-  bool get canRetry => retryCount < maxRetries && status == MutationStatus.pending;
+  bool get canRetry =>
+      retryCount < maxRetries && status == MutationStatus.pending;
 
   /// Whether this mutation has exhausted all retries.
   bool get isExhausted => retryCount >= maxRetries;

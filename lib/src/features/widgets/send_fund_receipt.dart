@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/types/transaction.dart';
@@ -27,7 +26,9 @@ class _ReceiptState extends State<SendFundReceipt> {
     transactionTiles = [
       FlatTile(
         name: TransactionAttribute.name.displayName,
-        value: "${widget.transaction.user!.firstName} ${widget.transaction.user!.lastName}".trim(),
+        value:
+            "${widget.transaction.user!.firstName} ${widget.transaction.user!.lastName}"
+                .trim(),
       ),
       FlatTile(
         name: TransactionAttribute.amount.displayName,
@@ -79,19 +80,25 @@ class _ReceiptState extends State<SendFundReceipt> {
                         shape: pw.BoxShape.circle,
                         color: PdfColors.grey300,
                       ),
-                      child: pw.Center(child: pw.Text(
-                        (widget.transaction.user!.firstName.isNotEmpty ? widget.transaction.user!.firstName[0] : '') + 
-                        (widget.transaction.user!.lastName.isNotEmpty ? widget.transaction.user!.lastName[0] : ''),
-                         style: pw.TextStyle(fontSize: 40, fontWeight: pw.FontWeight.bold)
-                      )),
+                      child: pw.Center(
+                          child: pw.Text(
+                              (widget.transaction.user!.firstName.isNotEmpty
+                                      ? widget.transaction.user!.firstName[0]
+                                      : '') +
+                                  (widget.transaction.user!.lastName.isNotEmpty
+                                      ? widget.transaction.user!.lastName[0]
+                                      : ''),
+                              style: pw.TextStyle(
+                                  fontSize: 40,
+                                  fontWeight: pw.FontWeight.bold))),
                     ),
                   ),
                   pw.SizedBox(height: 16),
                   ...transactionTiles.map(
                     (tile) => pw.Padding(
-                       padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                       child: pw.Text("${tile.name}: ${tile.value}", style: const pw.TextStyle(fontSize: 12))
-                    ),
+                        padding: const pw.EdgeInsets.symmetric(vertical: 4),
+                        child: pw.Text("${tile.name}: ${tile.value}",
+                            style: const pw.TextStyle(fontSize: 12))),
                   ),
                 ],
               );
@@ -119,14 +126,20 @@ class _ReceiptState extends State<SendFundReceipt> {
         spacing: 20.0.h,
         children: [
           CircleAvatar(
-            radius: 50.0,
-            backgroundColor: Colors.grey[300],
-            child: Text(
-               (widget.transaction.user!.firstName.isNotEmpty ? widget.transaction.user!.firstName[0] : '') +
-               (widget.transaction.user!.lastName.isNotEmpty ? widget.transaction.user!.lastName[0] : ''),
-               style: TextStyle(fontSize: 40.sp, fontWeight: FontWeight.bold, color: Colors.grey[700]),
-            )
-          ),
+              radius: 50.0,
+              backgroundColor: Colors.grey[300],
+              child: Text(
+                (widget.transaction.user!.firstName.isNotEmpty
+                        ? widget.transaction.user!.firstName[0]
+                        : '') +
+                    (widget.transaction.user!.lastName.isNotEmpty
+                        ? widget.transaction.user!.lastName[0]
+                        : ''),
+                style: TextStyle(
+                    fontSize: 40.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[700]),
+              )),
           Container(
             padding: EdgeInsets.symmetric(vertical: 32.0.h),
             height: responsiveController.screenHeight * 0.5,

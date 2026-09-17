@@ -166,7 +166,9 @@ class _LockedCountryPhoneInputState extends State<LockedCountryPhoneInput> {
                         ),
                         style: TextStyle(
                           fontSize: 16.sp,
-                          color: widget.enabled ? Colors.black : Colors.grey.shade600,
+                          color: widget.enabled
+                              ? Colors.black
+                              : Colors.grey.shade600,
                         ),
                         onChanged: _onChanged,
                       ),
@@ -328,8 +330,8 @@ class _CompactLockedCountryPhoneInputState
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialValue ?? '');
-    _countryConfig = CountryConfigs.getByCode(widget.countryCode) ??
-        CountryConfigs.nigeria;
+    _countryConfig =
+        CountryConfigs.getByCode(widget.countryCode) ?? CountryConfigs.nigeria;
   }
 
   @override
@@ -389,7 +391,8 @@ class _CompactLockedCountryPhoneInputState
               ],
               decoration: InputDecoration(
                 hintText: widget.hintText ?? 'Phone number',
-                hintStyle: TextStyle(fontSize: 14.sp, color: Colors.grey.shade600),
+                hintStyle:
+                    TextStyle(fontSize: 14.sp, color: Colors.grey.shade600),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(horizontal: 12.w),
               ),

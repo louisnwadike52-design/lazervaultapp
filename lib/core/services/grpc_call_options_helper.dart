@@ -56,10 +56,12 @@ class GrpcCallOptionsHelper {
     }
 
     print('=== GrpcCallOptionsHelper.withAuth ===');
-    print('Access token present: ${accessToken != null && accessToken.isNotEmpty}');
+    print(
+        'Access token present: ${accessToken != null && accessToken.isNotEmpty}');
     if (accessToken != null && accessToken.isNotEmpty) {
       print('Access token length: ${accessToken.length}');
-      print('Access token prefix: ${accessToken.substring(0, accessToken.length > 20 ? 20 : accessToken.length)}...');
+      print(
+          'Access token prefix: ${accessToken.substring(0, accessToken.length > 20 ? 20 : accessToken.length)}...');
     }
 
     final metadata = <String, String>{};
@@ -246,7 +248,8 @@ class GrpcCallOptionsHelper {
       // Note: Only retry on unauthenticated — permissionDenied may come from
       // PIN token validation (single-use tokens) and retrying would fail.
       if (e.code == StatusCode.unauthenticated && maxRetries > 0) {
-        print('Authentication error detected (${e.code}). Attempting token refresh...');
+        print(
+            'Authentication error detected (${e.code}). Attempting token refresh...');
         AppLogger.event('token_rotation', 'unauthenticated_retry',
             level: 'warn', fields: {'code': e.code});
 
@@ -257,7 +260,8 @@ class GrpcCallOptionsHelper {
           print('Token refreshed successfully. Retrying request...');
           AppLogger.event('token_rotation', 'refresh_ok');
           // Retry the call with the new token
-          return await executeWithTokenRotation(call, maxRetries: maxRetries - 1);
+          return await executeWithTokenRotation(call,
+              maxRetries: maxRetries - 1);
         } else {
           print('Token refresh failed. Request cannot be retried.');
           AppLogger.event('token_rotation', 'refresh_failed', level: 'error');
@@ -319,8 +323,10 @@ class GrpcCallOptionsHelper {
             newTokens['accessToken'] != null &&
             newTokens['refreshToken'] != null) {
           // Save new tokens to storage
-          await storage.write(key: _accessTokenKey, value: newTokens['accessToken']!);
-          await storage.write(key: _refreshTokenKey, value: newTokens['refreshToken']!);
+          await storage.write(
+              key: _accessTokenKey, value: newTokens['accessToken']!);
+          await storage.write(
+              key: _refreshTokenKey, value: newTokens['refreshToken']!);
 
           print('New tokens saved to storage');
           _refreshCompleter!.complete(true);
@@ -331,7 +337,6 @@ class GrpcCallOptionsHelper {
       print('Token refresh callback not available or returned null');
       _refreshCompleter!.complete(false);
       return false;
-
     } catch (e) {
       print('Error during token refresh: $e');
       _refreshCompleter!.completeError(e);

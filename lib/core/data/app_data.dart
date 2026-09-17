@@ -29,7 +29,8 @@ abstract class AppData {
   static const List<OnboardingSlide> onboardingSlides = [
     OnboardingSlide(
       title: 'Welcome to Lazervault',
-      subtitle: 'Your secure gateway to seamless financial management. Send, receive, and manage your money with ease.',
+      subtitle:
+          'Your secure gateway to seamless financial management. Send, receive, and manage your money with ease.',
       imagePath: 'assets/images/logos/lazervault-logo-only.png',
       backgroundColor: Color(0xFFF5F7FA), // Light gray-blue
       textColor: Color(0xFF1A1A2E), // Dark navy
@@ -37,7 +38,8 @@ abstract class AppData {
     ),
     OnboardingSlide(
       title: '100% Secure Transactions',
-      subtitle: 'Bank-grade encryption protects your money. Your security is our top priority.',
+      subtitle:
+          'Bank-grade encryption protects your money. Your security is our top priority.',
       imagePath: 'assets/images/dollar-money-send.png',
       backgroundColor: Color(0xFFE8F4FD), // Light blue
       textColor: Color(0xFF0D47A1), // Dark blue
@@ -45,7 +47,8 @@ abstract class AppData {
     ),
     OnboardingSlide(
       title: 'Multi-Currency Support',
-      subtitle: 'Hold and exchange multiple currencies. Get the best rates with real-time conversion.',
+      subtitle:
+          'Hold and exchange multiple currencies. Get the best rates with real-time conversion.',
       imagePath: 'assets/images/currencies/usa-flag.png',
       backgroundColor: Color(0xFFF0F4F8), // Soft gray
       textColor: Color(0xFF1A237E), // Navy
@@ -53,7 +56,8 @@ abstract class AppData {
     ),
     OnboardingSlide(
       title: 'Crypto Investments',
-      subtitle: 'Buy, sell, and track cryptocurrencies. Start your investment journey with confidence.',
+      subtitle:
+          'Buy, sell, and track cryptocurrencies. Start your investment journey with confidence.',
       imagePath: 'assets/images/exchange.png',
       backgroundColor: Color(0xFFE8F5E9), // Light green
       textColor: Color(0xFF1B5E20), // Dark green
@@ -61,7 +65,8 @@ abstract class AppData {
     ),
     OnboardingSlide(
       title: 'Start Your Journey',
-      subtitle: 'Join thousands of users who trust Lazervault for their financial needs. Let\'s get started!',
+      subtitle:
+          'Join thousands of users who trust Lazervault for their financial needs. Let\'s get started!',
       imagePath: 'assets/images/logos/lazervault-full-logo-no-background.png',
       backgroundColor: Color(0xFFF3E5F5), // Light purple
       textColor: Color(0xFF4A148C), // Dark purple
@@ -92,7 +97,8 @@ abstract class AppData {
 
   // ========== ASSETS ==========
   static const String appLogo = "assets/images/logos/lazervault-logo-only.png";
-  static const String appLogoFull = "assets/images/logos/lazervault-full-logo-no-background.png";
+  static const String appLogoFull =
+      "assets/images/logos/lazervault-full-logo-no-background.png";
   static const String defaultAvatar = "assets/images/users/default-avatar.png";
   static const String dp = "assets/images/dp.png";
   static const String dollarMoneySend = "assets/images/dollar-money-send.png";

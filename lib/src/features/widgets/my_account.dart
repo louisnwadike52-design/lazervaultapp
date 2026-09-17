@@ -17,7 +17,6 @@ import 'package:lazervault/src/features/widgets/profile_picture_picker.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'my_account_widgets.dart';
 
-
 class _MyAccountViewState extends State<_MyAccountView> {
   bool _hasLoadedOnce = false;
 
@@ -92,35 +91,35 @@ class _MyAccountViewState extends State<_MyAccountView> {
                       await context.read<ProfileCubit>().getUserProfile();
                     },
                     child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(
-                        parent: BouncingScrollPhysics()),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        SizedBox(height: 16.h),
+                      physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics()),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SizedBox(height: 16.h),
 
-                        // Profile Header
-                        _buildProfileHeader(user),
+                          // Profile Header
+                          _buildProfileHeader(user),
 
-                        SizedBox(height: 24.h),
+                          SizedBox(height: 24.h),
 
-                        // Quick Actions
-                        _buildQuickActions(),
+                          // Quick Actions
+                          _buildQuickActions(),
 
-                        SizedBox(height: 24.h),
+                          SizedBox(height: 24.h),
 
-                        // Verification Section
-                        _buildVerificationSection(
-                            isEmailVerified, user?.verified ?? false),
+                          // Verification Section
+                          _buildVerificationSection(
+                              isEmailVerified, user?.verified ?? false),
 
-                        SizedBox(height: 16.h),
+                          SizedBox(height: 16.h),
 
-                        // Account Info Section
-                        _buildAccountInfoSection(state),
+                          // Account Info Section
+                          _buildAccountInfoSection(state),
 
-                        SizedBox(height: 32.h),
-                      ],
-                    ),
+                          SizedBox(height: 32.h),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -133,9 +132,8 @@ class _MyAccountViewState extends State<_MyAccountView> {
   }
 
   Widget _buildProfileHeader(dynamic user) {
-    final fullName = user != null
-        ? '${user.firstName} ${user.lastName}'
-        : 'User Name';
+    final fullName =
+        user != null ? '${user.firstName} ${user.lastName}' : 'User Name';
     final email = user?.email ?? 'user@email.com';
     final username = user?.username;
 
@@ -170,8 +168,8 @@ class _MyAccountViewState extends State<_MyAccountView> {
                 size: 60,
                 onImageSelected: (base64Image) {
                   context.read<ProfileCubit>().updateUserProfile(
-                    profilePicture: base64Image,
-                  );
+                        profilePicture: base64Image,
+                      );
                 },
               ),
               SizedBox(width: 16.w),
@@ -203,7 +201,8 @@ class _MyAccountViewState extends State<_MyAccountView> {
                     if (username != null && username.isNotEmpty) ...[
                       SizedBox(height: 4.h),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12.w, vertical: 4.h),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12.r),
@@ -223,7 +222,8 @@ class _MyAccountViewState extends State<_MyAccountView> {
                     // email/phone — and far smaller than the old full-width pill.
                     if (user != null && (user.id as String).isNotEmpty) ...[
                       SizedBox(height: 8.h),
-                      SettingsTierBadge(userId: user.id as String, onDark: true),
+                      SettingsTierBadge(
+                          userId: user.id as String, onDark: true),
                     ],
                   ],
                 ),
@@ -329,9 +329,8 @@ class _MyAccountViewState extends State<_MyAccountView> {
       await SharePlus.instance.share(
         ShareParams(
           text: buffer.toString(),
-          subject: name.isEmpty
-              ? 'Pay me on Lazervault'
-              : 'Pay $name on Lazervault',
+          subject:
+              name.isEmpty ? 'Pay me on Lazervault' : 'Pay $name on Lazervault',
           sharePositionOrigin: origin,
         ),
       );
@@ -442,7 +441,8 @@ class _MyAccountViewState extends State<_MyAccountView> {
               onTap: () => Navigator.of(ctx).pop('verify'),
             ),
             ListTile(
-              leading: const Icon(Icons.edit_outlined, color: Color(0xFF4E03D0)),
+              leading:
+                  const Icon(Icons.edit_outlined, color: Color(0xFF4E03D0)),
               title: Text('Use a different number',
                   style:
                       GoogleFonts.inter(fontSize: 14.sp, color: Colors.white)),
@@ -716,5 +716,4 @@ class _MyAccountViewState extends State<_MyAccountView> {
       ),
     );
   }
-
 }

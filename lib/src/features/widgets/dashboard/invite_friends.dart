@@ -103,7 +103,8 @@ class InviteFriendsCompact extends StatelessWidget {
                   ),
                   SizedBox(width: 10.w),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10.r),
@@ -172,7 +173,7 @@ class _InviteFriendsState extends State<InviteFriends> {
               ),
             ),
           ),
-          
+
           // Main Content
           Padding(
             padding: EdgeInsets.all(24.w),

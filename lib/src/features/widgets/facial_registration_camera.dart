@@ -103,7 +103,9 @@ class _FacialRegistrationCameraState extends State<FacialRegistrationCamera>
   }
 
   Future<void> _captureAndRegisterFace() async {
-    if (_isProcessing || _cameraController == null || !_cameraController!.value.isInitialized) {
+    if (_isProcessing ||
+        _cameraController == null ||
+        !_cameraController!.value.isInitialized) {
       return;
     }
 
@@ -124,8 +126,10 @@ class _FacialRegistrationCameraState extends State<FacialRegistrationCamera>
       final userId = authCubit.userId ?? '';
 
       developer.log('Face registration - userId: $userId');
-      developer.log('Face registration - isAuthenticated: ${authCubit.isAuthenticated}');
-      developer.log('Face registration - currentProfile: ${authCubit.currentProfile}');
+      developer.log(
+          'Face registration - isAuthenticated: ${authCubit.isAuthenticated}');
+      developer.log(
+          'Face registration - currentProfile: ${authCubit.currentProfile}');
 
       if (userId.isEmpty) {
         developer.log('ERROR: User ID is empty during face registration');

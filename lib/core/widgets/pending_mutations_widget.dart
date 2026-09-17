@@ -76,9 +76,8 @@ class _PendingMutationsWidgetState extends State<PendingMutationsWidget> {
         .toList();
     setState(() {
       if (widget.filterTypes != null) {
-        _mutations = all
-            .where((m) => widget.filterTypes!.contains(m.type))
-            .toList();
+        _mutations =
+            all.where((m) => widget.filterTypes!.contains(m.type)).toList();
       } else {
         _mutations = all;
       }
@@ -105,7 +104,8 @@ class _PendingMutationsWidgetState extends State<PendingMutationsWidget> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: const Color(0xFFEF4444)),
+            style:
+                TextButton.styleFrom(foregroundColor: const Color(0xFFEF4444)),
             child: const Text('Cancel Operation'),
           ),
         ],
@@ -190,7 +190,9 @@ class _PendingMutationsWidgetState extends State<PendingMutationsWidget> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _isProcessing ? 'Processing...' : '${_mutations.length} pending operation${_mutations.length == 1 ? '' : 's'}',
+                  _isProcessing
+                      ? 'Processing...'
+                      : '${_mutations.length} pending operation${_mutations.length == 1 ? '' : 's'}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,
@@ -222,7 +224,8 @@ class _PendingMutationsWidgetState extends State<PendingMutationsWidget> {
   Widget _buildExpandedList() {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: _mutations.map((mutation) => _buildMutationTile(mutation)).toList(),
+      children:
+          _mutations.map((mutation) => _buildMutationTile(mutation)).toList(),
     );
   }
 
@@ -382,7 +385,8 @@ class _PendingMutationsBadgeState extends State<PendingMutationsBadge> {
   void initState() {
     super.initState();
     _updateCount();
-    _subscription = widget.mutationQueue.statusStream.listen((_) => _updateCount());
+    _subscription =
+        widget.mutationQueue.statusStream.listen((_) => _updateCount());
   }
 
   @override
@@ -397,7 +401,8 @@ class _PendingMutationsBadgeState extends State<PendingMutationsBadge> {
         .toList();
     setState(() {
       if (widget.filterTypes != null) {
-        _count = mutations.where((m) => widget.filterTypes!.contains(m.type)).length;
+        _count =
+            mutations.where((m) => widget.filterTypes!.contains(m.type)).length;
       } else {
         _count = mutations.length;
       }

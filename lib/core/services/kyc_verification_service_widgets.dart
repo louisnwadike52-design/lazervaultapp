@@ -22,7 +22,8 @@ class DocumentUploadResult {
     this.errorMessage,
   });
 
-  factory DocumentUploadResult.success(String documentId, String? extractedData) {
+  factory DocumentUploadResult.success(
+      String documentId, String? extractedData) {
     return DocumentUploadResult(
       documentId: documentId,
       extractedData: extractedData,

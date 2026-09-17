@@ -70,13 +70,12 @@ class _SetFingerPrintState extends State<SetFingerPrint>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: UniversalImageLoader(
                         imagePath:

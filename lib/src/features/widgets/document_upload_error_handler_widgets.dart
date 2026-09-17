@@ -141,7 +141,8 @@ class DocumentErrorSnackbar {
     VoidCallback? onRetry,
     VoidCallback? onManualEntry,
   }) {
-    final type = errorType ?? DocumentUploadErrorHandler.parseErrorType(errorMessage);
+    final type =
+        errorType ?? DocumentUploadErrorHandler.parseErrorType(errorMessage);
 
     final details = DocumentUploadErrorHandler(
       errorMessage: errorMessage,
@@ -166,7 +167,8 @@ class DocumentErrorSnackbar {
               onPressed: onRetry,
               child: const Text(
                 'RETRY',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             )
           : null,

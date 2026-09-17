@@ -88,7 +88,8 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,                  ),
+                    shape: BoxShape.circle,
+                  ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20.r),
                     child: UniversalImageLoader(
@@ -141,13 +142,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                         ),
                         borderRadius: BorderRadius.circular(24.r),
                         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 6,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,16 +194,17 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                                       width: 32.w,
                                       height: 32.h,
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.1),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.1),
                                         shape: BoxShape.circle,
                                         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                                          BoxShadow(
+                                            color: Colors.black
+                                                .withValues(alpha: 0.08),
+                                            blurRadius: 6,
+                                            offset: Offset(0, 2),
+                                          ),
+                                        ],
                                       ),
                                       child: Icon(
                                         Icons.account_balance_outlined,
@@ -244,16 +245,26 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                                     Icons.add_rounded,
                                     onTap: () {
                                       // Navigate to the new comprehensive deposit system
-                                      Get.toNamed(AppRoutes.depositMethodSelection,
+                                      Get.toNamed(
+                                          AppRoutes.depositMethodSelection,
                                           arguments: {
                                             'currency': {
-                                              'code': accounts[_currentIndex]['currency'],
-                                              'name': '${accounts[_currentIndex]['currency']} Account',
-                                              'symbol': accounts[_currentIndex]['currency'] == 'GBP' ? '£' : '\$',
-                                              'balance': accounts[_currentIndex]['balance'],
-                                              'flag': 'https://flagcdn.com/w320/gb.png',
+                                              'code': accounts[_currentIndex]
+                                                  ['currency'],
+                                              'name':
+                                                  '${accounts[_currentIndex]['currency']} Account',
+                                              'symbol': accounts[_currentIndex]
+                                                          ['currency'] ==
+                                                      'GBP'
+                                                  ? '£'
+                                                  : '\$',
+                                              'balance': accounts[_currentIndex]
+                                                  ['balance'],
+                                              'flag':
+                                                  'https://flagcdn.com/w320/gb.png',
                                             },
-                                            'selectedCard': accounts[_currentIndex],
+                                            'selectedCard':
+                                                accounts[_currentIndex],
                                           });
                                     },
                                   ),
@@ -321,7 +332,6 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: IconButton(
         icon: Icon(icon, color: Colors.white, size: 20.sp),
@@ -520,13 +530,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
             color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -595,7 +604,8 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                                   Container(
                                     padding: EdgeInsets.all(10.w),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.1),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12.r),
                                     ),
                                     child: Icon(
@@ -639,15 +649,17 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
                                             colors: [
-                                              Colors.blue.withValues(alpha: 0.2),
-                                              Colors.purple.withValues(alpha: 0.2),
+                                              Colors.blue
+                                                  .withValues(alpha: 0.2),
+                                              Colors.purple
+                                                  .withValues(alpha: 0.2),
                                             ],
                                           ),
                                           borderRadius:
                                               BorderRadius.circular(16.r),
                                           border: Border.all(
-                                            color:
-                                                Colors.white.withValues(alpha: 0.1),
+                                            color: Colors.white
+                                                .withValues(alpha: 0.1),
                                           ),
                                         ),
                                       ),
@@ -671,7 +683,8 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                                                     color: _showLocalDetails
                                                         ? Colors.white
                                                         : Colors.white
-                                                            .withValues(alpha: 0.5),
+                                                            .withValues(
+                                                                alpha: 0.5),
                                                     size: 20.sp,
                                                   ),
                                                   SizedBox(height: 4.h),
@@ -681,7 +694,8 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                                                       color: _showLocalDetails
                                                           ? Colors.white
                                                           : Colors.white
-                                                              .withValues(alpha: 0.5),
+                                                              .withValues(
+                                                                  alpha: 0.5),
                                                       fontSize: 12.sp,
                                                       fontWeight:
                                                           FontWeight.w500,
@@ -708,7 +722,8 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                                                     color: !_showLocalDetails
                                                         ? Colors.white
                                                         : Colors.white
-                                                            .withValues(alpha: 0.5),
+                                                            .withValues(
+                                                                alpha: 0.5),
                                                     size: 20.sp,
                                                   ),
                                                   SizedBox(height: 4.h),
@@ -718,7 +733,8 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                                                       color: !_showLocalDetails
                                                           ? Colors.white
                                                           : Colors.white
-                                                              .withValues(alpha: 0.5),
+                                                              .withValues(
+                                                                  alpha: 0.5),
                                                       fontSize: 12.sp,
                                                       fontWeight:
                                                           FontWeight.w500,
@@ -1044,13 +1060,13 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                                   color: Colors.white.withValues(alpha: 0.05),
                                   borderRadius: BorderRadius.circular(12.r),
                                   boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.08),
+                                      blurRadius: 6,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
                                 child: Row(
                                   children: [
@@ -1064,7 +1080,8 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                                       child: Text(
                                         'Your card details are protected with end-to-end encryption',
                                         style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.7),
+                                          color: Colors.white
+                                              .withValues(alpha: 0.7),
                                           fontSize: 12.sp,
                                         ),
                                       ),
@@ -1128,13 +1145,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
             color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1206,13 +1222,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -1354,13 +1369,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -1426,13 +1440,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -1481,13 +1494,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
               color: Colors.white.withValues(alpha: 0.03),
               borderRadius: BorderRadius.circular(8.r),
               boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               children: [
@@ -1702,13 +1714,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -1776,13 +1787,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
             color: Color(0xFF1E1E1E),
             borderRadius: BorderRadius.circular(24.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1820,13 +1830,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                   color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12.r),
                   boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: TextField(
                   controller: reasonController,
@@ -1883,7 +1892,8 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                             Get.snackbar(
                               'Error',
                               'Please provide a reason for blocking the card',
-                              backgroundColor: Colors.red.withValues(alpha: 0.1),
+                              backgroundColor:
+                                  Colors.red.withValues(alpha: 0.1),
                               colorText: Colors.white,
                               snackPosition: SnackPosition.BOTTOM,
                             );
@@ -1989,13 +1999,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
             color: Color(0xFF1E1E1E),
             borderRadius: BorderRadius.circular(24.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -2090,7 +2099,6 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Row(
         children: [
@@ -2142,13 +2150,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
             color: Color(0xFF1E1E1E),
             borderRadius: BorderRadius.circular(24.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -2226,7 +2233,8 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                           Get.snackbar(
                             'Card Unblocked',
                             'Your card has been successfully unblocked',
-                            backgroundColor: Colors.green.withValues(alpha: 0.1),
+                            backgroundColor:
+                                Colors.green.withValues(alpha: 0.1),
                             colorText: Colors.white,
                             snackPosition: SnackPosition.BOTTOM,
                             duration: Duration(seconds: 3),
@@ -2279,13 +2287,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
             color: Color(0xFF1E1E1E),
             borderRadius: BorderRadius.circular(24.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -2384,13 +2391,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                 color: Color(0xFF1E1E1E),
                 borderRadius: BorderRadius.circular(24.r),
                 boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -2435,13 +2441,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                           color: Colors.blue.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12.r),
                           boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08),
+                              blurRadius: 6,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Center(
                           child: Text(
@@ -2463,13 +2468,12 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                       color: Colors.amber.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12.r),
                       boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
@@ -2502,7 +2506,8 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                             Get.snackbar(
                               'PIN Copied',
                               'Your PIN has been copied to clipboard',
-                              backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                              backgroundColor:
+                                  Colors.blue.withValues(alpha: 0.1),
                               colorText: Colors.white,
                               snackPosition: SnackPosition.BOTTOM,
                               duration: Duration(seconds: 2),

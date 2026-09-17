@@ -171,6 +171,9 @@ class FeatureFlags {
   // from the dashboard Feature Flags tab without a release.
   static const String bulkSmsVisibleKey = 'bulk_sms_visible';
 
+  /// Master switch for merchant card acceptance (SoftPOS).
+  static const String cardAcceptanceVisibleKey = 'card_acceptance_visible';
+
   // ── Airtime landing tabs (admin-toggled) ─────────────────────────────────
   // Show/hide each of the three Airtime tabs (Buy / International / Sell) from
   // the admin dashboard. Buy + International default ON; Sell (airtime-to-cash)
@@ -268,6 +271,7 @@ class FeatureFlags {
       insuranceHostedEntrypointsEnabled,
       insuranceEnabled,
       bulkSmsVisibleKey,
+      cardAcceptanceVisibleKey,
       airtimeTabBuyEnabled,
       airtimeTabInternationalEnabled,
       airtimeTabSellEnabled,
@@ -358,6 +362,19 @@ class FeatureFlags {
     return _prefs?.getBool(bulkSmsVisibleKey) ?? false;
   }
 
+  // ── Card acceptance (SoftPOS) visibility ─────────────────────────────────
+  /// Whether merchant card acceptance is visible in Quick Services.
+  ///
+  /// Defaults to FALSE — hidden on cold start, offline, and before the admin
+  /// snapshot resolves. Taking a card needs a rail certified in the merchant's
+  /// market, so showing the tile by default would put a button in front of
+  /// merchants who cannot use it. The screen and route stay compiled in; only
+  /// the entry point is withheld, so the admin switch restores it without a
+  /// release.
+  static bool get cardAcceptanceVisible {
+    return _prefs?.getBool(cardAcceptanceVisibleKey) ?? false;
+  }
+
   // ── Voice & Chat Assistant section visibility ────────────────────────────
   /// `true` by default so the full "Voice & Chat Assistant" settings accordion
   /// (voice enrollment/re-enroll, cloned/assistant voice, language, voice-PIN,
@@ -376,7 +393,6 @@ class FeatureFlags {
   static bool get crowdfundDonationAlerts {
     return _prefs?.getBool(crowdfundDonationAlertsVisible) ?? false;
   }
-
 
   // ── Quick-service landing entrance animation ─────────────────────────────
   /// `true` by default — quick-service landing screens animate their content in

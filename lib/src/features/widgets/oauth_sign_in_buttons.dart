@@ -116,7 +116,8 @@ class AppleRoundIconButton extends StatelessWidget {
             child: Center(
               child: Padding(
                 padding: EdgeInsets.only(bottom: size * 0.05),
-                child: Icon(Icons.apple, color: Colors.white, size: size * 0.62),
+                child:
+                    Icon(Icons.apple, color: Colors.white, size: size * 0.62),
               ),
             ),
           ),

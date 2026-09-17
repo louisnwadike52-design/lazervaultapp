@@ -58,6 +58,10 @@ extension AppServiceNameMapper on AppServiceName {
         return TransactionServiceType.unknown;
       case AppServiceName.contactlessPay:
         return TransactionServiceType.unknown;
+      case AppServiceName.cardAcceptance:
+        // Its own type, not `unknown`: a card sale gets the rich receipt and
+        // the downloadable PDF every other money movement gets.
+        return TransactionServiceType.cardAcceptance;
       case AppServiceName.payroll:
         return TransactionServiceType.unknown;
       case AppServiceName.businessDashboard:

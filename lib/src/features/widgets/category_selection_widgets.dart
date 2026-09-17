@@ -4,13 +4,13 @@ part of 'category_selection.dart';
 /// Represents a category that can be selected for transactions
 class ServiceCategory {
   final String id;
-  final String serviceName;     // "transfer", "bill_payment", etc.
+  final String serviceName; // "transfer", "bill_payment", etc.
   final String subCategoryName; // "food", "airtime", etc.
-  final int budgetCategory;     // ExpenseCategory enum value
-  final String displayName;     // "Food Transfer", "Airtime Top-up"
-  final String iconName;        // Icon identifier
-  final Color color;            // Display color
-  final bool isCustom;          // True if user-created
+  final int budgetCategory; // ExpenseCategory enum value
+  final String displayName; // "Food Transfer", "Airtime Top-up"
+  final String iconName; // Icon identifier
+  final Color color; // Display color
+  final bool isCustom; // True if user-created
 
   const ServiceCategory({
     required this.id,
@@ -31,7 +31,9 @@ class ServiceCategory {
       subCategoryName: proto.subCategoryName,
       budgetCategory: proto.budgetCategory,
       displayName: proto.displayName,
-      iconName: proto.icon.isNotEmpty ? proto.icon : _defaultIconForCategory(proto.subCategoryName),
+      iconName: proto.icon.isNotEmpty
+          ? proto.icon
+          : _defaultIconForCategory(proto.subCategoryName),
       color: _colorFromHex(proto.color.isNotEmpty ? proto.color : '#3B82F6'),
       isCustom: proto.isCustom,
     );
@@ -64,7 +66,8 @@ class ServiceCategory {
       _ => subCategoryName
           .replaceAll('_', ' ')
           .split(' ')
-          .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+          .map((w) =>
+              w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
           .join(' '),
     };
   }
@@ -313,7 +316,8 @@ class CategorySelectionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final categories = availableCategories ?? ServiceCategory.commonTransferCategories;
+    final categories =
+        availableCategories ?? ServiceCategory.commonTransferCategories;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,7 +354,8 @@ class CategorySelectionWidget extends StatelessWidget {
                   children: [
                     Icon(
                       category.iconData,
-                      color: isSelected ? category.color : const Color(0xFF9CA3AF),
+                      color:
+                          isSelected ? category.color : const Color(0xFF9CA3AF),
                       size: 16.sp,
                     ),
                     SizedBox(width: 6.w),

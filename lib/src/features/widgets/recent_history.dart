@@ -60,7 +60,8 @@ class _RecentHistoryState extends State<RecentHistory> {
 
   void _onManualRefresh() {
     if (!mounted) return;
-    _lastAutoFetch = DateTime.now(); // suppress the visibility auto-fetch racing this
+    _lastAutoFetch =
+        DateTime.now(); // suppress the visibility auto-fetch racing this
     _cubit.refreshTransactions(background: false);
   }
 
@@ -106,47 +107,48 @@ class _RecentHistoryState extends State<RecentHistory> {
         key: const Key('dashboard-recent-history'),
         onVisibilityChanged: _onVisibilityChanged,
         child: Container(
-        padding: EdgeInsets.fromLTRB(20.w, 14.w, 20.w, 10.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Recent Transactions',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    height: 1.15,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1A1A1A),
-                    fontFamily: 'Inter',
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => Get.toNamed(AppRoutes.dashboardTransactionHistory),
-                  child: Text(
-                    'See all',
+          padding: EdgeInsets.fromLTRB(20.w, 14.w, 20.w, 10.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20.r),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'Recent Transactions',
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 16.sp,
                       height: 1.15,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF581CD9),
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1A1A1A),
                       fontFamily: 'Inter',
                     ),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 18.h),
-            const RecentHistoryList(),
-          ],
-        ),
+                  GestureDetector(
+                    onTap: () =>
+                        Get.toNamed(AppRoutes.dashboardTransactionHistory),
+                    child: Text(
+                      'See all',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        height: 1.15,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF581CD9),
+                        fontFamily: 'Inter',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 18.h),
+              const RecentHistoryList(),
+            ],
+          ),
         ),
       ),
     );

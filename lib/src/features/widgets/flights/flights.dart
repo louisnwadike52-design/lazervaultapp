@@ -21,7 +21,7 @@ class _FlightsState extends State<Flights> {
   bool _isRoundTrip = true;
 
   final List<String> _travelClasses = ['Economy', 'Business', 'First Class'];
-  
+
   @override
   void dispose() {
     _fromController.dispose();
@@ -48,8 +48,6 @@ class _FlightsState extends State<Flights> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-
-          
                 Text(
                   'Book Your\nFlight',
                   style: TextStyle(
@@ -116,7 +114,8 @@ class _FlightsState extends State<Flights> {
                     height: 40.w,
                     margin: EdgeInsets.symmetric(vertical: 8.h),
                     decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                      color: Color.fromARGB(255, 78, 3, 208)
+                          .withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
@@ -280,9 +279,8 @@ class _FlightsState extends State<Flights> {
             child: Text(
               label,
               style: TextStyle(
-                color: _isRoundTrip == isRoundTrip
-                    ? Colors.white
-                    : Colors.black,
+                color:
+                    _isRoundTrip == isRoundTrip ? Colors.white : Colors.black,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),

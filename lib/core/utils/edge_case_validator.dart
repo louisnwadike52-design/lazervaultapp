@@ -7,7 +7,6 @@ library;
 import 'package:flutter/material.dart';
 part 'edge_case_validator_widgets.dart';
 
-
 /// Dialog utilities for showing validation errors
 class ValidationDialog {
   /// Shows a validation error dialog
@@ -137,9 +136,7 @@ class ValidationDialog {
             child: Text(
               confirmText,
               style: TextStyle(
-                color: isDestructive
-                    ? Colors.red
-                    : Colors.blue,
+                color: isDestructive ? Colors.red : Colors.blue,
                 fontWeight: FontWeight.w600,
               ),
             ),

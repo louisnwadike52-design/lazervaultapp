@@ -231,7 +231,8 @@ class _AllServicesBottomSheetState extends State<AllServicesBottomSheet>
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14.r),
-            borderSide: BorderSide(color: _accent.withValues(alpha: 0.4), width: 1.5),
+            borderSide:
+                BorderSide(color: _accent.withValues(alpha: 0.4), width: 1.5),
           ),
         ),
       ),
@@ -276,11 +277,13 @@ class _AllServicesBottomSheetState extends State<AllServicesBottomSheet>
           // size while searching.
           final totalRows =
               (widget.services.length / _gridCrossAxisCount).ceil();
-          final tileWidth =
-              (constraints.maxWidth - (_gridCrossAxisCount - 1) * crossSpacing) /
-                  _gridCrossAxisCount;
-          final availHeight = constraints.maxHeight - (totalRows - 1) * mainSpacing;
-          final tileHeight = totalRows > 0 ? availHeight / totalRows : tileWidth;
+          final tileWidth = (constraints.maxWidth -
+                  (_gridCrossAxisCount - 1) * crossSpacing) /
+              _gridCrossAxisCount;
+          final availHeight =
+              constraints.maxHeight - (totalRows - 1) * mainSpacing;
+          final tileHeight =
+              totalRows > 0 ? availHeight / totalRows : tileWidth;
           // Clamp so tiles never get absurdly tall/short; on very small screens
           // the lower clamp lets the grid fall back to scrolling.
           final aspectRatio =

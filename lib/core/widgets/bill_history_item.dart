@@ -231,7 +231,9 @@ class BillHistoryItem extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (!compact && reference != null && reference!.isNotEmpty) ...[
+                  if (!compact &&
+                      reference != null &&
+                      reference!.isNotEmpty) ...[
                     SizedBox(height: 2.h),
                     Text(
                       reference!,

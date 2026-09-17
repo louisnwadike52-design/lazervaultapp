@@ -149,7 +149,8 @@ class _InputPinState extends State<InputPin> with CodeAutoFill {
                   if (_pinController.text.length == 4) {
                     setState(() => isLoading = true);
                     try {
-                      await Future.delayed(Duration(seconds: 1)); // Simulate API call
+                      await Future.delayed(
+                          Duration(seconds: 1)); // Simulate API call
                       // Terminal: wipe the flow (amount/account/PIN) so the
                       // receipt can never fall back onto the send screen — matches
                       // every real flow (all use offAllNamed to reach the receipt).

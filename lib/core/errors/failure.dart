@@ -3,7 +3,6 @@ import 'package:lazervault/core/utils/friendly_error.dart';
 
 import 'exceptions.dart';
 
-
 abstract class Failure extends Equatable {
   final String message;
   final int statusCode;

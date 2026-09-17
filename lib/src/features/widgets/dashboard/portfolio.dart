@@ -164,8 +164,10 @@ class _PortfolioState extends State<Portfolio> {
 
     if (state is PortfolioSummaryLoaded) {
       totalValue = _money(state.summary.currency, state.summary.totalValue);
-      gainLoss = _money(state.summary.currency, state.summary.totalGainLoss, signed: true);
-      gainLossColor = state.summary.totalGainLoss >= 0 ? Colors.green : Colors.red;
+      gainLoss = _money(state.summary.currency, state.summary.totalGainLoss,
+          signed: true);
+      gainLossColor =
+          state.summary.totalGainLoss >= 0 ? Colors.green : Colors.red;
     } else if (state is PortfolioLoaded) {
       final s = state.portfolio.summary;
       totalValue = _money(s.currency, s.totalValue);

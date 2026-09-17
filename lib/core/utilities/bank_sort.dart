@@ -89,8 +89,8 @@ List<Map<String, String>> sortBanks(
       });
     case BankSort.popular:
       list.sort((a, b) {
-        final byRank =
-            popularRank(a['name'] ?? '').compareTo(popularRank(b['name'] ?? ''));
+        final byRank = popularRank(a['name'] ?? '')
+            .compareTo(popularRank(b['name'] ?? ''));
         if (byRank != 0) return byRank;
         return (a['name'] ?? '')
             .toLowerCase()
@@ -209,7 +209,8 @@ class MostUsedBanks {
   /// (per-device) tally in charge. GET /api/v1/payments/frequent-banks.
   static Future<void> syncFromBackend() async {
     try {
-      final token = await serviceLocator<SecureStorageService>().getAccessToken();
+      final token =
+          await serviceLocator<SecureStorageService>().getAccessToken();
       if (token == null || token.isEmpty) return;
       final uri =
           Uri.parse('${endpointRegistry.httpTransfer}/payments/frequent-banks');
@@ -227,9 +228,8 @@ class MostUsedBanks {
         final code = (b['bank_code'] ?? b['bankCode'])?.toString();
         final rawCount = b['count'];
         // int64 is JSON-encoded as a string by grpc-gateway.
-        final c = rawCount is int
-            ? rawCount
-            : int.tryParse('${rawCount ?? ''}') ?? 0;
+        final c =
+            rawCount is int ? rawCount : int.tryParse('${rawCount ?? ''}') ?? 0;
         if (code == null || code.isEmpty || c <= 0) continue;
         if (c > (counts[code] ?? 0)) {
           counts[code] = c;

@@ -94,7 +94,8 @@ class ReminderStatusService {
       if (response.statusCode == 200 &&
           data is Map &&
           data['success'] == true) {
-        final status = data['status'] is String ? data['status'] as String : null;
+        final status =
+            data['status'] is String ? data['status'] as String : null;
         return ReminderStatusResult.success(status);
       }
 

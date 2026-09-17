@@ -26,7 +26,8 @@ class ApiConfig {
       return registryValue;
     }
 
-    voiceSettingsUrl = _resolve('VOICE_SETTINGS_URL', endpointRegistry.httpAdmin);
+    voiceSettingsUrl =
+        _resolve('VOICE_SETTINGS_URL', endpointRegistry.httpAdmin);
     coreGatewayUrl = _resolve('CORE_GATEWAY_URL', endpointRegistry.httpCore);
     authGatewayUrl = _resolve('AUTH_GATEWAY_URL', endpointRegistry.httpCore);
     investmentGatewayHttpUrl =

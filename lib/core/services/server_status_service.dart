@@ -46,7 +46,8 @@ class ServerHealthNotifier extends ChangeNotifier {
 /// The probe runs entirely in the background (see AppStartupGate); it never
 /// blocks app startup or the current screen.
 class ServerStatusService {
-  ServerStatusService({http.Client? client}) : _client = client ?? http.Client();
+  ServerStatusService({http.Client? client})
+      : _client = client ?? http.Client();
 
   final http.Client _client;
 

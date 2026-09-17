@@ -14,7 +14,8 @@ class DocumentExtractionResult {
     this.confidence = ExtractionConfidence.unknown,
   });
 
-  factory DocumentExtractionResult.success(Map<String, dynamic> data, ExtractionConfidence confidence) {
+  factory DocumentExtractionResult.success(
+      Map<String, dynamic> data, ExtractionConfidence confidence) {
     return DocumentExtractionResult(
       success: true,
       extractedData: data,
@@ -41,10 +42,10 @@ class DocumentExtractionResult {
 
 /// Confidence level of the extraction
 enum ExtractionConfidence {
-  high,      // All required fields extracted with high accuracy
-  medium,    // Most fields extracted, some may need verification
-  low,       // Some fields extracted, manual verification required
-  unknown,   // Extraction failed or confidence cannot be determined
+  high, // All required fields extracted with high accuracy
+  medium, // Most fields extracted, some may need verification
+  low, // Some fields extracted, manual verification required
+  unknown, // Extraction failed or confidence cannot be determined
 }
 
 /// Document type for extraction

@@ -67,7 +67,8 @@ class KYCService {
       'target_level': targetLevel.toString().split('.').last,
       if (personalInfo != null) 'personal_info': personalInfo.toJson(),
       if (addressInfo != null) 'address_info': addressInfo.toJson(),
-      if (documents != null) 'documents': documents.map((d) => d.toJson()).toList(),
+      if (documents != null)
+        'documents': documents.map((d) => d.toJson()).toList(),
     };
 
     final response = await http.post(

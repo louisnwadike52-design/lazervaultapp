@@ -47,9 +47,7 @@ class AppLoadingButton extends StatelessWidget {
           ),
           elevation: 0,
         ),
-        child: isLoading
-            ? _buildLoadingState()
-            : _buildNormalState(),
+        child: isLoading ? _buildLoadingState() : _buildNormalState(),
       ),
     );
   }
@@ -78,7 +76,7 @@ class AppLoadingButton extends StatelessWidget {
         ],
       );
     }
-    
+
     return Text(
       text,
       style: TextStyle(
@@ -87,4 +85,4 @@ class AppLoadingButton extends StatelessWidget {
       ),
     );
   }
-} 
+}

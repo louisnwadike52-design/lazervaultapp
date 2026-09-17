@@ -88,6 +88,8 @@ class UKBanksData {
     }
 
     final lowerQuery = query.toLowerCase();
-    return ukBanks.where((bank) => bank.toLowerCase().contains(lowerQuery)).toList();
+    return ukBanks
+        .where((bank) => bank.toLowerCase().contains(lowerQuery))
+        .toList();
   }
 }

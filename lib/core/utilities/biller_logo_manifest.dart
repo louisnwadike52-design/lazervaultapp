@@ -70,9 +70,8 @@ String? bundledBillerLogoAsset(String? key) {
   if (key == null) return null;
   final slug = _slug(key);
   if (slug.isEmpty) return null;
-  final canonical = _kBillerLogoAssets.containsKey(slug)
-      ? slug
-      : _kBillerAliases[slug];
+  final canonical =
+      _kBillerLogoAssets.containsKey(slug) ? slug : _kBillerAliases[slug];
   if (canonical == null) return null;
   return _kBillerLogoAssets[canonical];
 }
@@ -83,8 +82,9 @@ String _slug(String s) {
   final lower = s.trim().toLowerCase();
   // First try with separators collapsed to single hyphens (matches the alias
   // keys), then the caller-side lookup also tries the fully-stripped form.
-  final hyphenated =
-      lower.replaceAll(RegExp(r'[^a-z0-9]+'), '-').replaceAll(RegExp(r'^-|-$'), '');
+  final hyphenated = lower
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+      .replaceAll(RegExp(r'^-|-$'), '');
   if (_kBillerLogoAssets.containsKey(hyphenated) ||
       _kBillerAliases.containsKey(hyphenated)) {
     return hyphenated;

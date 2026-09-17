@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 part 'budget_override_dialog_widgets.dart';
 
-
 /// Dialog shown when a transaction is blocked due to budget exceeded (strict mode)
 /// Allows user to:
 /// 1. Cancel the transaction
@@ -71,7 +70,8 @@ class _BudgetOverrideDialogState extends State<BudgetOverrideDialog> {
   void initState() {
     super.initState();
     // Calculate minimum increase needed to cover this transaction
-    final totalAfterTransaction = widget.currentSpent + widget.transactionAmount;
+    final totalAfterTransaction =
+        widget.currentSpent + widget.transactionAmount;
     _suggestedIncrease = totalAfterTransaction - widget.budgetLimit;
     if (_suggestedIncrease! < 0) _suggestedIncrease = null;
   }
@@ -126,7 +126,8 @@ class _BudgetOverrideDialogState extends State<BudgetOverrideDialog> {
       ),
       child: SafeArea(
         child: Padding(
-          padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, MediaQuery.of(context).viewInsets.bottom + 24.h),
+          padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w,
+              MediaQuery.of(context).viewInsets.bottom + 24.h),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,7 +205,8 @@ class _BudgetOverrideDialogState extends State<BudgetOverrideDialog> {
                       child: LinearProgressIndicator(
                         value: (widget.percentageUsed / 100).clamp(0.0, 1.0),
                         backgroundColor: const Color(0xFF1A1A1A),
-                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFEF4444)),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                            Color(0xFFEF4444)),
                         minHeight: 6.h,
                       ),
                     ),
@@ -285,7 +287,8 @@ class _BudgetOverrideDialogState extends State<BudgetOverrideDialog> {
                   onTap: () {
                     setState(() => _showIncreaseInput = true);
                     if (_suggestedIncrease != null) {
-                      _increaseController.text = _suggestedIncrease!.toStringAsFixed(2);
+                      _increaseController.text =
+                          _suggestedIncrease!.toStringAsFixed(2);
                     }
                   },
                   color: const Color(0xFF10B981),
@@ -321,7 +324,8 @@ class _BudgetOverrideDialogState extends State<BudgetOverrideDialog> {
                       TextField(
                         controller: _increaseController,
                         focusNode: _increaseFocus,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         style: TextStyle(
                           fontSize: 16.sp,
                           color: Colors.white,
@@ -341,7 +345,8 @@ class _BudgetOverrideDialogState extends State<BudgetOverrideDialog> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8.r),
-                            borderSide: const BorderSide(color: Color(0xFF10B981)),
+                            borderSide:
+                                const BorderSide(color: Color(0xFF10B981)),
                           ),
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: 16.w,
@@ -349,7 +354,8 @@ class _BudgetOverrideDialogState extends State<BudgetOverrideDialog> {
                           ),
                         ),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d{0,2}')),
                         ],
                       ),
                       SizedBox(height: 12.h),
@@ -372,13 +378,15 @@ class _BudgetOverrideDialogState extends State<BudgetOverrideDialog> {
                               },
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFF9CA3AF),
-                                side: const BorderSide(color: Color(0xFF3D3D3D)),
+                                side:
+                                    const BorderSide(color: Color(0xFF3D3D3D)),
                                 padding: EdgeInsets.symmetric(vertical: 14.h),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8.r),
                                 ),
                               ),
-                              child: Text('Cancel', style: TextStyle(fontSize: 14.sp)),
+                              child: Text('Cancel',
+                                  style: TextStyle(fontSize: 14.sp)),
                             ),
                           ),
                           SizedBox(width: 12.w),
@@ -395,7 +403,9 @@ class _BudgetOverrideDialogState extends State<BudgetOverrideDialog> {
                               ),
                               child: Text(
                                 'Confirm Increase',
-                                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
+                                style: TextStyle(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w500),
                               ),
                             ),
                           ),

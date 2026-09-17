@@ -26,7 +26,6 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/widgets/receipt_metadata_humanizer.dart';
 part 'unified_transaction_receipt_widgets.dart';
 
-
 class UnifiedTransactionReceipt extends StatefulWidget {
   final UnifiedTransaction transaction;
   final bool fromHistory;
@@ -121,7 +120,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       if (isGiftCardSaleReference(ref)) {
         final sales = await repo.getMySales();
         final cards = await repo.getSellableCards();
-        final catalogue = cards.fold<List<SellableCard>>((_) => const [], (c) => c);
+        final catalogue =
+            cards.fold<List<SellableCard>>((_) => const [], (c) => c);
         sales.fold((_) => null, (list) {
           for (final sale in list) {
             if (sale.reference == ref) {
@@ -560,8 +560,8 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // the same thing for every gift-card row.
       if (_giftCard != null)
         ..._giftCard!.rows.map(
-          (r) => _DetailEntry(r.key, r.value,
-              copyable: r.key == 'Card reference'),
+          (r) =>
+              _DetailEntry(r.key, r.value, copyable: r.key == 'Card reference'),
         ),
       // An unmapped service type reads as "Type: Unknown" — noise, not
       // information. Hide the row instead.
@@ -665,8 +665,15 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     final hiddenKeys = {
       ...baseHiddenKeys,
       if (isSwap || isSend) ...{
-        'op', 'from_amount', 'to_amount', 'from_currency', 'to_currency',
-        'amount', 'currency', 'recipient', 'recipient_type',
+        'op',
+        'from_amount',
+        'to_amount',
+        'from_currency',
+        'to_currency',
+        'amount',
+        'currency',
+        'recipient',
+        'recipient_type',
       },
     };
     // Labels already spoken for by the first-class rows above. Metadata is
@@ -1228,17 +1235,24 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w700)),
               SizedBox(height: 4.h),
-              Text("The sender's copy shows the fee; the recipient's copy shows only the amount received.",
+              Text(
+                  "The sender's copy shows the fee; the recipient's copy shows only the amount received.",
                   style: TextStyle(
                       color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
               SizedBox(height: 14.h),
-              _receiptOptionTile(ctx, Icons.call_made_rounded,
-                  const Color(0xFF3B82F6), "Sender's copy",
+              _receiptOptionTile(
+                  ctx,
+                  Icons.call_made_rounded,
+                  const Color(0xFF3B82F6),
+                  "Sender's copy",
                   'Amount + fee — your own record.',
                   () => Navigator.of(ctx).pop(ReceiptCopyType.sender)),
               SizedBox(height: 10.h),
-              _receiptOptionTile(ctx, Icons.call_received_rounded,
-                  const Color(0xFF10B981), "Recipient's copy",
+              _receiptOptionTile(
+                  ctx,
+                  Icons.call_received_rounded,
+                  const Color(0xFF10B981),
+                  "Recipient's copy",
                   'Amount received only — for the other party.',
                   () => Navigator.of(ctx).pop(ReceiptCopyType.recipient)),
             ],
@@ -1268,18 +1282,27 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w700)),
               SizedBox(height: 14.h),
-              _receiptOptionTile(ctx, Icons.picture_as_pdf_outlined,
-                  const Color(0xFFEF4444), '$actionLabel as PDF',
+              _receiptOptionTile(
+                  ctx,
+                  Icons.picture_as_pdf_outlined,
+                  const Color(0xFFEF4444),
+                  '$actionLabel as PDF',
                   'Vector document — best for printing.',
                   () => Navigator.of(ctx).pop(ReceiptFileFormat.pdf)),
               SizedBox(height: 10.h),
-              _receiptOptionTile(ctx, Icons.image_outlined,
-                  const Color(0xFF3B82F6), '$actionLabel as JPG',
+              _receiptOptionTile(
+                  ctx,
+                  Icons.image_outlined,
+                  const Color(0xFF3B82F6),
+                  '$actionLabel as JPG',
                   'Compact image — easy to share in chats.',
                   () => Navigator.of(ctx).pop(ReceiptFileFormat.jpg)),
               SizedBox(height: 10.h),
-              _receiptOptionTile(ctx, Icons.photo_outlined,
-                  const Color(0xFF8B5CF6), '$actionLabel as PNG',
+              _receiptOptionTile(
+                  ctx,
+                  Icons.photo_outlined,
+                  const Color(0xFF8B5CF6),
+                  '$actionLabel as PNG',
                   'Lossless image with full quality.',
                   () => Navigator.of(ctx).pop(ReceiptFileFormat.png)),
             ],
@@ -1391,7 +1414,7 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           copyType: _chosenCopy,
           format: _chosenFormat,
           extraRows: _giftCard?.rows ?? _invoiceRows,
-              currentUserName: _currentUserName,
+          currentUserName: _currentUserName,
           // Anchors the iPad share popover; omitted it anchored top-left.
           sharePositionOrigin: _shareOrigin(),
         );

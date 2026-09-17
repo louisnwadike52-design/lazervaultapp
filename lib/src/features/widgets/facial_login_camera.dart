@@ -19,8 +19,7 @@ class FacialLoginCamera extends StatefulWidget {
   const FacialLoginCamera({super.key});
 
   @override
-  State<FacialLoginCamera> createState() =>
-      _FacialLoginCameraState();
+  State<FacialLoginCamera> createState() => _FacialLoginCameraState();
 }
 
 class _FacialLoginCameraState extends State<FacialLoginCamera>
@@ -105,7 +104,9 @@ class _FacialLoginCameraState extends State<FacialLoginCamera>
   }
 
   Future<void> _captureAndVerifyFace() async {
-    if (_isProcessing || _cameraController == null || !_cameraController!.value.isInitialized) {
+    if (_isProcessing ||
+        _cameraController == null ||
+        !_cameraController!.value.isInitialized) {
       return;
     }
 
@@ -125,7 +126,8 @@ class _FacialLoginCameraState extends State<FacialLoginCamera>
       final storedUserId = await _secureStorage.read(key: 'user_id');
 
       if (storedUserId == null || storedUserId.isEmpty) {
-        throw Exception('User ID not found. Please log in with your passcode first.');
+        throw Exception(
+            'User ID not found. Please log in with your passcode first.');
       }
 
       if (!mounted) return;
@@ -308,9 +310,7 @@ class _FacialLoginCameraState extends State<FacialLoginCamera>
                   children: [
                     // Cancel button
                     TextButton(
-                      onPressed: _isProcessing
-                          ? null
-                          : () => Get.back(),
+                      onPressed: _isProcessing ? null : () => Get.back(),
                       child: Text(
                         'Cancel',
                         style: TextStyle(

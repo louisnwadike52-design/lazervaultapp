@@ -33,8 +33,7 @@ class LegalLinksService {
   // banking-service's HTTP mux (see banking-service/cmd/main.go), NOT the core
   // gateway — use httpBanking so a local/dev build (distinct host:port) and any
   // admin repoint of the banking URL resolve to the right backend.
-  static const String _testHost =
-      String.fromEnvironment('TEST_BACKEND_HOST');
+  static const String _testHost = String.fromEnvironment('TEST_BACKEND_HOST');
   static String get _legalUrl {
     if (_testHost.isNotEmpty) {
       return 'http://$_testHost:8073/api/v1/legal/links';
@@ -101,7 +100,8 @@ class LegalLinksService {
         giftcardTerms: m['giftcard_terms_url'],
       );
       // Consider it a hit only if the unified list actually carried a legal link.
-      return m.containsKey('giftcard_terms_url') || m.containsKey('help_terms_url');
+      return m.containsKey('giftcard_terms_url') ||
+          m.containsKey('help_terms_url');
     } catch (_) {
       return false;
     }
@@ -110,8 +110,9 @@ class LegalLinksService {
   /// Fallback source: the legacy banking `/legal/links` endpoint.
   Future<void> _refreshFromBanking() async {
     try {
-      final res =
-          await http.get(Uri.parse(_legalUrl)).timeout(const Duration(seconds: 6));
+      final res = await http
+          .get(Uri.parse(_legalUrl))
+          .timeout(const Duration(seconds: 6));
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
         setUrls(

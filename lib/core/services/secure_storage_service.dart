@@ -109,7 +109,8 @@ class SecureStorageService {
 
   // Self-lock (proactive login reflection) --------------------------------
   Future<void> setSelfLockUntil(DateTime until, {String? reason}) async {
-    await _storage.write(key: _keySelfLockUntil, value: until.toUtc().toIso8601String());
+    await _storage.write(
+        key: _keySelfLockUntil, value: until.toUtc().toIso8601String());
     if (reason != null && reason.isNotEmpty) {
       await _storage.write(key: _keySelfLockReason, value: reason);
     }
@@ -296,8 +297,8 @@ class SecureStorageService {
       while (payload.length % 4 != 0) {
         payload += '=';
       }
-      final claims =
-          jsonDecode(utf8.decode(base64Url.decode(payload))) as Map<String, dynamic>;
+      final claims = jsonDecode(utf8.decode(base64Url.decode(payload)))
+          as Map<String, dynamic>;
       final id = (claims['sub'] ?? claims['user_id'] ?? '').toString();
       return id.isEmpty ? null : id;
     } catch (_) {

@@ -72,7 +72,7 @@ class _RequestFundsState extends State<RequestFunds> {
             ],
           ),
         ),
-    
+
         // Main Content
         Expanded(
           child: SingleChildScrollView(
@@ -87,7 +87,8 @@ class _RequestFundsState extends State<RequestFunds> {
                     padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(16),                      boxShadow: [
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 10,
@@ -103,13 +104,12 @@ class _RequestFundsState extends State<RequestFunds> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 6,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(24.w),
@@ -145,7 +145,7 @@ class _RequestFundsState extends State<RequestFunds> {
                     ),
                   ),
                   SizedBox(height: 32.h),
-    
+
                   // Amount Input - Updated styling
                   Text(
                     'Amount',
@@ -161,13 +161,12 @@ class _RequestFundsState extends State<RequestFunds> {
                       color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
@@ -190,7 +189,8 @@ class _RequestFundsState extends State<RequestFunds> {
                               children: [
                                 CircleAvatar(
                                   radius: 12.r,
-                                  backgroundImage: AssetImage(selectedCountry.flag),
+                                  backgroundImage:
+                                      AssetImage(selectedCountry.flag),
                                 ),
                                 SizedBox(width: 8.w),
                                 Text(
@@ -234,7 +234,7 @@ class _RequestFundsState extends State<RequestFunds> {
                     ),
                   ),
                   SizedBox(height: 24.h),
-    
+
                   // Updated _buildInputField method calls with new styling
                   _buildInputField(
                     label: 'Email',
@@ -245,7 +245,7 @@ class _RequestFundsState extends State<RequestFunds> {
                     borderColor: Colors.white.withValues(alpha: 0.15),
                   ),
                   SizedBox(height: 24.h),
-    
+
                   _buildInputField(
                     label: 'Notes',
                     hint: 'Please make payment',
@@ -260,7 +260,7 @@ class _RequestFundsState extends State<RequestFunds> {
             ),
           ),
         ),
-    
+
         // Request Button - Updated styling
         Padding(
           padding: EdgeInsets.all(24.w),
@@ -329,13 +329,12 @@ class _RequestFundsState extends State<RequestFunds> {
             color: backgroundColor ?? Colors.white.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: TextField(
             controller: controller,

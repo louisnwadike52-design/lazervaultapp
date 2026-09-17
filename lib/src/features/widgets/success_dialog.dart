@@ -57,17 +57,15 @@ class _SuccessDialogState extends State<SuccessDialog> {
                       type: TransactionType.billPay,
                       amount: 5000,
                       user: User(
-                          id: 'dummy_id',
-                          firstName: 'Louis',
-                          lastName: 'Nwadike',
-                          email: 'dummy@example.com',
-                          verified: false,
-                          isEmailVerified: false,
-                          createdAt: DateTime.fromMillisecondsSinceEpoch(0),
-                          updatedAt: DateTime.fromMillisecondsSinceEpoch(0),
-                          )
-                    )
-                ),
+                        id: 'dummy_id',
+                        firstName: 'Louis',
+                        lastName: 'Nwadike',
+                        email: 'dummy@example.com',
+                        verified: false,
+                        isEmailVerified: false,
+                        createdAt: DateTime.fromMillisecondsSinceEpoch(0),
+                        updatedAt: DateTime.fromMillisecondsSinceEpoch(0),
+                      ))),
               style: ElevatedButton.styleFrom(
                 backgroundColor: HybridHexColor.fromHex("#3784F9"),
                 foregroundColor: Colors.white,

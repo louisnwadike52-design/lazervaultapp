@@ -106,8 +106,8 @@ class ExchangeRates extends StatelessWidget {
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 78, 3, 208)
-                  .withValues(alpha: 0.1),
+              color:
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Row(
@@ -148,8 +148,8 @@ class ExchangeRates extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 8.h),
               child: const LinearProgressIndicator(
                 minHeight: 2,
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 78, 3, 208)),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                    Color.fromARGB(255, 78, 3, 208)),
                 backgroundColor: Color(0xFFE5E7EB),
               ),
             ),
@@ -254,8 +254,8 @@ class ExchangeRates extends StatelessWidget {
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
-              color: const Color.fromARGB(255, 78, 3, 208)
-                  .withValues(alpha: 0.08),
+              color:
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.08),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),

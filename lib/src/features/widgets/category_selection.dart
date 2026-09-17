@@ -9,7 +9,6 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'category_selection_widgets.dart';
 
-
 /// Category Selection Bottom Sheet
 /// Displays a grid of categories for user selection
 /// When "Other" is tapped, shows a text field to create a custom category
@@ -79,9 +78,11 @@ class _CategorySelectionBottomSheetState
     final items = widget.categories ?? ServiceCategory.commonTransferCategories;
     final filteredItems = _searchQuery.isEmpty
         ? items
-        : items.where((c) =>
-            c.displayName.toLowerCase().contains(_searchQuery) ||
-            c.subCategoryName.toLowerCase().contains(_searchQuery)).toList();
+        : items
+            .where((c) =>
+                c.displayName.toLowerCase().contains(_searchQuery) ||
+                c.subCategoryName.toLowerCase().contains(_searchQuery))
+            .toList();
 
     return AnimatedPadding(
       duration: const Duration(milliseconds: 150),
@@ -89,204 +90,230 @@ class _CategorySelectionBottomSheetState
       // Lift the sheet above the keyboard so the custom-category input (which
       // autofocuses on open) is visible instead of hidden behind the keyboard
       // (previously it looked like an empty overlay with no content).
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.75),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Handle
-          Container(
-            margin: EdgeInsets.only(top: 12.h),
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2D2D2D),
-              borderRadius: BorderRadius.circular(2.r),
-            ),
-          ),
-          // Header
-          Padding(
-            padding: EdgeInsets.fromLTRB(20.w, 20.w, 20.w, 12.w),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.category,
-                  color: const Color(0xFF3B82F6),
-                  size: 24.sp,
-                ),
-                SizedBox(width: 12.w),
-                Text(
-                  _showCustomInput ? 'New Category' : 'Select Category',
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () {
-                    if (_showCustomInput) {
-                      setState(() => _showCustomInput = false);
-                    } else {
-                      Navigator.pop(context);
-                    }
-                  },
-                  icon: Icon(
-                    _showCustomInput ? Icons.arrow_back : Icons.close,
-                    color: Colors.white,
-                    size: 20.sp,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (_showCustomInput)
-            _buildCustomCategoryInput()
-          else ...[
-            // Search bar
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: TextField(
-                controller: _searchController,
-                style: TextStyle(color: Colors.white, fontSize: 14.sp),
-                decoration: InputDecoration(
-                  hintText: 'Search categories...',
-                  hintStyle: TextStyle(color: const Color(0xFF6B7280), fontSize: 14.sp),
-                  prefixIcon: Icon(Icons.search, color: const Color(0xFF6B7280), size: 20.sp),
-                  filled: true,
-                  fillColor: const Color(0xFF2D2D2D),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                  isDense: true,
-                ),
-                onChanged: (value) {
-                  setState(() => _searchQuery = value.toLowerCase());
-                },
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.75),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle
+            Container(
+              margin: EdgeInsets.only(top: 12.h),
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2D2D2D),
+                borderRadius: BorderRadius.circular(2.r),
               ),
             ),
-            SizedBox(height: 12.h),
-            // Categories List (searchable, scrollable)
-            Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
+            // Header
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 20.w, 20.w, 12.w),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.category,
+                    color: const Color(0xFF3B82F6),
+                    size: 24.sp,
+                  ),
+                  SizedBox(width: 12.w),
+                  Text(
+                    _showCustomInput ? 'New Category' : 'Select Category',
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () {
+                      if (_showCustomInput) {
+                        setState(() => _showCustomInput = false);
+                      } else {
+                        Navigator.pop(context);
+                      }
+                    },
+                    icon: Icon(
+                      _showCustomInput ? Icons.arrow_back : Icons.close,
+                      color: Colors.white,
+                      size: 20.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (_showCustomInput)
+              _buildCustomCategoryInput()
+            else ...[
+              // Search bar
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
-                itemCount: filteredItems.length + 1, // +1 for "Create custom" option
-                itemBuilder: (context, index) {
-                  if (index == filteredItems.length) {
-                    // "Create custom category" option at bottom
+                child: TextField(
+                  controller: _searchController,
+                  style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                  decoration: InputDecoration(
+                    hintText: 'Search categories...',
+                    hintStyle: TextStyle(
+                        color: const Color(0xFF6B7280), fontSize: 14.sp),
+                    prefixIcon: Icon(Icons.search,
+                        color: const Color(0xFF6B7280), size: 20.sp),
+                    filled: true,
+                    fillColor: const Color(0xFF2D2D2D),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                    isDense: true,
+                  ),
+                  onChanged: (value) {
+                    setState(() => _searchQuery = value.toLowerCase());
+                  },
+                ),
+              ),
+              SizedBox(height: 12.h),
+              // Categories List (searchable, scrollable)
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  itemCount:
+                      filteredItems.length + 1, // +1 for "Create custom" option
+                  itemBuilder: (context, index) {
+                    if (index == filteredItems.length) {
+                      // "Create custom category" option at bottom
+                      return Padding(
+                        padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
+                        child: GestureDetector(
+                          onTap: () => setState(() => _showCustomInput = true),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 12.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2D2D2D),
+                              borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(
+                                  color: const Color(0xFF3B82F6)
+                                      .withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.add_circle_outline,
+                                    color: const Color(0xFF3B82F6),
+                                    size: 22.sp),
+                                SizedBox(width: 12.w),
+                                Text(
+                                  'Create Custom Category',
+                                  style: TextStyle(
+                                    color: const Color(0xFF3B82F6),
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    final category = filteredItems[index];
+                    final isSelected =
+                        widget.selectedCategory?.id == category.id;
+
                     return Padding(
-                      padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
+                      padding: EdgeInsets.only(bottom: 4.h),
                       child: GestureDetector(
-                        onTap: () => setState(() => _showCustomInput = true),
+                        onTap: () => widget.onSelected(category),
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16.w, vertical: 12.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2D2D2D),
+                            color: isSelected
+                                ? category.color.withValues(alpha: 0.15)
+                                : const Color(0xFF2D2D2D),
                             borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
+                            border: Border.all(
+                              color: isSelected
+                                  ? category.color
+                                  : Colors.transparent,
+                              width: isSelected ? 1.5 : 0,
+                            ),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.add_circle_outline, color: const Color(0xFF3B82F6), size: 22.sp),
-                              SizedBox(width: 12.w),
-                              Text(
-                                'Create Custom Category',
-                                style: TextStyle(
-                                  color: const Color(0xFF3B82F6),
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w600,
+                              Container(
+                                width: 36.w,
+                                height: 36.w,
+                                decoration: BoxDecoration(
+                                  color: category.color.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(10.r),
+                                ),
+                                child: Icon(
+                                  category.iconData,
+                                  color: isSelected
+                                      ? category.color
+                                      : const Color(0xFF9CA3AF),
+                                  size: 20.sp,
                                 ),
                               ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Text(
+                                  category.displayName,
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
+                                    color: isSelected
+                                        ? category.color
+                                        : Colors.white,
+                                  ),
+                                ),
+                              ),
+                              if (isSelected)
+                                Icon(Icons.check_circle,
+                                    color: category.color, size: 20.sp),
+                              if (category.isCustom)
+                                Padding(
+                                  padding: EdgeInsets.only(left: 8.w),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 6.w, vertical: 2.h),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF3B82F6)
+                                          .withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(4.r),
+                                    ),
+                                    child: Text(
+                                      'Custom',
+                                      style: TextStyle(
+                                          color: const Color(0xFF3B82F6),
+                                          fontSize: 10.sp),
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                         ),
                       ),
                     );
-                  }
-
-                  final category = filteredItems[index];
-                  final isSelected = widget.selectedCategory?.id == category.id;
-
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: 4.h),
-                    child: GestureDetector(
-                      onTap: () => widget.onSelected(category),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? category.color.withValues(alpha: 0.15)
-                              : const Color(0xFF2D2D2D),
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(
-                            color: isSelected ? category.color : Colors.transparent,
-                            width: isSelected ? 1.5 : 0,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 36.w,
-                              height: 36.w,
-                              decoration: BoxDecoration(
-                                color: category.color.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10.r),
-                              ),
-                              child: Icon(
-                                category.iconData,
-                                color: isSelected ? category.color : const Color(0xFF9CA3AF),
-                                size: 20.sp,
-                              ),
-                            ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: Text(
-                                category.displayName,
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                  color: isSelected ? category.color : Colors.white,
-                                ),
-                              ),
-                            ),
-                            if (isSelected)
-                              Icon(Icons.check_circle, color: category.color, size: 20.sp),
-                            if (category.isCustom)
-                              Padding(
-                                padding: EdgeInsets.only(left: 8.w),
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(4.r),
-                                  ),
-                                  child: Text(
-                                    'Custom',
-                                    style: TextStyle(color: const Color(0xFF3B82F6), fontSize: 10.sp),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
+                  },
+                ),
               ),
-            ),
+            ],
+            SizedBox(height: 20.h),
           ],
-          SizedBox(height: 20.h),
-        ],
-      ),
+        ),
       ),
     );
   }
@@ -311,14 +338,16 @@ class _CategorySelectionBottomSheetState
             style: TextStyle(color: Colors.white, fontSize: 16.sp),
             decoration: InputDecoration(
               hintText: 'e.g., Gym Membership',
-              hintStyle: TextStyle(color: const Color(0xFF6B7280), fontSize: 16.sp),
+              hintStyle:
+                  TextStyle(color: const Color(0xFF6B7280), fontSize: 16.sp),
               filled: true,
               fillColor: const Color(0xFF2D2D2D),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
                 borderSide: BorderSide.none,
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             ),
             textCapitalization: TextCapitalization.words,
             onSubmitted: (_) => _createCustomCategory(),
@@ -340,7 +369,8 @@ class _CategorySelectionBottomSheetState
                   ? LazerVaultLoader.small()
                   : Text(
                       'Create Category',
-                      style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                          fontSize: 16.sp, fontWeight: FontWeight.w600),
                     ),
             ),
           ),
@@ -382,7 +412,8 @@ class _CategorySelectionBottomSheetState
         widget.onSelected(_buildLocalCategory(name));
       }
     } catch (e) {
-      developer.log('Failed to create custom category', name: 'CategorySelection', error: e);
+      developer.log('Failed to create custom category',
+          name: 'CategorySelection', error: e);
       if (mounted) {
         // Fallback on error
         widget.onSelected(_buildLocalCategory(name));

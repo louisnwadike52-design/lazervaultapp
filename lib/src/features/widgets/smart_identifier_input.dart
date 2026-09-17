@@ -182,9 +182,8 @@ class _SmartIdentifierInputState extends State<SmartIdentifierInput> {
           decoration: BoxDecoration(
             color: const Color(0xFFF0F0F0),
             borderRadius: BorderRadius.circular(24.r),
-            border: hasError
-                ? Border.all(color: const Color(0xFFEF4444))
-                : null,
+            border:
+                hasError ? Border.all(color: const Color(0xFFEF4444)) : null,
           ),
           child: Row(children: [
             // Leading morphs its CONTENT with the detected type (country pill
@@ -258,8 +257,7 @@ class _SmartIdentifierInputState extends State<SmartIdentifierInput> {
               Padding(
                 padding: EdgeInsets.only(left: 6.w, right: 14.w),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(_typeIcon,
-                      size: 13.sp, color: const Color(0xFF4834D4)),
+                  Icon(_typeIcon, size: 13.sp, color: const Color(0xFF4834D4)),
                   SizedBox(width: 4.w),
                   Text(_detectedLabel,
                       style: TextStyle(
@@ -275,8 +273,8 @@ class _SmartIdentifierInputState extends State<SmartIdentifierInput> {
           Padding(
             padding: EdgeInsets.only(left: 8.w),
             child: Text(widget.errorText!,
-                style: TextStyle(
-                    fontSize: 11.sp, color: const Color(0xFFEF4444))),
+                style:
+                    TextStyle(fontSize: 11.sp, color: const Color(0xFFEF4444))),
           ),
         ],
       ],

@@ -20,7 +20,8 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 /// ========================================================================
 
 /// Safely get value from map with nested key support
-String safeGet(Map<String, dynamic>? data, String key, {String defaultValue = ""}) {
+String safeGet(Map<String, dynamic>? data, String key,
+    {String defaultValue = ""}) {
   if (data == null || data.isEmpty) return defaultValue;
 
   final keys = key.split('.');
@@ -152,7 +153,10 @@ String formatMultilineText(String text, {int maxLineLength = 80}) {
   String currentLine = '';
 
   for (final word in words) {
-    if ((currentLine.isEmpty ? word.length : currentLine.length + 1 + word.length) <= maxLineLength) {
+    if ((currentLine.isEmpty
+            ? word.length
+            : currentLine.length + 1 + word.length) <=
+        maxLineLength) {
       currentLine += (currentLine.isEmpty ? '' : ' ') + word;
     } else {
       if (currentLine.isNotEmpty) {
@@ -194,8 +198,10 @@ String formatErrorMessage(
   if (userFriendly) {
     final userMessages = <String, String>{
       'timeout': 'Taking longer than expected. Please wait a moment.',
-      'network_error': 'Connection issue. Please check your internet and try again.',
-      'service_unavailable': 'Service temporarily unavailable. Please try again later.',
+      'network_error':
+          'Connection issue. Please check your internet and try again.',
+      'service_unavailable':
+          'Service temporarily unavailable. Please try again later.',
       'unauthorized': 'Please log in to continue.',
       'rate_limit': 'Too many requests. Please wait a moment.',
       'not_found': 'We couldn\'t find what you\'re looking for.',
@@ -236,7 +242,8 @@ bool isValidResponse(dynamic response) {
 
   if (response is Map) {
     // Check if has meaningful content
-    final text = response['text'] ?? response['message'] ?? response['response'];
+    final text =
+        response['text'] ?? response['message'] ?? response['response'];
     if (text is String && text.trim().isNotEmpty) return true;
 
     // Check if has other meaningful data
@@ -312,7 +319,8 @@ dynamic _getDefaultForField(String field) {
 /// Get safe display text from response
 String getSafeDisplayText(
   Map<String, dynamic>? response, {
-  String fallback = 'I\'m having trouble understanding. Could you try rephrasing?',
+  String fallback =
+      'I\'m having trouble understanding. Could you try rephrasing?',
 }) {
   if (!isValidResponse(response)) return fallback;
 
@@ -416,7 +424,8 @@ String maskSensitiveValue(
     final actualMaskLength = maskLength ?? (value.length - visibleChars);
     if (actualMaskLength <= 0) return value;
 
-    return maskChar * actualMaskLength + value.substring(value.length - visibleChars);
+    return maskChar * actualMaskLength +
+        value.substring(value.length - visibleChars);
   }
 }
 
@@ -488,7 +497,8 @@ T Function(T Function() innerFunc) debounce<T>(T Function() _, Duration delay) {
 /// Throttle function calls. Returns a wrapper that only invokes the inner
 /// function once per `duration`; subsequent calls inside that window return
 /// the cached last result.
-T Function(T Function() innerFunc) throttle<T>(T Function() _, Duration duration) {
+T Function(T Function() innerFunc) throttle<T>(
+    T Function() _, Duration duration) {
   bool ready = true;
   T? lastResult;
 
@@ -637,7 +647,8 @@ String getErrorMessage(Map<String, dynamic>? response) {
 /// ========================================================================
 
 /// Scroll to bottom of chat
-void scrollToBottom(ScrollController controller, {Duration duration = const Duration(milliseconds: 300)}) {
+void scrollToBottom(ScrollController controller,
+    {Duration duration = const Duration(milliseconds: 300)}) {
   if (controller.hasClients) {
     controller.animateTo(
       controller.position.maxScrollExtent,
@@ -673,9 +684,7 @@ Color getMessageTextColor(bool isUser) {
 
 /// Get background color based on message type
 Color getMessageBackgroundColor(bool isUser, ColorScheme colorScheme) {
-  return isUser
-      ? colorScheme.primary
-      : colorScheme.surface;
+  return isUser ? colorScheme.primary : colorScheme.surface;
 }
 
 /// Get border radius based on message type

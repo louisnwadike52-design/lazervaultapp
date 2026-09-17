@@ -69,10 +69,12 @@ class MutationExecutor {
     final handler = _handlers[mutation.type];
 
     if (handler == null) {
-      throw Exception('No handler registered for mutation type: ${mutation.type.name}');
+      throw Exception(
+          'No handler registered for mutation type: ${mutation.type.name}');
     }
 
-    print('[MutationExecutor] Processing ${mutation.type.name} (${mutation.id})');
+    print(
+        '[MutationExecutor] Processing ${mutation.type.name} (${mutation.id})');
 
     try {
       await handler(mutation);

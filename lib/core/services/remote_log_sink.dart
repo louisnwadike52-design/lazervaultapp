@@ -69,15 +69,15 @@ class RemoteLogSink {
       _sampleRate = env.isProduction ? 0.2 : (env.isStaging ? 0.5 : 1.0);
       // Admin can flip these remotely (EndpointRegistry hydrates the keys from
       // the same settings poll that feeds the URL cache); defaults win offline.
-      _enabled = endpointRegistry
-              .raw('client_logs_enabled')
-              ?.trim()
-              .toLowerCase() !=
-          'false';
+      _enabled =
+          endpointRegistry.raw('client_logs_enabled')?.trim().toLowerCase() !=
+              'false';
       final rawRate = double.tryParse(
           endpointRegistry.raw('client_logs_sample_rate')?.trim() ?? '');
-      if (rawRate != null && rawRate >= 0 && rawRate <= 1) _sampleRate = rawRate;
-      final forceFlows = endpointRegistry.raw('client_logs_force_flows')?.trim();
+      if (rawRate != null && rawRate >= 0 && rawRate <= 1)
+        _sampleRate = rawRate;
+      final forceFlows =
+          endpointRegistry.raw('client_logs_force_flows')?.trim();
       if (forceFlows != null && forceFlows.isNotEmpty) {
         _forceShipFlows = forceFlows
             .split(',')
@@ -129,7 +129,8 @@ class RemoteLogSink {
       // Errors + warnings always ship; info/debug are sampled — EXCEPT flows
       // under active field debugging, which must capture every event or the
       // one tap that reproduces the bug is the one the sampler drops.
-      if ((lvl == 'info' || lvl == 'debug') && !_forceShipFlows.contains(flow)) {
+      if ((lvl == 'info' || lvl == 'debug') &&
+          !_forceShipFlows.contains(flow)) {
         if (!_passesSample()) return;
       }
 

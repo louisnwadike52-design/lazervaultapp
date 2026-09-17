@@ -59,7 +59,8 @@ Future<T?> _hostSheet<T>(BuildContext context, Widget child) {
 }
 
 /// Create an inventory item; resolves with the created [InventoryItemEntity].
-Future<InventoryItemEntity?> showCreateInventoryItemSheet(BuildContext context) {
+Future<InventoryItemEntity?> showCreateInventoryItemSheet(
+    BuildContext context) {
   return _hostSheet<InventoryItemEntity>(
     context,
     BlocProvider(

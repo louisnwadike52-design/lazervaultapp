@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 class BackNavigator extends StatelessWidget {
-    final VoidCallback? onPressed;
+  final VoidCallback? onPressed;
   const BackNavigator({super.key, this.onPressed});
 
   @override
@@ -19,7 +19,6 @@ class BackNavigator extends StatelessWidget {
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: GestureDetector(
         onTap: () {

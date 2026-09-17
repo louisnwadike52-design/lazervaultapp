@@ -47,7 +47,8 @@ class LocaleManager {
     required String country,
   }) {
     if (!_isValidLocaleFormat(locale)) {
-      throw ArgumentError('Invalid locale format: $locale. Expected format: en-US');
+      throw ArgumentError(
+          'Invalid locale format: $locale. Expected format: en-US');
     }
 
     _localeController.add(locale);
@@ -65,7 +66,8 @@ class LocaleManager {
   /// Example: setCurrency("GBP")
   void setCurrency(String currencyCode) {
     if (!_isValidCurrencyFormat(currencyCode)) {
-      throw ArgumentError('Invalid currency format: $currencyCode. Expected format: USD, GBP, EUR');
+      throw ArgumentError(
+          'Invalid currency format: $currencyCode. Expected format: USD, GBP, EUR');
     }
     _currencyController.add(currencyCode);
   }
@@ -120,9 +122,7 @@ class LocaleManager {
   bool _isValidLocaleFormat(String locale) {
     // Basic check: should be in format "xx-XX" or "xxx-XX"
     final parts = locale.split('-');
-    return parts.length == 2 &&
-           parts[0].length >= 2 &&
-           parts[1].length == 2;
+    return parts.length == 2 && parts[0].length >= 2 && parts[1].length == 2;
   }
 
   /// Basic validation for currency format (ISO 4217)
@@ -167,7 +167,18 @@ class LocaleManager {
   /// repository type to keep this class free of feature-layer
   /// imports. The wiring in injection_container.dart bridges them.
   Future<void> refreshSupportedLocales(
-    Future<List<({String locale, String countryCode, String countryName, String currencyCode, String flagEmoji, bool isActive})>> Function() fetch,
+    Future<
+                List<
+                    ({
+                      String locale,
+                      String countryCode,
+                      String countryName,
+                      String currencyCode,
+                      String flagEmoji,
+                      bool isActive
+                    })>>
+            Function()
+        fetch,
   ) async {
     try {
       final rows = await fetch();
@@ -201,13 +212,13 @@ class LocaleManager {
 
 /// Country data model for UI selection
 class CountryLocale {
-  final String countryCode;      // "US", "GB", "ZA"
-  final String countryName;      // "United States", "United Kingdom"
-  final String languageCode;     // "en", "fr", "de"
-  final String locale;           // "en-US", "en-GB", "fr-FR"
-  final String flag;             // Emoji flag "🇺🇸" or asset path
-  final String dialCode;         // "+1", "+44", "+27"
-  final String currency;         // "USD", "GBP", "ZAR"
+  final String countryCode; // "US", "GB", "ZA"
+  final String countryName; // "United States", "United Kingdom"
+  final String languageCode; // "en", "fr", "de"
+  final String locale; // "en-US", "en-GB", "fr-FR"
+  final String flag; // Emoji flag "🇺🇸" or asset path
+  final String dialCode; // "+1", "+44", "+27"
+  final String currency; // "USD", "GBP", "ZAR"
 
   const CountryLocale({
     required this.countryCode,
@@ -338,9 +349,9 @@ class CountryLocales {
     final lowerQuery = query.toLowerCase();
     return all.where((country) {
       return country.countryName.toLowerCase().contains(lowerQuery) ||
-             country.countryCode.toLowerCase().contains(lowerQuery) ||
-             country.locale.toLowerCase().contains(lowerQuery) ||
-             country.dialCode.contains(query);
+          country.countryCode.toLowerCase().contains(lowerQuery) ||
+          country.locale.toLowerCase().contains(lowerQuery) ||
+          country.dialCode.contains(query);
     }).toList();
   }
 

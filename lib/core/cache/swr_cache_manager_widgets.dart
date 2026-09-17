@@ -75,10 +75,13 @@ class CacheStatistics {
   int evictions = 0;
   int corruptionRepairs = 0;
 
-  double get hitRate => (hits + staleHits) / (hits + staleHits + misses).clamp(1, double.infinity);
+  double get hitRate =>
+      (hits + staleHits) /
+      (hits + staleHits + misses).clamp(1, double.infinity);
 
   void reset() {
-    hits = misses = staleHits = networkFetches = errors = evictions = corruptionRepairs = 0;
+    hits = misses =
+        staleHits = networkFetches = errors = evictions = corruptionRepairs = 0;
   }
 
   Map<String, dynamic> toJson() => {

@@ -25,6 +25,7 @@ class LVSnackbar {
       position: position,
     );
   }
+
   /// Show a success snackbar with the given title and message
   static void showSuccess({
     required String title,
@@ -128,4 +129,4 @@ class LVSnackbar {
       ),
     );
   }
-} 
+}

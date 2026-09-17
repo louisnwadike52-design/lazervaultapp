@@ -120,7 +120,8 @@ class BuildFormFieldState extends State<BuildFormField> {
   @override
   void initState() {
     super.initState();
-    _controller = widget.controller ?? TextEditingController(text: widget.initialValue ?? '');
+    _controller = widget.controller ??
+        TextEditingController(text: widget.initialValue ?? '');
     _isPasswordObscured = widget.obscureText;
 
     if (widget.onChanged != null && widget.controller == null) {
@@ -145,11 +146,14 @@ class BuildFormFieldState extends State<BuildFormField> {
       if (widget.onChanged != null) {
         _controller.addListener(_handleControllerChange);
       }
-    } else if (widget.controller == null && widget.initialValue != oldWidget.initialValue && widget.initialValue != _controller.text) {
+    } else if (widget.controller == null &&
+        widget.initialValue != oldWidget.initialValue &&
+        widget.initialValue != _controller.text) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && widget.initialValue != _controller.text) {
           _controller.text = widget.initialValue ?? '';
-          _controller.selection = TextSelection.fromPosition(TextPosition(offset: _controller.text.length));
+          _controller.selection = TextSelection.fromPosition(
+              TextPosition(offset: _controller.text.length));
         }
       });
     }
@@ -241,10 +245,11 @@ class BuildFormFieldState extends State<BuildFormField> {
                                 color: Colors.red,
                                 fontSize: 12.sp,
                               ),
-                              hintStyle: widget.hintStyle ?? TextStyle(
-                                fontSize: 16.sp,
-                                color: Colors.grey.shade600,
-                              ),
+                              hintStyle: widget.hintStyle ??
+                                  TextStyle(
+                                    fontSize: 16.sp,
+                                    color: Colors.grey.shade600,
+                                  ),
                               fillColor: Colors.transparent,
                               filled: true,
                               border: OutlineInputBorder(
@@ -271,7 +276,8 @@ class BuildFormFieldState extends State<BuildFormField> {
                                       ),
                                       onPressed: () {
                                         setState(() {
-                                          _isPasswordObscured = !_isPasswordObscured;
+                                          _isPasswordObscured =
+                                              !_isPasswordObscured;
                                         });
                                       },
                                     )

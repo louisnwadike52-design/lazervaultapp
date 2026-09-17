@@ -216,8 +216,8 @@ class BillAutoRechargeItem extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 8.w, vertical: 3.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                       decoration: BoxDecoration(
                         color: _statusColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4.r),
@@ -283,8 +283,7 @@ class BillAutoRechargeItem extends StatelessWidget {
             SizedBox(height: 10.h),
             Row(
               children: [
-                Icon(Icons.repeat,
-                    size: 14.sp, color: const Color(0xFF6B7280)),
+                Icon(Icons.repeat, size: 14.sp, color: const Color(0xFF6B7280)),
                 SizedBox(width: 6.w),
                 Text(
                   _scheduleText,
@@ -373,17 +372,20 @@ class BillAutoRechargeItem extends StatelessWidget {
                 children: [
                   // Pause / Resume
                   if (_isActive && onPause != null)
-                    Expanded(child: _actionBtn(Icons.pause, 'Pause',
-                        const Color(0xFFFB923C), onPause!)),
+                    Expanded(
+                        child: _actionBtn(Icons.pause, 'Pause',
+                            const Color(0xFFFB923C), onPause!)),
                   if (_isPaused && onResume != null)
-                    Expanded(child: _actionBtn(Icons.play_arrow, 'Resume',
-                        const Color(0xFF10B981), onResume!)),
+                    Expanded(
+                        child: _actionBtn(Icons.play_arrow, 'Resume',
+                            const Color(0xFF10B981), onResume!)),
                   // Edit
                   if (onEdit != null) ...[
                     if (onPause != null || onResume != null)
                       SizedBox(width: 8.w),
-                    Expanded(child: _actionBtn(Icons.edit_outlined, 'Edit',
-                        const Color(0xFF4E03D0), onEdit!)),
+                    Expanded(
+                        child: _actionBtn(Icons.edit_outlined, 'Edit',
+                            const Color(0xFF4E03D0), onEdit!)),
                   ],
                   // Delete
                   if (onDelete != null) ...[

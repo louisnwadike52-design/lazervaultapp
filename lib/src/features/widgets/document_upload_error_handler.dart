@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'document_upload_error_handler_widgets.dart';
 
-
 /// Widget for displaying document upload errors with helpful tips and actions
 class DocumentUploadErrorHandler extends StatelessWidget {
   final String? errorMessage;
@@ -73,7 +72,8 @@ class DocumentUploadErrorHandler extends StatelessWidget {
         return const DocumentErrorDetails(
           type: DocumentErrorType.blur,
           title: 'Image is Blurry',
-          message: 'The image appears to be out of focus. Please retake with a steady hand.',
+          message:
+              'The image appears to be out of focus. Please retake with a steady hand.',
           tips: [
             'Hold your phone steady with both hands',
             'Tap the screen to focus before capturing',
@@ -101,7 +101,8 @@ class DocumentUploadErrorHandler extends StatelessWidget {
         return const DocumentErrorDetails(
           type: DocumentErrorType.dark,
           title: 'Image is Too Dark',
-          message: 'The image is too dark to read. Please retake in better lighting.',
+          message:
+              'The image is too dark to read. Please retake in better lighting.',
           tips: [
             'Move to a well-lit area',
             'Use natural light from a window',
@@ -143,7 +144,8 @@ class DocumentUploadErrorHandler extends StatelessWidget {
         return const DocumentErrorDetails(
           type: DocumentErrorType.faceMultiple,
           title: 'Multiple Faces Detected',
-          message: 'Please take the photo alone. Multiple people were detected.',
+          message:
+              'Please take the photo alone. Multiple people were detected.',
           tips: [
             'Take the photo by yourself',
             'Ensure no one else is in the frame',
@@ -212,7 +214,8 @@ class DocumentUploadErrorHandler extends StatelessWidget {
         return DocumentErrorDetails(
           type: DocumentErrorType.unknown,
           title: 'Upload Failed',
-          message: errorMessage ?? 'An error occurred while processing your document.',
+          message: errorMessage ??
+              'An error occurred while processing your document.',
           tips: [
             'Please try again',
             'If the problem persists, try manual entry',
@@ -368,7 +371,8 @@ class DocumentUploadErrorHandler extends StatelessWidget {
                     icon: Icon(Icons.edit, size: 18.sp),
                     label: Text(
                       'Manual Entry',
-                      style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                          fontSize: 14.sp, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -391,7 +395,8 @@ class DocumentUploadErrorHandler extends StatelessWidget {
                       : Icon(Icons.refresh, size: 18.sp),
                   label: Text(
                     isLoading ? 'Retrying...' : 'Try Again',
-                    style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                    style:
+                        TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),

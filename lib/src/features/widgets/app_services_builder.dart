@@ -329,6 +329,13 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     if (!FeatureFlags.bulkSmsVisible) {
       hidden.add(AppServiceName.bulkSms);
     }
+    // Card acceptance is admin-gated and hidden by DEFAULT. Same mechanics as
+    // Insurance and Bulk SMS — and doubly warranted here, because the backend
+    // ALSO refuses a charge in a market with no certified rail. The toggle
+    // controls the entry point; the server controls whether money can move.
+    if (!FeatureFlags.cardAcceptanceVisible) {
+      hidden.add(AppServiceName.cardAcceptance);
+    }
     return hidden;
   }
 

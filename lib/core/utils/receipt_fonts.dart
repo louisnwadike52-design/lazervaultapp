@@ -41,7 +41,8 @@ class ReceiptFonts {
   static Future<void> load() async {
     if (embedded) return;
     try {
-      regular = pw.Font.ttf(await rootBundle.load('assets/fonts/Inter-Regular.ttf'));
+      regular =
+          pw.Font.ttf(await rootBundle.load('assets/fonts/Inter-Regular.ttf'));
       bold = pw.Font.ttf(await rootBundle.load('assets/fonts/Inter-Bold.ttf'));
       return;
     } catch (_) {

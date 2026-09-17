@@ -89,7 +89,8 @@ class PushNotificationsService {
         options: DefaultFirebaseOptions.currentPlatform,
       );
     } catch (e) {
-      debugPrint('PushNotificationsService: Firebase core init failed (non-fatal): $e');
+      debugPrint(
+          'PushNotificationsService: Firebase core init failed (non-fatal): $e');
       return;
     }
 
@@ -102,7 +103,8 @@ class PushNotificationsService {
     // un-attested; the gateway runs App Check report-only until enforced.)
     final gmsOk = await PlayServicesGate.isAvailable();
     if (!gmsOk) {
-      debugPrint('PushNotificationsService: Google Play Services unavailable/outdated '
+      debugPrint(
+          'PushNotificationsService: Google Play Services unavailable/outdated '
           '— skipping App Check + FCM (no push/attestation on this device).');
       // Local notifications don't need Play Services — keep them working.
       try {
@@ -124,7 +126,8 @@ class PushNotificationsService {
       await _checkColdStartTap();
     } catch (e) {
       // Any FCM/attestation failure is non-fatal — the app must open regardless.
-      debugPrint('PushNotificationsService: FCM/App Check setup failed (non-fatal): $e');
+      debugPrint(
+          'PushNotificationsService: FCM/App Check setup failed (non-fatal): $e');
     }
   }
 
@@ -135,7 +138,8 @@ class PushNotificationsService {
       sound: true,
     );
     if (Platform.isIOS) {
-      await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      await FirebaseMessaging.instance
+          .setForegroundNotificationPresentationOptions(
         alert: true,
         badge: true,
         sound: true,
@@ -279,7 +283,8 @@ class PushNotificationsService {
       }
     }
     if (token == null || token.isEmpty) {
-      debugPrint('[push] no FCM token available — push will not work until one is obtained');
+      debugPrint(
+          '[push] no FCM token available — push will not work until one is obtained');
       return;
     }
     debugPrint('[push] FCM token obtained (len=${token.length})');
@@ -351,7 +356,8 @@ class PushNotificationsService {
     // user logging in also won't match, so their token gets created on first login.
     final marker = '$userId:$token';
     if (await _readRegisteredMarker() == marker) {
-      debugPrint('[push] token already registered for this user/device — skipping remote call');
+      debugPrint(
+          '[push] token already registered for this user/device — skipping remote call');
       return;
     }
 

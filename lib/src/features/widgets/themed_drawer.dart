@@ -32,148 +32,90 @@ class ThemedDrawer extends StatelessWidget {
           ),
         ),
         child: BlocBuilder<AuthenticationCubit, AuthenticationState>(
-        builder: (context, state) {
-          final authCubit = context.read<AuthenticationCubit>();
-          final currentProfile = authCubit.currentProfile;
+          builder: (context, state) {
+            final authCubit = context.read<AuthenticationCubit>();
+            final currentProfile = authCubit.currentProfile;
 
-          final String userName = currentProfile != null
-              ? "${currentProfile.user.firstName} ${currentProfile.user.lastName}"
-              : "Guest User";
-          final String userEmail = currentProfile?.user.email ?? "";
-          final String userInitials = currentProfile != null
-              ? "${currentProfile.user.firstName[0]}${currentProfile.user.lastName[0]}"
-              : "GU";
-          final String? profilePicture = currentProfile?.user.profilePicture;
+            final String userName = currentProfile != null
+                ? "${currentProfile.user.firstName} ${currentProfile.user.lastName}"
+                : "Guest User";
+            final String userEmail = currentProfile?.user.email ?? "";
+            final String userInitials = currentProfile != null
+                ? "${currentProfile.user.firstName[0]}${currentProfile.user.lastName[0]}"
+                : "GU";
+            final String? profilePicture = currentProfile?.user.profilePicture;
 
-          return SafeArea(
-            child: Column(
-              children: [
-                // Header — a subtle frosted panel over the curved background so
-                // the brand curve reads through while the profile block stays
-                // legible.
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.06),
-                    borderRadius:
-                        BorderRadius.vertical(bottom: Radius.circular(28.r)),
-                    border: Border(
-                      bottom: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.08)),
+            return SafeArea(
+              child: Column(
+                children: [
+                  // Header — a subtle frosted panel over the curved background so
+                  // the brand curve reads through while the profile block stays
+                  // legible.
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.06),
+                      borderRadius:
+                          BorderRadius.vertical(bottom: Radius.circular(28.r)),
+                      border: Border(
+                        bottom: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.08)),
+                      ),
                     ),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(24.w),
-                    child: Column(
-                      children: [
-                      // Profile Avatar — tap for photo actions (view full
-                      // screen / change photo / account / settings).
-                      GestureDetector(
-                        onTap: () => showProfilePictureActions(
-                          context,
-                          imageUrl: profilePicture,
-                          profileCubit: context.read<ProfileCubit>(),
-                          showNavigationActions: true,
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.3),
-                              width: 3,
+                    child: Padding(
+                      padding: EdgeInsets.all(24.w),
+                      child: Column(
+                        children: [
+                          // Profile Avatar — tap for photo actions (view full
+                          // screen / change photo / account / settings).
+                          GestureDetector(
+                            onTap: () => showProfilePictureActions(
+                              context,
+                              imageUrl: profilePicture,
+                              profileCubit: context.read<ProfileCubit>(),
+                              showNavigationActions: true,
                             ),
-                          ),
-                          child: Hero(
-                            tag: kProfileAvatarHeroTag,
-                            child: _buildProfileAvatar(profilePicture, userInitials),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 16.h),
-
-                      // User Name
-                      Text(
-                        userName,
-                        style: GoogleFonts.inter(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 4.h),
-
-                      // User Email
-                      Text(
-                        userEmail,
-                        style: GoogleFonts.inter(
-                          fontSize: 13.sp,
-                          color: Colors.white.withValues(alpha: 0.8),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 16.h),
-
-                      // View Profile Button
-                      InkWell(
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyAccount(),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 20.w,
-                            vertical: 8.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20.r),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.person_outline,
-                                color: Colors.white,
-                                size: 16.sp,
-                              ),
-                              SizedBox(width: 8.w),
-                              Text(
-                                'View Profile',
-                                style: GoogleFonts.inter(
-                                  fontSize: 13.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                  width: 3,
                                 ),
                               ),
-                            ],
+                              child: Hero(
+                                tag: kProfileAvatarHeroTag,
+                                child: _buildProfileAvatar(
+                                    profilePicture, userInitials),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      ],
-                    ),
-                  ),
-                ),
+                          SizedBox(height: 16.h),
 
-                // Menu Items
-                Expanded(
-                  child: ListView(
-                    padding: EdgeInsets.symmetric(vertical: 8.h),
-                    children: [
-                      _buildMenuSection(
-                        'Menu',
-                        [
-                          _DrawerMenuItem(
-                            icon: Icons.account_circle_outlined,
-                            title: 'My Account',
-                            iconColor: Color(0xFF3784F9),
+                          // User Name
+                          Text(
+                            userName,
+                            style: GoogleFonts.inter(
+                              fontSize: 20.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 4.h),
+
+                          // User Email
+                          Text(
+                            userEmail,
+                            style: GoogleFonts.inter(
+                              fontSize: 13.sp,
+                              color: Colors.white.withValues(alpha: 0.8),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 16.h),
+
+                          // View Profile Button
+                          InkWell(
                             onTap: () {
                               Navigator.pop(context);
                               Navigator.push(
@@ -183,94 +125,154 @@ class ThemedDrawer extends StatelessWidget {
                                 ),
                               );
                             },
-                          ),
-                          _DrawerMenuItem(
-                            icon: Icons.settings_outlined,
-                            title: 'Settings',
-                            iconColor: Color(0xFF7C92A0),
-                            onTap: () {
-                              Navigator.pop(context);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const SettingsScreen(),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 20.w,
+                                vertical: 8.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(20.r),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.3),
                                 ),
-                              );
-                            },
-                          ),
-                          _DrawerMenuItem(
-                            icon: Icons.support_agent,
-                            title: 'Contact support',
-                            iconColor: Color(0xFF4E03D0),
-                            onTap: () {
-                              Navigator.pop(context);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  // Land on the ticket hub (open/closed +
-                                  // new-ticket FAB) — not straight into a
-                                  // chat thread.
-                                  builder: (context) =>
-                                      const SupportTicketsScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                          _DrawerMenuItem(
-                            icon: Icons.info_outline,
-                            title: 'About Lazervault',
-                            iconColor: Color(0xFF3784F9),
-                            onTap: () => _openAbout(context),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.person_outline,
+                                    color: Colors.white,
+                                    size: 16.sp,
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  Text(
+                                    'View Profile',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
 
-                // Logout Section
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        width: 1,
-                      ),
+                  // Menu Items
+                  Expanded(
+                    child: ListView(
+                      padding: EdgeInsets.symmetric(vertical: 8.h),
+                      children: [
+                        _buildMenuSection(
+                          'Menu',
+                          [
+                            _DrawerMenuItem(
+                              icon: Icons.account_circle_outlined,
+                              title: 'My Account',
+                              iconColor: Color(0xFF3784F9),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const MyAccount(),
+                                  ),
+                                );
+                              },
+                            ),
+                            _DrawerMenuItem(
+                              icon: Icons.settings_outlined,
+                              title: 'Settings',
+                              iconColor: Color(0xFF7C92A0),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const SettingsScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                            _DrawerMenuItem(
+                              icon: Icons.support_agent,
+                              title: 'Contact support',
+                              iconColor: Color(0xFF4E03D0),
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    // Land on the ticket hub (open/closed +
+                                    // new-ticket FAB) — not straight into a
+                                    // chat thread.
+                                    builder: (context) =>
+                                        const SupportTicketsScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                            _DrawerMenuItem(
+                              icon: Icons.info_outline,
+                              title: 'About Lazervault',
+                              iconColor: Color(0xFF3784F9),
+                              onTap: () => _openAbout(context),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  child: ListTile(
-                    leading: Container(
-                      padding: EdgeInsets.all(8.w),
-                      decoration: BoxDecoration(
-                        color: Color(0xFFFF2D2D).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Icon(
-                        Icons.logout,
-                        color: Color(0xFFFF2D2D),
-                        size: 20.sp,
+
+                  // Logout Section
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          width: 1,
+                        ),
                       ),
                     ),
-                    title: Text(
-                      'Logout',
-                      style: GoogleFonts.inter(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFFF2D2D),
+                    child: ListTile(
+                      leading: Container(
+                        padding: EdgeInsets.all(8.w),
+                        decoration: BoxDecoration(
+                          color: Color(0xFFFF2D2D).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Icon(
+                          Icons.logout,
+                          color: Color(0xFFFF2D2D),
+                          size: 20.sp,
+                        ),
                       ),
+                      title: Text(
+                        'Logout',
+                        style: GoogleFonts.inter(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFFF2D2D),
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showLogoutDialog(context, authCubit);
+                      },
                     ),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _showLogoutDialog(context, authCubit);
-                    },
                   ),
-                ),
-                SizedBox(height: 8.h),
-              ],
-            ),
-          );
-        },
-      ),
+                  SizedBox(height: 8.h),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -397,8 +399,7 @@ class ThemedDrawer extends StatelessWidget {
     if (!context.mounted) return;
     final url =
         cfg.aboutUrl.isNotEmpty ? cfg.aboutUrl : HelpConfig.fallback.aboutUrl;
-    await showWebViewBottomSheet(context,
-        url: url, title: 'About Lazervault');
+    await showWebViewBottomSheet(context, url: url, title: 'About Lazervault');
   }
 
   Widget _buildProfileAvatar(String? profilePicture, String userInitials) {

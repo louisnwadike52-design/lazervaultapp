@@ -91,9 +91,8 @@ bool isNetworkError(Object? error) {
     }
   }
 
-  return _messageLooksLikeNetwork(error is GrpcError
-      ? (error.message ?? '')
-      : error.toString());
+  return _messageLooksLikeNetwork(
+      error is GrpcError ? (error.message ?? '') : error.toString());
 }
 
 /// True when [statusCode] (gRPC int code or HTTP status) denotes a

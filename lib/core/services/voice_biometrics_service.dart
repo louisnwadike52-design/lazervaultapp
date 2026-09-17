@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 part 'voice_biometrics_service_widgets.dart';
 
-
 /// Voice Biometrics Service for speaker recognition and verification
 /// Communicates with voice-agent-gateway for voice enrollment and authentication
 ///
@@ -44,10 +43,12 @@ class VoiceBiometricsService {
       );
 
       final response = await _retryRequest(
-        () => _client.get(
-          uri,
-          headers: _buildHeaders(),
-        ).timeout(timeout),
+        () => _client
+            .get(
+              uri,
+              headers: _buildHeaders(),
+            )
+            .timeout(timeout),
       );
 
       if (response.statusCode == 200) {
@@ -139,9 +140,8 @@ class VoiceBiometricsService {
 
     try {
       // Convert audio samples to base64
-      final encodedSamples = audioSamples
-          .map((sample) => base64Encode(sample))
-          .toList();
+      final encodedSamples =
+          audioSamples.map((sample) => base64Encode(sample)).toList();
 
       final body = {
         'user_id': userId,
@@ -153,11 +153,13 @@ class VoiceBiometricsService {
       final uri = Uri.parse('$baseUrl/voice/auth/enroll');
 
       final response = await _retryRequest(
-        () => _client.post(
-          uri,
-          headers: _buildHeaders(),
-          body: json.encode(body),
-        ).timeout(timeout * 2), // Double timeout for enrollment
+        () => _client
+            .post(
+              uri,
+              headers: _buildHeaders(),
+              body: json.encode(body),
+            )
+            .timeout(timeout * 2), // Double timeout for enrollment
       );
 
       if (response.statusCode == 200) {
@@ -241,11 +243,13 @@ class VoiceBiometricsService {
       final uri = Uri.parse('$baseUrl/voice/auth/verify');
 
       final response = await _retryRequest(
-        () => _client.post(
-          uri,
-          headers: _buildHeaders(),
-          body: json.encode(body),
-        ).timeout(timeout),
+        () => _client
+            .post(
+              uri,
+              headers: _buildHeaders(),
+              body: json.encode(body),
+            )
+            .timeout(timeout),
       );
 
       if (response.statusCode == 200) {
@@ -345,12 +349,14 @@ class VoiceBiometricsService {
       }
       return VoiceLoginResult(verified: false, status: status);
     } on SocketException catch (e) {
-      throw VoiceBiometricsNetworkException('No internet connection: ${e.message}');
+      throw VoiceBiometricsNetworkException(
+          'No internet connection: ${e.message}');
     } on TimeoutException catch (_) {
       throw VoiceBiometricsNetworkException(
           'Voice login timed out after ${timeout.inSeconds} seconds');
     } on http.ClientException catch (e) {
-      throw VoiceBiometricsNetworkException('Network error during voice login: ${e.message}');
+      throw VoiceBiometricsNetworkException(
+          'Network error during voice login: ${e.message}');
     } catch (e) {
       if (e is VoiceBiometricsException) rethrow;
       throw VoiceBiometricsException('Error during voice login: $e');
@@ -410,12 +416,14 @@ class VoiceBiometricsService {
       }
       return VoiceLoginResult(verified: false, status: status);
     } on SocketException catch (e) {
-      throw VoiceBiometricsNetworkException('No internet connection: ${e.message}');
+      throw VoiceBiometricsNetworkException(
+          'No internet connection: ${e.message}');
     } on TimeoutException catch (_) {
       throw VoiceBiometricsNetworkException(
           'Voice login timed out after ${timeout.inSeconds} seconds');
     } on http.ClientException catch (e) {
-      throw VoiceBiometricsNetworkException('Network error during voice login: ${e.message}');
+      throw VoiceBiometricsNetworkException(
+          'Network error during voice login: ${e.message}');
     } catch (e) {
       if (e is VoiceBiometricsException) rethrow;
       throw VoiceBiometricsException('Error during voice login: $e');
@@ -440,13 +448,15 @@ class VoiceBiometricsService {
       } else if (response.statusCode == 404) {
         return VoiceEnrollmentStatus(isEnrolled: false);
       } else if (response.statusCode >= 500) {
-        throw VoiceBiometricsServerException('Server error: ${response.statusCode}',
+        throw VoiceBiometricsServerException(
+            'Server error: ${response.statusCode}',
             statusCode: response.statusCode);
       }
       throw VoiceBiometricsException(
           'Failed to check enrollment status: ${response.statusCode}');
     } on SocketException catch (e) {
-      throw VoiceBiometricsNetworkException('No internet connection: ${e.message}');
+      throw VoiceBiometricsNetworkException(
+          'No internet connection: ${e.message}');
     } on TimeoutException catch (_) {
       throw VoiceBiometricsNetworkException(
           'Request timed out after ${timeout.inSeconds} seconds');
@@ -470,10 +480,12 @@ class VoiceBiometricsService {
       );
 
       final response = await _retryRequest(
-        () => _client.delete(
-          uri,
-          headers: _buildHeaders(),
-        ).timeout(timeout),
+        () => _client
+            .delete(
+              uri,
+              headers: _buildHeaders(),
+            )
+            .timeout(timeout),
       );
 
       if (response.statusCode == 200) {
@@ -568,7 +580,6 @@ class VoiceBiometricsService {
     throw VoiceBiometricsException('Max retries exceeded');
   }
 
-
   /// Soft availability probe for the voice agent.
   ///
   /// FAIL-OPEN by design. This is only a *hint* for the entry points — the
@@ -593,8 +604,8 @@ class VoiceBiometricsService {
           : baseUrl;
       final uri = Uri.parse('$root/voice/health');
       final response = await _client.get(uri).timeout(
-        const Duration(seconds: 5),
-      );
+            const Duration(seconds: 5),
+          );
       if (response.statusCode == 200) return true;
       // Only treat an EXPLICIT admin-disabled signal as unavailable; every other
       // non-200 (gateway warming up, 404 through a mis-seeded base, 5xx) fails open.

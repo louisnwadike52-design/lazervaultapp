@@ -175,11 +175,13 @@ class ContactService {
       }
 
       // Sort by name (case-insensitive)
-      validContacts.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      validContacts
+          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
       // Limit cache size for memory efficiency (max 5000 contacts)
       if (validContacts.length > 5000) {
-        print('[ContactService] Warning: Large contact list (${validContacts.length}), caching first 5000');
+        print(
+            '[ContactService] Warning: Large contact list (${validContacts.length}), caching first 5000');
         _cachedContacts = validContacts.take(5000).toList();
       } else {
         _cachedContacts = validContacts;
@@ -215,7 +217,8 @@ class ContactService {
         return [];
       }
 
-      final results = allContacts.where((contact) => contact.matchesQuery(query)).toList();
+      final results =
+          allContacts.where((contact) => contact.matchesQuery(query)).toList();
       return results;
     } catch (e) {
       print('[ContactService] Error searching contacts: $e');
@@ -251,7 +254,10 @@ class ContactService {
   /// Useful for features that require a phone number (like sending SMS or calling)
   Future<List<DeviceContact>> getContactsWithPhone() async {
     final contacts = await getContacts();
-    return contacts.where((contact) => contact.phoneNumber != null && contact.phoneNumber!.isNotEmpty).toList();
+    return contacts
+        .where((contact) =>
+            contact.phoneNumber != null && contact.phoneNumber!.isNotEmpty)
+        .toList();
   }
 
   /// Gets contacts that have email addresses
@@ -259,7 +265,9 @@ class ContactService {
   /// Useful for features that require an email
   Future<List<DeviceContact>> getContactsWithEmail() async {
     final contacts = await getContacts();
-    return contacts.where((contact) => contact.email != null && contact.email!.isNotEmpty).toList();
+    return contacts
+        .where((contact) => contact.email != null && contact.email!.isNotEmpty)
+        .toList();
   }
 
   /// Clears the contact cache
@@ -298,7 +306,8 @@ class ContactService {
       }
 
       // Load full contact details with timeout
-      final fullContact = await fc.FlutterContacts.getContact(contact.id).timeout(
+      final fullContact =
+          await fc.FlutterContacts.getContact(contact.id).timeout(
         const Duration(seconds: 10),
         onTimeout: () {
           print('[ContactService] Loading contact details timed out');

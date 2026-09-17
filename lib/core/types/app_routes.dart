@@ -32,7 +32,7 @@ abstract class AppRoutes {
   static const String invoicePreview = '/invoice/preview';
   static const String invoicePayment = '/invoice/payment';
   static const String invoiceProcessing = '/invoice/processing';
-static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
+  static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String outgoingTaggedInvoices = '/invoice/outgoing-tagged';
   static const String invoiceItemPayment = '/invoice/item-payment';
   static const String invoicePaymentReceipt = '/invoice/payment-receipt';
@@ -53,26 +53,34 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String fcyActivation = '/accounts/fcy-activation';
 
   static const String electricityBillHome = '/electricity-bill';
-  static const String electricityBillMeterInput = '/electricity-bill/meter-input';
-  static const String electricityBillConfirmation = '/electricity-bill/confirmation';
-  static const String electricityBillProcessing = '/electricity-bill/processing';
+  static const String electricityBillMeterInput =
+      '/electricity-bill/meter-input';
+  static const String electricityBillConfirmation =
+      '/electricity-bill/confirmation';
+  static const String electricityBillProcessing =
+      '/electricity-bill/processing';
   static const String electricityBillReceipt = '/electricity-bill/receipt';
   static const String electricityBillHistory = '/electricity-bill/history';
-  static const String electricityBillBeneficiaries = '/electricity-bill/beneficiaries';
-  static const String electricityBillAutoRecharge = '/electricity-bill/auto-recharge';
+  static const String electricityBillBeneficiaries =
+      '/electricity-bill/beneficiaries';
+  static const String electricityBillAutoRecharge =
+      '/electricity-bill/auto-recharge';
   static const String electricityBillReminders = '/electricity-bill/reminders';
-  static const String electricityBillCreateReminder = '/electricity-bill/reminders/create';
+  static const String electricityBillCreateReminder =
+      '/electricity-bill/reminders/create';
 
   // Cable TV Routes
   static const String cableTVHome = '/cable-tv';
   static const String cableTVSmartCardInput = '/cable-tv/smart-card-input';
   static const String cableTVPackageSelection = '/cable-tv/package-selection';
-  static const String cableTVPaymentConfirmation = '/cable-tv/payment-confirmation';
+  static const String cableTVPaymentConfirmation =
+      '/cable-tv/payment-confirmation';
   static const String cableTVPaymentProcessing = '/cable-tv/payment-processing';
   static const String cableTVPaymentReceipt = '/cable-tv/payment-receipt';
   static const String cableTVBeneficiaries = '/cable-tv/beneficiaries';
   static const String cableTVAutoRecharge = '/cable-tv/auto-recharge';
-  static const String cableTVAutoRechargeCreate = '/cable-tv/auto-recharge/create';
+  static const String cableTVAutoRechargeCreate =
+      '/cable-tv/auto-recharge/create';
   static const String cableTVReminders = '/cable-tv/reminders';
   static const String cableTVReminderCreate = '/cable-tv/reminders/create';
   static const String cableTVHistory = '/cable-tv/history';
@@ -80,9 +88,12 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   // Internet Bill Routes
   static const String internetBillHome = '/internet-bill';
   static const String internetAccountInput = '/internet-bill/account-input';
-  static const String internetPackageSelection = '/internet-bill/package-selection';
-  static const String internetPaymentConfirmation = '/internet-bill/payment-confirmation';
-  static const String internetPaymentProcessing = '/internet-bill/payment-processing';
+  static const String internetPackageSelection =
+      '/internet-bill/package-selection';
+  static const String internetPaymentConfirmation =
+      '/internet-bill/payment-confirmation';
+  static const String internetPaymentProcessing =
+      '/internet-bill/payment-processing';
   static const String internetPaymentReceipt = '/internet-bill/payment-receipt';
   // Quick-access sub-pages — mirror the data bundles sub-page set
   // so the internet landing has the same Saved / Rollover / Reminders
@@ -99,8 +110,10 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   // Education PIN Routes
   static const String educationHome = '/education';
   static const String educationPurchase = '/education/purchase';
-  static const String educationPaymentConfirmation = '/education/payment-confirmation';
-  static const String educationPaymentProcessing = '/education/payment-processing';
+  static const String educationPaymentConfirmation =
+      '/education/payment-confirmation';
+  static const String educationPaymentProcessing =
+      '/education/payment-processing';
   static const String educationPinResult = '/education/pin-result';
   static const String educationHistory = '/education/history';
   static const String educationPinDetails = '/education/pin-details';
@@ -111,8 +124,10 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   // Water Bill Routes (Refactored)
   static const String waterBillHome = '/water-bill';
   static const String waterBillCustomerInput = '/water-bill/customer-input';
-  static const String waterBillPaymentConfirmation = '/water-bill/payment-confirmation';
-  static const String waterBillPaymentProcessing = '/water-bill/payment-processing';
+  static const String waterBillPaymentConfirmation =
+      '/water-bill/payment-confirmation';
+  static const String waterBillPaymentProcessing =
+      '/water-bill/payment-processing';
   static const String waterBillPaymentReceipt = '/water-bill/payment-receipt';
   static const String waterBillHistory = '/water-bill/history';
   static const String waterBillSavedAccounts = '/water-bill/saved-accounts';
@@ -120,23 +135,29 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String waterBillAutoRechargeCreate =
       '/water-bill/auto-recharge/create';
   static const String waterBillReminders = '/water-bill/reminders';
-  static const String waterBillRemindersCreate =
-      '/water-bill/reminders/create';
+  static const String waterBillRemindersCreate = '/water-bill/reminders/create';
 
   // Data Bundles Routes
   static const String dataBundlesHome = '/data-bundles';
   static const String dataBundlesPlanSelection = '/data-bundles/plan-selection';
-  static const String dataBundlesRecipientInput = '/data-bundles/recipient-input';
-  static const String dataBundlesPaymentConfirmation = '/data-bundles/payment-confirmation';
-  static const String dataBundlesPaymentProcessing = '/data-bundles/payment-processing';
-  static const String dataBundlesPaymentReceipt = '/data-bundles/payment-receipt';
+  static const String dataBundlesRecipientInput =
+      '/data-bundles/recipient-input';
+  static const String dataBundlesPaymentConfirmation =
+      '/data-bundles/payment-confirmation';
+  static const String dataBundlesPaymentProcessing =
+      '/data-bundles/payment-processing';
+  static const String dataBundlesPaymentReceipt =
+      '/data-bundles/payment-receipt';
   static const String autoRenewManagement = '/data-bundles/auto-renew';
   // International data (Reloadly-backed) — mirrors intl_airtime structure.
   // Reuses Reloadly's /operators?dataOnly=true and /topups endpoints per
   // provider docs (same audience as airtime; no separate API).
-  static const String intlDataCountrySelection = '/data-bundles/intl/country-selection';
-  static const String intlDataOperatorSelection = '/data-bundles/intl/operator-selection';
-  static const String intlDataBundleSelection = '/data-bundles/intl/bundle-selection';
+  static const String intlDataCountrySelection =
+      '/data-bundles/intl/country-selection';
+  static const String intlDataOperatorSelection =
+      '/data-bundles/intl/operator-selection';
+  static const String intlDataBundleSelection =
+      '/data-bundles/intl/bundle-selection';
   static const String intlDataReview = '/data-bundles/intl/review';
   static const String intlDataReceipt = '/data-bundles/intl/receipt';
   // Alias for the consolidated single-screen purchase flow so code
@@ -152,18 +173,23 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   // ('local'|'intl') mirroring airtimeHistory.
   static const String dataBundlesBeneficiaries = '/data-bundles/beneficiaries';
   static const String dataBundlesRollover = '/data-bundles/rollover';
-  static const String dataBundlesRolloverCreate = '/data-bundles/rollover/create';
+  static const String dataBundlesRolloverCreate =
+      '/data-bundles/rollover/create';
   static const String dataBundlesReminders = '/data-bundles/reminders';
-  static const String dataBundlesReminderCreate = '/data-bundles/reminders/create';
+  static const String dataBundlesReminderCreate =
+      '/data-bundles/reminders/create';
   static const String dataBundlesHistory = '/data-bundles/history';
   // International data management screens — filter the shared
   // data_beneficiaries / data_auto_recharges / data_reminders tables
   // by country_code != 'NG'.
-  static const String intlDataBeneficiaries = '/data-bundles/intl/beneficiaries';
+  static const String intlDataBeneficiaries =
+      '/data-bundles/intl/beneficiaries';
   static const String intlDataAutoRecharge = '/data-bundles/intl/auto-recharge';
-  static const String intlDataAutoRechargeCreate = '/data-bundles/intl/auto-recharge/create';
+  static const String intlDataAutoRechargeCreate =
+      '/data-bundles/intl/auto-recharge/create';
   static const String intlDataReminders = '/data-bundles/intl/reminders';
-  static const String intlDataReminderCreate = '/data-bundles/intl/reminders/create';
+  static const String intlDataReminderCreate =
+      '/data-bundles/intl/reminders/create';
 
   // Subscription Tracker Routes
   static const String subscriptionDashboard = '/subscriptions/dashboard';
@@ -197,7 +223,8 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String changePin = '/profile-settings/change-pin';
   static const String depositFunds = '/profile-settings/deposit-funds';
   static const String withdrawFunds = '/profile-settings/withdraw-funds';
-  static const String cbCurrencyExchange = '/profile-settings/cb-currency-exchange';
+  static const String cbCurrencyExchange =
+      '/profile-settings/cb-currency-exchange';
   static const String currencyDeposit = '/currency-deposit';
   // Currency Exchange Routes (Consolidated Flow)
   static const String exchangeHome = '/exchange';
@@ -209,13 +236,13 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
 
   // Legacy aliases (for navigation from other screens)
   static const String currencyExchange = '/exchange';
-  
+
   // Deposit Flow Routes
   static const String depositMethodSelection = '/deposit/method-selection';
   static const String depositAmount = '/deposit/amount';
   static const String depositReview = '/deposit/review';
   static const String depositSuccess = '/deposit/success';
-  
+
   static const String signUp = '/auth/sign-up';
   static const String signIn = '/auth/sign-in';
   static const String emailSignIn = '/auth/email-sign-in';
@@ -281,7 +308,8 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String enableBiometricAccess = '/auth/enable-biometric-access';
   static const String passwordRecovery = '/auth/password-recovery';
   static const String createNewPassword = '/auth/create-new-password';
-  static const String verifyPasswordResetOTP = '/auth/verify-password-reset-otp';
+  static const String verifyPasswordResetOTP =
+      '/auth/verify-password-reset-otp';
   static const String selectCountry = '/auth/select-country';
   static const String facialBiometricVerification =
       '/auth/facial-biometric-verification';
@@ -301,10 +329,12 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   // Gift Card Routes
   static const String giftCards = '/gift-cards';
   static const String purchaseGiftCard = '/gift-cards/purchase';
-  static const String giftCardPurchaseProcessing = '/gift-cards/purchase-processing';
+  static const String giftCardPurchaseProcessing =
+      '/gift-cards/purchase-processing';
   static const String giftCardSellProcessing = '/gift-cards/sell-processing';
   static const String giftCardDetails = '/gift-card-details';
   static const String myGiftCards = '/gift-cards/my-cards';
+
   /// Opens a gift card from a TRANSACTION row's "GC-…" reference (history
   /// rows carry no card id). Resolves, then replaces itself with the card's
   /// own details screen — where the code/PIN and receipt PDF live.
@@ -317,6 +347,7 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String stockDetails = '/stocks/details';
   static const String stockTrade = '/stocks/trade';
   static const String stockTradeAmount = '/stocks/trade/amount';
+
   /// Portfolio cash flows (add / withdraw / rebalance); not equity trade checkout.
   static const String stockTradePayment = '/stocks/trade/payment';
   static const String stockTradeReview = '/stocks/trade/review';
@@ -348,7 +379,7 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String cryptoOrders = '/crypto/orders';
   static const String cryptoNews = '/crypto/news';
   static const String cryptoChartDetails = '/crypto-chart-details';
-  
+
   // AI Scan to Pay Routes
   static const String aiScanToPay = '/ai-scan-to-pay';
   static const String aiScanSelection = '/ai-scan-to-pay/selection';
@@ -359,22 +390,26 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   // Unified intelligent-scan flow routes.
   static const String aiScanConfirm = '/ai-scan-to-pay/confirm';
   static const String aiScanReceipt = '/ai-scan-to-pay/receipt';
-  
+
   // Group Account Routes
   static const String groupAccount = '/group-account';
   static const String groupDetails = '/group-account/details';
   static const String createGroup = '/group-account/create';
   static const String addGroupMember = '/group-account/add-member';
   static const String createContribution = '/group-account/create-contribution';
-  static const String contributionDetails = '/group-account/contribution-details';
+  static const String contributionDetails =
+      '/group-account/contribution-details';
   static const String makePayment = '/group-account/make-payment';
   static const String paymentReceipt = '/group-account/payment-receipt';
-  static const String contributionTranscript = '/group-account/contribution-transcript';
-  static const String contributionHistory = '/group-account/contribution-history';
+  static const String contributionTranscript =
+      '/group-account/contribution-transcript';
+  static const String contributionHistory =
+      '/group-account/contribution-history';
   // Past Contributions / Past Groups (read-only ex-member surface)
   static const String pastContributions = '/group-account/past-contributions';
   static const String pastGroups = '/group-account/past-groups';
-  static const String pastContributionDetails = '/group-account/past-contribution-details';
+  static const String pastContributionDetails =
+      '/group-account/past-contribution-details';
 
   // Insurance Routes
   static const String insurance = '/insurance';
@@ -382,8 +417,10 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   // insuranceEdit removed: MyCover.ai has no policy-update endpoint.
   static const String createInsurance = '/insurance/create';
   static const String insurancePayment = '/insurance/payment';
-  static const String insurancePaymentProcessing = '/insurance/payment-processing';
-  static const String insurancePaymentConfirmation = '/insurance/payment-confirmation';
+  static const String insurancePaymentProcessing =
+      '/insurance/payment-processing';
+  static const String insurancePaymentConfirmation =
+      '/insurance/payment-confirmation';
   static const String insuranceClaims = '/insurance/claims';
   // createClaim removed: claims are filed via the provider's hosted
   // webview only, scoped to customer_id + policy_id.
@@ -407,11 +444,13 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String airtime = '/airtime';
 
   // International Airtime Routes
-  static const String intlAirtimeCountrySelection = '/airtime/intl/country-selection';
+  static const String intlAirtimeCountrySelection =
+      '/airtime/intl/country-selection';
   static const String intlAirtimePurchase = '/airtime/intl/purchase';
   static const String intlAirtimeReview = '/airtime/intl/review';
   static const String intlAirtimeReceipt = '/airtime/intl/receipt';
-  static const String airtimePaymentConfirmation = '/airtime/payment-confirmation';
+  static const String airtimePaymentConfirmation =
+      '/airtime/payment-confirmation';
   static const String airtimeHistory = '/airtime/history';
   static const String airtimeDetails = '/airtime/details';
   static const String airtimeBeneficiaries = '/airtime/beneficiaries';
@@ -465,7 +504,8 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String crowdfundDetails = '/crowdfund/details';
   static const String createCrowdfund = '/crowdfund/create';
   static const String crowdfundReport = '/crowdfund/report';
-  static const String crowdfundNotificationChannels = '/crowdfund/notification-channels';
+  static const String crowdfundNotificationChannels =
+      '/crowdfund/notification-channels';
   static const String donationPayment = '/crowdfund/donation-payment';
   static const String donationProcessing = '/crowdfund/donation-processing';
   static const String donationReceipt = '/crowdfund/donation-receipt';
@@ -480,7 +520,7 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   // Batch Transfer Routes
   static const String batchTransfer = '/batch-transfer';
   static const String batchTransferReview = '/batch-transfer-review';
-static const String batchTransferProcessing = '/batch-transfer-processing';
+  static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String batchTransferReceipt = '/batch-transfer-receipt';
   static const String batchTransferHistory = '/batch-transfer-history';
   static const String batchTransferDetail = '/batch-transfer-detail';
@@ -503,7 +543,8 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   // Statistics Routes
   static const String statisticsSpendingDetail = '/statistics/spending-detail';
   static const String statisticsMonthlyTrends = '/statistics/monthly-trends';
-  static const String statisticsCategoryAnalysis = '/statistics/category-analysis';
+  static const String statisticsCategoryAnalysis =
+      '/statistics/category-analysis';
   static const String statisticsComparison = '/statistics/comparison';
   static const String categoryManagement = '/statistics/category-management';
 
@@ -513,17 +554,21 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String budgetDetail = '/statistics/budgets/detail';
   static const String budgetAIInsights = '/statistics/budgets/ai-insights';
   static const String budgetReminders = '/statistics/budgets/reminders';
-  static const String createBudgetReminder = '/statistics/budgets/reminders/create';
+  static const String createBudgetReminder =
+      '/statistics/budgets/reminders/create';
 
   // Recurring Bills Routes
   static const String recurringBills = '/statistics/recurring-bills';
-  static const String createRecurringBill = '/statistics/recurring-bills/create';
-  static const String recurringBillDetail = '/statistics/recurring-bills/detail';
+  static const String createRecurringBill =
+      '/statistics/recurring-bills/create';
+  static const String recurringBillDetail =
+      '/statistics/recurring-bills/detail';
   static const String upcomingBills = '/statistics/upcoming-bills';
 
   // Financial Goals Routes
   static const String financialGoals = '/statistics/financial-goals';
-  static const String createFinancialGoal = '/statistics/financial-goals/create';
+  static const String createFinancialGoal =
+      '/statistics/financial-goals/create';
 
   // Credit Score Routes
   static const String creditScore = '/credit-score';
@@ -582,10 +627,14 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String idPayDetails = '/id-pay/details';
   static const String idPayOrganizations = '/id-pay/organizations';
   static const String createIdPayOrganization = '/id-pay/organizations/create';
-  static const String idPayOrganizationDetails = '/id-pay/organizations/details';
+  static const String idPayOrganizationDetails =
+      '/id-pay/organizations/details';
 
   // Contactless Payment Routes
   static const String contactlessPay = '/contactless-pay';
+
+  /// Merchant-facing card acceptance (SoftPOS) — the phone as the terminal.
+  static const String cardAcceptance = '/card-acceptance';
   static const String contactlessPayCreate = '/contactless-pay/create';
   static const String contactlessPayReader = '/contactless-pay/reader';
   static const String contactlessPayHistory = '/contactless-pay/history';
@@ -699,7 +748,8 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String addSupplier = '/inventory/suppliers/add';
   static const String purchaseOrders = '/inventory/purchase-orders';
   static const String createPurchaseOrder = '/inventory/purchase-orders/create';
-  static const String purchaseOrderDetails = '/inventory/purchase-orders/details';
+  static const String purchaseOrderDetails =
+      '/inventory/purchase-orders/details';
   static const String inventoryValuation = '/inventory/valuation';
   static const String expiryAlerts = '/inventory/expiry-alerts';
 
@@ -726,7 +776,8 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String airtimeToCash = '/airtime-to-cash';
   static const String airtimeToCashProviderSelect = '/airtime-to-cash/select';
   static const String airtimeToCashVtuafrica = '/airtime-to-cash/vtuafrica';
-  static const String airtimeToCashVtuafricaTransfer = '/airtime-to-cash/vtuafrica/transfer';
+  static const String airtimeToCashVtuafricaTransfer =
+      '/airtime-to-cash/vtuafrica/transfer';
   static const String airtimeToCashAutomation = '/airtime-to-cash/automation';
   static const String airtimeToCashPending = '/airtime-to-cash/pending';
   static const String airtimeToCashProcessing = '/airtime-to-cash/processing';

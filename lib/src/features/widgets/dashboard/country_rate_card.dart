@@ -27,8 +27,8 @@ class CountryRateCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
-              color: const Color.fromARGB(255, 78, 3, 208)
-                  .withValues(alpha: 0.08),
+              color:
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.08),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),

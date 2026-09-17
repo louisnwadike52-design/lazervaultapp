@@ -34,7 +34,8 @@ class AppCheckService {
   // debug token isn't registered). We therefore serve a cached token until it's
   // near expiry and, on failure, back off instead of hammering the provider.
   String? _cachedToken;
-  DateTime? _tokenExpiry; // refresh at/after this instant (JWT exp minus margin)
+  DateTime?
+      _tokenExpiry; // refresh at/after this instant (JWT exp minus margin)
   DateTime? _cooldownUntil; // don't call the provider again until this instant
   bool _loggedThisCooldown = false;
 
@@ -64,8 +65,9 @@ class AppCheckService {
     try {
       await FirebaseAppCheck.instance.activate(
         // Android: Play Integrity in release, debug provider otherwise.
-        androidProvider:
-            kReleaseMode ? AndroidProvider.playIntegrity : AndroidProvider.debug,
+        androidProvider: kReleaseMode
+            ? AndroidProvider.playIntegrity
+            : AndroidProvider.debug,
         // iOS/macOS: App Attest in release, debug provider otherwise.
         appleProvider:
             kReleaseMode ? AppleProvider.appAttest : AppleProvider.debug,
@@ -106,7 +108,9 @@ class AppCheckService {
 
     // 2) In a failure back-off window: return the last good token if we still
     //    hold one, otherwise null. Never hit the provider until it elapses.
-    if (!forceRefresh && _cooldownUntil != null && now.isBefore(_cooldownUntil!)) {
+    if (!forceRefresh &&
+        _cooldownUntil != null &&
+        now.isBefore(_cooldownUntil!)) {
       return _cachedToken;
     }
 

@@ -29,7 +29,8 @@ List<String>? rolesFromJwtClaims(Map<String, dynamic>? claims) {
   if (claims == null) return null;
   final raw = claims['roles'];
   if (raw is List) {
-    final out = raw.map((e) => e.toString()).where((s) => s.isNotEmpty).toList();
+    final out =
+        raw.map((e) => e.toString()).where((s) => s.isNotEmpty).toList();
     return out.isEmpty ? null : out;
   }
   if (raw is String && raw.isNotEmpty) return [raw];

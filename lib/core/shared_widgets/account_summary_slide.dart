@@ -28,7 +28,8 @@ class AccountSummarySlide extends StatefulWidget {
   State<AccountSummarySlide> createState() => _AccountSummarySlideState();
 
   /// Static method to show the slide from anywhere in the app
-  static void show(BuildContext context, {
+  static void show(
+    BuildContext context, {
     required List<AccountSummary> accounts,
     VoidCallback? onAccountChanged,
     VoidCallback? onLocaleChanged,
@@ -78,10 +79,12 @@ class AccountSummarySlideContent extends StatefulWidget {
   });
 
   @override
-  State<AccountSummarySlideContent> createState() => _AccountSummarySlideContentState();
+  State<AccountSummarySlideContent> createState() =>
+      _AccountSummarySlideContentState();
 }
 
-class _AccountSummarySlideContentState extends State<AccountSummarySlideContent> {
+class _AccountSummarySlideContentState
+    extends State<AccountSummarySlideContent> {
   // These will be injected via GetIt or passed from parent
   // For now, creating instances for demonstration
   late AccountManager _accountManager;
@@ -196,8 +199,10 @@ class _AccountSummarySlideContentState extends State<AccountSummarySlideContent>
                       final currentLocale = snapshot.data ?? 'en-US';
 
                       return Column(
-                        children: CountryLocales.all.take(10).map((countryLocale) {
-                          final isActive = countryLocale.locale == currentLocale;
+                        children:
+                            CountryLocales.all.take(10).map((countryLocale) {
+                          final isActive =
+                              countryLocale.locale == currentLocale;
                           return _buildLocaleCard(
                             countryLocale: countryLocale,
                             isActive: isActive,
@@ -277,7 +282,8 @@ class _AccountSummarySlideContentState extends State<AccountSummarySlideContent>
                 // Active indicator
                 if (isActive)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.blue,
                       borderRadius: BorderRadius.circular(20),

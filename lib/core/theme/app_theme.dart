@@ -61,7 +61,8 @@ class AppTheme {
             systemNavigationBarIconBrightness: Brightness.light,
           ),
         ),
-        textTheme: GoogleFonts.robotoTextTheme(ThemeData.dark().textTheme).copyWith(
+        textTheme:
+            GoogleFonts.robotoTextTheme(ThemeData.dark().textTheme).copyWith(
           titleLarge: GoogleFonts.robotoTextTheme(ThemeData.dark().textTheme)
               .titleLarge
               ?.copyWith(

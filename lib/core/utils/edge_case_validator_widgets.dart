@@ -11,7 +11,9 @@ class ValidationResult {
   });
 
   /// Creates a successful validation result
-  const ValidationResult.success() : isValid = true, errorMessage = null;
+  const ValidationResult.success()
+      : isValid = true,
+        errorMessage = null;
 
   /// Creates a failed validation result
   const ValidationResult.failure(String message)
@@ -23,7 +25,9 @@ class ValidationResult {
     bool condition,
     String errorMessage,
   ) {
-    return condition ? const ValidationResult.success() : ValidationResult.failure(errorMessage);
+    return condition
+        ? const ValidationResult.success()
+        : ValidationResult.failure(errorMessage);
   }
 }
 
@@ -63,8 +67,8 @@ class AccountIdValidator {
     if (args == null) return null;
 
     final id = args['id']?.toString() ??
-              args['uuid']?.toString() ??
-              args['accountId']?.toString();
+        args['uuid']?.toString() ??
+        args['accountId']?.toString();
 
     if (id != null && id.isNotEmpty) {
       return id;
@@ -103,7 +107,19 @@ class PinValidator {
     }
 
     // Check for common weak PINs
-    final weakPins = ['0000', '1111', '2222', '3333', '4444', '5555', '6666', '7777', '8888', '9999', '1234'];
+    final weakPins = [
+      '0000',
+      '1111',
+      '2222',
+      '3333',
+      '4444',
+      '5555',
+      '6666',
+      '7777',
+      '8888',
+      '9999',
+      '1234'
+    ];
     if (weakPins.contains(trimmed)) {
       return const ValidationResult.failure(
         'For your security, please choose a stronger PIN that is not a repeated digit.',
@@ -167,10 +183,8 @@ class AmountValidator {
     final trimmed = input.trim();
 
     // Handle common input formats (commas, currency symbols, etc.)
-    final cleanValue = trimmed
-        .replaceAll(',', '')
-        .replaceAll(RegExp(r'[₦$€£¥]'), '')
-        .trim();
+    final cleanValue =
+        trimmed.replaceAll(',', '').replaceAll(RegExp(r'[₦$€£¥]'), '').trim();
 
     final parsed = double.tryParse(cleanValue);
 
@@ -285,7 +299,7 @@ class SecuritySettingsValidator {
     required bool enableContactless,
     required bool enableOnlinePayments,
     required bool enableATMWithdrawals,
-    }) {
+  }) {
     // If all are disabled, warn the user
     if (!enable3DSecure &&
         !enableContactless &&

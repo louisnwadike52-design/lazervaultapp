@@ -7,4 +7,4 @@ class ServerException implements Exception {
   String toString() {
     return message ?? 'ServerException';
   }
-} 
+}

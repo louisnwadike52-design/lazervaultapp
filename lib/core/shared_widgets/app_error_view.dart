@@ -98,8 +98,7 @@ class AppErrorView extends StatelessWidget {
           GestureDetector(
             onTap: onRetry,
             child: Container(
-              padding:
-                  EdgeInsets.symmetric(horizontal: 28.w, vertical: 12.h),
+              padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 12.h),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],

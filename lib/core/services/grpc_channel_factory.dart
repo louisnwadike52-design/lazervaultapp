@@ -27,7 +27,8 @@ class GrpcChannelFactory {
       legacyPortEnvKey: 'GRPC_API_PORT',
       fallbackPort: 50070,
     );
-    print("📡 Creating Core Gateway Channel → ${ep.host}:${ep.port} (tls=${ep.useTls})");
+    print(
+        "📡 Creating Core Gateway Channel → ${ep.host}:${ep.port} (tls=${ep.useTls})");
     return _createChannel(ep.host, ep.port, 'Core Gateway', useTls: ep.useTls);
   }
 
@@ -39,7 +40,8 @@ class GrpcChannelFactory {
       fallbackPort: 50072,
     );
     print("📈 Creating Investment Gateway Channel → ${ep.host}:${ep.port}");
-    return _createChannel(ep.host, ep.port, 'Investment Gateway', useTls: ep.useTls);
+    return _createChannel(ep.host, ep.port, 'Investment Gateway',
+        useTls: ep.useTls);
   }
 
   /// Creates Commerce Gateway gRPC channel — commerce-gateway port 50061.
@@ -50,7 +52,8 @@ class GrpcChannelFactory {
       fallbackPort: 50061,
     );
     print("💳 Creating Commerce Gateway Channel → ${ep.host}:${ep.port}");
-    return _createChannel(ep.host, ep.port, 'Commerce Gateway', useTls: ep.useTls);
+    return _createChannel(ep.host, ep.port, 'Commerce Gateway',
+        useTls: ep.useTls);
   }
 
   /// Creates Financial Gateway gRPC channel — financial-gateway port 50071.
@@ -61,7 +64,8 @@ class GrpcChannelFactory {
       fallbackPort: 50071,
     );
     print("💱 Creating Financial Gateway Channel → ${ep.host}:${ep.port}");
-    return _createChannel(ep.host, ep.port, 'Financial Gateway', useTls: ep.useTls);
+    return _createChannel(ep.host, ep.port, 'Financial Gateway',
+        useTls: ep.useTls);
   }
 
   /// Creates Transfer Gateway gRPC channel (Payments, Transfers)
@@ -77,8 +81,10 @@ class GrpcChannelFactory {
       legacyPortEnvKey: 'TRANSFER_GRPC_PORT',
       fallbackPort: 50076,
     );
-    print("💸 Creating Transfer/Payments Gateway Channel → ${ep.host}:${ep.port}");
-    return _createChannel(ep.host, ep.port, 'Transfer Gateway (Payments)', useTls: ep.useTls);
+    print(
+        "💸 Creating Transfer/Payments Gateway Channel → ${ep.host}:${ep.port}");
+    return _createChannel(ep.host, ep.port, 'Transfer Gateway (Payments)',
+        useTls: ep.useTls);
   }
 
   /// Creates Banking Gateway gRPC channel — banking-gateway port 50077.
@@ -88,7 +94,8 @@ class GrpcChannelFactory {
       legacyPortEnvKey: 'BANKING_GATEWAY_GRPC_PORT',
       fallbackPort: 50077,
     );
-    return _createChannel(ep.host, ep.port, 'Banking Gateway', useTls: ep.useTls);
+    return _createChannel(ep.host, ep.port, 'Banking Gateway',
+        useTls: ep.useTls);
   }
 
   /// Creates Products Gateway gRPC channel — products-gateway port 50078.
@@ -98,7 +105,8 @@ class GrpcChannelFactory {
       legacyPortEnvKey: 'PRODUCTS_GRPC_PORT',
       fallbackPort: 50078,
     );
-    return _createChannel(ep.host, ep.port, 'Products Gateway', useTls: ep.useTls);
+    return _createChannel(ep.host, ep.port, 'Products Gateway',
+        useTls: ep.useTls);
   }
 
   /// Creates Contactless Payment Gateway gRPC channel — contactless-payment-gateway port 50075.
@@ -108,8 +116,10 @@ class GrpcChannelFactory {
       legacyPortEnvKey: 'CONTACTLESS_GRPC_PORT',
       fallbackPort: 50075,
     );
-    print("📡 Creating Contactless Payment Gateway Channel → ${ep.host}:${ep.port}");
-    return _createChannel(ep.host, ep.port, 'Contactless Payment Gateway', useTls: ep.useTls);
+    print(
+        "📡 Creating Contactless Payment Gateway Channel → ${ep.host}:${ep.port}");
+    return _createChannel(ep.host, ep.port, 'Contactless Payment Gateway',
+        useTls: ep.useTls);
   }
 
   /// Creates Exchange Service gRPC channel (Currency Exchange, International
@@ -139,8 +149,10 @@ class GrpcChannelFactory {
       legacyPortEnvKey: 'EXCHANGE_GRPC_PORT',
       fallbackPort: 50071,
     );
-    print("💱 Creating Exchange Service Channel (via Financial Gateway) → ${ep.host}:${ep.port}");
-    return _createChannel(ep.host, ep.port, 'Financial Gateway (Exchange)', useTls: ep.useTls);
+    print(
+        "💱 Creating Exchange Service Channel (via Financial Gateway) → ${ep.host}:${ep.port}");
+    return _createChannel(ep.host, ep.port, 'Financial Gateway (Exchange)',
+        useTls: ep.useTls);
   }
 
   /// Creates Business Gateway gRPC channel — business-gateway port 50079.
@@ -151,7 +163,8 @@ class GrpcChannelFactory {
       fallbackPort: 50079,
     );
     print("💼 Creating Business Gateway Channel → ${ep.host}:${ep.port}");
-    return _createChannel(ep.host, ep.port, 'Business Gateway', useTls: ep.useTls);
+    return _createChannel(ep.host, ep.port, 'Business Gateway',
+        useTls: ep.useTls);
   }
 
   /// Creates Chat Proxy Gateway gRPC channel — chat-proxy-gateway port 50074.
@@ -162,7 +175,8 @@ class GrpcChannelFactory {
       fallbackPort: 50074,
     );
     print("Creating Chat Proxy Gateway Channel -> ${ep.host}:${ep.port}");
-    return _createChannel(ep.host, ep.port, 'Chat Proxy Gateway', useTls: ep.useTls);
+    return _createChannel(ep.host, ep.port, 'Chat Proxy Gateway',
+        useTls: ep.useTls);
   }
 
   /// Creates Banking Service gRPC channel — banking-service port 50073.
@@ -173,7 +187,8 @@ class GrpcChannelFactory {
       fallbackPort: 50073,
     );
     print("🏦 Creating Banking Service Channel → ${ep.host}:${ep.port}");
-    return _createChannel(ep.host, ep.port, 'Banking Service', useTls: ep.useTls);
+    return _createChannel(ep.host, ep.port, 'Banking Service',
+        useTls: ep.useTls);
   }
 
   /// Creates Voice Biometrics Service gRPC channel — voice-biometrics-service port 50060.
@@ -183,8 +198,10 @@ class GrpcChannelFactory {
       legacyPortEnvKey: 'VOICE_BIOMETRICS_PORT',
       fallbackPort: 50060,
     );
-    print("🎙️ Creating Voice Biometrics Service Channel → ${ep.host}:${ep.port}");
-    return _createChannel(ep.host, ep.port, 'Voice Biometrics Service', useTls: ep.useTls);
+    print(
+        "🎙️ Creating Voice Biometrics Service Channel → ${ep.host}:${ep.port}");
+    return _createChannel(ep.host, ep.port, 'Voice Biometrics Service',
+        useTls: ep.useTls);
   }
 
   /// Resolves the (host, port, useTls) tuple for any gRPC channel.
@@ -235,7 +252,8 @@ class GrpcChannelFactory {
 
   /// Internal method to create channel with standard production-grade options
   /// Includes gzip compression for 60-80% payload reduction on low-bandwidth networks
-  static ClientChannel _createChannel(String host, int port, String name, {bool useTls = false}) {
+  static ClientChannel _createChannel(String host, int port, String name,
+      {bool useTls = false}) {
     // Self-healing wrapper: swaps in a fresh inner channel whenever the old
     // one wedges in SHUTDOWN (see ResilientClientChannel). The builder below
     // produces the raw channel each time.
@@ -246,7 +264,8 @@ class GrpcChannelFactory {
     );
   }
 
-  static ClientChannel _rawChannel(String host, int port, {bool useTls = false}) {
+  static ClientChannel _rawChannel(String host, int port,
+      {bool useTls = false}) {
     return ClientChannel(
       host,
       port: port,
@@ -258,7 +277,8 @@ class GrpcChannelFactory {
         credentials: useTls
             ? const ChannelCredentials.secure()
             : const ChannelCredentials.insecure(),
-        codecRegistry: CodecRegistry(codecs: const [GzipCodec()]), // Enable gzip compression
+        codecRegistry: CodecRegistry(
+            codecs: const [GzipCodec()]), // Enable gzip compression
         keepAlive: const ClientKeepAliveOptions(
           // Pings only while a call is in flight. Do NOT set
           // permitWithoutCalls back to true to "keep connections warm" — that
@@ -282,7 +302,8 @@ class GrpcChannelFactory {
           timeout: Duration(seconds: 10), // Ping timeout
           permitWithoutCalls: false,
         ),
-        connectionTimeout: const Duration(seconds: 10), // Connection establishment timeout
+        connectionTimeout:
+            const Duration(seconds: 10), // Connection establishment timeout
         // Long idleTimeout. This was originally set because a channel that
         // reached SHUTDOWN could never recover — every later RPC failed with
         // "Connection shutting down" until the app was killed.
@@ -337,7 +358,8 @@ class GrpcChannelFactory {
 /// the live admin-managed URL via [EndpointRegistry] while still
 /// honouring per-channel dotenv overrides for local dev.
 class _GrpcEndpoint {
-  const _GrpcEndpoint({required this.host, required this.port, required this.useTls});
+  const _GrpcEndpoint(
+      {required this.host, required this.port, required this.useTls});
   final String host;
   final int port;
   final bool useTls;

@@ -14,7 +14,6 @@ import '../authentication/data/datasources/chat_database.dart';
 import '../authentication/data/models/chat_message_model.dart';
 part 'send_fund_widgets.dart';
 
-
 class SendFund extends StatefulWidget {
   const SendFund({super.key, required this.recipient});
 
@@ -49,7 +48,8 @@ class _SendFundState extends State<SendFund> {
 
   Future<void> _loadMessages() async {
     try {
-      final recipientName = "${widget.recipient.firstName} ${widget.recipient.lastName}".trim();
+      final recipientName =
+          "${widget.recipient.firstName} ${widget.recipient.lastName}".trim();
       final messages = await _chatDb.getChatMessages(
         currentUser,
         recipientName,
@@ -80,7 +80,8 @@ class _SendFundState extends State<SendFund> {
       final message = text ?? _messageController.text.trim();
       if (message.isEmpty) return;
 
-      final recipientName = "${widget.recipient.firstName} ${widget.recipient.lastName}".trim();
+      final recipientName =
+          "${widget.recipient.firstName} ${widget.recipient.lastName}".trim();
       final chatMessage = ChatMessageModel(
         userFrom: currentUser,
         userTo: recipientName,
@@ -163,7 +164,8 @@ class _SendFundState extends State<SendFund> {
 
   void _addMediaMessage(String path, MessageType type) async {
     try {
-      final recipientName = "${widget.recipient.firstName} ${widget.recipient.lastName}".trim();
+      final recipientName =
+          "${widget.recipient.firstName} ${widget.recipient.lastName}".trim();
       final chatMessage = ChatMessageModel(
         userFrom: currentUser,
         userTo: recipientName,
@@ -248,7 +250,8 @@ class _SendFundState extends State<SendFund> {
                       child: Column(
                         children: [
                           Text(
-                            "${widget.recipient.firstName} ${widget.recipient.lastName}".trim(),
+                            "${widget.recipient.firstName} ${widget.recipient.lastName}"
+                                .trim(),
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,

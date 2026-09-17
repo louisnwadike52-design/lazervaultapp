@@ -18,7 +18,8 @@ class PasswordRecovery extends StatefulWidget {
   State<PasswordRecovery> createState() => _PasswordRecoveryState();
 }
 
-class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerProviderStateMixin {
+class _PasswordRecoveryState extends State<PasswordRecovery>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _email = '';
   String _phone = '';
@@ -108,7 +109,8 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
 
         final result = await cubit.requestPasswordResetV2(
           email: _email,
-          deliveryMethod: auth_enum.PasswordResetDeliveryMethod.DELIVERY_METHOD_EMAIL,
+          deliveryMethod:
+              auth_enum.PasswordResetDeliveryMethod.DELIVERY_METHOD_EMAIL,
         );
 
         if (!mounted) return;
@@ -128,7 +130,8 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
             // Check if user was found - for better UX while maintaining security
             if (!data.userFound) {
               setState(() {
-                _errorMessage = 'We couldn\'t find an account with that email address. Please check and try again.';
+                _errorMessage =
+                    'We couldn\'t find an account with that email address. Please check and try again.';
               });
               return;
             }
@@ -146,7 +149,8 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
                   arguments: {
                     'email': _email,
                     'resetToken': data.resetToken ?? '',
-                    'requireToken': data.resetToken == null || data.resetToken!.isEmpty,
+                    'requireToken':
+                        data.resetToken == null || data.resetToken!.isEmpty,
                     'deliveryMethod': 'email',
                     'maskedContact': data.maskedContact,
                   },
@@ -159,7 +163,8 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
         // SMS flow
         if (!_validatePhone(_phone)) {
           setState(() {
-            _errorMessage = 'Please enter a valid phone number (e.g., +234XXXXXXXXXX)';
+            _errorMessage =
+                'Please enter a valid phone number (e.g., +234XXXXXXXXXX)';
             _isLoading = false;
           });
           return;
@@ -167,7 +172,8 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
 
         final result = await cubit.requestPasswordResetV2(
           phone: _phone,
-          deliveryMethod: auth_enum.PasswordResetDeliveryMethod.DELIVERY_METHOD_SMS,
+          deliveryMethod:
+              auth_enum.PasswordResetDeliveryMethod.DELIVERY_METHOD_SMS,
         );
 
         if (!mounted) return;
@@ -187,7 +193,8 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
             // Check if user was found - for better UX while maintaining security
             if (!data.userFound) {
               setState(() {
-                _errorMessage = 'We couldn\'t find an account with that phone number. Please check and try again.';
+                _errorMessage =
+                    'We couldn\'t find an account with that phone number. Please check and try again.';
               });
               return;
             }
@@ -347,11 +354,13 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
 
           // Back to Login link
           TextButton(
-            onPressed: _isLoading ? null : () {
-              if (Navigator.canPop(context)) {
-                Get.back();
-              }
-            },
+            onPressed: _isLoading
+                ? null
+                : () {
+                    if (Navigator.canPop(context)) {
+                      Get.back();
+                    }
+                  },
             child: Text(
               'Back to Login',
               style: TextStyle(
@@ -411,7 +420,8 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
         ),
         SizedBox(height: 16.h),
         BuildFormField(
-          leading: const Icon(Icons.email_outlined, color: AppColors.secondaryFont),
+          leading:
+              const Icon(Icons.email_outlined, color: AppColors.secondaryFont),
           name: 'email',
           placeholder: 'Enter your email',
           keyboardType: TextInputType.emailAddress,
@@ -448,7 +458,8 @@ class _PasswordRecoveryState extends State<PasswordRecovery> with SingleTickerPr
         ),
         SizedBox(height: 16.h),
         BuildFormField(
-          leading: const Icon(Icons.phone_outlined, color: AppColors.secondaryFont),
+          leading:
+              const Icon(Icons.phone_outlined, color: AppColors.secondaryFont),
           name: 'phone',
           placeholder: '+234XXXXXXXXXX',
           keyboardType: TextInputType.phone,

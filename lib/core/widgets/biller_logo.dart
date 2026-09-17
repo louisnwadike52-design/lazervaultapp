@@ -137,6 +137,8 @@ class BillerLogo extends StatelessWidget {
   }
 
   Color _readableTextColor(Color bg) {
-    return bg.computeLuminance() > 0.55 ? const Color(0xFF1A1A1A) : Colors.white;
+    return bg.computeLuminance() > 0.55
+        ? const Color(0xFF1A1A1A)
+        : Colors.white;
   }
 }

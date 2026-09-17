@@ -17,15 +17,15 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
     final accountNumberRegex = RegExp(r'\b\d{15,}\b');
     final invoiceNumberRegex = RegExp(r'#INV-\d{4}-\d{3}');
     final amountRegex = RegExp(r'\$\d+(?:\.\d{2})?');
-    
+
     final allMatches = <RegExpMatch>[];
     allMatches.addAll(accountNumberRegex.allMatches(text));
     allMatches.addAll(invoiceNumberRegex.allMatches(text));
     allMatches.addAll(amountRegex.allMatches(text));
-    
+
     // Sort matches by start position
     allMatches.sort((a, b) => a.start.compareTo(b.start));
-    
+
     final spans = <TextSpan>[];
     int currentIndex = 0;
 
@@ -197,6 +197,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color(0xFF3B82F6);
       case AppServiceName.contactlessPay:
         return const Color(0xFF3B82F6);
+      case AppServiceName.cardAcceptance:
+        return const Color(0xFF0F9D58);
       case AppServiceName.payroll:
         return const Color(0xFF1E3A8A);
       case AppServiceName.businessDashboard:
@@ -238,7 +240,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
       ),
       itemBuilder: (context, index) {
         final notification = widget.notifications[index];
-        final serviceColor = _getServiceColor(notification.appService.serviceName);
+        final serviceColor =
+            _getServiceColor(notification.appService.serviceName);
 
         // Wrapped only when the notification actually resolves somewhere.
         // A row with no destination stays inert rather than offering a ripple
@@ -275,7 +278,7 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
               ),
 
               SizedBox(width: 14.w),
-              
+
               // Content
               Expanded(
                 child: Column(
@@ -307,9 +310,9 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
                         ),
                       ],
                     ),
-                    
+
                     SizedBox(height: 6.h),
-                    
+
                     // Subtitle
                     RichText(
                       text: TextSpan(

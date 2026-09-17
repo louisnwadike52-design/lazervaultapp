@@ -29,7 +29,8 @@ class ServiceCategories {
 
   /// All service categories with their mappings
   /// Use BudgetCubit.loadServiceCategories() to fetch from backend instead.
-  @Deprecated('Use BudgetCubit.loadServiceCategories() for dynamic categories from backend')
+  @Deprecated(
+      'Use BudgetCubit.loadServiceCategories() for dynamic categories from backend')
   static const List<ServiceCategory> allCategories = [
     // Transfer subcategories
     ServiceCategory(
@@ -226,7 +227,9 @@ class ServiceCategories {
 
   /// Get categories by service name
   static List<ServiceCategory> getByService(String serviceName) {
-    return allCategories.where((cat) => cat.serviceName == serviceName).toList();
+    return allCategories
+        .where((cat) => cat.serviceName == serviceName)
+        .toList();
   }
 
   /// Get category by subcategory name
@@ -248,7 +251,9 @@ class ServiceCategories {
     return subCategoryName
         .replaceAll('_', ' ')
         .split(' ')
-        .map((word) => word.isNotEmpty ? '${word[0].toUpperCase()}${word.substring(1)}' : '')
+        .map((word) => word.isNotEmpty
+            ? '${word[0].toUpperCase()}${word.substring(1)}'
+            : '')
         .join(' ');
   }
 
@@ -333,5 +338,5 @@ class ServiceCategory {
     required this.icon,
     required this.color,
     required this.budgetCategory,
-});
+  });
 }

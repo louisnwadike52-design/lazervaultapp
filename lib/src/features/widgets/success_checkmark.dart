@@ -86,8 +86,10 @@ class _SuccessCheckmarkState extends State<SuccessCheckmark>
               for (final (delay, strength) in const [(0.0, 0.35), (0.25, 0.22)])
                 if (t > delay)
                   Container(
-                    width: widget.size + (outer - widget.size) * ((t - delay) / (1 - delay)),
-                    height: widget.size + (outer - widget.size) * ((t - delay) / (1 - delay)),
+                    width: widget.size +
+                        (outer - widget.size) * ((t - delay) / (1 - delay)),
+                    height: widget.size +
+                        (outer - widget.size) * ((t - delay) / (1 - delay)),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: widget.color.withValues(

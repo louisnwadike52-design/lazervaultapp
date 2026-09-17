@@ -6,7 +6,6 @@ import 'package:lazervault/core/services/endpoint_registry.dart';
 import '../config/country_config.dart';
 part 'document_extraction_service_widgets.dart';
 
-
 /// Service for extracting data from identity documents using AI/OCR
 class DocumentExtractionService {
   static String get _defaultApiUrl =>
@@ -15,9 +14,7 @@ class DocumentExtractionService {
       endpointRegistry.httpChatAgent;
 
   static String get _defaultApiKey =>
-      dotenv.env['DOCUMENT_EXTRACTION_API_KEY'] ??
-      dotenv.env['API_KEY'] ??
-      '';
+      dotenv.env['DOCUMENT_EXTRACTION_API_KEY'] ?? dotenv.env['API_KEY'] ?? '';
 
   final String baseUrl;
   final String apiKey;
@@ -109,7 +106,8 @@ class DocumentExtractionService {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
 
         // Determine confidence level
-        final extractedConfidence = _parseConfidence(data['confidence'] as String?);
+        final extractedConfidence =
+            _parseConfidence(data['confidence'] as String?);
 
         // Validate extracted data against country requirements
         final validationResult = _validateExtractedData(
@@ -185,7 +183,8 @@ class DocumentExtractionService {
 
     // Extract expiration date
     final expirationDate = extractedData['expiration_date'] as String?;
-    if (expirationDate != null) extractedFields['expirationDate'] = expirationDate;
+    if (expirationDate != null)
+      extractedFields['expirationDate'] = expirationDate;
 
     // Extract sex/gender
     final sex = extractedData['sex'] as String?;
@@ -253,12 +252,16 @@ class DocumentExtractionService {
       confidence = ExtractionConfidence.medium;
     }
 
-    if (confidence == ExtractionConfidence.high && missingRequiredFields.isEmpty) {
-      return DocumentExtractionResult.success(extractedFields, ExtractionConfidence.high);
+    if (confidence == ExtractionConfidence.high &&
+        missingRequiredFields.isEmpty) {
+      return DocumentExtractionResult.success(
+          extractedFields, ExtractionConfidence.high);
     } else if (confidence == ExtractionConfidence.medium) {
-      return DocumentExtractionResult.success(extractedFields, ExtractionConfidence.medium);
+      return DocumentExtractionResult.success(
+          extractedFields, ExtractionConfidence.medium);
     } else {
-      return DocumentExtractionResult.success(extractedFields, ExtractionConfidence.low);
+      return DocumentExtractionResult.success(
+          extractedFields, ExtractionConfidence.low);
     }
   }
 
@@ -431,13 +434,15 @@ class DocumentExtractionService {
 
     // Merge results
     if (backResult.success) {
-      final mergedData = Map<String, dynamic>.from(frontResult.extractedData ?? {});
+      final mergedData =
+          Map<String, dynamic>.from(frontResult.extractedData ?? {});
       mergedData.addAll(backResult.extractedData ?? {});
 
       // Use the lower confidence of the two
-      final confidence = frontResult.confidence.index < backResult.confidence.index
-          ? frontResult.confidence
-          : backResult.confidence;
+      final confidence =
+          frontResult.confidence.index < backResult.confidence.index
+              ? frontResult.confidence
+              : backResult.confidence;
 
       return DocumentExtractionResult.success(mergedData, confidence);
     }
@@ -454,7 +459,8 @@ class DocumentExtractionService {
     if (technicalError.contains('blur') || technicalError.contains('focus')) {
       return 'The image is blurry. Please take a clearer photo.';
     }
-    if (technicalError.contains('glare') || technicalError.contains('reflection')) {
+    if (technicalError.contains('glare') ||
+        technicalError.contains('reflection')) {
       return 'There\'s glare on the document. Please retake in better lighting.';
     }
     if (technicalError.contains('corner') || technicalError.contains('edge')) {
@@ -463,7 +469,8 @@ class DocumentExtractionService {
     if (technicalError.contains('dark') || technicalError.contains('light')) {
       return 'The lighting is poor. Please retake in better lighting conditions.';
     }
-    if (technicalError.contains('document') || technicalError.contains('detect')) {
+    if (technicalError.contains('document') ||
+        technicalError.contains('detect')) {
       return 'We couldn\'t detect the document. Please ensure it\'s a valid ID.';
     }
 

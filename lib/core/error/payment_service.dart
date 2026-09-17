@@ -59,7 +59,8 @@ class PaymentService {
         config: RetryConfig.fast, // Fast retry for balance checks
       );
 
-      final balance = (result.data as Map<String, dynamic>)['balance'] as double;
+      final balance =
+          (result.data as Map<String, dynamic>)['balance'] as double;
       return balance;
     } on AppError catch (e) {
       _logBalanceError(e);
@@ -84,8 +85,8 @@ class PaymentService {
         config: RetryConfig.standard,
       );
 
-      final transactions = (result.data['transactions'] as List)
-          .cast<Map<String, dynamic>>();
+      final transactions =
+          (result.data['transactions'] as List).cast<Map<String, dynamic>>();
       return transactions;
     } on AppError catch (e) {
       _logTransactionError(e);
@@ -137,7 +138,6 @@ class PaymentBloc {
       // Show success
       // emit(PaymentSuccess(result));
       print('Payment successful: ${result['transaction_id']}');
-
     } on AppError catch (e) {
       // Handle structured error
       print('Payment failed: ${e.userMessage}');
@@ -253,7 +253,8 @@ class PaymentInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) {
     // Add idempotency key for write operations
-    if (options.method != 'GET' && !options.headers.containsKey('Idempotency-Key')) {
+    if (options.method != 'GET' &&
+        !options.headers.containsKey('Idempotency-Key')) {
       options.headers['Idempotency-Key'] =
           'req_${DateTime.now().millisecondsSinceEpoch}_${options.uri}';
     }

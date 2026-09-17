@@ -8,7 +8,6 @@ import 'package:crypto/crypto.dart';
 import 'mutation.dart';
 part 'mutation_queue_widgets.dart';
 
-
 /// Manages a queue of offline mutations for automatic retry.
 ///
 /// When network requests fail due to connectivity issues, mutations
@@ -311,7 +310,8 @@ class MutationQueue {
         'images': images,
         'idempotencyKey': idempotencyKey,
       },
-      description: 'Sell $cardType gift card (\$${denomination.toStringAsFixed(0)})',
+      description:
+          'Sell $cardType gift card (\$${denomination.toStringAsFixed(0)})',
     ));
   }
 

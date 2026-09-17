@@ -28,7 +28,8 @@ class BanksData {
   }
 
   /// Get popular banks for a specific country code (first 6 banks)
-  static List<Map<String, String>> getPopularBanksForCountry(String countryCode) {
+  static List<Map<String, String>> getPopularBanksForCountry(
+      String countryCode) {
     final banks = getBanksForCountry(countryCode);
     return banks.take(6).toList();
   }
@@ -74,17 +75,19 @@ class BanksData {
   }
 
   /// Search banks by query within a country
-  static List<Map<String, String>> searchBanks(String countryCode, String query) {
+  static List<Map<String, String>> searchBanks(
+      String countryCode, String query) {
     final banks = getBanksForCountry(countryCode);
     if (query.trim().isEmpty) {
       return banks;
     }
 
     final lowerQuery = query.toLowerCase();
-    return banks.where((bank) =>
-      bank['name']!.toLowerCase().contains(lowerQuery) ||
-      bank['code']!.toLowerCase().contains(lowerQuery)
-    ).toList();
+    return banks
+        .where((bank) =>
+            bank['name']!.toLowerCase().contains(lowerQuery) ||
+            bank['code']!.toLowerCase().contains(lowerQuery))
+        .toList();
   }
 
   /// Get bank logo URL by bank code - DISABLED (using local fallback only)
@@ -96,7 +99,8 @@ class BanksData {
 
   /// Get bank logo URL by bank name - DISABLED (using local fallback only)
   /// Bank logos are displayed using gradient initials instead of remote URLs
-  static String? getBankLogoUrlByName(String bankName, {String country = 'NG'}) {
+  static String? getBankLogoUrlByName(String bankName,
+      {String country = 'NG'}) {
     // Return null to always use local gradient fallback
     return null;
   }

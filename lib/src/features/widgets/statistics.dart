@@ -39,11 +39,11 @@ import 'package:lazervault/src/features/statistics/presentation/widgets/error_st
 import 'package:lazervault/core/services/secure_storage_service.dart';
 part 'statistics_widgets.dart';
 
-
 /// Returns true for platform/internal fee categories that should be
 /// included in totals but hidden from the UI breakdown.
 bool _isPlatformFee(String categoryName) {
-  final n = categoryName.toLowerCase().replaceAll('-', '_').replaceAll(' ', '_');
+  final n =
+      categoryName.toLowerCase().replaceAll('-', '_').replaceAll(' ', '_');
   return const {
     'fee',
     'fees',
@@ -66,7 +66,8 @@ bool _isPlatformFee(String categoryName) {
 /// Uses ServiceCategories for service subcategory mappings where available.
 String _friendlyCategoryName(String raw, {String? serviceName}) {
   // First try to find in ServiceCategories by subcategory name
-  final normalized = raw.toLowerCase().replaceAll('-', '_').replaceAll(' ', '_');
+  final normalized =
+      raw.toLowerCase().replaceAll('-', '_').replaceAll(' ', '_');
   final serviceCat = ServiceCategories.getBySubCategory(normalized);
   if (serviceCat != null) {
     return serviceCat.displayName;
@@ -80,11 +81,13 @@ String _friendlyCategoryName(String raw, {String? serviceName}) {
     'payroll' || 'crowdfunding' || 'deposits' || 'withdrawals' => raw,
     'reversals' || 'transfers' || 'banking' || 'payments' => raw,
     'food & drinks' || 'shopping' || 'transportation' || 'entertainment' => raw,
-
-    'piggyvault' || 'piggy vault' || 'lock funds' || 'lock_funds' => 'Piggyvault',
+    'piggyvault' ||
+    'piggy vault' ||
+    'lock funds' ||
+    'lock_funds' =>
+      'Piggyvault',
     'autosave' => 'AutoSave',
     'savings & products' => 'Savings & Products',
-
     'transfer' || 'c2c_transfer' => 'P2P Transfers',
     'domestic_transfer' => 'Bank Transfers',
     'international_transfer' => 'International Transfers',
@@ -99,7 +102,6 @@ String _friendlyCategoryName(String raw, {String? serviceName}) {
     'airtime' => 'Airtime',
     'bill_payment' => 'Bill Payments',
     'investment' || 'investments' => 'Investments',
-
     'core-payments-service' || 'core-payments' => 'Transfers',
     'banking-service' => 'Banking',
     'invoice-service' => 'Invoices',
@@ -111,15 +113,20 @@ String _friendlyCategoryName(String raw, {String? serviceName}) {
     'payroll-service' => 'Payroll',
     'crowdfund-service' => 'Crowdfunding',
     'accounts-service' => 'Other',
-
-    _ => raw.replaceAll('-', ' ').replaceAll('_', ' ').split(' ').map((w) =>
-        w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
+    _ => raw
+        .replaceAll('-', ' ')
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map(
+            (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+        .join(' '),
   };
 }
 
 /// Get category color from service categories or fallback
 Color _getCategoryColor(String categoryName, {String? serviceName}) {
-  final normalized = categoryName.toLowerCase().replaceAll('-', '_').replaceAll(' ', '_');
+  final normalized =
+      categoryName.toLowerCase().replaceAll('-', '_').replaceAll(' ', '_');
   final serviceCat = ServiceCategories.getBySubCategory(normalized);
   if (serviceCat != null) {
     return serviceCat.color;
@@ -176,6 +183,7 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
     if (_selectedBankIds.isEmpty) return null;
     return _selectedBankIds.join(',');
   }
+
   ExternalDataStatus _externalStatus = ExternalDataStatus.notApplicable;
   String? _externalError;
   String _userId = '';
@@ -238,7 +246,9 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
       // Await linked accounts first to avoid race condition —
       // both methods emit to the same cubit, so running them
       // concurrently causes the second to overwrite the first state.
-      await context.read<OpenBankingCubit>().fetchLinkedAccounts(userId: userId, accessToken: accessToken);
+      await context
+          .read<OpenBankingCubit>()
+          .fetchLinkedAccounts(userId: userId, accessToken: accessToken);
       if (mounted) {
         context.read<OpenBankingCubit>().fetchCreditScore(userId: userId);
         // COST-AWARE: do NOT auto-refresh bank balances on stats load — a live
@@ -539,8 +549,11 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
               ],
               if (includesWallet) ...[
                 SizedBox(width: 8.w),
-                _filterChip(Icons.account_balance_wallet_rounded, 'Wallet',
-                    () => _openFilterSheet('Wallet account', _buildWalletSheet())),
+                _filterChip(
+                    Icons.account_balance_wallet_rounded,
+                    'Wallet',
+                    () => _openFilterSheet(
+                        'Wallet account', _buildWalletSheet())),
               ],
             ],
           ),
@@ -634,9 +647,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: active
-              ? accent.withValues(alpha: 0.16)
-              : const Color(0xFF1F1F1F),
+          color:
+              active ? accent.withValues(alpha: 0.16) : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
               color: active
@@ -647,8 +659,7 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon,
-                size: 14.sp,
-                color: active ? accent : const Color(0xFFB9A5E8)),
+                size: 14.sp, color: active ? accent : const Color(0xFFB9A5E8)),
             SizedBox(width: 6.w),
             Text(label,
                 style: GoogleFonts.inter(
@@ -657,8 +668,7 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                     fontWeight: FontWeight.w600)),
             SizedBox(width: 4.w),
             Icon(Icons.keyboard_arrow_down_rounded,
-                size: 16.sp,
-                color: active ? accent : const Color(0xFF9CA3AF)),
+                size: 16.sp, color: active ? accent : const Color(0xFF9CA3AF)),
           ],
         ),
       ),
@@ -726,7 +736,9 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
           onTap: () {
             if (period != selectedPeriod) {
               setState(() => selectedPeriod = period);
-              context.read<StatisticsCubit>().changePeriod(period.toLowerCase());
+              context
+                  .read<StatisticsCubit>()
+                  .changePeriod(period.toLowerCase());
             }
             Navigator.of(context).pop();
           },
@@ -974,7 +986,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                 ? activeId
                 : accounts.first.id,
             dropdownColor: const Color(0xFF1F1F1F),
-            icon: Icon(Icons.keyboard_arrow_down, color: Colors.white70, size: 18.r),
+            icon: Icon(Icons.keyboard_arrow_down,
+                color: Colors.white70, size: 18.r),
             isDense: true,
             isExpanded: true,
             style: TextStyle(color: Colors.white, fontSize: 12.sp),
@@ -1001,9 +1014,11 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                     ),
                     SizedBox(width: 4.w),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
                       decoration: BoxDecoration(
-                        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2),
+                        color: InvoiceThemeColors.primaryPurple
+                            .withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                       child: Text(
@@ -1079,7 +1094,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: Icon(Icons.analytics_outlined, color: Colors.white, size: 18.sp),
+                child: Icon(Icons.analytics_outlined,
+                    color: Colors.white, size: 18.sp),
               ),
               SizedBox(width: 10.w),
               Text(
@@ -1161,19 +1177,23 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
 
     if (expenseChange > 20) {
       emoji = '\u{1F534}';
-      message = 'Spending up ${expenseChange.toStringAsFixed(0)}% vs last period';
+      message =
+          'Spending up ${expenseChange.toStringAsFixed(0)}% vs last period';
       borderColor = const Color(0xFFEF4444).withValues(alpha: 0.3);
     } else if (savingsRate >= 20) {
       emoji = '\u{1F389}';
-      message = 'Great job! You\'re saving ${savingsRate.toStringAsFixed(0)}% this month';
+      message =
+          'Great job! You\'re saving ${savingsRate.toStringAsFixed(0)}% this month';
       borderColor = const Color(0xFF10B981).withValues(alpha: 0.3);
     } else if (savingsRate >= 10) {
       emoji = '\u{1F4AA}';
-      message = 'Good progress \u2014 you saved ${savingsRate.toStringAsFixed(0)}% this month';
+      message =
+          'Good progress \u2014 you saved ${savingsRate.toStringAsFixed(0)}% this month';
       borderColor = InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3);
     } else {
       emoji = '\u{26A0}\u{FE0F}';
-      message = 'Heads up \u2014 only ${savingsRate.toStringAsFixed(0)}% saved this month';
+      message =
+          'Heads up \u2014 only ${savingsRate.toStringAsFixed(0)}% saved this month';
       borderColor = const Color(0xFFFB923C).withValues(alpha: 0.3);
     }
 
@@ -1201,9 +1221,11 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                 ),
               ),
             ),
-            Icon(Icons.auto_awesome, color: const Color.fromARGB(255, 78, 3, 208), size: 18.sp),
+            Icon(Icons.auto_awesome,
+                color: const Color.fromARGB(255, 78, 3, 208), size: 18.sp),
             SizedBox(width: 4.w),
-            Icon(Icons.chevron_right, color: const Color(0xFF9CA3AF), size: 18.sp),
+            Icon(Icons.chevron_right,
+                color: const Color(0xFF9CA3AF), size: 18.sp),
           ],
         ),
       ),
@@ -1231,7 +1253,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
         List<({double spent, double budget})> budgetItems = [];
         if (budgetState is BudgetProgressLoaded) {
           budgetItems = budgetState.items
-              .map((item) => (spent: item.spentAmount, budget: item.budgetAmount))
+              .map((item) =>
+                  (spent: item.spentAmount, budget: item.budgetAmount))
               .toList();
         }
 
@@ -1278,10 +1301,12 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
     }
 
     double dailyAverage = 0;
-    if (state.expenseTimeSeries != null && state.expenseTimeSeries!.dailyAverage > 0) {
+    if (state.expenseTimeSeries != null &&
+        state.expenseTimeSeries!.dailyAverage > 0) {
       dailyAverage = state.expenseTimeSeries!.dailyAverage;
     } else if (current.totalExpenses > 0) {
-      final elapsed = DateTime.now().difference(state.startDate).inDays.clamp(1, 366);
+      final elapsed =
+          DateTime.now().difference(state.startDate).inDays.clamp(1, 366);
       dailyAverage = current.totalExpenses / elapsed;
     }
 
@@ -1448,8 +1473,9 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
         : selected.length == 1
             ? selected.first.bankName
             : '${selected.length} banks';
-    final hidden =
-        _statsSource == StatisticsSource.both ? 'wallet & other banks' : 'other banks';
+    final hidden = _statsSource == StatisticsSource.both
+        ? 'wallet & other banks'
+        : 'other banks';
 
     return Container(
       width: double.infinity,
@@ -1457,7 +1483,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
       decoration: BoxDecoration(
         color: const Color(0xFFFB923C).withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.35)),
+        border:
+            Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.35)),
       ),
       child: Row(
         children: [
@@ -1468,7 +1495,9 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
             child: RichText(
               text: TextSpan(
                 style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF), fontSize: 11.5.sp, height: 1.35),
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 11.5.sp,
+                    height: 1.35),
                 children: [
                   const TextSpan(text: 'Analytics scoped to '),
                   TextSpan(
@@ -1576,7 +1605,9 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                   SizedBox(height: 3.h),
                   Text(body,
                       style: GoogleFonts.inter(
-                          color: const Color(0xFF9CA3AF), fontSize: 11.5.sp, height: 1.4)),
+                          color: const Color(0xFF9CA3AF),
+                          fontSize: 11.5.sp,
+                          height: 1.4)),
                 ],
               ),
             ),
@@ -1585,7 +1616,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
               GestureDetector(
                 onTap: () => context.read<StatisticsCubit>().refresh(),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
                   decoration: BoxDecoration(
                     color: color,
                     borderRadius: BorderRadius.circular(8.r),
@@ -1703,20 +1735,26 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                 Container(
                   padding: EdgeInsets.all(14.w),
                   decoration: BoxDecoration(
-                    color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
+                    color:
+                        InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
-                  child: Icon(Icons.show_chart, color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5), size: 32.r),
+                  child: Icon(Icons.show_chart,
+                      color: InvoiceThemeColors.primaryPurple
+                          .withValues(alpha: 0.5),
+                      size: 32.r),
                 ),
                 SizedBox(height: 12.h),
                 Text(
                   'No expense data for this period',
-                  style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                  style: TextStyle(
+                      color: const Color(0xFF9CA3AF), fontSize: 14.sp),
                 ),
                 SizedBox(height: 4.h),
                 Text(
                   'Tap to view detailed spending',
-                  style: TextStyle(color: const Color(0xFF6B7280), fontSize: 12.sp),
+                  style: TextStyle(
+                      color: const Color(0xFF6B7280), fontSize: 12.sp),
                 ),
               ],
             ),
@@ -1782,7 +1820,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                         show: true,
                         gradient: LinearGradient(
                           colors: [
-                            InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
+                            InvoiceThemeColors.primaryPurple
+                                .withValues(alpha: 0.3),
                             const Color(0xFF7C3AED).withValues(alpha: 0.0),
                           ],
                           begin: Alignment.topCenter,
@@ -1829,20 +1868,25 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                 Container(
                   padding: EdgeInsets.all(14.w),
                   decoration: BoxDecoration(
-                    color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
+                    color:
+                        InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
-                  child: Icon(Icons.bar_chart, color: const Color(0xFFFB923C).withValues(alpha: 0.5), size: 32.r),
+                  child: Icon(Icons.bar_chart,
+                      color: const Color(0xFFFB923C).withValues(alpha: 0.5),
+                      size: 32.r),
                 ),
                 SizedBox(height: 12.h),
                 Text(
                   'No monthly trend data available',
-                  style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                  style: TextStyle(
+                      color: const Color(0xFF9CA3AF), fontSize: 14.sp),
                 ),
                 SizedBox(height: 4.h),
                 Text(
                   'Tap to view monthly trends',
-                  style: TextStyle(color: const Color(0xFF6B7280), fontSize: 12.sp),
+                  style: TextStyle(
+                      color: const Color(0xFF6B7280), fontSize: 12.sp),
                 ),
               ],
             ),
@@ -1852,7 +1896,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
     }
 
     final maxY = monthlyPoints.fold<double>(0.0, (max, point) {
-      final bigger = point.income > point.expenses ? point.income : point.expenses;
+      final bigger =
+          point.income > point.expenses ? point.income : point.expenses;
       return bigger > max ? bigger : max;
     });
     final roundedMaxY = maxY > 0 ? (maxY * 1.2).ceilToDouble() : 10000.0;
@@ -1914,7 +1959,9 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                           }
                           return Text(
                             monthlyPoints[index].monthLabel,
-                            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp),
+                            style: TextStyle(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 11.sp),
                           );
                         },
                         reservedSize: 28,
@@ -1932,13 +1979,17 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                                   : '${value.toInt()}';
                           return Text(
                             compactValue,
-                            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 10.sp),
+                            style: TextStyle(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 10.sp),
                           );
                         },
                       ),
                     ),
-                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles:
+                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles:
+                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   ),
                   gridData: FlGridData(
                     show: true,
@@ -2134,8 +2185,9 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                 userId: _userId,
                 accessToken: _accessToken,
                 // Highlight the single scoped bank when exactly one is selected.
-                selectedAccountId:
-                    _selectedBankIds.length == 1 ? _selectedBankIds.first : null,
+                selectedAccountId: _selectedBankIds.length == 1
+                    ? _selectedBankIds.first
+                    : null,
                 onBankTap: (account) {
                   // Tapping a bank opens its management sheet (refresh, set
                   // default, reconnect, unlink) — filtering is handled by the
@@ -2191,7 +2243,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                     Container(
                       padding: EdgeInsets.all(10.w),
                       decoration: BoxDecoration(
-                        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12),
+                        color: InvoiceThemeColors.primaryPurple
+                            .withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Icon(Icons.account_balance_rounded,
@@ -2223,10 +2276,11 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                     ),
                     if (account.isDefault)
                       Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 4.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFF10B981).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6.r),
                         ),
                         child: Text('Default',
@@ -2354,8 +2408,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
     Get.dialog(
       AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text('Unlink ${account.bankName}?',
             style: GoogleFonts.inter(
                 color: Colors.white,
@@ -2423,7 +2477,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14.sp,
-                    fontWeight: showIncome ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        showIncome ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ),
@@ -2447,7 +2502,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14.sp,
-                    fontWeight: !showIncome ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        !showIncome ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ),
@@ -2471,7 +2527,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
     return const SizedBox.shrink();
   }
 
-  Widget _buildIncomeCategoryAnalytics(accounts_pb.GetCategoryAnalyticsResponse catAnalytics) {
+  Widget _buildIncomeCategoryAnalytics(
+      accounts_pb.GetCategoryAnalyticsResponse catAnalytics) {
     final categories = catAnalytics.incomeCategories;
     final totalIncome = catAnalytics.totalIncome;
 
@@ -2522,7 +2579,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                 PieChartData(
                   sectionsSpace: 0,
                   centerSpaceRadius: 40,
-                  sections: _generateCategoryBreakdownSections(categories, totalIncome),
+                  sections: _generateCategoryBreakdownSections(
+                      categories, totalIncome),
                 ),
               ),
             ),
@@ -2605,7 +2663,8 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                     PieChartData(
                       sectionsSpace: 0,
                       centerSpaceRadius: 40,
-                      sections: _generateCategoryBreakdownSections(displayCategories, totalExpenses),
+                      sections: _generateCategoryBreakdownSections(
+                          displayCategories, totalExpenses),
                     ),
                   ),
                 ),
@@ -2674,5 +2733,4 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
       ],
     );
   }
-
 }

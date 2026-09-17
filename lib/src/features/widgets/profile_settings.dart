@@ -63,9 +63,9 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                   // KYC Verification Tile
                   BlocProvider(
                     create: (context) {
-                      final userId = context.read<AuthenticationCubit>().userId ?? '';
-                      return serviceLocator<KYCCubit>()
-                        ..getKYCStatus(userId);
+                      final userId =
+                          context.read<AuthenticationCubit>().userId ?? '';
+                      return serviceLocator<KYCCubit>()..getKYCStatus(userId);
                     },
                     child: const KYCSettingsTile(),
                   ),

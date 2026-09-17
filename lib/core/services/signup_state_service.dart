@@ -190,7 +190,8 @@ class SignupStateService {
   Future<void> updateDraftPage(int page) async {
     final draft = await loadDraft();
     if (draft != null) {
-      final step = page == 0 ? SignupDraft.stepFormPage0 : SignupDraft.stepFormPage1;
+      final step =
+          page == 0 ? SignupDraft.stepFormPage0 : SignupDraft.stepFormPage1;
       await saveDraft(draft.copyWith(currentPage: page, currentStep: step));
     }
   }

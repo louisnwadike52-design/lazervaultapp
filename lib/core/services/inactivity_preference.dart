@@ -23,8 +23,8 @@ class InactivityPreference {
   /// Load from storage. Safe to call more than once.
   static Future<void> load() async {
     try {
-      _seconds =
-          await serviceLocator<SecureStorageService>().getInactivityTimeoutSeconds();
+      _seconds = await serviceLocator<SecureStorageService>()
+          .getInactivityTimeoutSeconds();
     } catch (_) {
       // Fall back to the platform policy rather than leaving the session
       // unprotected — see the class note.

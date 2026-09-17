@@ -112,6 +112,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.contactlessPay:
         Get.toNamed(AppRoutes.contactlessPay);
         break;
+      case AppServiceName.cardAcceptance:
+        Get.toNamed(AppRoutes.cardAcceptance);
+        break;
       case AppServiceName.groupAccount:
         Get.toNamed(AppRoutes.groupAccount);
         break;
@@ -366,7 +369,8 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         iconData = Icons.receipt_long;
         break;
       case AppServiceName.payInvoice:
-        iconData = Icons.receipt_long; // Same icon as invoice since they're consolidated
+        iconData = Icons
+            .receipt_long; // Same icon as invoice since they're consolidated
         break;
       case AppServiceName.payBills:
         iconData = Icons.receipt_long;
@@ -397,6 +401,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.contactlessPay:
         iconData = Icons.contactless;
+        break;
+      case AppServiceName.cardAcceptance:
+        iconData = Icons.credit_card;
         break;
       case AppServiceName.groupAccount:
         iconData = Icons.groups;
@@ -470,4 +477,3 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
     );
   }
 }
-

@@ -115,8 +115,7 @@ class BillDetailsSheet {
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16.r),
-                border:
-                    Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Column(
                 children: [
@@ -175,8 +174,7 @@ class BillDetailsSheet {
   static Widget _buildRow(BillDetailRow row) {
     return Row(
       children: [
-        Icon(row.icon,
-            color: Colors.white.withValues(alpha: 0.5), size: 18.sp),
+        Icon(row.icon, color: Colors.white.withValues(alpha: 0.5), size: 18.sp),
         SizedBox(width: 10.w),
         Expanded(
           child: Column(

@@ -5,4 +5,4 @@ import 'package:lazervault/core/error/failure.dart';
 // Use dartz's Either
 typedef ResultFuture<T> = Future<Either<Failure, T>>;
 
-typedef ResultVoid = ResultFuture<void>; 
+typedef ResultVoid = ResultFuture<void>;

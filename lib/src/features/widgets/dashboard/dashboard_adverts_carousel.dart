@@ -75,9 +75,8 @@ class _DashboardAdvertsCarouselState extends State<DashboardAdvertsCarousel> {
     // screens if an admin configures a long advert list.
     const maxSlides = 12;
     final source = _adverts.isEmpty ? kSeedDashboardAdverts : _adverts;
-    final slides = source.length > maxSlides
-        ? source.sublist(0, maxSlides)
-        : source;
+    final slides =
+        source.length > maxSlides ? source.sublist(0, maxSlides) : source;
 
     // Kept compact so the advert card AND its page indicators clear the fold
     // on the showcase dashboard (they'd otherwise sit behind the bottom nav).
@@ -101,7 +100,8 @@ class _DashboardAdvertsCarouselState extends State<DashboardAdvertsCarousel> {
             ),
             itemBuilder: (context, index, _) {
               final advert = slides[index];
-              return _AdvertCard(advert: advert, onTap: () => _openLink(advert.link));
+              return _AdvertCard(
+                  advert: advert, onTap: () => _openLink(advert.link));
             },
           ),
         ),

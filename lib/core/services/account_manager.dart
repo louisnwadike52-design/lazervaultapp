@@ -14,7 +14,8 @@ import 'package:lazervault/src/features/card_settings/domain/entities/account_de
 class AccountManager {
   // Stream controller for reactive account updates
   final _accountIdController = BehaviorSubject<String?>.seeded(null);
-  final _accountDetailsController = BehaviorSubject<AccountDetailsEntity?>.seeded(null);
+  final _accountDetailsController =
+      BehaviorSubject<AccountDetailsEntity?>.seeded(null);
 
   AccountManager();
 
@@ -22,13 +23,15 @@ class AccountManager {
   String? get activeAccountId => _accountIdController.value;
 
   /// Get current active account details (or null if none selected)
-  AccountDetailsEntity? get activeAccountDetails => _accountDetailsController.value;
+  AccountDetailsEntity? get activeAccountDetails =>
+      _accountDetailsController.value;
 
   /// Stream of account ID changes for reactive UI updates
   Stream<String?> get accountIdStream => _accountIdController.stream;
 
   /// Stream of account details changes for reactive UI updates
-  Stream<AccountDetailsEntity?> get accountDetailsStream => _accountDetailsController.stream;
+  Stream<AccountDetailsEntity?> get accountDetailsStream =>
+      _accountDetailsController.stream;
 
   /// Check if there's an active account selected
   bool get hasActiveAccount => _accountIdController.value != null;
@@ -148,7 +151,8 @@ class AccountSummary {
 
   /// Get display text for account selection UI
   String get displayText => '$accountType •••• $accountNumberLast4';
-  String get balanceText => '${currency.toUpperCase()} ${balance.toStringAsFixed(2)}';
+  String get balanceText =>
+      '${currency.toUpperCase()} ${balance.toStringAsFixed(2)}';
 
   /// Status badges
   bool get isFrozen => status.toLowerCase() == 'frozen';

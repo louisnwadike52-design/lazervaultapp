@@ -45,7 +45,8 @@ class RetryPolicy {
   );
 
   /// Execute a function with retry logic
-  Future<T> execute<T>(Future<T> Function() operation, {
+  Future<T> execute<T>(
+    Future<T> Function() operation, {
     bool Function(dynamic error)? shouldRetry,
     void Function(int attempt, dynamic error)? onRetry,
   }) async {
@@ -72,7 +73,8 @@ class RetryPolicy {
           onRetry(attempt, error);
         }
 
-        print('Retry attempt $attempt/$maxRetries after ${delay.inMilliseconds}ms due to: $error');
+        print(
+            'Retry attempt $attempt/$maxRetries after ${delay.inMilliseconds}ms due to: $error');
 
         // Wait before retrying
         await Future.delayed(delay);
@@ -111,22 +113,23 @@ class RetryPolicy {
   bool _shouldRetryGrpcError(GrpcError error) {
     // Retry on transient errors
     switch (error.code) {
-      case StatusCode.unavailable:      // Service unavailable
+      case StatusCode.unavailable: // Service unavailable
       case StatusCode.deadlineExceeded: // Timeout
-      case StatusCode.aborted:          // Conflict, may succeed on retry
-      case StatusCode.internal:         // Internal server error (may be transient)
-      case StatusCode.unknown:          // Unknown error (may be transient)
+      case StatusCode.aborted: // Conflict, may succeed on retry
+      case StatusCode.internal: // Internal server error (may be transient)
+      case StatusCode.unknown: // Unknown error (may be transient)
       case StatusCode.resourceExhausted: // Rate limited (with backoff)
         return true;
 
       // Don't retry on permanent errors
-      case StatusCode.invalidArgument:   // Bad request
-      case StatusCode.notFound:          // Resource not found
-      case StatusCode.alreadyExists:     // Already exists
-      case StatusCode.permissionDenied:  // Permission denied
-      case StatusCode.unauthenticated:   // Not authenticated
-      case StatusCode.failedPrecondition: // Precondition failed (e.g., insufficient funds)
-      case StatusCode.unimplemented:     // Not implemented
+      case StatusCode.invalidArgument: // Bad request
+      case StatusCode.notFound: // Resource not found
+      case StatusCode.alreadyExists: // Already exists
+      case StatusCode.permissionDenied: // Permission denied
+      case StatusCode.unauthenticated: // Not authenticated
+      case StatusCode
+            .failedPrecondition: // Precondition failed (e.g., insufficient funds)
+      case StatusCode.unimplemented: // Not implemented
         return false;
 
       default:

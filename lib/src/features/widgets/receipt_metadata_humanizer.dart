@@ -92,8 +92,7 @@ HumanizedReceiptEntry? humanizeReceiptMetadataEntry(
           : lk.contains('total')
               ? 'Total'
               : 'Amount';
-      return HumanizedReceiptEntry(
-          label,
+      return HumanizedReceiptEntry(label,
           '₦${naira.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},')}');
     }
     return null;

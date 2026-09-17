@@ -48,7 +48,8 @@ class ChatSoundSettings {
     if (_ready) return;
     try {
       final prefs = await SharedPreferences.getInstance();
-      _globalSound = prefs.getBool(_kGlobalSound) ?? false; // sound OFF by default
+      _globalSound =
+          prefs.getBool(_kGlobalSound) ?? false; // sound OFF by default
       _globalVibrate = prefs.getBool(_kGlobalVibrate) ?? true;
       _globalVolume =
           (prefs.getDouble(_kGlobalVolume) ?? _kDefaultVolume).clamp(0.0, 1.0);

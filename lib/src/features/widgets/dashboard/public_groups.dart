@@ -47,8 +47,7 @@ class _PublicGroupsState extends State<PublicGroups> {
           // "Joined" (membership is recomputed from the user's groups,
           // which joinPublicGroupById has already refreshed).
           context.read<GroupAccountCubit>().loadPublicGroups();
-        } else if (state is GroupAccountError &&
-            _joiningGroupIds.isNotEmpty) {
+        } else if (state is GroupAccountError && _joiningGroupIds.isNotEmpty) {
           setState(() => _joiningGroupIds.clear());
           Get.snackbar(
             'Error',
@@ -272,9 +271,7 @@ class _PublicGroupsState extends State<PublicGroups> {
                   ),
                   child: Center(
                     child: Text(
-                      group.name.isNotEmpty
-                          ? group.name[0].toUpperCase()
-                          : 'G',
+                      group.name.isNotEmpty ? group.name[0].toUpperCase() : 'G',
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w700,
@@ -389,9 +386,7 @@ class _PublicGroupsState extends State<PublicGroups> {
           ? null
           : () {
               setState(() => _joiningGroupIds.add(group.id));
-              context
-                  .read<GroupAccountCubit>()
-                  .joinPublicGroupById(group.id);
+              context.read<GroupAccountCubit>().joinPublicGroupById(group.id);
             },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),

@@ -43,8 +43,7 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
               if (state.isStale)
                 const LinearProgressIndicator(
                   minHeight: 2,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
                   backgroundColor: Color(0xFF1F1F1F),
                 ),
               _buildContent(entries),

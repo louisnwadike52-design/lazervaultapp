@@ -219,7 +219,8 @@ class _QuickStatCard extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
             decoration: BoxDecoration(
-              color: (isPositive ? Colors.white : const Color(0xFFEF4444)).withValues(alpha: 0.2),
+              color: (isPositive ? Colors.white : const Color(0xFFEF4444))
+                  .withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(6.r),
             ),
             child: Text(
@@ -283,14 +284,16 @@ class _CategoryItem extends StatelessWidget {
                     Flexible(
                       child: Text(
                         displayName,
-                        style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 13.sp),
+                        style: TextStyle(
+                            color: const Color(0xFFD1D5DB), fontSize: 13.sp),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     SizedBox(width: 6.w),
                     Text(
                       '$percentage%',
-                      style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp),
+                      style: TextStyle(
+                          color: const Color(0xFF9CA3AF), fontSize: 11.sp),
                     ),
                   ],
                 ),

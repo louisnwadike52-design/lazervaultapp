@@ -162,9 +162,7 @@ class EndpointRegistry {
   /// for prod). No edge Worker / path-stripper in the chain.
   static String get _settingsRefreshUrl {
     final sub = currentAppEnvironment.envSubdomain;
-    final host = sub.isEmpty
-        ? 'api.lazervault.app'
-        : '$sub.lazervault.app';
+    final host = sub.isEmpty ? 'api.lazervault.app' : '$sub.lazervault.app';
     return 'https://$host/api/v1/internal/voice-agents/settings';
   }
 
@@ -260,7 +258,8 @@ class EndpointRegistry {
         }
       }
       if (resetReason.isNotEmpty) {
-        debugPrint('[EndpointRegistry] $resetReason — resetting endpoint cache');
+        debugPrint(
+            '[EndpointRegistry] $resetReason — resetting endpoint cache');
         _cache.clear();
         final stale = prefs
             .getKeys()
@@ -283,7 +282,8 @@ class EndpointRegistry {
     if (loadedFromCache == 0) {
       _seedFromDotenv(prefs);
     } else {
-      debugPrint('[EndpointRegistry] Using cached URLs ($loadedFromCache keys)');
+      debugPrint(
+          '[EndpointRegistry] Using cached URLs ($loadedFromCache keys)');
     }
 
     _ready = true;
@@ -311,26 +311,25 @@ class EndpointRegistry {
     // Inline mirror of [grpcBase] for the seed map — same asymmetric rule:
     // dev/staging drop `api.` from the host, prod keeps it.
     final sub = currentAppEnvironment.envSubdomain;
-    final grpcHostPort = sub.isNotEmpty
-        ? '$sub.lazervault.app:443'
-        : 'api.lazervault.app:443';
+    final grpcHostPort =
+        sub.isNotEmpty ? '$sub.lazervault.app:443' : 'api.lazervault.app:443';
     final seeds = <String, String>{
-      'url_grpc_base':            grpcHostPort,
-      'url_core_gateway':         '$httpsBase/api/v1',
-      'url_transfer_gateway':     '$httpsBase/api/v1',
-      'url_financial_gateway':    '$httpsBase/api/v1',
-      'url_banking_gateway':      '$httpsBase/api/v1',
-      'url_commerce_gateway':     '$httpsBase/api/v1',
-      'url_investment_gateway':   '$httpsBase/api/v1',
-      'url_business_gateway':     '$httpsBase/api/v1',
-      'url_products_gateway':     '$httpsBase/api/v1',
-      'url_statistics_gateway':   '$httpsBase/api/v1',
+      'url_grpc_base': grpcHostPort,
+      'url_core_gateway': '$httpsBase/api/v1',
+      'url_transfer_gateway': '$httpsBase/api/v1',
+      'url_financial_gateway': '$httpsBase/api/v1',
+      'url_banking_gateway': '$httpsBase/api/v1',
+      'url_commerce_gateway': '$httpsBase/api/v1',
+      'url_investment_gateway': '$httpsBase/api/v1',
+      'url_business_gateway': '$httpsBase/api/v1',
+      'url_products_gateway': '$httpsBase/api/v1',
+      'url_statistics_gateway': '$httpsBase/api/v1',
       // Lifestyle + planning gateways share the same per-tier REST base (the
       // env sub-hostname dispatches by path). Dedicated keys so an operator can
       // repoint just these later without touching the others.
-      'url_lifestyle_gateway':    '$httpsBase/api/v1',
-      'url_planning_gateway':     '$httpsBase/api/v1',
-      'url_admin_gateway':        '$httpsBase/api/v1/admin',
+      'url_lifestyle_gateway': '$httpsBase/api/v1',
+      'url_planning_gateway': '$httpsBase/api/v1',
+      'url_admin_gateway': '$httpsBase/api/v1/admin',
       // Chat + voice gateway BASE URLs — the host only. Every voice/chat
       // client appends the `/voice/...` or `/chat/...` prefix itself
       // (see voice_session_cubit.dart, voice_biometrics_service.dart,
@@ -338,8 +337,8 @@ class EndpointRegistry {
       // URL doubling like `<host>/voice/voice/session/start`
       // → 404 → "Voice service temporarily unavailable" surfaced by
       // voice_enrollment_cubit.dart's error mapping.
-      'url_chat_agent_gateway':   httpsBase,
-      'url_voice_agent_gateway':  httpsBase,
+      'url_chat_agent_gateway': httpsBase,
+      'url_voice_agent_gateway': httpsBase,
       // url_voice_language_api is a HOST BASE, like the two above. Every
       // caller appends its own '/api/v1/voice/languages…' path.
       //
@@ -349,25 +348,25 @@ class EndpointRegistry {
       // '<host>/voice/languages/api/v1/voice/languages' and 404'd. That is
       // the whole reason Voice Settings showed "Failed to load languages":
       // the path was doubled, exactly like the session-start bug above.
-      'url_voice_language_api':   httpsBase,
-      'url_ws_voice':             '$wssBase/ws/voice',
-      'url_ws_balance':           '$wssBase/ws/balance',
+      'url_voice_language_api': httpsBase,
+      'url_ws_voice': '$wssBase/ws/voice',
+      'url_ws_balance': '$wssBase/ws/balance',
       // Contactless (tap-to-pay) realtime WS — host-only base, exactly like
       // wsVoice. The receiver phone subscribes here right after creating a
       // session; the gateway fans the completion event back. MUST be the
       // cloudflared host (dev.lazervault.app), never 10.0.2.2, so a real
       // phone (not just the Android emulator) can connect.
-      'url_ws_contactless':       '$wssBase/ws/contactless',
-      'url_storage':              '$httpsBase/v1/storage',
-      'url_webhook_base':         '$httpsBase/webhooks',
+      'url_ws_contactless': '$wssBase/ws/contactless',
+      'url_storage': '$httpsBase/v1/storage',
+      'url_webhook_base': '$httpsBase/webhooks',
       // Client telemetry ingest — the telemetry-collector service translates
       // batched app events into Prometheus metrics. Best-effort; failures are
       // re-queued and dropped after a cap, never surfaced to the user.
-      'url_telemetry_ingest':     '$httpsBase/api/v1/telemetry/ingest',
+      'url_telemetry_ingest': '$httpsBase/api/v1/telemetry/ingest',
       // Admin ops-alerts feed — read via the ADMIN-GATEWAY (AdminAuthMiddleware
       // verifies the JWT + admin role), which proxies to notifications-service.
       // The notifications read surface itself is internal-only (not public).
-      'url_ops_alerts':           '$httpsBase/api/v1/admin/ops-alerts',
+      'url_ops_alerts': '$httpsBase/api/v1/admin/ops-alerts',
     };
     var seeded = 0;
     for (final entry in seeds.entries) {
@@ -396,18 +395,15 @@ class EndpointRegistry {
       // admin-gateway instance answers behind the sub-hostname.
       final sub = currentAppEnvironment.envSubdomain;
       final envHint = sub.isEmpty ? 'prod' : sub; // '' → prod, 'dev', 'staging'
-      final resp = await http
-          .get(Uri.parse(_settingsRefreshUrl), headers: {'X-Env-Hint': envHint})
-          .timeout(_refreshTimeout);
+      final resp = await http.get(Uri.parse(_settingsRefreshUrl),
+          headers: {'X-Env-Hint': envHint}).timeout(_refreshTimeout);
       if (resp.statusCode != 200) {
         debugPrint('[EndpointRegistry] refresh HTTP ${resp.statusCode}; '
             'keeping cached URLs');
         return;
       }
       final body = jsonDecode(resp.body);
-      final settings = body is Map<String, dynamic>
-          ? body['settings']
-          : null;
+      final settings = body is Map<String, dynamic> ? body['settings'] : null;
       if (settings is! List) {
         debugPrint('[EndpointRegistry] refresh body shape unexpected; '
             'keeping cached URLs');
@@ -420,7 +416,8 @@ class EndpointRegistry {
         final key = raw['key'];
         final value = raw['value'];
         if (key is! String || value is! String) continue;
-        if (!key.startsWith('url_') && !_persistedNonUrlKeys.contains(key)) continue;
+        if (!key.startsWith('url_') && !_persistedNonUrlKeys.contains(key))
+          continue;
         if (_cache[key] == value) continue;
         _cache[key] = value;
         await prefs.setString(_prefix + key, value);
@@ -441,7 +438,8 @@ class EndpointRegistry {
       // The cache served on this launch keeps working; the next launch
       // tries again. Log at debugPrint so devs can see it during
       // diagnosis, but no banner / no analytics event for the user.
-      final reason = e is TimeoutException ? 'timeout' : e.runtimeType.toString();
+      final reason =
+          e is TimeoutException ? 'timeout' : e.runtimeType.toString();
       debugPrint('[EndpointRegistry] background refresh skipped this turn '
           '($reason); cached URLs remain authoritative '
           '(${_cache.length} keys in cache)');
@@ -478,9 +476,7 @@ class EndpointRegistry {
   /// `scheme` switches between https / wss for the WS accessors.
   String _tierBase(String scheme) {
     final sub = currentAppEnvironment.envSubdomain; // 'dev' / 'staging' / ''
-    final host = sub.isEmpty
-        ? 'api.lazervault.app'
-        : '$sub.lazervault.app';
+    final host = sub.isEmpty ? 'api.lazervault.app' : '$sub.lazervault.app';
     return '$scheme://$host';
   }
 
@@ -517,32 +513,53 @@ class EndpointRegistry {
   // (see migration 024) so a populated cache already carries the right
   // sub-hostname; the fallback only matters on a brand-new install
   // before the first background refresh completes.
-  String get httpCore        => _get('url_core_gateway',        '${_tierBase('https')}/api/v1');
-  String get httpTransfer    => _get('url_transfer_gateway',    '${_tierBase('https')}/api/v1');
-  String get httpFinancial   => _get('url_financial_gateway',   '${_tierBase('https')}/api/v1');
-  String get httpBanking     => _get('url_banking_gateway',     '${_tierBase('https')}/api/v1');
-  String get httpCommerce    => _get('url_commerce_gateway',    '${_tierBase('https')}/api/v1');
-  String get httpInvestment  => _get('url_investment_gateway',  '${_tierBase('https')}/api/v1');
-  String get httpBusiness    => _get('url_business_gateway',    '${_tierBase('https')}/api/v1');
-  String get httpProducts    => _get('url_products_gateway',    '${_tierBase('https')}/api/v1');
-  String get httpStatistics  => _get('url_statistics_gateway',  '${_tierBase('https')}/api/v1');
-  String get httpLifestyle   => _get('url_lifestyle_gateway',   '${_tierBase('https')}/api/v1');
-  String get httpPlanning    => _get('url_planning_gateway',    '${_tierBase('https')}/api/v1');
-  String get httpAdmin       => _get('url_admin_gateway',       '${_tierBase('https')}/api/v1/admin');
-  String get httpChatAgent   => _get('url_chat_agent_gateway',  _tierBase('https'));
-  String get httpVoiceAgent  => _get('url_voice_agent_gateway', _tierBase('https'));
+  String get httpCore =>
+      _get('url_core_gateway', '${_tierBase('https')}/api/v1');
+  String get httpTransfer =>
+      _get('url_transfer_gateway', '${_tierBase('https')}/api/v1');
+  String get httpFinancial =>
+      _get('url_financial_gateway', '${_tierBase('https')}/api/v1');
+  String get httpBanking =>
+      _get('url_banking_gateway', '${_tierBase('https')}/api/v1');
+  String get httpCommerce =>
+      _get('url_commerce_gateway', '${_tierBase('https')}/api/v1');
+  String get httpInvestment =>
+      _get('url_investment_gateway', '${_tierBase('https')}/api/v1');
+  String get httpBusiness =>
+      _get('url_business_gateway', '${_tierBase('https')}/api/v1');
+  String get httpProducts =>
+      _get('url_products_gateway', '${_tierBase('https')}/api/v1');
+  String get httpStatistics =>
+      _get('url_statistics_gateway', '${_tierBase('https')}/api/v1');
+  String get httpLifestyle =>
+      _get('url_lifestyle_gateway', '${_tierBase('https')}/api/v1');
+  String get httpPlanning =>
+      _get('url_planning_gateway', '${_tierBase('https')}/api/v1');
+  String get httpAdmin =>
+      _get('url_admin_gateway', '${_tierBase('https')}/api/v1/admin');
+  String get httpChatAgent =>
+      _get('url_chat_agent_gateway', _tierBase('https'));
+  String get httpVoiceAgent =>
+      _get('url_voice_agent_gateway', _tierBase('https'));
   // Host base — callers append '/api/v1/voice/languages…'. The fallback here
   // must match the seeded default above; it previously appended
   // '/voice/languages' on its own, which doubled the path to a 404.
-  String get httpVoiceLang   => _get('url_voice_language_api',  _tierBase('https'));
-  String get httpStorage     => _get('url_storage',             '${_tierBase('https')}/v1/storage');
-  String get httpWebhookBase => _get('url_webhook_base',        '${_tierBase('https')}/webhooks');
-  String get telemetryIngest => _get('url_telemetry_ingest',    '${_tierBase('https')}/api/v1/telemetry/ingest');
-  String get opsAlerts       => _get('url_ops_alerts',          '${_tierBase('https')}/api/v1/admin/ops-alerts');
+  String get httpVoiceLang =>
+      _get('url_voice_language_api', _tierBase('https'));
+  String get httpStorage =>
+      _get('url_storage', '${_tierBase('https')}/v1/storage');
+  String get httpWebhookBase =>
+      _get('url_webhook_base', '${_tierBase('https')}/webhooks');
+  String get telemetryIngest => _get(
+      'url_telemetry_ingest', '${_tierBase('https')}/api/v1/telemetry/ingest');
+  String get opsAlerts =>
+      _get('url_ops_alerts', '${_tierBase('https')}/api/v1/admin/ops-alerts');
 
-  String get wsVoice         => _get('url_ws_voice',            '${_tierBase('wss')}/ws/voice');
-  String get wsBalance       => _get('url_ws_balance',          '${_tierBase('wss')}/ws/balance');
-  String get wsContactless   => _get('url_ws_contactless',      '${_tierBase('wss')}/ws/contactless');
+  String get wsVoice => _get('url_ws_voice', '${_tierBase('wss')}/ws/voice');
+  String get wsBalance =>
+      _get('url_ws_balance', '${_tierBase('wss')}/ws/balance');
+  String get wsContactless =>
+      _get('url_ws_contactless', '${_tierBase('wss')}/ws/contactless');
 
   /// Resolve a realtime WS/HTTP endpoint's (host, port), honouring an OPTIONAL
   /// dev host override. With NO usable override we follow the tunnel host AND its
@@ -593,8 +610,10 @@ class EndpointRegistry {
   /// setting the key to "false" in system_settings still hides it (that value
   /// wins over this default via the background settings refresh).
   bool get splitBillExternalReceiverEnabled =>
-      _get('splitbill_external_receiver_enabled', 'true').trim().toLowerCase() !=
-          'false';
+      _get('splitbill_external_receiver_enabled', 'true')
+          .trim()
+          .toLowerCase() !=
+      'false';
 
   /// Whether the Split Bills quick action shows inside the SEND-FUNDS flow.
   /// Admin-tunable via `splitbill_sendfunds_entry_visible`.
@@ -606,7 +625,7 @@ class EndpointRegistry {
   /// transfer. Defaults to ON so behaviour is unchanged until an admin opts out.
   bool get splitBillSendFundsEntryVisible =>
       _get('splitbill_sendfunds_entry_visible', 'true').trim().toLowerCase() !=
-          'false';
+      'false';
 
   /// Whether the new-device OTP screen offers a "Skip for now" affordance.
   /// Admin-tunable via `auth_otp_skip_button_visible`; defaults to ON.
@@ -618,7 +637,7 @@ class EndpointRegistry {
   /// (`auth_adaptive_otp_enabled`), not something the client can wave away.
   bool get otpSkipButtonVisible =>
       _get('auth_otp_skip_button_visible', 'true').trim().toLowerCase() !=
-          'false';
+      'false';
 
   /// Raw read for any registered key — for places that store/read a key
   /// the typed accessors don't (yet) cover.

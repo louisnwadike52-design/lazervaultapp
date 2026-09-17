@@ -215,8 +215,10 @@ class DioAuthInterceptor extends QueuedInterceptor {
         if (newTokens != null &&
             newTokens['accessToken'] != null &&
             newTokens['refreshToken'] != null) {
-          await _storage.write(key: _accessTokenKey, value: newTokens['accessToken']!);
-          await _storage.write(key: _refreshTokenKey, value: newTokens['refreshToken']!);
+          await _storage.write(
+              key: _accessTokenKey, value: newTokens['accessToken']!);
+          await _storage.write(
+              key: _refreshTokenKey, value: newTokens['refreshToken']!);
           _refreshCompleter!.complete(true);
           return true;
         }

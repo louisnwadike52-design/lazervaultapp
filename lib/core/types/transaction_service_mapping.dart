@@ -79,7 +79,8 @@ extension AppServiceNameTransactionMapping on AppServiceName {
         // Settles as a transfer in the ledger — see service_type_mapper.
         return TransactionServiceType.transfer;
       case AppServiceName.escrow:
-        return TransactionServiceType.unknown; // Escrow has its own history surface
+        return TransactionServiceType
+            .unknown; // Escrow has its own history surface
       case AppServiceName.invoice:
         return TransactionServiceType.invoice;
       case AppServiceName.payInvoice:
@@ -122,6 +123,8 @@ extension AppServiceNameTransactionMapping on AppServiceName {
         return TransactionServiceType.unknown; // Not a transaction type
       case AppServiceName.contactlessPay:
         return TransactionServiceType.unknown; // Not a transaction type
+      case AppServiceName.cardAcceptance:
+        return TransactionServiceType.cardAcceptance;
       case AppServiceName.payroll:
         return TransactionServiceType.unknown; // Business service
       case AppServiceName.businessDashboard:

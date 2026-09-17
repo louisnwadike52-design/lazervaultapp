@@ -54,9 +54,7 @@ class _SwipeDownIndicator extends StatelessWidget {
                           ? Icons.check_circle_rounded
                           : Icons.swipe_down_rounded,
                       size: 14.sp,
-                      color: ready
-                          ? const Color(0xFF10B981)
-                          : Colors.white,
+                      color: ready ? const Color(0xFF10B981) : Colors.white,
                     ),
                     SizedBox(width: 6.w),
                     Text(

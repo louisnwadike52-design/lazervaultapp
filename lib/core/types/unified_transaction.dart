@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:equatable/equatable.dart';
 part 'unified_transaction_widgets.dart';
 
-
 /// Unified transaction model supporting all service types
 class UnifiedTransaction extends Equatable {
   final String id;
@@ -63,7 +62,11 @@ class UnifiedTransaction extends Equatable {
     if (override != null && override.isNotEmpty) {
       return '${flow.prefix}$override';
     }
-    final symbol = currency == 'NGN' ? '₦' : currency == 'USD' ? '\$' : currency;
+    final symbol = currency == 'NGN'
+        ? '₦'
+        : currency == 'USD'
+            ? '\$'
+            : currency;
     return '${flow.prefix}$symbol${amount.toStringAsFixed(2)}';
   }
 
@@ -156,7 +159,9 @@ class UnifiedTransaction extends Equatable {
       description: airtimeTxn['recipientPhoneNumber'] as String?,
       amount: (airtimeTxn['amount'] as num).toDouble(),
       currency: airtimeTxn['currency'] as String? ?? 'NGN',
-      createdAt: DateTime.parse(airtimeTxn['createdAt'] as String? ?? DateTime.now().toIso8601String()).toLocal(),
+      createdAt: DateTime.parse(airtimeTxn['createdAt'] as String? ??
+              DateTime.now().toIso8601String())
+          .toLocal(),
       status: UnifiedTransactionStatus.fromString(
         airtimeTxn['status'] as String? ?? 'pending',
       ),
@@ -179,11 +184,14 @@ class UnifiedTransaction extends Equatable {
       description: giftCardTxn['description'] as String?,
       amount: (giftCardTxn['amount'] as num).toDouble(),
       currency: giftCardTxn['currency'] as String? ?? 'USD',
-      createdAt: DateTime.parse(giftCardTxn['transactionDate'] as String? ?? DateTime.now().toIso8601String()).toLocal(),
+      createdAt: DateTime.parse(giftCardTxn['transactionDate'] as String? ??
+              DateTime.now().toIso8601String())
+          .toLocal(),
       status: UnifiedTransactionStatus.fromString(
         giftCardTxn['status'] as String? ?? 'pending',
       ),
-      flow: type == 'sell' ? TransactionFlow.incoming : TransactionFlow.outgoing,
+      flow:
+          type == 'sell' ? TransactionFlow.incoming : TransactionFlow.outgoing,
       transactionReference: giftCardTxn['id'] as String?,
       metadata: {
         'brandName': giftCardTxn['brandName'],
@@ -201,7 +209,9 @@ class UnifiedTransaction extends Equatable {
       description: billTxn['meterNumber'] as String?,
       amount: (billTxn['amount'] as num).toDouble(),
       currency: billTxn['currency'] as String? ?? 'NGN',
-      createdAt: DateTime.parse(billTxn['paymentDate'] as String? ?? DateTime.now().toIso8601String()).toLocal(),
+      createdAt: DateTime.parse(billTxn['paymentDate'] as String? ??
+              DateTime.now().toIso8601String())
+          .toLocal(),
       status: UnifiedTransactionStatus.fromString(
         billTxn['status'] as String? ?? 'pending',
       ),

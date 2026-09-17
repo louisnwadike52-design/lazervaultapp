@@ -136,12 +136,14 @@ class HelpConfigService {
     }
 
     return HelpConfig(
-      contactEmail: pick('help_contact_email', HelpConfig.fallback.contactEmail),
+      contactEmail:
+          pick('help_contact_email', HelpConfig.fallback.contactEmail),
       contactPhone: pick('help_contact_phone', ''),
       contactWhatsapp: pick('help_contact_whatsapp', ''),
       contactAddress: pick('help_contact_address', ''),
       contactUrl: pick('help_contact_url', ''),
-      supportHours: pick('help_support_hours', HelpConfig.fallback.supportHours),
+      supportHours:
+          pick('help_support_hours', HelpConfig.fallback.supportHours),
       termsUrl: pick('help_terms_url', HelpConfig.fallback.termsUrl),
       privacyUrl: pick('help_privacy_url', HelpConfig.fallback.privacyUrl),
       // Default to the fallback About page so the webview always has a URL to

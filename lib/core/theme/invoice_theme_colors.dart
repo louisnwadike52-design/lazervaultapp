@@ -6,14 +6,18 @@ import 'package:google_fonts/google_fonts.dart';
 class InvoiceThemeColors {
   // Background Colors
   static const Color primaryBackground = Color(0xFF0A0A0A); // Deep black
-  static const Color secondaryBackground = Color(0xFF1F1F1F); // Dark gray for cards
+  static const Color secondaryBackground =
+      Color(0xFF1F1F1F); // Dark gray for cards
   static const Color tertiaryBackground = Color(0xFF2D2D2D); // Border gray
   static const Color inputBackground = Color(0xFF0A0A0A); // Darker for inputs
 
   // Primary Brand Colors
-  static const Color primaryPurple = Color.fromARGB(255, 78, 3, 208); // Main purple — buttons, accents
-  static const Color alternativePurple = Color.fromARGB(255, 78, 3, 208); // Payment screens
-  static const Color gradientPurple = Color.fromARGB(255, 78, 3, 208); // Gradient complement
+  static const Color primaryPurple =
+      Color.fromARGB(255, 78, 3, 208); // Main purple — buttons, accents
+  static const Color alternativePurple =
+      Color.fromARGB(255, 78, 3, 208); // Payment screens
+  static const Color gradientPurple =
+      Color.fromARGB(255, 78, 3, 208); // Gradient complement
   // Lighter shade for use as text / icon / border on DARK backgrounds.
   // The deep #4E03D0 fails WCAG contrast on #0A0A0A; #A78BFA (Tailwind
   // violet-400) hits ~7:1 contrast which keeps text + thin borders
@@ -29,10 +33,14 @@ class InvoiceThemeColors {
 
   // Text Colors
   static const Color textWhite = Colors.white; // Primary text
-  static const Color textGray400 = Color(0xFFB0B0B0); // Secondary text (approx grey[400])
-  static const Color textGray500 = Color(0xFF909090); // Labels (approx grey[500])
-  static const Color textGray600 = Color(0xFF707070); // Muted (approx grey[600])
-  static const Color textGray300 = Color(0xFFD0D0D0); // Light gray (approx grey[300])
+  static const Color textGray400 =
+      Color(0xFFB0B0B0); // Secondary text (approx grey[400])
+  static const Color textGray500 =
+      Color(0xFF909090); // Labels (approx grey[500])
+  static const Color textGray600 =
+      Color(0xFF707070); // Muted (approx grey[600])
+  static const Color textGray300 =
+      Color(0xFFD0D0D0); // Light gray (approx grey[300])
   static const Color hintText = Color(0xFF666666); // Form hints
   static const Color subtleText = Color(0xFF888888); // Very subtle
 
@@ -214,7 +222,8 @@ class InvoiceDecorations {
     String? label,
     Widget? suffixIcon,
     Widget? prefixIcon,
-  }) => InputDecoration(
+  }) =>
+      InputDecoration(
         hintText: hint,
         labelText: label,
         hintStyle: GoogleFonts.inter(

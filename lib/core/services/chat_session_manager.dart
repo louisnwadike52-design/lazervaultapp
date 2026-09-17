@@ -74,8 +74,7 @@ class ChatSessionManager {
   String? get currentSessionId => _currentSessionId;
 
   /// Snapshot of the drawer list (most-recent-first).
-  List<ChatSessionSummary> get sessionList =>
-      List.unmodifiable(_sessionList);
+  List<ChatSessionSummary> get sessionList => List.unmodifiable(_sessionList);
 
   /// Broadcasts the active session id whenever it changes (or is set for
   /// the first time). Replays nothing — listeners only get future events.
@@ -90,8 +89,7 @@ class ChatSessionManager {
   /// SecureStorage. Safe to call multiple times — only emits a stream
   /// event when the resolved id is different from the in-memory value.
   Future<String?> restoreCurrentSession() async {
-    final stored =
-        await _secureStorageService.readChatCurrentSessionId();
+    final stored = await _secureStorageService.readChatCurrentSessionId();
     if (stored != null && stored.isNotEmpty) {
       _currentSessionId = stored;
       _currentIdController.add(stored);
@@ -120,7 +118,8 @@ class ChatSessionManager {
   /// Seed a fresh empty session on the gateway, prepend it to the local
   /// list, and switch the active id to it (so the next message lands in
   /// the new tab).
-  Future<ChatSessionSummary> createSession({String? title, String? locale}) async {
+  Future<ChatSessionSummary> createSession(
+      {String? title, String? locale}) async {
     final ds = _requireDataSource();
     final created = await ds.create(title: title, locale: locale);
     // Prepend (drawer is sorted by last_activity DESC)
@@ -148,8 +147,7 @@ class ChatSessionManager {
   }) async {
     final ds = _requireDataSource();
     final updated = await ds.rename(sessionId: sessionId, title: title);
-    final idx =
-        _sessionList.indexWhere((s) => s.sessionId == sessionId);
+    final idx = _sessionList.indexWhere((s) => s.sessionId == sessionId);
     if (idx >= 0) {
       _sessionList = List.of(_sessionList)
         ..[idx] = _sessionList[idx].copyWith(
@@ -186,8 +184,7 @@ class ChatSessionManager {
   /// posts a turn in that session. Avoids a full GET refetch on every
   /// message. Pure UI sync — server is still the source of truth.
   void touchLocalActivity(String sessionId, {String? previewIfMissing}) {
-    final idx =
-        _sessionList.indexWhere((s) => s.sessionId == sessionId);
+    final idx = _sessionList.indexWhere((s) => s.sessionId == sessionId);
     if (idx < 0) return;
     final current = _sessionList[idx];
     final updated = current.copyWith(

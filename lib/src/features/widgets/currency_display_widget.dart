@@ -36,7 +36,8 @@ class CurrencyDisplayWidget extends StatefulWidget {
 }
 
 class _CurrencyDisplayWidgetState extends State<CurrencyDisplayWidget> {
-  final CurrencySyncService _currencySyncService = serviceLocator<CurrencySyncService>();
+  final CurrencySyncService _currencySyncService =
+      serviceLocator<CurrencySyncService>();
 
   @override
   Widget build(BuildContext context) {

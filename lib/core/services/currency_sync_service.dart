@@ -73,7 +73,8 @@ class CurrencySyncService {
           final preferences = data['preferences'] as UserPreferences?;
           final serverCurrency = preferences?.currency ?? 'USD';
 
-          _logger.i('Server currency: $serverCurrency, Local (country-derived) currency: $currentCurrency');
+          _logger.i(
+              'Server currency: $serverCurrency, Local (country-derived) currency: $currentCurrency');
 
           // Record server value for rollback in updateCurrency, but do NOT
           // overwrite local currency — it is derived from the user's country.
@@ -100,7 +101,8 @@ class CurrencySyncService {
   /// Returns:
   /// - Right(UserPreferences): Updated preferences from server
   /// - Left(Failure): If update failed
-  Future<Either<dynamic, UserPreferences>> updateCurrency(String currencyCode) async {
+  Future<Either<dynamic, UserPreferences>> updateCurrency(
+      String currencyCode) async {
     try {
       _logger.i('Updating currency to: $currencyCode');
 
@@ -118,14 +120,16 @@ class CurrencySyncService {
 
           // Rollback local change if server update failed
           if (_lastKnownServerCurrency != null) {
-            _logger.w('Rolling back to last known server currency: $_lastKnownServerCurrency');
+            _logger.w(
+                'Rolling back to last known server currency: $_lastKnownServerCurrency');
             _localeManager.setCurrency(_lastKnownServerCurrency!);
           }
 
           return Left(failure);
         },
         (preferences) {
-          _logger.i('Successfully updated currency to: ${preferences.currency}');
+          _logger
+              .i('Successfully updated currency to: ${preferences.currency}');
           _lastKnownServerCurrency = preferences.currency;
           _isInitialized = true;
           return Right(preferences);
@@ -164,7 +168,8 @@ class CurrencySyncService {
   /// syncs the change to the server.
   Future<Either<dynamic, UserPreferences>> resetToDefaultForCountry() async {
     final recommendedCurrency = getRecommendedCurrencyForCurrentCountry();
-    _logger.i('Resetting currency to default for country: $recommendedCurrency');
+    _logger
+        .i('Resetting currency to default for country: $recommendedCurrency');
     return updateCurrency(recommendedCurrency);
   }
 
@@ -196,7 +201,8 @@ class CurrencySyncService {
           final localCurrency = currentCurrency;
 
           final inSync = serverCurrency == localCurrency;
-          _logger.i('Currency sync check: local=$localCurrency, server=$serverCurrency, inSync=$inSync');
+          _logger.i(
+              'Currency sync check: local=$localCurrency, server=$serverCurrency, inSync=$inSync');
 
           return inSync;
         },

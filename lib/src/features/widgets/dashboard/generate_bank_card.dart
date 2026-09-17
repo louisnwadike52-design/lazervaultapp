@@ -158,13 +158,12 @@ class _GenerateBankCardState extends State<GenerateBankCard> {
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             children: [

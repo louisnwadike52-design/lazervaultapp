@@ -53,7 +53,8 @@ class Screen {
         return MultiBlocProvider(
           providers: [
             BlocProvider(
-              create: (context) => serviceLocator<ProfileCubit>()..getUserProfile(),
+              create: (context) =>
+                  serviceLocator<ProfileCubit>()..getUserProfile(),
             ),
             BlocProvider.value(
               value: serviceLocator<StatisticsCubit>(),
@@ -105,7 +106,7 @@ class Screen {
         return InputPinScreen(recipient: param1 as User);
       case ScreenName.profileSettings:
         return const SettingsScreen();
-      case ScreenName.myAccount:  
+      case ScreenName.myAccount:
         return const MyAccountScreen();
       case ScreenName.languages:
         return const LanguagesScreen();
@@ -147,7 +148,7 @@ class Screen {
       case ScreenName.transactionHistory:
         return const DashboardTransactionHistoryScreen();
       case ScreenName.aiChat:
-          return const AiChats();
+        return const AiChats();
       case ScreenName.currencyExchange:
         return const CBCurrencyExchangeScreen();
       case ScreenName.moveMoney:
@@ -175,7 +176,8 @@ class Screen {
         return const NewLifestyleScreen();
       case ScreenName.crowdfund:
         return BlocProvider(
-          create: (context) => serviceLocator<CrowdfundCubit>()..loadCrowdfunds(),
+          create: (context) =>
+              serviceLocator<CrowdfundCubit>()..loadCrowdfunds(),
           child: const CrowdfundListScreen(),
         );
       case ScreenName.planMyDay:
@@ -236,7 +238,7 @@ List<Screen> screens = [
   Screen(name: ScreenName.aiChat),
   Screen(name: ScreenName.currencyExchange),
   Screen(name: ScreenName.lifeStyle),
-    ];
+];
 
 class TransactionCard {
   final Color titleColor;

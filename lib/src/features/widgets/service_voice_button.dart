@@ -173,7 +173,8 @@ class ServiceVoiceButton extends StatelessWidget {
 
       if (outcome == VoiceEnrollmentCheck.notEnrolled) {
         // The SAME enrollment prompt the dashboard mic shows.
-        final activated = await activationManager.activateVoice(context, userId);
+        final activated =
+            await activationManager.activateVoice(context, userId);
         if (!activated || !context.mounted) return;
       }
       break; // enrolled, or enrollment just completed

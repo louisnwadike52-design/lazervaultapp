@@ -18,7 +18,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class FreshInstallGuard {
   FreshInstallGuard._();
 
-  static const String _kInstalledBuildKey = 'fresh_install_guard.installed_build';
+  static const String _kInstalledBuildKey =
+      'fresh_install_guard.installed_build';
 
   /// Clears all local storage when `version+build` differs from the last launch.
   /// Returns true if it wiped (new install/update), false if unchanged.

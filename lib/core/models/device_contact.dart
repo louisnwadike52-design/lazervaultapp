@@ -44,10 +44,12 @@ class DeviceContact {
   /// Creates a DeviceContact from flutter_contacts Contact
   factory DeviceContact.fromFlutterContact(fc.Contact contact) {
     // Extract first phone number
-    final phone = contact.phones.isNotEmpty ? contact.phones.first.number : null;
+    final phone =
+        contact.phones.isNotEmpty ? contact.phones.first.number : null;
 
     // Extract first email`
-    final emailAddress = contact.emails.isNotEmpty ? contact.emails.first.address : null;
+    final emailAddress =
+        contact.emails.isNotEmpty ? contact.emails.first.address : null;
 
     // Extract all phone numbers
     final allPhones = contact.phones.map((p) => p.number).toList();
@@ -93,7 +95,8 @@ class DeviceContact {
 
   /// Converts bytes to base64 string
   static String _bytesToBase64(List<int> bytes) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    const chars =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
     final result = StringBuffer();
 
     for (var i = 0; i < bytes.length; i += 3) {
@@ -139,8 +142,8 @@ class DeviceContact {
   bool matchesQuery(String query) {
     final lowerQuery = query.toLowerCase();
     return name.toLowerCase().contains(lowerQuery) ||
-           (phoneNumber?.contains(query) ?? false) ||
-           (email?.toLowerCase().contains(lowerQuery) ?? false);
+        (phoneNumber?.contains(query) ?? false) ||
+        (email?.toLowerCase().contains(lowerQuery) ?? false);
   }
 
   @override

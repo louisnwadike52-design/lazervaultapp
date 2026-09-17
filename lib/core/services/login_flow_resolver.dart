@@ -19,8 +19,10 @@ class LoginFlowResolver {
   LoginFlowResolver._();
 
   // Secure-storage keys already used across the app.
-  static const _preferredKey = 'preferred_login_method'; // explicit Settings choice
-  static const _legacyMethodKey = 'login_method'; // legacy 'passcode'|'phone_passcode'
+  static const _preferredKey =
+      'preferred_login_method'; // explicit Settings choice
+  static const _legacyMethodKey =
+      'login_method'; // legacy 'passcode'|'phone_passcode'
   static const _hasPasscodeKey = 'has_passcode';
   static const _hasPasswordKey = 'has_password';
 
@@ -55,7 +57,8 @@ class LoginFlowResolver {
   /// Gated on the mirrored `has_passcode` flag (written from the backend profile
   /// on every login) so only a genuine phone+passcode returning user reaches the
   /// lock; everyone else gets the correct full-login screen for their account.
-  static Future<bool> hasCachedReturningUser({FlutterSecureStorage? storage}) async {
+  static Future<bool> hasCachedReturningUser(
+      {FlutterSecureStorage? storage}) async {
     final s = storage ?? _defaultStorage;
 
     // 1. Must have a cached identity — the lock renders it and can't unlock
@@ -96,7 +99,8 @@ class LoginFlowResolver {
   ///   * phone_passcode → the passcode LOCK screen only when a returning user is
   ///     cached; otherwise the full phone+passcode LOGIN screen (enter phone +
   ///     passcode), so a fresh install can actually sign in.
-  static Future<String> resolveLoginRoute({FlutterSecureStorage? storage}) async {
+  static Future<String> resolveLoginRoute(
+      {FlutterSecureStorage? storage}) async {
     if (FeatureFlags.isEmailPasswordLogin) return AppRoutes.emailSignIn;
     final returning = await hasCachedReturningUser(storage: storage);
     return returning ? AppRoutes.passcodeLogin : AppRoutes.phonePasscodeLogin;
@@ -152,7 +156,8 @@ class LoginFlowResolver {
 
   /// Force the flow to an explicit choice (Settings switch). Persists the
   /// canonical cache AND the `preferred_login_method` mirror.
-  static Future<void> setExplicit(String flow, {FlutterSecureStorage? storage}) async {
+  static Future<void> setExplicit(String flow,
+      {FlutterSecureStorage? storage}) async {
     final normalized = flow.toLowerCase().trim() == _email ? _email : _phone;
     await FeatureFlags.setLoginFlow(normalized);
     await (storage ?? _defaultStorage)
@@ -163,11 +168,13 @@ class LoginFlowResolver {
   /// derive it OFFLINE from the legacy secure-storage signals so an existing
   /// account lands on the correct screen without waiting for GetMe/`/auth/config`.
   /// Idempotent — a no-op once [FeatureFlags.hasLoginFlow] is true.
-  static Future<String> seedFromLegacyIfUnset({FlutterSecureStorage? storage}) async {
+  static Future<String> seedFromLegacyIfUnset(
+      {FlutterSecureStorage? storage}) async {
     if (FeatureFlags.hasLoginFlow) return FeatureFlags.loginFlow;
     final s = storage ?? _defaultStorage;
     final preferred = await s.read(key: _preferredKey);
-    final legacy = (await s.read(key: _legacyMethodKey) ?? '').toLowerCase().trim();
+    final legacy =
+        (await s.read(key: _legacyMethodKey) ?? '').toLowerCase().trim();
     final passcodeFromMethod = legacy == 'passcode' || legacy == _phone;
     final hasPasscode =
         (await s.read(key: _hasPasscodeKey)) == 'true' || passcodeFromMethod;
@@ -176,8 +183,7 @@ class LoginFlowResolver {
     // survived but whose `has_passcode` flag didn't (older build / never
     // written) gets the flag backfilled here, so every OTHER site that still
     // keys off `has_passcode` alone agrees with the resolver.
-    if (passcodeFromMethod &&
-        (await s.read(key: _hasPasscodeKey)) != 'true') {
+    if (passcodeFromMethod && (await s.read(key: _hasPasscodeKey)) != 'true') {
       await s.write(key: _hasPasscodeKey, value: 'true');
     }
     final flow = compute(

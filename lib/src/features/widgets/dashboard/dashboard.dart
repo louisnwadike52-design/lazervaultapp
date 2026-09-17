@@ -42,7 +42,6 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'dashboard_widgets.dart';
 
-
 class Dashboard extends StatefulWidget {
   /// Switches the bottom-nav to the AI Chat tab (index 2).
   final VoidCallback? onSwitchToAiChat;
@@ -283,137 +282,135 @@ class _DashboardState extends State<Dashboard> {
       // Search across EVERY platform service (deduped across account types) via
       // the existing searchable all-services sheet (real-time filter + tap-to-
       // navigate).
-      onSearchServices: () =>
-          showAllServicesBottomSheet(context, AppServicesBuilder.getAllServices()),
+      onSearchServices: () => showAllServicesBottomSheet(
+          context, AppServicesBuilder.getAllServices()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
-        children: [
-          NotificationListener<ScrollNotification>(
-            onNotification: _handleScrollNotification,
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: ClampingScrollPhysics(),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Wallet/account section. In Showcase (advert) mode it renders
-                  // a touch shorter so the adverts carousel + compact services
-                  // still sit above the fold. Rebuilds live on layout switch.
-                  DashboardWalkthrough.step(
-                    key: DashboardWalkthrough.accountsKey,
-                    title: 'Your accounts',
-                    body:
-                        'Personal, family, family & friends and business — swipe to switch. Pull down anytime to refresh.',
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: FeatureFlags.dashboardLayoutRevision,
-                      builder: (context, _, __) => DashboardCardSummary(
-                        compact: FeatureFlags.dashboardShowcaseLayout,
+      children: [
+        NotificationListener<ScrollNotification>(
+          onNotification: _handleScrollNotification,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: ClampingScrollPhysics(),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Wallet/account section. In Showcase (advert) mode it renders
+                // a touch shorter so the adverts carousel + compact services
+                // still sit above the fold. Rebuilds live on layout switch.
+                DashboardWalkthrough.step(
+                  key: DashboardWalkthrough.accountsKey,
+                  title: 'Your accounts',
+                  body:
+                      'Personal, family, family & friends and business — swipe to switch. Pull down anytime to refresh.',
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: FeatureFlags.dashboardLayoutRevision,
+                    builder: (context, _, __) => DashboardCardSummary(
+                      compact: FeatureFlags.dashboardShowcaseLayout,
+                    ),
+                  ),
+                ),
+                _buildPendingInvitationsBanner(),
+                Container(
+                  padding: EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      // Quick services + (classic) refer-a-friend OR (showcase)
+                      // compact services + adverts carousel. The user picks the
+                      // layout in Settings → Dashboard layout; this region
+                      // rebuilds live when they switch.
+                      ValueListenableBuilder<int>(
+                        valueListenable: FeatureFlags.dashboardLayoutRevision,
+                        builder: (context, _, __) {
+                          final showcase = FeatureFlags.dashboardShowcaseLayout;
+                          return Column(
+                            children: [
+                              DashboardWalkthrough.step(
+                                key: DashboardWalkthrough.servicesKey,
+                                title: 'Your services',
+                                body:
+                                    'These reorder by how often you use them (toggle in Settings). Tap “View all” to see everything and rearrange.',
+                                child: AppServicesBuilder(compact: showcase),
+                              ),
+                              SizedBox(height: 16.0.h),
+                              // Adverts carousel + refer-a-friend are hidden when
+                              // a Family & Friends card is active so that screen
+                              // stays clean — only the (self-gating) create-another
+                              // family CTA shows there.
+                              _familyAwareBottomExtras(showcase),
+                            ],
+                          );
+                        },
                       ),
-                    ),
-                  ),
-                  _buildPendingInvitationsBanner(),
-                  Container(
-                    padding: EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        // Quick services + (classic) refer-a-friend OR (showcase)
-                        // compact services + adverts carousel. The user picks the
-                        // layout in Settings → Dashboard layout; this region
-                        // rebuilds live when they switch.
-                        ValueListenableBuilder<int>(
-                          valueListenable:
-                              FeatureFlags.dashboardLayoutRevision,
-                          builder: (context, _, __) {
-                            final showcase =
-                                FeatureFlags.dashboardShowcaseLayout;
-                            return Column(
-                              children: [
-                                DashboardWalkthrough.step(
-                                  key: DashboardWalkthrough.servicesKey,
-                                  title: 'Your services',
-                                  body:
-                                      'These reorder by how often you use them (toggle in Settings). Tap “View all” to see everything and rearrange.',
-                                  child: AppServicesBuilder(compact: showcase),
-                                ),
-                                SizedBox(height: 16.0.h),
-                                // Adverts carousel + refer-a-friend are hidden when
-                                // a Family & Friends card is active so that screen
-                                // stays clean — only the (self-gating) create-another
-                                // family CTA shows there.
-                                _familyAwareBottomExtras(showcase),
-                              ],
-                            );
-                          },
-                        ),
+                      SizedBox(height: 16.0.h),
+                      DashboardWalkthrough.step(
+                        key: DashboardWalkthrough.historyKey,
+                        title: 'Recent activity',
+                        body:
+                            'Your latest transactions at a glance — tap any to see its receipt.',
+                        // Lower on the page → tooltip sits ABOVE, pointing down.
+                        position: TooltipPosition.top,
+                        child: RecentHistory(),
+                      ),
+                      SizedBox(height: 16.0.h),
+                      BlocProvider(
+                        create: (_) => serviceLocator<LeaderboardCubit>(),
+                        child: const TrendingCrowdfunds(),
+                      ),
+                      SizedBox(height: 16.0.h),
+                      BlocProvider.value(
+                        value: serviceLocator<GroupAccountCubit>(),
+                        child: const PublicGroups(),
+                      ),
+                      // Cards section: force-hidden in the view layer
+                      // regardless of the admin flag. The widget + its
+                      // routes/repository + `FeatureFlags.dashboardCardsVisible`
+                      // stay wired — to re-enable, just delete the `false &&`
+                      // guard below. (Hidden because the Cards product surface
+                      // isn't ready for testers yet; keeping the flag wiring
+                      // intact means the admin toggle resumes working when
+                      // the guard is lifted.)
+                      // ignore: dead_code
+                      if (false && FeatureFlags.dashboardCardsVisible) ...[
                         SizedBox(height: 16.0.h),
-                        DashboardWalkthrough.step(
-                          key: DashboardWalkthrough.historyKey,
-                          title: 'Recent activity',
-                          body:
-                              'Your latest transactions at a glance — tap any to see its receipt.',
-                          // Lower on the page → tooltip sits ABOVE, pointing down.
-                          position: TooltipPosition.top,
-                          child: RecentHistory(),
-                        ),
-                        SizedBox(height: 16.0.h),
-                        BlocProvider(
-                          create: (_) => serviceLocator<LeaderboardCubit>(),
-                          child: const TrendingCrowdfunds(),
-                        ),
-                        SizedBox(height: 16.0.h),
-                        BlocProvider.value(
-                          value: serviceLocator<GroupAccountCubit>(),
-                          child: const PublicGroups(),
-                        ),
-                        // Cards section: force-hidden in the view layer
-                        // regardless of the admin flag. The widget + its
-                        // routes/repository + `FeatureFlags.dashboardCardsVisible`
-                        // stay wired — to re-enable, just delete the `false &&`
-                        // guard below. (Hidden because the Cards product surface
-                        // isn't ready for testers yet; keeping the flag wiring
-                        // intact means the admin toggle resumes working when
-                        // the guard is lifted.)
-                        // ignore: dead_code
-                        if (false && FeatureFlags.dashboardCardsVisible) ...[
-                          SizedBox(height: 16.0.h),
-                          GenerateBankCard(),
-                        ],
-                        SizedBox(height: 16.0.h),
-                        Portfolio(),
-                        SizedBox(height: 16.0.h),
-                        BlocProvider(
-                          create: (_) => serviceLocator<DashboardRatesCubit>()
-                            ..loadRates(_getBaseCurrency()),
-                          child: const ExchangeRates(),
-                        ),
-                        SizedBox(height: 16.0.h),
-                        MonthlySummary(),
+                        GenerateBankCard(),
                       ],
-                    ),
+                      SizedBox(height: 16.0.h),
+                      Portfolio(),
+                      SizedBox(height: 16.0.h),
+                      BlocProvider(
+                        create: (_) => serviceLocator<DashboardRatesCubit>()
+                          ..loadRates(_getBaseCurrency()),
+                        child: const ExchangeRates(),
+                      ),
+                      SizedBox(height: 16.0.h),
+                      MonthlySummary(),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-          // Swipe-down progress chip — appears at the top while the user is
-          // pulling and animates with their drag, then disappears once the
-          // sheet opens or the gesture ends.
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 8.h,
-            left: 0,
-            right: 0,
-            child: IgnorePointer(
-              child: Center(
-                child: _SwipeDownIndicator(progress: _swipeProgress),
-              ),
+        ),
+        // Swipe-down progress chip — appears at the top while the user is
+        // pulling and animates with their drag, then disappears once the
+        // sheet opens or the gesture ends.
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 8.h,
+          left: 0,
+          right: 0,
+          child: IgnorePointer(
+            child: Center(
+              child: _SwipeDownIndicator(progress: _swipeProgress),
             ),
           ),
-        ],
+        ),
+      ],
     );
   }
 
@@ -458,9 +455,8 @@ class _DashboardState extends State<Dashboard> {
       builder: (context, state) {
         // Update cache when fresh data arrives
         if (state is PendingInvitationsLoaded) {
-          _cachedInvitations = state.invitations
-              .where((inv) => !inv.isExpired)
-              .toList();
+          _cachedInvitations =
+              state.invitations.where((inv) => !inv.isExpired).toList();
         } else if (state is InvitationAccepted || state is InvitationDeclined) {
           // Clear cache — will be repopulated when loadPendingInvitations completes
           _cachedInvitations = [];
@@ -476,8 +472,8 @@ class _DashboardState extends State<Dashboard> {
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
           child: Column(
             children: [
-              ...invitations
-                  .map((invite) => _buildInviteCard(invite, isProcessing: isProcessing)),
+              ...invitations.map((invite) =>
+                  _buildInviteCard(invite, isProcessing: isProcessing)),
               if (invitations.length > 1)
                 GestureDetector(
                   onTap: () => Get.toNamed(AppRoutes.familyInvitations),
@@ -540,10 +536,7 @@ class _DashboardState extends State<Dashboard> {
                   SizedBox(height: 16.0.h),
                 ],
                 _buildFamilyFriendsCTA(),
-                if (showcase)
-                  const InviteFriendsCompact()
-                else
-                  InviteFriends(),
+                if (showcase) const InviteFriendsCompact() else InviteFriends(),
               ],
             );
           },
@@ -693,7 +686,8 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildInviteCard(PendingInvitation invite, {bool isProcessing = false}) {
+  Widget _buildInviteCard(PendingInvitation invite,
+      {bool isProcessing = false}) {
     final isExpired = invite.isExpired;
 
     return Container(
@@ -741,9 +735,8 @@ class _DashboardState extends State<Dashboard> {
                           ? 'Expired Invitation'
                           : 'Family Account Invitation',
                       style: TextStyle(
-                        color: isExpired
-                            ? const Color(0xFFEF4444)
-                            : Colors.white,
+                        color:
+                            isExpired ? const Color(0xFFEF4444) : Colors.white,
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -780,7 +773,8 @@ class _DashboardState extends State<Dashboard> {
           if (isExpired)
             Center(
               child: TextButton(
-                onPressed: () => _familyInviteCubit.declineInvitation(invite.invitationToken),
+                onPressed: () => _familyInviteCubit
+                    .declineInvitation(invite.invitationToken),
                 child: Text(
                   'Dismiss',
                   style: TextStyle(
@@ -799,7 +793,8 @@ class _DashboardState extends State<Dashboard> {
                     child: OutlinedButton(
                       onPressed: isProcessing
                           ? null
-                          : () => _familyInviteCubit.declineInvitation(invite.invitationToken),
+                          : () => _familyInviteCubit
+                              .declineInvitation(invite.invitationToken),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF9CA3AF),
                         side: const BorderSide(color: Color(0xFF2D2D2D)),
@@ -809,7 +804,8 @@ class _DashboardState extends State<Dashboard> {
                       ),
                       child: Text(
                         'Decline',
-                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            fontSize: 13.sp, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -821,11 +817,13 @@ class _DashboardState extends State<Dashboard> {
                     child: ElevatedButton(
                       onPressed: isProcessing
                           ? null
-                          : () => _familyInviteCubit.acceptInvitation(invite.invitationToken),
+                          : () => _familyInviteCubit
+                              .acceptInvitation(invite.invitationToken),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2D2B6B),
                         foregroundColor: Colors.white,
-                        disabledBackgroundColor: const Color(0xFF2D2B6B).withValues(alpha: 0.4),
+                        disabledBackgroundColor:
+                            const Color(0xFF2D2B6B).withValues(alpha: 0.4),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
                         ),
@@ -835,7 +833,8 @@ class _DashboardState extends State<Dashboard> {
                           ? LazerVaultLoader(size: 18)
                           : Text(
                               'Accept',
-                              style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                  fontSize: 13.sp, fontWeight: FontWeight.w600),
                             ),
                     ),
                   ),

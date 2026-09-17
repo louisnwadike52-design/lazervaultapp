@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 part 'budget_warning_widget_widgets.dart';
 
-
 /// Parse budget enforcement mode from string
 BudgetEnforcementMode parseEnforcementMode(String mode) {
   switch (mode.toLowerCase()) {
@@ -164,7 +163,8 @@ class BudgetWarningWidget extends StatelessWidget {
   /// Check if widget should be shown
   bool get shouldShow {
     if (validationResult != null) {
-      return validationResult!.shouldShowWarning || validationResult!.hasNoBudget;
+      return validationResult!.shouldShowWarning ||
+          validationResult!.hasNoBudget;
     }
     return status != BudgetStatus.ok;
   }
@@ -211,7 +211,9 @@ class BudgetWarningWidget extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              if (percentageUsed > 0 && status != BudgetStatus.noBudgetSet && status != BudgetStatus.currencyMismatch)
+              if (percentageUsed > 0 &&
+                  status != BudgetStatus.noBudgetSet &&
+                  status != BudgetStatus.currencyMismatch)
                 Text(
                   '${percentageUsed.toStringAsFixed(0)}%',
                   style: TextStyle(
@@ -225,7 +227,9 @@ class BudgetWarningWidget extends StatelessWidget {
           SizedBox(height: 12.h),
 
           // Progress bar (only show for percentage-based statuses)
-          if (status == BudgetStatus.ok || status == BudgetStatus.nearLimit || status == BudgetStatus.exceeded) ...[
+          if (status == BudgetStatus.ok ||
+              status == BudgetStatus.nearLimit ||
+              status == BudgetStatus.exceeded) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(4.r),
               child: LinearProgressIndicator(
@@ -263,7 +267,9 @@ class BudgetWarningWidget extends StatelessWidget {
           ],
 
           // Days remaining
-          if (daysRemaining > 0 && effectiveBudgetInfo != null && status != BudgetStatus.noBudgetSet) ...[
+          if (daysRemaining > 0 &&
+              effectiveBudgetInfo != null &&
+              status != BudgetStatus.noBudgetSet) ...[
             SizedBox(height: 8.h),
             Text(
               '$daysRemaining ${daysRemaining == 1 ? "day" : "days"} remaining in this budget period',
@@ -285,12 +291,14 @@ class BudgetWarningWidget extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, size: 14.sp, color: const Color(0xFFF59E0B)),
+                  Icon(Icons.warning_amber_rounded,
+                      size: 14.sp, color: const Color(0xFFF59E0B)),
                   SizedBox(width: 6.w),
                   Expanded(
                     child: Text(
                       validationResult!.warnings.first,
-                      style: TextStyle(fontSize: 11.sp, color: const Color(0xFFF59E0B)),
+                      style: TextStyle(
+                          fontSize: 11.sp, color: const Color(0xFFF59E0B)),
                     ),
                   ),
                 ],

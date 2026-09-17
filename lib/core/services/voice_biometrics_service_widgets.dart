@@ -83,6 +83,7 @@ class VoiceLoginResult {
   final String? firstName;
   final String? lastName;
   final double? similarityScore;
+
   /// Failure classifier when not verified: VOICE_NOT_RECOGNIZED / NOT_ENROLLED
   /// / IDENTITY_MISMATCH / ERROR.
   final String? status;
@@ -105,7 +106,8 @@ class VoiceLoginResult {
       (refreshToken?.isNotEmpty ?? false);
   bool get isNotEnrolled => status == 'NOT_ENROLLED';
 
-  factory VoiceLoginResult.fromJson(Map<String, dynamic> json) => VoiceLoginResult(
+  factory VoiceLoginResult.fromJson(Map<String, dynamic> json) =>
+      VoiceLoginResult(
         verified: json['verified'] == true,
         accessToken: json['access_token'] as String?,
         refreshToken: json['refresh_token'] as String?,

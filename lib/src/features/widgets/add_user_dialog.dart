@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-
-
 class AddUserDialog extends StatelessWidget {
   const AddUserDialog({required this.nameController, super.key});
 

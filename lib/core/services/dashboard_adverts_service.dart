@@ -8,7 +8,8 @@ import 'package:lazervault/core/services/endpoint_registry.dart';
 /// hardcoded and can change with no redeploy.
 class DashboardAdvert {
   final String imageUrl; // remote image; empty rows are dropped
-  final String link; // GetX route path (e.g. "/bills") or full https URL; may be empty
+  final String
+      link; // GetX route path (e.g. "/bills") or full https URL; may be empty
   final String title; // optional accessibility / overlay label
   final int sort; // ascending display order
 
@@ -97,7 +98,9 @@ class DashboardAdvertsService {
         if (list is List) {
           String? raw;
           for (final s in list) {
-            if (s is Map && s['key'] == 'dashboard_adverts' && s['value'] is String) {
+            if (s is Map &&
+                s['key'] == 'dashboard_adverts' &&
+                s['value'] is String) {
               raw = s['value'] as String;
               break;
             }
@@ -120,7 +123,8 @@ class DashboardAdvertsService {
       final out = <DashboardAdvert>[];
       for (final item in decoded) {
         if (item is! Map) continue;
-        final imageUrl = (item['image_url'] ?? item['imageUrl'] ?? '').toString().trim();
+        final imageUrl =
+            (item['image_url'] ?? item['imageUrl'] ?? '').toString().trim();
         if (imageUrl.isEmpty) continue; // a row with no image is not renderable
         // active defaults to true; drop only when explicitly disabled.
         final active = item['active'];

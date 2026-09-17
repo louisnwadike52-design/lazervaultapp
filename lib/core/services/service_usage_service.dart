@@ -135,7 +135,8 @@ class ServiceUsageService {
       }).timeout(const Duration(seconds: 8));
       if (resp.statusCode != 200) return;
       final decoded = jsonDecode(resp.body);
-      final items = decoded is Map ? decoded['items'] ?? decoded['usage'] : decoded;
+      final items =
+          decoded is Map ? decoded['items'] ?? decoded['usage'] : decoded;
       if (items is! List) return;
       var changed = false;
       for (final it in items) {

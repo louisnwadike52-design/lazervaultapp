@@ -351,10 +351,12 @@ class _BankPickerSheetState extends State<BankPickerSheet> {
             SizedBox(
               width: 28,
               height: 28,
-              child: CircularProgressIndicator(strokeWidth: 2.5, color: t.accent),
+              child:
+                  CircularProgressIndicator(strokeWidth: 2.5, color: t.accent),
             ),
             const SizedBox(height: 12),
-            Text('Loading banks...', style: TextStyle(color: t.muted, fontSize: 14)),
+            Text('Loading banks...',
+                style: TextStyle(color: t.muted, fontSize: 14)),
           ],
         ),
       );
@@ -439,8 +441,8 @@ class _BankPickerSheetState extends State<BankPickerSheet> {
                       height: 24,
                       decoration: BoxDecoration(
                           color: t.accent, shape: BoxShape.circle),
-                      child:
-                          const Icon(Icons.check, color: Colors.white, size: 16),
+                      child: const Icon(Icons.check,
+                          color: Colors.white, size: 16),
                     )
                   : Icon(Icons.chevron_right, color: t.muted, size: 20),
               onTap: () {

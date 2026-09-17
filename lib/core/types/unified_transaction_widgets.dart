@@ -40,7 +40,8 @@ enum TransactionServiceType {
   sale('Sale', Icons.point_of_sale_outlined, Color(0xFF10B981)),
   expense('Expense', Icons.account_balance_wallet_outlined, Color(0xFFFB923C)),
   tax('Tax', Icons.receipt_long_outlined, Color(0xFF8B5CF6)),
-  purchaseOrder('Purchase Order', Icons.inventory_2_outlined, Color(0xFF0EA5E9)),
+  purchaseOrder(
+      'Purchase Order', Icons.inventory_2_outlined, Color(0xFF0EA5E9)),
 
   // Investments / savings.
   crypto('Crypto', Icons.currency_bitcoin, Color(0xFFF59E0B)),

@@ -37,7 +37,8 @@ class ProfilePicturePicker extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20.h),
-            if (currentProfilePicture != null && currentProfilePicture!.isNotEmpty)
+            if (currentProfilePicture != null &&
+                currentProfilePicture!.isNotEmpty)
               ListTile(
                 leading: const Icon(Icons.visibility_outlined,
                     color: Color(0xFF3B82F6)),
@@ -62,7 +63,8 @@ class ProfilePicturePicker extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Color(0xFF3B82F6)),
+              leading:
+                  const Icon(Icons.photo_library, color: Color(0xFF3B82F6)),
               title: Text(
                 'Choose from Gallery',
                 style: GoogleFonts.inter(fontSize: 16.sp),
@@ -72,7 +74,8 @@ class ProfilePicturePicker extends StatelessWidget {
                 await _captureImage(ImageSource.gallery);
               },
             ),
-            if (currentProfilePicture != null && currentProfilePicture!.isNotEmpty)
+            if (currentProfilePicture != null &&
+                currentProfilePicture!.isNotEmpty)
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
                 title: Text(
@@ -99,7 +102,8 @@ class ProfilePicturePicker extends StatelessWidget {
     Widget? image;
     if (pic.startsWith('data:image')) {
       try {
-        image = Image.memory(base64Decode(pic.split(',')[1]), fit: BoxFit.contain);
+        image =
+            Image.memory(base64Decode(pic.split(',')[1]), fit: BoxFit.contain);
       } catch (_) {
         image = null;
       }

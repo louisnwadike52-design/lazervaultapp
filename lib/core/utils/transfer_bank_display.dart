@@ -102,10 +102,11 @@ class TransferBankDisplay {
       'Transfer Type',
     ])?.toLowerCase();
     final hasInternalUser = pick(const [
-      'recipient_user_id',
-      'internal_user_id',
-      'internalUserId',
-    ]) != null;
+          'recipient_user_id',
+          'internal_user_id',
+          'internalUserId',
+        ]) !=
+        null;
 
     if ((type != null && type.contains('internal')) || hasInternalUser) {
       return const TransferBankDisplay(

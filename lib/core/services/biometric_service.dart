@@ -25,18 +25,25 @@ enum BiometricAvailability {
 /// the user an actionable message instead of a silent no-op.
 enum BiometricAuthOutcome {
   success,
+
   /// User dismissed / failed the prompt (not an error — just didn't pass).
   failed,
+
   /// No biometric enrolled — steer to OS enrollment.
   notEnrolled,
+
   /// Sensor not available on this device.
   notAvailable,
+
   /// Too many attempts — temporarily locked; retry later.
   lockedOut,
+
   /// Locked until the device is unlocked with PIN/pattern/password.
   permanentlyLockedOut,
+
   /// No device PIN/pattern/password set (required to use biometrics).
   passcodeNotSet,
+
   /// Any other platform error.
   error,
 }
@@ -212,7 +219,8 @@ class BiometricService {
   }
 
   /// User-facing copy for a non-success outcome (nullable → no message needed).
-  static String? messageFor(BiometricAuthResult r, {String label = 'biometrics'}) {
+  static String? messageFor(BiometricAuthResult r,
+      {String label = 'biometrics'}) {
     switch (r.outcome) {
       case BiometricAuthOutcome.success:
       case BiometricAuthOutcome.failed:

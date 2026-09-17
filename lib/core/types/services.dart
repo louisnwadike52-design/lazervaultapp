@@ -18,6 +18,7 @@ enum AppServiceName {
   aiScanToPay,
   qrPay,
   contactlessPay,
+  cardAcceptance,
   groupAccount,
   insurance,
   airtime,
@@ -106,6 +107,11 @@ extension AppServiceNameExtension on AppServiceName {
         return 'QR Pay';
       case AppServiceName.contactlessPay:
         return 'Contactless Pay';
+      case AppServiceName.cardAcceptance:
+        // The merchant-facing direction: THEY take a card from a customer.
+        // "Contactless Pay" is the opposite (paying someone), so the two names
+        // have to be unmistakable on a grid where they sit near each other.
+        return 'Accept Cards';
       case AppServiceName.groupAccount:
         return 'Joint Funds';
       case AppServiceName.insurance:
@@ -193,6 +199,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'qr-pay-service';
       case AppServiceName.contactlessPay:
         return 'contactless-payment-service';
+      case AppServiceName.cardAcceptance:
+        return 'banking-service';
       case AppServiceName.groupAccount:
         return 'accounts-service';
       case AppServiceName.insurance:

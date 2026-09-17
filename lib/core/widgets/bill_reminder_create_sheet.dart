@@ -261,8 +261,7 @@ class _BillReminderCreateSheetState extends State<BillReminderCreateSheet> {
               controller: _descriptionController,
               maxLines: 2,
               style: TextStyle(color: Colors.white, fontSize: 14.sp),
-              decoration:
-                  _fieldDecoration(hint: 'Anything to remember...'),
+              decoration: _fieldDecoration(hint: 'Anything to remember...'),
             ),
             SizedBox(height: 16.h),
             _label('When'),
@@ -270,8 +269,7 @@ class _BillReminderCreateSheetState extends State<BillReminderCreateSheet> {
             InkWell(
               onTap: _pickDateTime,
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                 decoration: BoxDecoration(
                   color: _fieldBg,
                   borderRadius: BorderRadius.circular(12.r),
@@ -311,9 +309,7 @@ class _BillReminderCreateSheetState extends State<BillReminderCreateSheet> {
                 style: TextStyle(color: Colors.white, fontSize: 14.sp),
               ),
               subtitle: Text(
-                _isRecurring
-                    ? 'Fires every $_recurrence'
-                    : 'One-off reminder',
+                _isRecurring ? 'Fires every $_recurrence' : 'One-off reminder',
                 style: TextStyle(color: _textMuted, fontSize: 12.sp),
               ),
               value: _isRecurring,

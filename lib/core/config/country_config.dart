@@ -1,6 +1,5 @@
 part 'country_config_widgets.dart';
 
-
 /// Country configurations for all supported countries
 class CountryConfigs {
   /// Nigeria Configuration
@@ -14,15 +13,20 @@ class CountryConfigs {
     ],
     defaultIdType: IdentityDocumentType.bvn,
     tierIdTypes: {
-      KycLevel.standard: [IdentityDocumentType.bvn],  // CBN: BVN mandatory for Tier 2
-      KycLevel.advanced: [IdentityDocumentType.nin],   // CBN: NIN mandatory for Tier 3
+      KycLevel.standard: [
+        IdentityDocumentType.bvn
+      ], // CBN: BVN mandatory for Tier 2
+      KycLevel.advanced: [
+        IdentityDocumentType.nin
+      ], // CBN: NIN mandatory for Tier 3
     },
     documentRequirements: [
       DocumentRequirement(
         documentTypeId: 'bvn',
         documentType: IdentityDocumentType.bvn,
         isRequired: true,
-        description: '11-digit Bank Verification Number linked to your bank accounts',
+        description:
+            '11-digit Bank Verification Number linked to your bank accounts',
         needsOcrExtraction: false,
         needsFrontPhoto: false,
         needsBackPhoto: false,
@@ -108,7 +112,8 @@ class CountryConfigs {
         documentTypeId: 'ssn',
         documentType: IdentityDocumentType.ssn,
         isRequired: true,
-        description: '9-digit Social Security Number (we only need last 4 for verification)',
+        description:
+            '9-digit Social Security Number (we only need last 4 for verification)',
         needsOcrExtraction: false, // SSN is manual entry only
         needsFrontPhoto: false,
         needsBackPhoto: false,
@@ -428,7 +433,8 @@ class CountryConfigs {
 
   /// Get the full locale for a country (language + country code)
   /// Defaults to "en" for language prefix
-  static String getLocaleForCountry(String countryCode, {String language = 'en'}) {
+  static String getLocaleForCountry(String countryCode,
+      {String language = 'en'}) {
     final config = getByCode(countryCode);
     if (config == null) return 'en-$countryCode';
     return '$language-${config.code}';
@@ -448,9 +454,7 @@ class CountryConfigs {
 
   /// Get list of all supported locales
   static List<String> get supportedLocales {
-    return all
-        .map((config) => 'en-${config.code}')
-        .toList();
+    return all.map((config) => 'en-${config.code}').toList();
   }
 
   /// Check if a locale is supported

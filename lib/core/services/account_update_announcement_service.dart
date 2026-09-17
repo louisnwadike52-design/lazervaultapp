@@ -101,8 +101,9 @@ class AccountUpdateAnnouncementService {
       final decoded = jsonDecode(raw);
       if (decoded is! Map) return null;
       final versionRaw = decoded['version'];
-      final version =
-          versionRaw is int ? versionRaw : int.tryParse('${versionRaw ?? ''}') ?? 0;
+      final version = versionRaw is int
+          ? versionRaw
+          : int.tryParse('${versionRaw ?? ''}') ?? 0;
       if (version <= 0) return null;
       return AccountUpdateAnnouncement(
         version: version,

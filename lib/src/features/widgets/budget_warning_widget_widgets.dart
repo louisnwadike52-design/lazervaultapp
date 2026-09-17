@@ -12,8 +12,8 @@ enum BudgetStatus {
 
 /// Budget Enforcement Mode
 enum BudgetEnforcementMode {
-  flexible,  // Allow transactions over budget with warning
-  strict,    // Block transactions when budget exceeded
+  flexible, // Allow transactions over budget with warning
+  strict, // Block transactions when budget exceeded
 }
 
 /// Budget Validation Reason
@@ -22,8 +22,8 @@ enum BudgetValidationReason {
   nearLimit,
   approachingLimit,
   budgetExceeded,
-  budgetExceededStrict,     // Exceeded with strict enforcement - BLOCK
-  budgetExceededFlexible,   // Exceeded with flexible enforcement - ALLOW with warning
+  budgetExceededStrict, // Exceeded with strict enforcement - BLOCK
+  budgetExceededFlexible, // Exceeded with flexible enforcement - ALLOW with warning
   noBudgetSet,
   noActiveBudget,
   currencyMismatch,
@@ -36,12 +36,12 @@ enum BudgetValidationReason {
 class BudgetInfo {
   final String budgetId;
   final String budgetName;
-  final double amount;         // Budget limit (major units)
-  final double spent;          // Amount spent (major units)
-  final double percentage;     // Percentage used
-  final int daysRemaining;     // Days remaining in period
+  final double amount; // Budget limit (major units)
+  final double spent; // Amount spent (major units)
+  final double percentage; // Percentage used
+  final int daysRemaining; // Days remaining in period
   final String currency;
-  final BudgetEnforcementMode enforcementMode;  // strict or flexible
+  final BudgetEnforcementMode enforcementMode; // strict or flexible
 
   const BudgetInfo({
     required this.budgetId,
@@ -87,7 +87,8 @@ class BudgetInfo {
 /// Result of validating a transaction against a budget
 class BudgetValidationResult {
   final bool allowed;
-  final String reason;            // "budget_exceeded", "near_limit", "within_budget", "no_budget_set", etc.
+  final String
+      reason; // "budget_exceeded", "near_limit", "within_budget", "no_budget_set", etc.
   final double currentSpent;
   final double budgetLimit;
   final double percentageUsed;
@@ -127,7 +128,10 @@ class BudgetValidationResult {
       budgetLimit: (json['budget_limit'] as num?)?.toDouble() ?? 0.0,
       percentageUsed: (json['percentage_used'] as num?)?.toDouble() ?? 0.0,
       remaining: (json['remaining'] as num?)?.toDouble() ?? 0.0,
-      matchingBudgets: budgets?.map((b) => BudgetInfo.fromJson(b as Map<String, dynamic>)).toList() ?? [],
+      matchingBudgets: budgets
+              ?.map((b) => BudgetInfo.fromJson(b as Map<String, dynamic>))
+              .toList() ??
+          [],
       warnings: warningsList?.map((w) => w.toString()).toList() ?? [],
       infoMessages: infoList?.map((i) => i.toString()).toList() ?? [],
     );
@@ -174,7 +178,8 @@ class BudgetValidationResult {
       case BudgetValidationReason.budgetExceededStrict:
         return BudgetStatus.exceeded;
       case BudgetValidationReason.budgetExceededFlexible:
-        return BudgetStatus.exceeded; // Still show exceeded, but transaction is allowed
+        return BudgetStatus
+            .exceeded; // Still show exceeded, but transaction is allowed
       case BudgetValidationReason.nearLimit:
       case BudgetValidationReason.approachingLimit:
         return BudgetStatus.nearLimit;
@@ -194,14 +199,15 @@ class BudgetValidationResult {
     }
   }
 
-  BudgetInfo? get primaryBudget => matchingBudgets.isNotEmpty ? matchingBudgets.first : null;
+  BudgetInfo? get primaryBudget =>
+      matchingBudgets.isNotEmpty ? matchingBudgets.first : null;
 
   /// Check if this result should show a warning to the user
   bool get shouldShowWarning {
     final status = this.status;
     return status == BudgetStatus.exceeded ||
-           status == BudgetStatus.nearLimit ||
-           status == BudgetStatus.currencyMismatch;
+        status == BudgetStatus.nearLimit ||
+        status == BudgetStatus.currencyMismatch;
   }
 
   /// Check if this result indicates no budget is set
@@ -233,7 +239,10 @@ class BudgetValidationResult {
         return 'Transaction blocked: This would exceed your ${primaryBudget?.budgetName ?? "budget"} by ${overBy.toStringAsFixed(0)}%. (Strict enforcement)';
       case BudgetValidationReason.budgetExceededFlexible:
         final overBy = percentageUsed - 100;
-        final mode = primaryBudget?.enforcementMode == BudgetEnforcementMode.strict ? 'strict' : 'flexible';
+        final mode =
+            primaryBudget?.enforcementMode == BudgetEnforcementMode.strict
+                ? 'strict'
+                : 'flexible';
         return 'Warning: This exceeds your ${primaryBudget?.budgetName ?? "budget"} by ${overBy.toStringAsFixed(0)}%. ($mode mode - transaction allowed)';
       case BudgetValidationReason.nearLimit:
         return 'You\'ve used ${percentageUsed.toStringAsFixed(0)}% of your ${primaryBudget?.budgetName ?? "budget"}.';
@@ -365,8 +374,8 @@ class CompactBudgetWarning extends StatelessWidget {
           Flexible(
             child: Text(
               message ??
-                validationResult?.displayMessage ??
-                '${percentageUsed.toStringAsFixed(0)}% of budget used',
+                  validationResult?.displayMessage ??
+                  '${percentageUsed.toStringAsFixed(0)}% of budget used',
               style: TextStyle(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w500,

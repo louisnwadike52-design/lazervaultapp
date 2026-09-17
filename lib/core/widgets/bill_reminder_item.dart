@@ -209,13 +209,11 @@ class BillReminderItem extends StatelessWidget {
                           color: Colors.white,
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
-                          decoration: _isCompleted
-                              ? TextDecoration.lineThrough
-                              : null,
+                          decoration:
+                              _isCompleted ? TextDecoration.lineThrough : null,
                         ),
                       ),
-                      if (description != null &&
-                          description!.isNotEmpty) ...[
+                      if (description != null && description!.isNotEmpty) ...[
                         SizedBox(height: 2.h),
                         Text(
                           description!,
@@ -231,8 +229,7 @@ class BillReminderItem extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
                     color: _statusColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
@@ -254,12 +251,12 @@ class BillReminderItem extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                    child:
-                        _infoChip(Icons.calendar_today, dateFmt.format(reminderDate))),
+                    child: _infoChip(
+                        Icons.calendar_today, dateFmt.format(reminderDate))),
                 SizedBox(width: 8.w),
                 Expanded(
-                    child:
-                        _infoChip(Icons.access_time, timeFmt.format(reminderDate))),
+                    child: _infoChip(
+                        Icons.access_time, timeFmt.format(reminderDate))),
               ],
             ),
             SizedBox(height: 8.h),

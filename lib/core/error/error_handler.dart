@@ -283,7 +283,8 @@ class ErrorHandler {
         final result = await fn().timeout(
           config.timeout,
           onTimeout: () {
-            throw TimeoutException('Operation timed out after ${config.timeout}');
+            throw TimeoutException(
+                'Operation timed out after ${config.timeout}');
           },
         );
         return result;
@@ -308,7 +309,8 @@ class ErrorHandler {
         }
 
         // Log retry
-        debugPrint('Retry $attempts/$config.maxRetries after ${delay.inMilliseconds}ms: ${appError.code}');
+        debugPrint(
+            'Retry $attempts/$config.maxRetries after ${delay.inMilliseconds}ms: ${appError.code}');
 
         // Wait before retry
         await Future.delayed(delay);
@@ -316,7 +318,8 @@ class ErrorHandler {
         // Exponential backoff
         delay = Duration(
           milliseconds: (delay.inMilliseconds * config.backoffFactor)
-              .clamp(config.initialDelay.inMilliseconds, config.maxDelay.inMilliseconds)
+              .clamp(config.initialDelay.inMilliseconds,
+                  config.maxDelay.inMilliseconds)
               .toInt(),
         );
       }

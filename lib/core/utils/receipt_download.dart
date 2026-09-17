@@ -51,7 +51,8 @@ class ReceiptDownload {
     try {
       final result = await OpenFilex.open(savedPath);
       if (result.type != ResultType.done) {
-        debugPrint('[ReceiptDownload] viewer declined to open: ${result.message}');
+        debugPrint(
+            '[ReceiptDownload] viewer declined to open: ${result.message}');
       }
     } catch (e) {
       debugPrint('[ReceiptDownload] could not open the saved receipt: $e');
@@ -65,5 +66,6 @@ class ReceiptDownload {
   /// user would go looking, so the honest promise is that it is saved and
   /// opening, not that it is "in Downloads".
   static const String successTitle = 'Receipt saved';
-  static const String successBody = 'Opening your receipt — share or save it from there.';
+  static const String successBody =
+      'Opening your receipt — share or save it from there.';
 }

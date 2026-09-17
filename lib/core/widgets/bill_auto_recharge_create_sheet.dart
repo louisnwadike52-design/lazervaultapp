@@ -50,6 +50,7 @@ class BillAutoRechargeCreateSheet extends StatefulWidget {
   final String title;
   final String ctaLabel;
   final double minAmount;
+
   /// Optional upper bound. Set per-network when known (e.g. NG MNOs cap
   /// per-transaction airtime around ₦10,000). Null means "no cap" — the
   /// caller hasn't told us the operator's ceiling, so we just enforce
@@ -174,10 +175,10 @@ class _BillAutoRechargeCreateSheetState
     // effective minimum to the maxAmount so the user can still pick a
     // value the upstream provider would accept. The misconfiguration
     // gets logged via the snackbar for the developer to catch.
-    final effectiveMin = (widget.maxAmount != null &&
-            widget.minAmount > widget.maxAmount!)
-        ? widget.maxAmount!
-        : widget.minAmount;
+    final effectiveMin =
+        (widget.maxAmount != null && widget.minAmount > widget.maxAmount!)
+            ? widget.maxAmount!
+            : widget.minAmount;
     if (amt < effectiveMin) {
       _snack(
         'Enter a valid amount (min ${widget.currencySymbol}${effectiveMin.toStringAsFixed(0)})',

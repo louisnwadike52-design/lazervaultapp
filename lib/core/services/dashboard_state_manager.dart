@@ -4,7 +4,8 @@
 /// restored when returning to the dashboard from other screens.
 class DashboardStateManager {
   // Singleton instance
-  static final DashboardStateManager _instance = DashboardStateManager._internal();
+  static final DashboardStateManager _instance =
+      DashboardStateManager._internal();
   factory DashboardStateManager() => _instance;
   DashboardStateManager._internal();
 
