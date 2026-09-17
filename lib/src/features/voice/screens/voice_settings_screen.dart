@@ -311,11 +311,55 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
           }
 
           if (state is VoiceSettingsLoaded) {
+            // A reachable service with nothing configured for this region is a
+            // successful answer, not an error — so it gets its own copy rather
+            // than a Retry button that would keep succeeding at nothing.
+            if (state.languages.isEmpty) return _buildNoLanguages();
             return _buildSettings(context, state);
           }
 
           return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+
+  /// Nothing configured for this region — a successful, empty answer.
+  ///
+  /// Deliberately not the error state: there is nothing to retry, and a red
+  /// icon over a working service teaches people to distrust the screen.
+  Widget _buildNoLanguages() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.translate_rounded,
+                size: 48.sp, color: Colors.grey[600]),
+            SizedBox(height: 16.h),
+            Text(
+              'No voices available yet',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Voice options for your region are being added. '
+              'Your assistant still works in English in the meantime.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: Colors.grey[400],
+                fontSize: 13.sp,
+                height: 1.45,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

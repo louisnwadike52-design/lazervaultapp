@@ -9,6 +9,21 @@ import '../../../../core/utils/logger.dart';
 import '../models/voice_settings_models.dart';
 import '../../voice_session/cubit/voice_session_cubit.dart';
 
+/// Thrown when the language catalogue could not be fetched.
+///
+/// Distinct from "the catalogue is empty" on purpose: the two need different
+/// copy and only one of them is worth retrying. [message] is already written
+/// for a user to read.
+class VoiceLanguagesUnavailable implements Exception {
+  final String message;
+  final int? statusCode;
+
+  const VoiceLanguagesUnavailable(this.message, {this.statusCode});
+
+  @override
+  String toString() => message;
+}
+
 /// Voice Settings API Service
 /// Handles fetching languages, voices, and managing user voice preferences
 class VoiceSettingsService {
@@ -55,13 +70,26 @@ class VoiceSettingsService {
             displayOrder: 0,
           );
         }).toList();
-      } else {
-        AppLogger.error('Failed to fetch languages: ${response.statusCode}');
-        return [];
       }
+      // A failed request is NOT an empty catalogue. Returning [] for both made
+      // a 404 (the doubled-path bug this endpoint shipped with) look identical
+      // to a correctly-reachable service that simply has no languages — so the
+      // screen said "Failed to load languages" for a routing mistake and gave
+      // nobody a way to tell the difference.
+      AppLogger.error('Failed to fetch languages: HTTP ${response.statusCode}');
+      throw VoiceLanguagesUnavailable(
+        response.statusCode == 401 || response.statusCode == 403
+            ? 'Your session expired. Sign in again to change voice settings.'
+            : 'Could not reach the voice service. Check your connection and try again.',
+        statusCode: response.statusCode,
+      );
+    } on VoiceLanguagesUnavailable {
+      rethrow;
     } catch (e) {
       AppLogger.error('Error fetching languages', error: e);
-      return [];
+      throw const VoiceLanguagesUnavailable(
+        'Could not reach the voice service. Check your connection and try again.',
+      );
     }
   }
 

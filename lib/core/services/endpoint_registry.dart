@@ -340,9 +340,16 @@ class EndpointRegistry {
       // voice_enrollment_cubit.dart's error mapping.
       'url_chat_agent_gateway':   httpsBase,
       'url_voice_agent_gateway':  httpsBase,
-      // url_voice_language_api is the FULL endpoint, not a base — callers
-      // hit it directly via Uri.parse(httpVoiceLang).
-      'url_voice_language_api':   '$httpsBase/voice/languages',
+      // url_voice_language_api is a HOST BASE, like the two above. Every
+      // caller appends its own '/api/v1/voice/languages…' path.
+      //
+      // This used to default to '$httpsBase/voice/languages' and was
+      // documented as a full endpoint, but no caller ever treated it that
+      // way — both append — so the request went to
+      // '<host>/voice/languages/api/v1/voice/languages' and 404'd. That is
+      // the whole reason Voice Settings showed "Failed to load languages":
+      // the path was doubled, exactly like the session-start bug above.
+      'url_voice_language_api':   httpsBase,
       'url_ws_voice':             '$wssBase/ws/voice',
       'url_ws_balance':           '$wssBase/ws/balance',
       // Contactless (tap-to-pay) realtime WS — host-only base, exactly like
@@ -524,7 +531,10 @@ class EndpointRegistry {
   String get httpAdmin       => _get('url_admin_gateway',       '${_tierBase('https')}/api/v1/admin');
   String get httpChatAgent   => _get('url_chat_agent_gateway',  _tierBase('https'));
   String get httpVoiceAgent  => _get('url_voice_agent_gateway', _tierBase('https'));
-  String get httpVoiceLang   => _get('url_voice_language_api',  '${_tierBase('https')}/voice/languages');
+  // Host base — callers append '/api/v1/voice/languages…'. The fallback here
+  // must match the seeded default above; it previously appended
+  // '/voice/languages' on its own, which doubled the path to a 404.
+  String get httpVoiceLang   => _get('url_voice_language_api',  _tierBase('https'));
   String get httpStorage     => _get('url_storage',             '${_tierBase('https')}/v1/storage');
   String get httpWebhookBase => _get('url_webhook_base',        '${_tierBase('https')}/webhooks');
   String get telemetryIngest => _get('url_telemetry_ingest',    '${_tierBase('https')}/api/v1/telemetry/ingest');

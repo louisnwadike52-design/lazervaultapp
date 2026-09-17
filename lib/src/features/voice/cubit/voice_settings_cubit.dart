@@ -55,12 +55,21 @@ class VoiceSettingsCubit extends Cubit<VoiceSettingsState> {
 
   Future<void> loadLanguages() async {
     emit(const VoiceSettingsLoading());
-    final languages = await _service.getSupportedLanguages();
-
-    if (languages.isNotEmpty) {
+    try {
+      final languages = await _service.getSupportedLanguages();
+      // An empty catalogue is a real, successful answer: nothing is configured
+      // for this region. It is not a failure, and calling it one sent people
+      // to Retry forever against a service that was replying perfectly well.
+      // The screen renders its own empty state from an empty list.
       emit(VoiceSettingsLoaded(languages: languages));
-    } else {
-      emit(const VoiceSettingsError('Failed to load languages'));
+    } on VoiceLanguagesUnavailable catch (e) {
+      // Already phrased for a person to read, and says which of the two
+      // problems it is — expired session versus unreachable service.
+      emit(VoiceSettingsError(e.message));
+    } catch (_) {
+      emit(const VoiceSettingsError(
+        'Could not load voice settings. Please try again.',
+      ));
     }
   }
 
