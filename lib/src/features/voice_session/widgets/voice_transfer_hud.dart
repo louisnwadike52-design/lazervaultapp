@@ -205,9 +205,9 @@ class VoiceTransferHud extends StatelessWidget {
   // ── Amount readout (big, animated count-up) ──
   Widget _buildAmountReadout(VoiceTransferContext c, Color accent) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(10.r),
         gradient: LinearGradient(
           colors: [
             accent.withValues(alpha: 0.10),
@@ -239,7 +239,7 @@ class VoiceTransferHud extends StatelessWidget {
               value: c.amountNaira ?? 0,
               currency: c.currency,
               color: Colors.white,
-              fontSize: 26.sp,
+              fontSize: 22.sp,
             ),
           ),
         ],
@@ -265,10 +265,18 @@ class VoiceTransferHud extends StatelessWidget {
         value: _fmtNaira(c.feeNaira!, c.currency),
       ));
     }
-    if (c.totalNaira != null && c.totalNaira! > 0) {
+    // TOTAL only when it DIFFERS from the amount. With no fee the two are
+    // identical, and repeating the same figure on its own row was the single
+    // biggest waste of height on a card the user reads at a glance.
+    final total = c.totalNaira;
+    final amount = c.amountNaira;
+    final totalDiffers = total != null &&
+        total > 0 &&
+        (amount == null || (total - amount).abs() > 0.009);
+    if (totalDiffers) {
       rows.add(_DataRow(
         label: 'TOTAL',
-        value: _fmtNaira(c.totalNaira!, c.currency),
+        value: _fmtNaira(total, c.currency),
         emphasized: true,
       ));
     }
@@ -276,24 +284,76 @@ class VoiceTransferHud extends StatelessWidget {
     final out = <Widget>[];
     for (var i = 0; i < rows.length; i++) {
       out.add(rows[i]);
-      if (i != rows.length - 1) out.add(SizedBox(height: 8.h));
+      if (i != rows.length - 1) out.add(SizedBox(height: 5.h));
     }
     return out;
   }
 
   Widget _buildSuccessFooter(VoiceTransferContext c) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    final ref = c.reference ?? '';
+    final bal = c.newBalance ?? '';
+    if (ref.isEmpty && bal.isEmpty) return const SizedBox.shrink();
+
+    // One compact line instead of two stacked rows. Both are reference data a
+    // user checks rather than reads, so they earn a single line between them —
+    // the reference truncates from the FRONT, because the distinguishing part
+    // of these ids is the tail.
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if ((c.reference ?? '').isNotEmpty)
-          _DataRow(label: 'REF', value: c.reference!, mono: true),
-        if ((c.newBalance ?? '').isNotEmpty) ...[
-          SizedBox(height: 8.h),
-          _DataRow(label: 'BALANCE', value: c.newBalance!),
-        ],
+        if (ref.isNotEmpty)
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _footerLabel('REF'),
+                Text(
+                  // Keep the TAIL: reference ids share a long common prefix
+                  // (C2C-CHAT-transfer-…), so trimming the front is what keeps
+                  // the part that identifies this transfer.
+                  ref.length > 22 ? '…${ref.substring(ref.length - 22)}' : ref,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.robotoMono(
+                      color: Colors.white.withValues(alpha: 0.75),
+                      fontSize: 10.sp),
+                ),
+              ],
+            ),
+          ),
+        if (ref.isNotEmpty && bal.isNotEmpty) SizedBox(width: 10.w),
+        if (bal.isNotEmpty)
+          Expanded(
+            flex: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                _footerLabel('BALANCE'),
+                Text(
+                  bal,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.robotoMono(
+                      color: Colors.white.withValues(alpha: 0.75),
+                      fontSize: 10.sp),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
+
+  Widget _footerLabel(String text) => Text(
+        text,
+        style: GoogleFonts.robotoMono(
+          color: Colors.white.withValues(alpha: 0.32),
+          fontSize: 8.sp,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1.2,
+        ),
+      );
 
   Widget _buildFailureFooter(VoiceTransferContext c) {
     return Container(
