@@ -681,6 +681,7 @@ class UpliftApplicationMessage extends $pb.GeneratedMessage {
     $core.int? counterEquityPct,
     $core.String? counterNote,
     $core.bool? hasCounter,
+    $core.String? videoUrl,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -713,6 +714,7 @@ class UpliftApplicationMessage extends $pb.GeneratedMessage {
     if (counterEquityPct != null) result.counterEquityPct = counterEquityPct;
     if (counterNote != null) result.counterNote = counterNote;
     if (hasCounter != null) result.hasCounter = hasCounter;
+    if (videoUrl != null) result.videoUrl = videoUrl;
     return result;
   }
 
@@ -782,6 +784,7 @@ class UpliftApplicationMessage extends $pb.GeneratedMessage {
         28, _omitFieldNames ? '' : 'counterEquityPct', $pb.PbFieldType.OU3)
     ..aOS(29, _omitFieldNames ? '' : 'counterNote')
     ..aOB(30, _omitFieldNames ? '' : 'hasCounter')
+    ..aOS(31, _omitFieldNames ? '' : 'videoUrl')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1067,6 +1070,18 @@ class UpliftApplicationMessage extends $pb.GeneratedMessage {
   $core.bool hasHasCounter() => $_has(29);
   @$pb.TagNumber(30)
   void clearHasCounter() => $_clearField(30);
+
+  /// Founder pitch video. Field 31 must match financial-products' uplift.proto —
+  /// this gateway rebuilds messages FIELD BY FIELD, so a number that drifts
+  /// between the two silently drops the value instead of failing to compile.
+  @$pb.TagNumber(31)
+  $core.String get videoUrl => $_getSZ(30);
+  @$pb.TagNumber(31)
+  set videoUrl($core.String value) => $_setString(30, value);
+  @$pb.TagNumber(31)
+  $core.bool hasVideoUrl() => $_has(30);
+  @$pb.TagNumber(31)
+  void clearVideoUrl() => $_clearField(31);
 }
 
 class UpliftMilestoneMessage extends $pb.GeneratedMessage {
@@ -3839,6 +3854,7 @@ class ApplyToUpliftFundRequest extends $pb.GeneratedMessage {
     $core.String? businessAccountId,
     $core.int? proposedEquityPct,
     $core.String? equityNote,
+    $core.String? videoUrl,
   }) {
     final result = create();
     if (fundId != null) result.fundId = fundId;
@@ -3851,6 +3867,7 @@ class ApplyToUpliftFundRequest extends $pb.GeneratedMessage {
     if (businessAccountId != null) result.businessAccountId = businessAccountId;
     if (proposedEquityPct != null) result.proposedEquityPct = proposedEquityPct;
     if (equityNote != null) result.equityNote = equityNote;
+    if (videoUrl != null) result.videoUrl = videoUrl;
     return result;
   }
 
@@ -3880,6 +3897,7 @@ class ApplyToUpliftFundRequest extends $pb.GeneratedMessage {
     ..a<$core.int>(
         9, _omitFieldNames ? '' : 'proposedEquityPct', $pb.PbFieldType.OU3)
     ..aOS(10, _omitFieldNames ? '' : 'equityNote')
+    ..aOS(11, _omitFieldNames ? '' : 'videoUrl')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -3982,6 +4000,15 @@ class ApplyToUpliftFundRequest extends $pb.GeneratedMessage {
   $core.bool hasEquityNote() => $_has(9);
   @$pb.TagNumber(10)
   void clearEquityNote() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get videoUrl => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set videoUrl($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasVideoUrl() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearVideoUrl() => $_clearField(11);
 }
 
 class ApplyToUpliftFundResponse extends $pb.GeneratedMessage {

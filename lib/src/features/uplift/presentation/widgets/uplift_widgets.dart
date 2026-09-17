@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:grpc/grpc.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lazervault/src/features/uplift/data/uplift_media_upload_service.dart';
 import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
@@ -13,7 +14,12 @@ import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
 /// {"equity_enabled":true,"investment_type":"equity","equity_offered_pct":1500,
 ///  "valuation":<kobo>,"equity_terms":"..."}
 class UpEquityTerms {
-  const UpEquityTerms({this.enabled = false, this.investmentType = '', this.offeredPct = 0, this.valuation = 0, this.terms = ''});
+  const UpEquityTerms(
+      {this.enabled = false,
+      this.investmentType = '',
+      this.offeredPct = 0,
+      this.valuation = 0,
+      this.terms = ''});
   final bool enabled;
   final String investmentType;
   final int offeredPct; // pct×100
@@ -47,7 +53,8 @@ class UpEquityTerms {
 
 /// A small purple pill used for equity / deal badges.
 class UpEquityChip extends StatelessWidget {
-  const UpEquityChip({required this.label, this.icon = Icons.pie_chart, super.key});
+  const UpEquityChip(
+      {required this.label, this.icon = Icons.pie_chart, super.key});
   final String label;
   final IconData icon;
   @override
@@ -61,7 +68,11 @@ class UpEquityChip extends StatelessWidget {
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(icon, size: 12, color: kUpPrimarySoft),
           const SizedBox(width: 4),
-          Text(label, style: GoogleFonts.inter(color: kUpPrimarySoft, fontSize: 11, fontWeight: FontWeight.w600)),
+          Text(label,
+              style: GoogleFonts.inter(
+                  color: kUpPrimarySoft,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600)),
         ]),
       );
 }
@@ -149,7 +160,8 @@ String upFriendlyError(Object e) {
 const Color kUpBg = Color(0xFF0A0A0A);
 const Color kUpCard = Color(0xFF1F1F1F);
 const Color kUpDivider = Color(0xFF2D2D2D);
-const Color kUpPrimary = Color.fromARGB(255, 78, 3, 208); // #4E03D0 — crypto/joint-funds accent
+const Color kUpPrimary =
+    Color.fromARGB(255, 78, 3, 208); // #4E03D0 — crypto/joint-funds accent
 const Color kUpPrimarySoft = Color(0xFF7C3AED);
 const Color kUpSuccess = Color(0xFF10B981);
 const Color kUpWarning = Color(0xFFFB923C);
@@ -293,9 +305,18 @@ String upAppStatusLabel(up.UpliftApplicationStatus s) {
 
 Color upStatusColor(String label) {
   final l = label.toLowerCase();
-  if (l.contains('complete') || l.contains('funding') || l.contains('accepted') || l.contains('open')) return kUpSuccess;
-  if (l.contains('cancel') || l.contains('reject') || l.contains('expired') || l.contains('declined')) return kUpError;
-  if (l.contains('review') || l.contains('submitted') || l.contains('selected') || l.contains('shortlist')) return kUpWarning;
+  if (l.contains('complete') ||
+      l.contains('funding') ||
+      l.contains('accepted') ||
+      l.contains('open')) return kUpSuccess;
+  if (l.contains('cancel') ||
+      l.contains('reject') ||
+      l.contains('expired') ||
+      l.contains('declined')) return kUpError;
+  if (l.contains('review') ||
+      l.contains('submitted') ||
+      l.contains('selected') ||
+      l.contains('shortlist')) return kUpWarning;
   return kUpTextSecondary;
 }
 
@@ -313,13 +334,15 @@ class UpStatusChip extends StatelessWidget {
         border: Border.all(color: c.withOpacity(0.4)),
       ),
       child: Text(label,
-          style: GoogleFonts.inter(color: c, fontSize: 11, fontWeight: FontWeight.w600)),
+          style: GoogleFonts.inter(
+              color: c, fontSize: 11, fontWeight: FontWeight.w600)),
     );
   }
 }
 
 class UpliftFundCard extends StatelessWidget {
-  const UpliftFundCard({required this.fund, this.onTap, this.trailing, super.key});
+  const UpliftFundCard(
+      {required this.fund, this.onTap, this.trailing, super.key});
   final up.UpliftFundMessage fund;
   final VoidCallback? onTap;
   final Widget? trailing;
@@ -328,7 +351,8 @@ class UpliftFundCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final committed = fund.committedPool.toInt();
     final released = fund.releasedTotal.toInt();
-    final progress = committed > 0 ? (released / committed).clamp(0.0, 1.0) : 0.0;
+    final progress =
+        committed > 0 ? (released / committed).clamp(0.0, 1.0) : 0.0;
     final equity = UpEquityTerms.fromMetadata(fund.metadata);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -337,7 +361,8 @@ class UpliftFundCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: kUpPrimary.withOpacity(0.18)),
         boxShadow: const [
-          BoxShadow(color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2)),
+          BoxShadow(
+              color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2)),
         ],
       ),
       child: Material(
@@ -353,7 +378,10 @@ class UpliftFundCard extends StatelessWidget {
                 if (fund.coverImageUrl.isNotEmpty)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.network(fund.coverImageUrl, height: 108, width: double.infinity, fit: BoxFit.cover,
+                    child: Image.network(fund.coverImageUrl,
+                        height: 108,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => const SizedBox.shrink()),
                   ),
                 if (fund.coverImageUrl.isNotEmpty) const SizedBox(height: 10),
@@ -368,18 +396,28 @@ class UpliftFundCard extends StatelessWidget {
                       child: Text(fund.title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700)),
                     ),
                     const SizedBox(width: 8),
-                    Padding(padding: const EdgeInsets.only(top: 1), child: UpStatusChip(label: upFundStatusLabel(fund.status))),
+                    Padding(
+                        padding: const EdgeInsets.only(top: 1),
+                        child: UpStatusChip(
+                            label: upFundStatusLabel(fund.status))),
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text('${fund.category} · up to ${upNaira(fund.perBusinessCap.toInt(), fund.currency)} each · ${fund.targetCount} businesses',
+                Text(
+                    '${fund.category} · up to ${upNaira(fund.perBusinessCap.toInt(), fund.currency)} each · ${fund.targetCount} businesses',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: kUpTextSecondary, fontSize: 12)),
-                if (equity.enabled && (equity.offeredPct > 0 || equity.investmentType.isNotEmpty)) ...[
+                    style:
+                        const TextStyle(color: kUpTextSecondary, fontSize: 12)),
+                if (equity.enabled &&
+                    (equity.offeredPct > 0 ||
+                        equity.investmentType.isNotEmpty)) ...[
                   const SizedBox(height: 8),
                   Row(children: [
                     UpEquityChip(
@@ -390,17 +428,22 @@ class UpliftFundCard extends StatelessWidget {
                   ]),
                 ],
                 const SizedBox(height: 10),
-              UpProgressBar(value: progress),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('${upNaira(released, fund.currency)} released of ${upNaira(committed, fund.currency)}',
-                      style: const TextStyle(color: kUpTextSecondary, fontSize: 11)),
-                  Text('${fund.applicationCount} applied', style: const TextStyle(color: kUpTextSecondary, fontSize: 11)),
-                ],
-              ),
-                if (trailing != null) Align(alignment: Alignment.centerRight, child: trailing!),
+                UpProgressBar(value: progress),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                        '${upNaira(released, fund.currency)} released of ${upNaira(committed, fund.currency)}',
+                        style: const TextStyle(
+                            color: kUpTextSecondary, fontSize: 11)),
+                    Text('${fund.applicationCount} applied',
+                        style: const TextStyle(
+                            color: kUpTextSecondary, fontSize: 11)),
+                  ],
+                ),
+                if (trailing != null)
+                  Align(alignment: Alignment.centerRight, child: trailing!),
               ],
             ),
           ),
@@ -422,12 +465,22 @@ class UpliftImagePickerRow extends StatefulWidget {
     required this.onAdd,
     required this.onRemove,
     this.label = 'Photos',
+    this.allowDocuments = false,
     super.key,
   });
   final List<String> urls;
   final ValueChanged<String> onAdd;
   final ValueChanged<String> onRemove;
   final String label;
+
+  /// Offer PDFs alongside photos.
+  ///
+  /// The uploader has accepted documents all along — `uploadImage` takes an
+  /// `allowDocuments` flag and has the error copy written for it — but every
+  /// call site used ImagePicker, which can only return images. So a business
+  /// could never attach the pitch deck the funder's screen already renders a
+  /// section for, and milestone evidence could not be an invoice.
+  final bool allowDocuments;
 
   @override
   State<UpliftImagePickerRow> createState() => _UpliftImagePickerRowState();
@@ -438,9 +491,39 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
   final _uploader = UpliftMediaUploadService();
   bool _uploading = false;
 
+  /// Pick a PDF and upload it.
+  ///
+  /// Separate from the image path because the two need different pickers and
+  /// different upload flags — folding them together would mean guessing the
+  /// kind from the extension after the fact.
+  Future<void> _pickDocumentAndUpload() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ['pdf'],
+        withData: false,
+      );
+      final path = result?.files.single.path;
+      if (path == null) return;
+      setState(() => _uploading = true);
+      final url = await _uploader.uploadImage(File(path), allowDocuments: true);
+      widget.onAdd(url);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(upFriendlyError(e)), backgroundColor: kUpError),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
   Future<void> _pickAndUpload(ImageSource source) async {
     try {
-      final picked = await _picker.pickImage(source: source, maxWidth: 1600, imageQuality: 82);
+      final picked = await _picker.pickImage(
+          source: source, maxWidth: 1600, imageQuality: 82);
       if (picked == null) return;
       setState(() => _uploading = true);
       final url = await _uploader.uploadImage(File(picked.path));
@@ -448,7 +531,8 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(upFriendlyError(e)), backgroundColor: kUpError),
+          SnackBar(
+              content: Text(upFriendlyError(e)), backgroundColor: kUpError),
         );
       }
     } finally {
@@ -466,7 +550,8 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library, color: Colors.white),
-              title: const Text('Choose from gallery', style: TextStyle(color: Colors.white)),
+              title: const Text('Choose from gallery',
+                  style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(ctx);
                 _pickAndUpload(ImageSource.gallery);
@@ -474,12 +559,25 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt, color: Colors.white),
-              title: const Text('Take a photo', style: TextStyle(color: Colors.white)),
+              title: const Text('Take a photo',
+                  style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(ctx);
                 _pickAndUpload(ImageSource.camera);
               },
             ),
+            if (widget.allowDocuments)
+              ListTile(
+                leading: const Icon(Icons.picture_as_pdf, color: Colors.white),
+                title: const Text('Attach a PDF',
+                    style: TextStyle(color: Colors.white)),
+                subtitle: const Text('Pitch deck, financials, CAC certificate',
+                    style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickDocumentAndUpload();
+                },
+              ),
           ],
         ),
       ),
@@ -491,7 +589,8 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.label, style: const TextStyle(color: kUpTextSecondary, fontSize: 12)),
+        Text(widget.label,
+            style: const TextStyle(color: kUpTextSecondary, fontSize: 12)),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -502,9 +601,27 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.network(u, width: 72, height: 72, fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                            width: 72, height: 72, color: kUpDivider, child: const Icon(Icons.broken_image, color: kUpTextSecondary))),
+                    // A PDF gets a document tile, not Image.network — which
+                    // would fail to decode it and draw a broken-image glyph on
+                    // an upload that succeeded.
+                    child: _isPdfUrl(u)
+                        ? Container(
+                            width: 72,
+                            height: 72,
+                            color: kUpDivider,
+                            child: const Icon(Icons.picture_as_pdf,
+                                color: Colors.white70),
+                          )
+                        : Image.network(u,
+                            width: 72,
+                            height: 72,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                                width: 72,
+                                height: 72,
+                                color: kUpDivider,
+                                child: const Icon(Icons.broken_image,
+                                    color: kUpTextSecondary))),
                   ),
                   Positioned(
                     right: 0,
@@ -512,8 +629,10 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
                     child: GestureDetector(
                       onTap: () => widget.onRemove(u),
                       child: Container(
-                        decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                        child: const Icon(Icons.close, size: 16, color: Colors.white),
+                        decoration: const BoxDecoration(
+                            color: Colors.black54, shape: BoxShape.circle),
+                        child: const Icon(Icons.close,
+                            size: 16, color: Colors.white),
                       ),
                     ),
                   ),
@@ -524,9 +643,17 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
               child: Container(
                 width: 72,
                 height: 72,
-                decoration: BoxDecoration(color: kUpCard, borderRadius: BorderRadius.circular(8), border: Border.all(color: kUpDivider)),
+                decoration: BoxDecoration(
+                    color: kUpCard,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: kUpDivider)),
                 child: _uploading
-                    ? const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: kUpPrimary)))
+                    ? const Center(
+                        child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: kUpPrimary)))
                     : const Icon(Icons.add_a_photo, color: kUpTextSecondary),
               ),
             ),
@@ -538,7 +665,8 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
 }
 
 class UpliftApplicationCard extends StatelessWidget {
-  const UpliftApplicationCard({required this.application, this.onTap, this.trailing, super.key});
+  const UpliftApplicationCard(
+      {required this.application, this.onTap, this.trailing, super.key});
   final up.UpliftApplicationMessage application;
   final VoidCallback? onTap;
   final Widget? trailing;
@@ -553,69 +681,83 @@ class UpliftApplicationCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: kUpDivider),
         boxShadow: const [
-          BoxShadow(color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2)),
+          BoxShadow(
+              color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2)),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  UpGradientAvatar(text: a.businessName, size: 36, radius: 9),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(a.businessName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
-                  ),
-                  const SizedBox(width: 8),
-                  UpStatusChip(label: upAppStatusLabel(a.status)),
-                ],
-              ),
-              const SizedBox(height: 4),
-              if (a.fundTitle.isNotEmpty)
-                Text(a.fundTitle, style: GoogleFonts.inter(color: kUpTextSecondary, fontSize: 12)),
-              const SizedBox(height: 6),
-              Text(
-                'Requested ${upNaira(a.requestedAmount.toInt(), a.currency)}'
-                '${a.approvedAmount.toInt() > 0 ? ' · Approved ${upNaira(a.approvedAmount.toInt(), a.currency)}' : ''}',
-                style: const TextStyle(color: Colors.white70, fontSize: 12),
-              ),
-              if (a.agreedEquityPct > 0 || a.proposedEquityPct > 0) ...[
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    UpGradientAvatar(text: a.businessName, size: 36, radius: 9),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(a.businessName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700)),
+                    ),
+                    const SizedBox(width: 8),
+                    UpStatusChip(label: upAppStatusLabel(a.status)),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                if (a.fundTitle.isNotEmpty)
+                  Text(a.fundTitle,
+                      style: GoogleFonts.inter(
+                          color: kUpTextSecondary, fontSize: 12)),
                 const SizedBox(height: 6),
-                Wrap(spacing: 6, runSpacing: 6, children: [
-                  if (a.agreedEquityPct > 0)
-                    UpEquityChip(label: '${upInvestmentTypeLabel(a.investmentType).isEmpty ? 'Equity' : upInvestmentTypeLabel(a.investmentType)} · ${upPct(a.agreedEquityPct)}'),
-                  if (a.agreedEquityPct == 0 && a.proposedEquityPct > 0)
-                    UpEquityChip(label: 'Proposes ${upPct(a.proposedEquityPct)}', icon: Icons.handshake),
-                ]),
-              ],
-              if (a.hasCounter)
-                Padding(
-                  padding: const EdgeInsets.only(top: 6),
-                  child: UpEquityChip(
-                    icon: Icons.swap_horiz,
-                    label: 'Counter: ${upNaira(a.counterAmount.toInt(), a.currency)}${a.counterEquityPct > 0 ? ' · ${upPct(a.counterEquityPct)}' : ''}',
+                Text(
+                  'Requested ${upNaira(a.requestedAmount.toInt(), a.currency)}'
+                  '${a.approvedAmount.toInt() > 0 ? ' · Approved ${upNaira(a.approvedAmount.toInt(), a.currency)}' : ''}',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+                if (a.agreedEquityPct > 0 || a.proposedEquityPct > 0) ...[
+                  const SizedBox(height: 6),
+                  Wrap(spacing: 6, runSpacing: 6, children: [
+                    if (a.agreedEquityPct > 0)
+                      UpEquityChip(
+                          label:
+                              '${upInvestmentTypeLabel(a.investmentType).isEmpty ? 'Equity' : upInvestmentTypeLabel(a.investmentType)} · ${upPct(a.agreedEquityPct)}'),
+                    if (a.agreedEquityPct == 0 && a.proposedEquityPct > 0)
+                      UpEquityChip(
+                          label: 'Proposes ${upPct(a.proposedEquityPct)}',
+                          icon: Icons.handshake),
+                  ]),
+                ],
+                if (a.hasCounter)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: UpEquityChip(
+                      icon: Icons.swap_horiz,
+                      label:
+                          'Counter: ${upNaira(a.counterAmount.toInt(), a.currency)}${a.counterEquityPct > 0 ? ' · ${upPct(a.counterEquityPct)}' : ''}',
+                    ),
                   ),
-                ),
-              if (a.endorsementCount > 0)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text('❤ ${a.endorsementCount} endorsements', style: const TextStyle(color: kUpTextSecondary, fontSize: 11)),
-                ),
-              if (trailing != null) Align(alignment: Alignment.centerRight, child: trailing!),
-            ],
+                if (a.endorsementCount > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text('❤ ${a.endorsementCount} endorsements',
+                        style: const TextStyle(
+                            color: kUpTextSecondary, fontSize: 11)),
+                  ),
+                if (trailing != null)
+                  Align(alignment: Alignment.centerRight, child: trailing!),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -628,7 +770,8 @@ class UpliftApplicationCard extends StatelessWidget {
 /// A gradient avatar (rounded square) with the first initial — mirrors the
 /// group-funds group avatar and the crypto asset avatar.
 class UpGradientAvatar extends StatelessWidget {
-  const UpGradientAvatar({required this.text, this.size = 40, this.radius = 10, super.key});
+  const UpGradientAvatar(
+      {required this.text, this.size = 40, this.radius = 10, super.key});
   final String text;
   final double size;
   final double radius;
@@ -646,7 +789,9 @@ class UpGradientAvatar extends StatelessWidget {
       child: Text(
         initial,
         style: GoogleFonts.inter(
-            color: Colors.white, fontWeight: FontWeight.w800, fontSize: size * 0.45),
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: size * 0.45),
       ),
     );
   }
@@ -654,7 +799,11 @@ class UpGradientAvatar extends StatelessWidget {
 
 /// Rounded contribution/progress meter — grey track + purple (or status) fill.
 class UpProgressBar extends StatelessWidget {
-  const UpProgressBar({required this.value, this.color = kUpPrimary, this.height = 8, super.key});
+  const UpProgressBar(
+      {required this.value,
+      this.color = kUpPrimary,
+      this.height = 8,
+      super.key});
   final double value; // 0..1
   final Color color;
   final double height;
@@ -674,7 +823,13 @@ class UpProgressBar extends StatelessWidget {
 
 /// Standard dark surface card (kUpCard + divider border + subtle shadow).
 class UpCard extends StatelessWidget {
-  const UpCard({required this.child, this.padding = const EdgeInsets.all(16), this.margin, this.radius = 14, this.borderColor, super.key});
+  const UpCard(
+      {required this.child,
+      this.padding = const EdgeInsets.all(16),
+      this.margin,
+      this.radius = 14,
+      this.borderColor,
+      super.key});
   final Widget child;
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry? margin;
@@ -690,7 +845,8 @@ class UpCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(color: borderColor ?? kUpDivider),
           boxShadow: const [
-            BoxShadow(color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2)),
+            BoxShadow(
+                color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2)),
           ],
         ),
         child: child,
@@ -700,7 +856,12 @@ class UpCard extends StatelessWidget {
 /// A compact stat tile (icon + value + label) tinted by [color] — the
 /// crypto/group-funds stat-strip motif.
 class UpStatChip extends StatelessWidget {
-  const UpStatChip({required this.icon, required this.value, required this.label, this.color = kUpPrimary, super.key});
+  const UpStatChip(
+      {required this.icon,
+      required this.value,
+      required this.label,
+      this.color = kUpPrimary,
+      super.key});
   final IconData icon;
   final String value;
   final String label;
@@ -721,9 +882,13 @@ class UpStatChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(value,
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700)),
               Text(label,
-                  style: GoogleFonts.inter(color: kUpTextSecondary, fontSize: 10)),
+                  style:
+                      GoogleFonts.inter(color: kUpTextSecondary, fontSize: 10)),
             ],
           ),
         ]),
@@ -742,7 +907,10 @@ class UpSectionHeader extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(title,
-                style: GoogleFonts.inter(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700)),
             if (trailing != null) trailing!,
           ],
         ),
@@ -751,7 +919,12 @@ class UpSectionHeader extends StatelessWidget {
 
 /// Full-height empty state (muted icon + title + subtitle).
 class UpEmptyState extends StatelessWidget {
-  const UpEmptyState({required this.icon, required this.title, this.subtitle, this.action, super.key});
+  const UpEmptyState(
+      {required this.icon,
+      required this.title,
+      this.subtitle,
+      this.action,
+      super.key});
   final IconData icon;
   final String title;
   final String? subtitle;
@@ -767,12 +940,16 @@ class UpEmptyState extends StatelessWidget {
               const SizedBox(height: 16),
               Text(title,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600)),
               if (subtitle != null) ...[
                 const SizedBox(height: 8),
                 Text(subtitle!,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(color: kUpTextSecondary, fontSize: 14)),
+                    style: GoogleFonts.inter(
+                        color: kUpTextSecondary, fontSize: 14)),
               ],
               if (action != null) ...[const SizedBox(height: 16), action!],
             ],
@@ -819,19 +996,24 @@ class UpErrorState extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: kUpError.withOpacity(0.12),
                     ),
-                    child: const Icon(Icons.wifi_tethering_error_rounded, size: 30, color: kUpError),
+                    child: const Icon(Icons.wifi_tethering_error_rounded,
+                        size: 30, color: kUpError),
                   ),
                   const SizedBox(height: 18),
                   Text(
                     title,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     message,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(color: kUpTextSecondary, fontSize: 13.5, height: 1.4),
+                    style: GoogleFonts.inter(
+                        color: kUpTextSecondary, fontSize: 13.5, height: 1.4),
                   ),
                   if (onRetry != null) ...[
                     const SizedBox(height: 22),
@@ -844,11 +1026,15 @@ class UpErrorState extends StatelessWidget {
                           foregroundColor: Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 13),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
-                        icon: const Icon(Icons.refresh_rounded, size: 18, color: Colors.white),
+                        icon: const Icon(Icons.refresh_rounded,
+                            size: 18, color: Colors.white),
                         label: Text('Try again',
-                            style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
+                            style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ],
@@ -871,23 +1057,30 @@ class UpLoading extends StatelessWidget {
 /// Group-funds style pill/segmented tabs. Wraps the ambient [DefaultTabController]
 /// so callers just pass the tab widgets. Accent pill indicator on a dark surface.
 class UpSegmentedTabs extends StatelessWidget {
-  const UpSegmentedTabs({required this.tabs, this.margin = const EdgeInsets.fromLTRB(16, 8, 16, 4), super.key});
+  const UpSegmentedTabs(
+      {required this.tabs,
+      this.margin = const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      super.key});
   final List<Widget> tabs;
   final EdgeInsetsGeometry margin;
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: margin,
-      decoration: BoxDecoration(color: kUpCard, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+          color: kUpCard, borderRadius: BorderRadius.circular(12)),
       child: TabBar(
         isScrollable: true,
         tabAlignment: TabAlignment.start,
         indicatorSize: TabBarIndicatorSize.tab,
-        indicator: BoxDecoration(color: kUpPrimary, borderRadius: BorderRadius.circular(12)),
+        indicator: BoxDecoration(
+            color: kUpPrimary, borderRadius: BorderRadius.circular(12)),
         labelColor: Colors.white,
         unselectedLabelColor: kUpTextSecondary,
-        labelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
+        labelStyle:
+            GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+        unselectedLabelStyle:
+            GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
         dividerColor: Colors.transparent,
         labelPadding: const EdgeInsets.symmetric(horizontal: 16),
         splashBorderRadius: BorderRadius.circular(12),
@@ -900,7 +1093,8 @@ class UpSegmentedTabs extends StatelessWidget {
 /// Insurance-style step indicator: an animated linear bar + expanding dots.
 /// Bar turns green on the final step. [current] is 0-based.
 class UpStepIndicator extends StatelessWidget {
-  const UpStepIndicator({required this.current, required this.total, super.key});
+  const UpStepIndicator(
+      {required this.current, required this.total, super.key});
   final int current;
   final int total;
   @override
@@ -923,7 +1117,9 @@ class UpStepIndicator extends StatelessWidget {
                     width: c.maxWidth * progress,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: isLast ? const [kUpSuccess, Color(0xFF059669)] : const [kUpPrimarySoft, kUpPrimary],
+                        colors: isLast
+                            ? const [kUpSuccess, Color(0xFF059669)]
+                            : const [kUpPrimarySoft, kUpPrimary],
                       ),
                     ),
                   ),
@@ -942,7 +1138,8 @@ class UpStepIndicator extends StatelessWidget {
                 height: 8,
                 margin: const EdgeInsets.symmetric(horizontal: 3),
                 decoration: BoxDecoration(
-                  color: active ? kUpPrimarySoft : Colors.white.withOpacity(0.25),
+                  color:
+                      active ? kUpPrimarySoft : Colors.white.withOpacity(0.25),
                   borderRadius: BorderRadius.circular(4),
                 ),
               );
@@ -991,10 +1188,15 @@ class UpBottomNav extends StatelessWidget {
                     foregroundColor: Colors.white,
                     minimumSize: const Size.fromHeight(52),
                     side: const BorderSide(color: kUpDivider),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: loading ? null : onBack,
-                  child: Text('Back', style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white)),
+                  child: Text('Back',
+                      style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white)),
                 ),
               ),
               const SizedBox(width: 12),
@@ -1012,18 +1214,33 @@ class UpBottomNav extends StatelessWidget {
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: isLast ? const [kUpSuccess, Color(0xFF059669)] : const [kUpPrimarySoft, kUpPrimary],
+                        colors: isLast
+                            ? const [kUpSuccess, Color(0xFF059669)]
+                            : const [kUpPrimarySoft, kUpPrimary],
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: loading
-                        ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white))
                         : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(nextLabel, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white)),
+                              Text(nextLabel,
+                                  style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white)),
                               const SizedBox(width: 8),
-                              Icon(isLast ? Icons.check_circle : Icons.arrow_forward, color: Colors.white, size: 18),
+                              Icon(
+                                  isLast
+                                      ? Icons.check_circle
+                                      : Icons.arrow_forward,
+                                  color: Colors.white,
+                                  size: 18),
                             ],
                           ),
                   ),
@@ -1040,7 +1257,8 @@ class UpBottomNav extends StatelessWidget {
 /// Crypto-style "Recent activity" card: header + View all, up to 3 receipt rows,
 /// or an empty state. Rows show a tinted leading icon, title + date, amount + type.
 class UpRecentActivitySection extends StatelessWidget {
-  const UpRecentActivitySection({required this.receipts, required this.onViewAll, this.onTap, super.key});
+  const UpRecentActivitySection(
+      {required this.receipts, required this.onViewAll, this.onTap, super.key});
   final List<up.UpliftReceiptMessage> receipts;
   final VoidCallback onViewAll;
   final void Function(up.UpliftReceiptMessage)? onTap;
@@ -1061,9 +1279,14 @@ class UpRecentActivitySection extends StatelessWidget {
                 : GestureDetector(
                     onTap: onViewAll,
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      Text('View all', style: GoogleFonts.inter(color: kUpTextSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+                      Text('View all',
+                          style: GoogleFonts.inter(
+                              color: kUpTextSecondary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500)),
                       const SizedBox(width: 4),
-                      const Icon(Icons.arrow_forward_ios, color: kUpTextSecondary, size: 12),
+                      const Icon(Icons.arrow_forward_ios,
+                          color: kUpTextSecondary, size: 12),
                     ]),
                   ),
           ),
@@ -1073,9 +1296,12 @@ class UpRecentActivitySection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Center(
                 child: Column(children: [
-                  Icon(Icons.receipt_long, size: 36, color: Colors.white.withOpacity(0.25)),
+                  Icon(Icons.receipt_long,
+                      size: 36, color: Colors.white.withOpacity(0.25)),
                   const SizedBox(height: 8),
-                  Text('No activity yet', style: GoogleFonts.inter(color: kUpTextSecondary, fontSize: 13)),
+                  Text('No activity yet',
+                      style: GoogleFonts.inter(
+                          color: kUpTextSecondary, fontSize: 13)),
                 ]),
               ),
             )
@@ -1098,26 +1324,203 @@ class UpRecentActivitySection extends StatelessWidget {
       onTap: onTap == null ? null : () => onTap!(r),
       child: Container(
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12)),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: color.withOpacity(0.18), borderRadius: BorderRadius.circular(9)),
-              child: Icon(isRelease ? Icons.south_west : Icons.reply, color: color, size: 18),
+              decoration: BoxDecoration(
+                  color: color.withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(9)),
+              child: Icon(isRelease ? Icons.south_west : Icons.reply,
+                  color: color, size: 18),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(title, style: GoogleFonts.inter(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 2),
-                Text(r.fundTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.inter(color: kUpTextSecondary, fontSize: 12)),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 2),
+                    Text(r.fundTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                            color: kUpTextSecondary, fontSize: 12)),
+                  ]),
             ),
-            Text(upNaira(r.amount.toInt(), r.currency), style: GoogleFonts.inter(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+            Text(upNaira(r.amount.toInt(), r.currency),
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700)),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// True when a stored media URL points at a PDF rather than an image.
+///
+/// Compared on the path only: a signed or query-stringed URL still ends in
+/// `.pdf` before the `?`, and matching the whole string would miss it.
+bool _isPdfUrl(String url) {
+  final path = Uri.tryParse(url)?.path ?? url;
+  return path.toLowerCase().endsWith('.pdf');
+}
+
+/// Public form of [_isPdfUrl] for screens that render stored media.
+bool upIsPdfUrl(String url) => _isPdfUrl(url);
+
+/// Founder pitch video picker — one video, replaceable.
+///
+/// Not a list. A funder deciding on an investment watches one pitch; offering a
+/// gallery is a way to avoid making one. Picking again replaces rather than
+/// appends, so the control always reflects what the funder will actually see.
+class UpliftVideoPickerRow extends StatefulWidget {
+  const UpliftVideoPickerRow({
+    required this.url,
+    required this.onChanged,
+    this.label = 'Pitch video (optional)',
+    super.key,
+  });
+
+  final String url;
+  final ValueChanged<String> onChanged;
+  final String label;
+
+  @override
+  State<UpliftVideoPickerRow> createState() => _UpliftVideoPickerRowState();
+}
+
+class _UpliftVideoPickerRowState extends State<UpliftVideoPickerRow> {
+  final _picker = ImagePicker();
+  final _uploader = UpliftMediaUploadService();
+  bool _uploading = false;
+
+  Future<void> _pick(ImageSource source) async {
+    try {
+      final picked = await _picker.pickVideo(
+        source: source,
+        // Capped at the source rather than validated after upload: a merchant
+        // on mobile data should not send 80MB before being told it is too long.
+        maxDuration: const Duration(minutes: 3),
+      );
+      if (picked == null) return;
+      setState(() => _uploading = true);
+      final url = await _uploader.uploadVideo(File(picked.path));
+      widget.onChanged(url);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(upFriendlyError(e)), backgroundColor: kUpError),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
+  void _chooseSource() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: kUpCard,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.video_library, color: Colors.white),
+              title: const Text('Choose a video',
+                  style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pick(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.videocam, color: Colors.white),
+              title: const Text('Record a pitch',
+                  style: TextStyle(color: Colors.white)),
+              subtitle: const Text('Up to 3 minutes',
+                  style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pick(ImageSource.camera);
+              },
+            ),
+            if (widget.url.isNotEmpty)
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: kUpError),
+                title: const Text('Remove video',
+                    style: TextStyle(color: kUpError)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  widget.onChanged('');
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final has = widget.url.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(widget.label,
+            style: const TextStyle(color: kUpTextSecondary, fontSize: 12)),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: _uploading ? null : _chooseSource,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: kUpCard,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: has ? kUpPrimary : kUpDivider),
+            ),
+            child: Row(
+              children: [
+                if (_uploading)
+                  const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: kUpPrimary))
+                else
+                  Icon(has ? Icons.check_circle : Icons.videocam_outlined,
+                      color: has ? kUpPrimary : kUpTextSecondary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _uploading
+                        ? 'Uploading your pitch…'
+                        : has
+                            ? 'Pitch video attached — tap to change'
+                            : 'Add a short pitch video',
+                    style: TextStyle(
+                        color: has ? Colors.white : kUpTextSecondary,
+                        fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

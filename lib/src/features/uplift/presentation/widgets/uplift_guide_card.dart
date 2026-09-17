@@ -88,7 +88,8 @@ class UpliftGuideCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1430),
         borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.35)),
+        border:
+            Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.35)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

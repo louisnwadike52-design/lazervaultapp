@@ -73,7 +73,12 @@ class UpliftCubit extends Cubit<UpliftState> {
     try {
       _discoverPage = 1;
       final results = await Future.wait([
-        _repo.listFunds(status: 'open', page: 1, pageSize: _pageSize, query: state.query, category: state.category),
+        _repo.listFunds(
+            status: 'open',
+            page: 1,
+            pageSize: _pageSize,
+            query: state.query,
+            category: state.category),
         _repo.myFunds(),
         _repo.listApplications(mineOnly: true),
       ]);
@@ -101,11 +106,16 @@ class UpliftCubit extends Cubit<UpliftState> {
   Future<void> searchDiscover({String? query, String? category}) async {
     final q = query ?? state.query;
     final c = category ?? state.category;
-    emit(state.copyWith(query: q, category: c, loading: true, clearError: true));
+    emit(
+        state.copyWith(query: q, category: c, loading: true, clearError: true));
     try {
       _discoverPage = 1;
-      final funds = await _repo.listFunds(status: 'open', page: 1, pageSize: _pageSize, query: q, category: c);
-      emit(state.copyWith(loading: false, discover: funds, discoverHasMore: funds.length >= _pageSize));
+      final funds = await _repo.listFunds(
+          status: 'open', page: 1, pageSize: _pageSize, query: q, category: c);
+      emit(state.copyWith(
+          loading: false,
+          discover: funds,
+          discoverHasMore: funds.length >= _pageSize));
     } catch (e) {
       emit(state.copyWith(loading: false, error: upFriendlyError(e)));
     }
@@ -116,7 +126,12 @@ class UpliftCubit extends Cubit<UpliftState> {
     emit(state.copyWith(discoverLoadingMore: true));
     try {
       final next = _discoverPage + 1;
-      final more = await _repo.listFunds(status: 'open', page: next, pageSize: _pageSize, query: state.query, category: state.category);
+      final more = await _repo.listFunds(
+          status: 'open',
+          page: next,
+          pageSize: _pageSize,
+          query: state.query,
+          category: state.category);
       _discoverPage = next;
       emit(state.copyWith(
         discover: [...state.discover, ...more],
@@ -124,7 +139,8 @@ class UpliftCubit extends Cubit<UpliftState> {
         discoverLoadingMore: false,
       ));
     } catch (e) {
-      emit(state.copyWith(discoverLoadingMore: false, error: upFriendlyError(e)));
+      emit(state.copyWith(
+          discoverLoadingMore: false, error: upFriendlyError(e)));
     }
   }
 

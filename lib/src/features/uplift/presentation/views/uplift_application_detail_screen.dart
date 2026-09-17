@@ -7,6 +7,7 @@ import 'package:lazervault/src/features/uplift/data/uplift_repository.dart';
 import 'package:lazervault/src/features/uplift/presentation/views/uplift_milestones_screen.dart';
 import 'package:lazervault/src/features/uplift/presentation/views/uplift_offer_screen.dart';
 import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_widgets.dart';
+import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_video_player.dart';
 import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
 
 /// Full-detail view of a single Lazerfunds application. Reached by tapping an
@@ -43,10 +44,12 @@ class UpliftApplicationDetailScreen extends StatefulWidget {
   final String? chatTargetAvatar;
 
   @override
-  State<UpliftApplicationDetailScreen> createState() => _UpliftApplicationDetailScreenState();
+  State<UpliftApplicationDetailScreen> createState() =>
+      _UpliftApplicationDetailScreenState();
 }
 
-class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailScreen> {
+class _UpliftApplicationDetailScreenState
+    extends State<UpliftApplicationDetailScreen> {
   final _repo = serviceLocator<UpliftRepository>();
   late up.UpliftApplicationMessage _app = widget.application;
   bool _busy = false;
@@ -114,7 +117,8 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
   }
 
   Future<void> _openMilestones() async {
-    await Get.to(() => UpliftMilestonesScreen(applicationId: _app.id, isFunder: widget.showFunderActions));
+    await Get.to(() => UpliftMilestonesScreen(
+        applicationId: _app.id, isFunder: widget.showFunderActions));
     await _refresh();
   }
 
@@ -153,6 +157,7 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
               const SizedBox(height: 12),
               _amountsCard(),
               _dealTermsCard(),
+              _videoSection(),
               _imagesSection(),
               _docsSection(),
               _milestonesSection(),
@@ -182,10 +187,15 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(a.businessName,
-                  style: const TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w700)),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 19,
+                      fontWeight: FontWeight.w700)),
               const SizedBox(height: 2),
               if (a.businessCategory.isNotEmpty)
-                Text(a.businessCategory, style: const TextStyle(color: kUpTextSecondary, fontSize: 13)),
+                Text(a.businessCategory,
+                    style:
+                        const TextStyle(color: kUpTextSecondary, fontSize: 13)),
               const SizedBox(height: 6),
               UpStatusChip(label: upAppStatusLabel(a.status)),
             ],
@@ -196,7 +206,9 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
   }
 
   Widget _messageButton() {
-    final name = (widget.chatTargetName?.trim().isNotEmpty ?? false) ? widget.chatTargetName!.trim() : 'the other party';
+    final name = (widget.chatTargetName?.trim().isNotEmpty ?? false)
+        ? widget.chatTargetName!.trim()
+        : 'the other party';
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
         backgroundColor: kUpPrimary,
@@ -216,7 +228,8 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Pitch & use of funds',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           Text(pitch.isEmpty ? 'No pitch provided.' : pitch,
               style: const TextStyle(color: Colors.white70, height: 1.4)),
@@ -231,7 +244,8 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
       child: Column(
         children: [
           _row('Requested', upNaira(a.requestedAmount.toInt(), a.currency)),
-          if (a.approvedAmount > 0) _row('Approved', upNaira(a.approvedAmount.toInt(), a.currency)),
+          if (a.approvedAmount > 0)
+            _row('Approved', upNaira(a.approvedAmount.toInt(), a.currency)),
           _row('Endorsements', '❤ ${a.endorsementCount}'),
         ],
       ),
@@ -240,8 +254,11 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
 
   Widget _dealTermsCard() {
     final a = _app;
-    final hasEquity = a.proposedEquityPct > 0 || a.agreedEquityPct > 0 || a.investmentType.isNotEmpty;
-    if (!hasEquity && !a.hasCounter && a.equityNote.isEmpty) return const SizedBox.shrink();
+    final hasEquity = a.proposedEquityPct > 0 ||
+        a.agreedEquityPct > 0 ||
+        a.investmentType.isNotEmpty;
+    if (!hasEquity && !a.hasCounter && a.equityNote.isEmpty)
+      return const SizedBox.shrink();
     return UpCard(
       margin: const EdgeInsets.only(top: 12),
       borderColor: kUpPrimary.withOpacity(0.3),
@@ -251,25 +268,45 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
           Row(children: const [
             Icon(Icons.handshake, size: 16, color: kUpPrimarySoft),
             SizedBox(width: 6),
-            Text('Deal terms', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+            Text('Deal terms',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
           ]),
           const SizedBox(height: 10),
-          if (a.investmentType.isNotEmpty) _row('Type', upInvestmentTypeLabel(a.investmentType)),
-          if (a.agreedEquityPct > 0) _row('Agreed equity', upPct(a.agreedEquityPct)),
-          if (a.agreedEquityPct == 0 && a.proposedEquityPct > 0) _row('Proposed equity', upPct(a.proposedEquityPct)),
+          if (a.investmentType.isNotEmpty)
+            _row('Type', upInvestmentTypeLabel(a.investmentType)),
+          if (a.agreedEquityPct > 0)
+            _row('Agreed equity', upPct(a.agreedEquityPct)),
+          if (a.agreedEquityPct == 0 && a.proposedEquityPct > 0)
+            _row('Proposed equity', upPct(a.proposedEquityPct)),
           if (a.hasCounter)
             _row('Counter',
                 '${upNaira(a.counterAmount.toInt(), a.currency)}${a.counterEquityPct > 0 ? ' · ${upPct(a.counterEquityPct)}' : ''}'),
           if (a.counterNote.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(a.counterNote, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            Text(a.counterNote,
+                style: const TextStyle(color: Colors.white70, fontSize: 13)),
           ],
           if (a.equityNote.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(a.equityNote, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            Text(a.equityNote,
+                style: const TextStyle(color: Colors.white70, fontSize: 13)),
           ],
         ],
       ),
+    );
+  }
+
+  /// The founder's pitch video, when one was attached.
+  ///
+  /// Placed ABOVE photos and documents: it is the richest signal in the
+  /// application, and burying it under a photo strip means it goes unwatched.
+  Widget _videoSection() {
+    final url = _app.videoUrl;
+    if (url.isEmpty) return const SizedBox.shrink();
+    return UpCard(
+      margin: const EdgeInsets.only(top: 12),
+      child: UpliftVideoPlayer(url: url),
     );
   }
 
@@ -286,7 +323,9 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
           separatorBuilder: (_, __) => const SizedBox(width: 8),
           itemBuilder: (_, i) => ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.network(imgs[i], width: 110, fit: BoxFit.cover,
+            child: Image.network(imgs[i],
+                width: 110,
+                fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => const SizedBox.shrink()),
           ),
         ),
@@ -302,7 +341,9 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Documents', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+          const Text('Documents',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
           for (var i = 0; i < docs.length; i++)
             InkWell(
@@ -310,13 +351,17 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(children: [
-                  const Icon(Icons.description_outlined, size: 18, color: kUpPrimarySoft),
+                  const Icon(Icons.description_outlined,
+                      size: 18, color: kUpPrimarySoft),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text('Document ${i + 1}',
-                        style: const TextStyle(color: kUpPrimarySoft, decoration: TextDecoration.underline)),
+                        style: const TextStyle(
+                            color: kUpPrimarySoft,
+                            decoration: TextDecoration.underline)),
                   ),
-                  const Icon(Icons.open_in_new, size: 16, color: kUpTextSecondary),
+                  const Icon(Icons.open_in_new,
+                      size: 16, color: kUpTextSecondary),
                 ]),
               ),
             ),
@@ -333,7 +378,9 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Milestones', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+          const Text('Milestones',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           for (final m in ms)
             Padding(
@@ -343,22 +390,30 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
                   width: 26,
                   height: 26,
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(color: kUpCard, borderRadius: BorderRadius.circular(8)),
-                  child: Text('${m.sequence}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                  decoration: BoxDecoration(
+                      color: kUpCard, borderRadius: BorderRadius.circular(8)),
+                  child: Text('${m.sequence}',
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 12)),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(m.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                      Text(m.title,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600)),
                       Text(_milestoneStatusLabel(m.status),
-                          style: const TextStyle(color: kUpTextSecondary, fontSize: 12)),
+                          style: const TextStyle(
+                              color: kUpTextSecondary, fontSize: 12)),
                     ],
                   ),
                 ),
                 Text(upNaira(m.amount.toInt(), _app.currency),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.w600)),
               ]),
             ),
         ],
@@ -366,28 +421,43 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
     );
   }
 
-  String _milestoneStatusLabel(up.UpliftMilestoneStatus s) =>
-      s.name.replaceFirst('UPLIFT_MILESTONE_STATUS_', '').toLowerCase().replaceAll('_', ' ');
+  String _milestoneStatusLabel(up.UpliftMilestoneStatus s) => s.name
+      .replaceFirst('UPLIFT_MILESTONE_STATUS_', '')
+      .toLowerCase()
+      .replaceAll('_', ' ');
 
-  Widget _endorsements() => Text('${_app.endorsementCount} endorsement${_app.endorsementCount == 1 ? '' : 's'} from the community',
+  Widget _endorsements() => Text(
+      '${_app.endorsementCount} endorsement${_app.endorsementCount == 1 ? '' : 's'} from the community',
       style: const TextStyle(color: kUpTextSecondary, fontSize: 12));
 
   List<Widget> _funderActions() {
     final a = _app;
-    final canAct = a.status == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_SUBMITTED ||
-        a.status == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_UNDER_REVIEW ||
-        a.status == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_SHORTLISTED ||
-        a.status == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_NEGOTIATING;
-    final inFunding = a.status == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_FUNDING_IN_PROGRESS ||
-        a.status == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_COMPLETED;
+    final canAct = a.status ==
+            up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_SUBMITTED ||
+        a.status ==
+            up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_UNDER_REVIEW ||
+        a.status ==
+            up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_SHORTLISTED ||
+        a.status ==
+            up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_NEGOTIATING;
+    final inFunding = a.status ==
+            up.UpliftApplicationStatus
+                .UPLIFT_APPLICATION_STATUS_FUNDING_IN_PROGRESS ||
+        a.status ==
+            up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_COMPLETED;
     return [
-      const Text('Decision', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+      const Text('Decision',
+          style: TextStyle(
+              color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
       const SizedBox(height: 10),
       if (canAct)
         Row(children: [
           Expanded(
             child: OutlinedButton(
-              style: OutlinedButton.styleFrom(foregroundColor: Colors.white, minimumSize: const Size.fromHeight(46), side: const BorderSide(color: kUpDivider)),
+              style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size.fromHeight(46),
+                  side: const BorderSide(color: kUpDivider)),
               onPressed: _busy ? null : () => _review('shortlist'),
               child: const Text('Shortlist'),
             ),
@@ -395,7 +465,10 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
           const SizedBox(width: 10),
           Expanded(
             child: OutlinedButton(
-              style: OutlinedButton.styleFrom(foregroundColor: kUpError, minimumSize: const Size.fromHeight(46), side: const BorderSide(color: kUpError)),
+              style: OutlinedButton.styleFrom(
+                  foregroundColor: kUpError,
+                  minimumSize: const Size.fromHeight(46),
+                  side: const BorderSide(color: kUpError)),
               onPressed: _busy ? null : () => _review('reject'),
               child: const Text('Reject'),
             ),
@@ -404,14 +477,28 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
       if (canAct) const SizedBox(height: 10),
       if (canAct)
         ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(backgroundColor: kUpPrimary, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(48)),
+          style: ElevatedButton.styleFrom(
+              backgroundColor: kUpPrimary,
+              foregroundColor: Colors.white,
+              minimumSize: const Size.fromHeight(48)),
           onPressed: _busy ? null : _select,
-          icon: Icon(a.status == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_NEGOTIATING ? Icons.swap_horiz : Icons.savings),
-          label: Text(a.status == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_NEGOTIATING ? 'Review counter & re-offer' : 'Select & fund'),
+          icon: Icon(a.status ==
+                  up.UpliftApplicationStatus
+                      .UPLIFT_APPLICATION_STATUS_NEGOTIATING
+              ? Icons.swap_horiz
+              : Icons.savings),
+          label: Text(a.status ==
+                  up.UpliftApplicationStatus
+                      .UPLIFT_APPLICATION_STATUS_NEGOTIATING
+              ? 'Review counter & re-offer'
+              : 'Select & fund'),
         ),
       if (inFunding)
         ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(backgroundColor: kUpPrimary, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(48)),
+          style: ElevatedButton.styleFrom(
+              backgroundColor: kUpPrimary,
+              foregroundColor: Colors.white,
+              minimumSize: const Size.fromHeight(48)),
           onPressed: _openMilestones,
           icon: const Icon(Icons.flag),
           label: const Text('Review milestones'),
@@ -421,9 +508,14 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
 
   Widget _row(String k, String v) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        child:
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text(k, style: const TextStyle(color: kUpTextSecondary)),
-          Flexible(child: Text(v, textAlign: TextAlign.right, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600))),
+          Flexible(
+              child: Text(v,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w600))),
         ]),
       );
 
@@ -439,11 +531,16 @@ class _UpliftApplicationDetailScreenState extends State<UpliftApplicationDetailS
           autofocus: true,
           maxLines: 3,
           style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(labelText: label, labelStyle: const TextStyle(color: kUpTextSecondary)),
+          decoration: InputDecoration(
+              labelText: label,
+              labelStyle: const TextStyle(color: kUpTextSecondary)),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, c.text), child: const Text('Confirm')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, c.text),
+              child: const Text('Confirm')),
         ],
       ),
     );

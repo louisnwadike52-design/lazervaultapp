@@ -55,7 +55,8 @@ class UpliftReceiptScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return UnifiedTransactionReceipt(transaction: upliftReceiptToUnified(receipt));
+    return UnifiedTransactionReceipt(
+        transaction: upliftReceiptToUnified(receipt));
   }
 }
 
@@ -65,7 +66,8 @@ class UpliftReceiptsListScreen extends StatefulWidget {
   const UpliftReceiptsListScreen({super.key});
 
   @override
-  State<UpliftReceiptsListScreen> createState() => _UpliftReceiptsListScreenState();
+  State<UpliftReceiptsListScreen> createState() =>
+      _UpliftReceiptsListScreenState();
 }
 
 class _UpliftReceiptsListScreenState extends State<UpliftReceiptsListScreen> {
@@ -106,40 +108,68 @@ class _UpliftReceiptsListScreenState extends State<UpliftReceiptsListScreen> {
       appBar: upAppBar('Receipts'),
       body: UpGradientScaffoldBody(
         child: _loading
-          ? const UpLoading()
-          : _error != null
-              ? UpErrorState(message: _error!, onRetry: _load)
-              : _receipts.isEmpty
-                  ? const Center(child: Text('No receipts yet.', style: TextStyle(color: kUpTextSecondary)))
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _receipts.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
-                        itemBuilder: (_, i) {
-                          final r = _receipts[i];
-                          final isRelease = r.referenceType == 'milestone_release';
-                          return Material(
-                            color: kUpCard,
-                            borderRadius: BorderRadius.circular(12),
-                            child: ListTile(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              leading: CircleAvatar(
-                                backgroundColor: (isRelease ? kUpSuccess : kUpPrimary).withOpacity(0.15),
-                                child: Icon(isRelease ? Icons.south_west : Icons.reply, color: isRelease ? kUpSuccess : kUpPrimary),
+            ? const UpLoading()
+            : _error != null
+                ? UpErrorState(message: _error!, onRetry: _load)
+                : _receipts.isEmpty
+                    ? const Center(
+                        child: Text('No receipts yet.',
+                            style: TextStyle(color: kUpTextSecondary)))
+                    : RefreshIndicator(
+                        onRefresh: _load,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: _receipts.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (_, i) {
+                            final r = _receipts[i];
+                            final isRelease =
+                                r.referenceType == 'milestone_release';
+                            return Material(
+                              color: kUpCard,
+                              borderRadius: BorderRadius.circular(12),
+                              child: ListTile(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                                leading: CircleAvatar(
+                                  backgroundColor:
+                                      (isRelease ? kUpSuccess : kUpPrimary)
+                                          .withOpacity(0.15),
+                                  child: Icon(
+                                      isRelease
+                                          ? Icons.south_west
+                                          : Icons.reply,
+                                      color:
+                                          isRelease ? kUpSuccess : kUpPrimary),
+                                ),
+                                title: Text(
+                                    isRelease
+                                        ? 'Funding received'
+                                        : 'Escrow refund',
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600)),
+                                subtitle: Text(r.fundTitle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        color: kUpTextSecondary)),
+                                trailing: Text(
+                                    upNaira(r.amount.toInt(), r.currency),
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700)),
+                                onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          UpliftReceiptScreen(receipt: r)),
+                                ),
                               ),
-                              title: Text(isRelease ? 'Funding received' : 'Escrow refund', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                              subtitle: Text(r.fundTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: kUpTextSecondary)),
-                              trailing: Text(upNaira(r.amount.toInt(), r.currency), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => UpliftReceiptScreen(receipt: r)),
-                              ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
-                    ),
       ),
     );
   }

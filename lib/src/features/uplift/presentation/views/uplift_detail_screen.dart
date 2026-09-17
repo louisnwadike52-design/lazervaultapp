@@ -19,7 +19,8 @@ import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
 /// Everyone else sees the fund story and can apply / endorse. An applicant with
 /// a pending offer can accept or decline here.
 class UpliftDetailScreen extends StatefulWidget {
-  const UpliftDetailScreen({required this.fundId, this.applicationId, super.key});
+  const UpliftDetailScreen(
+      {required this.fundId, this.applicationId, super.key});
   final String fundId;
   final String? applicationId;
 
@@ -27,9 +28,11 @@ class UpliftDetailScreen extends StatefulWidget {
   State<UpliftDetailScreen> createState() => _UpliftDetailScreenState();
 }
 
-class _UpliftDetailScreenState extends State<UpliftDetailScreen> with TransactionPinMixin {
+class _UpliftDetailScreenState extends State<UpliftDetailScreen>
+    with TransactionPinMixin {
   @override
-  ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
 
   final _repo = serviceLocator<UpliftRepository>();
   up.UpliftFundMessage? _fund;
@@ -57,7 +60,8 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
       // fund throws for non-funders — swallow it and show none.
       List<up.UpliftApplicationMessage> apps = [];
       try {
-        apps = await _repo.listApplications(fundId: fund.id, sortBy: 'most_endorsed');
+        apps = await _repo.listApplications(
+            fundId: fund.id, sortBy: 'most_endorsed');
       } catch (_) {
         apps = [];
       }
@@ -105,7 +109,11 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
       amount: 0,
       currency: fund.currency,
       onPinValidated: (verificationToken) async {
-        await _repo.cancelFund(fundId: fund.id, reason: reason.trim(), pinToken: verificationToken, transactionId: txId);
+        await _repo.cancelFund(
+            fundId: fund.id,
+            reason: reason.trim(),
+            pinToken: verificationToken,
+            transactionId: txId);
         await _load();
       },
     );
@@ -114,9 +122,12 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
   Future<void> _respondToOffer(bool accept) async {
     if (widget.applicationId == null) return;
     try {
-      await _repo.respondToOffer(applicationId: widget.applicationId!, accept: accept);
+      await _repo.respondToOffer(
+          applicationId: widget.applicationId!, accept: accept);
       Get.snackbar(accept ? 'Offer accepted' : 'Offer declined', '',
-          backgroundColor: kUpCard, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+          backgroundColor: kUpCard,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
       await _load();
     } catch (e) {
       _err(e);
@@ -134,25 +145,43 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
       backgroundColor: kUpBg,
       isScrollControlled: true,
       builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom, left: 16, right: 16, top: 16),
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Counter the offer', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
-          const SizedBox(height: 4),
-          const Text('Propose terms you\'d accept — the investor reviews and re-offers.', style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
-          const SizedBox(height: 12),
-          _sheetField(amountCtrl, 'Amount you want (₦)', keyboard: TextInputType.number),
-          const SizedBox(height: 10),
-          _sheetField(equityCtrl, 'Equity you\'ll give (%)', keyboard: TextInputType.number),
-          const SizedBox(height: 10),
-          _sheetField(noteCtrl, 'Note (optional)', maxLines: 2),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: kUpPrimary, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(48)),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Send counter'),
-          ),
-          const SizedBox(height: 16),
-        ]),
+        padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16),
+        child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Counter the offer',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16)),
+              const SizedBox(height: 4),
+              const Text(
+                  'Propose terms you\'d accept — the investor reviews and re-offers.',
+                  style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
+              const SizedBox(height: 12),
+              _sheetField(amountCtrl, 'Amount you want (₦)',
+                  keyboard: TextInputType.number),
+              const SizedBox(height: 10),
+              _sheetField(equityCtrl, 'Equity you\'ll give (%)',
+                  keyboard: TextInputType.number),
+              const SizedBox(height: 10),
+              _sheetField(noteCtrl, 'Note (optional)', maxLines: 2),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: kUpPrimary,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(48)),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Send counter'),
+              ),
+              const SizedBox(height: 16),
+            ]),
       ),
     );
     if (ok != true) return;
@@ -161,19 +190,25 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
         applicationId: widget.applicationId!,
         accept: false,
         counter: true,
-        counterAmountKobo: ((double.tryParse(amountCtrl.text.trim()) ?? 0) * 100).round(),
-        counterEquityPct: ((double.tryParse(equityCtrl.text.trim()) ?? 0) * 100).round(),
+        counterAmountKobo:
+            ((double.tryParse(amountCtrl.text.trim()) ?? 0) * 100).round(),
+        counterEquityPct:
+            ((double.tryParse(equityCtrl.text.trim()) ?? 0) * 100).round(),
         counterNote: noteCtrl.text.trim(),
       );
       Get.snackbar('Counter sent', '${f.title} will review your terms',
-          backgroundColor: kUpCard, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+          backgroundColor: kUpCard,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
       await _load();
     } catch (e) {
       _err(e);
     }
   }
 
-  Widget _sheetField(TextEditingController c, String label, {int maxLines = 1, TextInputType? keyboard}) => TextField(
+  Widget _sheetField(TextEditingController c, String label,
+          {int maxLines = 1, TextInputType? keyboard}) =>
+      TextField(
         controller: c,
         maxLines: maxLines,
         keyboardType: keyboard,
@@ -184,12 +219,15 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
           filled: true,
           fillColor: kUpCard,
           isDense: true,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none),
         ),
       );
 
   Future<void> _editFund() async {
-    final changed = await Get.to<bool>(() => CreateUpliftScreen(existing: _fund));
+    final changed =
+        await Get.to<bool>(() => CreateUpliftScreen(existing: _fund));
     if (changed == true) await _load();
   }
 
@@ -198,7 +236,9 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
       await _repo.publishFund(_fund!.id);
       await _load();
       Get.snackbar('Published', 'Your fund is now accepting applications',
-          backgroundColor: kUpCard, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+          backgroundColor: kUpCard,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
       _err(e);
     }
@@ -218,11 +258,17 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
     if (id.isEmpty) return;
     final confirmed = await Get.dialog<bool>(AlertDialog(
       backgroundColor: kUpCard,
-      title: const Text('Withdraw application?', style: TextStyle(color: Colors.white)),
-      content: const Text('You can re-apply while the fund is still open.', style: TextStyle(color: kUpTextSecondary)),
+      title: const Text('Withdraw application?',
+          style: TextStyle(color: Colors.white)),
+      content: const Text('You can re-apply while the fund is still open.',
+          style: TextStyle(color: kUpTextSecondary)),
       actions: [
-        TextButton(onPressed: () => Get.back(result: false), child: const Text('Keep')),
-        TextButton(onPressed: () => Get.back(result: true), child: const Text('Withdraw', style: TextStyle(color: kUpError))),
+        TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('Keep')),
+        TextButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('Withdraw', style: TextStyle(color: kUpError))),
       ],
     ));
     if (confirmed != true) return;
@@ -242,7 +288,9 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
           fund: _fund!,
           showFunderActions: true,
           chatTargetUserId: a.applicant.userUuid,
-          chatTargetName: a.businessName.isNotEmpty ? a.businessName : a.applicant.displayName,
+          chatTargetName: a.businessName.isNotEmpty
+              ? a.businessName
+              : a.applicant.displayName,
           chatTargetAvatar: a.applicant.profilePicture,
         ));
     await _load();
@@ -271,7 +319,8 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
           fund: f,
           showFunderActions: false,
           chatTargetUserId: f.funder.userUuid,
-          chatTargetName: f.funder.displayName.isNotEmpty ? f.funder.displayName : f.title,
+          chatTargetName:
+              f.funder.displayName.isNotEmpty ? f.funder.displayName : f.title,
           chatTargetAvatar: f.funder.profilePicture,
         ));
     await _load();
@@ -286,7 +335,11 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
           showFunderActions: false,
           // Own application in the community list ⇒ still allow messaging the investor.
           chatTargetUserId: own ? _fund!.funder.userUuid : null,
-          chatTargetName: own ? (_fund!.funder.displayName.isNotEmpty ? _fund!.funder.displayName : _fund!.title) : null,
+          chatTargetName: own
+              ? (_fund!.funder.displayName.isNotEmpty
+                  ? _fund!.funder.displayName
+                  : _fund!.title)
+              : null,
           chatTargetAvatar: own ? _fund!.funder.profilePicture : null,
         ));
     await _load();
@@ -302,7 +355,9 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
   }
 
   void _err(Object e) => Get.snackbar('Error', upFriendlyError(e),
-      backgroundColor: kUpError, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+      backgroundColor: kUpError,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM);
 
   @override
   Widget build(BuildContext context) {
@@ -310,7 +365,10 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
       backgroundColor: kUpBg,
       appBar: upAppBar('Fund details', actions: [
         if (_fund != null && _fund!.isFunder && _fundEditable(_fund!.status))
-          IconButton(tooltip: 'Edit', icon: const Icon(Icons.edit, color: Colors.white), onPressed: _editFund),
+          IconButton(
+              tooltip: 'Edit',
+              icon: const Icon(Icons.edit, color: Colors.white),
+              onPressed: _editFund),
       ]),
       body: UpGradientScaffoldBody(
         child: _loading
@@ -332,23 +390,35 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
           if (f.coverImageUrl.isNotEmpty) ...[
             ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(f.coverImageUrl, height: 150, width: double.infinity, fit: BoxFit.cover,
+                child: Image.network(f.coverImageUrl,
+                    height: 150,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => const SizedBox.shrink())),
             const SizedBox(height: 14),
           ],
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: Text(f.title, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700))),
+              Expanded(
+                  child: Text(f.title,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700))),
               const SizedBox(width: 10),
-              Padding(padding: const EdgeInsets.only(top: 2), child: UpStatusChip(label: upFundStatusLabel(f.status))),
+              Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: UpStatusChip(label: upFundStatusLabel(f.status))),
             ],
           ),
           const SizedBox(height: 6),
-          Text('${f.category} · up to ${upNaira(f.perBusinessCap.toInt(), f.currency)} each · ${f.targetCount} businesses',
+          Text(
+              '${f.category} · up to ${upNaira(f.perBusinessCap.toInt(), f.currency)} each · ${f.targetCount} businesses',
               style: const TextStyle(color: kUpTextSecondary, fontSize: 13)),
           const SizedBox(height: 12),
-          Text(f.description, style: const TextStyle(color: Colors.white70, height: 1.4)),
+          Text(f.description,
+              style: const TextStyle(color: Colors.white70, height: 1.4)),
           if (f.gallery.isNotEmpty) ...[
             const SizedBox(height: 12),
             SizedBox(
@@ -359,7 +429,9 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (_, i) => ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.network(f.gallery[i], width: 100, fit: BoxFit.cover,
+                    child: Image.network(f.gallery[i],
+                        width: 100,
+                        fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => const SizedBox.shrink())),
               ),
             ),
@@ -377,15 +449,19 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
   Widget _escrowCard(up.UpliftFundMessage f) {
     final committed = f.committedPool.toInt();
     final released = f.releasedTotal.toInt();
-    final progress = committed > 0 ? (released / committed).clamp(0.0, 1.0) : 0.0;
+    final progress =
+        committed > 0 ? (released / committed).clamp(0.0, 1.0) : 0.0;
     return UpCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: const [
-            Icon(Icons.account_balance_wallet_outlined, size: 16, color: kUpPrimarySoft),
+            Icon(Icons.account_balance_wallet_outlined,
+                size: 16, color: kUpPrimarySoft),
             SizedBox(width: 6),
-            Text('Pool & escrow', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+            Text('Pool & escrow',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
           ]),
           const SizedBox(height: 12),
           _row('Committed', upNaira(committed, f.currency)),
@@ -394,9 +470,11 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
           // off the applicant + community view to reduce clutter.
           if (f.isFunder) ...[
             _row('Refunded', upNaira(f.refundedTotal.toInt(), f.currency)),
-            _row('Available to allocate', upNaira(f.escrowAvailable.toInt(), f.currency)),
+            _row('Available to allocate',
+                upNaira(f.escrowAvailable.toInt(), f.currency)),
             if (_escrow != null)
-              _row('Escrow wallet (live)', upNaira(_escrow!.balance.toInt(), f.currency)),
+              _row('Escrow wallet (live)',
+                  upNaira(_escrow!.balance.toInt(), f.currency)),
           ],
           const SizedBox(height: 12),
           UpProgressBar(value: progress),
@@ -407,9 +485,12 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
 
   Widget _row(String k, String v) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 3),
-        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        child:
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text(k, style: const TextStyle(color: kUpTextSecondary)),
-          Text(v, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          Text(v,
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.w600)),
         ]),
       );
 
@@ -425,15 +506,24 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
           Row(children: const [
             Icon(Icons.pie_chart, size: 16, color: kUpPrimarySoft),
             SizedBox(width: 6),
-            Text('Deal structure', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+            Text('Deal structure',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
           ]),
           const SizedBox(height: 10),
-          _row('Type', upInvestmentTypeLabel(eq.investmentType).isEmpty ? 'Equity' : upInvestmentTypeLabel(eq.investmentType)),
-          if (eq.offeredPct > 0) _row('Equity per business', upPct(eq.offeredPct)),
-          if (eq.valuation > 0) _row('Valuation', upNaira(eq.valuation, f.currency)),
+          _row(
+              'Type',
+              upInvestmentTypeLabel(eq.investmentType).isEmpty
+                  ? 'Equity'
+                  : upInvestmentTypeLabel(eq.investmentType)),
+          if (eq.offeredPct > 0)
+            _row('Equity per business', upPct(eq.offeredPct)),
+          if (eq.valuation > 0)
+            _row('Valuation', upNaira(eq.valuation, f.currency)),
           if (eq.terms.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(eq.terms, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            Text(eq.terms,
+                style: const TextStyle(color: Colors.white70, fontSize: 13)),
           ],
         ],
       ),
@@ -476,13 +566,17 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
       s == up.UpliftFundStatus.UPLIFT_FUND_STATUS_PAUSED;
 
   List<Widget> _funderSection(up.UpliftFundMessage f) {
-    final actionable = f.status != up.UpliftFundStatus.UPLIFT_FUND_STATUS_CANCELLED &&
-        f.status != up.UpliftFundStatus.UPLIFT_FUND_STATUS_COMPLETED;
+    final actionable =
+        f.status != up.UpliftFundStatus.UPLIFT_FUND_STATUS_CANCELLED &&
+            f.status != up.UpliftFundStatus.UPLIFT_FUND_STATUS_COMPLETED;
     return [
       // Draft funds: prominent publish CTA before anything else.
       if (f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_DRAFT) ...[
         ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(backgroundColor: kUpSuccess, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(48)),
+          style: ElevatedButton.styleFrom(
+              backgroundColor: kUpSuccess,
+              foregroundColor: Colors.white,
+              minimumSize: const Size.fromHeight(48)),
           onPressed: _publishFund,
           icon: const Icon(Icons.publish),
           label: const Text('Publish — start accepting applications'),
@@ -496,7 +590,10 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
       Row(children: [
         Expanded(
           child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(backgroundColor: kUpPrimary, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(48)),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: kUpPrimary,
+                foregroundColor: Colors.white,
+                minimumSize: const Size.fromHeight(48)),
             onPressed: actionable ? _commitPool : null,
             icon: const Icon(Icons.savings),
             label: const Text('Commit funds'),
@@ -505,7 +602,10 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
         const SizedBox(width: 12),
         Expanded(
           child: OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(foregroundColor: kUpError, minimumSize: const Size.fromHeight(48), side: const BorderSide(color: kUpError)),
+            style: OutlinedButton.styleFrom(
+                foregroundColor: kUpError,
+                minimumSize: const Size.fromHeight(48),
+                side: const BorderSide(color: kUpError)),
             onPressed: actionable ? _cancelFund : null,
             icon: const Icon(Icons.cancel),
             label: const Text('Cancel'),
@@ -519,10 +619,20 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
             f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_PAUSED)
           Expanded(
             child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(foregroundColor: kUpWarning, minimumSize: const Size.fromHeight(44), side: const BorderSide(color: kUpDivider)),
-              onPressed: () => _pauseResume(f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_PAUSED),
-              icon: Icon(f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_PAUSED ? Icons.play_arrow : Icons.pause),
-              label: Text(f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_PAUSED ? 'Resume' : 'Pause'),
+              style: OutlinedButton.styleFrom(
+                  foregroundColor: kUpWarning,
+                  minimumSize: const Size.fromHeight(44),
+                  side: const BorderSide(color: kUpDivider)),
+              onPressed: () => _pauseResume(
+                  f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_PAUSED),
+              icon: Icon(
+                  f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_PAUSED
+                      ? Icons.play_arrow
+                      : Icons.pause),
+              label: Text(
+                  f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_PAUSED
+                      ? 'Resume'
+                      : 'Pause'),
             ),
           ),
         if (f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_OPEN ||
@@ -531,8 +641,12 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
           const SizedBox(width: 12),
         Expanded(
           child: OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(foregroundColor: Colors.white, minimumSize: const Size.fromHeight(44), side: const BorderSide(color: kUpDivider)),
-            onPressed: () => Get.to(() => UpliftFundingActivityScreen(fundId: f.id, currency: f.currency)),
+            style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                minimumSize: const Size.fromHeight(44),
+                side: const BorderSide(color: kUpDivider)),
+            onPressed: () => Get.to(() => UpliftFundingActivityScreen(
+                fundId: f.id, currency: f.currency)),
             icon: const Icon(Icons.receipt_long),
             label: const Text('Funding activity'),
           ),
@@ -542,14 +656,22 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text('Applications', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
-          Text('${f.applicationCount} total · ${f.selectedCount}/${f.targetCount} selected',
+          const Text('Applications',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700)),
+          Text(
+              '${f.applicationCount} total · ${f.selectedCount}/${f.targetCount} selected',
               style: const TextStyle(color: kUpTextSecondary, fontSize: 12)),
         ],
       ),
       const SizedBox(height: 8),
       if (_applications.isEmpty)
-        const Padding(padding: EdgeInsets.all(16), child: Text('No applications yet.', style: TextStyle(color: kUpTextSecondary))),
+        const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text('No applications yet.',
+                style: TextStyle(color: kUpTextSecondary))),
       for (final a in _applications) _funderApplicationTile(a),
     ];
   }
@@ -581,10 +703,14 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
                         Text(a.businessName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700)),
                         const SizedBox(height: 2),
-                        Text('Requested ${upNaira(a.requestedAmount.toInt(), a.currency)} · ❤ ${a.endorsementCount}',
-                            style: const TextStyle(color: kUpTextSecondary, fontSize: 12)),
+                        Text(
+                            'Requested ${upNaira(a.requestedAmount.toInt(), a.currency)} · ❤ ${a.endorsementCount}',
+                            style: const TextStyle(
+                                color: kUpTextSecondary, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -594,28 +720,44 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
               ),
               if (a.pitch.trim().isNotEmpty) ...[
                 const SizedBox(height: 8),
-                Text(a.pitch, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                Text(a.pitch,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style:
+                        const TextStyle(color: Colors.white70, fontSize: 13)),
               ],
-              if (a.agreedEquityPct > 0 || a.proposedEquityPct > 0 || a.hasCounter) ...[
+              if (a.agreedEquityPct > 0 ||
+                  a.proposedEquityPct > 0 ||
+                  a.hasCounter) ...[
                 const SizedBox(height: 8),
                 Wrap(spacing: 6, runSpacing: 6, children: [
-                  if (a.agreedEquityPct > 0) UpEquityChip(label: 'Offered ${upPct(a.agreedEquityPct)}'),
-                  if (a.agreedEquityPct == 0 && a.proposedEquityPct > 0) UpEquityChip(label: 'Proposes ${upPct(a.proposedEquityPct)}', icon: Icons.handshake),
+                  if (a.agreedEquityPct > 0)
+                    UpEquityChip(label: 'Offered ${upPct(a.agreedEquityPct)}'),
+                  if (a.agreedEquityPct == 0 && a.proposedEquityPct > 0)
+                    UpEquityChip(
+                        label: 'Proposes ${upPct(a.proposedEquityPct)}',
+                        icon: Icons.handshake),
                   if (a.hasCounter)
                     UpEquityChip(
                       icon: Icons.swap_horiz,
-                      label: 'Counter ${upNaira(a.counterAmount.toInt(), a.currency)}${a.counterEquityPct > 0 ? ' · ${upPct(a.counterEquityPct)}' : ''}',
+                      label:
+                          'Counter ${upNaira(a.counterAmount.toInt(), a.currency)}${a.counterEquityPct > 0 ? ' · ${upPct(a.counterEquityPct)}' : ''}',
                     ),
                 ]),
               ],
               const SizedBox(height: 10),
               Row(children: [
-                Icon(Icons.touch_app_outlined, size: 14, color: kUpPrimarySoft.withOpacity(0.9)),
+                Icon(Icons.touch_app_outlined,
+                    size: 14, color: kUpPrimarySoft.withOpacity(0.9)),
                 const SizedBox(width: 6),
                 Text(_funderTileHint(a.status),
-                    style: const TextStyle(color: kUpPrimarySoft, fontSize: 12, fontWeight: FontWeight.w500)),
+                    style: const TextStyle(
+                        color: kUpPrimarySoft,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500)),
                 const Spacer(),
-                const Icon(Icons.chevron_right, color: kUpTextSecondary, size: 20),
+                const Icon(Icons.chevron_right,
+                    color: kUpTextSecondary, size: 20),
               ]),
             ],
           ),
@@ -632,7 +774,8 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
         return 'Tap to review & decide';
       case up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_NEGOTIATING:
         return 'Tap to review counter';
-      case up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_FUNDING_IN_PROGRESS:
+      case up.UpliftApplicationStatus
+            .UPLIFT_APPLICATION_STATUS_FUNDING_IN_PROGRESS:
       case up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_COMPLETED:
         return 'Tap to review milestones';
       default:
@@ -641,8 +784,10 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
   }
 
   List<Widget> _applicantSection(up.UpliftFundMessage f) {
-    final hasOffer = f.myApplicationStatus == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_SELECTED;
-    final negotiating = f.myApplicationStatus == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_NEGOTIATING;
+    final hasOffer = f.myApplicationStatus ==
+        up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_SELECTED;
+    final negotiating = f.myApplicationStatus ==
+        up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_NEGOTIATING;
     final hasApplied = f.myApplicationId.isNotEmpty;
     return [
       if (hasOffer) ...[
@@ -657,19 +802,28 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
             Row(children: const [
               Text('🎉', style: TextStyle(fontSize: 18)),
               SizedBox(width: 8),
-              Expanded(child: Text('You have a funding offer', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15))),
+              Expanded(
+                  child: Text('You have a funding offer',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15))),
             ]),
             const SizedBox(height: 4),
             const Align(
               alignment: Alignment.centerLeft,
-              child: Text('Open your application to see the full terms, then respond.',
+              child: Text(
+                  'Open your application to see the full terms, then respond.',
                   style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
             ),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(backgroundColor: kUpSuccess, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(46)),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: kUpSuccess,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(46)),
                 onPressed: () => _respondToOffer(true),
                 icon: const Icon(Icons.check_circle, size: 18),
                 label: const Text('Accept offer'),
@@ -679,15 +833,21 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
             Row(children: [
               Expanded(
                   child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(44), side: const BorderSide(color: kUpPrimary)),
+                      style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(44),
+                          side: const BorderSide(color: kUpPrimary)),
                       onPressed: _negotiate,
-                      child: const Text('Negotiate', style: TextStyle(color: kUpPrimarySoft)))),
+                      child: const Text('Negotiate',
+                          style: TextStyle(color: kUpPrimarySoft)))),
               const SizedBox(width: 8),
               Expanded(
                   child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(44), side: const BorderSide(color: kUpDivider)),
+                      style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(44),
+                          side: const BorderSide(color: kUpDivider)),
                       onPressed: () => _respondToOffer(false),
-                      child: const Text('Decline', style: TextStyle(color: Colors.white)))),
+                      child: const Text('Decline',
+                          style: TextStyle(color: Colors.white)))),
             ]),
           ]),
         ),
@@ -704,14 +864,20 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
           child: Row(children: const [
             Icon(Icons.hourglass_top, color: kUpPrimarySoft),
             SizedBox(width: 10),
-            Expanded(child: Text('Counter sent — awaiting the investor\'s response.', style: TextStyle(color: Colors.white))),
+            Expanded(
+                child: Text('Counter sent — awaiting the investor\'s response.',
+                    style: TextStyle(color: Colors.white))),
           ]),
         ),
         const SizedBox(height: 12),
       ],
-      if (!hasApplied && f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_OPEN)
+      if (!hasApplied &&
+          f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_OPEN)
         ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(backgroundColor: kUpPrimary, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(50)),
+          style: ElevatedButton.styleFrom(
+              backgroundColor: kUpPrimary,
+              foregroundColor: Colors.white,
+              minimumSize: const Size.fromHeight(50)),
           onPressed: () async {
             await Get.to(() => ApplyUpliftScreen(fund: f));
             _load();
@@ -737,9 +903,12 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Your application status: ${upAppStatusLabel(f.myApplicationStatus)}', style: const TextStyle(color: Colors.white)),
+                    Text(
+                        'Your application status: ${upAppStatusLabel(f.myApplicationStatus)}',
+                        style: const TextStyle(color: Colors.white)),
                     const SizedBox(height: 2),
-                    const Text('View details & message the investor', style: TextStyle(color: kUpPrimarySoft, fontSize: 12)),
+                    const Text('View details & message the investor',
+                        style: TextStyle(color: kUpPrimarySoft, fontSize: 12)),
                   ],
                 ),
               ),
@@ -747,13 +916,21 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
             ]),
           ),
         ),
-        if (f.myApplicationStatus == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_FUNDING_IN_PROGRESS ||
-            f.myApplicationStatus == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_COMPLETED) ...[
+        if (f.myApplicationStatus ==
+                up.UpliftApplicationStatus
+                    .UPLIFT_APPLICATION_STATUS_FUNDING_IN_PROGRESS ||
+            f.myApplicationStatus ==
+                up.UpliftApplicationStatus
+                    .UPLIFT_APPLICATION_STATUS_COMPLETED) ...[
           const SizedBox(height: 12),
           ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(backgroundColor: kUpPrimary, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(48)),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: kUpPrimary,
+                foregroundColor: Colors.white,
+                minimumSize: const Size.fromHeight(48)),
             onPressed: () async {
-              await Get.to(() => UpliftMilestonesScreen(applicationId: f.myApplicationId, isFunder: false));
+              await Get.to(() => UpliftMilestonesScreen(
+                  applicationId: f.myApplicationId, isFunder: false));
               _load();
             },
             icon: const Icon(Icons.flag),
@@ -761,16 +938,23 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
           ),
         ],
         // Withdraw is allowed before funding starts.
-        if (f.myApplicationStatus == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_SUBMITTED ||
-            f.myApplicationStatus == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_UNDER_REVIEW ||
-            f.myApplicationStatus == up.UpliftApplicationStatus.UPLIFT_APPLICATION_STATUS_SHORTLISTED) ...[
+        if (f.myApplicationStatus ==
+                up.UpliftApplicationStatus
+                    .UPLIFT_APPLICATION_STATUS_SUBMITTED ||
+            f.myApplicationStatus ==
+                up.UpliftApplicationStatus
+                    .UPLIFT_APPLICATION_STATUS_UNDER_REVIEW ||
+            f.myApplicationStatus ==
+                up.UpliftApplicationStatus
+                    .UPLIFT_APPLICATION_STATUS_SHORTLISTED) ...[
           const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               onPressed: _withdrawApplication,
               icon: const Icon(Icons.undo, size: 18, color: kUpError),
-              label: const Text('Withdraw application', style: TextStyle(color: kUpError)),
+              label: const Text('Withdraw application',
+                  style: TextStyle(color: kUpError)),
             ),
           ),
         ],
@@ -778,9 +962,14 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
       // Community endorsement — anyone can back other applicants.
       if (_applications.isNotEmpty) ...[
         const SizedBox(height: 22),
-        const Text('Applicants', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+        const Text('Applicants',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
-        const Text('Endorse the businesses you believe in — the funder sees community support.',
+        const Text(
+            'Endorse the businesses you believe in — the funder sees community support.',
             style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
         const SizedBox(height: 10),
         for (final a in _applications)
@@ -792,14 +981,24 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
             trailing: a.id == f.myApplicationId
                 ? const Chip(
                     backgroundColor: kUpCard,
-                    label: Text('Your application', style: TextStyle(color: kUpTextSecondary, fontSize: 11)),
+                    label: Text('Your application',
+                        style:
+                            TextStyle(color: kUpTextSecondary, fontSize: 11)),
                   )
                 : TextButton.icon(
                     onPressed: () => _endorse(a),
-                    icon: Icon(a.viewerHasEndorsed ? Icons.favorite : Icons.favorite_border,
-                        size: 18, color: a.viewerHasEndorsed ? kUpError : kUpTextSecondary),
+                    icon: Icon(
+                        a.viewerHasEndorsed
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        size: 18,
+                        color:
+                            a.viewerHasEndorsed ? kUpError : kUpTextSecondary),
                     label: Text(a.viewerHasEndorsed ? 'Endorsed' : 'Endorse',
-                        style: TextStyle(color: a.viewerHasEndorsed ? kUpError : kUpTextSecondary)),
+                        style: TextStyle(
+                            color: a.viewerHasEndorsed
+                                ? kUpError
+                                : kUpTextSecondary)),
                   ),
           ),
       ],
@@ -820,11 +1019,16 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen> with Transactio
           autofocus: true,
           maxLines: 3,
           style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(labelText: label, labelStyle: const TextStyle(color: kUpTextSecondary)),
+          decoration: InputDecoration(
+              labelText: label,
+              labelStyle: const TextStyle(color: kUpTextSecondary)),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(ctx, c.text), child: const Text('Confirm')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, c.text),
+              child: const Text('Confirm')),
         ],
       ),
     );

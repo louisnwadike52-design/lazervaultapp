@@ -21,9 +21,11 @@ class UpliftCommitScreen extends StatefulWidget {
   State<UpliftCommitScreen> createState() => _UpliftCommitScreenState();
 }
 
-class _UpliftCommitScreenState extends State<UpliftCommitScreen> with TransactionPinMixin {
+class _UpliftCommitScreenState extends State<UpliftCommitScreen>
+    with TransactionPinMixin {
   @override
-  ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
 
   final _repo = serviceLocator<UpliftRepository>();
   final _amount = TextEditingController();
@@ -39,14 +41,19 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen> with Transactio
     final major = double.tryParse(_amount.text.trim());
     if (major == null || major <= 0) {
       Get.snackbar('Enter an amount', 'Type the amount to commit to escrow',
-          backgroundColor: kUpError, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+          backgroundColor: kUpError,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
       return;
     }
     final account = serviceLocator<AccountManager>();
     final sourceId = account.activeAccountId;
     if (sourceId == null || sourceId.isEmpty) {
-      Get.snackbar('No active account', 'Select an account on the dashboard first',
-          backgroundColor: kUpError, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+          'No active account', 'Select an account on the dashboard first',
+          backgroundColor: kUpError,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
       return;
     }
     final amountKobo = (major * 100).round();
@@ -69,13 +76,18 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen> with Transactio
             transactionId: txId,
           );
           Get.back(result: true);
-          Get.snackbar('Committed', '${upNaira(amountKobo, widget.fund.currency)} moved to escrow',
-              backgroundColor: kUpCard, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+          Get.snackbar('Committed',
+              '${upNaira(amountKobo, widget.fund.currency)} moved to escrow',
+              backgroundColor: kUpCard,
+              colorText: Colors.white,
+              snackPosition: SnackPosition.BOTTOM);
         },
       );
     } catch (e) {
       Get.snackbar('Could not commit', upFriendlyError(e),
-          backgroundColor: kUpError, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+          backgroundColor: kUpError,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -95,13 +107,23 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen> with Transactio
             // Fund hero
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(gradient: kUpAccentGradient, borderRadius: BorderRadius.circular(16)),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(widget.fund.title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
-                const SizedBox(height: 4),
-                Text('Escrow available: ${upNaira(widget.fund.escrowAvailable.toInt(), widget.fund.currency)}',
-                    style: const TextStyle(color: Colors.white70, fontSize: 12)),
-              ]),
+              decoration: BoxDecoration(
+                  gradient: kUpAccentGradient,
+                  borderRadius: BorderRadius.circular(16)),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.fund.title,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 4),
+                    Text(
+                        'Escrow available: ${upNaira(widget.fund.escrowAvailable.toInt(), widget.fund.currency)}',
+                        style: const TextStyle(
+                            color: Colors.white70, fontSize: 12)),
+                  ]),
             ),
             const SizedBox(height: 16),
             _readOnlyTile(
@@ -110,60 +132,101 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen> with Transactio
               value: account == null
                   ? 'Active account'
                   : '${_titleCase(account.accountType)} · ${_maskAccount(account.accountNumber)}',
-              sub: account == null ? null : 'Balance ${account.currency} ${account.balance.toStringAsFixed(2)}',
+              sub: account == null
+                  ? null
+                  : 'Balance ${account.currency} ${account.balance.toStringAsFixed(2)}',
             ),
             const SizedBox(height: 10),
-            _readOnlyTile(icon: Icons.public, label: 'Locale', value: locale.currentCountry, sub: locale.currentCurrency),
+            _readOnlyTile(
+                icon: Icons.public,
+                label: 'Locale',
+                value: locale.currentCountry,
+                sub: locale.currentCurrency),
             const SizedBox(height: 18),
             TextField(
               controller: _amount,
               keyboardType: TextInputType.number,
               autofocus: true,
-              style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700),
               decoration: InputDecoration(
                 labelText: 'Amount to commit (${widget.fund.currency})',
                 labelStyle: const TextStyle(color: kUpTextSecondary),
                 prefixText: '₦ ',
-                prefixStyle: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+                prefixStyle: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700),
                 filled: true,
                 fillColor: kUpCard,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none),
               ),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: kUpPrimary, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(52)),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: kUpPrimary,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size.fromHeight(52)),
               onPressed: _submitting ? null : _confirm,
               child: _submitting
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white))
                   : const Text('Confirm & enter PIN'),
             ),
             const SizedBox(height: 10),
-            const Text('Funds are held in escrow and released to businesses per approved milestone.',
-                textAlign: TextAlign.center, style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
+            const Text(
+                'Funds are held in escrow and released to businesses per approved milestone.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
           ],
         ),
       ),
     );
   }
 
-  Widget _readOnlyTile({required IconData icon, required String label, required String value, String? sub}) {
+  Widget _readOnlyTile(
+      {required IconData icon,
+      required String label,
+      required String value,
+      String? sub}) {
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: kUpCard, borderRadius: BorderRadius.circular(12), border: Border.all(color: kUpDivider)),
+      decoration: BoxDecoration(
+          color: kUpCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: kUpDivider)),
       child: Row(children: [
         Container(
-          width: 40, height: 40, alignment: Alignment.center,
-          decoration: BoxDecoration(color: kUpPrimary.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
+          width: 40,
+          height: 40,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+              color: kUpPrimary.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10)),
           child: Icon(icon, color: kUpPrimarySoft, size: 20),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, style: const TextStyle(color: kUpTextSecondary, fontSize: 11)),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(label,
+                style: const TextStyle(color: kUpTextSecondary, fontSize: 11)),
             const SizedBox(height: 2),
-            Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-            if (sub != null) Text(sub, style: const TextStyle(color: kUpTextSecondary, fontSize: 11)),
+            Text(value,
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w600)),
+            if (sub != null)
+              Text(sub,
+                  style:
+                      const TextStyle(color: kUpTextSecondary, fontSize: 11)),
           ]),
         ),
         const Icon(Icons.lock, size: 14, color: kUpTextSecondary),
@@ -171,6 +234,8 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen> with Transactio
     );
   }
 
-  String _maskAccount(String n) => n.length <= 4 ? n : '••${n.substring(n.length - 4)}';
-  String _titleCase(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+  String _maskAccount(String n) =>
+      n.length <= 4 ? n : '••${n.substring(n.length - 4)}';
+  String _titleCase(String s) =>
+      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 }

@@ -1,6 +1,7 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as pb_ts;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
+    as pb_ts;
 import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
 
 /// Thin gRPC wrapper around the products-gateway UpliftService. Every call is
@@ -53,7 +54,8 @@ class UpliftRepository {
     if (fundingDeadline != null) {
       req.fundingDeadline = _tsFrom(fundingDeadline);
     }
-    final resp = await _client.createUpliftFund(req, options: await _callOptions.withAuth());
+    final resp = await _client.createUpliftFund(req,
+        options: await _callOptions.withAuth());
     return resp.fund;
   }
 
@@ -83,9 +85,11 @@ class UpliftRepository {
       gallery: gallery,
       metadata: metadata,
     );
-    if (applicationDeadline != null) req.applicationDeadline = _tsFrom(applicationDeadline);
+    if (applicationDeadline != null)
+      req.applicationDeadline = _tsFrom(applicationDeadline);
     if (fundingDeadline != null) req.fundingDeadline = _tsFrom(fundingDeadline);
-    final resp = await _client.updateUpliftFund(req, options: await _callOptions.withAuth());
+    final resp = await _client.updateUpliftFund(req,
+        options: await _callOptions.withAuth());
     return resp.fund;
   }
 
@@ -104,31 +108,42 @@ class UpliftRepository {
     String query = '',
   }) async {
     final resp = await _client.listUpliftFunds(
-      up.ListUpliftFundsRequest(page: page, pageSize: pageSize, status: status, category: category, query: query),
+      up.ListUpliftFundsRequest(
+          page: page,
+          pageSize: pageSize,
+          status: status,
+          category: category,
+          query: query),
       options: await _callOptions.withAuth(),
     );
     return resp.funds;
   }
 
-  Future<List<up.UpliftFundMessage>> myFunds({int page = 1, int pageSize = 50, String status = ''}) async {
+  Future<List<up.UpliftFundMessage>> myFunds(
+      {int page = 1, int pageSize = 50, String status = ''}) async {
     final resp = await _client.getMyUpliftFunds(
-      up.GetMyUpliftFundsRequest(page: page, pageSize: pageSize, status: status),
+      up.GetMyUpliftFundsRequest(
+          page: page, pageSize: pageSize, status: status),
       options: await _callOptions.withAuth(),
     );
     return resp.funds;
   }
 
   Future<up.UpliftFundMessage> getFund(String fundId) async {
-    final resp = await _client.getUpliftFund(up.GetUpliftFundRequest(fundId: fundId), options: await _callOptions.withAuth());
+    final resp = await _client.getUpliftFund(
+        up.GetUpliftFundRequest(fundId: fundId),
+        options: await _callOptions.withAuth());
     return resp.fund;
   }
 
   Future<up.PublishUpliftFundResponse> publishFund(String fundId) =>
       _publish(fundId);
   Future<up.PublishUpliftFundResponse> _publish(String fundId) async =>
-      _client.publishUpliftFund(up.PublishUpliftFundRequest(fundId: fundId), options: await _callOptions.withAuth());
+      _client.publishUpliftFund(up.PublishUpliftFundRequest(fundId: fundId),
+          options: await _callOptions.withAuth());
 
-  Future<up.UpliftFundMessage> pauseFund(String fundId, {required bool resume}) async {
+  Future<up.UpliftFundMessage> pauseFund(String fundId,
+      {required bool resume}) async {
     final resp = await _client.pauseUpliftFund(
       up.PauseUpliftFundRequest(fundId: fundId, resume: resume),
       options: await _callOptions.withAuth(),
@@ -136,17 +151,21 @@ class UpliftRepository {
     return resp.fund;
   }
 
-  Future<List<up.UpliftMilestoneReleaseRecord>> listReleases({String fundId = '', String status = ''}) async {
+  Future<List<up.UpliftMilestoneReleaseRecord>> listReleases(
+      {String fundId = '', String status = ''}) async {
     final resp = await _client.listUpliftMilestoneReleases(
-      up.ListUpliftMilestoneReleasesRequest(fundId: fundId, status: status, page: 1, pageSize: 100),
+      up.ListUpliftMilestoneReleasesRequest(
+          fundId: fundId, status: status, page: 1, pageSize: 100),
       options: await _callOptions.withAuth(),
     );
     return resp.releases;
   }
 
-  Future<List<up.UpliftEscrowRefundRecord>> listRefunds({required String fundId, String status = ''}) async {
+  Future<List<up.UpliftEscrowRefundRecord>> listRefunds(
+      {required String fundId, String status = ''}) async {
     final resp = await _client.listUpliftEscrowRefunds(
-      up.ListUpliftEscrowRefundsRequest(fundId: fundId, status: status, page: 1, pageSize: 100),
+      up.ListUpliftEscrowRefundsRequest(
+          fundId: fundId, status: status, page: 1, pageSize: 100),
       options: await _callOptions.withAuth(),
     );
     return resp.refunds;
@@ -178,7 +197,11 @@ class UpliftRepository {
     required String transactionId,
   }) async {
     return _client.cancelUpliftFund(
-      up.CancelUpliftFundRequest(fundId: fundId, reason: reason, transactionPin: pinToken, transactionId: transactionId),
+      up.CancelUpliftFundRequest(
+          fundId: fundId,
+          reason: reason,
+          transactionPin: pinToken,
+          transactionId: transactionId),
       options: await _callOptions.withAuth(),
     );
   }
@@ -193,6 +216,7 @@ class UpliftRepository {
     required int requestedAmountKobo,
     List<String> images = const [],
     List<String> docUrls = const [],
+    String videoUrl = '',
     String businessAccountId = '',
     int proposedEquityPct = 0,
     String equityNote = '',
@@ -206,6 +230,7 @@ class UpliftRepository {
         requestedAmount: Int64(requestedAmountKobo),
         images: images,
         docUrls: docUrls,
+        videoUrl: videoUrl,
         businessAccountId: businessAccountId,
         proposedEquityPct: proposedEquityPct,
         equityNote: equityNote,
@@ -225,27 +250,38 @@ class UpliftRepository {
   }) async {
     final resp = await _client.listUpliftApplications(
       up.ListUpliftApplicationsRequest(
-        fundId: fundId, mineOnly: mineOnly, status: status, page: page, pageSize: pageSize, sortBy: sortBy),
+          fundId: fundId,
+          mineOnly: mineOnly,
+          status: status,
+          page: page,
+          pageSize: pageSize,
+          sortBy: sortBy),
       options: await _callOptions.withAuth(),
     );
     return resp.applications;
   }
 
   Future<up.UpliftApplicationMessage> getApplication(String id) async {
-    final resp = await _client.getUpliftApplication(up.GetUpliftApplicationRequest(applicationId: id), options: await _callOptions.withAuth());
+    final resp = await _client.getUpliftApplication(
+        up.GetUpliftApplicationRequest(applicationId: id),
+        options: await _callOptions.withAuth());
     return resp.application;
   }
 
-  Future<up.EndorseUpliftApplicationResponse> endorse(String applicationId, {bool remove = false}) async {
+  Future<up.EndorseUpliftApplicationResponse> endorse(String applicationId,
+      {bool remove = false}) async {
     return _client.endorseUpliftApplication(
-      up.EndorseUpliftApplicationRequest(applicationId: applicationId, remove: remove),
+      up.EndorseUpliftApplicationRequest(
+          applicationId: applicationId, remove: remove),
       options: await _callOptions.withAuth(),
     );
   }
 
-  Future<up.UpliftApplicationMessage> withdraw(String applicationId, {String reason = ''}) async {
+  Future<up.UpliftApplicationMessage> withdraw(String applicationId,
+      {String reason = ''}) async {
     final resp = await _client.withdrawUpliftApplication(
-      up.WithdrawUpliftApplicationRequest(applicationId: applicationId, reason: reason),
+      up.WithdrawUpliftApplicationRequest(
+          applicationId: applicationId, reason: reason),
       options: await _callOptions.withAuth(),
     );
     return resp.application;
@@ -253,9 +289,12 @@ class UpliftRepository {
 
   // ---- Funder review / select / offer ----
 
-  Future<up.UpliftApplicationMessage> review(String applicationId, String action, {String reason = ''}) async {
+  Future<up.UpliftApplicationMessage> review(
+      String applicationId, String action,
+      {String reason = ''}) async {
     final resp = await _client.reviewUpliftApplication(
-      up.ReviewUpliftApplicationRequest(applicationId: applicationId, action: action, reason: reason),
+      up.ReviewUpliftApplicationRequest(
+          applicationId: applicationId, action: action, reason: reason),
       options: await _callOptions.withAuth(),
     );
     return resp.application;
@@ -311,9 +350,12 @@ class UpliftRepository {
 
   // ---- Milestones ----
 
-  Future<up.UpliftMilestoneMessage> submitEvidence(String milestoneId, List<String> evidence, {String note = ''}) async {
+  Future<up.UpliftMilestoneMessage> submitEvidence(
+      String milestoneId, List<String> evidence,
+      {String note = ''}) async {
     final resp = await _client.submitMilestoneEvidence(
-      up.SubmitMilestoneEvidenceRequest(milestoneId: milestoneId, evidence: evidence, note: note),
+      up.SubmitMilestoneEvidenceRequest(
+          milestoneId: milestoneId, evidence: evidence, note: note),
       options: await _callOptions.withAuth(),
     );
     return resp.milestone;
@@ -328,13 +370,19 @@ class UpliftRepository {
   }) async {
     return _client.reviewMilestone(
       up.ReviewMilestoneRequest(
-        milestoneId: milestoneId, approve: approve, reason: reason, transactionPin: pinToken, transactionId: transactionId),
+          milestoneId: milestoneId,
+          approve: approve,
+          reason: reason,
+          transactionPin: pinToken,
+          transactionId: transactionId),
       options: await _callOptions.withAuth(),
     );
   }
 
   Future<up.GetUpliftStatisticsResponse> statistics(String fundId) async {
-    return _client.getUpliftStatistics(up.GetUpliftStatisticsRequest(fundId: fundId), options: await _callOptions.withAuth());
+    return _client.getUpliftStatistics(
+        up.GetUpliftStatisticsRequest(fundId: fundId),
+        options: await _callOptions.withAuth());
   }
 
   /// Platform fee quote for a hypothetical disbursement (kobo). Business
@@ -349,7 +397,8 @@ class UpliftRepository {
 
   // ---- Receipts ----
 
-  Future<List<up.UpliftReceiptMessage>> listReceipts({int page = 1, int pageSize = 50}) async {
+  Future<List<up.UpliftReceiptMessage>> listReceipts(
+      {int page = 1, int pageSize = 50}) async {
     final resp = await _client.listUpliftReceipts(
       up.ListUpliftReceiptsRequest(page: page, pageSize: pageSize),
       options: await _callOptions.withAuth(),
@@ -357,14 +406,17 @@ class UpliftRepository {
     return resp.receipts;
   }
 
-  Future<up.UpliftReceiptMessage> getReceipt(String referenceType, String referenceId) async {
+  Future<up.UpliftReceiptMessage> getReceipt(
+      String referenceType, String referenceId) async {
     final resp = await _client.getUpliftReceipt(
-      up.GetUpliftReceiptRequest(referenceType: referenceType, referenceId: referenceId),
+      up.GetUpliftReceiptRequest(
+          referenceType: referenceType, referenceId: referenceId),
       options: await _callOptions.withAuth(),
     );
     return resp.receipt;
   }
 
   // Converts a Dart DateTime to a protobuf Timestamp.
-  static pb_ts.Timestamp _tsFrom(DateTime d) => pb_ts.Timestamp.fromDateTime(d.toUtc());
+  static pb_ts.Timestamp _tsFrom(DateTime d) =>
+      pb_ts.Timestamp.fromDateTime(d.toUtc());
 }

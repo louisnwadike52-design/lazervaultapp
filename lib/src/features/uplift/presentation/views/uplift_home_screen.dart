@@ -26,7 +26,16 @@ class UpliftHomeScreen extends StatefulWidget {
   State<UpliftHomeScreen> createState() => _UpliftHomeScreenState();
 }
 
-const _kUpliftCategories = ['All', 'Agri-tech', 'Retail', 'Technology', 'Health', 'Education', 'Creative', 'Services'];
+const _kUpliftCategories = [
+  'All',
+  'Agri-tech',
+  'Retail',
+  'Technology',
+  'Health',
+  'Education',
+  'Creative',
+  'Services'
+];
 
 class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
   late final UpliftCubit _cubit;
@@ -124,7 +133,11 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             foregroundColor: Colors.white,
-            title: Text('Lazerfunds', style: GoogleFonts.inter(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+            title: Text('Lazerfunds',
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800)),
             actions: [
               // Persistent way back to the explanation. Always present — the
               // moment someone needs it is exactly the moment they have
@@ -132,8 +145,8 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
               Builder(
                 builder: (ctx) => IconButton(
                   tooltip: 'How Lazerfunds works',
-                  icon: Icon(Icons.help_outline,
-                      color: kUpPrimary, size: 20.sp),
+                  icon:
+                      Icon(Icons.help_outline, color: kUpPrimary, size: 20.sp),
                   onPressed: () => _replayGuide(
                     UpliftGuidePreference
                         .allTabs[DefaultTabController.of(ctx).index],
@@ -162,7 +175,9 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
             backgroundColor: kUpPrimary,
             foregroundColor: Colors.white,
             icon: const Icon(Icons.add, color: Colors.white),
-            label: Text('Open a fund', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
+            label: Text('Open a fund',
+                style: GoogleFonts.inter(
+                    color: Colors.white, fontWeight: FontWeight.w600)),
             onPressed: () async {
               await Get.to(() => const CreateUpliftScreen());
               _cubit.refreshMine();
@@ -179,9 +194,17 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
               child: Column(
                 children: [
                   const UpSegmentedTabs(tabs: [
-                    Tab(child: _TabLabel(icon: Icons.explore_outlined, text: 'Discover')),
-                    Tab(child: _TabLabel(icon: Icons.volunteer_activism_outlined, text: 'My Funds')),
-                    Tab(child: _TabLabel(icon: Icons.inbox_outlined, text: 'My Applications')),
+                    Tab(
+                        child: _TabLabel(
+                            icon: Icons.explore_outlined, text: 'Discover')),
+                    Tab(
+                        child: _TabLabel(
+                            icon: Icons.volunteer_activism_outlined,
+                            text: 'My Funds')),
+                    Tab(
+                        child: _TabLabel(
+                            icon: Icons.inbox_outlined,
+                            text: 'My Applications')),
                   ]),
                   Expanded(
                     child: BlocBuilder<UpliftCubit, UpliftState>(
@@ -243,7 +266,9 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
               filled: true,
               fillColor: kUpCard,
               isDense: true,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none),
             ),
           ),
           const SizedBox(height: 10),
@@ -261,7 +286,9 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
                   label: Text(c),
                   selected: selected,
                   onSelected: (_) => _cubit.searchDiscover(category: value),
-                  labelStyle: TextStyle(color: selected ? Colors.white : kUpTextSecondary, fontSize: 12),
+                  labelStyle: TextStyle(
+                      color: selected ? Colors.white : kUpTextSecondary,
+                      fontSize: 12),
                   backgroundColor: kUpCard,
                   selectedColor: kUpPrimary,
                   side: BorderSide.none,
@@ -275,8 +302,10 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
   }
 
   Widget _discoverBody(UpliftState state) {
-    if (state.loading && state.discover.isEmpty && state.recentReceipts.isEmpty) return const UpLoading();
-    if (state.error != null && state.discover.isEmpty) return UpErrorState(message: state.error!, onRetry: _cubit.loadAll);
+    if (state.loading && state.discover.isEmpty && state.recentReceipts.isEmpty)
+      return const UpLoading();
+    if (state.error != null && state.discover.isEmpty)
+      return UpErrorState(message: state.error!, onRetry: _cubit.loadAll);
     // Single scroll: fund cards → load-more → "Recent activity" section pinned at
     // the bottom of the landing (crypto pattern; replaces the app-bar icon).
     return RefreshIndicator(
@@ -287,7 +316,9 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
           if (state.discover.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 28),
-              child: Center(child: Text('No open funds match your search.', style: TextStyle(color: kUpTextSecondary))),
+              child: Center(
+                  child: Text('No open funds match your search.',
+                      style: TextStyle(color: kUpTextSecondary))),
             )
           else
             for (final f in state.discover)
@@ -302,7 +333,9 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
                     await Get.to(() => ApplyUpliftScreen(fund: f));
                     _cubit.refreshMine();
                   },
-                  child: const Text('Apply', style: TextStyle(color: kUpPrimarySoft, fontWeight: FontWeight.w600)),
+                  child: const Text('Apply',
+                      style: TextStyle(
+                          color: kUpPrimarySoft, fontWeight: FontWeight.w600)),
                 ),
               ),
           if (state.discoverHasMore)
@@ -313,7 +346,9 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
                     ? const CircularProgressIndicator(color: kUpPrimary)
                     : OutlinedButton(
                         onPressed: _cubit.loadMoreDiscover,
-                        style: OutlinedButton.styleFrom(foregroundColor: kUpPrimary, side: const BorderSide(color: kUpDivider)),
+                        style: OutlinedButton.styleFrom(
+                            foregroundColor: kUpPrimary,
+                            side: const BorderSide(color: kUpDivider)),
                         child: const Text('Load more'),
                       ),
               ),
@@ -344,14 +379,16 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
 
   Widget _myFundsTabBody(UpliftState state) {
     if (state.loading && state.myFunds.isEmpty) return const UpLoading();
-    if (state.error != null && state.myFunds.isEmpty) return UpErrorState(message: state.error!, onRetry: _cubit.loadAll);
+    if (state.error != null && state.myFunds.isEmpty)
+      return UpErrorState(message: state.error!, onRetry: _cubit.loadAll);
     if (state.myFunds.isEmpty) {
       return UpEmptyState(
         icon: Icons.volunteer_activism_outlined,
         title: 'No funds yet',
         subtitle: 'Open a fund to back businesses you believe in.',
         action: ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(backgroundColor: kUpPrimary, foregroundColor: Colors.white),
+          style: ElevatedButton.styleFrom(
+              backgroundColor: kUpPrimary, foregroundColor: Colors.white),
           onPressed: () async {
             await Get.to(() => const CreateUpliftScreen());
             _cubit.refreshMine();
@@ -395,7 +432,8 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
 
   Widget _myApplicationsTabBody(UpliftState state) {
     if (state.loading && state.myApplications.isEmpty) return const UpLoading();
-    if (state.error != null && state.myApplications.isEmpty) return UpErrorState(message: state.error!, onRetry: _cubit.loadAll);
+    if (state.error != null && state.myApplications.isEmpty)
+      return UpErrorState(message: state.error!, onRetry: _cubit.loadAll);
     if (state.myApplications.isEmpty) {
       return const UpEmptyState(
         icon: Icons.inbox_outlined,
@@ -413,7 +451,8 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
           return UpliftApplicationCard(
             application: a,
             onTap: () async {
-              await Get.to(() => UpliftDetailScreen(fundId: a.fundId, applicationId: a.id));
+              await Get.to(() =>
+                  UpliftDetailScreen(fundId: a.fundId, applicationId: a.id));
               _cubit.refreshMine();
             },
           );

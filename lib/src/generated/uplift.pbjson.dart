@@ -140,7 +140,7 @@ final $typed_data.Uint8List upliftUserMessageDescriptor = $convert.base64Decode(
     'UYAiABKAlSCHVzZXJuYW1lEh0KCmZpcnN0X25hbWUYAyABKAlSCWZpcnN0TmFtZRIbCglsYXN0'
     'X25hbWUYBCABKAlSCGxhc3ROYW1lEiEKDGRpc3BsYXlfbmFtZRgFIAEoCVILZGlzcGxheU5hbW'
     'USJwoPcHJvZmlsZV9waWN0dXJlGAYgASgJUg5wcm9maWxlUGljdHVyZRIaCgh2ZXJpZmllZBgH'
-    'IAEoCFIIdmVyaWZpZWQ=');
+    'IAEoCFIIdmVyaWZpZWQSGwoJdXNlcl91dWlkGAggASgJUgh1c2VyVXVpZA==');
 
 @$core.Deprecated('Use upliftFundMessageDescriptor instead')
 const UpliftFundMessage$json = {
@@ -416,6 +416,7 @@ const UpliftApplicationMessage$json = {
     },
     {'1': 'counter_note', '3': 29, '4': 1, '5': 9, '10': 'counterNote'},
     {'1': 'has_counter', '3': 30, '4': 1, '5': 8, '10': 'hasCounter'},
+    {'1': 'video_url', '3': 31, '4': 1, '5': 9, '10': 'videoUrl'},
   ],
 };
 
@@ -443,7 +444,8 @@ final $typed_data.Uint8List upliftApplicationMessageDescriptor = $convert.base64
     'IKZXF1aXR5Tm90ZRInCg9pbnZlc3RtZW50X3R5cGUYGiABKAlSDmludmVzdG1lbnRUeXBlEiUK'
     'DmNvdW50ZXJfYW1vdW50GBsgASgEUg1jb3VudGVyQW1vdW50EiwKEmNvdW50ZXJfZXF1aXR5X3'
     'BjdBgcIAEoDVIQY291bnRlckVxdWl0eVBjdBIhCgxjb3VudGVyX25vdGUYHSABKAlSC2NvdW50'
-    'ZXJOb3RlEh8KC2hhc19jb3VudGVyGB4gASgIUgpoYXNDb3VudGVy');
+    'ZXJOb3RlEh8KC2hhc19jb3VudGVyGB4gASgIUgpoYXNDb3VudGVyEhsKCXZpZGVvX3VybBgfIA'
+    'EoCVIIdmlkZW9Vcmw=');
 
 @$core.Deprecated('Use upliftMilestoneMessageDescriptor instead')
 const UpliftMilestoneMessage$json = {
@@ -1143,6 +1145,7 @@ const ApplyToUpliftFundRequest$json = {
       '10': 'proposedEquityPct'
     },
     {'1': 'equity_note', '3': 10, '4': 1, '5': 9, '10': 'equityNote'},
+    {'1': 'video_url', '3': 11, '4': 1, '5': 9, '10': 'videoUrl'},
   ],
 };
 
@@ -1154,7 +1157,8 @@ final $typed_data.Uint8List applyToUpliftFundRequestDescriptor = $convert.base64
     'VkX2Ftb3VudBgFIAEoBFIPcmVxdWVzdGVkQW1vdW50EhYKBmltYWdlcxgGIAMoCVIGaW1hZ2Vz'
     'EhkKCGRvY191cmxzGAcgAygJUgdkb2NVcmxzEi4KE2J1c2luZXNzX2FjY291bnRfaWQYCCABKA'
     'lSEWJ1c2luZXNzQWNjb3VudElkEi4KE3Byb3Bvc2VkX2VxdWl0eV9wY3QYCSABKA1SEXByb3Bv'
-    'c2VkRXF1aXR5UGN0Eh8KC2VxdWl0eV9ub3RlGAogASgJUgplcXVpdHlOb3Rl');
+    'c2VkRXF1aXR5UGN0Eh8KC2VxdWl0eV9ub3RlGAogASgJUgplcXVpdHlOb3RlEhsKCXZpZGVvX3'
+    'VybBgLIAEoCVIIdmlkZW9Vcmw=');
 
 @$core.Deprecated('Use applyToUpliftFundResponseDescriptor instead')
 const ApplyToUpliftFundResponse$json = {

@@ -24,6 +24,17 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
   final _equityPct = TextEditingController();
   final _equityNote = TextEditingController();
   final List<String> _images = [];
+
+  /// Pitch deck, financials, CAC certificate.
+  ///
+  /// Kept out of [_images] on purpose: the funder's detail screen renders docs
+  /// and photos in different sections, and a PDF in the photo gallery draws as
+  /// a broken thumbnail. This list was the missing half — the backend field and
+  /// the funder's documents section both existed with nothing ever filling them.
+  final List<String> _docUrls = [];
+
+  /// Optional founder pitch video.
+  String _videoUrl = '';
   bool _offerEquity = false;
   bool _submitting = false;
 
@@ -43,8 +54,11 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
     if (!_form.currentState!.validate()) return;
     final amountKobo = (double.parse(_amount.text.trim()) * 100).round();
     if (amountKobo > _capKobo) {
-      Get.snackbar('Amount too high', 'Max is ${upNaira(_capKobo, widget.fund.currency)} per business',
-          backgroundColor: kUpError, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('Amount too high',
+          'Max is ${upNaira(_capKobo, widget.fund.currency)} per business',
+          backgroundColor: kUpError,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
       return;
     }
     setState(() => _submitting = true);
@@ -55,15 +69,24 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
         pitch: _pitch.text.trim(),
         requestedAmountKobo: amountKobo,
         images: _images,
-        proposedEquityPct: _offerEquity ? ((double.tryParse(_equityPct.text.trim()) ?? 0) * 100).round() : 0,
+        docUrls: _docUrls,
+        videoUrl: _videoUrl,
+        proposedEquityPct: _offerEquity
+            ? ((double.tryParse(_equityPct.text.trim()) ?? 0) * 100).round()
+            : 0,
         equityNote: _offerEquity ? _equityNote.text.trim() : '',
       );
       Get.back();
-      Get.snackbar('Application sent', 'The funder will review your application',
-          backgroundColor: kUpCard, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+          'Application sent', 'The funder will review your application',
+          backgroundColor: kUpCard,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
       Get.snackbar('Could not apply', upFriendlyError(e),
-          backgroundColor: kUpError, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+          backgroundColor: kUpError,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -83,38 +106,70 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(color: kUpCard, borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                  color: kUpCard, borderRadius: BorderRadius.circular(12)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(f.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                  Text(f.title,
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
                   Text('Up to ${upNaira(_capKobo, f.currency)} per business',
-                      style: const TextStyle(color: kUpTextSecondary, fontSize: 12)),
+                      style: const TextStyle(
+                          color: kUpTextSecondary, fontSize: 12)),
                 ],
               ),
             ),
             const SizedBox(height: 16),
             _field(_businessName, 'Business name'),
-            _field(_pitch, 'Your pitch — what will you do with the funds?', maxLines: 5),
-            _field(_amount, 'Amount requested (₦)', keyboard: TextInputType.number, validator: (v) {
+            _field(_pitch, 'Your pitch — what will you do with the funds?',
+                maxLines: 5),
+            _field(_amount, 'Amount requested (₦)',
+                keyboard: TextInputType.number, validator: (v) {
               if (v == null || v.trim().isEmpty) return 'Required';
-              return double.tryParse(v.trim()) == null ? 'Enter a valid amount' : null;
+              return double.tryParse(v.trim()) == null
+                  ? 'Enter a valid amount'
+                  : null;
             }),
             const SizedBox(height: 8),
             UpliftImagePickerRow(
+              label: 'Photos of your business',
               urls: _images,
               onAdd: (u) => setState(() => _images.add(u)),
               onRemove: (u) => setState(() => _images.remove(u)),
             ),
             const SizedBox(height: 16),
+            // The documents an investor actually decides on. Separate row from
+            // photos because they go to a different field and the funder's
+            // screen renders them in a different section.
+            UpliftImagePickerRow(
+              label: 'Pitch deck & documents',
+              urls: _docUrls,
+              allowDocuments: true,
+              onAdd: (u) => setState(() => _docUrls.add(u)),
+              onRemove: (u) => setState(() => _docUrls.remove(u)),
+            ),
+            const SizedBox(height: 16),
+            UpliftVideoPickerRow(
+              url: _videoUrl,
+              onChanged: (u) => setState(() => _videoUrl = u),
+            ),
+            const SizedBox(height: 16),
             _equityProposal(),
             const SizedBox(height: 20),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: kUpPrimary, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(50)),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: kUpPrimary,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size.fromHeight(50)),
               onPressed: _submitting ? null : _submit,
               child: _submitting
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white))
                   : const Text('Submit application'),
             ),
           ],
@@ -130,7 +185,8 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
       decoration: BoxDecoration(
         color: kUpCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: kUpPrimary.withOpacity(_offerEquity ? 0.4 : 0.12)),
+        border: Border.all(
+            color: kUpPrimary.withOpacity(_offerEquity ? 0.4 : 0.12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,7 +195,8 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: UpEquityChip(
-                label: 'Investor seeks ${upInvestmentTypeLabel(eq.investmentType).isEmpty ? 'equity' : upInvestmentTypeLabel(eq.investmentType)}'
+                label:
+                    'Investor seeks ${upInvestmentTypeLabel(eq.investmentType).isEmpty ? 'equity' : upInvestmentTypeLabel(eq.investmentType)}'
                     '${eq.offeredPct > 0 ? ' · ${upPct(eq.offeredPct)}' : ''}',
               ),
             ),
@@ -148,8 +205,12 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
             activeColor: kUpPrimary,
             value: _offerEquity,
             onChanged: (v) => setState(() => _offerEquity = v),
-            title: const Text('Propose equity terms', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-            subtitle: const Text('Optional — what you\'re willing to give in return', style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
+            title: const Text('Propose equity terms',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w600)),
+            subtitle: const Text(
+                'Optional — what you\'re willing to give in return',
+                style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
           ),
           if (_offerEquity) ...[
             const SizedBox(height: 8),
@@ -178,10 +239,15 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
         filled: true,
         fillColor: kUpBg,
         isDense: true,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none),
       );
 
-  Widget _field(TextEditingController c, String label, {int maxLines = 1, TextInputType? keyboard, String? Function(String?)? validator}) {
+  Widget _field(TextEditingController c, String label,
+      {int maxLines = 1,
+      TextInputType? keyboard,
+      String? Function(String?)? validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextFormField(
@@ -189,13 +255,16 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
         maxLines: maxLines,
         keyboardType: keyboard,
         style: const TextStyle(color: Colors.white),
-        validator: validator ?? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+        validator: validator ??
+            (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(color: kUpTextSecondary),
           filled: true,
           fillColor: kUpCard,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none),
         ),
       ),
     );
