@@ -22,6 +22,7 @@ import '../widgets/escrow_empty_state.dart';
 import '../../domain/entities/escrow_deal_entity.dart';
 import 'escrow_role_labels.dart';
 import 'escrow_theme.dart';
+import 'escrow_party_chat_action.dart';
 part 'escrow_deal_detail_screen_widgets.dart';
 
 
@@ -546,6 +547,21 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text('Deal details',
             style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+        actions: [
+          // Needs the loaded deal to know who the other party is, and the
+          // AppBar is built outside the BlocConsumer below — so it listens for
+          // itself rather than being hoisted into the body, where it would
+          // scroll away from the header it belongs to.
+          BlocBuilder<EscrowCubit, EscrowState>(
+            builder: (context, state) {
+              if (state is! EscrowDealLoaded) return const SizedBox.shrink();
+              return EscrowPartyChatAction(
+                deal: state.deal,
+                viewerUserId: state.currentUserId,
+              );
+            },
+          ),
+        ],
       ),
       body: BlocConsumer<EscrowCubit, EscrowState>(
         listener: (context, state) {
@@ -645,6 +661,10 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
             ..._evidenceGallerySlivers(deal),
             SizedBox(height: 16.h),
             _parties(deal, isBuyer),
+            // Sits directly under the parties block, which is where the other
+            // side is named and therefore where "can I reach them?" occurs.
+            // The AppBar icon is easy to miss on a screen this long.
+            EscrowPartyChatRow(deal: deal, viewerUserId: uid),
             SizedBox(height: 16.h),
             _timeline(deal),
             SizedBox(height: 24.h),
