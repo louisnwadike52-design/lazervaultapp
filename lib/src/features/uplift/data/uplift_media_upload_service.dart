@@ -31,10 +31,14 @@ class UpliftMediaUploadService {
   static const _allowedVideoExtensions = {'.mp4', '.mov', '.m4v', '.webm'};
 
   /// Video gets its own ceiling. 10MB suits an image or a PDF deck; even a
-  /// minute of phone footage clears it, and the gateway allows 100MB on this
-  /// route specifically. Checking here too means the user is told BEFORE
-  /// spending the upload on mobile data.
-  static const _maxVideoSize = 100 * 1024 * 1024; // 100MB
+  /// minute of phone footage clears it.
+  ///
+  /// 64MB, matching the gateway. NOT 100MB: prod uploads traverse the
+  /// Cloudflare tunnel, which caps request bodies at 100MB on our plan, so a
+  /// limit set at the edge value fails with Cloudflare's error page rather than
+  /// ours. Checked client-side too so the user is told BEFORE spending the
+  /// upload on mobile data.
+  static const _maxVideoSize = 64 * 1024 * 1024; // 64MB
 
   /// Longer than the image timeout for the obvious reason: a 100MB upload on a
   /// Nigerian mobile connection does not finish in 45 seconds, and timing out
@@ -178,7 +182,7 @@ class UpliftMediaUploadService {
     if (fileSize > _maxVideoSize) {
       final sizeMB = (fileSize / (1024 * 1024)).toStringAsFixed(0);
       throw UpliftUploadException(
-          'Video is too large ($sizeMB MB). Maximum is 100 MB — try a shorter clip.');
+          'Video is too large ($sizeMB MB). Maximum is 64 MB — try a shorter clip.');
     }
     if (fileSize < 8) {
       throw const UpliftUploadException('That video file is empty.');
@@ -234,7 +238,7 @@ class UpliftMediaUploadService {
             'Session expired. Please log in again.');
       case 413:
         throw const UpliftUploadException(
-            'Video is too large. Maximum is 100 MB — try a shorter clip.');
+            'Video is too large. Maximum is 64 MB — try a shorter clip.');
       case 503:
         throw const UpliftUploadException(
             'Video upload is temporarily unavailable. Please try again later.');

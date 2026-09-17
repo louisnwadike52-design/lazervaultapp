@@ -38,6 +38,19 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
   bool _offerEquity = false;
   bool _submitting = false;
 
+  /// True while ANY attachment is uploading.
+  ///
+  /// Counted rather than a bool: a user can start a document and a video
+  /// together, and a single flag would clear on the first one finishing while
+  /// the other was still in flight.
+  int _uploadsInFlight = 0;
+  bool get _uploading => _uploadsInFlight > 0;
+
+  void _trackUpload(bool active) {
+    setState(() => _uploadsInFlight += active ? 1 : -1);
+    if (_uploadsInFlight < 0) _uploadsInFlight = 0;
+  }
+
   @override
   void dispose() {
     _businessName.dispose();
@@ -135,6 +148,7 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
             const SizedBox(height: 8),
             UpliftImagePickerRow(
               label: 'Photos of your business',
+              onUploadingChanged: _trackUpload,
               urls: _images,
               onAdd: (u) => setState(() => _images.add(u)),
               onRemove: (u) => setState(() => _images.remove(u)),
@@ -145,6 +159,7 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
             // screen renders them in a different section.
             UpliftImagePickerRow(
               label: 'Pitch deck & documents',
+              onUploadingChanged: _trackUpload,
               urls: _docUrls,
               allowDocuments: true,
               onAdd: (u) => setState(() => _docUrls.add(u)),
@@ -153,6 +168,7 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
             const SizedBox(height: 16),
             UpliftVideoPickerRow(
               url: _videoUrl,
+              onUploadingChanged: _trackUpload,
               onChanged: (u) => setState(() => _videoUrl = u),
             ),
             const SizedBox(height: 16),
@@ -163,14 +179,22 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
                   backgroundColor: kUpPrimary,
                   foregroundColor: Colors.white,
                   minimumSize: const Size.fromHeight(50)),
-              onPressed: _submitting ? null : _submit,
+              // Blocked while an attachment is still uploading: submitting
+              // now would post the form without the URL, and the business
+              // would never know the deck or video did not arrive.
+              onPressed: (_submitting || _uploading) ? null : _submit,
               child: _submitting
                   ? const SizedBox(
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white))
-                  : const Text('Submit application'),
+                  // Says WHY it is disabled. A greyed button with no
+                  // explanation reads as a broken form, and the user retries
+                  // instead of waiting the few seconds left.
+                  : Text(_uploading
+                      ? 'Waiting for uploads…'
+                      : 'Submit application'),
             ),
           ],
         ),

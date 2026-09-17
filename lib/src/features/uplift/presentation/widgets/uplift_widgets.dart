@@ -466,8 +466,17 @@ class UpliftImagePickerRow extends StatefulWidget {
     required this.onRemove,
     this.label = 'Photos',
     this.allowDocuments = false,
+    this.onUploadingChanged,
     super.key,
   });
+
+  /// Fires while an upload is in flight.
+  ///
+  /// The parent needs this to disable its submit button. Without it a user
+  /// could tap Submit mid-upload and the form would post with the URL missing —
+  /// the attachment silently absent from an application that looked like it
+  /// sent. Most visible with a 100MB video, which takes minutes.
+  final ValueChanged<bool>? onUploadingChanged;
   final List<String> urls;
   final ValueChanged<String> onAdd;
   final ValueChanged<String> onRemove;
@@ -506,6 +515,7 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
       final path = result?.files.single.path;
       if (path == null) return;
       setState(() => _uploading = true);
+      widget.onUploadingChanged?.call(true);
       final url = await _uploader.uploadImage(File(path), allowDocuments: true);
       widget.onAdd(url);
     } catch (e) {
@@ -517,6 +527,7 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
       }
     } finally {
       if (mounted) setState(() => _uploading = false);
+      widget.onUploadingChanged?.call(false);
     }
   }
 
@@ -526,6 +537,7 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
           source: source, maxWidth: 1600, imageQuality: 82);
       if (picked == null) return;
       setState(() => _uploading = true);
+      widget.onUploadingChanged?.call(true);
       final url = await _uploader.uploadImage(File(picked.path));
       widget.onAdd(url);
     } catch (e) {
@@ -537,6 +549,7 @@ class _UpliftImagePickerRowState extends State<UpliftImagePickerRow> {
       }
     } finally {
       if (mounted) setState(() => _uploading = false);
+      widget.onUploadingChanged?.call(false);
     }
   }
 
@@ -723,6 +736,28 @@ class UpliftApplicationCard extends StatelessWidget {
                   '${a.approvedAmount.toInt() > 0 ? ' · Approved ${upNaira(a.approvedAmount.toInt(), a.currency)}' : ''}',
                   style: const TextStyle(color: Colors.white70, fontSize: 12),
                 ),
+                // What the business actually attached.
+                //
+                // A funder scanning a list of applications had no way to see
+                // which ones came with a pitch video or a deck — the richest
+                // signals were invisible until the detail screen, so the
+                // applications that made the most effort read the same as the
+                // ones that made none.
+                if (a.videoUrl.isNotEmpty || a.docUrls.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Wrap(spacing: 6, runSpacing: 6, children: [
+                    if (a.videoUrl.isNotEmpty)
+                      const UpAttachmentChip(
+                          label: 'Pitch video',
+                          icon: Icons.play_circle_outline),
+                    if (a.docUrls.isNotEmpty)
+                      UpAttachmentChip(
+                          label: a.docUrls.length == 1
+                              ? '1 document'
+                              : '${a.docUrls.length} documents',
+                          icon: Icons.description_outlined),
+                  ]),
+                ],
                 if (a.agreedEquityPct > 0 || a.proposedEquityPct > 0) ...[
                   const SizedBox(height: 6),
                   Wrap(spacing: 6, runSpacing: 6, children: [
@@ -1389,8 +1424,13 @@ class UpliftVideoPickerRow extends StatefulWidget {
     required this.url,
     required this.onChanged,
     this.label = 'Pitch video (optional)',
+    this.onUploadingChanged,
     super.key,
   });
+
+  /// See UpliftImagePickerRow.onUploadingChanged — matters most here, because a
+  /// pitch video upload runs for minutes.
+  final ValueChanged<bool>? onUploadingChanged;
 
   final String url;
   final ValueChanged<String> onChanged;
@@ -1415,6 +1455,7 @@ class _UpliftVideoPickerRowState extends State<UpliftVideoPickerRow> {
       );
       if (picked == null) return;
       setState(() => _uploading = true);
+      widget.onUploadingChanged?.call(true);
       final url = await _uploader.uploadVideo(File(picked.path));
       widget.onChanged(url);
     } catch (e) {
@@ -1426,6 +1467,7 @@ class _UpliftVideoPickerRowState extends State<UpliftVideoPickerRow> {
       }
     } finally {
       if (mounted) setState(() => _uploading = false);
+      widget.onUploadingChanged?.call(false);
     }
   }
 
@@ -1521,6 +1563,38 @@ class _UpliftVideoPickerRowState extends State<UpliftVideoPickerRow> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// A small "what's attached" marker on an application card.
+///
+/// Deliberately quieter than [UpEquityChip]: equity is a term of the deal, an
+/// attachment is a hint to open the application. Same shape so the row reads as
+/// one set of tags rather than two competing styles.
+class UpAttachmentChip extends StatelessWidget {
+  const UpAttachmentChip({required this.label, required this.icon, super.key});
+
+  final String label;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: kUpDivider,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: kUpTextSecondary),
+          const SizedBox(width: 4),
+          Text(label,
+              style: const TextStyle(color: kUpTextSecondary, fontSize: 11)),
+        ],
+      ),
     );
   }
 }

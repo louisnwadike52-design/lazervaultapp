@@ -77,6 +77,10 @@ class _UpliftMilestonesScreenState extends State<UpliftMilestonesScreen>
   Future<void> _submitEvidence(up.UpliftMilestoneMessage m) async {
     final images = <String>[];
     final noteCtrl = TextEditingController();
+    // Guards the same race the application form had: submitting mid-upload
+    // sends the milestone WITHOUT its proof, and the funder then rejects it for
+    // having no evidence — a failure the business cannot diagnose.
+    var uploading = false;
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: kUpBg,
@@ -103,6 +107,7 @@ class _UpliftMilestonesScreenState extends State<UpliftMilestonesScreen>
                 // Evidence is often an invoice, delivery note or signed
                 // contract — a PDF, not a photo of one.
                 allowDocuments: true,
+                onUploadingChanged: (v) => setSheet(() => uploading = v),
                 urls: images,
                 onAdd: (u) => setSheet(() => images.add(u)),
                 onRemove: (u) => setSheet(() => images.remove(u)),
@@ -128,8 +133,8 @@ class _UpliftMilestonesScreenState extends State<UpliftMilestonesScreen>
                     backgroundColor: kUpPrimary,
                     foregroundColor: Colors.white,
                     minimumSize: const Size.fromHeight(48)),
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Submit'),
+                onPressed: uploading ? null : () => Navigator.pop(ctx, true),
+                child: Text(uploading ? 'Waiting for uploads…' : 'Submit'),
               ),
               const SizedBox(height: 16),
             ],
