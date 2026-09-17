@@ -22,6 +22,849 @@ export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
 export 'banking.pbenum.dart';
 
+class CreateCardChargeRequest extends $pb.GeneratedMessage {
+  factory CreateCardChargeRequest({
+    $core.String? reference,
+    $fixnum.Int64? amountMinor,
+    $core.String? currency,
+    $core.String? description,
+    $core.String? terminalId,
+    $core.String? staffUserId,
+    $core.String? devicePayload,
+  }) {
+    final result = create();
+    if (reference != null) result.reference = reference;
+    if (amountMinor != null) result.amountMinor = amountMinor;
+    if (currency != null) result.currency = currency;
+    if (description != null) result.description = description;
+    if (terminalId != null) result.terminalId = terminalId;
+    if (staffUserId != null) result.staffUserId = staffUserId;
+    if (devicePayload != null) result.devicePayload = devicePayload;
+    return result;
+  }
+
+  CreateCardChargeRequest._();
+
+  factory CreateCardChargeRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CreateCardChargeRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CreateCardChargeRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'reference')
+    ..aInt64(2, _omitFieldNames ? '' : 'amountMinor')
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..aOS(4, _omitFieldNames ? '' : 'description')
+    ..aOS(5, _omitFieldNames ? '' : 'terminalId')
+    ..aOS(6, _omitFieldNames ? '' : 'staffUserId')
+    ..aOS(7, _omitFieldNames ? '' : 'devicePayload')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CreateCardChargeRequest clone() =>
+      CreateCardChargeRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CreateCardChargeRequest copyWith(
+          void Function(CreateCardChargeRequest) updates) =>
+      super.copyWith((message) => updates(message as CreateCardChargeRequest))
+          as CreateCardChargeRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateCardChargeRequest create() => CreateCardChargeRequest._();
+  @$core.override
+  CreateCardChargeRequest createEmptyInstance() => create();
+  static $pb.PbList<CreateCardChargeRequest> createRepeated() =>
+      $pb.PbList<CreateCardChargeRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CreateCardChargeRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CreateCardChargeRequest>(create);
+  static CreateCardChargeRequest? _defaultInstance;
+
+  /// OUR id for this sale. Unique, client-generated, and what makes a retry
+  /// from a phone on a bad connection idempotent rather than a double charge.
+  @$pb.TagNumber(1)
+  $core.String get reference => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set reference($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasReference() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReference() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get amountMinor => $_getI64(1);
+  @$pb.TagNumber(2)
+  set amountMinor($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAmountMinor() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmountMinor() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get description => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set description($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasDescription() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDescription() => $_clearField(4);
+
+  /// Which phone took the payment and who was operating it. The point of a
+  /// multi-branch SoftPOS is answering "which shop, which person", and
+  /// attribution recorded after the fact is attribution nobody trusts.
+  @$pb.TagNumber(5)
+  $core.String get terminalId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set terminalId($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasTerminalId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTerminalId() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get staffUserId => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set staffUserId($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasStaffUserId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearStaffUserId() => $_clearField(6);
+
+  /// The encrypted blob the certified SDK produced from the card read.
+  /// Opaque on purpose — forwarded to the provider, never inspected here.
+  @$pb.TagNumber(7)
+  $core.String get devicePayload => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set devicePayload($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasDevicePayload() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearDevicePayload() => $_clearField(7);
+}
+
+class GetCardChargeRequest extends $pb.GeneratedMessage {
+  factory GetCardChargeRequest({
+    $core.String? reference,
+  }) {
+    final result = create();
+    if (reference != null) result.reference = reference;
+    return result;
+  }
+
+  GetCardChargeRequest._();
+
+  factory GetCardChargeRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetCardChargeRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCardChargeRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'reference')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCardChargeRequest clone() =>
+      GetCardChargeRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCardChargeRequest copyWith(void Function(GetCardChargeRequest) updates) =>
+      super.copyWith((message) => updates(message as GetCardChargeRequest))
+          as GetCardChargeRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetCardChargeRequest create() => GetCardChargeRequest._();
+  @$core.override
+  GetCardChargeRequest createEmptyInstance() => create();
+  static $pb.PbList<GetCardChargeRequest> createRepeated() =>
+      $pb.PbList<GetCardChargeRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetCardChargeRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCardChargeRequest>(create);
+  static GetCardChargeRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get reference => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set reference($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasReference() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReference() => $_clearField(1);
+}
+
+class ListMyCardChargesRequest extends $pb.GeneratedMessage {
+  factory ListMyCardChargesRequest({
+    $core.String? status,
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final result = create();
+    if (status != null) result.status = status;
+    if (limit != null) result.limit = limit;
+    if (offset != null) result.offset = offset;
+    return result;
+  }
+
+  ListMyCardChargesRequest._();
+
+  factory ListMyCardChargesRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListMyCardChargesRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListMyCardChargesRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'status')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListMyCardChargesRequest clone() =>
+      ListMyCardChargesRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListMyCardChargesRequest copyWith(
+          void Function(ListMyCardChargesRequest) updates) =>
+      super.copyWith((message) => updates(message as ListMyCardChargesRequest))
+          as ListMyCardChargesRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListMyCardChargesRequest create() => ListMyCardChargesRequest._();
+  @$core.override
+  ListMyCardChargesRequest createEmptyInstance() => create();
+  static $pb.PbList<ListMyCardChargesRequest> createRepeated() =>
+      $pb.PbList<ListMyCardChargesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListMyCardChargesRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListMyCardChargesRequest>(create);
+  static ListMyCardChargesRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get status => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set status($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasStatus() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStatus() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get limit => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set limit($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLimit() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLimit() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get offset => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set offset($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasOffset() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearOffset() => $_clearField(3);
+}
+
+class ListMyCardChargesResponse extends $pb.GeneratedMessage {
+  factory ListMyCardChargesResponse({
+    $core.Iterable<CardCharge>? charges,
+    $core.int? total,
+    $fixnum.Int64? unsettledAmountMinor,
+  }) {
+    final result = create();
+    if (charges != null) result.charges.addAll(charges);
+    if (total != null) result.total = total;
+    if (unsettledAmountMinor != null)
+      result.unsettledAmountMinor = unsettledAmountMinor;
+    return result;
+  }
+
+  ListMyCardChargesResponse._();
+
+  factory ListMyCardChargesResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListMyCardChargesResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListMyCardChargesResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..pc<CardCharge>(1, _omitFieldNames ? '' : 'charges', $pb.PbFieldType.PM,
+        subBuilder: CardCharge.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..aInt64(3, _omitFieldNames ? '' : 'unsettledAmountMinor')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListMyCardChargesResponse clone() =>
+      ListMyCardChargesResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListMyCardChargesResponse copyWith(
+          void Function(ListMyCardChargesResponse) updates) =>
+      super.copyWith((message) => updates(message as ListMyCardChargesResponse))
+          as ListMyCardChargesResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListMyCardChargesResponse create() => ListMyCardChargesResponse._();
+  @$core.override
+  ListMyCardChargesResponse createEmptyInstance() => create();
+  static $pb.PbList<ListMyCardChargesResponse> createRepeated() =>
+      $pb.PbList<ListMyCardChargesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListMyCardChargesResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListMyCardChargesResponse>(create);
+  static ListMyCardChargesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<CardCharge> get charges => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => $_clearField(2);
+
+  /// Sales taken but not yet paid out, so the merchant screen can lead with
+  /// "₦X on its way" rather than implying the money has already landed.
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get unsettledAmountMinor => $_getI64(2);
+  @$pb.TagNumber(3)
+  set unsettledAmountMinor($fixnum.Int64 value) => $_setInt64(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasUnsettledAmountMinor() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearUnsettledAmountMinor() => $_clearField(3);
+}
+
+class CardChargeResponse extends $pb.GeneratedMessage {
+  factory CardChargeResponse({
+    $core.bool? success,
+    CardCharge? charge,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (charge != null) result.charge = charge;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  CardChargeResponse._();
+
+  factory CardChargeResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CardChargeResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CardChargeResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOM<CardCharge>(2, _omitFieldNames ? '' : 'charge',
+        subBuilder: CardCharge.create)
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CardChargeResponse clone() => CardChargeResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CardChargeResponse copyWith(void Function(CardChargeResponse) updates) =>
+      super.copyWith((message) => updates(message as CardChargeResponse))
+          as CardChargeResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CardChargeResponse create() => CardChargeResponse._();
+  @$core.override
+  CardChargeResponse createEmptyInstance() => create();
+  static $pb.PbList<CardChargeResponse> createRepeated() =>
+      $pb.PbList<CardChargeResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CardChargeResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CardChargeResponse>(create);
+  static CardChargeResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  CardCharge get charge => $_getN(1);
+  @$pb.TagNumber(2)
+  set charge(CardCharge value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCharge() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCharge() => $_clearField(2);
+  @$pb.TagNumber(2)
+  CardCharge ensureCharge() => $_ensure(1);
+
+  /// Shown to a merchant standing in front of a customer, so it says what to
+  /// do next rather than repeating a provider code.
+  @$pb.TagNumber(3)
+  $core.String get message => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set message($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessage() => $_clearField(3);
+}
+
+class CardCharge extends $pb.GeneratedMessage {
+  factory CardCharge({
+    $core.String? reference,
+    $core.String? provider,
+    $core.String? providerReference,
+    $core.String? status,
+    $fixnum.Int64? amountMinor,
+    $fixnum.Int64? feeMinor,
+    $core.String? currency,
+    $core.String? description,
+    $core.String? terminalId,
+    $core.String? staffUserId,
+    $core.String? cardLast4,
+    $core.String? cardBrand,
+    $core.String? authCode,
+    $core.String? failureReason,
+    $core.String? settlementReference,
+    $core.String? authorisedAt,
+    $core.String? settledAt,
+    $core.String? createdAt,
+  }) {
+    final result = create();
+    if (reference != null) result.reference = reference;
+    if (provider != null) result.provider = provider;
+    if (providerReference != null) result.providerReference = providerReference;
+    if (status != null) result.status = status;
+    if (amountMinor != null) result.amountMinor = amountMinor;
+    if (feeMinor != null) result.feeMinor = feeMinor;
+    if (currency != null) result.currency = currency;
+    if (description != null) result.description = description;
+    if (terminalId != null) result.terminalId = terminalId;
+    if (staffUserId != null) result.staffUserId = staffUserId;
+    if (cardLast4 != null) result.cardLast4 = cardLast4;
+    if (cardBrand != null) result.cardBrand = cardBrand;
+    if (authCode != null) result.authCode = authCode;
+    if (failureReason != null) result.failureReason = failureReason;
+    if (settlementReference != null)
+      result.settlementReference = settlementReference;
+    if (authorisedAt != null) result.authorisedAt = authorisedAt;
+    if (settledAt != null) result.settledAt = settledAt;
+    if (createdAt != null) result.createdAt = createdAt;
+    return result;
+  }
+
+  CardCharge._();
+
+  factory CardCharge.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CardCharge.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CardCharge',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'reference')
+    ..aOS(2, _omitFieldNames ? '' : 'provider')
+    ..aOS(3, _omitFieldNames ? '' : 'providerReference')
+    ..aOS(4, _omitFieldNames ? '' : 'status')
+    ..aInt64(5, _omitFieldNames ? '' : 'amountMinor')
+    ..aInt64(6, _omitFieldNames ? '' : 'feeMinor')
+    ..aOS(7, _omitFieldNames ? '' : 'currency')
+    ..aOS(8, _omitFieldNames ? '' : 'description')
+    ..aOS(9, _omitFieldNames ? '' : 'terminalId')
+    ..aOS(10, _omitFieldNames ? '' : 'staffUserId')
+    ..aOS(11, _omitFieldNames ? '' : 'cardLast4')
+    ..aOS(12, _omitFieldNames ? '' : 'cardBrand')
+    ..aOS(13, _omitFieldNames ? '' : 'authCode')
+    ..aOS(14, _omitFieldNames ? '' : 'failureReason')
+    ..aOS(15, _omitFieldNames ? '' : 'settlementReference')
+    ..aOS(16, _omitFieldNames ? '' : 'authorisedAt')
+    ..aOS(17, _omitFieldNames ? '' : 'settledAt')
+    ..aOS(18, _omitFieldNames ? '' : 'createdAt')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CardCharge clone() => CardCharge()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CardCharge copyWith(void Function(CardCharge) updates) =>
+      super.copyWith((message) => updates(message as CardCharge)) as CardCharge;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CardCharge create() => CardCharge._();
+  @$core.override
+  CardCharge createEmptyInstance() => create();
+  static $pb.PbList<CardCharge> createRepeated() => $pb.PbList<CardCharge>();
+  @$core.pragma('dart2js:noInline')
+  static CardCharge getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CardCharge>(create);
+  static CardCharge? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get reference => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set reference($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasReference() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReference() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get provider => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set provider($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasProvider() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearProvider() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get providerReference => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set providerReference($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasProviderReference() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearProviderReference() => $_clearField(3);
+
+  /// pending | succeeded | failed | refunded
+  @$pb.TagNumber(4)
+  $core.String get status => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set status($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasStatus() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearStatus() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get amountMinor => $_getI64(4);
+  @$pb.TagNumber(5)
+  set amountMinor($fixnum.Int64 value) => $_setInt64(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasAmountMinor() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearAmountMinor() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get feeMinor => $_getI64(5);
+  @$pb.TagNumber(6)
+  set feeMinor($fixnum.Int64 value) => $_setInt64(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasFeeMinor() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearFeeMinor() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get currency => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set currency($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasCurrency() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCurrency() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get description => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set description($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasDescription() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearDescription() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get terminalId => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set terminalId($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasTerminalId() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearTerminalId() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get staffUserId => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set staffUserId($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasStaffUserId() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearStaffUserId() => $_clearField(10);
+
+  /// The only card details that may travel: the ones printed on a paper
+  /// receipt, none of which can reconstruct a payment.
+  @$pb.TagNumber(11)
+  $core.String get cardLast4 => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set cardLast4($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasCardLast4() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCardLast4() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get cardBrand => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set cardBrand($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasCardBrand() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearCardBrand() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get authCode => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set authCode($core.String value) => $_setString(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasAuthCode() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearAuthCode() => $_clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get failureReason => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set failureReason($core.String value) => $_setString(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasFailureReason() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearFailureReason() => $_clearField(14);
+
+  /// Empty until the merchant has actually been paid — NOT the same as
+  /// succeeded, which only means the card was charged.
+  @$pb.TagNumber(15)
+  $core.String get settlementReference => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set settlementReference($core.String value) => $_setString(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasSettlementReference() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearSettlementReference() => $_clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get authorisedAt => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set authorisedAt($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasAuthorisedAt() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearAuthorisedAt() => $_clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.String get settledAt => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set settledAt($core.String value) => $_setString(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasSettledAt() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearSettledAt() => $_clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.String get createdAt => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set createdAt($core.String value) => $_setString(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasCreatedAt() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearCreatedAt() => $_clearField(18);
+}
+
+class GetCardAcceptanceStatusRequest extends $pb.GeneratedMessage {
+  factory GetCardAcceptanceStatusRequest() => create();
+
+  GetCardAcceptanceStatusRequest._();
+
+  factory GetCardAcceptanceStatusRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetCardAcceptanceStatusRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCardAcceptanceStatusRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCardAcceptanceStatusRequest clone() =>
+      GetCardAcceptanceStatusRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCardAcceptanceStatusRequest copyWith(
+          void Function(GetCardAcceptanceStatusRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetCardAcceptanceStatusRequest))
+          as GetCardAcceptanceStatusRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetCardAcceptanceStatusRequest create() =>
+      GetCardAcceptanceStatusRequest._();
+  @$core.override
+  GetCardAcceptanceStatusRequest createEmptyInstance() => create();
+  static $pb.PbList<GetCardAcceptanceStatusRequest> createRepeated() =>
+      $pb.PbList<GetCardAcceptanceStatusRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetCardAcceptanceStatusRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCardAcceptanceStatusRequest>(create);
+  static GetCardAcceptanceStatusRequest? _defaultInstance;
+}
+
+class GetCardAcceptanceStatusResponse extends $pb.GeneratedMessage {
+  factory GetCardAcceptanceStatusResponse({
+    $core.bool? available,
+    $core.String? activeProvider,
+    $core.Iterable<$core.String>? usableProviders,
+    $core.String? unavailableReason,
+  }) {
+    final result = create();
+    if (available != null) result.available = available;
+    if (activeProvider != null) result.activeProvider = activeProvider;
+    if (usableProviders != null) result.usableProviders.addAll(usableProviders);
+    if (unavailableReason != null) result.unavailableReason = unavailableReason;
+    return result;
+  }
+
+  GetCardAcceptanceStatusResponse._();
+
+  factory GetCardAcceptanceStatusResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetCardAcceptanceStatusResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetCardAcceptanceStatusResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'banking'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'available')
+    ..aOS(2, _omitFieldNames ? '' : 'activeProvider')
+    ..pPS(3, _omitFieldNames ? '' : 'usableProviders')
+    ..aOS(4, _omitFieldNames ? '' : 'unavailableReason')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCardAcceptanceStatusResponse clone() =>
+      GetCardAcceptanceStatusResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetCardAcceptanceStatusResponse copyWith(
+          void Function(GetCardAcceptanceStatusResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetCardAcceptanceStatusResponse))
+          as GetCardAcceptanceStatusResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetCardAcceptanceStatusResponse create() =>
+      GetCardAcceptanceStatusResponse._();
+  @$core.override
+  GetCardAcceptanceStatusResponse createEmptyInstance() => create();
+  static $pb.PbList<GetCardAcceptanceStatusResponse> createRepeated() =>
+      $pb.PbList<GetCardAcceptanceStatusResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetCardAcceptanceStatusResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetCardAcceptanceStatusResponse>(
+          create);
+  static GetCardAcceptanceStatusResponse? _defaultInstance;
+
+  /// False when no provider has usable credentials. The app must say so up
+  /// front; discovering it at the tap means a customer is already waiting.
+  @$pb.TagNumber(1)
+  $core.bool get available => $_getBF(0);
+  @$pb.TagNumber(1)
+  set available($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasAvailable() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAvailable() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get activeProvider => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set activeProvider($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasActiveProvider() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearActiveProvider() => $_clearField(2);
+
+  /// Providers compiled in AND holding credentials.
+  @$pb.TagNumber(3)
+  $pb.PbList<$core.String> get usableProviders => $_getList(2);
+
+  @$pb.TagNumber(4)
+  $core.String get unavailableReason => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set unavailableReason($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasUnavailableReason() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearUnavailableReason() => $_clearField(4);
+}
+
 class CreateVirtualAccountRequest extends $pb.GeneratedMessage {
   factory CreateVirtualAccountRequest({
     $core.String? userId,

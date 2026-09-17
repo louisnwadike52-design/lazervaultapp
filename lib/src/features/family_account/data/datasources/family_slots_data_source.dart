@@ -42,14 +42,23 @@ class FamilySlotsDataSource {
   /// [idempotencyKey] must be stable across retries of the SAME purchase — one
   /// key per confirmation, generated when the sheet opens, not per attempt.
   /// A fresh key on a retry after a timeout buys a second slot.
+  ///
+  /// [pinToken] / [pinTransactionId] carry the transaction-PIN confirmation.
+  /// The token is minted by auth-service against [pinTransactionId], so the two
+  /// must come from the SAME PIN prompt — a token sent with a different
+  /// transaction id is refused rather than loosely accepted.
   Future<family_pb.RequestExtraFamilySlotResponse> requestExtraSlot({
     required String idempotencyKey,
+    String pinToken = '',
+    String pinTransactionId = '',
   }) async {
     try {
       final options = await _callOptionsHelper.withAuth();
       return await _client.requestExtraFamilySlot(
         family_pb.RequestExtraFamilySlotRequest(
           idempotencyKey: idempotencyKey,
+          pinToken: pinToken,
+          pinTransactionId: pinTransactionId,
         ),
         options: options,
       );

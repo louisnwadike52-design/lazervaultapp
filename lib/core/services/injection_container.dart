@@ -132,6 +132,7 @@ import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.
 import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_cubit.dart';
 import 'package:lazervault/src/features/voice/cubit/voice_settings_cubit.dart';
 import 'package:lazervault/src/features/voice/services/voice_settings_service.dart';
+import 'package:lazervault/src/features/voice/services/voice_talk_mode_controller.dart';
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/transaction_pin/cubit/transaction_pin_cubit.dart';
@@ -2989,6 +2990,14 @@ Future<void> init() async {
   // Voice Settings Service and Cubit
   serviceLocator.registerLazySingleton<VoiceSettingsService>(
     () => VoiceSettingsService(),
+  );
+
+  // Single source of truth for the voice talk mode. The mode previously lived
+  // in three unsynchronised places (sheet setState, session cubit, persisted
+  // settings), so changing it in Settings never reached the cubit and the mic
+  // stayed in continuous mode whatever the user picked.
+  serviceLocator.registerLazySingleton<VoiceTalkModeController>(
+    () => VoiceTalkModeController(serviceLocator<VoiceSettingsService>()),
   );
 
   serviceLocator.registerFactory<VoiceSettingsCubit>(

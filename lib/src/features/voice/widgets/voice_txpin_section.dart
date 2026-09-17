@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/logger.dart';
 import 'package:lazervault/src/features/settings/presentation/theme/settings_theme.dart';
 import '../services/voice_settings_service.dart';
+import 'package:lazervault/src/features/voice/services/voice_talk_mode_controller.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_talk_affordance.dart';
 
 /// Per-user voice transaction-PIN controls, reusable on the voice settings screen
@@ -93,6 +95,17 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
       entryMode: entryMode,
       interactionMode: interactionMode,
     );
+    // Broadcast a talk-mode change so a LIVE voice session picks it up.
+    //
+    // Saving alone only wrote the row: the running VoiceSessionCubit kept its
+    // own copy, so the mic carried on in whatever mode the session opened with
+    // and the setting looked like it did nothing.
+    if (ok &&
+        interactionMode != null &&
+        serviceLocator.isRegistered<VoiceTalkModeController>()) {
+      serviceLocator<VoiceTalkModeController>()
+          .applyFromServer(interactionMode);
+    }
     if (!mounted) return;
     if (ok) {
       // Reflect the saved override locally without a round-trip. entry_mode is only
@@ -150,7 +163,8 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 12.w),
         decoration: BoxDecoration(
-          color: selected ? _primary.withValues(alpha: 0.15) : Colors.transparent,
+          color:
+              selected ? _primary.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(10.r),
           border: Border.all(color: selected ? _primary : _divider),
         ),
@@ -239,9 +253,12 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
               // and this screen is where the choice is made.
               child: Text(
                 VoiceTalkMode.explanation(
-                  (s.interactionMode.isEmpty) ? 'continuous' : s.interactionMode,
+                  (s.interactionMode.isEmpty)
+                      ? 'continuous'
+                      : s.interactionMode,
                 ),
-                style: GoogleFonts.inter(fontSize: 11.sp, color: _textSecondary),
+                style:
+                    GoogleFonts.inter(fontSize: 11.sp, color: _textSecondary),
               ),
             ),
           ),
@@ -249,7 +266,8 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
             padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
             child: Row(
               children: [
-                Expanded(child: _interactionChip(s, 'continuous', 'Continuous')),
+                Expanded(
+                    child: _interactionChip(s, 'continuous', 'Continuous')),
                 SizedBox(width: 8.w),
                 Expanded(child: _interactionChip(s, 'hold', 'Hold')),
                 SizedBox(width: 8.w),
@@ -261,7 +279,8 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
           ),
           Divider(color: _divider, height: 1),
           SwitchListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
             activeThumbColor: _primary,
             value: requirePin,
             onChanged: _saving
@@ -292,100 +311,107 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Skip PIN below',
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Skip PIN below',
+                              style: GoogleFonts.inter(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                color: _textPrimary,
+                              ),
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              'Small voice payments at or below this amount skip the PIN. Leave empty to always ask.',
+                              style: GoogleFonts.inter(
+                                  fontSize: 11.sp, color: _textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      SizedBox(
+                        width: 96.w,
+                        child: TextField(
+                          controller: _thresholdController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
                           style: GoogleFonts.inter(
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w600,
-                            color: _textPrimary,
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-                        Text(
-                          'Small voice payments at or below this amount skip the PIN. Leave empty to always ask.',
-                          style: GoogleFonts.inter(fontSize: 11.sp, color: _textSecondary),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  SizedBox(
-                    width: 96.w,
-                    child: TextField(
-                      controller: _thresholdController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      style: GoogleFonts.inter(color: _textPrimary, fontSize: 14.sp),
-                      decoration: InputDecoration(
-                        prefixText: '₦ ',
-                        prefixStyle: GoogleFonts.inter(color: _textSecondary, fontSize: 14.sp),
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.r),
-                          borderSide: BorderSide(color: _divider),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.r),
-                          borderSide: BorderSide(color: _primary),
-                        ),
-                      ),
-                      // Never persist on keystroke or keyboard-done — just mark
-                      // the field dirty so the Save CTA appears. Committing is
-                      // an explicit tap on Save.
-                      onChanged: (_) {
-                        if (!_thresholdDirty) {
-                          setState(() => _thresholdDirty = true);
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              // Clean themed Save CTA — only shown once the amount is edited,
-              // and the ONLY thing that persists the threshold.
-              if (_thresholdDirty) ...[
-                SizedBox(height: 12.h),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _saving ? null : _saveThreshold,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _primary,
-                      disabledBackgroundColor: _primary.withValues(alpha: 0.4),
-                      elevation: 0,
-                      padding: EdgeInsets.symmetric(vertical: 12.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    child: _saving
-                        ? SizedBox(
-                            width: 18.w,
-                            height: 18.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              color: _textPrimary, fontSize: 14.sp),
+                          decoration: InputDecoration(
+                            prefixText: '₦ ',
+                            prefixStyle: GoogleFonts.inter(
+                                color: _textSecondary, fontSize: 14.sp),
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10.w, vertical: 10.h),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.r),
+                              borderSide: BorderSide(color: _divider),
                             ),
-                          )
-                        : Text(
-                            'Save amount',
-                            style: GoogleFonts.inter(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.r),
+                              borderSide: BorderSide(color: _primary),
                             ),
                           ),
+                          // Never persist on keystroke or keyboard-done — just mark
+                          // the field dirty so the Save CTA appears. Committing is
+                          // an explicit tap on Save.
+                          onChanged: (_) {
+                            if (!_thresholdDirty) {
+                              setState(() => _thresholdDirty = true);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                  // Clean themed Save CTA — only shown once the amount is edited,
+                  // and the ONLY thing that persists the threshold.
+                  if (_thresholdDirty) ...[
+                    SizedBox(height: 12.h),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _saving ? null : _saveThreshold,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _primary,
+                          disabledBackgroundColor:
+                              _primary.withValues(alpha: 0.4),
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                        child: _saving
+                            ? SizedBox(
+                                width: 18.w,
+                                height: 18.w,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              )
+                            : Text(
+                                'Save amount',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -408,7 +434,8 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
                   SizedBox(height: 2.h),
                   Text(
                     'How you confirm a voice money move when a PIN is asked.',
-                    style: GoogleFonts.inter(fontSize: 11.sp, color: _textSecondary),
+                    style: GoogleFonts.inter(
+                        fontSize: 11.sp, color: _textSecondary),
                   ),
                   SizedBox(height: 10.h),
                   Row(

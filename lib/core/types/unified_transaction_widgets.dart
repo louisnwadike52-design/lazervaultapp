@@ -22,6 +22,12 @@ enum TransactionServiceType {
   qrPayment('QR Payment', Icons.qr_code_2, Color(0xFFEC4899)),
   idPay('PayID', Icons.badge_outlined, Color(0xFF9B6DFF)),
   contactlessPay('Tap to Pay', Icons.contactless_outlined, Color(0xFF6F42C1)),
+  // SoftPOS: the merchant's phone reading a customer's CARD. Distinct from
+  // contactlessPay (phone-to-phone between two LazerVault users) and from
+  // `sale` (a business record, not a card rail) — a receipt that says which of
+  // the three happened is the difference between a customer dispute being
+  // answerable and not.
+  cardAcceptance('Card Payment', Icons.credit_card, Color(0xFF0F9D58)),
   rmb('RMB Transfer', Icons.currency_yuan, Color(0xFFE60012)),
 
   // Stored value / commerce.

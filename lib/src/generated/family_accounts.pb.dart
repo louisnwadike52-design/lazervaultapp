@@ -222,9 +222,13 @@ class GetFamilyCapacityResponse extends $pb.GeneratedMessage {
 class RequestExtraFamilySlotRequest extends $pb.GeneratedMessage {
   factory RequestExtraFamilySlotRequest({
     $core.String? idempotencyKey,
+    $core.String? pinToken,
+    $core.String? pinTransactionId,
   }) {
     final result = create();
     if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    if (pinToken != null) result.pinToken = pinToken;
+    if (pinTransactionId != null) result.pinTransactionId = pinTransactionId;
     return result;
   }
 
@@ -242,6 +246,8 @@ class RequestExtraFamilySlotRequest extends $pb.GeneratedMessage {
       package: const $pb.PackageName(_omitMessageNames ? '' : 'accounts.v1'),
       createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(2, _omitFieldNames ? '' : 'pinToken')
+    ..aOS(3, _omitFieldNames ? '' : 'pinTransactionId')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -279,6 +285,29 @@ class RequestExtraFamilySlotRequest extends $pb.GeneratedMessage {
   $core.bool hasIdempotencyKey() => $_has(0);
   @$pb.TagNumber(1)
   void clearIdempotencyKey() => $_clearField(1);
+
+  /// Transaction-PIN confirmation token, obtained by exchanging the user's PIN
+  /// with auth-service. Bound to (user, transaction_id) so a token captured from
+  /// one request cannot authorise a different, larger one. The PIN itself never
+  /// crosses this boundary.
+  @$pb.TagNumber(2)
+  $core.String get pinToken => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set pinToken($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPinToken() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPinToken() => $_clearField(2);
+
+  /// The id the token was minted against. Must match, or the token is refused.
+  @$pb.TagNumber(3)
+  $core.String get pinTransactionId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set pinTransactionId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPinTransactionId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPinTransactionId() => $_clearField(3);
 }
 
 class RequestExtraFamilySlotResponse extends $pb.GeneratedMessage {
@@ -6764,6 +6793,8 @@ class AllocateFundsRequest extends $pb.GeneratedMessage {
     $core.double? amount,
     $core.String? description,
     $core.String? idempotencyKey,
+    $core.String? pinToken,
+    $core.String? pinTransactionId,
   }) {
     final result = create();
     if (familyId != null) result.familyId = familyId;
@@ -6771,6 +6802,8 @@ class AllocateFundsRequest extends $pb.GeneratedMessage {
     if (amount != null) result.amount = amount;
     if (description != null) result.description = description;
     if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    if (pinToken != null) result.pinToken = pinToken;
+    if (pinTransactionId != null) result.pinTransactionId = pinTransactionId;
     return result;
   }
 
@@ -6792,6 +6825,8 @@ class AllocateFundsRequest extends $pb.GeneratedMessage {
     ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(4, _omitFieldNames ? '' : 'description')
     ..aOS(5, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(6, _omitFieldNames ? '' : 'pinToken')
+    ..aOS(7, _omitFieldNames ? '' : 'pinTransactionId')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -6860,6 +6895,29 @@ class AllocateFundsRequest extends $pb.GeneratedMessage {
   $core.bool hasIdempotencyKey() => $_has(4);
   @$pb.TagNumber(5)
   void clearIdempotencyKey() => $_clearField(5);
+
+  /// Transaction-PIN confirmation token, obtained by exchanging the user's PIN
+  /// with auth-service. Bound to (user, transaction_id) so a token captured from
+  /// one request cannot authorise a different, larger one. The PIN itself never
+  /// crosses this boundary.
+  @$pb.TagNumber(6)
+  $core.String get pinToken => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set pinToken($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasPinToken() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPinToken() => $_clearField(6);
+
+  /// The id the token was minted against. Must match, or the token is refused.
+  @$pb.TagNumber(7)
+  $core.String get pinTransactionId => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set pinTransactionId($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasPinTransactionId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPinTransactionId() => $_clearField(7);
 }
 
 class AllocateFundsResponse extends $pb.GeneratedMessage {
@@ -7750,6 +7808,8 @@ class ProcessMemberContributionRequest extends $pb.GeneratedMessage {
     $core.double? amount,
     $core.String? description,
     $core.String? idempotencyKey,
+    $core.String? pinToken,
+    $core.String? pinTransactionId,
   }) {
     final result = create();
     if (familyId != null) result.familyId = familyId;
@@ -7757,6 +7817,8 @@ class ProcessMemberContributionRequest extends $pb.GeneratedMessage {
     if (amount != null) result.amount = amount;
     if (description != null) result.description = description;
     if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    if (pinToken != null) result.pinToken = pinToken;
+    if (pinTransactionId != null) result.pinTransactionId = pinTransactionId;
     return result;
   }
 
@@ -7779,6 +7841,8 @@ class ProcessMemberContributionRequest extends $pb.GeneratedMessage {
     ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(4, _omitFieldNames ? '' : 'description')
     ..aOS(5, _omitFieldNames ? '' : 'idempotencyKey')
+    ..aOS(6, _omitFieldNames ? '' : 'pinToken')
+    ..aOS(7, _omitFieldNames ? '' : 'pinTransactionId')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -7851,6 +7915,29 @@ class ProcessMemberContributionRequest extends $pb.GeneratedMessage {
   $core.bool hasIdempotencyKey() => $_has(4);
   @$pb.TagNumber(5)
   void clearIdempotencyKey() => $_clearField(5);
+
+  /// Transaction-PIN confirmation token, obtained by exchanging the user's PIN
+  /// with auth-service. Bound to (user, transaction_id) so a token captured from
+  /// one request cannot authorise a different, larger one. The PIN itself never
+  /// crosses this boundary.
+  @$pb.TagNumber(6)
+  $core.String get pinToken => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set pinToken($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasPinToken() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPinToken() => $_clearField(6);
+
+  /// The id the token was minted against. Must match, or the token is refused.
+  @$pb.TagNumber(7)
+  $core.String get pinTransactionId => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set pinTransactionId($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasPinTransactionId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPinTransactionId() => $_clearField(7);
 }
 
 class ProcessMemberContributionResponse extends $pb.GeneratedMessage {

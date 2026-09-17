@@ -40,16 +40,19 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // agent and voice-language URLs all come from the EndpointRegistry so
   // an admin URL rotation propagates without an app rebuild; dotenv
   // overrides are still honoured for local-dev (10.0.2.2 dialling).
-  final String _livekitWsUrl = dotenv.env['LIVEKIT_URL'] ?? (throw Exception('LIVEKIT_URL environment variable is not set.'));
+  final String _livekitWsUrl = dotenv.env['LIVEKIT_URL'] ??
+      (throw Exception('LIVEKIT_URL environment variable is not set.'));
   final String _voiceWsUrl = (dotenv.env['VOICE_WS_URL']?.isNotEmpty == true)
       ? dotenv.env['VOICE_WS_URL']!
       : endpointRegistry.wsVoice;
-  final String _voiceLanguageApiUrl = (dotenv.env['VOICE_LANGUAGE_API_URL']?.isNotEmpty == true)
-      ? dotenv.env['VOICE_LANGUAGE_API_URL']!
-      : endpointRegistry.httpVoiceLang;
-  final String _voiceAgentGatewayUrl = (dotenv.env['VOICE_AGENT_GATEWAY_URL']?.isNotEmpty == true)
-      ? dotenv.env['VOICE_AGENT_GATEWAY_URL']!
-      : endpointRegistry.httpVoiceAgent;
+  final String _voiceLanguageApiUrl =
+      (dotenv.env['VOICE_LANGUAGE_API_URL']?.isNotEmpty == true)
+          ? dotenv.env['VOICE_LANGUAGE_API_URL']!
+          : endpointRegistry.httpVoiceLang;
+  final String _voiceAgentGatewayUrl =
+      (dotenv.env['VOICE_AGENT_GATEWAY_URL']?.isNotEmpty == true)
+          ? dotenv.env['VOICE_AGENT_GATEWAY_URL']!
+          : endpointRegistry.httpVoiceAgent;
 
   static const String _prefKeyLanguage = 'voice_selected_language';
   static const String _prefKeyVoice = 'voice_selected_voice_id';
@@ -245,7 +248,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // Mirrors the server-side policy so on_device verification enforces identically.
   bool _bioEnabled = false;
   bool _bioEnrollmentRequired = true;
-  String _bioMismatchAction = 'warn'; // 'warn' (continue) | 'exit' (end session)
+  String _bioMismatchAction =
+      'warn'; // 'warn' (continue) | 'exit' (end session)
   bool _bioFailOpen = false;
   double _bioThreshold = 0.85;
 
@@ -319,10 +323,46 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // commands ("yes", "check balance") don't end in these, so they stay snappy —
   // this only ever EXTENDS the wait, never shortens it, so it can't cut anyone off.
   static const Set<String> _incompleteTrailers = {
-    'and', 'or', 'but', 'so', 'because', 'if', 'then', 'to', 'too', 'for',
-    'with', 'of', 'the', 'a', 'an', 'my', 'your', 'our', 'their', 'his', 'her',
-    'at', 'on', 'in', 'into', 'from', 'by', 'as', 'plus', 'minus', 'about',
-    'um', 'uh', 'er', 'erm', 'hmm', 'like', 'send', 'pay', 'transfer',
+    'and',
+    'or',
+    'but',
+    'so',
+    'because',
+    'if',
+    'then',
+    'to',
+    'too',
+    'for',
+    'with',
+    'of',
+    'the',
+    'a',
+    'an',
+    'my',
+    'your',
+    'our',
+    'their',
+    'his',
+    'her',
+    'at',
+    'on',
+    'in',
+    'into',
+    'from',
+    'by',
+    'as',
+    'plus',
+    'minus',
+    'about',
+    'um',
+    'uh',
+    'er',
+    'erm',
+    'hmm',
+    'like',
+    'send',
+    'pay',
+    'transfer',
   };
   static const Duration _incompleteExtraWait = Duration(milliseconds: 1600);
   static final Duration _endOfTurnGraceWindowLong =
@@ -406,7 +446,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   VoiceSessionCubit() : super(VoiceSessionInitial());
 
   /// Chat history cubit for tracking conversation messages
-  late final VoiceChatHistoryCubit _chatHistoryCubit = serviceLocator<VoiceChatHistoryCubit>();
+  late final VoiceChatHistoryCubit _chatHistoryCubit =
+      serviceLocator<VoiceChatHistoryCubit>();
 
   /// Currently selected language code (e.g., "en", "yo", "ig").
   String? get selectedLanguageCode => _selectedLanguageCode;
@@ -451,7 +492,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     }
 
     try {
-      final conversation = _chatHistoryCubit.getConversation(_currentSessionId!);
+      final conversation =
+          _chatHistoryCubit.getConversation(_currentSessionId!);
       if (conversation == null) {
         return [];
       }
@@ -468,9 +510,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       final validMessages = messages.where((msg) {
         // Validate message has required fields
         return msg != null &&
-               msg.text != null &&
-               msg.text.trim().isNotEmpty &&
-               msg.timestamp != null;
+            msg.text != null &&
+            msg.text.trim().isNotEmpty &&
+            msg.timestamp != null;
       }).toList();
 
       return validMessages;
@@ -517,21 +559,24 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // Edge case: Handle empty or null country code
     final effectiveCountry = (countryCode != null && countryCode.isNotEmpty)
         ? countryCode.toUpperCase()
-        : 'NG';  // Default to Nigeria
+        : 'NG'; // Default to Nigeria
 
     try {
       final prefs = await SharedPreferences.getInstance();
       _selectedLanguageCode = prefs.getString(_prefKeyLanguage);
       _selectedVoiceId = prefs.getString(_prefKeyVoice);
-      _africanPermittedCached = prefs.getBool(_prefKeyAfricanPermitted) ?? false;
+      _africanPermittedCached =
+          prefs.getBool(_prefKeyAfricanPermitted) ?? false;
 
       // Fetch available languages from voice gateway API
       _availableLanguages = await _fetchSupportedLanguages(effectiveCountry);
 
       // Edge case: Handle empty available languages list
       if (_availableLanguages.isEmpty) {
-        print('VoiceSessionCubit: No languages available from API, using hardcoded defaults');
-        _availableLanguages = VoiceLanguageDefaults.forCountry(effectiveCountry);
+        print(
+            'VoiceSessionCubit: No languages available from API, using hardcoded defaults');
+        _availableLanguages =
+            VoiceLanguageDefaults.forCountry(effectiveCountry);
       }
 
       // If no persisted language, or it's not available for this country, auto-select default
@@ -540,11 +585,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
       if (!hasPersistedLanguage) {
         // Auto-select English for Nigerian users (Domestic English with en-NG locale)
-        if (effectiveCountry == 'NG' && _availableLanguages.any((l) => l.code == 'en')) {
+        if (effectiveCountry == 'NG' &&
+            _availableLanguages.any((l) => l.code == 'en')) {
           _selectedLanguageCode = 'en';
 
           // Pre-select default voice for English
-          final english = _availableLanguages.where((l) => l.code == 'en').firstOrNull;
+          final english =
+              _availableLanguages.where((l) => l.code == 'en').firstOrNull;
           if (english != null) {
             // Edge case: Use defaultVoiceOption with fallback to first available voice
             final defaultVoiceOption = english.defaultVoiceOption;
@@ -553,7 +600,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             } else if (english.availableVoices.isNotEmpty) {
               // Edge case: No default voice set, use first available voice
               _selectedVoiceId = english.availableVoices.first.id;
-              print('VoiceSessionCubit: No default voice for English, using first available: $_selectedVoiceId');
+              print(
+                  'VoiceSessionCubit: No default voice for English, using first available: $_selectedVoiceId');
             }
           }
 
@@ -593,7 +641,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
       // If no voice preference exists or the current voice is not available for the new language,
       // set the default voice for the new language
-      final lang = _availableLanguages.where((l) => l.code == languageCode).firstOrNull;
+      final lang =
+          _availableLanguages.where((l) => l.code == languageCode).firstOrNull;
       if (lang != null) {
         final hasValidVoice = _selectedVoiceId != null &&
             lang.availableVoices.any((v) => v.id == _selectedVoiceId);
@@ -609,23 +658,28 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             if (_selectedVoiceId != null) {
               await prefs.setString(_prefKeyVoice, _selectedVoiceId!);
             }
-            print('VoiceSessionCubit: No default voice for $languageCode, using first available: $_selectedVoiceId');
+            print(
+                'VoiceSessionCubit: No default voice for $languageCode, using first available: $_selectedVoiceId');
           } else {
             // Edge case: No voices available for this language
-            print('VoiceSessionCubit: No voices available for language $languageCode');
+            print(
+                'VoiceSessionCubit: No voices available for language $languageCode');
             _selectedVoiceId = null;
           }
         }
       } else {
         // Edge case: Language not found in available list
-        AppLogger.error('setLanguage: Language $languageCode not found in available languages');
+        AppLogger.error(
+            'setLanguage: Language $languageCode not found in available languages');
       }
 
       // Send language change to backend via WebSocket if session is active
       if (_wsChannel != null && isConnected) {
         final localeManager = serviceLocator<LocaleManager>();
         final currentCountry = localeManager.currentCountry;
-        final locale = currentCountry.isNotEmpty ? '$languageCode-$currentCountry' : languageCode;
+        final locale = currentCountry.isNotEmpty
+            ? '$languageCode-$currentCountry'
+            : languageCode;
 
         await sendToVoiceAgent('language_changed', {
           'language': languageCode,
@@ -636,7 +690,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           if (_selectedVoiceId != null && _selectedVoiceId!.isNotEmpty)
             'voice_preference': _selectedVoiceId,
         });
-        print('VoiceSessionCubit: Sent language change to backend: $languageCode ($locale) voice=$_selectedVoiceId');
+        print(
+            'VoiceSessionCubit: Sent language change to backend: $languageCode ($locale) voice=$_selectedVoiceId');
       }
     } catch (e) {
       // Edge case: Handle SharedPreferences errors
@@ -681,14 +736,16 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   }
 
   /// Fetch supported languages from voice gateway API with fallback.
-  Future<List<VoiceLanguage>> _fetchSupportedLanguages(String countryCode) async {
+  Future<List<VoiceLanguage>> _fetchSupportedLanguages(
+      String countryCode) async {
     try {
       // Send the bearer so the gateway can read the email claim and return African
       // languages ONLY when this user is on the admin per-email allowlist — the picker
       // then never offers a language the session would silently coerce back to English.
       final headers = <String, String>{};
       try {
-        final token = await serviceLocator<SecureStorageService>().getAccessToken();
+        final token =
+            await serviceLocator<SecureStorageService>().getAccessToken();
         if (token != null && token.isNotEmpty) {
           headers['Authorization'] = 'Bearer $token';
         }
@@ -696,10 +753,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         // No token (picker opened pre-login) — server returns the English-safe set.
       }
 
-      final response = await http.get(
-        Uri.parse('$_voiceLanguageApiUrl/api/v1/voice/languages?country=$countryCode'),
-        headers: headers,
-      ).timeout(const Duration(seconds: 5));
+      final response = await http
+          .get(
+            Uri.parse(
+                '$_voiceLanguageApiUrl/api/v1/voice/languages?country=$countryCode'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -709,8 +769,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         if (languages != null && languages.isNotEmpty) {
           // The server already applied THIS user's per-email African grant. Remember
           // whether it granted African languages so the offline fallback matches.
-          final hasAfrican = languages.any((l) =>
-              _africanLangCodes.contains(l.code.toLowerCase().split('-').first));
+          final hasAfrican = languages.any((l) => _africanLangCodes
+              .contains(l.code.toLowerCase().split('-').first));
           await _persistAfricanPermitted(hasAfrican);
           return _gateAfricanLanguages(languages, serverAuthoritative: true);
         }
@@ -744,7 +804,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // Master feature off → never show African (defense-in-depth), regardless of source.
     if (!FeatureFlags.africanVoiceLanguagesEnabled) {
       final filtered = langs
-          .where((l) => !_africanLangCodes.contains(l.code.toLowerCase().split('-').first))
+          .where((l) => !_africanLangCodes
+              .contains(l.code.toLowerCase().split('-').first))
           .toList();
       return filtered.isEmpty ? langs : filtered;
     }
@@ -754,7 +815,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // (so a non-allowlisted user never sees African chips when the server is down).
     if (_africanPermittedCached) return langs;
     final filtered = langs
-        .where((l) => !_africanLangCodes.contains(l.code.toLowerCase().split('-').first))
+        .where((l) =>
+            !_africanLangCodes.contains(l.code.toLowerCase().split('-').first))
         .toList();
     return filtered.isEmpty ? langs : filtered;
   }
@@ -780,7 +842,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // tears the old room down and awaits before reaching here, so it is not
     // blocked. Cleared in the finally below.
     if (_isStartingSession) {
-      print('VoiceSessionCubit: startVoiceSession ignored — a start is already in flight');
+      print(
+          'VoiceSessionCubit: startVoiceSession ignored — a start is already in flight');
       return;
     }
     _isStartingSession = true;
@@ -790,7 +853,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     if (accessToken == null || accessToken.isEmpty) {
       _isStartingSession = false;
       if (isClosed) return;
-      emit(const VoiceSessionCredentialsError('Authentication token is invalid or user not logged in.'));
+      emit(const VoiceSessionCredentialsError(
+          'Authentication token is invalid or user not logged in.'));
       return;
     }
 
@@ -801,7 +865,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // LiveKit room + WS first so the new STT/TTS choice takes effect
     // deterministically instead of leaking a second room.
     if (_room != null) {
-      print('VoiceSessionCubit: restarting — disposing existing room before new session');
+      print(
+          'VoiceSessionCubit: restarting — disposing existing room before new session');
       _disconnectWebSocket();
       await _disposeRoomResources();
       _setVisualFeedbackActive(false);
@@ -849,22 +914,26 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       // Pydantic AliasChoices), so the direct call is lossless and safe.
       final url = '$_voiceAgentGatewayUrl/voice/session/start';
       print('VoiceSessionCubit: POST $url');
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
-        body: jsonEncode(requestBody),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(
+            Uri.parse(url),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $accessToken',
+            },
+            body: jsonEncode(requestBody),
+          )
+          .timeout(const Duration(seconds: 30));
       print('VoiceSessionCubit: Response status=${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
         if (data is Map<String, dynamic> &&
-            data.containsKey('roomName') && data['roomName'] is String &&
-            data.containsKey('livekitToken') && data['livekitToken'] is String) {
+            data.containsKey('roomName') &&
+            data['roomName'] is String &&
+            data.containsKey('livekitToken') &&
+            data['livekitToken'] is String) {
           final roomName = data['roomName'] as String;
           final livekitToken = data['livekitToken'] as String;
           _currentSessionId = data['sessionId'] as String? ?? roomName;
@@ -872,7 +941,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           // on-device recognizer + suppress the LiveKit mic; livekit → legacy
           // server-side STT. Read once per session from the start response.
           _onDeviceMode = (data['inputMode'] as String?) != 'livekit';
-          print('VoiceSessionCubit: inputMode=${data['inputMode'] ?? 'on_device(default)'} -> onDeviceMode=$_onDeviceMode');
+          print(
+              'VoiceSessionCubit: inputMode=${data['inputMode'] ?? 'on_device(default)'} -> onDeviceMode=$_onDeviceMode');
           // Admin biometrics policy (drives on_device verification + enforcement).
           final bio = data['biometrics'];
           if (bio is Map) {
@@ -884,7 +954,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             if (t is num) _bioThreshold = t.toDouble();
             // Arm a one-time verification capture for the first user-speech window.
             _bioPending = _bioEnabled;
-            print('VoiceSessionCubit: biometrics policy enabled=$_bioEnabled action=$_bioMismatchAction failOpen=$_bioFailOpen');
+            print(
+                'VoiceSessionCubit: biometrics policy enabled=$_bioEnabled action=$_bioMismatchAction failOpen=$_bioFailOpen');
           }
 
           // Start tracking chat history for this session
@@ -906,10 +977,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
               final effectiveLanguage =
                   data['effectiveLanguage'] as String? ?? 'en';
               if (coercedFrom.isNotEmpty) {
-                emit(VoiceSessionLanguageCoerced(coercedFrom, effectiveLanguage));
+                emit(VoiceSessionLanguageCoerced(
+                    coercedFrom, effectiveLanguage));
               }
             }
-            print('VoiceSessionCubit: Credentials loaded, room=$roomName, url=$_livekitWsUrl');
+            print(
+                'VoiceSessionCubit: Credentials loaded, room=$roomName, url=$_livekitWsUrl');
             emit(VoiceSessionCredentialsLoaded(
               roomName: roomName,
               livekitToken: livekitToken,
@@ -918,17 +991,21 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           } else {
             if (isClosed) return;
             print('VoiceSessionCubit: Empty credentials received');
-            emit(const VoiceSessionCredentialsError('Received empty credentials from backend.'));
+            emit(const VoiceSessionCredentialsError(
+                'Received empty credentials from backend.'));
           }
         } else {
           if (isClosed) return;
           print('VoiceSessionCubit: Invalid response data: ${response.body}');
-          emit(VoiceSessionCredentialsError('Invalid credential data received from backend: ${response.body}'));
+          emit(VoiceSessionCredentialsError(
+              'Invalid credential data received from backend: ${response.body}'));
         }
       } else {
         if (isClosed) return;
-        print('VoiceSessionCubit: HTTP error ${response.statusCode}: ${response.body}');
-        emit(VoiceSessionCredentialsError('Failed to get voice session credentials: ${response.statusCode} ${response.body}'));
+        print(
+            'VoiceSessionCubit: HTTP error ${response.statusCode}: ${response.body}');
+        emit(VoiceSessionCredentialsError(
+            'Failed to get voice session credentials: ${response.statusCode} ${response.body}'));
       }
     } catch (e) {
       if (isClosed) {
@@ -936,7 +1013,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         return;
       }
       print('VoiceSessionCubit: Exception: $e');
-      emit(VoiceSessionCredentialsError('Error processing voice session credentials: $e'));
+      emit(VoiceSessionCredentialsError(
+          'Error processing voice session credentials: $e'));
     } finally {
       // Release the re-entrancy guard. Credentials are loaded (or failed) by
       // now; the LiveKit connect itself runs in connectToLiveKitRoom().
@@ -944,13 +1022,16 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     }
   }
 
-  Future<void> connectToLiveKitRoom(String roomName, String token, String url) async {
+  Future<void> connectToLiveKitRoom(
+      String roomName, String token, String url) async {
     if (isClosed) return;
-    _teardownRequested = false; // fresh connect — clear any stale teardown request
+    _teardownRequested =
+        false; // fresh connect — clear any stale teardown request
     emit(VoiceSessionConnectingToRoom());
 
     final micPermissionStatus = await Permission.microphone.request();
-    if (micPermissionStatus.isDenied || micPermissionStatus.isPermanentlyDenied) {
+    if (micPermissionStatus.isDenied ||
+        micPermissionStatus.isPermanentlyDenied) {
       if (isClosed) return;
       emit(VoiceSessionMicPermissionDenied());
       return;
@@ -996,9 +1077,11 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           if (_isVisualFeedbackActive) return;
 
           if (event.participant.isSpeaking) {
-            if (_room != null && !isClosed) emit(VoiceSessionLocalUserSpeaking(_room!));
+            if (_room != null && !isClosed)
+              emit(VoiceSessionLocalUserSpeaking(_room!));
           } else {
-            if (_room != null && _room!.connectionState == ConnectionState.connected) {
+            if (_room != null &&
+                _room!.connectionState == ConnectionState.connected) {
               if (isClosed) return;
               emit(VoiceSessionAgentProcessing(_room!));
             } else if (_room?.connectionState != ConnectionState.connected) {
@@ -1028,7 +1111,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       // this connect was in flight — up to 30s. If so, immediately leave the room
       // we just joined instead of going live on a session nobody is watching.
       if (isClosed || _teardownRequested) {
-        print('VoiceSessionCubit: teardown requested during connect — disconnecting immediately');
+        print(
+            'VoiceSessionCubit: teardown requested during connect — disconnecting immediately');
         await _disposeRoomResources();
         if (!isClosed) emit(VoiceSessionDisconnected());
         return;
@@ -1094,7 +1178,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           !_isAgentSpeaking &&
           !isClosed &&
           !_teardownRequested) {
-        print('VoiceSessionCubit: greeting-end not observed — starting on-device listening (fallback)');
+        print(
+            'VoiceSessionCubit: greeting-end not observed — starting on-device listening (fallback)');
         _awaitingAgentReply = false;
         startLocalListening();
       }
@@ -1107,7 +1192,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     try {
       _sttAvailable = await _speech.initialize(
         onError: (err) {
-          print('VoiceSessionCubit: speech_to_text error: ${err.errorMsg} (permanent=${err.permanent})');
+          print(
+              'VoiceSessionCubit: speech_to_text error: ${err.errorMsg} (permanent=${err.permanent})');
           _isLocalListening = false;
           // Transient errors (error_no_match / error_speech_timeout) just end a
           // listen window — re-arm whenever listening is currently permitted
@@ -1125,7 +1211,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         },
       );
       _sttInitialized = true;
-      print('VoiceSessionCubit: speech_to_text initialized available=$_sttAvailable');
+      print(
+          'VoiceSessionCubit: speech_to_text initialized available=$_sttAvailable');
     } catch (e) {
       _sttAvailable = false;
       _sttInitialized = true;
@@ -1141,7 +1228,11 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// - while waiting for the agent to START replying → no;
   /// - otherwise (user's turn) → yes.
   bool _listeningPermitted() {
-    if (!_onDeviceMode || isClosed || _teardownRequested || _isMuted || !_sttAvailable) {
+    if (!_onDeviceMode ||
+        isClosed ||
+        _teardownRequested ||
+        _isMuted ||
+        !_sttAvailable) {
       return false;
     }
     if (_bioInProgress) return false; // verification capture owns the mic
@@ -1176,6 +1267,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     if (next == _interactionMode) return;
     final wasPtt = isPushToTalk;
     _interactionMode = next;
+    // The gesture the button binds, its label, and the docked bar's hint all
+    // read the mode — repaint them, or the UI keeps offering the old gesture.
+    _emitCaptionUpdate();
     if (isPushToTalk) {
       // Entering PTT: close the mic; it reopens only on a gesture.
       _pttActive = false;
@@ -1193,6 +1287,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     if (!isPushToTalk) return;
     _pttActive = true;
     _awaitingAgentReply = false; // a fresh user turn overrides any pending wait
+    // Tell the UI the capture window is OPEN.
+    //
+    // _pttActive is a plain field, and VoiceSessionState is Equatable — without
+    // a nudge no BlocBuilder re-runs, so the talk button never lit up while the
+    // user was holding it and the only feedback that the mic was live was the
+    // agent eventually replying.
+    _emitCaptionUpdate();
     await startLocalListening();
   }
 
@@ -1202,6 +1303,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   Future<void> pttEnd() async {
     if (!isPushToTalk) return;
     _pttActive = false;
+    // Same reason as pttBegin: without this the button stays lit after release.
+    _emitCaptionUpdate();
     // Dispatch whatever we have NOW (accumulated finals + the live partial), the
     // same join the silence-timer/native-final paths use. _dispatchUserTurn dedups
     // and drops an empty turn, so a no-speech press is a clean no-op.
@@ -1362,7 +1465,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _lastPartialText = words;
     final display = _joinTurn(_turnAccumulator, words);
     const minInterimChars = 3;
-    final hasPreview = _currentUserCaption != null && _currentUserCaption!.isNotEmpty;
+    final hasPreview =
+        _currentUserCaption != null && _currentUserCaption!.isNotEmpty;
     if (display.length >= minInterimChars || hasPreview) {
       _currentUserCaption = display.isNotEmpty ? display : _currentUserCaption;
       _setUserSpeaking(); // reflect "you're talking" in the UI
@@ -1375,9 +1479,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _turnSilenceTimer?.cancel();
     // Same adaptive rule for the pure-silence path: an unfinished-sounding turn
     // gets the longer window so a natural pause doesn't finalise it early.
-    final silenceWindow = _looksIncomplete(display)
-        ? _turnSilenceWindowLong
-        : _turnSilenceWindow;
+    final silenceWindow =
+        _looksIncomplete(display) ? _turnSilenceWindowLong : _turnSilenceWindow;
     _turnSilenceTimer = Timer(silenceWindow, () {
       if (_onDeviceMode && !_turnDispatched && _isLocalListening) {
         _dispatchUserTurn(_joinTurn(_turnAccumulator, _lastPartialText));
@@ -1490,14 +1593,16 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     final room = _room;
     if (room == null) return;
     try {
-      final payload = utf8.encode(jsonEncode({'type': 'user_text', 'text': text}));
+      final payload =
+          utf8.encode(jsonEncode({'type': 'user_text', 'text': text}));
       unawaited(room.localParticipant?.publishData(
             payload,
             reliable: true,
             topic: _userTextTopic,
           ) ??
           Future.value());
-      print('VoiceSessionCubit: published on-device user text (${text.length} chars)');
+      print(
+          'VoiceSessionCubit: published on-device user text (${text.length} chars)');
     } catch (e) {
       print('VoiceSessionCubit: publishData failed: $e');
       // If we couldn't hand off the turn, don't strand the mic — re-arm.
@@ -1511,7 +1616,10 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// PREFER en-US (the most broadly-trained model), then any other English, then
   /// any locale whose code matches; null falls back to the device default.
   Future<String?> _resolveSttLocaleId() async {
-    final lang = (_selectedLanguageCode ?? 'en').split(RegExp('[-_]')).first.toLowerCase();
+    final lang = (_selectedLanguageCode ?? 'en')
+        .split(RegExp('[-_]'))
+        .first
+        .toLowerCase();
     try {
       final locales = await _speech.locales();
       String? firstLangMatch;
@@ -1563,11 +1671,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       }
       if (!await _bioRecorder.hasPermission()) return;
       final tmp = await getTemporaryDirectory();
-      path = '${tmp.path}/voice_verify_${DateTime.now().millisecondsSinceEpoch}.wav';
+      path =
+          '${tmp.path}/voice_verify_${DateTime.now().millisecondsSinceEpoch}.wav';
       _bioCancelled = false;
       _bioInProgress = true; // recorder owns the mic
       await _bioRecorder.start(
-        const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000, numChannels: 1),
+        const RecordConfig(
+            encoder: AudioEncoder.wav, sampleRate: 16000, numChannels: 1),
         path: path,
       );
       // Gate on REAL speech: wait until the mic actually hears the user before we
@@ -1575,7 +1685,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       // against silence or the agent's own audio.
       final heardUser = await _waitForUserSpeech();
       if (_bioCancelled || isClosed || !heardUser) {
-        print('VoiceSessionCubit: no user speech for verification — skipping (fail-open)');
+        print(
+            'VoiceSessionCubit: no user speech for verification — skipping (fail-open)');
         return;
       }
       // Capture a short slice of their speech for the embedding, then hand the mic
@@ -1592,11 +1703,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         audioSample: Uint8List.fromList(bytes),
         threshold: _bioThreshold,
       );
-      print('VoiceSessionCubit: on-device voice verification → verified=${result.verified} (${result.status})');
+      print(
+          'VoiceSessionCubit: on-device voice verification → verified=${result.verified} (${result.status})');
       // _applyBiometricVerdict may end the session on a mismatch+exit; don't then
       // re-arm listening into a torn-down room.
       reArm = !(result.verified == false && _bioMismatchAction == 'exit');
-      _applyBiometricVerdict(verified: result.verified, message: result.message);
+      _applyBiometricVerdict(
+          verified: result.verified, message: result.message);
     } catch (e) {
       print('VoiceSessionCubit: on-device biometrics error: $e');
       if (!_bioFailOpen && _bioMismatchAction == 'exit') {
@@ -1627,7 +1740,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// the agent's voice.
   Future<bool> _waitForUserSpeech() async {
     const maxPolls = 33; // 33 × 150ms ≈ 5s budget for the user to start talking
-    const speechDbThreshold = -35.0; // dBFS; quiet room floor is well below this
+    const speechDbThreshold =
+        -35.0; // dBFS; quiet room floor is well below this
     for (var i = 0; i < maxPolls; i++) {
       if (_bioCancelled || isClosed || !_bioInProgress) return false;
       try {
@@ -1649,11 +1763,15 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     if (verified) {
       emit(VoiceSessionVerificationSuccess(
         _room!,
-        (message != null && message.isNotEmpty) ? message : "Voice verified — it's really you.",
+        (message != null && message.isNotEmpty)
+            ? message
+            : "Voice verified — it's really you.",
       ));
       // Auto-dismiss back to the live session after ~3s.
       Future.delayed(const Duration(seconds: 3), () {
-        if (!isClosed && state is VoiceSessionVerificationSuccess && _room != null &&
+        if (!isClosed &&
+            state is VoiceSessionVerificationSuccess &&
+            _room != null &&
             _room!.connectionState == ConnectionState.connected) {
           emit(VoiceSessionConnected(_room!));
         }
@@ -1676,7 +1794,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             : "We couldn't fully confirm your voice — continuing, but please re-enroll if this keeps happening.",
       ));
       Future.delayed(const Duration(seconds: 5), () {
-        if (!isClosed && state is VoiceSessionLowConfidenceWarning && _room != null &&
+        if (!isClosed &&
+            state is VoiceSessionLowConfidenceWarning &&
+            _room != null &&
             _room!.connectionState == ConnectionState.connected) {
           emit(VoiceSessionConnected(_room!));
         }
@@ -1722,10 +1842,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _wsChannel?.sink.close();
     _wsChannel = null;
 
-    final wsUri = Uri.parse(
-      '$_voiceWsUrl/ws/voice/$_currentSessionId'
-      '?token=$_currentAccessToken'
-    );
+    final wsUri = Uri.parse('$_voiceWsUrl/ws/voice/$_currentSessionId'
+        '?token=$_currentAccessToken');
 
     try {
       _wsChannel = IOWebSocketChannel.connect(
@@ -1796,8 +1914,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         case 'show_user_search':
           if (_room != null) {
             final users = (eventData['users'] as List?)
-                ?.map((u) => Map<String, dynamic>.from(u as Map))
-                .toList() ?? [];
+                    ?.map((u) => Map<String, dynamic>.from(u as Map))
+                    .toList() ??
+                [];
             // Keep the candidates so selectUser() can resolve the chosen
             // user's name / avatar for the HUD. If we are searching again
             // after a prior failure, reset the stale result fields.
@@ -1951,7 +2070,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
               emit(VoiceSessionLowConfidenceWarning(_room!, verificationMsg));
               // Auto-dismiss after 5s and return to connected state
               Future.delayed(const Duration(seconds: 5), () {
-                if (!isClosed && _room != null &&
+                if (!isClosed &&
+                    _room != null &&
                     _room!.connectionState == ConnectionState.connected) {
                   emit(VoiceSessionConnected(_room!));
                 }
@@ -1983,7 +2103,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         case 'invalid_beneficiary':
           if (_room != null) {
             _setVisualFeedbackActive(false);
-            final errorMsg = eventData['message'] as String? ?? 'Transaction failed';
+            final errorMsg =
+                eventData['message'] as String? ?? 'Transaction failed';
             // Reflect the rejection on the HUD (failed + reason) so it stays
             // in sync instead of stalling on the review/PIN step.
             if (_transferContext.isActive) {
@@ -1992,7 +2113,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
                 failureReason: _rejectReason(eventType, errorMsg),
               ));
             }
-            emit(VoiceSessionTransactionError(_room!, errorMsg, eventType ?? 'error'));
+            emit(VoiceSessionTransactionError(
+                _room!, errorMsg, eventType ?? 'error'));
           }
           break;
         // ── Caption events for real-time transcription ──
@@ -2059,7 +2181,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
                     _chatHistoryCubit.replaceLastUserMessage(
                         _currentSessionId!, sanitized);
                   } else {
-                    _chatHistoryCubit.addUserMessage(_currentSessionId!, sanitized);
+                    _chatHistoryCubit.addUserMessage(
+                        _currentSessionId!, sanitized);
                   }
                 }
                 _currentUserCaption = null;
@@ -2096,7 +2219,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
               } else if (_bargeInEnabled) {
                 // (Legacy) open-mic acoustic barge-in — off by default (no AEC).
                 Future.delayed(const Duration(milliseconds: 700), () {
-                  if (_agentSpeaking && _listeningPermitted()) startLocalListening();
+                  if (_agentSpeaking && _listeningPermitted())
+                    startLocalListening();
                 });
               }
             }
@@ -2105,8 +2229,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             // is still showing — commit it as a REPLACE on agent_caption_end so the
             // user sees ONE answer, not a half reply followed by a second one.
             _pendingAgentReplace = eventData['replace'] == true;
-            final sanitized =
-                text != null ? _sanitizeCaptionText(text) : '';
+            final sanitized = text != null ? _sanitizeCaptionText(text) : '';
             _currentAgentCaption = sanitized.isNotEmpty ? sanitized : null;
             _isAgentSpeaking = true;
             _emitCaptionUpdate();
@@ -2140,9 +2263,11 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
                 : (_currentAgentCaption ?? '');
             if (finalText.isNotEmpty && _currentSessionId != null) {
               if (_pendingAgentReplace) {
-                _chatHistoryCubit.replaceLastAgentMessage(_currentSessionId!, finalText);
+                _chatHistoryCubit.replaceLastAgentMessage(
+                    _currentSessionId!, finalText);
               } else {
-                _chatHistoryCubit.addAgentMessage(_currentSessionId!, finalText);
+                _chatHistoryCubit.addAgentMessage(
+                    _currentSessionId!, finalText);
               }
             }
             _pendingAgentReplace = false;
@@ -2171,9 +2296,11 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           final newLocale = eventData['locale'] as String?;
           if (newLang != null && newLang.isNotEmpty) {
             _selectedLanguageCode = newLang;
-            print('VoiceSessionCubit: Language switched to $newLang ($newLocale)');
+            print(
+                'VoiceSessionCubit: Language switched to $newLang ($newLocale)');
             if (_room != null) {
-              emit(VoiceSessionLanguageChanged(_room!, newLang, newLocale ?? newLang));
+              emit(VoiceSessionLanguageChanged(
+                  _room!, newLang, newLocale ?? newLang));
             }
           }
           break;
@@ -2203,7 +2330,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           // rating screen (VoiceSessionEnded), instead of silently popping the
           // sheet. The mini-bubble also auto-hides on VoiceSessionEnded.
           final reason = eventData['reason'] as String? ?? 'ended';
-          print('VoiceSessionCubit: agent ended session (reason=$reason) — ending like a manual end (show rating)');
+          print(
+              'VoiceSessionCubit: agent ended session (reason=$reason) — ending like a manual end (show rating)');
           _setVisualFeedbackActive(false);
           _clearCaptions();
           // Fire-and-forget to avoid reentrancy on the active WS-message stack;
@@ -2215,7 +2343,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           _setVisualFeedbackActive(false);
           print('VoiceSessionCubit: WS error event: ${eventData['message']}');
           if (_room != null) {
-            final errorMsg = eventData['message'] as String? ?? 'An error occurred';
+            final errorMsg =
+                eventData['message'] as String? ?? 'An error occurred';
             emit(VoiceSessionError(errorMsg));
           }
           break;
@@ -2355,11 +2484,11 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     final currency = (d['currency'] ?? 'NGN').toString();
     final recipient = (d['recipient'] ?? '').toString().trim();
     final username = (d['username'] ?? '').toString().trim();
-    final bank = (d['beneficiary_bank'] ?? d['bank_name'] ?? '').toString().trim();
-    final account =
-        (d['account_number'] ?? d['recipient_account_number'] ?? '')
-            .toString()
-            .trim();
+    final bank =
+        (d['beneficiary_bank'] ?? d['bank_name'] ?? '').toString().trim();
+    final account = (d['account_number'] ?? d['recipient_account_number'] ?? '')
+        .toString()
+        .trim();
     final type = (d['transfer_type'] ?? 'internal').toString();
 
     _updateTransferContext(_transferContext.copyWith(
@@ -2392,9 +2521,10 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       totalNaira: total,
       currency: currency.isEmpty ? null : currency,
       // Only adopt the summary as a name if we never resolved a recipient.
-      recipientName: _transferContext.recipientName == null && summary.isNotEmpty
-          ? summary
-          : null,
+      recipientName:
+          _transferContext.recipientName == null && summary.isNotEmpty
+              ? summary
+              : null,
     ));
   }
 
@@ -2406,14 +2536,16 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       final ref = (d['reference'] ?? d['transaction_reference'] ?? '')
           .toString()
           .trim();
-      final balance = (d['new_balance'] ?? d['balance'] ?? '').toString().trim();
+      final balance =
+          (d['new_balance'] ?? d['balance'] ?? '').toString().trim();
       _updateTransferContext(_transferContext.copyWith(
         status: VoiceTransferStatus.success,
         reference: ref.isEmpty ? null : ref,
         newBalance: balance.isEmpty ? null : balance,
       ));
     } else {
-      final reason = (d['error'] ?? d['message'] ?? 'Transfer failed').toString();
+      final reason =
+          (d['error'] ?? d['message'] ?? 'Transfer failed').toString();
       _updateTransferContext(_transferContext.copyWith(
         status: VoiceTransferStatus.failed,
         failureReason: reason,
@@ -2438,7 +2570,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // ── Send events to voice agent via WebSocket ──
 
   /// Send a structured event to the voice agent through the WebSocket service.
-  Future<void> sendToVoiceAgent(String eventType, Map<String, dynamic> data) async {
+  Future<void> sendToVoiceAgent(
+      String eventType, Map<String, dynamic> data) async {
     if (_wsChannel == null) return;
     final payload = jsonEncode({'event': eventType, 'data': data});
     try {
@@ -2601,8 +2734,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         amount: amount,
         currency: currency,
       );
-      if (result.success &&
-          (result.verificationToken?.isNotEmpty ?? false)) {
+      if (result.success && (result.verificationToken?.isNotEmpty ?? false)) {
         final token = result.verificationToken!;
         if (callbackIntent.isNotEmpty) {
           await submitPinVerification(
@@ -2670,8 +2802,10 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   }
 
   Future<void> disconnectFromLiveKitRoom({bool fullCleanup = false}) async {
-    print('VoiceSessionCubit: disconnectFromLiveKitRoom called, fullCleanup=$fullCleanup');
-    _teardownRequested = true; // cancel any in-flight connect (mid-connection dismissal)
+    print(
+        'VoiceSessionCubit: disconnectFromLiveKitRoom called, fullCleanup=$fullCleanup');
+    _teardownRequested =
+        true; // cancel any in-flight connect (mid-connection dismissal)
     _disconnectWebSocket();
     _setVisualFeedbackActive(false);
     _clearCaptions();
@@ -2693,7 +2827,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   Future<void> endSession({String? endReason}) async {
     final sessionId = _currentSessionId ?? '';
     print('VoiceSessionCubit: endSession called, sessionId=$sessionId');
-    _teardownRequested = true; // cancel any in-flight connect (mid-connection end)
+    _teardownRequested =
+        true; // cancel any in-flight connect (mid-connection end)
     _disconnectWebSocket();
     _setVisualFeedbackActive(false);
     _clearCaptions();
@@ -2787,7 +2922,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _isLocalListening = false;
     _bioAttemptedThisSession = false;
     _bioInProgress = false;
-    _bioCancelled = true; // bail any in-flight capture; a new capture re-arms it
+    _bioCancelled =
+        true; // bail any in-flight capture; a new capture re-arms it
     _bioPending = false;
     _turnDispatched = false;
     _lastPartialText = '';
@@ -2880,7 +3016,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     if (trimmed.isEmpty) return '';
 
     // Remove control characters (except common whitespace)
-    final sanitized = trimmed.replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]'), '');
+    final sanitized =
+        trimmed.replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]'), '');
 
     // Truncate if too long (max 500 chars to prevent memory issues)
     const maxLength = 500;

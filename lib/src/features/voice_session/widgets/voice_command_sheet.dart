@@ -39,6 +39,7 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/voice/services/voice_settings_service.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_mini_bubble.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_talk_affordance.dart';
+import 'package:lazervault/src/features/voice/services/voice_talk_mode_controller.dart';
 import 'package:lazervault/src/features/ai_chats/presentation/widgets/ai_chat_content.dart'
     show BubbleTailPainter;
 part 'voice_command_sheet_widgets.dart';
@@ -148,6 +149,11 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// Loaded from the user's voice settings (admin default → per-user override) at
   /// session start; also togglable in-sheet. Drives the talk button + docked bar.
   String _interactionMode = 'continuous';
+
+  /// Live subscription to the shared talk mode, so a change made in Settings
+  /// (or the settings bottom sheet) re-renders this sheet AND re-applies to the
+  /// session — the three copies used to drift and the mic ignored all but one.
+  StreamSubscription<String>? _talkModeSub;
   bool get _isPtt => _interactionMode != 'continuous';
 
   @override
@@ -484,37 +490,77 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     unawaited(_applyInteractionModeFromSettings());
   }
 
-  /// Fetch the user's effective voice interaction mode and apply it to the cubit +
-  /// this sheet. Fail-safe: any failure leaves the default 'continuous' mode.
+  /// Subscribe to the shared talk mode and apply every change to the session.
+  ///
+  /// A SUBSCRIPTION, not a one-shot read: the mode can change while this sheet
+  /// is open (the settings bottom sheet is reachable from inside it), and a
+  /// one-shot read left the cubit on whatever the mode was at open time — the
+  /// mic then kept auto-listening for a user who had just chosen push-to-talk.
   Future<void> _applyInteractionModeFromSettings() async {
-    try {
-      if (!serviceLocator.isRegistered<VoiceSettingsService>()) return;
-      final s = await serviceLocator<VoiceSettingsService>().getTxPinSettings();
-      if (s == null || !mounted) return;
-      final mode = s.effectiveInteractionMode;
+    if (!serviceLocator.isRegistered<VoiceTalkModeController>()) return;
+    final controller = serviceLocator<VoiceTalkModeController>();
+
+    _talkModeSub?.cancel();
+    _talkModeSub = controller.modeStream.listen((mode) {
+      if (!mounted) return;
       setState(() => _interactionMode = mode);
+      // The only line that actually changes how the microphone behaves.
       context.read<VoiceSessionCubit>().setInteractionMode(mode);
-    } catch (_) {/* keep the default continuous mode */}
+    });
+
+    // Pull the persisted value; the listener above applies whatever arrives.
+    await controller.load();
   }
 
   /// Cycle to the next interaction mode from the in-sheet toggle and persist it as
   /// a per-user override. Order: continuous → hold → tap → double_tap → continuous.
   Future<void> _cycleInteractionMode() async {
-    const order = ['continuous', 'hold', 'tap', 'double_tap'];
+    final order = VoiceTalkMode.all;
     final next = order[(order.indexOf(_interactionMode) + 1) % order.length];
-    setState(() => _interactionMode = next);
-    context.read<VoiceSessionCubit>().setInteractionMode(next);
-    try {
-      if (serviceLocator.isRegistered<VoiceSettingsService>()) {
-        await serviceLocator<VoiceSettingsService>().updateTxPinSettings(
-          requirePin: null,
-          thresholdKobo: null,
-          interactionMode: next,
-        );
-      }
-    } catch (_) {
-      /* the in-session choice still applies even if the save fails */
+    // Through the controller: it persists AND broadcasts, so the settings
+    // screen and the minimized bar follow without either knowing about this
+    // chip. The stream listener is what applies it to the session.
+    if (serviceLocator.isRegistered<VoiceTalkModeController>()) {
+      await serviceLocator<VoiceTalkModeController>().setMode(next);
     }
+    if (mounted) _showTalkModeChanged(next);
+  }
+
+  /// Confirm a mode change on screen.
+  ///
+  /// The mode decides whether the mic listens on its own or waits for a
+  /// gesture. Changing it silently leaves the user unsure which rules now
+  /// apply, and the difference only shows up when they try to speak.
+  void _showTalkModeChanged(String mode) {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+    messenger.clearSnackBars();
+    messenger.showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF1B1626),
+        content: Row(
+          children: [
+            Icon(
+              mode == VoiceTalkMode.continuous
+                  ? Icons.graphic_eq_rounded
+                  : Icons.touch_app_rounded,
+              color: const Color(0xFF10B981),
+              size: 18,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                // Says what the user must now DO, not just the mode's name.
+                'Voice mode: ${VoiceTalkMode.action(mode, capturing: false)}',
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   /// Human label for an interaction mode (used on the toggle chip + docked bar).
@@ -816,6 +862,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
   @override
   void dispose() {
+    _talkModeSub?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     // Always release the wakelock when the sheet is torn down.
     WakelockPlus.disable().catchError((_) {});
@@ -3026,38 +3073,38 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             _captionedControl(
               label: _isMuted ? 'Unmute' : 'Mute',
               child: GestureDetector(
-              onTap: () async {
-                final cubit = context.read<VoiceSessionCubit>();
-                final newMuted = await cubit.toggleMute();
-                setState(() => _isMuted = newMuted);
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 56.w,
-                height: 56.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _isMuted
-                      ? const Color(0xFFFB923C).withValues(alpha: 0.15)
-                      : Colors.white.withValues(alpha: 0.12),
-                  border: Border.all(
+                onTap: () async {
+                  final cubit = context.read<VoiceSessionCubit>();
+                  final newMuted = await cubit.toggleMute();
+                  setState(() => _isMuted = newMuted);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 56.w,
+                  height: 56.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
                     color: _isMuted
-                        ? const Color(0xFFFB923C).withValues(alpha: 0.4)
-                        : Colors.white.withValues(alpha: 0.25),
-                    width: 1,
+                        ? const Color(0xFFFB923C).withValues(alpha: 0.15)
+                        : Colors.white.withValues(alpha: 0.12),
+                    border: Border.all(
+                      color: _isMuted
+                          ? const Color(0xFFFB923C).withValues(alpha: 0.4)
+                          : Colors.white.withValues(alpha: 0.25),
+                      width: 1,
+                    ),
+                  ),
+                  child: Icon(
+                    _isMuted
+                        ? Icons.volume_off_rounded
+                        : Icons.volume_up_rounded,
+                    color: _isMuted
+                        ? const Color(0xFFFB923C)
+                        : Colors.white.withValues(alpha: 0.9),
+                    size: 24.sp,
                   ),
                 ),
-                child: Icon(
-                  _isMuted
-                      ? Icons.volume_off_rounded
-                      : Icons.volume_up_rounded,
-                  color: _isMuted
-                      ? const Color(0xFFFB923C)
-                      : Colors.white.withValues(alpha: 0.9),
-                  size: 24.sp,
-                ),
               ),
-            ),
             ),
           ],
         ],

@@ -672,6 +672,42 @@ class BankingServiceClient extends $grpc.Client {
         options: options);
   }
 
+  /// Open a card sale. Idempotent on reference.
+  $grpc.ResponseFuture<$0.CardChargeResponse> createCardCharge(
+    $0.CreateCardChargeRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$createCardCharge, request, options: options);
+  }
+
+  /// Current status of one sale. The app polls this after a tap; the webhook
+  /// usually beats it, and the reconciler covers the case where neither lands.
+  $grpc.ResponseFuture<$0.CardChargeResponse> getCardCharge(
+    $0.GetCardChargeRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getCardCharge, request, options: options);
+  }
+
+  /// The signed-in merchant's own sales, newest first.
+  $grpc.ResponseFuture<$0.ListMyCardChargesResponse> listMyCardCharges(
+    $0.ListMyCardChargesRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$listMyCardCharges, request, options: options);
+  }
+
+  /// Which rail is live and whether card acceptance is usable at all, so the
+  /// app can say "card payments are unavailable" instead of failing at the tap.
+  $grpc.ResponseFuture<$0.GetCardAcceptanceStatusResponse>
+      getCardAcceptanceStatus(
+    $0.GetCardAcceptanceStatusRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getCardAcceptanceStatus, request,
+        options: options);
+  }
+
   // method descriptors
 
   static final _$initiateDomesticTransfer =
@@ -1067,6 +1103,27 @@ class BankingServiceClient extends $grpc.Client {
       '/banking.BankingService/GetMultiSourceCreditScores',
       ($0.GetMultiSourceCreditScoresRequest value) => value.writeToBuffer(),
       $0.MultiSourceCreditScoresResponse.fromBuffer);
+  static final _$createCardCharge =
+      $grpc.ClientMethod<$0.CreateCardChargeRequest, $0.CardChargeResponse>(
+          '/banking.BankingService/CreateCardCharge',
+          ($0.CreateCardChargeRequest value) => value.writeToBuffer(),
+          $0.CardChargeResponse.fromBuffer);
+  static final _$getCardCharge =
+      $grpc.ClientMethod<$0.GetCardChargeRequest, $0.CardChargeResponse>(
+          '/banking.BankingService/GetCardCharge',
+          ($0.GetCardChargeRequest value) => value.writeToBuffer(),
+          $0.CardChargeResponse.fromBuffer);
+  static final _$listMyCardCharges = $grpc.ClientMethod<
+          $0.ListMyCardChargesRequest, $0.ListMyCardChargesResponse>(
+      '/banking.BankingService/ListMyCardCharges',
+      ($0.ListMyCardChargesRequest value) => value.writeToBuffer(),
+      $0.ListMyCardChargesResponse.fromBuffer);
+  static final _$getCardAcceptanceStatus = $grpc.ClientMethod<
+          $0.GetCardAcceptanceStatusRequest,
+          $0.GetCardAcceptanceStatusResponse>(
+      '/banking.BankingService/GetCardAcceptanceStatus',
+      ($0.GetCardAcceptanceStatusRequest value) => value.writeToBuffer(),
+      $0.GetCardAcceptanceStatusResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('banking.BankingService')
@@ -1766,6 +1823,42 @@ abstract class BankingServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetMultiSourceCreditScoresRequest.fromBuffer(value),
         ($0.MultiSourceCreditScoresResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.CreateCardChargeRequest, $0.CardChargeResponse>(
+            'CreateCardCharge',
+            createCardCharge_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.CreateCardChargeRequest.fromBuffer(value),
+            ($0.CardChargeResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.GetCardChargeRequest, $0.CardChargeResponse>(
+            'GetCardCharge',
+            getCardCharge_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.GetCardChargeRequest.fromBuffer(value),
+            ($0.CardChargeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListMyCardChargesRequest,
+            $0.ListMyCardChargesResponse>(
+        'ListMyCardCharges',
+        listMyCardCharges_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ListMyCardChargesRequest.fromBuffer(value),
+        ($0.ListMyCardChargesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCardAcceptanceStatusRequest,
+            $0.GetCardAcceptanceStatusResponse>(
+        'GetCardAcceptanceStatus',
+        getCardAcceptanceStatus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetCardAcceptanceStatusRequest.fromBuffer(value),
+        ($0.GetCardAcceptanceStatusResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.TransferResponse> initiateDomesticTransfer_Pre(
@@ -2459,4 +2552,40 @@ abstract class BankingServiceBase extends $grpc.Service {
 
   $async.Future<$0.MultiSourceCreditScoresResponse> getMultiSourceCreditScores(
       $grpc.ServiceCall call, $0.GetMultiSourceCreditScoresRequest request);
+
+  $async.Future<$0.CardChargeResponse> createCardCharge_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.CreateCardChargeRequest> $request) async {
+    return createCardCharge($call, await $request);
+  }
+
+  $async.Future<$0.CardChargeResponse> createCardCharge(
+      $grpc.ServiceCall call, $0.CreateCardChargeRequest request);
+
+  $async.Future<$0.CardChargeResponse> getCardCharge_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetCardChargeRequest> $request) async {
+    return getCardCharge($call, await $request);
+  }
+
+  $async.Future<$0.CardChargeResponse> getCardCharge(
+      $grpc.ServiceCall call, $0.GetCardChargeRequest request);
+
+  $async.Future<$0.ListMyCardChargesResponse> listMyCardCharges_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ListMyCardChargesRequest> $request) async {
+    return listMyCardCharges($call, await $request);
+  }
+
+  $async.Future<$0.ListMyCardChargesResponse> listMyCardCharges(
+      $grpc.ServiceCall call, $0.ListMyCardChargesRequest request);
+
+  $async.Future<$0.GetCardAcceptanceStatusResponse> getCardAcceptanceStatus_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetCardAcceptanceStatusRequest> $request) async {
+    return getCardAcceptanceStatus($call, await $request);
+  }
+
+  $async.Future<$0.GetCardAcceptanceStatusResponse> getCardAcceptanceStatus(
+      $grpc.ServiceCall call, $0.GetCardAcceptanceStatusRequest request);
 }

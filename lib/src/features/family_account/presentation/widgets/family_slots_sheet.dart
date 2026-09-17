@@ -5,6 +5,9 @@ import 'package:uuid/uuid.dart';
 
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/family_account/data/datasources/family_slots_data_source.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:get_it/get_it.dart';
 import 'package:lazervault/src/generated/family_accounts.pbgrpc.dart'
     as family_pb;
 
@@ -32,7 +35,12 @@ class FamilySlotsSheet extends StatefulWidget {
   State<FamilySlotsSheet> createState() => _FamilySlotsSheetState();
 }
 
-class _FamilySlotsSheetState extends State<FamilySlotsSheet> {
+class _FamilySlotsSheetState extends State<FamilySlotsSheet>
+    with TransactionPinMixin<FamilySlotsSheet> {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
+
   static const _bg = Color(0xFF121212);
   static const _card = Color(0xFF1C1C1E);
   static const _border = Color(0xFF2A2A2C);
@@ -130,31 +138,51 @@ class _FamilySlotsSheetState extends State<FamilySlotsSheet> {
     if (confirmed != true || !mounted) return;
 
     setState(() => _buying = true);
+
+    // The PIN transaction id is minted ONCE per confirmation and travels with
+    // the token: auth-service binds the token to this id, and the server
+    // refuses a token presented against any other one.
+    final pinTxId = 'FAMSLOT-${DateTime.now().microsecondsSinceEpoch}';
+    final feeMajor = cap.extraSlotFeeMinor.toInt() / 100.0;
+
     try {
-      final resp = await widget.dataSource
-          .requestExtraSlot(idempotencyKey: _idempotencyKey);
-      if (!mounted) return;
-      setState(() => _buying = false);
-      // The server returns capacity with the purchase, so the sheet redraws
-      // from the response instead of a second round trip.
-      if (resp.hasCapacity()) {
-        setState(() => _capacity = resp.capacity);
-      }
-      await _load();
-      widget.onChanged?.call();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(resp.message.isEmpty ? 'Slot added' : resp.message),
-          backgroundColor: _ok,
-        ),
+      await validateTransactionPin(
+        context: context,
+        transactionId: pinTxId,
+        transactionType: 'family_slot_purchase',
+        amount: feeMajor,
+        currency: cap.currency,
+        title: 'Add a family slot',
+        onPinValidated: (verificationToken) async {
+          final resp = await widget.dataSource.requestExtraSlot(
+            idempotencyKey: _idempotencyKey,
+            pinToken: verificationToken,
+            pinTransactionId: pinTxId,
+          );
+          if (!mounted) return;
+          // The server returns capacity with the purchase, so the sheet redraws
+          // from the response instead of a second round trip.
+          if (resp.hasCapacity()) {
+            setState(() => _capacity = resp.capacity);
+          }
+          await _load();
+          widget.onChanged?.call();
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(resp.message.isEmpty ? 'Slot added' : resp.message),
+              backgroundColor: _ok,
+            ),
+          );
+        },
       );
     } catch (e) {
       if (!mounted) return;
-      setState(() => _buying = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(_friendly(e)), backgroundColor: _danger),
       );
+    } finally {
+      if (mounted) setState(() => _buying = false);
     }
   }
 
