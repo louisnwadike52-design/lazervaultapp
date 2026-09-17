@@ -53,6 +53,41 @@ class GroupAccountServiceClient extends $grpc.Client {
     return $createUnaryCall(_$listUserGroups, request, options: options);
   }
 
+  /// ListPastContributions returns contributions the caller used to
+  /// belong to but has been removed from / left voluntarily. Backed by
+  /// contribution_members rows where removed_at IS NOT NULL. Filter
+  /// values: "" (all), "removed" (admin-removed), "left" (self-exit).
+  $grpc.ResponseFuture<$0.ListPastContributionsResponse> listPastContributions(
+    $0.ListPastContributionsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$listPastContributions, request, options: options);
+  }
+
+  /// ListPastGroups returns groups the caller has been removed from /
+  /// left. Mirrors ListPastContributions over group_members soft-delete.
+  $grpc.ResponseFuture<$0.ListPastGroupsResponse> listPastGroups(
+    $0.ListPastGroupsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$listPastGroups, request, options: options);
+  }
+
+  /// GetPastContributionDetails aggregates everything the read-only
+  /// detail screen needs in one round-trip: contribution meta, the
+  /// caller's payments (with refund status per cycle), all members,
+  /// closed cycles, and the cycle that was active when the caller was
+  /// removed (if any). Permitted via assertCanIncludingExited so an
+  /// ex-member can still see what they used to be part of.
+  $grpc.ResponseFuture<$0.GetPastContributionDetailsResponse>
+      getPastContributionDetails(
+    $0.GetPastContributionDetailsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getPastContributionDetails, request,
+        options: options);
+  }
+
   $grpc.ResponseFuture<$0.UpdateGroupResponse> updateGroup(
     $0.UpdateGroupRequest request, {
     $grpc.CallOptions? options,
@@ -463,6 +498,16 @@ class GroupAccountServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getPublicGroup, request, options: options);
   }
 
+  $grpc.ResponseFuture<$0.JoinPublicGroupResponse> joinPublicGroup(
+    $0.JoinPublicGroupRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$joinPublicGroup, request, options: options);
+  }
+
+  /// ---- Join requests -----------------------------------------------------
+  /// The admin's queue for one group. Admin/moderator only: this lists people
+  /// waiting on a decision about access to the group's money.
   $grpc.ResponseFuture<$0.ListJoinRequestsResponse> listJoinRequests(
     $0.ListJoinRequestsRequest request, {
     $grpc.CallOptions? options,
@@ -470,6 +515,7 @@ class GroupAccountServiceClient extends $grpc.Client {
     return $createUnaryCall(_$listJoinRequests, request, options: options);
   }
 
+  /// Approve or reject one request. Admin/moderator only.
   $grpc.ResponseFuture<$0.DecideJoinRequestResponse> decideJoinRequest(
     $0.DecideJoinRequestRequest request, {
     $grpc.CallOptions? options,
@@ -477,6 +523,9 @@ class GroupAccountServiceClient extends $grpc.Client {
     return $createUnaryCall(_$decideJoinRequest, request, options: options);
   }
 
+  /// The requester takes back their own request. Without this the only way out
+  /// of "awaiting approval" is somebody else's decision, which leaves a person
+  /// who changed their mind stuck in another group's queue.
   $grpc.ResponseFuture<$0.WithdrawJoinRequestResponse> withdrawJoinRequest(
     $0.WithdrawJoinRequestRequest request, {
     $grpc.CallOptions? options,
@@ -484,11 +533,94 @@ class GroupAccountServiceClient extends $grpc.Client {
     return $createUnaryCall(_$withdrawJoinRequest, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.JoinPublicGroupResponse> joinPublicGroup(
-    $0.JoinPublicGroupRequest request, {
+  /// ---- Group join links (shareable invite) -------------------------------
+  /// Mint (or fetch) the group's active share link. Admin/moderator only —
+  /// the same gate as inviting a member, since a link IS an open invite.
+  $grpc.ResponseFuture<$0.CreateGroupJoinLinkResponse> createGroupJoinLink(
+    $0.CreateGroupJoinLinkRequest request, {
     $grpc.CallOptions? options,
   }) {
-    return $createUnaryCall(_$joinPublicGroup, request, options: options);
+    return $createUnaryCall(_$createGroupJoinLink, request, options: options);
+  }
+
+  /// Preview a shared link before acting on it. Authenticated (so we can say
+  /// "you're already a member") but requires no group membership.
+  $grpc.ResponseFuture<$0.GetGroupJoinLinkResponse> getGroupJoinLink(
+    $0.GetGroupJoinLinkRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getGroupJoinLink, request, options: options);
+  }
+
+  /// Consume the link: adds the caller to the group. Idempotent — an existing
+  /// member gets already_member=true instead of a duplicate row or an error.
+  $grpc.ResponseFuture<$0.JoinGroupViaLinkResponse> joinGroupViaLink(
+    $0.JoinGroupViaLinkRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$joinGroupViaLink, request, options: options);
+  }
+
+  /// Kill the active link (anything already shared stops working).
+  $grpc.ResponseFuture<$0.RevokeGroupJoinLinkResponse> revokeGroupJoinLink(
+    $0.RevokeGroupJoinLinkRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$revokeGroupJoinLink, request, options: options);
+  }
+
+  /// Quote the platform fee for a group-funds money movement. Authenticated
+  /// so it can't be used to probe pricing anonymously; cheap (settings are
+  /// cached) so the app can call it as the amount changes.
+  $grpc.ResponseFuture<$0.GetGroupFundsFeeQuoteResponse> getGroupFundsFeeQuote(
+    $0.GetGroupFundsFeeQuoteRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getGroupFundsFeeQuote, request, options: options);
+  }
+
+  /// ---- Contribution chat state -------------------------------------------
+  $grpc.ResponseFuture<$0.MarkContributionReadResponse> markContributionRead(
+    $0.MarkContributionReadRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$markContributionRead, request, options: options);
+  }
+
+  /// One call for everything the chat needs to render state: who has read how
+  /// far, who is typing, and the caller's unread count.
+  $grpc.ResponseFuture<$0.GetContributionChatStateResponse>
+      getContributionChatState(
+    $0.GetContributionChatStateRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getContributionChatState, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.SetContributionTypingResponse> setContributionTyping(
+    $0.SetContributionTypingRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$setContributionTyping, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.EditContributionMessageResponse>
+      editContributionMessage(
+    $0.EditContributionMessageRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$editContributionMessage, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.DeleteContributionMessageForEveryoneResponse>
+      deleteContributionMessageForEveryone(
+    $0.DeleteContributionMessageForEveryoneRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$deleteContributionMessageForEveryone, request,
+        options: options);
   }
 
   // method descriptors
@@ -508,6 +640,22 @@ class GroupAccountServiceClient extends $grpc.Client {
           '/group_accounts.GroupAccountService/ListUserGroups',
           ($0.ListUserGroupsRequest value) => value.writeToBuffer(),
           $0.ListUserGroupsResponse.fromBuffer);
+  static final _$listPastContributions = $grpc.ClientMethod<
+          $0.ListPastContributionsRequest, $0.ListPastContributionsResponse>(
+      '/group_accounts.GroupAccountService/ListPastContributions',
+      ($0.ListPastContributionsRequest value) => value.writeToBuffer(),
+      $0.ListPastContributionsResponse.fromBuffer);
+  static final _$listPastGroups =
+      $grpc.ClientMethod<$0.ListPastGroupsRequest, $0.ListPastGroupsResponse>(
+          '/group_accounts.GroupAccountService/ListPastGroups',
+          ($0.ListPastGroupsRequest value) => value.writeToBuffer(),
+          $0.ListPastGroupsResponse.fromBuffer);
+  static final _$getPastContributionDetails = $grpc.ClientMethod<
+          $0.GetPastContributionDetailsRequest,
+          $0.GetPastContributionDetailsResponse>(
+      '/group_accounts.GroupAccountService/GetPastContributionDetails',
+      ($0.GetPastContributionDetailsRequest value) => value.writeToBuffer(),
+      $0.GetPastContributionDetailsResponse.fromBuffer);
   static final _$updateGroup =
       $grpc.ClientMethod<$0.UpdateGroupRequest, $0.UpdateGroupResponse>(
           '/group_accounts.GroupAccountService/UpdateGroup',
@@ -781,6 +929,11 @@ class GroupAccountServiceClient extends $grpc.Client {
           '/group_accounts.GroupAccountService/GetPublicGroup',
           ($0.GetPublicGroupRequest value) => value.writeToBuffer(),
           $0.GetPublicGroupResponse.fromBuffer);
+  static final _$joinPublicGroup =
+      $grpc.ClientMethod<$0.JoinPublicGroupRequest, $0.JoinPublicGroupResponse>(
+          '/group_accounts.GroupAccountService/JoinPublicGroup',
+          ($0.JoinPublicGroupRequest value) => value.writeToBuffer(),
+          $0.JoinPublicGroupResponse.fromBuffer);
   static final _$listJoinRequests = $grpc.ClientMethod<
           $0.ListJoinRequestsRequest, $0.ListJoinRequestsResponse>(
       '/group_accounts.GroupAccountService/ListJoinRequests',
@@ -796,11 +949,60 @@ class GroupAccountServiceClient extends $grpc.Client {
       '/group_accounts.GroupAccountService/WithdrawJoinRequest',
       ($0.WithdrawJoinRequestRequest value) => value.writeToBuffer(),
       $0.WithdrawJoinRequestResponse.fromBuffer);
-  static final _$joinPublicGroup =
-      $grpc.ClientMethod<$0.JoinPublicGroupRequest, $0.JoinPublicGroupResponse>(
-          '/group_accounts.GroupAccountService/JoinPublicGroup',
-          ($0.JoinPublicGroupRequest value) => value.writeToBuffer(),
-          $0.JoinPublicGroupResponse.fromBuffer);
+  static final _$createGroupJoinLink = $grpc.ClientMethod<
+          $0.CreateGroupJoinLinkRequest, $0.CreateGroupJoinLinkResponse>(
+      '/group_accounts.GroupAccountService/CreateGroupJoinLink',
+      ($0.CreateGroupJoinLinkRequest value) => value.writeToBuffer(),
+      $0.CreateGroupJoinLinkResponse.fromBuffer);
+  static final _$getGroupJoinLink = $grpc.ClientMethod<
+          $0.GetGroupJoinLinkRequest, $0.GetGroupJoinLinkResponse>(
+      '/group_accounts.GroupAccountService/GetGroupJoinLink',
+      ($0.GetGroupJoinLinkRequest value) => value.writeToBuffer(),
+      $0.GetGroupJoinLinkResponse.fromBuffer);
+  static final _$joinGroupViaLink = $grpc.ClientMethod<
+          $0.JoinGroupViaLinkRequest, $0.JoinGroupViaLinkResponse>(
+      '/group_accounts.GroupAccountService/JoinGroupViaLink',
+      ($0.JoinGroupViaLinkRequest value) => value.writeToBuffer(),
+      $0.JoinGroupViaLinkResponse.fromBuffer);
+  static final _$revokeGroupJoinLink = $grpc.ClientMethod<
+          $0.RevokeGroupJoinLinkRequest, $0.RevokeGroupJoinLinkResponse>(
+      '/group_accounts.GroupAccountService/RevokeGroupJoinLink',
+      ($0.RevokeGroupJoinLinkRequest value) => value.writeToBuffer(),
+      $0.RevokeGroupJoinLinkResponse.fromBuffer);
+  static final _$getGroupFundsFeeQuote = $grpc.ClientMethod<
+          $0.GetGroupFundsFeeQuoteRequest, $0.GetGroupFundsFeeQuoteResponse>(
+      '/group_accounts.GroupAccountService/GetGroupFundsFeeQuote',
+      ($0.GetGroupFundsFeeQuoteRequest value) => value.writeToBuffer(),
+      $0.GetGroupFundsFeeQuoteResponse.fromBuffer);
+  static final _$markContributionRead = $grpc.ClientMethod<
+          $0.MarkContributionReadRequest, $0.MarkContributionReadResponse>(
+      '/group_accounts.GroupAccountService/MarkContributionRead',
+      ($0.MarkContributionReadRequest value) => value.writeToBuffer(),
+      $0.MarkContributionReadResponse.fromBuffer);
+  static final _$getContributionChatState = $grpc.ClientMethod<
+          $0.GetContributionChatStateRequest,
+          $0.GetContributionChatStateResponse>(
+      '/group_accounts.GroupAccountService/GetContributionChatState',
+      ($0.GetContributionChatStateRequest value) => value.writeToBuffer(),
+      $0.GetContributionChatStateResponse.fromBuffer);
+  static final _$setContributionTyping = $grpc.ClientMethod<
+          $0.SetContributionTypingRequest, $0.SetContributionTypingResponse>(
+      '/group_accounts.GroupAccountService/SetContributionTyping',
+      ($0.SetContributionTypingRequest value) => value.writeToBuffer(),
+      $0.SetContributionTypingResponse.fromBuffer);
+  static final _$editContributionMessage = $grpc.ClientMethod<
+          $0.EditContributionMessageRequest,
+          $0.EditContributionMessageResponse>(
+      '/group_accounts.GroupAccountService/EditContributionMessage',
+      ($0.EditContributionMessageRequest value) => value.writeToBuffer(),
+      $0.EditContributionMessageResponse.fromBuffer);
+  static final _$deleteContributionMessageForEveryone = $grpc.ClientMethod<
+          $0.DeleteContributionMessageForEveryoneRequest,
+          $0.DeleteContributionMessageForEveryoneResponse>(
+      '/group_accounts.GroupAccountService/DeleteContributionMessageForEveryone',
+      ($0.DeleteContributionMessageForEveryoneRequest value) =>
+          value.writeToBuffer(),
+      $0.DeleteContributionMessageForEveryoneResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('group_accounts.GroupAccountService')
@@ -833,6 +1035,34 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.ListUserGroupsRequest.fromBuffer(value),
         ($0.ListUserGroupsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListPastContributionsRequest,
+            $0.ListPastContributionsResponse>(
+        'ListPastContributions',
+        listPastContributions_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ListPastContributionsRequest.fromBuffer(value),
+        ($0.ListPastContributionsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListPastGroupsRequest,
+            $0.ListPastGroupsResponse>(
+        'ListPastGroups',
+        listPastGroups_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ListPastGroupsRequest.fromBuffer(value),
+        ($0.ListPastGroupsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetPastContributionDetailsRequest,
+            $0.GetPastContributionDetailsResponse>(
+        'GetPastContributionDetails',
+        getPastContributionDetails_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetPastContributionDetailsRequest.fromBuffer(value),
+        ($0.GetPastContributionDetailsResponse value) =>
+            value.writeToBuffer()));
     $addMethod(
         $grpc.ServiceMethod<$0.UpdateGroupRequest, $0.UpdateGroupResponse>(
             'UpdateGroup',
@@ -1303,6 +1533,15 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetPublicGroupRequest.fromBuffer(value),
         ($0.GetPublicGroupResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.JoinPublicGroupRequest,
+            $0.JoinPublicGroupResponse>(
+        'JoinPublicGroup',
+        joinPublicGroup_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.JoinPublicGroupRequest.fromBuffer(value),
+        ($0.JoinPublicGroupResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.ListJoinRequestsRequest,
             $0.ListJoinRequestsResponse>(
         'ListJoinRequests',
@@ -1330,15 +1569,98 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.WithdrawJoinRequestRequest.fromBuffer(value),
         ($0.WithdrawJoinRequestResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.JoinPublicGroupRequest,
-            $0.JoinPublicGroupResponse>(
-        'JoinPublicGroup',
-        joinPublicGroup_Pre,
+    $addMethod($grpc.ServiceMethod<$0.CreateGroupJoinLinkRequest,
+            $0.CreateGroupJoinLinkResponse>(
+        'CreateGroupJoinLink',
+        createGroupJoinLink_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.JoinPublicGroupRequest.fromBuffer(value),
-        ($0.JoinPublicGroupResponse value) => value.writeToBuffer()));
+            $0.CreateGroupJoinLinkRequest.fromBuffer(value),
+        ($0.CreateGroupJoinLinkResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetGroupJoinLinkRequest,
+            $0.GetGroupJoinLinkResponse>(
+        'GetGroupJoinLink',
+        getGroupJoinLink_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetGroupJoinLinkRequest.fromBuffer(value),
+        ($0.GetGroupJoinLinkResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.JoinGroupViaLinkRequest,
+            $0.JoinGroupViaLinkResponse>(
+        'JoinGroupViaLink',
+        joinGroupViaLink_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.JoinGroupViaLinkRequest.fromBuffer(value),
+        ($0.JoinGroupViaLinkResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RevokeGroupJoinLinkRequest,
+            $0.RevokeGroupJoinLinkResponse>(
+        'RevokeGroupJoinLink',
+        revokeGroupJoinLink_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.RevokeGroupJoinLinkRequest.fromBuffer(value),
+        ($0.RevokeGroupJoinLinkResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetGroupFundsFeeQuoteRequest,
+            $0.GetGroupFundsFeeQuoteResponse>(
+        'GetGroupFundsFeeQuote',
+        getGroupFundsFeeQuote_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetGroupFundsFeeQuoteRequest.fromBuffer(value),
+        ($0.GetGroupFundsFeeQuoteResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.MarkContributionReadRequest,
+            $0.MarkContributionReadResponse>(
+        'MarkContributionRead',
+        markContributionRead_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.MarkContributionReadRequest.fromBuffer(value),
+        ($0.MarkContributionReadResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetContributionChatStateRequest,
+            $0.GetContributionChatStateResponse>(
+        'GetContributionChatState',
+        getContributionChatState_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetContributionChatStateRequest.fromBuffer(value),
+        ($0.GetContributionChatStateResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SetContributionTypingRequest,
+            $0.SetContributionTypingResponse>(
+        'SetContributionTyping',
+        setContributionTyping_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SetContributionTypingRequest.fromBuffer(value),
+        ($0.SetContributionTypingResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.EditContributionMessageRequest,
+            $0.EditContributionMessageResponse>(
+        'EditContributionMessage',
+        editContributionMessage_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.EditContributionMessageRequest.fromBuffer(value),
+        ($0.EditContributionMessageResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<
+            $0.DeleteContributionMessageForEveryoneRequest,
+            $0.DeleteContributionMessageForEveryoneResponse>(
+        'DeleteContributionMessageForEveryone',
+        deleteContributionMessageForEveryone_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.DeleteContributionMessageForEveryoneRequest.fromBuffer(value),
+        ($0.DeleteContributionMessageForEveryoneResponse value) =>
+            value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateGroupResponse> createGroup_Pre($grpc.ServiceCall $call,
@@ -1365,6 +1687,34 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
 
   $async.Future<$0.ListUserGroupsResponse> listUserGroups(
       $grpc.ServiceCall call, $0.ListUserGroupsRequest request);
+
+  $async.Future<$0.ListPastContributionsResponse> listPastContributions_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ListPastContributionsRequest> $request) async {
+    return listPastContributions($call, await $request);
+  }
+
+  $async.Future<$0.ListPastContributionsResponse> listPastContributions(
+      $grpc.ServiceCall call, $0.ListPastContributionsRequest request);
+
+  $async.Future<$0.ListPastGroupsResponse> listPastGroups_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.ListPastGroupsRequest> $request) async {
+    return listPastGroups($call, await $request);
+  }
+
+  $async.Future<$0.ListPastGroupsResponse> listPastGroups(
+      $grpc.ServiceCall call, $0.ListPastGroupsRequest request);
+
+  $async.Future<$0.GetPastContributionDetailsResponse>
+      getPastContributionDetails_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetPastContributionDetailsRequest> $request) async {
+    return getPastContributionDetails($call, await $request);
+  }
+
+  $async.Future<$0.GetPastContributionDetailsResponse>
+      getPastContributionDetails(
+          $grpc.ServiceCall call, $0.GetPastContributionDetailsRequest request);
 
   $async.Future<$0.UpdateGroupResponse> updateGroup_Pre($grpc.ServiceCall $call,
       $async.Future<$0.UpdateGroupRequest> $request) async {
@@ -1834,6 +2184,15 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
   $async.Future<$0.GetPublicGroupResponse> getPublicGroup(
       $grpc.ServiceCall call, $0.GetPublicGroupRequest request);
 
+  $async.Future<$0.JoinPublicGroupResponse> joinPublicGroup_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.JoinPublicGroupRequest> $request) async {
+    return joinPublicGroup($call, await $request);
+  }
+
+  $async.Future<$0.JoinPublicGroupResponse> joinPublicGroup(
+      $grpc.ServiceCall call, $0.JoinPublicGroupRequest request);
+
   $async.Future<$0.ListJoinRequestsResponse> listJoinRequests_Pre(
       $grpc.ServiceCall $call,
       $async.Future<$0.ListJoinRequestsRequest> $request) async {
@@ -1861,12 +2220,96 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
   $async.Future<$0.WithdrawJoinRequestResponse> withdrawJoinRequest(
       $grpc.ServiceCall call, $0.WithdrawJoinRequestRequest request);
 
-  $async.Future<$0.JoinPublicGroupResponse> joinPublicGroup_Pre(
+  $async.Future<$0.CreateGroupJoinLinkResponse> createGroupJoinLink_Pre(
       $grpc.ServiceCall $call,
-      $async.Future<$0.JoinPublicGroupRequest> $request) async {
-    return joinPublicGroup($call, await $request);
+      $async.Future<$0.CreateGroupJoinLinkRequest> $request) async {
+    return createGroupJoinLink($call, await $request);
   }
 
-  $async.Future<$0.JoinPublicGroupResponse> joinPublicGroup(
-      $grpc.ServiceCall call, $0.JoinPublicGroupRequest request);
+  $async.Future<$0.CreateGroupJoinLinkResponse> createGroupJoinLink(
+      $grpc.ServiceCall call, $0.CreateGroupJoinLinkRequest request);
+
+  $async.Future<$0.GetGroupJoinLinkResponse> getGroupJoinLink_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetGroupJoinLinkRequest> $request) async {
+    return getGroupJoinLink($call, await $request);
+  }
+
+  $async.Future<$0.GetGroupJoinLinkResponse> getGroupJoinLink(
+      $grpc.ServiceCall call, $0.GetGroupJoinLinkRequest request);
+
+  $async.Future<$0.JoinGroupViaLinkResponse> joinGroupViaLink_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.JoinGroupViaLinkRequest> $request) async {
+    return joinGroupViaLink($call, await $request);
+  }
+
+  $async.Future<$0.JoinGroupViaLinkResponse> joinGroupViaLink(
+      $grpc.ServiceCall call, $0.JoinGroupViaLinkRequest request);
+
+  $async.Future<$0.RevokeGroupJoinLinkResponse> revokeGroupJoinLink_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.RevokeGroupJoinLinkRequest> $request) async {
+    return revokeGroupJoinLink($call, await $request);
+  }
+
+  $async.Future<$0.RevokeGroupJoinLinkResponse> revokeGroupJoinLink(
+      $grpc.ServiceCall call, $0.RevokeGroupJoinLinkRequest request);
+
+  $async.Future<$0.GetGroupFundsFeeQuoteResponse> getGroupFundsFeeQuote_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetGroupFundsFeeQuoteRequest> $request) async {
+    return getGroupFundsFeeQuote($call, await $request);
+  }
+
+  $async.Future<$0.GetGroupFundsFeeQuoteResponse> getGroupFundsFeeQuote(
+      $grpc.ServiceCall call, $0.GetGroupFundsFeeQuoteRequest request);
+
+  $async.Future<$0.MarkContributionReadResponse> markContributionRead_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.MarkContributionReadRequest> $request) async {
+    return markContributionRead($call, await $request);
+  }
+
+  $async.Future<$0.MarkContributionReadResponse> markContributionRead(
+      $grpc.ServiceCall call, $0.MarkContributionReadRequest request);
+
+  $async.Future<$0.GetContributionChatStateResponse>
+      getContributionChatState_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.GetContributionChatStateRequest> $request) async {
+    return getContributionChatState($call, await $request);
+  }
+
+  $async.Future<$0.GetContributionChatStateResponse> getContributionChatState(
+      $grpc.ServiceCall call, $0.GetContributionChatStateRequest request);
+
+  $async.Future<$0.SetContributionTypingResponse> setContributionTyping_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.SetContributionTypingRequest> $request) async {
+    return setContributionTyping($call, await $request);
+  }
+
+  $async.Future<$0.SetContributionTypingResponse> setContributionTyping(
+      $grpc.ServiceCall call, $0.SetContributionTypingRequest request);
+
+  $async.Future<$0.EditContributionMessageResponse> editContributionMessage_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.EditContributionMessageRequest> $request) async {
+    return editContributionMessage($call, await $request);
+  }
+
+  $async.Future<$0.EditContributionMessageResponse> editContributionMessage(
+      $grpc.ServiceCall call, $0.EditContributionMessageRequest request);
+
+  $async.Future<$0.DeleteContributionMessageForEveryoneResponse>
+      deleteContributionMessageForEveryone_Pre(
+          $grpc.ServiceCall $call,
+          $async.Future<$0.DeleteContributionMessageForEveryoneRequest>
+              $request) async {
+    return deleteContributionMessageForEveryone($call, await $request);
+  }
+
+  $async.Future<$0.DeleteContributionMessageForEveryoneResponse>
+      deleteContributionMessageForEveryone($grpc.ServiceCall call,
+          $0.DeleteContributionMessageForEveryoneRequest request);
 }

@@ -1094,6 +1094,11 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       // Server-side gate. Read here rather than inferred, so the CTA reflects
       // the group's actual policy instead of a client guess.
       requiresApproval: group.requiresApproval,
+      // Field 18 — whether THIS user is already in the queue. Server-resolved
+      // because a request outlives the app process: the screen used to track
+      // it in memory only, so a restart made a filed request invisible and
+      // invited the user to file it a second time.
+      hasPendingJoinRequest: group.hasPendingJoinRequest,
     );
   }
 

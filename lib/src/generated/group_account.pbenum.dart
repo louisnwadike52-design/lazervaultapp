@@ -109,6 +109,23 @@ class GroupMemberStatus extends $pb.ProtobufEnum {
       GroupMemberStatus._(
           5, _omitEnumNames ? '' : 'GROUP_MEMBER_STATUS_PENDING');
 
+  /// The PERSON asked to join a public group and an admin has not decided
+  /// yet. The opposite direction from PENDING above, which is an invitation
+  /// the admin sent. Clients render an "Awaiting approval" state for the
+  /// requester and an approve/reject action for admins; an admin seeing
+  /// PENDING must be able to tell they are waiting on somebody, not the
+  /// other way round.
+  static const GroupMemberStatus GROUP_MEMBER_STATUS_PENDING_APPROVAL =
+      GroupMemberStatus._(
+          6, _omitEnumNames ? '' : 'GROUP_MEMBER_STATUS_PENDING_APPROVAL');
+
+  /// An admin declined a join request. Distinct from REMOVED, which means
+  /// "was a member, is not any more" — someone never admitted was never
+  /// removed, and the two read differently in the activity log.
+  static const GroupMemberStatus GROUP_MEMBER_STATUS_REJECTED =
+      GroupMemberStatus._(
+          7, _omitEnumNames ? '' : 'GROUP_MEMBER_STATUS_REJECTED');
+
   static const $core.List<GroupMemberStatus> values = <GroupMemberStatus>[
     GROUP_MEMBER_STATUS_UNSPECIFIED,
     GROUP_MEMBER_STATUS_ACTIVE,
@@ -116,10 +133,12 @@ class GroupMemberStatus extends $pb.ProtobufEnum {
     GROUP_MEMBER_STATUS_SUSPENDED,
     GROUP_MEMBER_STATUS_REMOVED,
     GROUP_MEMBER_STATUS_PENDING,
+    GROUP_MEMBER_STATUS_PENDING_APPROVAL,
+    GROUP_MEMBER_STATUS_REJECTED,
   ];
 
   static final $core.List<GroupMemberStatus?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 5);
+      $pb.ProtobufEnum.$_initByValueList(values, 7);
   static GroupMemberStatus? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 

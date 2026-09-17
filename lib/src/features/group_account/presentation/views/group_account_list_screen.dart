@@ -1428,7 +1428,13 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     final isJoining = _joiningGroupIds.contains(group.id);
     // Check if user already belongs to this group
     final cachedGroups = context.read<GroupAccountCubit>().cachedGroups;
-    final isAlreadyMember = _joinedGroupIds.contains(group.id) ||
+    // group.isMember is the server's own answer for this listing and leads:
+    // the two local signals only know about this device, so someone who
+    // joined elsewhere — or before a reinstall — was being shown "Join" for a
+    // group they are already in. Checked before the pending branch because
+    // membership supersedes any request that produced it.
+    final isAlreadyMember = group.isMember ||
+        _joinedGroupIds.contains(group.id) ||
         (cachedGroups != null && cachedGroups.any((g) => g.id == group.id));
 
     if (isAlreadyMember) {
@@ -1467,7 +1473,12 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     // Already asked, still waiting. Shown instead of the CTA so the user is
     // not invited to request a second time — the server would return the same
     // row, but a button that appears to do nothing reads as broken.
-    if (_pendingRequestGroupIds.contains(group.id)) {
+    // The server's answer is authoritative and covers requests filed on an
+    // earlier run or another device; the local set covers the request made
+    // moments ago, before the list has been refetched. Either one means the
+    // person is waiting.
+    if (group.hasPendingJoinRequest ||
+        _pendingRequestGroupIds.contains(group.id)) {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(

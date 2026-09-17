@@ -109,6 +109,19 @@ class GroupAccount extends Equatable {
   /// rather than showing a gate that is not there.
   final bool requiresApproval;
 
+  /// True when the current user has already asked to join and nobody has
+  /// decided yet.
+  ///
+  /// Server-resolved rather than remembered on the device. A request survives
+  /// app restarts, reinstalls and device changes, so local state cannot
+  /// represent it: without this the applicant reopens Discover, sees "Request
+  /// to join" again, and has no way to tell whether the first one landed.
+  ///
+  /// Mutually exclusive with [isMember] — the server allows at most one open
+  /// request per group, and an approved one becomes membership rather than
+  /// staying pending.
+  final bool hasPendingJoinRequest;
+
   const GroupAccount({
     required this.id,
     required this.name,
@@ -127,6 +140,7 @@ class GroupAccount extends Equatable {
     this.contributionCount = 0,
     this.isMember = false,
     this.requiresApproval = false,
+    this.hasPendingJoinRequest = false,
   });
 
   @override
@@ -147,6 +161,12 @@ class GroupAccount extends Equatable {
         imageUrl,
         contributionCount,
         isMember,
+        // Both of these were missing from props, which made two groups compare
+        // equal while differing on whether joining needs approval and whether
+        // the user is already waiting — so a BlocBuilder would skip the
+        // rebuild and leave a stale CTA on screen after the state changed.
+        requiresApproval,
+        hasPendingJoinRequest,
       ];
 
   GroupAccount copyWith({
@@ -166,6 +186,8 @@ class GroupAccount extends Equatable {
     String? imageUrl,
     int? contributionCount,
     bool? isMember,
+    bool? requiresApproval,
+    bool? hasPendingJoinRequest,
   }) {
     return GroupAccount(
       id: id ?? this.id,
@@ -184,6 +206,12 @@ class GroupAccount extends Equatable {
       imageUrl: imageUrl ?? this.imageUrl,
       contributionCount: contributionCount ?? this.contributionCount,
       isMember: isMember ?? this.isMember,
+      // Previously omitted, so every copyWith quietly reset the approval gate
+      // to false and a public group that needs a decision would offer a plain
+      // "Join" after any local update.
+      requiresApproval: requiresApproval ?? this.requiresApproval,
+      hasPendingJoinRequest:
+          hasPendingJoinRequest ?? this.hasPendingJoinRequest,
     );
   }
 

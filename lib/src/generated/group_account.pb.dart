@@ -41,6 +41,7 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
     $core.int? contributionCount,
     $core.bool? isMember,
     $core.bool? requiresApproval,
+    $core.bool? hasPendingJoinRequest,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -60,6 +61,8 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
     if (contributionCount != null) result.contributionCount = contributionCount;
     if (isMember != null) result.isMember = isMember;
     if (requiresApproval != null) result.requiresApproval = requiresApproval;
+    if (hasPendingJoinRequest != null)
+      result.hasPendingJoinRequest = hasPendingJoinRequest;
     return result;
   }
 
@@ -110,6 +113,7 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
         15, _omitFieldNames ? '' : 'contributionCount', $pb.PbFieldType.O3)
     ..aOB(16, _omitFieldNames ? '' : 'isMember')
     ..aOB(17, _omitFieldNames ? '' : 'requiresApproval')
+    ..aOB(18, _omitFieldNames ? '' : 'hasPendingJoinRequest')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -277,8 +281,9 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
   @$pb.TagNumber(16)
   void clearIsMember() => $_clearField(16);
 
-  /// Drives the CTA: 'Request to join' versus 'Join', so the user knows
-  /// before tapping whether they are joining or joining a queue.
+  /// Whether joining this group needs an admin decision. Drives the CTA:
+  /// "Request to join" versus "Join", so the user knows before tapping
+  /// whether they are getting in or getting in a queue.
   @$pb.TagNumber(17)
   $core.bool get requiresApproval => $_getBF(16);
   @$pb.TagNumber(17)
@@ -287,6 +292,18 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
   $core.bool hasRequiresApproval() => $_has(16);
   @$pb.TagNumber(17)
   void clearRequiresApproval() => $_clearField(17);
+
+  /// The caller's own outstanding request, when they have one. Lets the
+  /// discover list render "Awaiting approval" without a second round-trip
+  /// per group.
+  @$pb.TagNumber(18)
+  $core.bool get hasPendingJoinRequest => $_getBF(17);
+  @$pb.TagNumber(18)
+  set hasPendingJoinRequest($core.bool value) => $_setBool(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasHasPendingJoinRequest() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearHasPendingJoinRequest() => $_clearField(18);
 }
 
 class GroupMemberMessage extends $pb.GeneratedMessage {
@@ -539,7 +556,8 @@ class GroupMemberMessage extends $pb.GeneratedMessage {
   @$pb.TagNumber(15)
   void clearPhoneMatchesSearchQueryExact() => $_clearField(15);
 
-  /// Join-request audit. Unset for members who never went through approval.
+  /// Join-request audit. Set only for members who came through the public
+  /// group approval flow; null/empty for everyone else.
   @$pb.TagNumber(16)
   $1.Timestamp get requestedAt => $_getN(15);
   @$pb.TagNumber(16)
@@ -1057,6 +1075,12 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
     $core.int? missedCycles,
     $core.String? membershipStatus,
     $core.String? linkedInvitationId,
+    $1.Timestamp? removedAt,
+    $core.String? removalReason,
+    $fixnum.Int64? refundAmount,
+    $fixnum.Int64? forfeitedAmount,
+    $core.String? refundStatus,
+    $core.String? refundFailedReason,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -1075,6 +1099,13 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
     if (membershipStatus != null) result.membershipStatus = membershipStatus;
     if (linkedInvitationId != null)
       result.linkedInvitationId = linkedInvitationId;
+    if (removedAt != null) result.removedAt = removedAt;
+    if (removalReason != null) result.removalReason = removalReason;
+    if (refundAmount != null) result.refundAmount = refundAmount;
+    if (forfeitedAmount != null) result.forfeitedAmount = forfeitedAmount;
+    if (refundStatus != null) result.refundStatus = refundStatus;
+    if (refundFailedReason != null)
+      result.refundFailedReason = refundFailedReason;
     return result;
   }
 
@@ -1113,6 +1144,13 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
         12, _omitFieldNames ? '' : 'missedCycles', $pb.PbFieldType.OU3)
     ..aOS(13, _omitFieldNames ? '' : 'membershipStatus')
     ..aOS(14, _omitFieldNames ? '' : 'linkedInvitationId')
+    ..aOM<$1.Timestamp>(15, _omitFieldNames ? '' : 'removedAt',
+        subBuilder: $1.Timestamp.create)
+    ..aOS(16, _omitFieldNames ? '' : 'removalReason')
+    ..aInt64(17, _omitFieldNames ? '' : 'refundAmount')
+    ..aInt64(18, _omitFieldNames ? '' : 'forfeitedAmount')
+    ..aOS(19, _omitFieldNames ? '' : 'refundStatus')
+    ..aOS(20, _omitFieldNames ? '' : 'refundFailedReason')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1281,6 +1319,64 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
   $core.bool hasLinkedInvitationId() => $_has(13);
   @$pb.TagNumber(14)
   void clearLinkedInvitationId() => $_clearField(14);
+
+  /// === Exit / refund metadata (populated only for removed members) ===
+  /// Mirrors migration 013 columns. All zero-values for active rows.
+  @$pb.TagNumber(15)
+  $1.Timestamp get removedAt => $_getN(14);
+  @$pb.TagNumber(15)
+  set removedAt($1.Timestamp value) => $_setField(15, value);
+  @$pb.TagNumber(15)
+  $core.bool hasRemovedAt() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearRemovedAt() => $_clearField(15);
+  @$pb.TagNumber(15)
+  $1.Timestamp ensureRemovedAt() => $_ensure(14);
+
+  @$pb.TagNumber(16)
+  $core.String get removalReason => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set removalReason($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasRemovalReason() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearRemovalReason() => $_clearField(16);
+
+  @$pb.TagNumber(17)
+  $fixnum.Int64 get refundAmount => $_getI64(16);
+  @$pb.TagNumber(17)
+  set refundAmount($fixnum.Int64 value) => $_setInt64(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasRefundAmount() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearRefundAmount() => $_clearField(17);
+
+  @$pb.TagNumber(18)
+  $fixnum.Int64 get forfeitedAmount => $_getI64(17);
+  @$pb.TagNumber(18)
+  set forfeitedAmount($fixnum.Int64 value) => $_setInt64(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasForfeitedAmount() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearForfeitedAmount() => $_clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.String get refundStatus => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set refundStatus($core.String value) => $_setString(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasRefundStatus() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearRefundStatus() => $_clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.String get refundFailedReason => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set refundFailedReason($core.String value) => $_setString(19, value);
+  @$pb.TagNumber(20)
+  $core.bool hasRefundFailedReason() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearRefundFailedReason() => $_clearField(20);
 }
 
 class ContributionPaymentMessage extends $pb.GeneratedMessage {
@@ -4358,6 +4454,809 @@ class ListUserGroupsResponse extends $pb.GeneratedMessage {
   GroupPaginationInfo ensurePagination() => $_ensure(1);
 }
 
+/// PastContributionEntry decorates a contribution + group pair with
+/// the caller's exit metadata (when, why, refund status, the cycle
+/// they were on at exit) so the Past-Contributions list screen can
+/// render the full row in one pass.
+class PastContributionEntry extends $pb.GeneratedMessage {
+  factory PastContributionEntry({
+    ContributionMessage? contribution,
+    GroupAccountMessage? group,
+    $1.Timestamp? removedAt,
+    $core.String? removalReason,
+    $core.int? removedAtCycleIndex,
+    $core.String? refundStatus,
+    $fixnum.Int64? refundAmount,
+    $fixnum.Int64? forfeitedAmount,
+    $core.String? refundFailedReason,
+    $core.bool? selfExit,
+  }) {
+    final result = create();
+    if (contribution != null) result.contribution = contribution;
+    if (group != null) result.group = group;
+    if (removedAt != null) result.removedAt = removedAt;
+    if (removalReason != null) result.removalReason = removalReason;
+    if (removedAtCycleIndex != null)
+      result.removedAtCycleIndex = removedAtCycleIndex;
+    if (refundStatus != null) result.refundStatus = refundStatus;
+    if (refundAmount != null) result.refundAmount = refundAmount;
+    if (forfeitedAmount != null) result.forfeitedAmount = forfeitedAmount;
+    if (refundFailedReason != null)
+      result.refundFailedReason = refundFailedReason;
+    if (selfExit != null) result.selfExit = selfExit;
+    return result;
+  }
+
+  PastContributionEntry._();
+
+  factory PastContributionEntry.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory PastContributionEntry.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'PastContributionEntry',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOM<ContributionMessage>(1, _omitFieldNames ? '' : 'contribution',
+        subBuilder: ContributionMessage.create)
+    ..aOM<GroupAccountMessage>(2, _omitFieldNames ? '' : 'group',
+        subBuilder: GroupAccountMessage.create)
+    ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'removedAt',
+        subBuilder: $1.Timestamp.create)
+    ..aOS(4, _omitFieldNames ? '' : 'removalReason')
+    ..a<$core.int>(
+        5, _omitFieldNames ? '' : 'removedAtCycleIndex', $pb.PbFieldType.O3)
+    ..aOS(6, _omitFieldNames ? '' : 'refundStatus')
+    ..aInt64(7, _omitFieldNames ? '' : 'refundAmount')
+    ..aInt64(8, _omitFieldNames ? '' : 'forfeitedAmount')
+    ..aOS(9, _omitFieldNames ? '' : 'refundFailedReason')
+    ..aOB(10, _omitFieldNames ? '' : 'selfExit')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PastContributionEntry clone() =>
+      PastContributionEntry()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PastContributionEntry copyWith(
+          void Function(PastContributionEntry) updates) =>
+      super.copyWith((message) => updates(message as PastContributionEntry))
+          as PastContributionEntry;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static PastContributionEntry create() => PastContributionEntry._();
+  @$core.override
+  PastContributionEntry createEmptyInstance() => create();
+  static $pb.PbList<PastContributionEntry> createRepeated() =>
+      $pb.PbList<PastContributionEntry>();
+  @$core.pragma('dart2js:noInline')
+  static PastContributionEntry getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<PastContributionEntry>(create);
+  static PastContributionEntry? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ContributionMessage get contribution => $_getN(0);
+  @$pb.TagNumber(1)
+  set contribution(ContributionMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContribution() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContribution() => $_clearField(1);
+  @$pb.TagNumber(1)
+  ContributionMessage ensureContribution() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  GroupAccountMessage get group => $_getN(1);
+  @$pb.TagNumber(2)
+  set group(GroupAccountMessage value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasGroup() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearGroup() => $_clearField(2);
+  @$pb.TagNumber(2)
+  GroupAccountMessage ensureGroup() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $1.Timestamp get removedAt => $_getN(2);
+  @$pb.TagNumber(3)
+  set removedAt($1.Timestamp value) => $_setField(3, value);
+  @$pb.TagNumber(3)
+  $core.bool hasRemovedAt() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRemovedAt() => $_clearField(3);
+  @$pb.TagNumber(3)
+  $1.Timestamp ensureRemovedAt() => $_ensure(2);
+
+  @$pb.TagNumber(4)
+  $core.String get removalReason => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set removalReason($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasRemovalReason() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRemovalReason() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get removedAtCycleIndex => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set removedAtCycleIndex($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasRemovedAtCycleIndex() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearRemovedAtCycleIndex() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get refundStatus => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set refundStatus($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasRefundStatus() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearRefundStatus() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get refundAmount => $_getI64(6);
+  @$pb.TagNumber(7)
+  set refundAmount($fixnum.Int64 value) => $_setInt64(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasRefundAmount() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearRefundAmount() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get forfeitedAmount => $_getI64(7);
+  @$pb.TagNumber(8)
+  set forfeitedAmount($fixnum.Int64 value) => $_setInt64(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasForfeitedAmount() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearForfeitedAmount() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get refundFailedReason => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set refundFailedReason($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasRefundFailedReason() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearRefundFailedReason() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.bool get selfExit => $_getBF(9);
+  @$pb.TagNumber(10)
+  set selfExit($core.bool value) => $_setBool(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasSelfExit() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearSelfExit() => $_clearField(10);
+}
+
+class ListPastContributionsRequest extends $pb.GeneratedMessage {
+  factory ListPastContributionsRequest({
+    $core.int? page,
+    $core.int? pageSize,
+    $core.String? filter,
+  }) {
+    final result = create();
+    if (page != null) result.page = page;
+    if (pageSize != null) result.pageSize = pageSize;
+    if (filter != null) result.filter = filter;
+    return result;
+  }
+
+  ListPastContributionsRequest._();
+
+  factory ListPastContributionsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListPastContributionsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListPastContributionsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(3, _omitFieldNames ? '' : 'filter')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListPastContributionsRequest clone() =>
+      ListPastContributionsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListPastContributionsRequest copyWith(
+          void Function(ListPastContributionsRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as ListPastContributionsRequest))
+          as ListPastContributionsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListPastContributionsRequest create() =>
+      ListPastContributionsRequest._();
+  @$core.override
+  ListPastContributionsRequest createEmptyInstance() => create();
+  static $pb.PbList<ListPastContributionsRequest> createRepeated() =>
+      $pb.PbList<ListPastContributionsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListPastContributionsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListPastContributionsRequest>(create);
+  static ListPastContributionsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get page => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set page($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPage() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get pageSize => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set pageSize($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPageSize() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPageSize() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get filter => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set filter($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasFilter() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFilter() => $_clearField(3);
+}
+
+class ListPastContributionsResponse extends $pb.GeneratedMessage {
+  factory ListPastContributionsResponse({
+    $core.Iterable<PastContributionEntry>? entries,
+    GroupPaginationInfo? pagination,
+  }) {
+    final result = create();
+    if (entries != null) result.entries.addAll(entries);
+    if (pagination != null) result.pagination = pagination;
+    return result;
+  }
+
+  ListPastContributionsResponse._();
+
+  factory ListPastContributionsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListPastContributionsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListPastContributionsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..pc<PastContributionEntry>(
+        1, _omitFieldNames ? '' : 'entries', $pb.PbFieldType.PM,
+        subBuilder: PastContributionEntry.create)
+    ..aOM<GroupPaginationInfo>(2, _omitFieldNames ? '' : 'pagination',
+        subBuilder: GroupPaginationInfo.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListPastContributionsResponse clone() =>
+      ListPastContributionsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListPastContributionsResponse copyWith(
+          void Function(ListPastContributionsResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as ListPastContributionsResponse))
+          as ListPastContributionsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListPastContributionsResponse create() =>
+      ListPastContributionsResponse._();
+  @$core.override
+  ListPastContributionsResponse createEmptyInstance() => create();
+  static $pb.PbList<ListPastContributionsResponse> createRepeated() =>
+      $pb.PbList<ListPastContributionsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListPastContributionsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListPastContributionsResponse>(create);
+  static ListPastContributionsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<PastContributionEntry> get entries => $_getList(0);
+
+  @$pb.TagNumber(2)
+  GroupPaginationInfo get pagination => $_getN(1);
+  @$pb.TagNumber(2)
+  set pagination(GroupPaginationInfo value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPagination() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPagination() => $_clearField(2);
+  @$pb.TagNumber(2)
+  GroupPaginationInfo ensurePagination() => $_ensure(1);
+}
+
+class PastGroupEntry extends $pb.GeneratedMessage {
+  factory PastGroupEntry({
+    GroupAccountMessage? group,
+    $1.Timestamp? leftAt,
+    $core.bool? selfExit,
+    $core.int? activeContributionsAtExit,
+  }) {
+    final result = create();
+    if (group != null) result.group = group;
+    if (leftAt != null) result.leftAt = leftAt;
+    if (selfExit != null) result.selfExit = selfExit;
+    if (activeContributionsAtExit != null)
+      result.activeContributionsAtExit = activeContributionsAtExit;
+    return result;
+  }
+
+  PastGroupEntry._();
+
+  factory PastGroupEntry.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory PastGroupEntry.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'PastGroupEntry',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOM<GroupAccountMessage>(1, _omitFieldNames ? '' : 'group',
+        subBuilder: GroupAccountMessage.create)
+    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'leftAt',
+        subBuilder: $1.Timestamp.create)
+    ..aOB(3, _omitFieldNames ? '' : 'selfExit')
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'activeContributionsAtExit',
+        $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PastGroupEntry clone() => PastGroupEntry()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PastGroupEntry copyWith(void Function(PastGroupEntry) updates) =>
+      super.copyWith((message) => updates(message as PastGroupEntry))
+          as PastGroupEntry;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static PastGroupEntry create() => PastGroupEntry._();
+  @$core.override
+  PastGroupEntry createEmptyInstance() => create();
+  static $pb.PbList<PastGroupEntry> createRepeated() =>
+      $pb.PbList<PastGroupEntry>();
+  @$core.pragma('dart2js:noInline')
+  static PastGroupEntry getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<PastGroupEntry>(create);
+  static PastGroupEntry? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  GroupAccountMessage get group => $_getN(0);
+  @$pb.TagNumber(1)
+  set group(GroupAccountMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasGroup() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGroup() => $_clearField(1);
+  @$pb.TagNumber(1)
+  GroupAccountMessage ensureGroup() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $1.Timestamp get leftAt => $_getN(1);
+  @$pb.TagNumber(2)
+  set leftAt($1.Timestamp value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLeftAt() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLeftAt() => $_clearField(2);
+  @$pb.TagNumber(2)
+  $1.Timestamp ensureLeftAt() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.bool get selfExit => $_getBF(2);
+  @$pb.TagNumber(3)
+  set selfExit($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasSelfExit() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSelfExit() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get activeContributionsAtExit => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set activeContributionsAtExit($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasActiveContributionsAtExit() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearActiveContributionsAtExit() => $_clearField(4);
+}
+
+class ListPastGroupsRequest extends $pb.GeneratedMessage {
+  factory ListPastGroupsRequest({
+    $core.int? page,
+    $core.int? pageSize,
+    $core.String? filter,
+  }) {
+    final result = create();
+    if (page != null) result.page = page;
+    if (pageSize != null) result.pageSize = pageSize;
+    if (filter != null) result.filter = filter;
+    return result;
+  }
+
+  ListPastGroupsRequest._();
+
+  factory ListPastGroupsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListPastGroupsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListPastGroupsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(3, _omitFieldNames ? '' : 'filter')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListPastGroupsRequest clone() =>
+      ListPastGroupsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListPastGroupsRequest copyWith(
+          void Function(ListPastGroupsRequest) updates) =>
+      super.copyWith((message) => updates(message as ListPastGroupsRequest))
+          as ListPastGroupsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListPastGroupsRequest create() => ListPastGroupsRequest._();
+  @$core.override
+  ListPastGroupsRequest createEmptyInstance() => create();
+  static $pb.PbList<ListPastGroupsRequest> createRepeated() =>
+      $pb.PbList<ListPastGroupsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListPastGroupsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListPastGroupsRequest>(create);
+  static ListPastGroupsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get page => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set page($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPage() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get pageSize => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set pageSize($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPageSize() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPageSize() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get filter => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set filter($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasFilter() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFilter() => $_clearField(3);
+}
+
+class ListPastGroupsResponse extends $pb.GeneratedMessage {
+  factory ListPastGroupsResponse({
+    $core.Iterable<PastGroupEntry>? entries,
+    GroupPaginationInfo? pagination,
+  }) {
+    final result = create();
+    if (entries != null) result.entries.addAll(entries);
+    if (pagination != null) result.pagination = pagination;
+    return result;
+  }
+
+  ListPastGroupsResponse._();
+
+  factory ListPastGroupsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ListPastGroupsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ListPastGroupsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..pc<PastGroupEntry>(
+        1, _omitFieldNames ? '' : 'entries', $pb.PbFieldType.PM,
+        subBuilder: PastGroupEntry.create)
+    ..aOM<GroupPaginationInfo>(2, _omitFieldNames ? '' : 'pagination',
+        subBuilder: GroupPaginationInfo.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListPastGroupsResponse clone() =>
+      ListPastGroupsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListPastGroupsResponse copyWith(
+          void Function(ListPastGroupsResponse) updates) =>
+      super.copyWith((message) => updates(message as ListPastGroupsResponse))
+          as ListPastGroupsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListPastGroupsResponse create() => ListPastGroupsResponse._();
+  @$core.override
+  ListPastGroupsResponse createEmptyInstance() => create();
+  static $pb.PbList<ListPastGroupsResponse> createRepeated() =>
+      $pb.PbList<ListPastGroupsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListPastGroupsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ListPastGroupsResponse>(create);
+  static ListPastGroupsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<PastGroupEntry> get entries => $_getList(0);
+
+  @$pb.TagNumber(2)
+  GroupPaginationInfo get pagination => $_getN(1);
+  @$pb.TagNumber(2)
+  set pagination(GroupPaginationInfo value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPagination() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPagination() => $_clearField(2);
+  @$pb.TagNumber(2)
+  GroupPaginationInfo ensurePagination() => $_ensure(1);
+}
+
+class GetPastContributionDetailsRequest extends $pb.GeneratedMessage {
+  factory GetPastContributionDetailsRequest({
+    $core.String? contributionId,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    return result;
+  }
+
+  GetPastContributionDetailsRequest._();
+
+  factory GetPastContributionDetailsRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetPastContributionDetailsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetPastContributionDetailsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetPastContributionDetailsRequest clone() =>
+      GetPastContributionDetailsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetPastContributionDetailsRequest copyWith(
+          void Function(GetPastContributionDetailsRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as GetPastContributionDetailsRequest))
+          as GetPastContributionDetailsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetPastContributionDetailsRequest create() =>
+      GetPastContributionDetailsRequest._();
+  @$core.override
+  GetPastContributionDetailsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetPastContributionDetailsRequest> createRepeated() =>
+      $pb.PbList<GetPastContributionDetailsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetPastContributionDetailsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetPastContributionDetailsRequest>(
+          create);
+  static GetPastContributionDetailsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+}
+
+class GetPastContributionDetailsResponse extends $pb.GeneratedMessage {
+  factory GetPastContributionDetailsResponse({
+    ContributionMessage? contribution,
+    PastContributionEntry? membershipSummary,
+    $core.Iterable<ContributionMemberMessage>? members,
+    $core.Iterable<ContributionPaymentMessage>? myPayments,
+    $core.Iterable<ContributionPaymentMessage>? allPaymentsPage,
+    $core.Iterable<ContributionCycleSummary>? closedCycles,
+    ContributionCycleSummary? activeCycleAtExit,
+    GroupPaginationInfo? allPaymentsPagination,
+  }) {
+    final result = create();
+    if (contribution != null) result.contribution = contribution;
+    if (membershipSummary != null) result.membershipSummary = membershipSummary;
+    if (members != null) result.members.addAll(members);
+    if (myPayments != null) result.myPayments.addAll(myPayments);
+    if (allPaymentsPage != null) result.allPaymentsPage.addAll(allPaymentsPage);
+    if (closedCycles != null) result.closedCycles.addAll(closedCycles);
+    if (activeCycleAtExit != null) result.activeCycleAtExit = activeCycleAtExit;
+    if (allPaymentsPagination != null)
+      result.allPaymentsPagination = allPaymentsPagination;
+    return result;
+  }
+
+  GetPastContributionDetailsResponse._();
+
+  factory GetPastContributionDetailsResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetPastContributionDetailsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetPastContributionDetailsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOM<ContributionMessage>(1, _omitFieldNames ? '' : 'contribution',
+        subBuilder: ContributionMessage.create)
+    ..aOM<PastContributionEntry>(2, _omitFieldNames ? '' : 'membershipSummary',
+        subBuilder: PastContributionEntry.create)
+    ..pc<ContributionMemberMessage>(
+        3, _omitFieldNames ? '' : 'members', $pb.PbFieldType.PM,
+        subBuilder: ContributionMemberMessage.create)
+    ..pc<ContributionPaymentMessage>(
+        4, _omitFieldNames ? '' : 'myPayments', $pb.PbFieldType.PM,
+        subBuilder: ContributionPaymentMessage.create)
+    ..pc<ContributionPaymentMessage>(
+        5, _omitFieldNames ? '' : 'allPaymentsPage', $pb.PbFieldType.PM,
+        subBuilder: ContributionPaymentMessage.create)
+    ..pc<ContributionCycleSummary>(
+        6, _omitFieldNames ? '' : 'closedCycles', $pb.PbFieldType.PM,
+        subBuilder: ContributionCycleSummary.create)
+    ..aOM<ContributionCycleSummary>(
+        7, _omitFieldNames ? '' : 'activeCycleAtExit',
+        subBuilder: ContributionCycleSummary.create)
+    ..aOM<GroupPaginationInfo>(
+        8, _omitFieldNames ? '' : 'allPaymentsPagination',
+        subBuilder: GroupPaginationInfo.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetPastContributionDetailsResponse clone() =>
+      GetPastContributionDetailsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetPastContributionDetailsResponse copyWith(
+          void Function(GetPastContributionDetailsResponse) updates) =>
+      super.copyWith((message) =>
+              updates(message as GetPastContributionDetailsResponse))
+          as GetPastContributionDetailsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetPastContributionDetailsResponse create() =>
+      GetPastContributionDetailsResponse._();
+  @$core.override
+  GetPastContributionDetailsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetPastContributionDetailsResponse> createRepeated() =>
+      $pb.PbList<GetPastContributionDetailsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetPastContributionDetailsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetPastContributionDetailsResponse>(
+          create);
+  static GetPastContributionDetailsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ContributionMessage get contribution => $_getN(0);
+  @$pb.TagNumber(1)
+  set contribution(ContributionMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContribution() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContribution() => $_clearField(1);
+  @$pb.TagNumber(1)
+  ContributionMessage ensureContribution() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  PastContributionEntry get membershipSummary => $_getN(1);
+  @$pb.TagNumber(2)
+  set membershipSummary(PastContributionEntry value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMembershipSummary() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMembershipSummary() => $_clearField(2);
+  @$pb.TagNumber(2)
+  PastContributionEntry ensureMembershipSummary() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $pb.PbList<ContributionMemberMessage> get members => $_getList(2);
+
+  /// Caller's payments only — render the per-cycle refund pill from
+  /// payments where status = 'refunded' grouped by cycle_index.
+  @$pb.TagNumber(4)
+  $pb.PbList<ContributionPaymentMessage> get myPayments => $_getList(3);
+
+  /// First page of the FULL payments list across all members; client
+  /// pages further via existing GetContributionPayments. Empty for
+  /// ROSCA contributions where the caller wasn't ever a member of any
+  /// cycle.
+  @$pb.TagNumber(5)
+  $pb.PbList<ContributionPaymentMessage> get allPaymentsPage => $_getList(4);
+
+  @$pb.TagNumber(6)
+  $pb.PbList<ContributionCycleSummary> get closedCycles => $_getList(5);
+
+  /// Cycle that was active at the moment the caller was removed —
+  /// null/zero for one-time contributions or pre-cycle exits.
+  @$pb.TagNumber(7)
+  ContributionCycleSummary get activeCycleAtExit => $_getN(6);
+  @$pb.TagNumber(7)
+  set activeCycleAtExit(ContributionCycleSummary value) => $_setField(7, value);
+  @$pb.TagNumber(7)
+  $core.bool hasActiveCycleAtExit() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearActiveCycleAtExit() => $_clearField(7);
+  @$pb.TagNumber(7)
+  ContributionCycleSummary ensureActiveCycleAtExit() => $_ensure(6);
+
+  @$pb.TagNumber(8)
+  GroupPaginationInfo get allPaymentsPagination => $_getN(7);
+  @$pb.TagNumber(8)
+  set allPaymentsPagination(GroupPaginationInfo value) => $_setField(8, value);
+  @$pb.TagNumber(8)
+  $core.bool hasAllPaymentsPagination() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearAllPaymentsPagination() => $_clearField(8);
+  @$pb.TagNumber(8)
+  GroupPaginationInfo ensureAllPaymentsPagination() => $_ensure(7);
+}
+
 class UpdateGroupRequest extends $pb.GeneratedMessage {
   factory UpdateGroupRequest({
     $core.String? groupId,
@@ -5646,16 +6545,13 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(19)
   void clearAutoPayoutEnabled() => $_clearField(19);
 
-  /// Who receives the payout, chosen at creation.
-  ///
-  /// Lives in the proto rather than as a hand-edit to the generated Dart: a
-  /// previous edit was applied directly to group_account.pb.dart and a later
-  /// regeneration silently removed it, breaking the build. Field 20 matches the
-  /// service contract.
-  ///
-  /// Empty is meaningful — the contribution is created in pending_receiver,
-  /// which is what older app builds do. For a rotating contribution the
-  /// receiver is member_rotation_order[0], so the order IS the selection.
+  /// Who receives the payout for the first cycle. REQUIRED for one_time:
+  /// there is deliberately no server-side fallback — not even the creator —
+  /// because silently choosing a recipient for a money movement hides that
+  /// decision from the person making it. rotating_savings ignores this field:
+  /// its receiver is member_rotation_order[0], so the rotation order IS the
+  /// selection. Empty ⇒ the contribution is created in pending_receiver,
+  /// which is what older app builds will keep doing.
   @$pb.TagNumber(20)
   $core.String get payoutReceiverUserId => $_getSZ(19);
   @$pb.TagNumber(20)
@@ -10689,6 +11585,12 @@ class ContributionMessageProto extends $pb.GeneratedMessage {
     $core.String? mediaUrl,
     $core.int? durationMs,
     $core.String? createdAt,
+    $core.String? clientMessageId,
+    $core.String? replyToMessageId,
+    $core.String? replyToBody,
+    $core.String? replyToSender,
+    $core.String? editedAt,
+    $core.bool? deletedForEveryone,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -10700,6 +11602,13 @@ class ContributionMessageProto extends $pb.GeneratedMessage {
     if (mediaUrl != null) result.mediaUrl = mediaUrl;
     if (durationMs != null) result.durationMs = durationMs;
     if (createdAt != null) result.createdAt = createdAt;
+    if (clientMessageId != null) result.clientMessageId = clientMessageId;
+    if (replyToMessageId != null) result.replyToMessageId = replyToMessageId;
+    if (replyToBody != null) result.replyToBody = replyToBody;
+    if (replyToSender != null) result.replyToSender = replyToSender;
+    if (editedAt != null) result.editedAt = editedAt;
+    if (deletedForEveryone != null)
+      result.deletedForEveryone = deletedForEveryone;
     return result;
   }
 
@@ -10725,6 +11634,12 @@ class ContributionMessageProto extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'mediaUrl')
     ..a<$core.int>(8, _omitFieldNames ? '' : 'durationMs', $pb.PbFieldType.O3)
     ..aOS(9, _omitFieldNames ? '' : 'createdAt')
+    ..aOS(10, _omitFieldNames ? '' : 'clientMessageId')
+    ..aOS(11, _omitFieldNames ? '' : 'replyToMessageId')
+    ..aOS(12, _omitFieldNames ? '' : 'replyToBody')
+    ..aOS(13, _omitFieldNames ? '' : 'replyToSender')
+    ..aOS(14, _omitFieldNames ? '' : 'editedAt')
+    ..aOB(15, _omitFieldNames ? '' : 'deletedForEveryone')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -10830,6 +11745,65 @@ class ContributionMessageProto extends $pb.GeneratedMessage {
   $core.bool hasCreatedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearCreatedAt() => $_clearField(9);
+
+  /// Echoed back so the app can match the server row to its optimistic
+  /// bubble instead of rendering the message twice.
+  @$pb.TagNumber(10)
+  $core.String get clientMessageId => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set clientMessageId($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasClientMessageId() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearClientMessageId() => $_clearField(10);
+
+  /// Reply quote. Denormalised: survives deletion of the original.
+  @$pb.TagNumber(11)
+  $core.String get replyToMessageId => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set replyToMessageId($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasReplyToMessageId() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearReplyToMessageId() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get replyToBody => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set replyToBody($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasReplyToBody() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearReplyToBody() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get replyToSender => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set replyToSender($core.String value) => $_setString(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasReplyToSender() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearReplyToSender() => $_clearField(13);
+
+  /// Non-empty ⇒ show an "edited" marker.
+  @$pb.TagNumber(14)
+  $core.String get editedAt => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set editedAt($core.String value) => $_setString(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasEditedAt() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearEditedAt() => $_clearField(14);
+
+  /// True ⇒ render "This message was deleted" in place; body/media are blank.
+  @$pb.TagNumber(15)
+  $core.bool get deletedForEveryone => $_getBF(14);
+  @$pb.TagNumber(15)
+  set deletedForEveryone($core.bool value) => $_setBool(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasDeletedForEveryone() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearDeletedForEveryone() => $_clearField(15);
 }
 
 class SendContributionMessageRequest extends $pb.GeneratedMessage {
@@ -10839,6 +11813,8 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
     $core.String? body,
     $core.String? mediaUrl,
     $core.int? durationMs,
+    $core.String? clientMessageId,
+    $core.String? replyToMessageId,
   }) {
     final result = create();
     if (contributionId != null) result.contributionId = contributionId;
@@ -10846,6 +11822,8 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
     if (body != null) result.body = body;
     if (mediaUrl != null) result.mediaUrl = mediaUrl;
     if (durationMs != null) result.durationMs = durationMs;
+    if (clientMessageId != null) result.clientMessageId = clientMessageId;
+    if (replyToMessageId != null) result.replyToMessageId = replyToMessageId;
     return result;
   }
 
@@ -10867,6 +11845,8 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'body')
     ..aOS(4, _omitFieldNames ? '' : 'mediaUrl')
     ..a<$core.int>(5, _omitFieldNames ? '' : 'durationMs', $pb.PbFieldType.O3)
+    ..aOS(6, _omitFieldNames ? '' : 'clientMessageId')
+    ..aOS(7, _omitFieldNames ? '' : 'replyToMessageId')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -10938,6 +11918,27 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
   $core.bool hasDurationMs() => $_has(4);
   @$pb.TagNumber(5)
   void clearDurationMs() => $_clearField(5);
+
+  /// Client-generated id that makes SEND idempotent: a retry after a timeout
+  /// returns the original message instead of posting a duplicate.
+  @$pb.TagNumber(6)
+  $core.String get clientMessageId => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set clientMessageId($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasClientMessageId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearClientMessageId() => $_clearField(6);
+
+  /// Optional: the message being replied to.
+  @$pb.TagNumber(7)
+  $core.String get replyToMessageId => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set replyToMessageId($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasReplyToMessageId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearReplyToMessageId() => $_clearField(7);
 }
 
 class SendContributionMessageResponse extends $pb.GeneratedMessage {
@@ -12756,9 +13757,10 @@ class JoinPublicGroupResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   void clearMessage() => $_clearField(3);
 
-  /// True when this call filed a REQUEST rather than joining. The member above
-  /// is then the pending row, not a membership — do not navigate into the
-  /// group on the strength of it.
+  /// True when the group requires approval and this call filed a REQUEST
+  /// rather than joining. The member above is then the pending row, not a
+  /// membership — clients must not navigate into the group on the strength
+  /// of it.
   @$pb.TagNumber(4)
   $core.bool get pendingApproval => $_getBF(3);
   @$pb.TagNumber(4)
@@ -12947,6 +13949,7 @@ class DecideJoinRequestRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearGroupId() => $_clearField(1);
 
+  /// The person who asked to join.
   @$pb.TagNumber(2)
   $core.String get requesterId => $_getSZ(1);
   @$pb.TagNumber(2)
@@ -12956,7 +13959,8 @@ class DecideJoinRequestRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   void clearRequesterId() => $_clearField(2);
 
-  /// true approves, false rejects.
+  /// true approves, false rejects. One RPC rather than two so a client
+  /// cannot approve when it meant to reject by calling the wrong endpoint.
   @$pb.TagNumber(3)
   $core.bool get approve => $_getBF(2);
   @$pb.TagNumber(3)
@@ -12966,6 +13970,7 @@ class DecideJoinRequestRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   void clearApprove() => $_clearField(3);
 
+  /// Optional note from the admin, carried to the requester's notification.
   @$pb.TagNumber(4)
   $core.String get note => $_getSZ(3);
   @$pb.TagNumber(4)
@@ -14226,6 +15231,1886 @@ class GetContributionActivityLogsResponse extends $pb.GeneratedMessage {
   void clearPagination() => $_clearField(2);
   @$pb.TagNumber(2)
   ActivityLogPaginationInfo ensurePagination() => $_ensure(1);
+}
+
+class GroupJoinLink extends $pb.GeneratedMessage {
+  factory GroupJoinLink({
+    $core.String? token,
+    $core.String? groupId,
+    $core.String? url,
+    $core.String? createdByUserId,
+    $core.String? role,
+    $core.String? expiresAt,
+    $core.int? maxUses,
+    $core.int? useCount,
+    $core.bool? revoked,
+    $core.String? createdAt,
+  }) {
+    final result = create();
+    if (token != null) result.token = token;
+    if (groupId != null) result.groupId = groupId;
+    if (url != null) result.url = url;
+    if (createdByUserId != null) result.createdByUserId = createdByUserId;
+    if (role != null) result.role = role;
+    if (expiresAt != null) result.expiresAt = expiresAt;
+    if (maxUses != null) result.maxUses = maxUses;
+    if (useCount != null) result.useCount = useCount;
+    if (revoked != null) result.revoked = revoked;
+    if (createdAt != null) result.createdAt = createdAt;
+    return result;
+  }
+
+  GroupJoinLink._();
+
+  factory GroupJoinLink.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GroupJoinLink.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GroupJoinLink',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'token')
+    ..aOS(2, _omitFieldNames ? '' : 'groupId')
+    ..aOS(3, _omitFieldNames ? '' : 'url')
+    ..aOS(4, _omitFieldNames ? '' : 'createdByUserId')
+    ..aOS(5, _omitFieldNames ? '' : 'role')
+    ..aOS(6, _omitFieldNames ? '' : 'expiresAt')
+    ..a<$core.int>(7, _omitFieldNames ? '' : 'maxUses', $pb.PbFieldType.O3)
+    ..a<$core.int>(8, _omitFieldNames ? '' : 'useCount', $pb.PbFieldType.O3)
+    ..aOB(9, _omitFieldNames ? '' : 'revoked')
+    ..aOS(10, _omitFieldNames ? '' : 'createdAt')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GroupJoinLink clone() => GroupJoinLink()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GroupJoinLink copyWith(void Function(GroupJoinLink) updates) =>
+      super.copyWith((message) => updates(message as GroupJoinLink))
+          as GroupJoinLink;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GroupJoinLink create() => GroupJoinLink._();
+  @$core.override
+  GroupJoinLink createEmptyInstance() => create();
+  static $pb.PbList<GroupJoinLink> createRepeated() =>
+      $pb.PbList<GroupJoinLink>();
+  @$core.pragma('dart2js:noInline')
+  static GroupJoinLink getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GroupJoinLink>(create);
+  static GroupJoinLink? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get token => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set token($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasToken() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearToken() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get groupId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set groupId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasGroupId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearGroupId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get url => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set url($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasUrl() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearUrl() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get createdByUserId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set createdByUserId($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasCreatedByUserId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCreatedByUserId() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get role => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set role($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasRole() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearRole() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get expiresAt => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set expiresAt($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasExpiresAt() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearExpiresAt() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get maxUses => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set maxUses($core.int value) => $_setSignedInt32(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasMaxUses() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearMaxUses() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.int get useCount => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set useCount($core.int value) => $_setSignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasUseCount() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearUseCount() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.bool get revoked => $_getBF(8);
+  @$pb.TagNumber(9)
+  set revoked($core.bool value) => $_setBool(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasRevoked() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearRevoked() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get createdAt => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set createdAt($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasCreatedAt() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearCreatedAt() => $_clearField(10);
+}
+
+class CreateGroupJoinLinkRequest extends $pb.GeneratedMessage {
+  factory CreateGroupJoinLinkRequest({
+    $core.String? groupId,
+    $core.int? expiresInHours,
+    $core.int? maxUses,
+    $core.String? role,
+    $core.bool? rotate,
+  }) {
+    final result = create();
+    if (groupId != null) result.groupId = groupId;
+    if (expiresInHours != null) result.expiresInHours = expiresInHours;
+    if (maxUses != null) result.maxUses = maxUses;
+    if (role != null) result.role = role;
+    if (rotate != null) result.rotate = rotate;
+    return result;
+  }
+
+  CreateGroupJoinLinkRequest._();
+
+  factory CreateGroupJoinLinkRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CreateGroupJoinLinkRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CreateGroupJoinLinkRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'groupId')
+    ..a<$core.int>(
+        2, _omitFieldNames ? '' : 'expiresInHours', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'maxUses', $pb.PbFieldType.O3)
+    ..aOS(4, _omitFieldNames ? '' : 'role')
+    ..aOB(5, _omitFieldNames ? '' : 'rotate')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CreateGroupJoinLinkRequest clone() =>
+      CreateGroupJoinLinkRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CreateGroupJoinLinkRequest copyWith(
+          void Function(CreateGroupJoinLinkRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as CreateGroupJoinLinkRequest))
+          as CreateGroupJoinLinkRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateGroupJoinLinkRequest create() => CreateGroupJoinLinkRequest._();
+  @$core.override
+  CreateGroupJoinLinkRequest createEmptyInstance() => create();
+  static $pb.PbList<CreateGroupJoinLinkRequest> createRepeated() =>
+      $pb.PbList<CreateGroupJoinLinkRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CreateGroupJoinLinkRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CreateGroupJoinLinkRequest>(create);
+  static CreateGroupJoinLinkRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get groupId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set groupId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasGroupId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGroupId() => $_clearField(1);
+
+  /// Optional overrides. expires_in_hours 0 => server default (7 days);
+  /// max_uses 0 => unlimited.
+  @$pb.TagNumber(2)
+  $core.int get expiresInHours => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set expiresInHours($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasExpiresInHours() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearExpiresInHours() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get maxUses => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set maxUses($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMaxUses() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMaxUses() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get role => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set role($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasRole() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRole() => $_clearField(4);
+
+  /// When true, mint a NEW token even if an active one exists (rotates the
+  /// link, invalidating anything already shared).
+  @$pb.TagNumber(5)
+  $core.bool get rotate => $_getBF(4);
+  @$pb.TagNumber(5)
+  set rotate($core.bool value) => $_setBool(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasRotate() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearRotate() => $_clearField(5);
+}
+
+class CreateGroupJoinLinkResponse extends $pb.GeneratedMessage {
+  factory CreateGroupJoinLinkResponse({
+    GroupJoinLink? link,
+  }) {
+    final result = create();
+    if (link != null) result.link = link;
+    return result;
+  }
+
+  CreateGroupJoinLinkResponse._();
+
+  factory CreateGroupJoinLinkResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CreateGroupJoinLinkResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CreateGroupJoinLinkResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOM<GroupJoinLink>(1, _omitFieldNames ? '' : 'link',
+        subBuilder: GroupJoinLink.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CreateGroupJoinLinkResponse clone() =>
+      CreateGroupJoinLinkResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CreateGroupJoinLinkResponse copyWith(
+          void Function(CreateGroupJoinLinkResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as CreateGroupJoinLinkResponse))
+          as CreateGroupJoinLinkResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateGroupJoinLinkResponse create() =>
+      CreateGroupJoinLinkResponse._();
+  @$core.override
+  CreateGroupJoinLinkResponse createEmptyInstance() => create();
+  static $pb.PbList<CreateGroupJoinLinkResponse> createRepeated() =>
+      $pb.PbList<CreateGroupJoinLinkResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CreateGroupJoinLinkResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CreateGroupJoinLinkResponse>(create);
+  static CreateGroupJoinLinkResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  GroupJoinLink get link => $_getN(0);
+  @$pb.TagNumber(1)
+  set link(GroupJoinLink value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLink() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLink() => $_clearField(1);
+  @$pb.TagNumber(1)
+  GroupJoinLink ensureLink() => $_ensure(0);
+}
+
+class GetGroupJoinLinkRequest extends $pb.GeneratedMessage {
+  factory GetGroupJoinLinkRequest({
+    $core.String? token,
+  }) {
+    final result = create();
+    if (token != null) result.token = token;
+    return result;
+  }
+
+  GetGroupJoinLinkRequest._();
+
+  factory GetGroupJoinLinkRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetGroupJoinLinkRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetGroupJoinLinkRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'token')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGroupJoinLinkRequest clone() =>
+      GetGroupJoinLinkRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGroupJoinLinkRequest copyWith(
+          void Function(GetGroupJoinLinkRequest) updates) =>
+      super.copyWith((message) => updates(message as GetGroupJoinLinkRequest))
+          as GetGroupJoinLinkRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetGroupJoinLinkRequest create() => GetGroupJoinLinkRequest._();
+  @$core.override
+  GetGroupJoinLinkRequest createEmptyInstance() => create();
+  static $pb.PbList<GetGroupJoinLinkRequest> createRepeated() =>
+      $pb.PbList<GetGroupJoinLinkRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetGroupJoinLinkRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetGroupJoinLinkRequest>(create);
+  static GetGroupJoinLinkRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get token => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set token($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasToken() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearToken() => $_clearField(1);
+}
+
+/// Preview shown BEFORE joining: enough to decide, nothing sensitive (no
+/// member list, no balances).
+class GetGroupJoinLinkResponse extends $pb.GeneratedMessage {
+  factory GetGroupJoinLinkResponse({
+    $core.bool? valid,
+    $core.String? invalidReason,
+    $core.String? groupId,
+    $core.String? groupName,
+    $core.String? groupDescription,
+    $core.int? memberCount,
+    $core.String? inviterName,
+    $core.String? role,
+    $core.String? expiresAt,
+    $core.bool? alreadyMember,
+  }) {
+    final result = create();
+    if (valid != null) result.valid = valid;
+    if (invalidReason != null) result.invalidReason = invalidReason;
+    if (groupId != null) result.groupId = groupId;
+    if (groupName != null) result.groupName = groupName;
+    if (groupDescription != null) result.groupDescription = groupDescription;
+    if (memberCount != null) result.memberCount = memberCount;
+    if (inviterName != null) result.inviterName = inviterName;
+    if (role != null) result.role = role;
+    if (expiresAt != null) result.expiresAt = expiresAt;
+    if (alreadyMember != null) result.alreadyMember = alreadyMember;
+    return result;
+  }
+
+  GetGroupJoinLinkResponse._();
+
+  factory GetGroupJoinLinkResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetGroupJoinLinkResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetGroupJoinLinkResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'valid')
+    ..aOS(2, _omitFieldNames ? '' : 'invalidReason')
+    ..aOS(3, _omitFieldNames ? '' : 'groupId')
+    ..aOS(4, _omitFieldNames ? '' : 'groupName')
+    ..aOS(5, _omitFieldNames ? '' : 'groupDescription')
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'memberCount', $pb.PbFieldType.O3)
+    ..aOS(7, _omitFieldNames ? '' : 'inviterName')
+    ..aOS(8, _omitFieldNames ? '' : 'role')
+    ..aOS(9, _omitFieldNames ? '' : 'expiresAt')
+    ..aOB(10, _omitFieldNames ? '' : 'alreadyMember')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGroupJoinLinkResponse clone() =>
+      GetGroupJoinLinkResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGroupJoinLinkResponse copyWith(
+          void Function(GetGroupJoinLinkResponse) updates) =>
+      super.copyWith((message) => updates(message as GetGroupJoinLinkResponse))
+          as GetGroupJoinLinkResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetGroupJoinLinkResponse create() => GetGroupJoinLinkResponse._();
+  @$core.override
+  GetGroupJoinLinkResponse createEmptyInstance() => create();
+  static $pb.PbList<GetGroupJoinLinkResponse> createRepeated() =>
+      $pb.PbList<GetGroupJoinLinkResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetGroupJoinLinkResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetGroupJoinLinkResponse>(create);
+  static GetGroupJoinLinkResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get valid => $_getBF(0);
+  @$pb.TagNumber(1)
+  set valid($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasValid() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearValid() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get invalidReason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set invalidReason($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasInvalidReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearInvalidReason() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get groupId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set groupId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasGroupId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearGroupId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get groupName => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set groupName($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasGroupName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearGroupName() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get groupDescription => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set groupDescription($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasGroupDescription() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearGroupDescription() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get memberCount => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set memberCount($core.int value) => $_setSignedInt32(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasMemberCount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearMemberCount() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get inviterName => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set inviterName($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasInviterName() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearInviterName() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get role => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set role($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasRole() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearRole() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get expiresAt => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set expiresAt($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasExpiresAt() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearExpiresAt() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.bool get alreadyMember => $_getBF(9);
+  @$pb.TagNumber(10)
+  set alreadyMember($core.bool value) => $_setBool(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasAlreadyMember() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearAlreadyMember() => $_clearField(10);
+}
+
+class JoinGroupViaLinkRequest extends $pb.GeneratedMessage {
+  factory JoinGroupViaLinkRequest({
+    $core.String? token,
+  }) {
+    final result = create();
+    if (token != null) result.token = token;
+    return result;
+  }
+
+  JoinGroupViaLinkRequest._();
+
+  factory JoinGroupViaLinkRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory JoinGroupViaLinkRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'JoinGroupViaLinkRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'token')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  JoinGroupViaLinkRequest clone() =>
+      JoinGroupViaLinkRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  JoinGroupViaLinkRequest copyWith(
+          void Function(JoinGroupViaLinkRequest) updates) =>
+      super.copyWith((message) => updates(message as JoinGroupViaLinkRequest))
+          as JoinGroupViaLinkRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static JoinGroupViaLinkRequest create() => JoinGroupViaLinkRequest._();
+  @$core.override
+  JoinGroupViaLinkRequest createEmptyInstance() => create();
+  static $pb.PbList<JoinGroupViaLinkRequest> createRepeated() =>
+      $pb.PbList<JoinGroupViaLinkRequest>();
+  @$core.pragma('dart2js:noInline')
+  static JoinGroupViaLinkRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<JoinGroupViaLinkRequest>(create);
+  static JoinGroupViaLinkRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get token => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set token($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasToken() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearToken() => $_clearField(1);
+}
+
+class JoinGroupViaLinkResponse extends $pb.GeneratedMessage {
+  factory JoinGroupViaLinkResponse({
+    $core.bool? success,
+    $core.String? message,
+    $core.String? groupId,
+    GroupMemberMessage? member,
+    $core.bool? alreadyMember,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (message != null) result.message = message;
+    if (groupId != null) result.groupId = groupId;
+    if (member != null) result.member = member;
+    if (alreadyMember != null) result.alreadyMember = alreadyMember;
+    return result;
+  }
+
+  JoinGroupViaLinkResponse._();
+
+  factory JoinGroupViaLinkResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory JoinGroupViaLinkResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'JoinGroupViaLinkResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOS(3, _omitFieldNames ? '' : 'groupId')
+    ..aOM<GroupMemberMessage>(4, _omitFieldNames ? '' : 'member',
+        subBuilder: GroupMemberMessage.create)
+    ..aOB(5, _omitFieldNames ? '' : 'alreadyMember')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  JoinGroupViaLinkResponse clone() =>
+      JoinGroupViaLinkResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  JoinGroupViaLinkResponse copyWith(
+          void Function(JoinGroupViaLinkResponse) updates) =>
+      super.copyWith((message) => updates(message as JoinGroupViaLinkResponse))
+          as JoinGroupViaLinkResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static JoinGroupViaLinkResponse create() => JoinGroupViaLinkResponse._();
+  @$core.override
+  JoinGroupViaLinkResponse createEmptyInstance() => create();
+  static $pb.PbList<JoinGroupViaLinkResponse> createRepeated() =>
+      $pb.PbList<JoinGroupViaLinkResponse>();
+  @$core.pragma('dart2js:noInline')
+  static JoinGroupViaLinkResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<JoinGroupViaLinkResponse>(create);
+  static JoinGroupViaLinkResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get groupId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set groupId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasGroupId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearGroupId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  GroupMemberMessage get member => $_getN(3);
+  @$pb.TagNumber(4)
+  set member(GroupMemberMessage value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasMember() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMember() => $_clearField(4);
+  @$pb.TagNumber(4)
+  GroupMemberMessage ensureMember() => $_ensure(3);
+
+  @$pb.TagNumber(5)
+  $core.bool get alreadyMember => $_getBF(4);
+  @$pb.TagNumber(5)
+  set alreadyMember($core.bool value) => $_setBool(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasAlreadyMember() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearAlreadyMember() => $_clearField(5);
+}
+
+class RevokeGroupJoinLinkRequest extends $pb.GeneratedMessage {
+  factory RevokeGroupJoinLinkRequest({
+    $core.String? groupId,
+  }) {
+    final result = create();
+    if (groupId != null) result.groupId = groupId;
+    return result;
+  }
+
+  RevokeGroupJoinLinkRequest._();
+
+  factory RevokeGroupJoinLinkRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RevokeGroupJoinLinkRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RevokeGroupJoinLinkRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'groupId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RevokeGroupJoinLinkRequest clone() =>
+      RevokeGroupJoinLinkRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RevokeGroupJoinLinkRequest copyWith(
+          void Function(RevokeGroupJoinLinkRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as RevokeGroupJoinLinkRequest))
+          as RevokeGroupJoinLinkRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RevokeGroupJoinLinkRequest create() => RevokeGroupJoinLinkRequest._();
+  @$core.override
+  RevokeGroupJoinLinkRequest createEmptyInstance() => create();
+  static $pb.PbList<RevokeGroupJoinLinkRequest> createRepeated() =>
+      $pb.PbList<RevokeGroupJoinLinkRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RevokeGroupJoinLinkRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RevokeGroupJoinLinkRequest>(create);
+  static RevokeGroupJoinLinkRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get groupId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set groupId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasGroupId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGroupId() => $_clearField(1);
+}
+
+class RevokeGroupJoinLinkResponse extends $pb.GeneratedMessage {
+  factory RevokeGroupJoinLinkResponse({
+    $core.bool? success,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    return result;
+  }
+
+  RevokeGroupJoinLinkResponse._();
+
+  factory RevokeGroupJoinLinkResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory RevokeGroupJoinLinkResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RevokeGroupJoinLinkResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RevokeGroupJoinLinkResponse clone() =>
+      RevokeGroupJoinLinkResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RevokeGroupJoinLinkResponse copyWith(
+          void Function(RevokeGroupJoinLinkResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as RevokeGroupJoinLinkResponse))
+          as RevokeGroupJoinLinkResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RevokeGroupJoinLinkResponse create() =>
+      RevokeGroupJoinLinkResponse._();
+  @$core.override
+  RevokeGroupJoinLinkResponse createEmptyInstance() => create();
+  static $pb.PbList<RevokeGroupJoinLinkResponse> createRepeated() =>
+      $pb.PbList<RevokeGroupJoinLinkResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RevokeGroupJoinLinkResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<RevokeGroupJoinLinkResponse>(create);
+  static RevokeGroupJoinLinkResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+}
+
+class GetGroupFundsFeeQuoteRequest extends $pb.GeneratedMessage {
+  factory GetGroupFundsFeeQuoteRequest({
+    $fixnum.Int64? amountMinor,
+    $core.String? leg,
+  }) {
+    final result = create();
+    if (amountMinor != null) result.amountMinor = amountMinor;
+    if (leg != null) result.leg = leg;
+    return result;
+  }
+
+  GetGroupFundsFeeQuoteRequest._();
+
+  factory GetGroupFundsFeeQuoteRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetGroupFundsFeeQuoteRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetGroupFundsFeeQuoteRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aInt64(1, _omitFieldNames ? '' : 'amountMinor')
+    ..aOS(2, _omitFieldNames ? '' : 'leg')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGroupFundsFeeQuoteRequest clone() =>
+      GetGroupFundsFeeQuoteRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGroupFundsFeeQuoteRequest copyWith(
+          void Function(GetGroupFundsFeeQuoteRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetGroupFundsFeeQuoteRequest))
+          as GetGroupFundsFeeQuoteRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetGroupFundsFeeQuoteRequest create() =>
+      GetGroupFundsFeeQuoteRequest._();
+  @$core.override
+  GetGroupFundsFeeQuoteRequest createEmptyInstance() => create();
+  static $pb.PbList<GetGroupFundsFeeQuoteRequest> createRepeated() =>
+      $pb.PbList<GetGroupFundsFeeQuoteRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetGroupFundsFeeQuoteRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetGroupFundsFeeQuoteRequest>(create);
+  static GetGroupFundsFeeQuoteRequest? _defaultInstance;
+
+  /// Amount the fee is charged on, in MINOR units (kobo/cents).
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get amountMinor => $_getI64(0);
+  @$pb.TagNumber(1)
+  set amountMinor($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasAmountMinor() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAmountMinor() => $_clearField(1);
+
+  /// Which leg: "contribution" (member pays in) or "payout" (recipient is
+  /// paid). Empty defaults to contribution.
+  @$pb.TagNumber(2)
+  $core.String get leg => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set leg($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLeg() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLeg() => $_clearField(2);
+}
+
+class GetGroupFundsFeeQuoteResponse extends $pb.GeneratedMessage {
+  factory GetGroupFundsFeeQuoteResponse({
+    $core.bool? feeApplies,
+    $fixnum.Int64? feeMinor,
+    $fixnum.Int64? totalMinor,
+    $core.String? description,
+  }) {
+    final result = create();
+    if (feeApplies != null) result.feeApplies = feeApplies;
+    if (feeMinor != null) result.feeMinor = feeMinor;
+    if (totalMinor != null) result.totalMinor = totalMinor;
+    if (description != null) result.description = description;
+    return result;
+  }
+
+  GetGroupFundsFeeQuoteResponse._();
+
+  factory GetGroupFundsFeeQuoteResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetGroupFundsFeeQuoteResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetGroupFundsFeeQuoteResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'feeApplies')
+    ..aInt64(2, _omitFieldNames ? '' : 'feeMinor')
+    ..aInt64(3, _omitFieldNames ? '' : 'totalMinor')
+    ..aOS(4, _omitFieldNames ? '' : 'description')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGroupFundsFeeQuoteResponse clone() =>
+      GetGroupFundsFeeQuoteResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetGroupFundsFeeQuoteResponse copyWith(
+          void Function(GetGroupFundsFeeQuoteResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetGroupFundsFeeQuoteResponse))
+          as GetGroupFundsFeeQuoteResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetGroupFundsFeeQuoteResponse create() =>
+      GetGroupFundsFeeQuoteResponse._();
+  @$core.override
+  GetGroupFundsFeeQuoteResponse createEmptyInstance() => create();
+  static $pb.PbList<GetGroupFundsFeeQuoteResponse> createRepeated() =>
+      $pb.PbList<GetGroupFundsFeeQuoteResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetGroupFundsFeeQuoteResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetGroupFundsFeeQuoteResponse>(create);
+  static GetGroupFundsFeeQuoteResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get feeApplies => $_getBF(0);
+  @$pb.TagNumber(1)
+  set feeApplies($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFeeApplies() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFeeApplies() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get feeMinor => $_getI64(1);
+  @$pb.TagNumber(2)
+  set feeMinor($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasFeeMinor() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFeeMinor() => $_clearField(2);
+
+  /// amount + fee for the contribution leg; amount - fee for the payout leg.
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get totalMinor => $_getI64(2);
+  @$pb.TagNumber(3)
+  set totalMinor($fixnum.Int64 value) => $_setInt64(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasTotalMinor() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalMinor() => $_clearField(3);
+
+  /// Human label, e.g. "1% (max ₦1,000)" or "₦50 flat". Empty when no fee.
+  @$pb.TagNumber(4)
+  $core.String get description => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set description($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasDescription() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDescription() => $_clearField(4);
+}
+
+class ContributionReader extends $pb.GeneratedMessage {
+  factory ContributionReader({
+    $core.String? userId,
+    $core.String? userName,
+    $core.String? lastReadMessageId,
+    $core.String? lastReadAt,
+  }) {
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (userName != null) result.userName = userName;
+    if (lastReadMessageId != null) result.lastReadMessageId = lastReadMessageId;
+    if (lastReadAt != null) result.lastReadAt = lastReadAt;
+    return result;
+  }
+
+  ContributionReader._();
+
+  factory ContributionReader.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ContributionReader.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ContributionReader',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'userName')
+    ..aOS(3, _omitFieldNames ? '' : 'lastReadMessageId')
+    ..aOS(4, _omitFieldNames ? '' : 'lastReadAt')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ContributionReader clone() => ContributionReader()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ContributionReader copyWith(void Function(ContributionReader) updates) =>
+      super.copyWith((message) => updates(message as ContributionReader))
+          as ContributionReader;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ContributionReader create() => ContributionReader._();
+  @$core.override
+  ContributionReader createEmptyInstance() => create();
+  static $pb.PbList<ContributionReader> createRepeated() =>
+      $pb.PbList<ContributionReader>();
+  @$core.pragma('dart2js:noInline')
+  static ContributionReader getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ContributionReader>(create);
+  static ContributionReader? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userName($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasUserName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserName() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get lastReadMessageId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set lastReadMessageId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasLastReadMessageId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLastReadMessageId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get lastReadAt => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set lastReadAt($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasLastReadAt() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLastReadAt() => $_clearField(4);
+}
+
+class ContributionTyping extends $pb.GeneratedMessage {
+  factory ContributionTyping({
+    $core.String? userId,
+    $core.String? userName,
+  }) {
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (userName != null) result.userName = userName;
+    return result;
+  }
+
+  ContributionTyping._();
+
+  factory ContributionTyping.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ContributionTyping.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ContributionTyping',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'userName')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ContributionTyping clone() => ContributionTyping()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ContributionTyping copyWith(void Function(ContributionTyping) updates) =>
+      super.copyWith((message) => updates(message as ContributionTyping))
+          as ContributionTyping;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ContributionTyping create() => ContributionTyping._();
+  @$core.override
+  ContributionTyping createEmptyInstance() => create();
+  static $pb.PbList<ContributionTyping> createRepeated() =>
+      $pb.PbList<ContributionTyping>();
+  @$core.pragma('dart2js:noInline')
+  static ContributionTyping getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ContributionTyping>(create);
+  static ContributionTyping? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userName($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasUserName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserName() => $_clearField(2);
+}
+
+class MarkContributionReadRequest extends $pb.GeneratedMessage {
+  factory MarkContributionReadRequest({
+    $core.String? contributionId,
+    $core.String? messageId,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    if (messageId != null) result.messageId = messageId;
+    return result;
+  }
+
+  MarkContributionReadRequest._();
+
+  factory MarkContributionReadRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory MarkContributionReadRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MarkContributionReadRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..aOS(2, _omitFieldNames ? '' : 'messageId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MarkContributionReadRequest clone() =>
+      MarkContributionReadRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MarkContributionReadRequest copyWith(
+          void Function(MarkContributionReadRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as MarkContributionReadRequest))
+          as MarkContributionReadRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MarkContributionReadRequest create() =>
+      MarkContributionReadRequest._();
+  @$core.override
+  MarkContributionReadRequest createEmptyInstance() => create();
+  static $pb.PbList<MarkContributionReadRequest> createRepeated() =>
+      $pb.PbList<MarkContributionReadRequest>();
+  @$core.pragma('dart2js:noInline')
+  static MarkContributionReadRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MarkContributionReadRequest>(create);
+  static MarkContributionReadRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+
+  /// Newest message the caller has seen. The server refuses to move a
+  /// watermark backwards, so replaying an older id is a no-op.
+  @$pb.TagNumber(2)
+  $core.String get messageId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set messageId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessageId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessageId() => $_clearField(2);
+}
+
+class MarkContributionReadResponse extends $pb.GeneratedMessage {
+  factory MarkContributionReadResponse({
+    $core.bool? success,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    return result;
+  }
+
+  MarkContributionReadResponse._();
+
+  factory MarkContributionReadResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory MarkContributionReadResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MarkContributionReadResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MarkContributionReadResponse clone() =>
+      MarkContributionReadResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MarkContributionReadResponse copyWith(
+          void Function(MarkContributionReadResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as MarkContributionReadResponse))
+          as MarkContributionReadResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MarkContributionReadResponse create() =>
+      MarkContributionReadResponse._();
+  @$core.override
+  MarkContributionReadResponse createEmptyInstance() => create();
+  static $pb.PbList<MarkContributionReadResponse> createRepeated() =>
+      $pb.PbList<MarkContributionReadResponse>();
+  @$core.pragma('dart2js:noInline')
+  static MarkContributionReadResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MarkContributionReadResponse>(create);
+  static MarkContributionReadResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+}
+
+class GetContributionChatStateRequest extends $pb.GeneratedMessage {
+  factory GetContributionChatStateRequest({
+    $core.String? contributionId,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    return result;
+  }
+
+  GetContributionChatStateRequest._();
+
+  factory GetContributionChatStateRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetContributionChatStateRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetContributionChatStateRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetContributionChatStateRequest clone() =>
+      GetContributionChatStateRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetContributionChatStateRequest copyWith(
+          void Function(GetContributionChatStateRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetContributionChatStateRequest))
+          as GetContributionChatStateRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetContributionChatStateRequest create() =>
+      GetContributionChatStateRequest._();
+  @$core.override
+  GetContributionChatStateRequest createEmptyInstance() => create();
+  static $pb.PbList<GetContributionChatStateRequest> createRepeated() =>
+      $pb.PbList<GetContributionChatStateRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetContributionChatStateRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetContributionChatStateRequest>(
+          create);
+  static GetContributionChatStateRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+}
+
+class GetContributionChatStateResponse extends $pb.GeneratedMessage {
+  factory GetContributionChatStateResponse({
+    $core.Iterable<ContributionReader>? readers,
+    $core.Iterable<ContributionTyping>? typing,
+    $fixnum.Int64? unreadCount,
+  }) {
+    final result = create();
+    if (readers != null) result.readers.addAll(readers);
+    if (typing != null) result.typing.addAll(typing);
+    if (unreadCount != null) result.unreadCount = unreadCount;
+    return result;
+  }
+
+  GetContributionChatStateResponse._();
+
+  factory GetContributionChatStateResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetContributionChatStateResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetContributionChatStateResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..pc<ContributionReader>(
+        1, _omitFieldNames ? '' : 'readers', $pb.PbFieldType.PM,
+        subBuilder: ContributionReader.create)
+    ..pc<ContributionTyping>(
+        2, _omitFieldNames ? '' : 'typing', $pb.PbFieldType.PM,
+        subBuilder: ContributionTyping.create)
+    ..aInt64(3, _omitFieldNames ? '' : 'unreadCount')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetContributionChatStateResponse clone() =>
+      GetContributionChatStateResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetContributionChatStateResponse copyWith(
+          void Function(GetContributionChatStateResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetContributionChatStateResponse))
+          as GetContributionChatStateResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetContributionChatStateResponse create() =>
+      GetContributionChatStateResponse._();
+  @$core.override
+  GetContributionChatStateResponse createEmptyInstance() => create();
+  static $pb.PbList<GetContributionChatStateResponse> createRepeated() =>
+      $pb.PbList<GetContributionChatStateResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetContributionChatStateResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetContributionChatStateResponse>(
+          create);
+  static GetContributionChatStateResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<ContributionReader> get readers => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $pb.PbList<ContributionTyping> get typing => $_getList(1);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get unreadCount => $_getI64(2);
+  @$pb.TagNumber(3)
+  set unreadCount($fixnum.Int64 value) => $_setInt64(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasUnreadCount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearUnreadCount() => $_clearField(3);
+}
+
+class SetContributionTypingRequest extends $pb.GeneratedMessage {
+  factory SetContributionTypingRequest({
+    $core.String? contributionId,
+    $core.bool? isTyping,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    if (isTyping != null) result.isTyping = isTyping;
+    return result;
+  }
+
+  SetContributionTypingRequest._();
+
+  factory SetContributionTypingRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SetContributionTypingRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SetContributionTypingRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..aOB(2, _omitFieldNames ? '' : 'isTyping')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetContributionTypingRequest clone() =>
+      SetContributionTypingRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetContributionTypingRequest copyWith(
+          void Function(SetContributionTypingRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as SetContributionTypingRequest))
+          as SetContributionTypingRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SetContributionTypingRequest create() =>
+      SetContributionTypingRequest._();
+  @$core.override
+  SetContributionTypingRequest createEmptyInstance() => create();
+  static $pb.PbList<SetContributionTypingRequest> createRepeated() =>
+      $pb.PbList<SetContributionTypingRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SetContributionTypingRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SetContributionTypingRequest>(create);
+  static SetContributionTypingRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get isTyping => $_getBF(1);
+  @$pb.TagNumber(2)
+  set isTyping($core.bool value) => $_setBool(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasIsTyping() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearIsTyping() => $_clearField(2);
+}
+
+class SetContributionTypingResponse extends $pb.GeneratedMessage {
+  factory SetContributionTypingResponse({
+    $core.bool? success,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    return result;
+  }
+
+  SetContributionTypingResponse._();
+
+  factory SetContributionTypingResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SetContributionTypingResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SetContributionTypingResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetContributionTypingResponse clone() =>
+      SetContributionTypingResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetContributionTypingResponse copyWith(
+          void Function(SetContributionTypingResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as SetContributionTypingResponse))
+          as SetContributionTypingResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SetContributionTypingResponse create() =>
+      SetContributionTypingResponse._();
+  @$core.override
+  SetContributionTypingResponse createEmptyInstance() => create();
+  static $pb.PbList<SetContributionTypingResponse> createRepeated() =>
+      $pb.PbList<SetContributionTypingResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SetContributionTypingResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SetContributionTypingResponse>(create);
+  static SetContributionTypingResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+}
+
+class EditContributionMessageRequest extends $pb.GeneratedMessage {
+  factory EditContributionMessageRequest({
+    $core.String? contributionId,
+    $core.String? messageId,
+    $core.String? body,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    if (messageId != null) result.messageId = messageId;
+    if (body != null) result.body = body;
+    return result;
+  }
+
+  EditContributionMessageRequest._();
+
+  factory EditContributionMessageRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory EditContributionMessageRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'EditContributionMessageRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..aOS(2, _omitFieldNames ? '' : 'messageId')
+    ..aOS(3, _omitFieldNames ? '' : 'body')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  EditContributionMessageRequest clone() =>
+      EditContributionMessageRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  EditContributionMessageRequest copyWith(
+          void Function(EditContributionMessageRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as EditContributionMessageRequest))
+          as EditContributionMessageRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static EditContributionMessageRequest create() =>
+      EditContributionMessageRequest._();
+  @$core.override
+  EditContributionMessageRequest createEmptyInstance() => create();
+  static $pb.PbList<EditContributionMessageRequest> createRepeated() =>
+      $pb.PbList<EditContributionMessageRequest>();
+  @$core.pragma('dart2js:noInline')
+  static EditContributionMessageRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<EditContributionMessageRequest>(create);
+  static EditContributionMessageRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get messageId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set messageId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessageId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessageId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get body => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set body($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasBody() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearBody() => $_clearField(3);
+}
+
+class EditContributionMessageResponse extends $pb.GeneratedMessage {
+  factory EditContributionMessageResponse({
+    ContributionMessageProto? message,
+  }) {
+    final result = create();
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  EditContributionMessageResponse._();
+
+  factory EditContributionMessageResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory EditContributionMessageResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'EditContributionMessageResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOM<ContributionMessageProto>(1, _omitFieldNames ? '' : 'message',
+        subBuilder: ContributionMessageProto.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  EditContributionMessageResponse clone() =>
+      EditContributionMessageResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  EditContributionMessageResponse copyWith(
+          void Function(EditContributionMessageResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as EditContributionMessageResponse))
+          as EditContributionMessageResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static EditContributionMessageResponse create() =>
+      EditContributionMessageResponse._();
+  @$core.override
+  EditContributionMessageResponse createEmptyInstance() => create();
+  static $pb.PbList<EditContributionMessageResponse> createRepeated() =>
+      $pb.PbList<EditContributionMessageResponse>();
+  @$core.pragma('dart2js:noInline')
+  static EditContributionMessageResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<EditContributionMessageResponse>(
+          create);
+  static EditContributionMessageResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ContributionMessageProto get message => $_getN(0);
+  @$pb.TagNumber(1)
+  set message(ContributionMessageProto value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasMessage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMessage() => $_clearField(1);
+  @$pb.TagNumber(1)
+  ContributionMessageProto ensureMessage() => $_ensure(0);
+}
+
+class DeleteContributionMessageForEveryoneRequest extends $pb.GeneratedMessage {
+  factory DeleteContributionMessageForEveryoneRequest({
+    $core.String? contributionId,
+    $core.String? messageId,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    if (messageId != null) result.messageId = messageId;
+    return result;
+  }
+
+  DeleteContributionMessageForEveryoneRequest._();
+
+  factory DeleteContributionMessageForEveryoneRequest.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DeleteContributionMessageForEveryoneRequest.fromJson(
+          $core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DeleteContributionMessageForEveryoneRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..aOS(2, _omitFieldNames ? '' : 'messageId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeleteContributionMessageForEveryoneRequest clone() =>
+      DeleteContributionMessageForEveryoneRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeleteContributionMessageForEveryoneRequest copyWith(
+          void Function(DeleteContributionMessageForEveryoneRequest) updates) =>
+      super.copyWith((message) =>
+              updates(message as DeleteContributionMessageForEveryoneRequest))
+          as DeleteContributionMessageForEveryoneRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DeleteContributionMessageForEveryoneRequest create() =>
+      DeleteContributionMessageForEveryoneRequest._();
+  @$core.override
+  DeleteContributionMessageForEveryoneRequest createEmptyInstance() => create();
+  static $pb.PbList<DeleteContributionMessageForEveryoneRequest>
+      createRepeated() =>
+          $pb.PbList<DeleteContributionMessageForEveryoneRequest>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteContributionMessageForEveryoneRequest getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          DeleteContributionMessageForEveryoneRequest>(create);
+  static DeleteContributionMessageForEveryoneRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get messageId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set messageId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessageId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessageId() => $_clearField(2);
+}
+
+class DeleteContributionMessageForEveryoneResponse
+    extends $pb.GeneratedMessage {
+  factory DeleteContributionMessageForEveryoneResponse({
+    $core.bool? success,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    return result;
+  }
+
+  DeleteContributionMessageForEveryoneResponse._();
+
+  factory DeleteContributionMessageForEveryoneResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory DeleteContributionMessageForEveryoneResponse.fromJson(
+          $core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DeleteContributionMessageForEveryoneResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeleteContributionMessageForEveryoneResponse clone() =>
+      DeleteContributionMessageForEveryoneResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeleteContributionMessageForEveryoneResponse copyWith(
+          void Function(DeleteContributionMessageForEveryoneResponse)
+              updates) =>
+      super.copyWith((message) =>
+              updates(message as DeleteContributionMessageForEveryoneResponse))
+          as DeleteContributionMessageForEveryoneResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DeleteContributionMessageForEveryoneResponse create() =>
+      DeleteContributionMessageForEveryoneResponse._();
+  @$core.override
+  DeleteContributionMessageForEveryoneResponse createEmptyInstance() =>
+      create();
+  static $pb.PbList<DeleteContributionMessageForEveryoneResponse>
+      createRepeated() =>
+          $pb.PbList<DeleteContributionMessageForEveryoneResponse>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteContributionMessageForEveryoneResponse getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<
+          DeleteContributionMessageForEveryoneResponse>(create);
+  static DeleteContributionMessageForEveryoneResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
 }
 
 const $core.bool _omitFieldNames =

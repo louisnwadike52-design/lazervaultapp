@@ -70,6 +70,7 @@ class GroupAccountModel extends GroupAccount {
     super.contributionCount,
     super.isMember,
     super.requiresApproval,
+    super.hasPendingJoinRequest,
   });
 
   factory GroupAccountModel.fromJson(Map<String, dynamic> json) {
@@ -169,6 +170,8 @@ class GroupAccountModel extends GroupAccount {
     String? imageUrl,
     int? contributionCount,
     bool? isMember,
+    bool? requiresApproval,
+    bool? hasPendingJoinRequest,
   }) {
     return GroupAccountModel(
       id: id ?? this.id,
@@ -187,6 +190,12 @@ class GroupAccountModel extends GroupAccount {
       imageUrl: imageUrl ?? this.imageUrl,
       contributionCount: contributionCount ?? this.contributionCount,
       isMember: isMember ?? this.isMember,
+      // The override previously omitted both, so a model copyWith silently
+      // downgraded an approval-gated group to an open one and forgot that the
+      // user was already in the queue.
+      requiresApproval: requiresApproval ?? this.requiresApproval,
+      hasPendingJoinRequest:
+          hasPendingJoinRequest ?? this.hasPendingJoinRequest,
     );
   }
 }

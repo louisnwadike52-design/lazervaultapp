@@ -40,6 +40,11 @@ class _PublicGroupDetailBottomSheetState
   bool _isJoining = false;
   bool _hasJoined = false;
 
+  /// Set when the tap filed a REQUEST rather than joining outright. Kept apart
+  /// from [_hasJoined] because the two produce different buttons: one says the
+  /// user is in, the other that somebody has to decide.
+  bool _hasPendingRequest = false;
+
   @override
   void initState() {
     super.initState();
@@ -67,9 +72,16 @@ class _PublicGroupDetailBottomSheetState
             (current is GroupAccountError && _isJoining),
         listener: (context, state) {
           if (state is JoinPublicGroupSuccess) {
+            // A successful call is not always membership. On an
+            // approval-gated group it means the request was filed, and
+            // recording that as "joined" would tell someone they are inside a
+            // group they cannot yet see. requiresApproval is exact rather than
+            // a guess: the server joins outright only when it is false.
+            final queued = state.group.requiresApproval;
             setState(() {
               _isJoining = false;
-              _hasJoined = true;
+              _hasJoined = !queued;
+              _hasPendingRequest = queued;
             });
             Navigator.of(context).pop();
             ScaffoldMessenger.of(context).showSnackBar(
@@ -458,8 +470,27 @@ class _PublicGroupDetailBottomSheetState
   }
 
   Widget _buildJoinButton(PublicGroupDetail detail) {
-    final isMember = detail.isMember || _hasJoined;
-    final isDisabled = isMember || _isJoining;
+    final isMember = detail.isMember || detail.group.isMember || _hasJoined;
+    // Waiting on a decision is its own state. The server's answer covers a
+    // request filed on an earlier run or another device; the local flag covers
+    // the one filed seconds ago, before any refetch. Either way the button
+    // must not invite a second request — the server would return the same row,
+    // and a button that appears to do nothing reads as broken.
+    final isPending =
+        !isMember && (detail.group.hasPendingJoinRequest || _hasPendingRequest);
+    final isDisabled = isMember || isPending || _isJoining;
+
+    final String label;
+    if (isMember) {
+      label = 'Already a Member';
+    } else if (isPending) {
+      label = 'Awaiting admin approval';
+    } else if (detail.group.requiresApproval) {
+      // Say so before the tap, so joining a queue is never a surprise.
+      label = 'Request to Join';
+    } else {
+      label = 'Join Group';
+    }
 
     return Container(
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
@@ -498,7 +529,7 @@ class _PublicGroupDetailBottomSheetState
           child: _isJoining
               ? LazerVaultLoader.small()
               : Text(
-                  isMember ? 'Already a Member' : 'Join Group',
+                  label,
                   style: GoogleFonts.inter(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
