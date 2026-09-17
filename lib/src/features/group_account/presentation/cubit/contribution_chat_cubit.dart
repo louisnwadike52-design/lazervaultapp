@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../data/datasources/contribution_chat_remote_data_source.dart';
+
+part 'contribution_chat_media.dart';
 
 /// Orchestrates one contribution's chat: message list, optimistic send,
 /// typing presence and read receipts.

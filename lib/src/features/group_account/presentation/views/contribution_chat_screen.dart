@@ -1,3 +1,10 @@
+import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:just_audio/just_audio.dart';
+import 'dart:async';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:record/record.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -42,6 +49,21 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
 
   late final ContributionChatCubit _chat;
   final _input = TextEditingController();
+
+  // Media capture state. Mirrors p2p_chat_input_bar so both chats behave the
+  // same way and share its Android fixes.
+  final ImagePicker _imagePicker = ImagePicker();
+  final AudioRecorder _recorder = AudioRecorder();
+  bool _isRecording = false;
+  Duration _recordingDuration = Duration.zero;
+  Timer? _recordingTimer;
+  // Drives the send/mic swap. Held in state so the composer rebuilds on the
+  // empty↔non-empty transition only, not on every keystroke.
+  bool _hasText = false;
+  // Voice playback. One player for the screen so a second tap
+  // replaces the first note rather than overlapping voices.
+  final AudioPlayer _voicePlayer = AudioPlayer();
+  String? _playingMessageId;
   final _scroll = ScrollController();
 
   /// Tracks whether the viewer is parked near the newest message. New
@@ -103,6 +125,9 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
     _scroll.removeListener(_onScroll);
     _chat.removeListener(_onChatChanged);
     _chat.dispose();
+    _recordingTimer?.cancel();
+    _voicePlayer.dispose();
+    _recorder.dispose();
     _input.dispose();
     _scroll.dispose();
     super.dispose();
@@ -394,11 +419,19 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
                   ),
                 ),
               if (m.hasReply) _replyQuote(m, mine),
-              Text(
-                m.body,
-                style: GoogleFonts.inter(
-                    color: Colors.white, fontSize: 14.sp, height: 1.35),
-              ),
+              // Media bubbles render their content instead of the body. A
+              // voice note or image has no text, so the previous unconditional
+              // Text painted an empty line where the media should be.
+              if (m.kind == 'image')
+                _imageBubble(m)
+              else if (m.kind == 'voice')
+                _voiceBubble(m)
+              else
+                Text(
+                  m.body,
+                  style: GoogleFonts.inter(
+                      color: Colors.white, fontSize: 14.sp, height: 1.35),
+                ),
               SizedBox(height: 3.h),
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -569,10 +602,25 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          if (!_isRecording)
+            GestureDetector(
+              onTap: _pickImage,
+              child: Padding(
+                padding: EdgeInsets.only(right: 6.w, bottom: 6.h),
+                child: Icon(Icons.add_photo_alternate_outlined,
+                    color: Colors.grey[500], size: 24.sp),
+              ),
+            ),
+          if (_isRecording) _buildRecordingBar(),
+          if (!_isRecording)
           Expanded(
             child: TextField(
               controller: _input,
-              onChanged: _chat.onTypingChanged,
+              onChanged: (v) {
+                _chat.onTypingChanged(v);
+                final has = v.trim().isNotEmpty;
+                if (has != _hasText) setState(() => _hasText = has);
+              },
               minLines: 1,
               maxLines: 5,
               textCapitalization: TextCapitalization.sentences,
@@ -601,13 +649,25 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
             ),
           ),
           SizedBox(width: 8.w),
+          // Send when there is text to send, microphone when there is not.
+          // One control rather than two: a composer with a permanently greyed
+          // send button next to a mic reads as broken, and the p2p bar already
+          // established this shape.
           GestureDetector(
-            onTap: _send,
+            onTap: _hasText ? _send : _toggleRecording,
             child: Container(
               padding: EdgeInsets.all(11.w),
-              decoration: const BoxDecoration(
-                  color: _mine, shape: BoxShape.circle),
-              child: Icon(Icons.send_rounded, color: Colors.white, size: 18.sp),
+              decoration: BoxDecoration(
+                color: _isRecording ? const Color(0xFFEF4444) : _mine,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _hasText
+                    ? Icons.send_rounded
+                    : (_isRecording ? Icons.stop_rounded : Icons.mic_rounded),
+                color: Colors.white,
+                size: 18.sp,
+              ),
             ),
           ),
         ],
@@ -615,10 +675,277 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
     );
   }
 
+  /// Recording strip shown in place of the text field while capturing.
+  ///
+  /// Cancel is deliberately as prominent as send: a voice note recorded by
+  /// accident, or one the user thinks better of, must be discardable without
+  /// sending it to the whole group.
+  Widget _buildRecordingBar() {
+    final secs = _recordingDuration.inSeconds;
+    final mm = (secs ~/ 60).toString().padLeft(2, '0');
+    final ss = (secs % 60).toString().padLeft(2, '0');
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: _card,
+          borderRadius: BorderRadius.circular(22.r),
+          border: Border.all(color: const Color(0xFFEF4444)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 8.w,
+              height: 8.w,
+              decoration: const BoxDecoration(
+                  color: Color(0xFFEF4444), shape: BoxShape.circle),
+            ),
+            SizedBox(width: 10.w),
+            Text('$mm:$ss',
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600)),
+            const Spacer(),
+            GestureDetector(
+              onTap: _cancelRecording,
+              child: Text('Cancel',
+                  style: GoogleFonts.inter(
+                      color: Colors.grey[400], fontSize: 13.sp)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── media capture ────────────────────────────────────────────────────
+  //
+  // Mirrors p2p_chat_input_bar, deliberately: that implementation carries a
+  // hard-won Android fix (mono capture) and re-deriving it here would risk
+  // re-introducing the bug it solved.
+
+  Future<void> _pickImage() async {
+    if (_isRecording) return;
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        // Chat images are viewed on a phone; full-resolution originals cost
+        // the sender's data and the group's load time for no visible gain.
+        maxWidth: 1600,
+        imageQuality: 85,
+      );
+      if (picked == null) return;
+      await _chat.sendImage(File(picked.path));
+    } catch (_) {
+      _toast('Could not attach that image');
+    }
+  }
+
+  Future<void> _toggleRecording() async {
+    if (_isRecording) {
+      await _stopRecording(send: true);
+    } else {
+      await _startRecording();
+    }
+  }
+
+  Future<void> _startRecording() async {
+    if (_isRecording) return;
+    if (!await _recorder.hasPermission()) {
+      _toast('Microphone permission is required for voice notes');
+      return;
+    }
+    final dir = await getTemporaryDirectory();
+    final path =
+        '${dir.path}/group_voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    try {
+      // Mono @44.1kHz, not the package default of stereo: Android's
+      // AudioRecord silently fails to initialise in stereo on most mics, which
+      // records an empty clip and makes voice notes "not send" on Android while
+      // iOS works. Learned in the p2p chat; kept identical here.
+      await _recorder.start(
+        const RecordConfig(
+          encoder: AudioEncoder.aacLc,
+          numChannels: 1,
+          sampleRate: 44100,
+          bitRate: 128000,
+        ),
+        path: path,
+      );
+    } catch (_) {
+      _toast('Could not start recording. Please try again.');
+      return;
+    }
+    if (!mounted) return;
+    setState(() {
+      _isRecording = true;
+      _recordingDuration = Duration.zero;
+    });
+    _recordingTimer?.cancel();
+    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() => _recordingDuration += const Duration(seconds: 1));
+    });
+  }
+
+  Future<void> _cancelRecording() => _stopRecording(send: false);
+
+  Future<void> _stopRecording({required bool send}) async {
+    _recordingTimer?.cancel();
+    _recordingTimer = null;
+    final elapsed = _recordingDuration;
+    String? path;
+    try {
+      path = await _recorder.stop();
+    } catch (_) {
+      // Fall through: the UI must leave the recording state regardless, or the
+      // composer is stuck showing a timer that will never advance.
+    }
+    if (mounted) {
+      setState(() {
+        _isRecording = false;
+        _recordingDuration = Duration.zero;
+      });
+    }
+    if (!send || path == null || path.isEmpty) {
+      if (path != null && path.isNotEmpty) {
+        // Discarded: delete the clip rather than leaving it in temp.
+        try {
+          File(path).deleteSync();
+        } catch (_) {}
+      }
+      return;
+    }
+    // A tap that lands as a sub-second clip is almost always an accident, and
+    // an empty voice note in a group chat is pure noise.
+    if (elapsed.inMilliseconds < 1000) {
+      try {
+        File(path).deleteSync();
+      } catch (_) {}
+      _toast('Hold to record a voice note');
+      return;
+    }
+    await _chat.sendVoiceNote(File(path), durationMs: elapsed.inMilliseconds);
+  }
+
+  void _toast(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: const Color(0xFFEF4444)),
+    );
+  }
+
+  /// Image bubble.
+  ///
+  /// While a send is in flight the message still points at the LOCAL file, so
+  /// the picture is visible immediately rather than appearing only after the
+  /// upload completes.
+  Widget _imageBubble(ContributionMessage m) {
+    final url = m.mediaUrl;
+    final isLocal = !url.startsWith('http');
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10.r),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: 220.h, maxWidth: 240.w),
+        child: isLocal
+            ? Image.file(File(url), fit: BoxFit.cover)
+            : Image.network(
+                url,
+                fit: BoxFit.cover,
+                loadingBuilder: (c, child, progress) => progress == null
+                    ? child
+                    : SizedBox(
+                        height: 120.h,
+                        width: 200.w,
+                        child: const Center(child: LazerVaultLoader.small()),
+                      ),
+                // A broken image must not render as a red exception box in the
+                // middle of a conversation.
+                errorBuilder: (_, __, ___) => Container(
+                  height: 120.h,
+                  width: 200.w,
+                  color: Colors.white10,
+                  child: Center(
+                    child: Icon(Icons.broken_image_outlined,
+                        color: Colors.grey[500], size: 26.sp),
+                  ),
+                ),
+              ),
+      ),
+    );
+  }
+
+  /// Voice-note bubble.
+  ///
+  /// Deliberately a play affordance plus a duration rather than a waveform:
+  /// the duration is the one thing a listener wants before committing to
+  /// playing something in a group chat, and it is already on the message.
+  Widget _voiceBubble(ContributionMessage m) {
+    final secs = (m.durationMs / 1000).round();
+    final mm = (secs ~/ 60).toString().padLeft(2, '0');
+    final ss = (secs % 60).toString().padLeft(2, '0');
+    final playing = _playingMessageId == m.id && m.id.isNotEmpty;
+    return GestureDetector(
+      onTap: () => _toggleVoicePlayback(m),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(playing ? Icons.pause_circle_filled : Icons.play_circle_fill,
+              color: Colors.white, size: 30.sp),
+          SizedBox(width: 8.w),
+          Icon(Icons.graphic_eq, color: Colors.white70, size: 18.sp),
+          SizedBox(width: 8.w),
+          Text('$mm:$ss',
+              style: GoogleFonts.inter(
+                  color: Colors.white, fontSize: 13.sp)),
+        ],
+      ),
+    );
+  }
+
+  /// Plays or pauses a voice note.
+  ///
+  /// Only one note plays at a time — starting a second while the first is
+  /// running would overlap two voices in the same conversation.
+  Future<void> _toggleVoicePlayback(ContributionMessage m) async {
+    final url = m.mediaUrl;
+    if (url.isEmpty) return;
+    try {
+      if (_playingMessageId == m.id) {
+        await _voicePlayer.stop();
+        if (mounted) setState(() => _playingMessageId = null);
+        return;
+      }
+      await _voicePlayer.stop();
+      if (url.startsWith('http')) {
+        await _voicePlayer.setUrl(url);
+      } else {
+        await _voicePlayer.setFilePath(url);
+      }
+      if (mounted) setState(() => _playingMessageId = m.id);
+      await _voicePlayer.play();
+      if (mounted && _playingMessageId == m.id) {
+        setState(() => _playingMessageId = null);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _playingMessageId = null);
+      _toast('Could not play that voice note');
+    }
+  }
+
   void _showMessageActions(ContributionMessage m, bool mine) {
     if (m.id.isEmpty) {
       // Still sending (or failed) — the only useful action is a retry.
-      if (m.status == ChatDeliveryStatus.failed) _chat.retry(m);
+      // Media retries re-upload the local file; the text path re-posts a body,
+      // so sending a media bubble down it would post an empty message.
+      if (m.status == ChatDeliveryStatus.failed) {
+        if (m.kind == 'image' || m.kind == 'voice') {
+          _chat.retryMedia(m);
+        } else {
+          _chat.retry(m);
+        }
+      }
       return;
     }
     showModalBottomSheet(

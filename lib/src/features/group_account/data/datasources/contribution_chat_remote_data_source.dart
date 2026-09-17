@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/endpoint_registry.dart';
 
@@ -265,6 +267,65 @@ class ContributionChatRemoteDataSource {
 
   /// Send a message. [clientMessageId] makes this IDEMPOTENT: a retry after a
   /// timeout returns the original row rather than posting a duplicate.
+  /// Uploads a voice note or image and returns the absolute media URL to hand
+  /// to [send].
+  ///
+  /// The endpoint is plain multipart rather than the gRPC-gateway surface the
+  /// rest of this data source uses, because the bytes never belong in a JSON
+  /// envelope. group-accounts routes the file to storage-service, so where it
+  /// physically lands follows the platform's active storage provider and the
+  /// URL returned here is absolute and durable — it keeps resolving even after
+  /// an admin switches providers.
+  Future<({String mediaUrl, int durationMs})> uploadMedia({
+    required String token,
+    required String contributionId,
+    required File file,
+    required String kind, // 'voice' | 'image'
+    int durationMs = 0,
+  }) async {
+    final uri =
+        Uri.parse('$_base/v1/contributions/$contributionId/messages/media');
+    final req = http.MultipartRequest('POST', uri)
+      ..headers['Authorization'] = 'Bearer $token'
+      ..fields['kind'] = kind
+      ..files.add(await http.MultipartFile.fromPath('file', file.path));
+    if (durationMs > 0) {
+      req.fields['durationMs'] = durationMs.toString();
+    }
+
+    final streamed = await _client.send(req);
+    final res = await http.Response.fromStream(streamed);
+
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      // The size guard answers 413 with a plain-text body, so parse
+      // defensively rather than assuming JSON.
+      String msg = 'Upload failed (${res.statusCode})';
+      if (res.statusCode == 413) {
+        msg = 'That file is too large to send';
+      } else {
+        try {
+          final b = jsonDecode(res.body) as Map<String, dynamic>;
+          final m = (b['message'] ?? b['error']) as String?;
+          if (m != null && m.trim().isNotEmpty) msg = m;
+        } catch (_) {
+          final t = res.body.trim();
+          if (t.isNotEmpty && t.length < 160) msg = t;
+        }
+      }
+      throw msg;
+    }
+
+    final body = jsonDecode(res.body) as Map<String, dynamic>;
+    final url = (body['media_url'] ?? '') as String;
+    if (url.isEmpty) {
+      throw 'Upload succeeded but returned no media URL';
+    }
+    return (
+      mediaUrl: url,
+      durationMs: (body['duration_ms'] as num?)?.toInt() ?? durationMs,
+    );
+  }
+
   Future<ContributionMessage> send({
     required String token,
     required String contributionId,
