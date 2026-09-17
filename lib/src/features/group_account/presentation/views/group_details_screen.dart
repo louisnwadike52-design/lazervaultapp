@@ -1,3 +1,6 @@
+import 'package:lazervault/src/features/group_account/presentation/widgets/join_requests_sheet.dart';
+import 'package:lazervault/src/features/group_account/data/datasources/group_account_remote_data_source.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -47,6 +50,11 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   // produces a single scroll animation instead of N stacked ones.
   Timer? _scrollToMembersBottomDebounce;
 
+  /// How many people are waiting to join. Drives the overflow badge and the
+  /// menu count. Zero until resolved, and left at zero for non-admins and for
+  /// groups without the approval gate — neither can act on it.
+  int _pendingJoinRequestCount = 0;
+
   @override
   void initState() {
     super.initState();
@@ -56,6 +64,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     // Load group details if not already loaded
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
+      // Resolve the badge alongside the group. Failure is silent — see
+      // _refreshPendingJoinRequestCount.
+      _refreshPendingJoinRequestCount();
     });
   }
 
@@ -636,10 +647,27 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             ),
           ),
           PopupMenuButton<String>(
-            icon: Icon(
-              Icons.more_vert,
-              color: Colors.white,
-              size: 24.sp,
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(Icons.more_vert, color: Colors.white, size: 24.sp),
+                // A request nobody notices is a person waiting indefinitely,
+                // so the count is surfaced on the closed menu rather than
+                // only inside it.
+                if (_pendingJoinRequestCount > 0)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      padding: EdgeInsets.all(3.w),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF59E0B),
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: BoxConstraints(minWidth: 8.w, minHeight: 8.w),
+                    ),
+                  ),
+              ],
             ),
             color: const Color(0xFF1F1F1F),
             itemBuilder: (context) {
@@ -675,6 +703,45 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                     ],
                   ),
                 ),
+                // Join requests. Only for a PUBLIC group with the gate on:
+                // showing it elsewhere would offer admins a queue that can
+                // never have anything in it.
+                if (isAdmin &&
+                    group.visibility == GroupVisibility.public &&
+                    group.requiresApproval)
+                  PopupMenuItem(
+                    value: 'join_requests',
+                    child: Row(
+                      children: [
+                        Icon(Icons.how_to_reg_outlined,
+                            color: const Color(0xFFF59E0B), size: 20.sp),
+                        SizedBox(width: 12.w),
+                        Text(
+                          'Join requests',
+                          style: GoogleFonts.inter(color: Colors.white),
+                        ),
+                        if (_pendingJoinRequestCount > 0) ...[
+                          SizedBox(width: 8.w),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 6.w, vertical: 1.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF59E0B),
+                              borderRadius: BorderRadius.circular(9.r),
+                            ),
+                            child: Text(
+                              '$_pendingJoinRequestCount',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 if (canEditGroup)
                   PopupMenuItem(
                     value: 'edit',
@@ -1313,10 +1380,49 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     );
   }
 
+  /// Opens the admin queue.
+  ///
+  /// The count is refreshed when the sheet closes and after each decision, so
+  /// the badge cannot keep advertising requests already dealt with.
+  Future<void> _showJoinRequestsSheet(GroupAccount group) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => JoinRequestsSheet(
+        groupId: group.id,
+        groupName: group.name,
+        dataSource: serviceLocator<GroupAccountRemoteDataSource>(),
+        onChanged: _refreshPendingJoinRequestCount,
+      ),
+    );
+    await _refreshPendingJoinRequestCount();
+  }
+
+  /// Reads the queue depth for the badge.
+  ///
+  /// Deliberately silent on failure: this is decoration, and a non-admin
+  /// opening a group gets PERMISSION_DENIED here by design. Surfacing that
+  /// would put a scary message in front of a member who did nothing wrong.
+  Future<void> _refreshPendingJoinRequestCount() async {
+    try {
+      final rows = await serviceLocator<GroupAccountRemoteDataSource>()
+          .listJoinRequests(widget.groupId);
+      if (!mounted) return;
+      setState(() => _pendingJoinRequestCount = rows.length);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _pendingJoinRequestCount = 0);
+    }
+  }
+
   void _handleMenuAction(String action, GroupAccount group) {
     switch (action) {
       case 'share_report':
         _showShareReportScreen(group);
+        break;
+      case 'join_requests':
+        _showJoinRequestsSheet(group);
         break;
       case 'edit':
         _showEditGroupBottomSheet(group);

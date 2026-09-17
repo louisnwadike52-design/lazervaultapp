@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
-import 'package:lazervault/src/features/group_account/data/datasources/group_account_grpc_data_source.dart';
+import 'package:lazervault/src/features/group_account/data/datasources/group_account_remote_data_source.dart';
 import 'package:lazervault/src/features/group_account/domain/entities/group_entities.dart';
 
 /// The admin's queue of people waiting to join a public group.
@@ -27,7 +27,7 @@ class JoinRequestsSheet extends StatefulWidget {
 
   final String groupId;
   final String groupName;
-  final GroupAccountGrpcDataSource dataSource;
+  final GroupAccountRemoteDataSource dataSource;
 
   /// Called after any decision lands, so the caller can refresh its member
   /// list and badge count rather than holding a stale number.

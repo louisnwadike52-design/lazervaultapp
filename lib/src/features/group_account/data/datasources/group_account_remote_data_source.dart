@@ -181,6 +181,23 @@ abstract class GroupAccountRemoteDataSource {
   Future<PublicGroupDetailModel> getPublicGroup(String groupId);
   Future<GroupAccountModel> joinPublicGroup(String groupId);
 
+  /// Outstanding join requests for a group. Admin/moderator only — the server
+  /// answers PERMISSION_DENIED for anyone else rather than an empty list, so
+  /// the UI can say why instead of implying nobody is waiting.
+  Future<List<GroupMemberModel>> listJoinRequests(String groupId);
+
+  /// Approves or rejects one request. One call with a bool, mirroring the
+  /// server, so a client cannot approve when it meant to reject.
+  Future<GroupMemberModel> decideJoinRequest({
+    required String groupId,
+    required String requesterId,
+    required bool approve,
+    String note,
+  });
+
+  /// Withdraws the CALLER's own request; scoped to them by the server.
+  Future<void> withdrawJoinRequest(String groupId);
+
   // Cycle history.
   Future<({List<ContributionCycle> cycles, int total})>
       listContributionCycles({
