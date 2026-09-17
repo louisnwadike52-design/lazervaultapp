@@ -9,6 +9,7 @@ import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/group_account/utils/rosca_payout_unified_mapper.dart';
+import 'package:lazervault/src/features/group_account/presentation/widgets/contribution_payment_details_sheet.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/transaction_detail_screen.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
@@ -476,7 +477,14 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
         final tint = completed
             ? const Color(0xFF10B981)
             : const Color(0xFFFB923C);
-        return Container(
+        // Tappable: a contribution is proof you paid into the pot, and in a
+        // savings circle that proof is precisely what members end up arguing
+        // about. It was display-only — a name, a date and an amount with no way
+        // to open or send it.
+        return InkWell(
+          onTap: () => _openPaymentDetails(p, d),
+          borderRadius: BorderRadius.circular(12.r),
+          child: Container(
           margin: EdgeInsets.only(bottom: 10.h),
           padding: EdgeInsets.all(14.w),
           decoration: BoxDecoration(
@@ -540,10 +548,90 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
                   color: Colors.white,
                 ),
               ),
+              SizedBox(width: 4.w),
+              // Without this the row gives no sign it opens anything, and a
+              // tappable row that looks inert is only discovered by accident.
+              Icon(Icons.chevron_right_rounded,
+                  size: 18.sp, color: Colors.grey[600]),
             ],
+          ),
           ),
         );
       },
+    );
+  }
+
+  /// The receiver's name, never their user id.
+  ///
+  /// This used to fall back to `receiverUserId`, so whenever the server had not
+  /// denormalised a name the screen announced the person collecting the pot as
+  /// "806fd9c5-f872-4047-a9ab-19a156a25c64". A raw uuid is not a worse name —
+  /// it is not a name at all, and it is shown at the moment members most want
+  /// to know who is being paid.
+  ///
+  /// The cycle already carries a member snapshot, so the id can be resolved
+  /// locally. Falling back to a description of the ROLE beats an identifier:
+  /// "The scheduled receiver" is true and readable, where a uuid is neither.
+  String _resolveReceiverName(ContributionCycleDetails d) {
+    final s = d.summary;
+    final given = s.receiverName.trim();
+    if (given.isNotEmpty) return given;
+
+    final id = (s.receiverUserId ?? '').trim();
+    if (id.isNotEmpty) {
+      for (final m in d.members) {
+        if (m.userId == id && m.userName.trim().isNotEmpty) {
+          return m.userName.trim();
+        }
+      }
+      // The snapshot also marks who received, which survives a missing id.
+      for (final m in d.members) {
+        if (m.wasReceiver && m.userName.trim().isNotEmpty) {
+          return m.userName.trim();
+        }
+      }
+    }
+    return '';
+  }
+
+  /// Open one contribution's detail, with a route to its receipt.
+  ///
+  /// The receipt is offered only for a COMPLETED payment: the document's whole
+  /// job is to prove the money arrived, and issuing one for a pending transfer
+  /// would be a receipt for something that has not happened.
+  void _openPaymentDetails(
+    ContributionPayment payment,
+    ContributionCycleDetails d,
+  ) {
+    final viewerId = context.read<AuthenticationCubit>().userId;
+    final completed = payment.status == PaymentStatus.completed;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) => ContributionPaymentDetailsSheet(
+        payment: payment,
+        contributionTitle: widget.contribution.title,
+        cycleIndex: d.summary.cycleIndex,
+        onViewReceipt: !completed
+            ? null
+            : () {
+                // Close the detail sheet FIRST. Pushing a full screen over a
+                // modal leaves the sheet underneath, so coming back from the
+                // receipt would land on a stale sheet the user already
+                // finished with.
+                Navigator.of(sheetContext).pop();
+                Get.to(() => TransactionDetailScreen(
+                      transaction: contributionPaymentToUnified(
+                        payment,
+                        contributionTitle: widget.contribution.title,
+                        cycleIndex: d.summary.cycleIndex,
+                        viewerUserId: viewerId,
+                      ),
+                    ));
+              },
+      ),
     );
   }
 
@@ -552,9 +640,7 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
   // -----------------------------------------------------------
   Widget _buildReceiverTab(ContributionCycleDetails d) {
     final s = d.summary;
-    final receiverName = s.receiverName.isNotEmpty
-        ? s.receiverName
-        : (s.receiverUserId ?? '');
+    final receiverName = _resolveReceiverName(d);
 
     if (s.isFailed) {
       return Padding(
@@ -582,29 +668,26 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
         ),
       );
     }
-    if (receiverName.isEmpty) {
+    final hasReceiver = (s.receiverUserId ?? '').isNotEmpty ||
+        s.receiverName.trim().isNotEmpty;
+    if (!hasReceiver) {
       return _emptyState(
           icon: Icons.person_outline,
           title: 'No receiver yet',
           message:
               'A receiver will be assigned when the cycle progresses toward close.');
     }
-    return Padding(
-      padding: EdgeInsets.all(16.w),
-      child: Container(
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(14.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.25),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
+    // No inner card. The sheet already paints a dark rounded surface, so
+    // wrapping this in a second one with its own shadow produced a panel
+    // floating on a near-identical panel — visible as a seam down the screen
+    // with dead space below it, because the inner card sized to its content
+    // while the outer filled the tab. The receiver is a short list of facts;
+    // it reads better as rows on the sheet than as a card pretending to be an
+    // object.
+    return ListView(
+      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
+      children: [
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -621,23 +704,32 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        receiverName,
+                        receiverName.isNotEmpty
+                            ? receiverName
+                            // Names the ROLE when the person cannot be
+                            // resolved. Says something true instead of an
+                            // identifier nobody can act on.
+                            : (s.isLive
+                                ? 'Scheduled receiver'
+                                : 'Cycle receiver'),
                         style: GoogleFonts.inter(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
                       ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        s.isLive
-                            ? 'Scheduled receiver'
-                            : 'Received this cycle',
-                        style: GoogleFonts.inter(
-                          fontSize: 11.sp,
-                          color: Colors.grey[500],
+                      if (receiverName.isNotEmpty) ...[
+                        SizedBox(height: 2.h),
+                        Text(
+                          s.isLive
+                              ? 'Scheduled receiver'
+                              : 'Received this cycle',
+                          style: GoogleFonts.inter(
+                            fontSize: 11.sp,
+                            color: Colors.grey[500],
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -687,7 +779,7 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
               ),
           ],
         ),
-      ),
+      ],
     );
   }
 
