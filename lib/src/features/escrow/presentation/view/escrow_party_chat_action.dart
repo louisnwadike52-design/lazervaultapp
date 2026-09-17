@@ -41,6 +41,10 @@ EscrowCounterparty? escrowCounterpartyFor(
   }
 
   if (id.trim().isEmpty) return null;
+  // Never open a thread with yourself. Degenerate data (both sides the same
+  // user) would otherwise route into a conversation with the viewer, which the
+  // p2p screen is not built for — the existing P2PChatIcon guards the same way.
+  if (id.trim() == viewerUserId) return null;
   return EscrowCounterparty(
     userId: id.trim(),
     // A blank name is common before a counterparty completes their profile;

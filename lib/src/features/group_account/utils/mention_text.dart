@@ -152,3 +152,72 @@ class MentionText {
     return [...prefix, ...contains];
   }
 }
+
+/// One run of message text, flagged as a mention or not.
+class MentionSpan {
+  final String text;
+  final bool isMention;
+
+  /// True when the mention is of the reader. Their own name in a busy thread
+  /// is the one they scan for, so it earns stronger emphasis than a mention of
+  /// somebody else.
+  final bool isSelf;
+
+  const MentionSpan(this.text, {this.isMention = false, this.isSelf = false});
+}
+
+/// Split [text] into plain and mentioned runs.
+///
+/// Driven by NAMES rather than by scanning for "@word", because a display name
+/// contains spaces and an "@word" rule would highlight only its first word —
+/// leaving "@Praiz" coloured and "Onah Flw" plain, which looks like a rendering
+/// fault rather than a mention.
+///
+/// [namesById] supplies the display name for each mentioned id; ids with no
+/// known name (a member who has since left) simply go unhighlighted rather
+/// than guessing at a substring.
+extension MentionHighlighting on MentionText {
+  static List<MentionSpan> spans(
+    String text,
+    List<String> mentionedIds,
+    Map<String, String> namesById, {
+    String? selfUserId,
+  }) {
+    if (text.isEmpty) return const [];
+    if (mentionedIds.isEmpty) return [MentionSpan(text)];
+
+    // Longest first: when one name is a prefix of another ("Ada" / "Ada Obi"),
+    // matching the short one first would leave " Obi" dangling outside the
+    // highlight.
+    final targets = <({String needle, bool isSelf})>[];
+    for (final id in mentionedIds) {
+      final name = namesById[id];
+      if (name == null || name.trim().isEmpty) continue;
+      targets.add((needle: '@${name.trim()}', isSelf: id == selfUserId));
+    }
+    if (targets.isEmpty) return [MentionSpan(text)];
+    targets.sort((a, b) => b.needle.length.compareTo(a.needle.length));
+
+    final out = <MentionSpan>[];
+    var i = 0;
+    while (i < text.length) {
+      ({String needle, bool isSelf})? hit;
+      var at = -1;
+      for (final t in targets) {
+        final idx = text.indexOf(t.needle, i);
+        if (idx >= 0 && (at < 0 || idx < at)) {
+          at = idx;
+          hit = t;
+        }
+      }
+      if (hit == null || at < 0) {
+        out.add(MentionSpan(text.substring(i)));
+        break;
+      }
+      if (at > i) out.add(MentionSpan(text.substring(i, at)));
+      out.add(MentionSpan(hit.needle, isMention: true, isSelf: hit.isSelf));
+      i = at + hit.needle.length;
+    }
+    return out;
+  }
+}

@@ -75,15 +75,12 @@ void main() {
       expect(c.name, 'Counterparty');
     });
 
-    // Degenerate data, but it must resolve deterministically rather than
-    // pointing someone at themselves.
-    test('a deal where both sides are the same user resolves to that user once',
-        () {
+    // Degenerate data, but it must never route someone into a conversation
+    // with themselves — the p2p screen is not built for that.
+    test('a deal where both sides are the same user offers no chat', () {
       final c = escrowCounterpartyFor(
           _deal(buyerId: 'same', sellerId: 'same'), 'same');
-      // The buyer branch wins, so it reports the seller side — the same person.
-      // What matters is that it does not crash or return a phantom id.
-      expect(c?.userId, 'same');
+      expect(c, isNull);
     });
   });
 }

@@ -207,6 +207,61 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
     });
   }
 
+  /// Message text with any @mentions highlighted.
+  ///
+  /// Without this the whole feature is invisible: the ids were stored, sent and
+  /// notified on, but the bubble painted plain text — so a tag looked exactly
+  /// like someone typing a name, which is the one thing a mention must not do.
+  ///
+  /// Highlighting is driven by the member NAMES rather than by scanning for
+  /// "@word", because names contain spaces: an "@word" rule would colour
+  /// "@Praiz" and leave "Onah Flw" plain, reading as a rendering fault.
+  Widget _bodyWithMentions(ContributionMessage m) {
+    final base = GoogleFonts.inter(
+        color: Colors.white, fontSize: 14.sp, height: 1.35);
+
+    if (m.mentionedUserIds.isEmpty) return Text(m.body, style: base);
+
+    final namesById = {
+      for (final c in widget.mentionCandidates) c.userId: c.name,
+    };
+    final spans = MentionHighlighting.spans(
+      m.body,
+      m.mentionedUserIds,
+      namesById,
+      selfUserId: widget.currentUserId,
+    );
+
+    // Nothing resolved — every mentioned member has since left, so there is no
+    // name to match. Render plain rather than inventing a highlight.
+    if (spans.length == 1 && !spans.first.isMention) {
+      return Text(m.body, style: base);
+    }
+
+    return RichText(
+      text: TextSpan(
+        style: base,
+        children: [
+          for (final sp in spans)
+            TextSpan(
+              text: sp.text,
+              style: sp.isMention
+                  ? base.copyWith(
+                      // Your OWN name is what you scan a busy thread for, so it
+                      // gets the stronger treatment; other people's mentions
+                      // are merely marked.
+                      color: sp.isSelf
+                          ? const Color(0xFFFFD166)
+                          : const Color(0xFF9B6DFF),
+                      fontWeight: FontWeight.w700,
+                    )
+                  : null,
+            ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _send() async {
     final text = _input.text;
     if (text.trim().isEmpty) return;
@@ -505,11 +560,7 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
               else if (m.kind == 'voice')
                 _voiceBubble(m)
               else
-                Text(
-                  m.body,
-                  style: GoogleFonts.inter(
-                      color: Colors.white, fontSize: 14.sp, height: 1.35),
-                ),
+                _bodyWithMentions(m),
               SizedBox(height: 3.h),
               Row(
                 mainAxisSize: MainAxisSize.min,

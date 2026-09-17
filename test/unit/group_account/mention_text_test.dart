@@ -155,4 +155,66 @@ void main() {
       expect(MentionText.rank(names, 'zzz', nameOf: nameOf), isEmpty);
     });
   });
+
+  group('MentionHighlighting.spans', () {
+    const names = {'u1': 'Ada Obi', 'u2': 'Ada'};
+
+    test('highlights the mentioned name and leaves the rest plain', () {
+      final r = MentionHighlighting.spans(
+          'hey @Ada Obi please pay', ['u1'], names);
+      expect(r.map((s) => s.text).join(), 'hey @Ada Obi please pay',
+          reason: 'spans must reassemble into the original message');
+      expect(r.where((s) => s.isMention).map((s) => s.text), ['@Ada Obi']);
+    });
+
+    // A name containing spaces is the whole reason this is name-driven. An
+    // "@word" rule would colour "@Ada" and leave " Obi" plain, which reads as
+    // a rendering fault rather than a mention.
+    test('a multi-word name is highlighted whole', () {
+      final r = MentionHighlighting.spans('@Ada Obi', ['u1'], names);
+      expect(r.single.text, '@Ada Obi');
+      expect(r.single.isMention, isTrue);
+    });
+
+    // "Ada" is a prefix of "Ada Obi": matching the short one first would leave
+    // " Obi" dangling outside the highlight.
+    test('the longer name wins when one is a prefix of another', () {
+      final r =
+          MentionHighlighting.spans('@Ada Obi', ['u1', 'u2'], names);
+      expect(r.single.text, '@Ada Obi');
+    });
+
+    test("your own mention is marked differently from someone else's", () {
+      final mine = MentionHighlighting.spans(
+          '@Ada Obi', ['u1'], names, selfUserId: 'u1');
+      expect(mine.single.isSelf, isTrue);
+
+      final theirs = MentionHighlighting.spans(
+          '@Ada Obi', ['u1'], names, selfUserId: 'someone');
+      expect(theirs.single.isSelf, isFalse);
+    });
+
+    test('an id with no known name is left unhighlighted', () {
+      final r = MentionHighlighting.spans('@Ghost hi', ['gone'], names);
+      expect(r.single.isMention, isFalse);
+      expect(r.single.text, '@Ghost hi');
+    });
+
+    test('several mentions in one message', () {
+      final r = MentionHighlighting.spans(
+          '@Ada Obi and @Ada again', ['u1', 'u2'], names);
+      expect(r.map((s) => s.text).join(), '@Ada Obi and @Ada again');
+      expect(r.where((s) => s.isMention).length, 2);
+    });
+
+    test('no mentions returns the text as one plain span', () {
+      final r = MentionHighlighting.spans('plain text', const [], names);
+      expect(r.single.text, 'plain text');
+      expect(r.single.isMention, isFalse);
+    });
+
+    test('empty text yields nothing', () {
+      expect(MentionHighlighting.spans('', ['u1'], names), isEmpty);
+    });
+  });
 }
