@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/logger.dart';
 import 'package:lazervault/src/features/settings/presentation/theme/settings_theme.dart';
 import '../services/voice_settings_service.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_talk_affordance.dart';
 
 /// Per-user voice transaction-PIN controls, reusable on the voice settings screen
 /// and the general app settings page. Reads/writes the override through
@@ -232,8 +233,14 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
             padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 8.h),
             child: Align(
               alignment: Alignment.centerLeft,
+              // Explains the mode that is actually SELECTED, in the same words
+              // the in-call button and the floating bubble use. A fixed line
+              // listing all four taught nobody which gesture they had chosen,
+              // and this screen is where the choice is made.
               child: Text(
-                'Continuous listens hands-free. Hold / Tap / Double-tap are push-to-talk.',
+                VoiceTalkMode.explanation(
+                  (s.interactionMode.isEmpty) ? 'continuous' : s.interactionMode,
+                ),
                 style: GoogleFonts.inter(fontSize: 11.sp, color: _textSecondary),
               ),
             ),

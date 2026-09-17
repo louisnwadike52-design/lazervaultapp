@@ -118,17 +118,11 @@ class _VoiceDockedBar extends StatelessWidget {
     );
   }
 
-  String get _hint {
-    switch (interactionMode) {
-      case 'hold':
-        return 'Hold to talk';
-      case 'double_tap':
-        return 'Double-tap to talk';
-      case 'tap':
-      default:
-        return 'Tap to talk';
-    }
-  }
+  /// Delegates to the shared copy so the bubble, the full sheet and settings
+  /// cannot drift — this file used to say "Double-tap to talk" while the sheet
+  /// said "Double-tap" for the very same mode.
+  String _hintFor({required bool capturing}) =>
+      VoiceTalkMode.action(interactionMode, capturing: capturing);
 
   @override
   Widget build(BuildContext context) {
@@ -201,29 +195,18 @@ class _VoiceDockedBar extends StatelessWidget {
                       ),
                     );
 
-                    void begin() => cubit.pttBegin();
-                    void end() => cubit.pttEnd();
-                    void toggle() => capturing ? end() : begin();
-
-                    Widget talkButton;
-                    switch (interactionMode) {
-                      case 'hold':
-                        talkButton = GestureDetector(
-                          onTapDown: (_) => begin(),
-                          onTapUp: (_) => end(),
-                          onTapCancel: end,
-                          child: talk,
-                        );
-                        break;
-                      case 'double_tap':
-                        talkButton =
-                            GestureDetector(onDoubleTap: toggle, child: talk);
-                        break;
-                      case 'tap':
-                      default:
-                        talkButton =
-                            GestureDetector(onTap: toggle, child: talk);
-                    }
+                    // The same control as the full sheet, compact: the
+                    // pulse is what makes the mic readable as "press me" in a
+                    // floating bubble where the whole surface is also tappable
+                    // (a tap anywhere else reopens the call).
+                    final talkButton = VoiceTalkButton(
+                      mode: interactionMode,
+                      capturing: capturing,
+                      onBegin: cubit.pttBegin,
+                      onEnd: cubit.pttEnd,
+                      showLabel: false,
+                      diameter: 44,
+                    );
 
                     return Row(
                       children: [
@@ -240,7 +223,7 @@ class _VoiceDockedBar extends StatelessWidget {
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600)),
                               Text(
-                                capturing ? 'Listening…' : _hint,
+                                _hintFor(capturing: capturing),
                                 style: TextStyle(
                                     color: capturing
                                         ? active

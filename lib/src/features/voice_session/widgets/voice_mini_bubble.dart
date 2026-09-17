@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_state.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_talk_affordance.dart';
 part 'voice_mini_bubble_widgets.dart';
 
 

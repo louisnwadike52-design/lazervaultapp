@@ -38,6 +38,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/voice/services/voice_settings_service.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_mini_bubble.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_talk_affordance.dart';
 import 'package:lazervault/src/features/ai_chats/presentation/widgets/ai_chat_content.dart'
     show BubbleTailPainter;
 part 'voice_command_sheet_widgets.dart';
@@ -517,74 +518,26 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   }
 
   /// Human label for an interaction mode (used on the toggle chip + docked bar).
-  String _interactionModeLabel(String m) {
-    switch (m) {
-      case 'hold':
-        return 'Hold to talk';
-      case 'tap':
-        return 'Tap to talk';
-      case 'double_tap':
-        return 'Double-tap';
-      default:
-        return 'Continuous';
-    }
-  }
+  ///
+  /// Delegates to VoiceTalkMode so the chip, the talk button, the minimized
+  /// bubble and the settings screen cannot drift apart. They already had: this
+  /// returned "Double-tap" while the floating bubble said "Double-tap to talk".
+  String _interactionModeLabel(String m) => VoiceTalkMode.label(m);
 
-  /// The push-to-talk button. Gesture semantics depend on the mode:
-  ///  • hold       — press & hold to capture, release to send;
-  ///  • tap        — tap to start, tap again to send;
-  ///  • double_tap — double-tap to start, double-tap to send.
-  /// The mic opens only while engaged; `cubit.isPttCapturing` drives the visual
-  /// (the sheet rebuilds via BlocConsumer as the cubit emits speaking/processing).
+  /// The push-to-talk button.
+  ///
+  /// The gesture depends on the mode, and nothing here used to say which — all
+  /// three modes drew the same bare mic, so the only way to learn "hold" from
+  /// "double-tap" was to try one and see. VoiceTalkButton carries the label and
+  /// the idle pulse; this method just wires it to the cubit.
   Widget _buildPttTalkButton(VoiceSessionState state) {
     final cubit = context.read<VoiceSessionCubit>();
-    final capturing = cubit.isPttCapturing;
-    const active = Color(0xFF10B981); // capturing (green)
-    const accent = Color(0xFF5B45C9); // sheet brand accent
-    final bg = capturing ? active : accent;
-
-    void begin() => cubit.pttBegin();
-    void end() => cubit.pttEnd();
-    void toggle() => capturing ? end() : begin();
-
-    final button = AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      width: 72.w,
-      height: 72.w,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: bg.withValues(alpha: capturing ? 0.9 : 0.18),
-        border: Border.all(color: bg.withValues(alpha: 0.6), width: 2),
-        boxShadow: capturing
-            ? [
-                BoxShadow(
-                    color: active.withValues(alpha: 0.5),
-                    blurRadius: 18,
-                    spreadRadius: 2)
-              ]
-            : null,
-      ),
-      child: Icon(
-        capturing ? Icons.graphic_eq_rounded : Icons.mic_none_rounded,
-        color: capturing ? Colors.white : bg,
-        size: 30.sp,
-      ),
+    return VoiceTalkButton(
+      mode: _interactionMode,
+      capturing: cubit.isPttCapturing,
+      onBegin: cubit.pttBegin,
+      onEnd: cubit.pttEnd,
     );
-
-    switch (_interactionMode) {
-      case 'hold':
-        return GestureDetector(
-          onTapDown: (_) => begin(),
-          onTapUp: (_) => end(),
-          onTapCancel: end,
-          child: button,
-        );
-      case 'double_tap':
-        return GestureDetector(onDoubleTap: toggle, child: button);
-      case 'tap':
-      default:
-        return GestureDetector(onTap: toggle, child: button);
-    }
   }
 
   /// Resolve whether to offer the "Your Voice" (cloned voice) row for the given
@@ -3024,25 +2977,31 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // End call button — transitions to rating screen
-          GestureDetector(
-            onTap: _endCall,
-            child: Container(
-              width: 56.w,
-              height: 56.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFFEF4444).withValues(alpha: 0.12),
-                border: Border.all(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.25),
-                  width: 1,
+          // End call button — transitions to rating screen.
+          // Captioned like its neighbours: three unlabelled circles left people
+          // guessing which one talked and which one hung up.
+          _captionedControl(
+            label: 'End',
+            child: GestureDetector(
+              onTap: _endCall,
+              child: Container(
+                width: 56.w,
+                height: 56.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.12),
+                  border: Border.all(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.25),
+                    width: 1,
+                  ),
                 ),
-              ),
-              child: Icon(
-                Icons.call_end_rounded,
-                color: const Color(0xFFEF4444),
-                size: 24.sp,
+                child: Icon(
+                  Icons.call_end_rounded,
+                  color: const Color(0xFFEF4444),
+                  size: 24.sp,
+                ),
               ),
             ),
           ),
@@ -3057,8 +3016,16 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           if (isActive) ...[
             SizedBox(width: 24.w),
 
-            // Mute/Unmute toggle
-            GestureDetector(
+            // Mute/Unmute toggle.
+            //
+            // Captioned, and drawn with a SPEAKER-crossed glyph rather than a
+            // second mic: this sat beside the talk mic as two near-identical
+            // circular mic buttons, one of which starts a recording and one of
+            // which shuts the microphone off. The label plus a distinct icon is
+            // what separates them at a glance.
+            _captionedControl(
+              label: _isMuted ? 'Unmute' : 'Mute',
+              child: GestureDetector(
               onTap: () async {
                 final cubit = context.read<VoiceSessionCubit>();
                 final newMuted = await cubit.toggleMute();
@@ -3081,7 +3048,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                   ),
                 ),
                 child: Icon(
-                  _isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
+                  _isMuted
+                      ? Icons.volume_off_rounded
+                      : Icons.volume_up_rounded,
                   color: _isMuted
                       ? const Color(0xFFFB923C)
                       : Colors.white.withValues(alpha: 0.9),
@@ -3089,7 +3058,37 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 ),
               ),
             ),
+            ),
           ],
+        ],
+      ),
+    );
+  }
+
+  /// A control with its name underneath.
+  ///
+  /// The call bar was three unlabelled circles, two of them mic glyphs. Naming
+  /// each one costs a line of 11sp text and removes the guesswork entirely.
+  /// Fixed-width so the row keeps its spacing as labels change length
+  /// ("Mute" <-> "Unmute").
+  Widget _captionedControl({required String label, required Widget child}) {
+    return SizedBox(
+      width: 76.w,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          child,
+          SizedBox(height: 6.h),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.65),
+              fontSize: 11.5.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
