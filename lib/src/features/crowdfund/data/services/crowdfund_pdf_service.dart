@@ -62,12 +62,19 @@ class CrowdfundPdfService {
                 _buildReceiptSection(
                   'Donation Information',
                   [
-                    ['Donation ID:', donation.id],
+                    // One identifier, and the customer-facing one where it
+                    // exists. The transaction reference is what support can
+                    // look up and what the donor can quote; the internal
+                    // donation UUID only appears when there is no reference,
+                    // so the receipt is never left untraceable but never
+                    // prints both ids under two labels either.
+                    if (_hasReference(donation))
+                      ['Reference:', donation.transactionId!.trim()]
+                    else
+                      ['Donation ID:', donation.id],
                     ['Date & Time:', DateFormat('MMMM dd, yyyy • hh:mm a').format(donation.donationDate)],
                     ['Amount:', '${donation.currency} ${donation.amount.toStringAsFixed(2)}'],
                     ['Payment Method:', donation.paymentMethod],
-                    if (donation.transactionId != null)
-                      ['Transaction ID:', donation.transactionId!],
                     ['Status:', _getStatusText(donation.status)],
                   ],
                 ),
@@ -92,8 +99,12 @@ class CrowdfundPdfService {
                   _buildReceiptSection(
                     'Donor Information',
                     [
+                      // Name only. The donor's user id is an internal
+                      // identifier that means nothing to anyone holding this
+                      // receipt, and a donation receipt is a document people
+                      // forward — to a spouse, an accountant, the campaign
+                      // owner. It stays available in admin auditing.
                       ['Name:', receipt.donorName],
-                      ['Donor ID:', donation.donorUserId.toString()],
                     ],
                   ),
 
@@ -307,6 +318,12 @@ class CrowdfundPdfService {
       ],
     );
   }
+
+  /// True when the donation carries a payment reference rather than only the
+  /// internal row id. Legacy rows recorded before references existed fall back
+  /// to the id so the receipt still identifies the payment.
+  bool _hasReference(CrowdfundDonation donation) =>
+      donation.transactionId?.trim().isNotEmpty ?? false;
 
   String _getStatusText(DonationStatus status) {
     switch (status) {

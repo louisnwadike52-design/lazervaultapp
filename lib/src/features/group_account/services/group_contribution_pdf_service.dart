@@ -149,7 +149,8 @@ class GroupContributionPdfService {
               _buildPaymentDetails(
                 currencySymbol: currencySymbol,
                 amount: amount,
-                transactionId: payment.transactionId ?? 'N/A',
+                reference: _receiptReference(payment),
+                referenceIsCustomerFacing: _hasCustomerReference(payment),
                 notes: payment.notes,
                 currency: payment.currency,
               ),
@@ -247,13 +248,29 @@ class GroupContributionPdfService {
           payment.userName.isNotEmpty ? payment.userName.toUpperCase() : 'LAZERVAULT USER',
           style: _getTextStyle(fontSize: 14, isBold: true),
         ),
-        pw.SizedBox(height: 4),
-        pw.Text(
-          'User ID: ${_truncateId(payment.userId)}',
-          style: _getTextStyle(fontSize: 11, color: PdfColors.grey700),
-        ),
+        // No user id. A receipt identifies the payer by name; the internal
+        // UUID means nothing to whoever receives this document and is exactly
+        // the sort of identifier that should not travel in a file people
+        // forward. It stays available in admin auditing.
       ],
     );
+  }
+
+  /// True when the payment carries a real reference rather than only the
+  /// internal row id.
+  ///
+  /// The server stamps a human-quotable reference (`GRP-…`, or the caller's
+  /// idempotency key) on every payment it records, so this is normally true;
+  /// it can be false for a legacy row written before that existed.
+  static bool _hasCustomerReference(ContributionPayment payment) =>
+      (payment.transactionId ?? '').trim().isNotEmpty;
+
+  /// The identifier to print. Prefers the reference, because that is what
+  /// support can look up and what the payer can quote; falls back to the row
+  /// id so the receipt is never left with nothing to trace.
+  static String _receiptReference(ContributionPayment payment) {
+    final ref = (payment.transactionId ?? '').trim();
+    return ref.isNotEmpty ? ref : payment.id;
   }
 
   static String _truncateId(String id) {
@@ -306,7 +323,8 @@ class GroupContributionPdfService {
   static pw.Widget _buildPaymentDetails({
     required String currencySymbol,
     required String amount,
-    required String transactionId,
+    required String reference,
+    required bool referenceIsCustomerFacing,
     String? notes,
     required String currency,
   }) {
@@ -329,7 +347,14 @@ class GroupContributionPdfService {
             children: [
               _buildDetailRow('Amount Paid', '$currencySymbol$amount', isBold: true),
               _buildDetailRow('Currency', _currencyNameFor(currency)),
-              _buildDetailRow('Transaction ID', transactionId),
+              // The payment reference (GRP-…) is the identifier a person can
+              // actually quote back to support. The raw row UUID is only shown
+              // when no reference exists, so the receipt always carries
+              // something traceable but never the internal id by preference.
+              _buildDetailRow(
+                referenceIsCustomerFacing ? 'Reference' : 'Transaction ID',
+                reference,
+              ),
               if (notes != null && notes.isNotEmpty)
                 _buildDetailRow('Notes', notes),
             ],
