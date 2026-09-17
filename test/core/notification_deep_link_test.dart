@@ -86,6 +86,48 @@ void main() {
       expect(t.precision, TargetPrecision.serviceLanding);
     });
 
+    // Group-fund chat. The type begins with `group_`, which the generic joint-
+    // funds branch also matches, so ordering inside the resolver is the whole
+    // behaviour here: get it wrong and every chat notification silently lands
+    // on the group instead of the conversation.
+    test('a chat message opens the contribution, not the group', () {
+      final t = NotificationRouteResolver.resolve('group_chat_message', {
+        'contribution_id': 'contrib-42',
+        'group_id': 'group-7',
+      });
+      expect(t!.route, AppRoutes.contributionDetails);
+      expect((t.arguments as Map)['contributionId'], 'contrib-42');
+      expect(t.precision, TargetPrecision.record);
+    });
+
+    // group_id is always present in the payload, so the fallback has to be
+    // driven by the MISSING contribution id rather than by an empty payload —
+    // otherwise a publisher that drops the thread id silently keeps working
+    // and nobody notices the link got less precise.
+    test('falls back to the group when the thread id did not travel', () {
+      final t = NotificationRouteResolver.resolve('group_chat_message', {
+        'group_id': 'group-7',
+      });
+      expect(t!.route, AppRoutes.groupDetails);
+      expect(t.arguments, 'group-7');
+    });
+
+    test('falls back to the list when nothing travelled', () {
+      final t = NotificationRouteResolver.resolve('group_chat_message', {});
+      expect(t!.route, AppRoutes.groupAccount);
+      expect(t.precision, TargetPrecision.serviceLanding);
+    });
+
+    // The ordinary group notifications must NOT be dragged into the chat
+    // branch by the new prefix match.
+    test('a plain group notification still opens the group', () {
+      final t = NotificationRouteResolver.resolve('group_account.updated', {
+        'group_id': 'group-7',
+      });
+      expect(t!.route, AppRoutes.groupDetails);
+      expect(t.arguments, 'group-7');
+    });
+
     test('every split_bill status suffix still resolves', () {
       for (final status in [
         'created',

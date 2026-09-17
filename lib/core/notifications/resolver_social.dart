@@ -95,6 +95,38 @@ NotificationTarget? _resolveSocial(String type, Map<String, String> data) {
     return _landing(AppRoutes.familyAccounts);
   }
 
+  // ---- Group-fund chat -----------------------------------------------------
+  // group_chat_message. MUST be tested before the generic 'group' branch
+  // below, which would otherwise swallow it (_is matches a `group_` prefix)
+  // and land the user on the group instead of the conversation.
+  //
+  // Routes to the CONTRIBUTION, not the chat screen itself: the chat is pushed
+  // imperatively with a title, the current user id and a token provider, none
+  // of which a notification payload carries. The contribution screen owns that
+  // entry point and shows the unread badge, so the tap lands one step from the
+  // message without inventing arguments the payload does not have.
+  if (_is(type, 'group_chat') || _is(type, 'contribution_message')) {
+    final contributionId = _first(data, const [
+      'contribution_id',
+      'contributionId',
+      'reference_id',
+      'entity_id',
+    ]);
+    if (contributionId != null) {
+      return _record(
+        AppRoutes.contributionDetails,
+        arguments: {'contributionId': contributionId},
+      );
+    }
+    // No contribution id — fall back to the group, then the list. A near-miss
+    // beats a dead tap.
+    final fallbackGroupId = _first(data, const ['group_id', 'groupId']);
+    if (fallbackGroupId != null) {
+      return _record(AppRoutes.groupDetails, arguments: fallbackGroupId);
+    }
+    return _landing(AppRoutes.groupAccount);
+  }
+
   // ---- Joint funds / group accounts ---------------------------------------
   // GroupDetailsScreen takes a bare String groupId.
   if (_is(type, 'group') ||
