@@ -57,12 +57,26 @@ class PointsConversionReceiptScreen extends StatelessWidget {
         flow: TransactionFlow.incoming,
         transactionReference: result.reference,
         counterpartyName: 'Lazerpoints rewards',
+        // Human labels as KEYS, matching the invoice and contribution receipts.
+        //
+        // The metadata humanizer falls back to printing the key verbatim, so
+        // snake_case keys reach the document as "points_redeemed 1,500" — and
+        // the PDF builders read the same map, so both surfaces would show it.
+        //
+        // Values are pre-formatted strings for the same reason: the humanizer
+        // only converts keys containing "minor", and everything else is printed
+        // as-is. All ASCII apart from the naira sign, which the embedded Inter
+        // face draws (see ReceiptFonts — the built-in Helvetica RAISES on a
+        // glyph it lacks, which fails the whole document rather than
+        // substituting).
         metadata: {
-          'points_redeemed': result.pointsRedeemed,
-          'points_per_major_unit': pointsPerMajorUnit,
-          'points_balance_after': result.newBalance,
+          'Points converted': '${_formatPoints(result.pointsRedeemed)} LP',
+          'Rate': '${_formatPoints(pointsPerMajorUnit)} LP = ${_naira(1)}',
+          'Points remaining': '${_formatPoints(result.newBalance)} LP',
         },
       );
+
+  static String _naira(num v) => '₦${v.toStringAsFixed(2)}';
 
   @override
   Widget build(BuildContext context) {

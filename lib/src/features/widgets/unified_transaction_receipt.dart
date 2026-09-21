@@ -946,6 +946,14 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // anonymous debit.
       tx.serviceType == TransactionServiceType.groupContribution ||
       tx.serviceType == TransactionServiceType.groupFunds ||
+      // Lazerpoints conversion: a rewards balance someone spent months
+      // building turning into real money in their wallet. Without this entry it
+      // falls out of the list exactly as every type above it once did, and
+      // Share/Download export a flat screenshot of the one document that proves
+      // the payout happened. The points spent, the rate and the balance left
+      // ride along in metadata, so the PDF says what the conversion COST rather
+      // than only what arrived.
+      tx.serviceType == TransactionServiceType.lazerpoints ||
       tx.serviceType == TransactionServiceType.withdrawal;
 
   /// Invoice-payload rows for the PDF body — mirrored from the metadata the
