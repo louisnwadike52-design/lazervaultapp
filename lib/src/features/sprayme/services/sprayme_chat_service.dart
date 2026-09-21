@@ -18,6 +18,7 @@ class SprayMeChatService {
   Future<ChatResponse> sendMessage({
     required String message,
     required String sessionId,
+    String? spraySessionId,
   }) async {
     final token = await _storage.getAccessToken();
     if (token == null) {
@@ -47,6 +48,14 @@ class SprayMeChatService {
         'locale': 'en-NG',
         'metadata': {
           'feature': 'sprayme_ai_assistant',
+          // The live this question is being asked from.
+          //
+          // The gateway copies this into the agent's entities as `session_id`.
+          // Without it the agent only learns which session it is in once a tool
+          // has already run, so Nova — opened from inside a live — answered
+          // "could you share the session code?" about the session she was in.
+          if (spraySessionId != null && spraySessionId.isNotEmpty)
+            'spray_session_id': spraySessionId,
         },
       },
       options: Options(

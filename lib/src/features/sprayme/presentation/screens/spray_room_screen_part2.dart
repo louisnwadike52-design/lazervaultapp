@@ -130,6 +130,9 @@ class _AIChatSheetState extends State<_AIChatSheet> {
         final response = await _chatService.sendMessage(
           message: text,
           sessionId: _conversationId,
+          // The live we are inside, so Nova answers about THIS session instead
+          // of asking for the code of the room she is already in.
+          spraySessionId: widget.sessionId,
         );
         if (!mounted) return;
         final reply = response.response.trim();
