@@ -2567,6 +2567,218 @@ class GetPointsConfigResponse extends $pb.GeneratedMessage {
   $pb.PbList<PointsConfigEntry> get configs => $_getList(0);
 }
 
+class GetPointsBreakdownRequest extends $pb.GeneratedMessage {
+  factory GetPointsBreakdownRequest() => create();
+
+  GetPointsBreakdownRequest._();
+
+  factory GetPointsBreakdownRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetPointsBreakdownRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetPointsBreakdownRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetPointsBreakdownRequest clone() =>
+      GetPointsBreakdownRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetPointsBreakdownRequest copyWith(
+          void Function(GetPointsBreakdownRequest) updates) =>
+      super.copyWith((message) => updates(message as GetPointsBreakdownRequest))
+          as GetPointsBreakdownRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetPointsBreakdownRequest create() => GetPointsBreakdownRequest._();
+  @$core.override
+  GetPointsBreakdownRequest createEmptyInstance() => create();
+  static $pb.PbList<GetPointsBreakdownRequest> createRepeated() =>
+      $pb.PbList<GetPointsBreakdownRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetPointsBreakdownRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetPointsBreakdownRequest>(create);
+  static GetPointsBreakdownRequest? _defaultInstance;
+}
+
+/// ServicePointsBreakdown is one product's contribution to a balance.
+class ServicePointsBreakdown extends $pb.GeneratedMessage {
+  factory ServicePointsBreakdown({
+    $core.String? serviceKey,
+    $core.String? displayName,
+    $core.int? points,
+    $core.int? transactions,
+  }) {
+    final result = create();
+    if (serviceKey != null) result.serviceKey = serviceKey;
+    if (displayName != null) result.displayName = displayName;
+    if (points != null) result.points = points;
+    if (transactions != null) result.transactions = transactions;
+    return result;
+  }
+
+  ServicePointsBreakdown._();
+
+  factory ServicePointsBreakdown.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ServicePointsBreakdown.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ServicePointsBreakdown',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'serviceKey')
+    ..aOS(2, _omitFieldNames ? '' : 'displayName')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'points', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ServicePointsBreakdown clone() =>
+      ServicePointsBreakdown()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ServicePointsBreakdown copyWith(
+          void Function(ServicePointsBreakdown) updates) =>
+      super.copyWith((message) => updates(message as ServicePointsBreakdown))
+          as ServicePointsBreakdown;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ServicePointsBreakdown create() => ServicePointsBreakdown._();
+  @$core.override
+  ServicePointsBreakdown createEmptyInstance() => create();
+  static $pb.PbList<ServicePointsBreakdown> createRepeated() =>
+      $pb.PbList<ServicePointsBreakdown>();
+  @$core.pragma('dart2js:noInline')
+  static ServicePointsBreakdown getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ServicePointsBreakdown>(create);
+  static ServicePointsBreakdown? _defaultInstance;
+
+  /// The canonical product key — "crypto", "giftcards", "bills".
+  @$pb.TagNumber(1)
+  $core.String get serviceKey => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set serviceKey($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasServiceKey() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearServiceKey() => $_clearField(1);
+
+  /// Resolved server-side so every client names a product the same way, and so
+  /// renaming one does not need an app release.
+  @$pb.TagNumber(2)
+  $core.String get displayName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set displayName($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasDisplayName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDisplayName() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get points => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set points($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPoints() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPoints() => $_clearField(3);
+
+  /// How many earning events made up those points, so a large total from one
+  /// big transaction reads differently from the same total earned steadily.
+  @$pb.TagNumber(4)
+  $core.int get transactions => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set transactions($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasTransactions() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTransactions() => $_clearField(4);
+}
+
+class GetPointsBreakdownResponse extends $pb.GeneratedMessage {
+  factory GetPointsBreakdownResponse({
+    $core.Iterable<ServicePointsBreakdown>? items,
+    $core.int? totalPoints,
+  }) {
+    final result = create();
+    if (items != null) result.items.addAll(items);
+    if (totalPoints != null) result.totalPoints = totalPoints;
+    return result;
+  }
+
+  GetPointsBreakdownResponse._();
+
+  factory GetPointsBreakdownResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory GetPointsBreakdownResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'GetPointsBreakdownResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..pc<ServicePointsBreakdown>(
+        1, _omitFieldNames ? '' : 'items', $pb.PbFieldType.PM,
+        subBuilder: ServicePointsBreakdown.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalPoints', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetPointsBreakdownResponse clone() =>
+      GetPointsBreakdownResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetPointsBreakdownResponse copyWith(
+          void Function(GetPointsBreakdownResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as GetPointsBreakdownResponse))
+          as GetPointsBreakdownResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetPointsBreakdownResponse create() => GetPointsBreakdownResponse._();
+  @$core.override
+  GetPointsBreakdownResponse createEmptyInstance() => create();
+  static $pb.PbList<GetPointsBreakdownResponse> createRepeated() =>
+      $pb.PbList<GetPointsBreakdownResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetPointsBreakdownResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<GetPointsBreakdownResponse>(create);
+  static GetPointsBreakdownResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<ServicePointsBreakdown> get items => $_getList(0);
+
+  /// The sum of the items, computed server-side. The client must not add these
+  /// up itself: the list is capped for display and the total would silently
+  /// disagree with the balance shown directly above it.
+  @$pb.TagNumber(2)
+  $core.int get totalPoints => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set totalPoints($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotalPoints() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalPoints() => $_clearField(2);
+}
+
 class RedeemPointsRequest extends $pb.GeneratedMessage {
   factory RedeemPointsRequest({
     $core.int? points,
@@ -2938,6 +3150,316 @@ class GetRedemptionQuoteResponse extends $pb.GeneratedMessage {
   $core.bool hasReason() => $_has(6);
   @$pb.TagNumber(7)
   void clearReason() => $_clearField(7);
+}
+
+class AwardTransactionPointsRequest extends $pb.GeneratedMessage {
+  factory AwardTransactionPointsRequest({
+    $core.String? userId,
+    $core.String? transactionId,
+    $fixnum.Int64? amountMinor,
+    $core.String? currency,
+    $core.String? serviceType,
+  }) {
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (transactionId != null) result.transactionId = transactionId;
+    if (amountMinor != null) result.amountMinor = amountMinor;
+    if (currency != null) result.currency = currency;
+    if (serviceType != null) result.serviceType = serviceType;
+    return result;
+  }
+
+  AwardTransactionPointsRequest._();
+
+  factory AwardTransactionPointsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AwardTransactionPointsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AwardTransactionPointsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'transactionId')
+    ..aInt64(3, _omitFieldNames ? '' : 'amountMinor')
+    ..aOS(4, _omitFieldNames ? '' : 'currency')
+    ..aOS(5, _omitFieldNames ? '' : 'serviceType')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AwardTransactionPointsRequest clone() =>
+      AwardTransactionPointsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AwardTransactionPointsRequest copyWith(
+          void Function(AwardTransactionPointsRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as AwardTransactionPointsRequest))
+          as AwardTransactionPointsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AwardTransactionPointsRequest create() =>
+      AwardTransactionPointsRequest._();
+  @$core.override
+  AwardTransactionPointsRequest createEmptyInstance() => create();
+  static $pb.PbList<AwardTransactionPointsRequest> createRepeated() =>
+      $pb.PbList<AwardTransactionPointsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AwardTransactionPointsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AwardTransactionPointsRequest>(create);
+  static AwardTransactionPointsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => $_clearField(1);
+
+  /// The idempotency anchor. One transaction earns once however many times its
+  /// completion is delivered.
+  @$pb.TagNumber(2)
+  $core.String get transactionId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set transactionId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTransactionId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTransactionId() => $_clearField(2);
+
+  /// Minor units (kobo).
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get amountMinor => $_getI64(2);
+  @$pb.TagNumber(3)
+  set amountMinor($fixnum.Int64 value) => $_setInt64(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasAmountMinor() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmountMinor() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get currency => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set currency($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasCurrency() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCurrency() => $_clearField(4);
+
+  /// What was paid for, shown in the user's points history so the earn is
+  /// recognisable rather than an unexplained credit.
+  @$pb.TagNumber(5)
+  $core.String get serviceType => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set serviceType($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasServiceType() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearServiceType() => $_clearField(5);
+}
+
+class AwardTransactionPointsResponse extends $pb.GeneratedMessage {
+  factory AwardTransactionPointsResponse({
+    $core.int? pointsAwarded,
+  }) {
+    final result = create();
+    if (pointsAwarded != null) result.pointsAwarded = pointsAwarded;
+    return result;
+  }
+
+  AwardTransactionPointsResponse._();
+
+  factory AwardTransactionPointsResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AwardTransactionPointsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AwardTransactionPointsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..a<$core.int>(
+        1, _omitFieldNames ? '' : 'pointsAwarded', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AwardTransactionPointsResponse clone() =>
+      AwardTransactionPointsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AwardTransactionPointsResponse copyWith(
+          void Function(AwardTransactionPointsResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as AwardTransactionPointsResponse))
+          as AwardTransactionPointsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AwardTransactionPointsResponse create() =>
+      AwardTransactionPointsResponse._();
+  @$core.override
+  AwardTransactionPointsResponse createEmptyInstance() => create();
+  static $pb.PbList<AwardTransactionPointsResponse> createRepeated() =>
+      $pb.PbList<AwardTransactionPointsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AwardTransactionPointsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AwardTransactionPointsResponse>(create);
+  static AwardTransactionPointsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get pointsAwarded => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set pointsAwarded($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPointsAwarded() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPointsAwarded() => $_clearField(1);
+}
+
+class ReverseTransactionPointsRequest extends $pb.GeneratedMessage {
+  factory ReverseTransactionPointsRequest({
+    $core.String? userId,
+    $core.String? transactionId,
+  }) {
+    final result = create();
+    if (userId != null) result.userId = userId;
+    if (transactionId != null) result.transactionId = transactionId;
+    return result;
+  }
+
+  ReverseTransactionPointsRequest._();
+
+  factory ReverseTransactionPointsRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ReverseTransactionPointsRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ReverseTransactionPointsRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'transactionId')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ReverseTransactionPointsRequest clone() =>
+      ReverseTransactionPointsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ReverseTransactionPointsRequest copyWith(
+          void Function(ReverseTransactionPointsRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as ReverseTransactionPointsRequest))
+          as ReverseTransactionPointsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ReverseTransactionPointsRequest create() =>
+      ReverseTransactionPointsRequest._();
+  @$core.override
+  ReverseTransactionPointsRequest createEmptyInstance() => create();
+  static $pb.PbList<ReverseTransactionPointsRequest> createRepeated() =>
+      $pb.PbList<ReverseTransactionPointsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ReverseTransactionPointsRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ReverseTransactionPointsRequest>(
+          create);
+  static ReverseTransactionPointsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get transactionId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set transactionId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTransactionId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTransactionId() => $_clearField(2);
+}
+
+class ReverseTransactionPointsResponse extends $pb.GeneratedMessage {
+  factory ReverseTransactionPointsResponse({
+    $core.int? pointsReversed,
+  }) {
+    final result = create();
+    if (pointsReversed != null) result.pointsReversed = pointsReversed;
+    return result;
+  }
+
+  ReverseTransactionPointsResponse._();
+
+  factory ReverseTransactionPointsResponse.fromBuffer(
+          $core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory ReverseTransactionPointsResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ReverseTransactionPointsResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'),
+      createEmptyInstance: create)
+    ..a<$core.int>(
+        1, _omitFieldNames ? '' : 'pointsReversed', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ReverseTransactionPointsResponse clone() =>
+      ReverseTransactionPointsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ReverseTransactionPointsResponse copyWith(
+          void Function(ReverseTransactionPointsResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as ReverseTransactionPointsResponse))
+          as ReverseTransactionPointsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ReverseTransactionPointsResponse create() =>
+      ReverseTransactionPointsResponse._();
+  @$core.override
+  ReverseTransactionPointsResponse createEmptyInstance() => create();
+  static $pb.PbList<ReverseTransactionPointsResponse> createRepeated() =>
+      $pb.PbList<ReverseTransactionPointsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ReverseTransactionPointsResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ReverseTransactionPointsResponse>(
+          create);
+  static ReverseTransactionPointsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get pointsReversed => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set pointsReversed($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPointsReversed() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPointsReversed() => $_clearField(1);
 }
 
 const $core.bool _omitFieldNames =

@@ -80,6 +80,18 @@ enum TransactionServiceType {
   // literally what the money is for; fuchsia keeps it distinct from escrow's
   // violet and lazerfunds' deep purple while staying in the same family.
   sprayme('Lazerspray', Icons.celebration_outlined, Color(0xFFD946EF)),
+  // Converting Lazerpoints to cash — the same hole escrow, lazerfunds,
+  // groupContribution and sprayme each had: nothing mapped it, so the one
+  // receipt proving a rewards balance became real money would resolve to
+  // `unknown`, show the grey help-outline glyph, and lose the downloadable PDF
+  // every other money movement gets.
+  //
+  // Own constant rather than `deposit`: the cash does arrive in the wallet like
+  // a deposit, but a receipt that calls it one cannot say what was SPENT to get
+  // it — and "how many points did that cost me" is the entire question someone
+  // opens this receipt to answer. Amber keeps it in the rewards family the
+  // rewards screen already uses.
+  lazerpoints('Lazerpoints', Icons.stars_rounded, Color(0xFFF59E0B)),
 
   // Account-level money flow.
   deposit('Deposit', Icons.add_circle_outline, Color(0xFF10B981)),

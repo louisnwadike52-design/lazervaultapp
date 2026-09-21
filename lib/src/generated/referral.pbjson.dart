@@ -728,6 +728,55 @@ final $typed_data.Uint8List getPointsConfigResponseDescriptor =
         'ChdHZXRQb2ludHNDb25maWdSZXNwb25zZRIvCgdjb25maWdzGAEgAygLMhUucGIuUG9pbnRzQ2'
         '9uZmlnRW50cnlSB2NvbmZpZ3M=');
 
+@$core.Deprecated('Use getPointsBreakdownRequestDescriptor instead')
+const GetPointsBreakdownRequest$json = {
+  '1': 'GetPointsBreakdownRequest',
+};
+
+/// Descriptor for `GetPointsBreakdownRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getPointsBreakdownRequestDescriptor =
+    $convert.base64Decode('ChlHZXRQb2ludHNCcmVha2Rvd25SZXF1ZXN0');
+
+@$core.Deprecated('Use servicePointsBreakdownDescriptor instead')
+const ServicePointsBreakdown$json = {
+  '1': 'ServicePointsBreakdown',
+  '2': [
+    {'1': 'service_key', '3': 1, '4': 1, '5': 9, '10': 'serviceKey'},
+    {'1': 'display_name', '3': 2, '4': 1, '5': 9, '10': 'displayName'},
+    {'1': 'points', '3': 3, '4': 1, '5': 5, '10': 'points'},
+    {'1': 'transactions', '3': 4, '4': 1, '5': 5, '10': 'transactions'},
+  ],
+};
+
+/// Descriptor for `ServicePointsBreakdown`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List servicePointsBreakdownDescriptor = $convert.base64Decode(
+    'ChZTZXJ2aWNlUG9pbnRzQnJlYWtkb3duEh8KC3NlcnZpY2Vfa2V5GAEgASgJUgpzZXJ2aWNlS2'
+    'V5EiEKDGRpc3BsYXlfbmFtZRgCIAEoCVILZGlzcGxheU5hbWUSFgoGcG9pbnRzGAMgASgFUgZw'
+    'b2ludHMSIgoMdHJhbnNhY3Rpb25zGAQgASgFUgx0cmFuc2FjdGlvbnM=');
+
+@$core.Deprecated('Use getPointsBreakdownResponseDescriptor instead')
+const GetPointsBreakdownResponse$json = {
+  '1': 'GetPointsBreakdownResponse',
+  '2': [
+    {
+      '1': 'items',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.pb.ServicePointsBreakdown',
+      '10': 'items'
+    },
+    {'1': 'total_points', '3': 2, '4': 1, '5': 5, '10': 'totalPoints'},
+  ],
+};
+
+/// Descriptor for `GetPointsBreakdownResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getPointsBreakdownResponseDescriptor =
+    $convert.base64Decode(
+        'ChpHZXRQb2ludHNCcmVha2Rvd25SZXNwb25zZRIwCgVpdGVtcxgBIAMoCzIaLnBiLlNlcnZpY2'
+        'VQb2ludHNCcmVha2Rvd25SBWl0ZW1zEiEKDHRvdGFsX3BvaW50cxgCIAEoBVILdG90YWxQb2lu'
+        'dHM=');
+
 @$core.Deprecated('Use redeemPointsRequestDescriptor instead')
 const RedeemPointsRequest$json = {
   '1': 'RedeemPointsRequest',
@@ -801,3 +850,65 @@ final $typed_data.Uint8List getRedemptionQuoteResponseDescriptor = $convert.base
     'EjEKFXBvaW50c19wZXJfbWFqb3JfdW5pdBgEIAEoBVIScG9pbnRzUGVyTWFqb3JVbml0EioKEW'
     '1pbl9yZWRlZW1fcG9pbnRzGAUgASgFUg9taW5SZWRlZW1Qb2ludHMSHQoKY2FuX3JlZGVlbRgG'
     'IAEoCFIJY2FuUmVkZWVtEhYKBnJlYXNvbhgHIAEoCVIGcmVhc29u');
+
+@$core.Deprecated('Use awardTransactionPointsRequestDescriptor instead')
+const AwardTransactionPointsRequest$json = {
+  '1': 'AwardTransactionPointsRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'transaction_id', '3': 2, '4': 1, '5': 9, '10': 'transactionId'},
+    {'1': 'amount_minor', '3': 3, '4': 1, '5': 3, '10': 'amountMinor'},
+    {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'service_type', '3': 5, '4': 1, '5': 9, '10': 'serviceType'},
+  ],
+};
+
+/// Descriptor for `AwardTransactionPointsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List awardTransactionPointsRequestDescriptor = $convert.base64Decode(
+    'Ch1Bd2FyZFRyYW5zYWN0aW9uUG9pbnRzUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySW'
+    'QSJQoOdHJhbnNhY3Rpb25faWQYAiABKAlSDXRyYW5zYWN0aW9uSWQSIQoMYW1vdW50X21pbm9y'
+    'GAMgASgDUgthbW91bnRNaW5vchIaCghjdXJyZW5jeRgEIAEoCVIIY3VycmVuY3kSIQoMc2Vydm'
+    'ljZV90eXBlGAUgASgJUgtzZXJ2aWNlVHlwZQ==');
+
+@$core.Deprecated('Use awardTransactionPointsResponseDescriptor instead')
+const AwardTransactionPointsResponse$json = {
+  '1': 'AwardTransactionPointsResponse',
+  '2': [
+    {'1': 'points_awarded', '3': 1, '4': 1, '5': 5, '10': 'pointsAwarded'},
+  ],
+};
+
+/// Descriptor for `AwardTransactionPointsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List awardTransactionPointsResponseDescriptor =
+    $convert.base64Decode(
+        'Ch5Bd2FyZFRyYW5zYWN0aW9uUG9pbnRzUmVzcG9uc2USJQoOcG9pbnRzX2F3YXJkZWQYASABKA'
+        'VSDXBvaW50c0F3YXJkZWQ=');
+
+@$core.Deprecated('Use reverseTransactionPointsRequestDescriptor instead')
+const ReverseTransactionPointsRequest$json = {
+  '1': 'ReverseTransactionPointsRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'transaction_id', '3': 2, '4': 1, '5': 9, '10': 'transactionId'},
+  ],
+};
+
+/// Descriptor for `ReverseTransactionPointsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List reverseTransactionPointsRequestDescriptor =
+    $convert.base64Decode(
+        'Ch9SZXZlcnNlVHJhbnNhY3Rpb25Qb2ludHNSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZX'
+        'JJZBIlCg50cmFuc2FjdGlvbl9pZBgCIAEoCVINdHJhbnNhY3Rpb25JZA==');
+
+@$core.Deprecated('Use reverseTransactionPointsResponseDescriptor instead')
+const ReverseTransactionPointsResponse$json = {
+  '1': 'ReverseTransactionPointsResponse',
+  '2': [
+    {'1': 'points_reversed', '3': 1, '4': 1, '5': 5, '10': 'pointsReversed'},
+  ],
+};
+
+/// Descriptor for `ReverseTransactionPointsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List reverseTransactionPointsResponseDescriptor =
+    $convert.base64Decode(
+        'CiBSZXZlcnNlVHJhbnNhY3Rpb25Qb2ludHNSZXNwb25zZRInCg9wb2ludHNfcmV2ZXJzZWQYAS'
+        'ABKAVSDnBvaW50c1JldmVyc2Vk');

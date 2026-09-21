@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/referral/domain/entities/referral_stats_
 import 'package:lazervault/src/features/referral/domain/entities/leaderboard_entry_entity.dart';
 import 'package:lazervault/src/features/referral/domain/entities/points_balance_entity.dart';
 import 'package:lazervault/src/features/referral/domain/entities/point_transaction_entity.dart';
+import 'package:lazervault/src/features/referral/domain/entities/points_breakdown_entity.dart';
 import 'package:lazervault/src/features/referral/domain/entities/points_config_entity.dart';
 import 'package:lazervault/src/features/referral/domain/repositories/i_referral_repository.dart';
 import 'package:lazervault/src/features/referral/data/models/referral_code_model.dart';
@@ -361,6 +362,45 @@ class ReferralRepositoryImpl implements IReferralRepository {
     } on GrpcError catch (e) {
       return Left(ServerFailure(
         message: friendlyGrpcError(e, 'Could not price that conversion'),
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, PointsBreakdownEntity>> getPointsBreakdown() async {
+    try {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _referralServiceClient.getPointsBreakdown(
+        referral_pb.GetPointsBreakdownRequest(),
+        options: callOptions,
+      );
+      return Right(PointsBreakdownEntity(
+        items: response.items
+            .map((i) => ServicePointsBreakdownEntity(
+                  serviceKey: i.serviceKey,
+                  displayName: i.displayName,
+                  points: i.points,
+                  transactions: i.transactions,
+                ))
+            .toList(),
+        totalPoints: response.totalPoints,
+      ));
+    } on GrpcError catch (e) {
+      // UNIMPLEMENTED means the app is talking to a referral-service older than
+      // this RPC. That is deployment skew, not something the user did, so the
+      // section hides itself rather than showing an error beside a balance that
+      // is perfectly fine.
+      if (e.code == StatusCode.unimplemented) {
+        return const Right(PointsBreakdownEntity.empty);
+      }
+      return Left(ServerFailure(
+        message: friendlyGrpcError(e, 'Could not load your points breakdown'),
         statusCode: e.code,
       ));
     } catch (e) {

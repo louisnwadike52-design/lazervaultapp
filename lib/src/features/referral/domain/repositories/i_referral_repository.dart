@@ -7,6 +7,7 @@ import '../entities/referral_stats_entity.dart';
 import '../entities/leaderboard_entry_entity.dart';
 import '../entities/points_balance_entity.dart';
 import '../entities/point_transaction_entity.dart';
+import '../entities/points_breakdown_entity.dart';
 import '../entities/points_config_entity.dart';
 import '../entities/redemption_entities.dart';
 
@@ -51,6 +52,11 @@ abstract class IReferralRepository {
 
   /// Get LazerPoints earn rules/configuration
   Future<Either<Failure, List<PointsConfigEntity>>> getPointsConfig();
+
+  /// Where the balance came from, per product.
+  ///
+  /// An empty breakdown is the normal state of a new account, not a failure.
+  Future<Either<Failure, PointsBreakdownEntity>> getPointsBreakdown();
 
   /// What converting [points] would be worth. 0 quotes the whole balance,
   /// which is what the screen opens on.

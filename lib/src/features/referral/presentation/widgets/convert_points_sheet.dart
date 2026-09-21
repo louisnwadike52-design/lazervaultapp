@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/referral/domain/entities/redemption_entities.dart';
 import 'package:lazervault/src/features/referral/domain/repositories/i_referral_repository.dart';
+import 'package:lazervault/src/features/referral/presentation/screens/points_conversion_receipt_screen.dart';
 
 /// Turning LazerPoints into money.
 ///
@@ -44,17 +46,57 @@ class _ConvertPointsSheetState extends State<ConvertPointsSheet> {
   bool _converting = false;
   String? _error;
 
-  /// Generated ONCE per sheet, not per tap.
+  /// The idempotency key for this conversion attempt.
   ///
-  /// It is the idempotency key: if the first attempt times out and the user
-  /// presses again, the same key means the server converts once. A fresh key
-  /// per tap would convert twice.
-  late final String _idempotencyKey = const Uuid().v4();
+  /// Generated once per sheet, not per tap: if the first attempt times out and
+  /// the user presses again, the same key means the server converts once. A
+  /// fresh key per tap would convert twice.
+  ///
+  /// It is also PERSISTED, which the per-sheet version was not. A timeout is
+  /// exactly when someone closes the sheet and reopens it to try again — and a
+  /// reopened sheet used to mint a brand-new key, so the retry looked like a
+  /// second conversion to the server and paid out twice. The key is cleared
+  /// only once an attempt has definitively resolved.
+  String? _idempotencyKey;
+
+  static const _pendingKeyPref = 'lazerpoints.pending_conversion_key';
 
   @override
   void initState() {
     super.initState();
+    _restoreOrCreateKey();
     _loadQuote();
+  }
+
+  Future<void> _restoreOrCreateKey() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final existing = prefs.getString(_pendingKeyPref);
+      if (existing != null && existing.isNotEmpty) {
+        // An attempt from a previous sheet never resolved. Reusing its key is
+        // what makes this a RETRY rather than a second conversion.
+        _idempotencyKey = existing;
+        return;
+      }
+      final fresh = const Uuid().v4();
+      await prefs.setString(_pendingKeyPref, fresh);
+      _idempotencyKey = fresh;
+    } catch (_) {
+      // Storage unavailable. Fall back to an in-memory key: still correct
+      // within this sheet, which is the behaviour this replaced, rather than
+      // blocking a conversion because a preference could not be written.
+      _idempotencyKey ??= const Uuid().v4();
+    }
+  }
+
+  Future<void> _clearPendingKey() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_pendingKeyPref);
+    } catch (_) {
+      // Nothing to do: a stale key only ever causes a retry to be treated as
+      // the same conversion, which is the safe direction.
+    }
   }
 
   Future<void> _loadQuote() async {
@@ -83,15 +125,26 @@ class _ConvertPointsSheetState extends State<ConvertPointsSheet> {
     final q = _quote;
     if (q == null || !q.canRedeem || _converting) return;
 
+    // The key may still be loading from storage on a very fast tap. Awaiting it
+    // rather than generating a throwaway is the whole point: a throwaway key is
+    // a second conversion.
+    if (_idempotencyKey == null) {
+      await _restoreOrCreateKey();
+      if (!mounted) return;
+    }
+
     setState(() => _converting = true);
     final res = await widget.repository.redeemPoints(
       points: q.points,
-      idempotencyKey: _idempotencyKey,
+      idempotencyKey: _idempotencyKey!,
     );
     if (!mounted) return;
 
-    res.fold(
-      (f) {
+    await res.fold(
+      (f) async {
+        // The key is deliberately KEPT. A failure here may be a timeout on a
+        // conversion that actually succeeded, and reusing the key is what makes
+        // the user's next attempt a retry rather than a second payout.
         setState(() => _converting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -101,16 +154,26 @@ class _ConvertPointsSheetState extends State<ConvertPointsSheet> {
           ),
         );
       },
-      (r) {
+      (r) async {
+        // Resolved, so the key has done its job and must not bind the NEXT
+        // conversion — which would make a genuine second conversion silently
+        // return the first one's result.
+        await _clearPendingKey();
+        if (!mounted) return;
+
         widget.onConverted?.call();
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${_money(r.cashMajor, r.currency)} added to your wallet',
+
+        // A receipt, not a toast. This is the moment a rewards balance someone
+        // spent months building becomes money, and it was the only money
+        // movement in the product with nothing to download, share or refer back
+        // to afterwards.
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => PointsConversionReceiptScreen(
+              result: r,
+              pointsPerMajorUnit: q.pointsPerMajorUnit,
             ),
-            backgroundColor: const Color(0xFF10B981),
-            behavior: SnackBarBehavior.floating,
           ),
         );
       },

@@ -1092,6 +1092,14 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     // AppServiceName entry for it, so wallet top-ups, sprays and gifts all fell
     // through to `unknown` and rendered the grey help-outline glyph.
     if (serviceLower.contains('spray')) return TransactionServiceType.sprayme;
+    // A Lazerpoints conversion is written by referral-service, which likewise
+    // has no AppServiceName entry — so the credit that lands when someone cashes
+    // out their rewards fell through to `unknown`, showing the grey
+    // help-outline glyph in their history beside every properly-iconed row.
+    if (serviceLower.contains('referral') ||
+        serviceLower.contains('lazerpoint')) {
+      return TransactionServiceType.lazerpoints;
+    }
 
     return TransactionServiceType.unknown;
   }

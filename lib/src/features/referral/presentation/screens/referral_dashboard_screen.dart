@@ -257,7 +257,7 @@ class _ReferralDashboardScreenState extends State<ReferralDashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'LazerPoints',
+                    'Lazerpoints',
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w700,

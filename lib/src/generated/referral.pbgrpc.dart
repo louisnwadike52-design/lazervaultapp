@@ -138,6 +138,35 @@ class ReferralServiceClient extends $grpc.Client {
     return $createUnaryCall(_$redeemPoints, request, options: options);
   }
 
+  /// Award points for a completed transaction. SERVICE-TO-SERVICE.
+  ///
+  /// Called by accounts-service after a transaction commits. Idempotent on
+  /// transaction_id: at-least-once delivery and retries must award once.
+  ///
+  /// Not user-authenticated — the caller is a service acting on behalf of a user
+  /// it has already authenticated, and the user_id is supplied rather than taken
+  /// from a token.
+  $grpc.ResponseFuture<$0.AwardTransactionPointsResponse>
+      awardTransactionPoints(
+    $0.AwardTransactionPointsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$awardTransactionPoints, request,
+        options: options);
+  }
+
+  /// Claw back points when a transaction is refunded. SERVICE-TO-SERVICE.
+  ///
+  /// Without it, buy -> earn -> refund mints a rewards balance out of nothing.
+  $grpc.ResponseFuture<$0.ReverseTransactionPointsResponse>
+      reverseTransactionPoints(
+    $0.ReverseTransactionPointsRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$reverseTransactionPoints, request,
+        options: options);
+  }
+
   /// What a conversion would be worth, without performing it.
   ///
   /// Exists so the app can show the cash value and the minimum BEFORE the user
@@ -148,6 +177,19 @@ class ReferralServiceClient extends $grpc.Client {
     $grpc.CallOptions? options,
   }) {
     return $createUnaryCall(_$getRedemptionQuote, request, options: options);
+  }
+
+  /// Where a user's points came from, per product.
+  ///
+  /// The rewards screen showed a total and a flat list of history rows, so
+  /// "most of this came from bill payments" was not answerable without scrolling
+  /// the entire ledger — and a rewards balance nobody can account for is a
+  /// rewards balance nobody trusts.
+  $grpc.ResponseFuture<$0.GetPointsBreakdownResponse> getPointsBreakdown(
+    $0.GetPointsBreakdownRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$getPointsBreakdown, request, options: options);
   }
 
   // method descriptors
@@ -212,11 +254,27 @@ class ReferralServiceClient extends $grpc.Client {
           '/pb.ReferralService/RedeemPoints',
           ($0.RedeemPointsRequest value) => value.writeToBuffer(),
           $0.RedeemPointsResponse.fromBuffer);
+  static final _$awardTransactionPoints = $grpc.ClientMethod<
+          $0.AwardTransactionPointsRequest, $0.AwardTransactionPointsResponse>(
+      '/pb.ReferralService/AwardTransactionPoints',
+      ($0.AwardTransactionPointsRequest value) => value.writeToBuffer(),
+      $0.AwardTransactionPointsResponse.fromBuffer);
+  static final _$reverseTransactionPoints = $grpc.ClientMethod<
+          $0.ReverseTransactionPointsRequest,
+          $0.ReverseTransactionPointsResponse>(
+      '/pb.ReferralService/ReverseTransactionPoints',
+      ($0.ReverseTransactionPointsRequest value) => value.writeToBuffer(),
+      $0.ReverseTransactionPointsResponse.fromBuffer);
   static final _$getRedemptionQuote = $grpc.ClientMethod<
           $0.GetRedemptionQuoteRequest, $0.GetRedemptionQuoteResponse>(
       '/pb.ReferralService/GetRedemptionQuote',
       ($0.GetRedemptionQuoteRequest value) => value.writeToBuffer(),
       $0.GetRedemptionQuoteResponse.fromBuffer);
+  static final _$getPointsBreakdown = $grpc.ClientMethod<
+          $0.GetPointsBreakdownRequest, $0.GetPointsBreakdownResponse>(
+      '/pb.ReferralService/GetPointsBreakdown',
+      ($0.GetPointsBreakdownRequest value) => value.writeToBuffer(),
+      $0.GetPointsBreakdownResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('pb.ReferralService')
@@ -332,6 +390,24 @@ abstract class ReferralServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.RedeemPointsRequest.fromBuffer(value),
             ($0.RedeemPointsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AwardTransactionPointsRequest,
+            $0.AwardTransactionPointsResponse>(
+        'AwardTransactionPoints',
+        awardTransactionPoints_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AwardTransactionPointsRequest.fromBuffer(value),
+        ($0.AwardTransactionPointsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ReverseTransactionPointsRequest,
+            $0.ReverseTransactionPointsResponse>(
+        'ReverseTransactionPoints',
+        reverseTransactionPoints_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ReverseTransactionPointsRequest.fromBuffer(value),
+        ($0.ReverseTransactionPointsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetRedemptionQuoteRequest,
             $0.GetRedemptionQuoteResponse>(
         'GetRedemptionQuote',
@@ -341,6 +417,15 @@ abstract class ReferralServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetRedemptionQuoteRequest.fromBuffer(value),
         ($0.GetRedemptionQuoteResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetPointsBreakdownRequest,
+            $0.GetPointsBreakdownResponse>(
+        'GetPointsBreakdown',
+        getPointsBreakdown_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetPointsBreakdownRequest.fromBuffer(value),
+        ($0.GetPointsBreakdownResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.ValidateReferralCodeResponse> validateReferralCode_Pre(
@@ -451,6 +536,24 @@ abstract class ReferralServiceBase extends $grpc.Service {
   $async.Future<$0.RedeemPointsResponse> redeemPoints(
       $grpc.ServiceCall call, $0.RedeemPointsRequest request);
 
+  $async.Future<$0.AwardTransactionPointsResponse> awardTransactionPoints_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.AwardTransactionPointsRequest> $request) async {
+    return awardTransactionPoints($call, await $request);
+  }
+
+  $async.Future<$0.AwardTransactionPointsResponse> awardTransactionPoints(
+      $grpc.ServiceCall call, $0.AwardTransactionPointsRequest request);
+
+  $async.Future<$0.ReverseTransactionPointsResponse>
+      reverseTransactionPoints_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.ReverseTransactionPointsRequest> $request) async {
+    return reverseTransactionPoints($call, await $request);
+  }
+
+  $async.Future<$0.ReverseTransactionPointsResponse> reverseTransactionPoints(
+      $grpc.ServiceCall call, $0.ReverseTransactionPointsRequest request);
+
   $async.Future<$0.GetRedemptionQuoteResponse> getRedemptionQuote_Pre(
       $grpc.ServiceCall $call,
       $async.Future<$0.GetRedemptionQuoteRequest> $request) async {
@@ -459,4 +562,13 @@ abstract class ReferralServiceBase extends $grpc.Service {
 
   $async.Future<$0.GetRedemptionQuoteResponse> getRedemptionQuote(
       $grpc.ServiceCall call, $0.GetRedemptionQuoteRequest request);
+
+  $async.Future<$0.GetPointsBreakdownResponse> getPointsBreakdown_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.GetPointsBreakdownRequest> $request) async {
+    return getPointsBreakdown($call, await $request);
+  }
+
+  $async.Future<$0.GetPointsBreakdownResponse> getPointsBreakdown(
+      $grpc.ServiceCall call, $0.GetPointsBreakdownRequest request);
 }

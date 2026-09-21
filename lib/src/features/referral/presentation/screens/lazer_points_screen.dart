@@ -5,11 +5,13 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/points_balance_entity.dart';
 import '../../domain/entities/point_transaction_entity.dart';
+import '../../domain/entities/points_breakdown_entity.dart';
 import '../../domain/entities/points_config_entity.dart';
 import '../cubit/referral_cubit.dart';
 import '../cubit/referral_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import '../widgets/convert_points_sheet.dart';
+import '../widgets/points_breakdown_section.dart';
 import '../../domain/repositories/i_referral_repository.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 part 'lazer_points_screen_widgets.dart';
@@ -26,6 +28,13 @@ class _LazerPointsScreenState extends State<LazerPointsScreen> {
   PointsBalanceEntity? _balance;
   List<PointsConfigEntity> _configs = [];
 
+  /// Where the balance came from, per product.
+  ///
+  /// Read directly rather than through the cubit: only this screen wants it,
+  /// and a failure here must not disturb the balance, which is what the user
+  /// actually came for.
+  PointsBreakdownEntity _breakdown = PointsBreakdownEntity.empty;
+
   @override
   void initState() {
     super.initState();
@@ -36,6 +45,17 @@ class _LazerPointsScreenState extends State<LazerPointsScreen> {
     final cubit = context.read<ReferralCubit>();
     // Load balance first, then history
     await cubit.loadPointsBalance();
+    await _loadBreakdown();
+  }
+
+  Future<void> _loadBreakdown() async {
+    final res =
+        await serviceLocator<IReferralRepository>().getPointsBreakdown();
+    if (!mounted) return;
+    // A failure leaves the previous breakdown in place and shows nothing new.
+    // The balance above it is still correct, and an error banner over a working
+    // balance would say otherwise.
+    res.fold((_) {}, (b) => setState(() => _breakdown = b));
   }
 
   Future<void> _onRefresh() async {
@@ -54,7 +74,7 @@ class _LazerPointsScreenState extends State<LazerPointsScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
-          'LazerPoints',
+          'Lazerpoints',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18.sp,
@@ -102,6 +122,14 @@ class _LazerPointsScreenState extends State<LazerPointsScreen> {
                   SizedBox(height: 16.h),
                   if (_balance != null) _buildBalanceCard(_balance!),
                   SizedBox(height: 20.h),
+                  // Directly under the balance: it explains the number above
+                  // it, and the first thing anyone does with a rewards total is
+                  // try to work out where it came from. Hides itself when there
+                  // is nothing to account for yet.
+                  if (!_breakdown.isEmpty) ...[
+                    PointsBreakdownSection(breakdown: _breakdown),
+                    SizedBox(height: 20.h),
+                  ],
                   if (_configs.isNotEmpty) ...[
                     _buildHowToEarnSection(),
                     SizedBox(height: 20.h),

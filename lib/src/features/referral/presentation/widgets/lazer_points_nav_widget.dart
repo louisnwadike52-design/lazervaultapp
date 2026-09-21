@@ -91,7 +91,7 @@ class _LazerPointsNavWidgetState extends State<LazerPointsNavWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'LazerPoints',
+                      'Lazerpoints',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.85),
                         fontSize: 12.5.sp,
