@@ -812,8 +812,9 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
   Widget _buildWalletSheet() {
     return BlocBuilder<StatisticsCubit, StatisticsState>(
       builder: (context, state) {
-        final wallets =
-            state is StatisticsLoaded ? state.availableWallets : const <StatisticsWallet>[];
+        final wallets = state is StatisticsLoaded
+            ? state.availableWallets
+            : const <StatisticsWallet>[];
         if (wallets.isEmpty) {
           return Padding(
             padding: EdgeInsets.symmetric(vertical: 18.h),
@@ -2163,7 +2164,93 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
     );
   }
 
+  /// Credit-score slot on the Bank tab when no bank is linked.
+  ///
+  /// Says what is actually true — there is no bank score yet — and offers the
+  /// one action that produces one, rather than routing to a LazerVault score
+  /// the bank tab did not ask for.
+  ///
+  /// Deliberately NOT tappable: the working "Link a bank account" button sits
+  /// in the Linked Banks section directly above this card on the same screen.
+  /// Duplicating that flow here would mean a second copy of the connection-fee
+  /// consent + Mono Connect sequence, and a card that merely restates what the
+  /// section above already offers should not pretend to be a second route to it.
+  Widget _buildCreditScoreLinkBankCTA() {
+    return Semantics(
+      label: 'Credit Score. Link a bank to build your bank credit score.',
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF181818),
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFB923C).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(Icons.speed_rounded,
+                  color: const Color(0xFFFB923C).withValues(alpha: 0.7),
+                  size: 24.sp),
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Credit Score',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    'Link a bank to build your bank credit score',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.lock_outline_rounded,
+                color: const Color(0xFF4B5563), size: 16.sp),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildCreditScoreCTA() {
+    // A bank-scoped tab must not offer a score derived from LazerVault.
+    //
+    // This card used to render unconditionally and always open the score
+    // screen. On the Bank tab with NO bank linked that meant: "View your score,
+    // insights & tips to improve" -> a 603 computed entirely from LazerVault
+    // wallet activity, presented on a tab that is explicitly about banks. The
+    // number was real, but it answered a question the user had not asked and
+    // implied a bank score they do not have.
+    //
+    // The score screen itself already handles the empty case correctly (a nil
+    // external/combined renders the link-bank CTA rather than a fabricated
+    // score), so the fix belongs here at the entry point.
+    final bankScopeOnly = _statsSource == StatisticsSource.bank;
+    final hasLinkedBanks =
+        context.read<OpenBankingCubit>().linkedAccounts.isNotEmpty;
+
+    if (bankScopeOnly && !hasLinkedBanks) {
+      return _buildCreditScoreLinkBankCTA();
+    }
+
     return GestureDetector(
       onTap: () => Get.toNamed(
         AppRoutes.creditScore,
