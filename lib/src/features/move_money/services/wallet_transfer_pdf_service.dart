@@ -100,9 +100,7 @@ class WalletTransferPdfService {
     final generatedDate = _dateFormat.format(DateTime.now());
     final statusColor = _getStatusColor(transfer.status);
     final statusText = _getStatusText(transfer.status);
-    final amount = transfer.amount != null
-        ? transfer.amount! / 100.0
-        : 0.0;
+    final amount = transfer.amount != null ? transfer.amount! / 100.0 : 0.0;
     final currency = 'NGN'; // Default, could be passed as parameter if needed
 
     pdf.addPage(
@@ -229,16 +227,19 @@ class WalletTransferPdfService {
                 ),
                 child: pw.Column(
                   children: [
-                    _buildDetailRow('Amount', _formatCurrency(amount, currency)),
+                    _buildDetailRow(
+                        'Amount', _formatCurrency(amount, currency)),
                     _buildDetailRow('Fee', '$currency 0.00'),
                     pw.Divider(color: PdfColors.grey300),
                     pw.SizedBox(height: 4),
                     _buildDetailRow('Total', _formatCurrency(amount, currency),
                         isBold: true),
                     pw.SizedBox(height: 8),
-                    if (transfer.reference != null && transfer.reference!.isNotEmpty)
+                    if (transfer.reference != null &&
+                        transfer.reference!.isNotEmpty)
                       _buildDetailRow('Reference', transfer.reference!),
-                    if (transfer.transferId != null && transfer.transferId!.isNotEmpty)
+                    if (transfer.transferId != null &&
+                        transfer.transferId!.isNotEmpty)
                       _buildDetailRow('Transfer ID', transfer.transferId!),
                     _buildDetailRow(
                       'Date',
@@ -256,7 +257,8 @@ class WalletTransferPdfService {
               ),
 
               // Recipient info
-              if (transfer.recipientName != null && transfer.recipientName!.isNotEmpty) ...[
+              if (transfer.recipientName != null &&
+                  transfer.recipientName!.isNotEmpty) ...[
                 pw.SizedBox(height: 16),
                 pw.Container(
                   padding: const pw.EdgeInsets.all(16),
@@ -269,7 +271,8 @@ class WalletTransferPdfService {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text('Recipient',
-                          style: _getTextStyle(fontSize: 11, color: PdfColors.grey600)),
+                          style: _getTextStyle(
+                              fontSize: 11, color: PdfColors.grey600)),
                       pw.SizedBox(height: 4),
                       pw.Text(transfer.recipientName!,
                           style: _getTextStyle(fontSize: 13, isBold: true)),
@@ -420,7 +423,8 @@ class WalletTransferPdfService {
       destinationAccountName: destinationAccountName,
     );
     final directory = await getDownloadsDirectory();
-    final fileName = 'wallet_transfer_${DateTime.now().millisecondsSinceEpoch}.pdf';
+    final fileName =
+        'wallet_transfer_${DateTime.now().millisecondsSinceEpoch}.pdf';
     final file = File('${directory!.path}/$fileName');
     await file.writeAsBytes(pdfBytes);
     return file.path;

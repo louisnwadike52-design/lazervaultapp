@@ -8,16 +8,16 @@ import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 
-/// "LazerAI" in a Lazerspray live.
+/// Nova in a Lazerspray live.
 ///
 /// - [summon] dispatches the platform voice-agent into the EXISTING spray room
 ///   (`spray_<sessionId>`) via the voice-agent-gateway. The agent joins as a
 ///   participant and converses in real time — everyone already subscribes to
 ///   room audio, so no extra client wiring is needed to hear it.
 /// - [startWakeWord] runs lightweight on-device keyword spotting on the local
-///   mic; when a speaker says "lazerai" it calls [summon] (once per cooldown).
+///   mic; when a speaker says "Nova" it calls [summon] (once per cooldown).
 ///   Best-effort: on devices where LiveKit already owns the mic this may be
-///   limited, so a manual "Summon LazerAI" action is offered as the reliable
+///   limited, so a manual "Nova in live" action is offered as the reliable
 ///   path.
 class SprayLazerAiService {
   final Dio _dio;
@@ -34,8 +34,17 @@ class SprayLazerAiService {
       DateTime.fromMillisecondsSinceEpoch(0); // client-side cooldown
   static const _cooldown = Duration(seconds: 45);
 
-  // Match "lazerai", "lazer ai", "laser ai", "lazer eye" (common ASR variants).
-  static final _wakeRe = RegExp(r'laz?er\s?(ai|eye|a\.i\.?)', caseSensitive: false);
+  /// Matches the assistant's name as ASR is likely to transcribe it.
+  ///
+  /// "nova" is the current name; "nover"/"novah" are the usual mishearings.
+  /// The legacy "lazerai" family stays matched on purpose — the rename is a
+  /// product decision, and a user who still says the old name should be
+  /// understood rather than ignored. Word boundaries keep "nova" from firing
+  /// inside unrelated words (e.g. "innovation", "Casanova").
+  static final _wakeRe = RegExp(
+    r'\b(nova|nover|novah|laz?er\s?(ai|eye|a\.i\.?))\b',
+    caseSensitive: false,
+  );
 
   /// Dispatch the voice-agent into the live. Returns null on success, else a
   /// short error message.
@@ -96,7 +105,7 @@ class SprayLazerAiService {
         pauseFor: const Duration(seconds: 5),
       );
     } catch (e) {
-      debugPrint('LazerAI wake-word listen error: $e');
+      debugPrint('Nova wake-word listen error: $e');
     }
   }
 

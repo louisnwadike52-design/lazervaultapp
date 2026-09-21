@@ -97,6 +97,21 @@ class FeatureFlags {
   //   false ignores resolution (bank/external routing only). UI gate.
   static const String scanResolveUsersEnabled = 'scan_resolve_users_enabled';
 
+  /// Platform default participant layout for a Lazerspray live
+  /// ('grid' | 'sidebar' | 'spotlight'). A STRING, not a boolean — mirrored
+  /// verbatim below and parsed by `sprayLayoutModeFromSetting`, which falls
+  /// back to grid for anything it does not recognise. A viewer's own choice
+  /// inside a room always beats this.
+  static const String spraymeDefaultLayoutMode = 'sprayme_default_layout_mode';
+
+  /// The admin-configured default spray layout, or null when it has never been
+  /// fetched. Null means "use the built-in default" — the caller decides, so a
+  /// missing setting and an explicit 'grid' stay distinguishable.
+  static String? get spraymeLayoutMode {
+    final raw = _prefs?.getString(spraymeDefaultLayoutMode)?.trim();
+    return (raw == null || raw.isEmpty) ? null : raw;
+  }
+
   /// Standalone BVN-capture screen in signup (admin-toggled). OFF by default:
   /// the default onboarding uses the Mono Prove flow, whose completion webhook
   /// already auto-creates the Flutterwave virtual account server-side. When the
@@ -304,6 +319,9 @@ class FeatureFlags {
       appMinBuildAndroid,
       appStoreUrlAndroid,
       appUpdateNotesKey,
+      // Spray layout default is a string enum ('grid'|'sidebar'|'spotlight'),
+      // so it is mirrored verbatim here rather than coerced to a bool above.
+      spraymeDefaultLayoutMode,
     ]) {
       final v = remote[key];
       if (v == null) continue;

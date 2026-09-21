@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'wallet_transfer_state.dart';
+import '../utils/wallet_beam_scope.dart';
 
 class WalletTransferCubit extends Cubit<WalletTransferState> {
   final IPaymentsTransferDataSource paymentsTransferDataSource;
@@ -12,7 +13,7 @@ class WalletTransferCubit extends Cubit<WalletTransferState> {
   Future<void> transferBetweenAccounts({
     required String fromAccountId,
     required String toAccountNumber,
-    required String type,  // "internal" or "external" - PRIMARY KEY
+    required String type, // "internal" or "external" - PRIMARY KEY
     required double amount,
     required String description,
     required String transactionId,
@@ -58,6 +59,12 @@ class WalletTransferCubit extends Cubit<WalletTransferState> {
   Future<void> getRecentWalletTransfers({
     required String accountId,
     int limit = 5,
+
+    /// Every LazerVault account number the user holds.
+    ///
+    /// Keeps only wallet-to-wallet moves on the Beam tab. Empty means
+    /// "unknown" and leaves the list unscoped — see [WalletBeamScope].
+    Set<String> ownAccountNumbers = const {},
   }) async {
     try {
       if (isClosed) return;
@@ -68,9 +75,14 @@ class WalletTransferCubit extends Cubit<WalletTransferState> {
         offset: 0,
       );
       if (isClosed) return;
+      final scoped =
+          WalletBeamScope.filter(result.transfers, ownAccountNumbers);
       emit(WalletTransferHistoryLoaded(
-        transfers: result.transfers,
-        total: result.total,
+        // `total` drives the count the UI prints, so it must describe the list
+        // the user is looking at — the unscoped server total would read
+        // "12 transfers" above a list of three.
+        transfers: scoped,
+        total: scoped.length,
       ));
     } catch (e) {
       if (isClosed) return;
@@ -82,6 +94,7 @@ class WalletTransferCubit extends Cubit<WalletTransferState> {
     required String accountId,
     int limit = 20,
     int offset = 0,
+    Set<String> ownAccountNumbers = const {},
   }) async {
     try {
       if (isClosed) return;
@@ -92,9 +105,11 @@ class WalletTransferCubit extends Cubit<WalletTransferState> {
         offset: offset,
       );
       if (isClosed) return;
+      final scoped =
+          WalletBeamScope.filter(result.transfers, ownAccountNumbers);
       emit(WalletTransferHistoryLoaded(
-        transfers: result.transfers,
-        total: result.total,
+        transfers: scoped,
+        total: scoped.length,
       ));
     } catch (e) {
       if (isClosed) return;

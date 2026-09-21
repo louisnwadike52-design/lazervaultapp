@@ -53,7 +53,8 @@ class BudgetProgressLoaded extends BudgetState {
   });
 
   @override
-  List<Object?> get props => [items, totalBudget, totalSpent, overallPercentage];
+  List<Object?> get props =>
+      [items, totalBudget, totalSpent, overallPercentage];
 }
 
 /// Budget alerts loaded

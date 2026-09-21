@@ -156,7 +156,10 @@ class _SplitBillReceiptScreenState extends State<SplitBillReceiptScreen> {
       case SplitBillParticipantStatus.pending:
         return 'Pending';
       default:
-        return 'Paid';
+        // NEVER default to 'Paid'. This is a money screen: an unmapped or
+        // absent status is something we do not know, and claiming the share
+        // was paid is the one answer that can cost someone money.
+        return 'Pending';
     }
   }
 

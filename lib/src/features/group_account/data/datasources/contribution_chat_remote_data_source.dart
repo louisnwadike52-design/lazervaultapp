@@ -79,7 +79,7 @@ class ContributionMessage {
     this.deletedForEveryone = false,
     this.status = ChatDeliveryStatus.sent,
     this.localMediaPath,
-      this.mentionedUserIds = const [],
+    this.mentionedUserIds = const [],
   });
 
   bool get isText => kind == 'text';
@@ -125,8 +125,16 @@ class ContributionMessage {
       senderName: (j['senderName'] ?? j['sender_name']) as String? ?? '',
       kind: (j['kind'] as String?) ?? 'text',
       body: (j['body'] as String?) ?? '',
-      mediaUrl: (j['mediaUrl'] ?? j['media_url']) as String? ?? '',
-      durationMs: int.tryParse('${j['durationMs'] ?? j['duration_ms'] ?? 0}') ?? 0,
+      // `attachment_url` is what group-accounts' WebSocket fanout emits
+      // (fanoutChatMessageToGateway), while the history/list gRPC emits
+      // `mediaUrl`. The chat polls today so only the latter is exercised —
+      // but the day the socket is consumed, a voice note would arrive with
+      // an empty media url and render as a bubble that plays nothing.
+      mediaUrl:
+          (j['mediaUrl'] ?? j['media_url'] ?? j['attachment_url']) as String? ??
+              '',
+      durationMs:
+          int.tryParse('${j['durationMs'] ?? j['duration_ms'] ?? 0}') ?? 0,
       createdAt: ts(j['createdAt'] ?? j['created_at']) ?? DateTime.now(),
       clientMessageId:
           (j['clientMessageId'] ?? j['client_message_id']) as String? ?? '',
@@ -171,9 +179,11 @@ class ContributionReader {
       userId: (j['userId'] ?? j['user_id']) as String? ?? '',
       userName: (j['userName'] ?? j['user_name']) as String? ?? '',
       lastReadMessageId:
-          (j['lastReadMessageId'] ?? j['last_read_message_id']) as String? ?? '',
-      lastReadAt:
-          raw != null && raw.isNotEmpty ? DateTime.tryParse(raw)?.toLocal() : null,
+          (j['lastReadMessageId'] ?? j['last_read_message_id']) as String? ??
+              '',
+      lastReadAt: raw != null && raw.isNotEmpty
+          ? DateTime.tryParse(raw)?.toLocal()
+          : null,
     );
   }
 }
@@ -364,8 +374,7 @@ class ContributionChatRemoteDataSource {
         'reply_to_message_id': replyToMessageId,
         // Omitted when empty so an older gateway that does not know the field
         // is never sent a null it has to interpret.
-        if (mentionedUserIds.isNotEmpty)
-          'mentioned_user_ids': mentionedUserIds,
+        if (mentionedUserIds.isNotEmpty) 'mentioned_user_ids': mentionedUserIds,
       }),
     );
     if (res.statusCode < 200 || res.statusCode >= 300) {
@@ -387,8 +396,7 @@ class ContributionChatRemoteDataSource {
     required String token,
     required String contributionId,
   }) async {
-    final uri =
-        Uri.parse('$_base/v1/contributions/$contributionId/chat-state');
+    final uri = Uri.parse('$_base/v1/contributions/$contributionId/chat-state');
     final res = await _client.get(uri, headers: _headers(token));
     if (res.statusCode < 200 || res.statusCode >= 300) {
       return const ContributionChatState();

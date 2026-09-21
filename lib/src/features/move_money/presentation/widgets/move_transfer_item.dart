@@ -71,7 +71,8 @@ class MoveTransferItem extends StatelessWidget {
                   // Status badge and date row
                   Row(
                     children: [
-                      MoveStatusBadge(status: transfer.status, transfer: transfer),
+                      MoveStatusBadge(
+                          status: transfer.status, transfer: transfer),
                       SizedBox(width: 8.w),
                       Text(
                         _formatDate(transfer.createdAt),

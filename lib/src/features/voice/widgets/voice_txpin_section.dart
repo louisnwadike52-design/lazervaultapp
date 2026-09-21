@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -50,14 +52,43 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
   bool _thresholdDirty = false;
   VoiceTxPinSettings? _settings;
 
+  /// Live talk-mode updates from anywhere else in the app (the in-call sheet
+  /// cycles the mode with a single tap).
+  StreamSubscription<String>? _talkModeSub;
+
   @override
   void initState() {
     super.initState();
     _load();
+    // Without this the section was write-only: it read the mode ONCE in
+    // initState, so cycling the chip inside the voice sheet left this screen
+    // showing the old value indefinitely. That is the "Settings says Hold,
+    // sheet says Hands-free" report.
+    if (serviceLocator.isRegistered<VoiceTalkModeController>()) {
+      final controller = serviceLocator<VoiceTalkModeController>();
+      // Prime the controller from the persisted value. It is seeded with
+      // `continuous` and, until now, only the voice sheet ever called load() —
+      // so opening the sheet before this screen presented Hands-free while the
+      // saved choice was something else. Its own docstring already promised
+      // "Settings on mount"; this makes that true.
+      unawaited(controller.load());
+      _talkModeSub = controller
+          .modeStream
+          .listen((mode) {
+        if (!mounted) return;
+        final current = _settings;
+        if (current == null || current.effectiveInteractionMode == mode) return;
+        // Re-read rather than patch a local copy: the server is the authority
+        // on the whole settings record, and a mode change is rare enough that
+        // one refresh is cheaper than a second source of truth.
+        _load();
+      });
+    }
   }
 
   @override
   void dispose() {
+    _talkModeSub?.cancel();
     _thresholdController.dispose();
     super.dispose();
   }
@@ -89,22 +120,34 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
     String? interactionMode,
   }) async {
     setState(() => _saving = true);
-    final ok = await _service.updateTxPinSettings(
-      requirePin: requirePin,
-      thresholdKobo: thresholdKobo,
-      entryMode: entryMode,
-      interactionMode: interactionMode,
-    );
-    // Broadcast a talk-mode change so a LIVE voice session picks it up.
+
+    // TALK MODE GOES THROUGH THE CONTROLLER, NOT AROUND IT.
     //
-    // Saving alone only wrote the row: the running VoiceSessionCubit kept its
-    // own copy, so the mic carried on in whatever mode the session opened with
-    // and the setting looked like it did nothing.
-    if (ok &&
-        interactionMode != null &&
+    // This used to write the row itself and then merely BROADCAST via
+    // applyFromServer, which is announce-only. Two consequences: the
+    // controller's own loaded-state was never set, and the write went through
+    // a second, non-DI VoiceSettingsService instance — so the controller and
+    // this screen could hold different values for the same setting.
+    // setMode() persists AND broadcasts, which is the whole point of it.
+    bool ok = true;
+    if (interactionMode != null &&
         serviceLocator.isRegistered<VoiceTalkModeController>()) {
-      serviceLocator<VoiceTalkModeController>()
-          .applyFromServer(interactionMode);
+      await serviceLocator<VoiceTalkModeController>().setMode(interactionMode);
+    } else if (interactionMode != null) {
+      ok = await _service.updateTxPinSettings(
+        requirePin: null,
+        thresholdKobo: null,
+        interactionMode: interactionMode,
+      );
+    }
+    // Everything that is NOT the talk mode still saves the ordinary way.
+    if (requirePin != null || thresholdKobo != null || entryMode != null) {
+      ok = await _service.updateTxPinSettings(
+            requirePin: requirePin,
+            thresholdKobo: thresholdKobo,
+            entryMode: entryMode,
+          ) &&
+          ok;
     }
     if (!mounted) return;
     if (ok) {
@@ -252,11 +295,11 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
               // listing all four taught nobody which gesture they had chosen,
               // and this screen is where the choice is made.
               child: Text(
-                VoiceTalkMode.explanation(
-                  (s.interactionMode.isEmpty)
-                      ? 'continuous'
-                      : s.interactionMode,
-                ),
+                // effectiveInteractionMode, not the raw override. The chips
+                // highlight by `effectiveInteractionMode`, so reading the raw
+                // field here (with a 'continuous' fallback) could describe
+                // hands-free while the Hold chip was lit.
+                VoiceTalkMode.explanation(s.effectiveInteractionMode),
                 style:
                     GoogleFonts.inter(fontSize: 11.sp, color: _textSecondary),
               ),
@@ -266,14 +309,17 @@ class _VoiceTxPinSectionState extends State<VoiceTxPinSection> {
             padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
             child: Row(
               children: [
-                Expanded(
-                    child: _interactionChip(s, 'continuous', 'Continuous')),
-                SizedBox(width: 8.w),
-                Expanded(child: _interactionChip(s, 'hold', 'Hold')),
-                SizedBox(width: 8.w),
-                Expanded(child: _interactionChip(s, 'tap', 'Tap')),
-                SizedBox(width: 8.w),
-                Expanded(child: _interactionChip(s, 'double_tap', '2×-tap')),
+                // Labels come from VoiceTalkMode, the same source the in-call
+                // sheet and the docked bar use. This screen used to spell them
+                // itself ('Continuous' / 'Hold' / 'Tap' / '2×-tap'), so the
+                // settings page and the live session named the same mode
+                // differently — Settings said "Hold" while the sheet said
+                // "Hands-free".
+                for (final m in VoiceTalkMode.all) ...[
+                  if (m != VoiceTalkMode.all.first) SizedBox(width: 8.w),
+                  Expanded(
+                      child: _interactionChip(s, m, VoiceTalkMode.label(m))),
+                ],
               ],
             ),
           ),

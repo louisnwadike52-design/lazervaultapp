@@ -1168,6 +1168,16 @@ const ScheduledPayoutMessage$json = {
       '6': '.google.protobuf.Timestamp',
       '10': 'updatedAt'
     },
+    {'1': 'failure_code', '3': 23, '4': 1, '5': 9, '10': 'failureCode'},
+    {
+      '1': 'failure_recoverable',
+      '3': 24,
+      '4': 1,
+      '5': 8,
+      '10': 'failureRecoverable'
+    },
+    {'1': 'failure_hint', '3': 25, '4': 1, '5': 9, '10': 'failureHint'},
+    {'1': 'manual_eligible', '3': 26, '4': 1, '5': 8, '10': 'manualEligible'},
   ],
 };
 
@@ -1191,7 +1201,10 @@ final $typed_data.Uint8List scheduledPayoutMessageDescriptor = $convert.base64De
     'oVcGF5b3V0X3RyYW5zYWN0aW9uX2lkGBMgASgJUhNwYXlvdXRUcmFuc2FjdGlvbklkEhgKB3Zl'
     'cnNpb24YFCABKANSB3ZlcnNpb24SOQoKY3JlYXRlZF9hdBgVIAEoCzIaLmdvb2dsZS5wcm90b2'
     'J1Zi5UaW1lc3RhbXBSCWNyZWF0ZWRBdBI5Cgp1cGRhdGVkX2F0GBYgASgLMhouZ29vZ2xlLnBy'
-    'b3RvYnVmLlRpbWVzdGFtcFIJdXBkYXRlZEF0');
+    'b3RvYnVmLlRpbWVzdGFtcFIJdXBkYXRlZEF0EiEKDGZhaWx1cmVfY29kZRgXIAEoCVILZmFpbH'
+    'VyZUNvZGUSLwoTZmFpbHVyZV9yZWNvdmVyYWJsZRgYIAEoCFISZmFpbHVyZVJlY292ZXJhYmxl'
+    'EiEKDGZhaWx1cmVfaGludBgZIAEoCVILZmFpbHVyZUhpbnQSJwoPbWFudWFsX2VsaWdpYmxlGB'
+    'ogASgIUg5tYW51YWxFbGlnaWJsZQ==');
 
 @$core.Deprecated('Use payoutEventMessageDescriptor instead')
 const PayoutEventMessage$json = {
@@ -1361,6 +1374,43 @@ final $typed_data.Uint8List clearPayoutReceiverResponseDescriptor =
         'ChtDbGVhclBheW91dFJlY2VpdmVyUmVzcG9uc2USGAoHY2xlYXJlZBgBIAEoCFIHY2xlYXJlZB'
         'JRChBzY2hlZHVsZWRfcGF5b3V0GAIgASgLMiYuZ3JvdXBfYWNjb3VudHMuU2NoZWR1bGVkUGF5'
         'b3V0TWVzc2FnZVIPc2NoZWR1bGVkUGF5b3V0');
+
+@$core.Deprecated('Use switchPayoutToManualRequestDescriptor instead')
+const SwitchPayoutToManualRequest$json = {
+  '1': 'SwitchPayoutToManualRequest',
+  '2': [
+    {'1': 'contribution_id', '3': 1, '4': 1, '5': 9, '10': 'contributionId'},
+    {'1': 'cycle_index', '3': 2, '4': 1, '5': 5, '10': 'cycleIndex'},
+  ],
+};
+
+/// Descriptor for `SwitchPayoutToManualRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List switchPayoutToManualRequestDescriptor =
+    $convert.base64Decode(
+        'ChtTd2l0Y2hQYXlvdXRUb01hbnVhbFJlcXVlc3QSJwoPY29udHJpYnV0aW9uX2lkGAEgASgJUg'
+        '5jb250cmlidXRpb25JZBIfCgtjeWNsZV9pbmRleBgCIAEoBVIKY3ljbGVJbmRleA==');
+
+@$core.Deprecated('Use switchPayoutToManualResponseDescriptor instead')
+const SwitchPayoutToManualResponse$json = {
+  '1': 'SwitchPayoutToManualResponse',
+  '2': [
+    {
+      '1': 'scheduled_payout',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.group_accounts.ScheduledPayoutMessage',
+      '10': 'scheduledPayout'
+    },
+  ],
+};
+
+/// Descriptor for `SwitchPayoutToManualResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List switchPayoutToManualResponseDescriptor =
+    $convert.base64Decode(
+        'ChxTd2l0Y2hQYXlvdXRUb01hbnVhbFJlc3BvbnNlElEKEHNjaGVkdWxlZF9wYXlvdXQYASABKA'
+        'syJi5ncm91cF9hY2NvdW50cy5TY2hlZHVsZWRQYXlvdXRNZXNzYWdlUg9zY2hlZHVsZWRQYXlv'
+        'dXQ=');
 
 @$core.Deprecated('Use triggerManualPayoutRequestDescriptor instead')
 const TriggerManualPayoutRequest$json = {
@@ -3692,6 +3742,13 @@ const ContributionMessageProto$json = {
       '5': 8,
       '10': 'deletedForEveryone'
     },
+    {
+      '1': 'mentioned_user_ids',
+      '3': 16,
+      '4': 3,
+      '5': 9,
+      '10': 'mentionedUserIds'
+    },
   ],
 };
 
@@ -3706,7 +3763,8 @@ final $typed_data.Uint8List contributionMessageProtoDescriptor = $convert.base64
     'b19tZXNzYWdlX2lkGAsgASgJUhByZXBseVRvTWVzc2FnZUlkEiIKDXJlcGx5X3RvX2JvZHkYDC'
     'ABKAlSC3JlcGx5VG9Cb2R5EiYKD3JlcGx5X3RvX3NlbmRlchgNIAEoCVINcmVwbHlUb1NlbmRl'
     'chIbCgllZGl0ZWRfYXQYDiABKAlSCGVkaXRlZEF0EjAKFGRlbGV0ZWRfZm9yX2V2ZXJ5b25lGA'
-    '8gASgIUhJkZWxldGVkRm9yRXZlcnlvbmU=');
+    '8gASgIUhJkZWxldGVkRm9yRXZlcnlvbmUSLAoSbWVudGlvbmVkX3VzZXJfaWRzGBAgAygJUhBt'
+    'ZW50aW9uZWRVc2VySWRz');
 
 @$core.Deprecated('Use sendContributionMessageRequestDescriptor instead')
 const SendContributionMessageRequest$json = {
@@ -3725,6 +3783,13 @@ const SendContributionMessageRequest$json = {
       '5': 9,
       '10': 'replyToMessageId'
     },
+    {
+      '1': 'mentioned_user_ids',
+      '3': 8,
+      '4': 3,
+      '5': 9,
+      '10': 'mentionedUserIds'
+    },
   ],
 };
 
@@ -3734,7 +3799,8 @@ final $typed_data.Uint8List sendContributionMessageRequestDescriptor = $convert.
     'gJUg5jb250cmlidXRpb25JZBISCgRraW5kGAIgASgJUgRraW5kEhIKBGJvZHkYAyABKAlSBGJv'
     'ZHkSGwoJbWVkaWFfdXJsGAQgASgJUghtZWRpYVVybBIfCgtkdXJhdGlvbl9tcxgFIAEoBVIKZH'
     'VyYXRpb25NcxIqChFjbGllbnRfbWVzc2FnZV9pZBgGIAEoCVIPY2xpZW50TWVzc2FnZUlkEi0K'
-    'E3JlcGx5X3RvX21lc3NhZ2VfaWQYByABKAlSEHJlcGx5VG9NZXNzYWdlSWQ=');
+    'E3JlcGx5X3RvX21lc3NhZ2VfaWQYByABKAlSEHJlcGx5VG9NZXNzYWdlSWQSLAoSbWVudGlvbm'
+    'VkX3VzZXJfaWRzGAggAygJUhBtZW50aW9uZWRVc2VySWRz');
 
 @$core.Deprecated('Use sendContributionMessageResponseDescriptor instead')
 const SendContributionMessageResponse$json = {

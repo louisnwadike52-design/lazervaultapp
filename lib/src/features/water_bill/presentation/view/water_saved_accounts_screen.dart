@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/shared_widgets/app_error_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -128,24 +129,13 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
   Widget _buildBody() {
     if (_error != null &&
         (_beneficiaries == null || _beneficiaries!.isEmpty)) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline,
-                size: 48.sp, color: const Color(0xFFEF4444)),
-            SizedBox(height: 16.h),
-            Text(_error!,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
-            SizedBox(height: 24.h),
-            ElevatedButton(
-              onPressed: () => context.read<WaterBeneficiaryCubit>().load(),
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
+      // Raw thrown strings (SocketException / 'Failed host lookup') were
+      // being printed straight to the user. AppErrorView maps them via
+      // friendlyError() into plain connectivity copy.
+      return AppErrorView(
+        error: _error,
+        context: 'load your saved water accounts',
+        onRetry: () => context.read<WaterBeneficiaryCubit>().load(),
       );
     }
     if (_loading && _beneficiaries == null) {

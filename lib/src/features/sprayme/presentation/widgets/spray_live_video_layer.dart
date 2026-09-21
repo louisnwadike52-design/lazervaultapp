@@ -3,7 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:video_player/video_player.dart';
 
+import 'package:lazervault/src/features/sprayme/domain/entities/spray_layout_mode.dart';
 import 'package:lazervault/src/features/sprayme/presentation/cubit/spray_live_state.dart';
+
+part 'spray_live_video_layouts.dart';
 
 /// Full-bleed background layer that renders the SprayMe live video — either the
 /// WebRTC broadcaster track(s) or an HLS stream — with all the money/gift/comment
@@ -15,10 +18,15 @@ class SprayLiveVideoLayer extends StatelessWidget {
   /// so guest boxes show the real username instead of the token fallback "Guest".
   final Map<String, String> nameByIdentity;
 
+  /// How participants are arranged. Defaults to the product default so any
+  /// caller that has not been updated still renders a valid layout.
+  final SprayLayoutMode layout;
+
   const SprayLiveVideoLayer({
     super.key,
     required this.state,
     this.nameByIdentity = const {},
+    this.layout = kSprayDefaultLayoutMode,
   });
 
   @override
@@ -31,7 +39,8 @@ class SprayLiveVideoLayer extends StatelessWidget {
       case SprayLivePhase.connecting:
         base = const ColoredBox(
           color: Color(0xFF0A0A0A),
-          child: Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6))),
+          child: Center(
+              child: CircularProgressIndicator(color: Color(0xFF3B82F6))),
         );
 
       case SprayLivePhase.broadcasting:
@@ -40,6 +49,7 @@ class SprayLiveVideoLayer extends StatelessWidget {
           tracks: state.tracks,
           nameByIdentity: nameByIdentity,
           isAudioOnly: state.isAudioOnly,
+          layout: layout,
         );
 
       case SprayLivePhase.idle:
@@ -50,7 +60,8 @@ class SprayLiveVideoLayer extends StatelessWidget {
     // Paused overlay sits above the (frozen) video for both broadcaster and viewers.
     if (state.isPaused && state.isLiveActive) {
       return Positioned.fill(
-        child: Stack(fit: StackFit.expand, children: [base, const _PausedOverlay()]),
+        child: Stack(
+            fit: StackFit.expand, children: [base, const _PausedOverlay()]),
       );
     }
     return Positioned.fill(child: base);
@@ -73,7 +84,10 @@ class _PausedOverlay extends StatelessWidget {
             SizedBox(height: 12.h),
             Text(
               'Live paused',
-              style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700),
             ),
             SizedBox(height: 4.h),
             Text(
@@ -94,15 +108,18 @@ class _PausedOverlay extends StatelessWidget {
 class _WebRtcView extends StatelessWidget {
   final List<SprayLiveTrack> tracks;
   final Map<String, String> nameByIdentity;
+
   /// The host is live on audio with the camera off — a valid broadcast, not a
   /// missing one. Without this the audio-only case is indistinguishable from a
   /// stream that has not arrived, and viewers were told "Waiting for video…"
   /// for the whole broadcast.
   final bool isAudioOnly;
+  final SprayLayoutMode layout;
   const _WebRtcView({
     required this.tracks,
     this.nameByIdentity = const {},
     this.isAudioOnly = false,
+    this.layout = kSprayDefaultLayoutMode,
   });
 
   @override
@@ -135,99 +152,38 @@ class _WebRtcView extends StatelessWidget {
       return const ColoredBox(
         color: Color(0xFF0A0A0A),
         child: Center(
-          child: Text('Waiting for video…', style: TextStyle(color: Colors.white70)),
+          child: Text('Waiting for video…',
+              style: TextStyle(color: Colors.white70)),
         ),
       );
     }
 
-    // Primary = the HOST's track (full-screen), always — never let a guest take
-    // over the main view, and never demote the host to a box on their own
-    // screen. Fall back to the first remote, then local, if the host track
-    // isn't available yet.
+    // Primary = the HOST's track, always — never let a guest take over the main
+    // view, and never demote the host to a box on their own screen. Fall back
+    // to the first remote, then local, if the host track isn't available yet.
+    // Grid has no "primary" and ignores this.
     final primary = tracks.firstWhere(
       (t) => t.isHost,
       orElse: () =>
           tracks.firstWhere((t) => !t.isLocal, orElse: () => tracks.first),
     );
-    final guests =
+    final others =
         tracks.where((t) => t.participantId != primary.participantId).toList();
 
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: VideoTrackRenderer(
-            primary.track,
-            fit: VideoViewFit.cover,
-          ),
+    return switch (layout) {
+      SprayLayoutMode.grid =>
+        _GridLayout(tracks: tracks, nameByIdentity: nameByIdentity),
+      SprayLayoutMode.sidebar => _SidebarLayout(
+          primary: primary,
+          others: others,
+          nameByIdentity: nameByIdentity,
         ),
-        // Guest boxes row — horizontally scrollable so up to 8 guests fit.
-        if (guests.isNotEmpty)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 170.h,
-            child: SizedBox(
-              height: 116.h,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.symmetric(horizontal: 12.w),
-                itemCount: guests.length,
-                separatorBuilder: (_, __) => SizedBox(width: 8.w),
-                itemBuilder: (_, i) => _GuestBox(
-                  track: guests[i],
-                  displayName: nameByIdentity[guests[i].participantId],
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-/// A single guest "box": the guest's live video + a name chip.
-class _GuestBox extends StatelessWidget {
-  final SprayLiveTrack track;
-  final String? displayName; // from the roster; falls back to the track name
-  const _GuestBox({required this.track, this.displayName});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 84.w,
-      height: 116.h,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF7C3AED), width: 1.5),
-        color: const Color(0xFF0A0A0A),
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          VideoTrackRenderer(track.track, fit: VideoViewFit.cover),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
-              color: Colors.black54,
-              child: Text(
-                track.isLocal
-                    ? 'You'
-                    : (displayName != null && displayName!.isNotEmpty
-                        ? displayName!
-                        : track.name),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.white, fontSize: 10.sp),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+      SprayLayoutMode.spotlight => _SpotlightLayout(
+          primary: primary,
+          others: others,
+          nameByIdentity: nameByIdentity,
+        ),
+    };
   }
 }
 
@@ -305,17 +261,22 @@ class _HlsViewState extends State<_HlsView> {
               SizedBox(height: 12.h),
               Text(
                 'Stream unavailable',
-                style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600),
               ),
               SizedBox(height: 4.h),
               Text(
                 'We couldn’t load the live video',
-                style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
               ),
               SizedBox(height: 12.h),
               TextButton(
                 onPressed: _retry,
-                child: const Text('Retry', style: TextStyle(color: Color(0xFF3B82F6))),
+                child: const Text('Retry',
+                    style: TextStyle(color: Color(0xFF3B82F6))),
               ),
             ],
           ),
@@ -325,7 +286,8 @@ class _HlsViewState extends State<_HlsView> {
     if (c == null || !c.value.isInitialized) {
       return const ColoredBox(
         color: Color(0xFF0A0A0A),
-        child: Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6))),
+        child:
+            Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6))),
       );
     }
     return ColoredBox(

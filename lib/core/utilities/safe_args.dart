@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 /// Typed, crash-proof access to `Get.arguments`.
 ///
@@ -20,7 +21,16 @@ T? safeArgs<T>() {
 void popMissingArgs(String screenName) {
   WidgetsBinding.instance.addPostFrameCallback((_) {
     if (Get.isSnackbarOpen) return;
-    Get.back();
+    // The very situations that bring us here — a deep link or a push
+    // notification opened from cold — can make this screen the ONLY route on
+    // the stack. `Get.back()` there pops the app down to nothing, trading a
+    // grey screen for a black one. Land the user on the dashboard instead.
+    final canPop = Get.key.currentState?.canPop() ?? false;
+    if (canPop) {
+      Get.back();
+    } else {
+      Get.offAllNamed(AppRoutes.dashboard);
+    }
     Get.snackbar(
       'Something went wrong',
       'We couldn\'t open $screenName. Please try again.',

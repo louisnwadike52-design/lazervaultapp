@@ -10,7 +10,6 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'recurring_bills_screen_widgets.dart';
 
-
 /// Recurring Bills Screen
 /// Manage recurring bills and subscriptions loaded from the backend
 class RecurringBillsScreen extends StatefulWidget {
@@ -42,7 +41,8 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
         ),
         title: const Text(
           'Recurring Bills',
-          style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         actions: [
@@ -89,7 +89,8 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
                   child: state.bills.isEmpty
                       ? _buildEmptyState()
                       : RefreshIndicator(
-                          onRefresh: () => context.read<BudgetCubit>().loadRecurringBills(),
+                          onRefresh: () =>
+                              context.read<BudgetCubit>().loadRecurringBills(),
                           color: const Color(0xFF10B981),
                           backgroundColor: const Color(0xFF1F1F1F),
                           child: ListView.builder(
@@ -122,7 +123,9 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
     required List<pb.RecurringBill> bills,
     required double totalUpcoming,
   }) {
-    final upcomingBills = bills.where((b) => b.daysUntilDue >= 0 && b.daysUntilDue <= 30).toList();
+    final upcomingBills = bills
+        .where((b) => b.daysUntilDue >= 0 && b.daysUntilDue <= 30)
+        .toList();
     final overdueBills = bills.where((b) => b.daysUntilDue < 0).toList();
 
     return Container(
@@ -170,7 +173,8 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
             label: 'Overdue',
             value: '${overdueBills.length}',
             subtext: overdueBills.isEmpty ? 'bills' : '!',
-            subtextColor: overdueBills.isNotEmpty ? const Color(0xFFFFA726) : null,
+            subtextColor:
+                overdueBills.isNotEmpty ? const Color(0xFFFFA726) : null,
           ),
         ],
       ),
@@ -193,7 +197,9 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
                   color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.receipt_long, color: const Color(0xFF10B981).withValues(alpha: 0.5), size: 40.r),
+                child: Icon(Icons.receipt_long,
+                    color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                    size: 40.r),
               ),
               SizedBox(height: 16.h),
               Text(
@@ -213,7 +219,8 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                 ),
               ),
             ],
@@ -256,7 +263,8 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
     final nameController = TextEditingController();
     final amountController = TextEditingController();
     final merchantController = TextEditingController();
-    pb.ExpenseCategory selectedCategory = pb.ExpenseCategory.EXPENSE_CATEGORY_SUBSCRIPTIONS;
+    pb.ExpenseCategory selectedCategory =
+        pb.ExpenseCategory.EXPENSE_CATEGORY_SUBSCRIPTIONS;
     String selectedRecurrence = 'monthly';
 
     Get.bottomSheet(
@@ -283,7 +291,10 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
                   ),
                   const Text(
                     'Add Recurring Bill',
-                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 24.h),
                   TextField(
@@ -335,7 +346,8 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
                   ),
                   SizedBox(height: 16.h),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF2D2D2D),
                       borderRadius: BorderRadius.circular(12.r),
@@ -344,9 +356,11 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
                       child: DropdownButton<pb.ExpenseCategory>(
                         value: selectedCategory,
                         dropdownColor: const Color(0xFF2D2D2D),
-                        icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
+                        icon: const Icon(Icons.keyboard_arrow_down,
+                            color: Colors.white70),
                         isExpanded: true,
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 14),
                         items: [
                           pb.ExpenseCategory.EXPENSE_CATEGORY_SUBSCRIPTIONS,
                           pb.ExpenseCategory.EXPENSE_CATEGORY_BILLS_UTILITIES,
@@ -360,14 +374,16 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
                           );
                         }).toList(),
                         onChanged: (value) {
-                          if (value != null) setSheetState(() => selectedCategory = value);
+                          if (value != null)
+                            setSheetState(() => selectedCategory = value);
                         },
                       ),
                     ),
                   ),
                   SizedBox(height: 16.h),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF2D2D2D),
                       borderRadius: BorderRadius.circular(12.r),
@@ -376,17 +392,24 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
                       child: DropdownButton<String>(
                         value: selectedRecurrence,
                         dropdownColor: const Color(0xFF2D2D2D),
-                        icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
+                        icon: const Icon(Icons.keyboard_arrow_down,
+                            color: Colors.white70),
                         isExpanded: true,
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 14),
                         items: const [
-                          DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
-                          DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
-                          DropdownMenuItem(value: 'quarterly', child: Text('Quarterly')),
-                          DropdownMenuItem(value: 'yearly', child: Text('Yearly')),
+                          DropdownMenuItem(
+                              value: 'weekly', child: Text('Weekly')),
+                          DropdownMenuItem(
+                              value: 'monthly', child: Text('Monthly')),
+                          DropdownMenuItem(
+                              value: 'quarterly', child: Text('Quarterly')),
+                          DropdownMenuItem(
+                              value: 'yearly', child: Text('Yearly')),
                         ],
                         onChanged: (value) {
-                          if (value != null) setSheetState(() => selectedRecurrence = value);
+                          if (value != null)
+                            setSheetState(() => selectedRecurrence = value);
                         },
                       ),
                     ),
@@ -397,32 +420,37 @@ class _RecurringBillsScreenState extends State<RecurringBillsScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         final name = nameController.text.trim();
-                        final amount = double.tryParse(amountController.text.trim()) ?? 0;
+                        final amount =
+                            double.tryParse(amountController.text.trim()) ?? 0;
                         final merchant = merchantController.text.trim();
 
                         if (name.isEmpty || amount <= 0) {
-                          Get.snackbar('Error', 'Please enter a name and amount',
+                          Get.snackbar(
+                              'Error', 'Please enter a name and amount',
                               backgroundColor: const Color(0xFFEF4444));
                           return;
                         }
 
                         Get.back();
                         context.read<BudgetCubit>().createRecurringBill(
-                          name: name,
-                          amount: amount,
-                          currency: CurrencySymbols.currentCurrency,
-                          category: selectedCategory,
-                          recurrencePattern: selectedRecurrence,
-                          merchant: merchant.isNotEmpty ? merchant : null,
-                        );
+                              name: name,
+                              amount: amount,
+                              currency: CurrencySymbols.currentCurrency,
+                              category: selectedCategory,
+                              recurrencePattern: selectedRecurrence,
+                              merchant: merchant.isNotEmpty ? merchant : null,
+                            );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF10B981),
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r)),
                       ),
-                      child: const Text('Add Bill', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: const Text('Add Bill',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

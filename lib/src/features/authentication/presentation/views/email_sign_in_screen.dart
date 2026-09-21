@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/authentication/presentation/widgets/account_locked_modal.dart';
 import 'package:flutter/services.dart';
@@ -82,6 +83,41 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
       FeatureFlags.isAppleLoginEnabled &&
       _appleLoginOn;
   bool get _socialSignInEnabled => _showGoogle || _showApple;
+
+  /// The provider buttons, in platform order.
+  ///
+  /// iOS puts Apple first; every other platform puts Google first. Built as a
+  /// list so the separator sits BETWEEN whichever two are actually shown —
+  /// the previous inline form hard-coded Google-then-Apple and hung the gap
+  /// off Google, so a build showing only Apple still reserved Google's spacing.
+  List<Widget> _socialButtons(BuildContext context) {
+    final google = _showGoogle
+        ? GoogleSignInButton(
+            onPressed: () =>
+                context.read<AuthenticationCubit>().signInWithGoogle(),
+          )
+        : null;
+    final apple = _showApple
+        ? AppleSignInButtonFull(
+            onPressed: () =>
+                context.read<AuthenticationCubit>().signInWithApple(),
+          )
+        : null;
+
+    final ordered = <Widget>[
+      for (final w in (defaultTargetPlatform == TargetPlatform.iOS
+          ? [apple, google]
+          : [google, apple]))
+        if (w != null) w,
+    ];
+
+    return <Widget>[
+      for (var i = 0; i < ordered.length; i++) ...[
+        if (i > 0) SizedBox(height: 12.h),
+        ordered[i],
+      ],
+    ];
+  }
 
   Future<void> _loadSocialLoginPrefs() async {
     final store = serviceLocator<SecureStorageService>();
@@ -566,8 +602,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                             Row(children: [
                               const Expanded(child: Divider(thickness: 0.6)),
                               Padding(
-                                padding:
-                                    EdgeInsets.symmetric(horizontal: 12.w),
+                                padding: EdgeInsets.symmetric(horizontal: 12.w),
                                 child: Text(
                                   'or continue with',
                                   style: TextStyle(
@@ -577,20 +612,22 @@ class _EmailSignInScreenState extends State<EmailSignInScreen>
                               const Expanded(child: Divider(thickness: 0.6)),
                             ]),
                             SizedBox(height: 16.0.h),
-                            if (_showGoogle) ...[
-                              GoogleSignInButton(
-                                onPressed: () => context
-                                    .read<AuthenticationCubit>()
-                                    .signInWithGoogle(),
-                              ),
-                              if (_showApple) SizedBox(height: 12.h),
-                            ],
-                            if (_showApple)
-                              AppleSignInButtonFull(
-                                onPressed: () => context
-                                    .read<AuthenticationCubit>()
-                                    .signInWithApple(),
-                              ),
+                            // APPLE LEADS ON iOS.
+                            //
+                            // Order is platform-dependent, not fixed: on iOS
+                            // Sign in with Apple takes the leading position and
+                            // Google follows; everywhere else Google leads.
+                            // This is also what Apple's own guidance requires —
+                            // Sign in with Apple must appear at least as
+                            // prominently as other providers, and on their
+                            // platform "first" is what prominent means.
+                            //
+                            // NOTE: these are the brands' official FULL-WIDTH
+                            // treatments, stacked, so "leading" is the TOP
+                            // slot rather than the left of a row. The compact
+                            // side-by-side squares were tried and failed both
+                            // style guides.
+                            ..._socialButtons(context),
                             SizedBox(height: 24.h),
                           ] else
                             SizedBox(height: 32.h),

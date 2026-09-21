@@ -12,7 +12,6 @@ import '../../utils/group_export_helper.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'share_contribution_bottom_sheet_widgets.dart';
 
-
 class ShareContributionBottomSheet extends StatefulWidget {
   final Contribution contribution;
   final String groupName;
@@ -28,10 +27,12 @@ class ShareContributionBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<ShareContributionBottomSheet> createState() => _ShareContributionBottomSheetState();
+  State<ShareContributionBottomSheet> createState() =>
+      _ShareContributionBottomSheetState();
 }
 
-class _ShareContributionBottomSheetState extends State<ShareContributionBottomSheet> {
+class _ShareContributionBottomSheetState
+    extends State<ShareContributionBottomSheet> {
   SharePlatform? _selectedPlatform;
   ShareFormat _selectedFormat = ShareFormat.summaryText;
   bool _isGenerating = false;
@@ -335,7 +336,9 @@ class _ShareContributionBottomSheetState extends State<ShareContributionBottomSh
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.2) : const Color(0xFF2D2D2D),
+          color: isSelected
+              ? color.withValues(alpha: 0.2)
+              : const Color(0xFF2D2D2D),
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isSelected ? color : Colors.transparent,
@@ -402,7 +405,8 @@ class _ShareContributionBottomSheetState extends State<ShareContributionBottomSh
   }
 
   String _getPreviewText() {
-    final currencyFormat = NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
+    final currencyFormat =
+        NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
     final dateFormat = DateFormat('MMM d, yyyy');
     final c = widget.contribution;
 
@@ -482,7 +486,8 @@ Join us on Lazervault!''';
           SnackBar(
             content: const Text('Shared successfully'),
             backgroundColor: const Color(0xFF10B981),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r)),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -493,7 +498,8 @@ Join us on Lazervault!''';
           SnackBar(
             content: Text('Failed to share: ${e.toString()}'),
             backgroundColor: const Color(0xFFEF4444),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r)),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -508,7 +514,8 @@ Join us on Lazervault!''';
   }
 
   String _generateSummaryText() {
-    final currencyFormat = NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
+    final currencyFormat =
+        NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
     final dateFormat = DateFormat('MMM d, yyyy');
     final c = widget.contribution;
     final progress = c.targetAmount > 0
@@ -529,7 +536,8 @@ Join us on LazerVault to contribute!
 https://lazervault.app/groups''';
   }
 
-  Future<void> _shareToPlatform(SharePlatform platform, String? text, File? file) async {
+  Future<void> _shareToPlatform(
+      SharePlatform platform, String? text, File? file) async {
     switch (platform) {
       case SharePlatform.whatsapp:
         if (file != null) {
@@ -568,13 +576,15 @@ https://lazervault.app/groups''';
             text: text,
           );
         } else if (text != null) {
-          final subject = Uri.encodeComponent('Contribution: ${widget.contribution.title}');
+          final subject =
+              Uri.encodeComponent('Contribution: ${widget.contribution.title}');
           final body = Uri.encodeComponent(text);
           final url = Uri.parse('mailto:?subject=$subject&body=$body');
           if (await canLaunchUrl(url)) {
             await launchUrl(url);
           } else {
-            await Share.share(text, subject: 'Contribution: ${widget.contribution.title}');
+            await Share.share(text,
+                subject: 'Contribution: ${widget.contribution.title}');
           }
         }
         break;
@@ -604,7 +614,8 @@ https://lazervault.app/groups''';
             SnackBar(
               content: const Text('Copied to clipboard'),
               backgroundColor: const Color(0xFF10B981),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r)),
               behavior: SnackBarBehavior.floating,
               duration: const Duration(seconds: 2),
             ),

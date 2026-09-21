@@ -68,6 +68,10 @@ class ChatMessageEntity extends Equatable {
   final dynamic receiptCard;
   /// Scannable QR payload from `metadata.qr_card` — see ChatQrCard.
   final Map<String, dynamic>? qrCard;
+
+  /// `recipient_card` — the confirmed transfer counterparty, rendered as an
+  /// avatar card rather than a line of prose. See ChatRecipientCard.
+  final Map<String, dynamic>? recipientCard;
   // PinPromptIntent payload (chat_services_shared/pin_prompt.py) — drives the
   // inline ChatPinPromptCard so a chat-driven money move collects the PIN in
   // the chat thread instead of telling the user to open a screen.
@@ -94,6 +98,7 @@ class ChatMessageEntity extends Equatable {
     this.receiptData,
     this.receiptCard,
     this.qrCard,
+    this.recipientCard,
     this.pinPrompt,
   });
 
@@ -118,6 +123,7 @@ class ChatMessageEntity extends Equatable {
     Map<String, dynamic>? receiptData,
     dynamic receiptCard,
     Map<String, dynamic>? qrCard,
+    Map<String, dynamic>? recipientCard,
     Map<String, dynamic>? pinPrompt,
   }) {
     return ChatMessageEntity(
@@ -141,6 +147,7 @@ class ChatMessageEntity extends Equatable {
       receiptData: receiptData ?? this.receiptData,
       receiptCard: receiptCard ?? this.receiptCard,
       qrCard: qrCard ?? this.qrCard,
+      recipientCard: recipientCard ?? this.recipientCard,
       pinPrompt: pinPrompt ?? this.pinPrompt,
     );
   }
@@ -160,6 +167,7 @@ class ChatMessageEntity extends Equatable {
         receiptData,
         receiptCard,
         qrCard,
+        recipientCard,
         pinPrompt,
       ];
 }

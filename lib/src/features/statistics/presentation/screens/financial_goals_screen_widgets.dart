@@ -66,7 +66,10 @@ class _GoalCard extends StatelessWidget {
                   children: [
                     Text(
                       goal.name,
-                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 2.h),
                     Text(
@@ -98,7 +101,8 @@ class _GoalCard extends StatelessWidget {
               Expanded(
                 child: _ProgressItem(
                   label: 'Remaining',
-                  value: CurrencySymbols.formatAmount(remaining > 0 ? remaining : 0),
+                  value: CurrencySymbols.formatAmount(
+                      remaining > 0 ? remaining : 0),
                 ),
               ),
               Expanded(
@@ -152,7 +156,8 @@ class _GoalCard extends StatelessWidget {
                 backgroundColor: goalColor,
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 10.h),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r)),
               ),
             ),
           ),
@@ -225,7 +230,10 @@ class _ProgressItem extends StatelessWidget {
         SizedBox(height: 2.h),
         Text(
           value,
-          style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600),
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w600),
         ),
       ],
     );

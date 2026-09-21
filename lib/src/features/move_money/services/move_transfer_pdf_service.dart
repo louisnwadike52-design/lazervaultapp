@@ -205,13 +205,17 @@ class MoveTransferPdfService {
                 child: pw.Column(
                   children: [
                     _buildDetailRow('Reference', transfer.reference),
-                    _buildDetailRow('Date', _fullDateTimeFormat.format(transfer.createdAt)),
+                    _buildDetailRow(
+                        'Date', _fullDateTimeFormat.format(transfer.createdAt)),
                     if (transfer.completedAt != null)
-                      _buildDetailRow('Completed', _fullDateTimeFormat.format(transfer.completedAt!)),
+                      _buildDetailRow('Completed',
+                          _fullDateTimeFormat.format(transfer.completedAt!)),
                     if (transfer.debitReference != null)
-                      _buildDetailRow('Debit Reference', transfer.debitReference!),
+                      _buildDetailRow(
+                          'Debit Reference', transfer.debitReference!),
                     if (transfer.payoutReference != null)
-                      _buildDetailRow('Payout Reference', transfer.payoutReference!),
+                      _buildDetailRow(
+                          'Payout Reference', transfer.payoutReference!),
                   ],
                 ),
               ),
@@ -230,11 +234,13 @@ class MoveTransferPdfService {
                     children: [
                       // Single consolidated fee on the user receipt; itemized
                       // breakdown is retained on the backend + admin console.
-                      _buildDetailRow('Transfer fee', _formatNaira(transfer.totalFeeNaira),
+                      _buildDetailRow(
+                          'Transfer fee', _formatNaira(transfer.totalFeeNaira),
                           isBold: true),
                       pw.Divider(color: PdfColors.grey300),
                       pw.SizedBox(height: 8),
-                      _buildDetailRow('Total Debit', _formatNaira(transfer.totalDebitNaira),
+                      _buildDetailRow(
+                          'Total Debit', _formatNaira(transfer.totalDebitNaira),
                           isBold: true, color: PdfColors.blue600),
                     ],
                   ),
@@ -242,7 +248,8 @@ class MoveTransferPdfService {
               ],
 
               // Narration
-              if (transfer.narration != null && transfer.narration!.isNotEmpty) ...[
+              if (transfer.narration != null &&
+                  transfer.narration!.isNotEmpty) ...[
                 pw.SizedBox(height: 16),
                 pw.Container(
                   padding: const pw.EdgeInsets.all(16),
@@ -255,7 +262,8 @@ class MoveTransferPdfService {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text('Narration',
-                          style: _getTextStyle(fontSize: 11, color: PdfColors.grey600)),
+                          style: _getTextStyle(
+                              fontSize: 11, color: PdfColors.grey600)),
                       pw.SizedBox(height: 4),
                       pw.Text(transfer.narration!,
                           style: _getTextStyle(fontSize: 13)),
@@ -266,7 +274,8 @@ class MoveTransferPdfService {
 
               // Failure info
               if (transfer.status == MoveTransferStatus.failed &&
-                  (transfer.failureReason != null || transfer.failureStage != null)) ...[
+                  (transfer.failureReason != null ||
+                      transfer.failureStage != null)) ...[
                 pw.SizedBox(height: 16),
                 pw.Container(
                   padding: const pw.EdgeInsets.all(16),
@@ -279,15 +288,20 @@ class MoveTransferPdfService {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text('Failure Information',
-                          style: _getTextStyle(fontSize: 11, isBold: true, color: PdfColors.red700)),
+                          style: _getTextStyle(
+                              fontSize: 11,
+                              isBold: true,
+                              color: PdfColors.red700)),
                       pw.SizedBox(height: 4),
                       if (transfer.failureReason != null)
                         pw.Text(transfer.failureReason!,
-                            style: _getTextStyle(fontSize: 12, color: PdfColors.red700)),
+                            style: _getTextStyle(
+                                fontSize: 12, color: PdfColors.red700)),
                       if (transfer.failureStage != null) ...[
                         pw.SizedBox(height: 4),
                         pw.Text('Stage: ${transfer.failureStage}',
-                            style: _getTextStyle(fontSize: 11, color: PdfColors.red600)),
+                            style: _getTextStyle(
+                                fontSize: 11, color: PdfColors.red600)),
                       ],
                     ],
                   ),
@@ -441,7 +455,8 @@ class MoveTransferPdfService {
     required MoveTransfer transfer,
     required String userName,
   }) async {
-    final pdfBytes = await generateReceipt(transfer: transfer, userName: userName);
+    final pdfBytes =
+        await generateReceipt(transfer: transfer, userName: userName);
     final directory = await getDownloadsDirectory();
     final fileName =
         'transfer_${transfer.reference}_${DateTime.now().millisecondsSinceEpoch}.pdf';
@@ -455,7 +470,8 @@ class MoveTransferPdfService {
     required MoveTransfer transfer,
     required String userName,
   }) async {
-    final pdfBytes = await generateReceipt(transfer: transfer, userName: userName);
+    final pdfBytes =
+        await generateReceipt(transfer: transfer, userName: userName);
     final fileName = 'transfer_${transfer.reference}.pdf';
     // ignore: deprecated_member_use
     await Share.shareXFiles(

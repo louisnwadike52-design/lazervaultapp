@@ -28,7 +28,6 @@ import '../../../../../core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'group_details_screen_widgets.dart';
 
-
 class GroupDetailsScreen extends StatefulWidget {
   final String groupId;
 
@@ -97,7 +96,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   /// want one final animation.
   void _scrollMembersToBottom() {
     _scrollToMembersBottomDebounce?.cancel();
-    _scrollToMembersBottomDebounce = Timer(const Duration(milliseconds: 250), () {
+    _scrollToMembersBottomDebounce =
+        Timer(const Duration(milliseconds: 250), () {
       if (!mounted) return;
       if (!_membersScrollController.hasClients) return;
       final position = _membersScrollController.position;
@@ -127,16 +127,19 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                 SnackBar(
                   content: Text(state.message),
                   backgroundColor: const Color(0xFFEF4444),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r)),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
             } else if (state is GroupAccountContributionCreated) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Contribution "${state.contribution.title}" created successfully!'),
+                  content: Text(
+                      'Contribution "${state.contribution.title}" created successfully!'),
                   backgroundColor: const Color(0xFF10B981),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r)),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -146,15 +149,19 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                 SnackBar(
                   content: Text('You have left the group'),
                   backgroundColor: const Color(0xFF10B981),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r)),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
               Get.back();
-            } else if (state is MemberAddedSuccess && state.groupId == widget.groupId) {
+            } else if (state is MemberAddedSuccess &&
+                state.groupId == widget.groupId) {
               // Reload group details to get updated members list
               // This is a single reload after successful member add
-              context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
+              context
+                  .read<GroupAccountCubit>()
+                  .loadGroupDetails(widget.groupId);
               // Auto-scroll the members list to the new bottom row.
               // Debounced inside _scrollMembersToBottom so a Future.wait
               // of N adds collapses to a single animation.
@@ -273,7 +280,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             SizedBox(height: 24.h),
             ElevatedButton(
               onPressed: () {
-                context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
+                context
+                    .read<GroupAccountCubit>()
+                    .loadGroupDetails(widget.groupId);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromARGB(255, 78, 3, 208),
@@ -452,6 +461,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         permissions.add(label);
       }
     }
+
     addIf(GroupAction.viewGroup, 'View group details');
     addIf(GroupAction.createContribution, 'Create contributions');
     addIf(GroupAction.editContribution, 'Manage contributions');
@@ -487,7 +497,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                 padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
                   color: const Color(0xFF2D2D2D),
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(16.r)),
                 ),
                 child: Row(
                   children: [
@@ -524,7 +535,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                               if (group.adminId == currentMember.userId) ...[
                                 SizedBox(width: 8.w),
                                 Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 6.w, vertical: 2.h),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(4.r),
@@ -552,7 +564,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                           color: const Color(0xFF3D3D3D),
                           borderRadius: BorderRadius.circular(8.r),
                         ),
-                        child: Icon(Icons.close, color: Colors.white70, size: 18.sp),
+                        child: Icon(Icons.close,
+                            color: Colors.white70, size: 18.sp),
                       ),
                     ),
                   ],
@@ -573,21 +586,22 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                     ),
                     SizedBox(height: 12.h),
                     ...permissions.map((permission) => Padding(
-                      padding: EdgeInsets.only(bottom: 8.h),
-                      child: Row(
-                        children: [
-                          Icon(Icons.check_circle, color: roleColor, size: 16.sp),
-                          SizedBox(width: 8.w),
-                          Text(
-                            permission,
-                            style: GoogleFonts.inter(
-                              fontSize: 13.sp,
-                              color: Colors.white.withValues(alpha: 0.9),
-                            ),
+                          padding: EdgeInsets.only(bottom: 8.h),
+                          child: Row(
+                            children: [
+                              Icon(Icons.check_circle,
+                                  color: roleColor, size: 16.sp),
+                              SizedBox(width: 8.w),
+                              Text(
+                                permission,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13.sp,
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    )),
+                        )),
                   ],
                 ),
               ),
@@ -626,19 +640,29 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 24sp bold sat between a back button and an overflow menu,
+                // so a normal group name ("DECEMBER ITEMS") took two lines and
+                // pushed a two-line description below it — four lines of
+                // header before any of the group's actual numbers. Sized to
+                // fit the common case on one line, capped at two for the rest.
                 Text(
                   group.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     color: Colors.white,
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
                   ),
                 ),
+                SizedBox(height: 2.h),
                 Text(
                   group.description,
                   style: GoogleFonts.inter(
                     color: Colors.grey[400],
-                    fontSize: 14.sp,
+                    fontSize: 12.5.sp,
+                    height: 1.25,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -664,15 +688,18 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                         color: Color(0xFFF59E0B),
                         shape: BoxShape.circle,
                       ),
-                      constraints: BoxConstraints(minWidth: 8.w, minHeight: 8.w),
+                      constraints:
+                          BoxConstraints(minWidth: 8.w, minHeight: 8.w),
                     ),
                   ),
               ],
             ),
             color: const Color(0xFF1F1F1F),
             itemBuilder: (context) {
-              final currentUserId = context.read<GroupAccountCubit>().currentUserId;
-              final currentMember = currentUserId != null ? group.getMember(currentUserId) : null;
+              final currentUserId =
+                  context.read<GroupAccountCubit>().currentUserId;
+              final currentMember =
+                  currentUserId != null ? group.getMember(currentUserId) : null;
               // Edit is admin-only — moderators can manage members but
               // can't reshape the group itself. Identify admin via the
               // creator id (group.adminId) plus the role table; either
@@ -694,7 +721,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                   value: 'share_report',
                   child: Row(
                     children: [
-                      Icon(Icons.analytics, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
+                      Icon(Icons.analytics,
+                          color: const Color.fromARGB(255, 78, 3, 208),
+                          size: 20.sp),
                       SizedBox(width: 12.w),
                       Text(
                         'Generate Report',
@@ -778,8 +807,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                   value: 'past_groups',
                   child: Row(
                     children: [
-                      Icon(Icons.history,
-                          color: Colors.white, size: 20.sp),
+                      Icon(Icons.history, color: Colors.white, size: 20.sp),
                       SizedBox(width: 12.w),
                       Text(
                         'Past groups',
@@ -802,10 +830,14 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     List<GroupMember> members,
     List<Contribution> contributions,
   ) {
-    final totalTarget = contributions.fold<double>(0, (sum, c) => sum + c.targetAmount);
-    final totalCurrent = contributions.fold<double>(0, (sum, c) => sum + c.currentAmount);
-    final progressPercentage = totalTarget > 0 ? (totalCurrent / totalTarget) * 100 : 0;
-    final primaryCurrency = contributions.isNotEmpty ? contributions.first.currency : 'NGN';
+    final totalTarget =
+        contributions.fold<double>(0, (sum, c) => sum + c.targetAmount);
+    final totalCurrent =
+        contributions.fold<double>(0, (sum, c) => sum + c.currentAmount);
+    final progressPercentage =
+        totalTarget > 0 ? (totalCurrent / totalTarget) * 100 : 0;
+    final primaryCurrency =
+        contributions.isNotEmpty ? contributions.first.currency : 'NGN';
     final currencySymbol = _getCurrencySymbol(primaryCurrency);
 
     return Container(
@@ -1116,7 +1148,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     );
   }
 
-  Widget _buildMembersTab(List<GroupMember> members, GroupAccount group, List<Contribution> contributions) {
+  Widget _buildMembersTab(List<GroupMember> members, GroupAccount group,
+      List<Contribution> contributions) {
     // Check if current user can add members
     final currentUserId = context.read<GroupAccountCubit>().currentUserId;
     final currentMember = currentUserId != null
@@ -1152,7 +1185,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                   ),
                   if (canAddMembers)
                     ElevatedButton.icon(
-                      onPressed: () => _showAddMemberBottomSheet(group, members),
+                      onPressed: () =>
+                          _showAddMemberBottomSheet(group, members),
                       icon: Icon(Icons.add, size: 16.sp),
                       label: Text(
                         'Add Member',
@@ -1161,7 +1195,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                         foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12.w, vertical: 8.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.r),
                         ),
@@ -1170,7 +1205,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                   else
                     // Show a disabled button or nothing for non-privileged users
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                       decoration: BoxDecoration(
                         color: Colors.grey[800],
                         borderRadius: BorderRadius.circular(8.r),
@@ -1178,7 +1214,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.lock_outline, size: 14.sp, color: Colors.grey[500]),
+                          Icon(Icons.lock_outline,
+                              size: 14.sp, color: Colors.grey[500]),
                           SizedBox(width: 4.w),
                           Text(
                             'Member',
@@ -1219,7 +1256,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     );
   }
 
-  Widget _buildContributionsTab(List<Contribution> contributions, GroupAccount group, GroupMember? currentUserMember) {
+  Widget _buildContributionsTab(List<Contribution> contributions,
+      GroupAccount group, GroupMember? currentUserMember) {
     // canMember combines role + status — a pending/inactive/removed
     // member never passes even if their role would otherwise allow.
     final canCreateContribution = GroupRolePermissions.canMember(
@@ -1257,16 +1295,19 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                         ),
                         if (isAdmin)
                           ElevatedButton.icon(
-                            onPressed: () => _showCreateContributionBottomSheet(group),
+                            onPressed: () =>
+                                _showCreateContributionBottomSheet(group),
                             icon: Icon(Icons.add, size: 16.sp),
                             label: Text(
                               'New Goal',
                               style: GoogleFonts.inter(fontSize: 12.sp),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 78, 3, 208),
                               foregroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 12.w, vertical: 8.h),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.r),
                               ),
@@ -1287,13 +1328,16 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                         // RIGHT NOW (role + active status). The card
                         // hides the button when onPayment is null.
                         final canPay = GroupRolePermissions.canMember(
-                            currentUserMember,
-                            GroupAction.makeContribution);
+                            currentUserMember, GroupAction.makeContribution);
                         return Padding(
                           padding: EdgeInsets.only(bottom: 12.h),
                           child: ContributionCard(
                             contribution: contribution,
-                            onTap: () => _navigateToContributionDetails(contribution),
+                            // Marks the contributions this user started.
+                            currentUserId:
+                                context.read<AuthenticationCubit>().userId,
+                            onTap: () =>
+                                _navigateToContributionDetails(contribution),
                             onPayment: canPay
                                 ? () => _navigateToMakePayment(contribution)
                                 : null,
@@ -1359,7 +1403,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
                     ),
@@ -1522,7 +1567,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     );
   }
 
-  void _showAddMemberBottomSheet(GroupAccount group, List<GroupMember> existingMembers) {
+  void _showAddMemberBottomSheet(
+      GroupAccount group, List<GroupMember> existingMembers) {
     final cubit = context.read<GroupAccountCubit>();
     final currentUserId = cubit.currentUserId;
     final currentMember = currentUserId != null
@@ -1576,7 +1622,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         group.contributions.first.currency.isNotEmpty) {
       userCurrency = group.contributions.first.currency.toUpperCase();
     } else {
-      final activeAccount = serviceLocator<AccountManager>().activeAccountDetails;
+      final activeAccount =
+          serviceLocator<AccountManager>().activeAccountDetails;
       if (activeAccount != null && activeAccount.currency.isNotEmpty) {
         userCurrency = activeAccount.currency.toUpperCase();
       } else {
@@ -1719,7 +1766,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
 
   void _showChangeRoleDialog(GroupMember member, GroupAccount group) {
     final currentUserId = context.read<GroupAccountCubit>().currentUserId;
-    final currentMember = currentUserId != null ? group.getMember(currentUserId) : null;
+    final currentMember =
+        currentUserId != null ? group.getMember(currentUserId) : null;
     final currentUserRole = currentMember?.role ?? GroupMemberRole.viewer;
     showDialog(
       context: context,
@@ -1728,10 +1776,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         currentUserRole: currentUserRole,
         onRoleSelected: (newRole) {
           context.read<GroupAccountCubit>().updateMemberRoleInGroup(
-            groupId: group.id,
-            memberId: member.id,
-            newRole: newRole,
-          );
+                groupId: group.id,
+                memberId: member.id,
+                newRole: newRole,
+              );
         },
       ),
     );
@@ -1744,9 +1792,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         member: member,
         onConfirm: () {
           context.read<GroupAccountCubit>().removeMemberFromGroupAccount(
-            groupId: group.id,
-            memberId: member.id,
-          );
+                groupId: group.id,
+                memberId: member.id,
+              );
         },
       ),
     );

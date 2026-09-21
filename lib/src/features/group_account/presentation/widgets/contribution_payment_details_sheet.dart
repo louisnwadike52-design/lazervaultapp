@@ -38,8 +38,7 @@ class ContributionPaymentDetailsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tint =
-        _completed ? const Color(0xFF10B981) : const Color(0xFFFB923C);
+    final tint = _completed ? const Color(0xFF10B981) : const Color(0xFFFB923C);
 
     return Container(
       decoration: BoxDecoration(
@@ -81,13 +80,12 @@ class ContributionPaymentDetailsSheet extends StatelessWidget {
                   ),
                   SizedBox(height: 6.h),
                   Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 10.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: tint.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20.r),
-                      border:
-                          Border.all(color: tint.withValues(alpha: 0.35)),
+                      border: Border.all(color: tint.withValues(alpha: 0.35)),
                     ),
                     child: Text(
                       _statusLabel(),
@@ -105,13 +103,15 @@ class ContributionPaymentDetailsSheet extends StatelessWidget {
 
             // Rows, not a card. The sheet is already a surface; a panel inside
             // it just adds a second background for no added meaning.
-            _row('Paid by',
+            _row(
+                'Paid by',
                 payment.userName.trim().isNotEmpty
                     ? payment.userName.trim()
                     : 'Member'),
             _row('To', contributionTitle),
             if (cycleIndex != null) _row('Cycle', '$cycleIndex'),
-            _row('Date',
+            _row(
+                'Date',
                 DateFormat('d MMM yyyy, h:mm a')
                     .format(payment.paymentDate.toLocal())),
             // Reference over the row id: it is what support can look up and
@@ -201,8 +201,8 @@ class ContributionPaymentDetailsSheet extends StatelessWidget {
             width: 96.w,
             child: Text(
               label,
-              style: GoogleFonts.inter(
-                  color: Colors.grey[500], fontSize: 12.5.sp),
+              style:
+                  GoogleFonts.inter(color: Colors.grey[500], fontSize: 12.5.sp),
             ),
           ),
           Expanded(
@@ -224,6 +224,5 @@ class ContributionPaymentDetailsSheet extends StatelessWidget {
     );
   }
 
-  static String _fmt(double v) =>
-      NumberFormat('#,##0.00').format(v);
+  static String _fmt(double v) => NumberFormat('#,##0.00').format(v);
 }

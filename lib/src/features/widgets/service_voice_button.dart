@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/voice/managers/voice_activation_manager.
 import 'package:lazervault/src/features/voice/screens/per_service_voice_settings_screen.dart';
 
 import '../voice_session/widgets/voice_command_sheet.dart';
+import 'service_display_name.dart';
 
 /// Reusable voice button widget for service screens
 ///
@@ -34,10 +35,17 @@ class ServiceVoiceButton extends StatelessWidget {
   /// If not provided, will use default suggestions from VoiceSuggestions
   final List<String>? suggestions;
 
-  /// Icon color (defaults to white)
+  /// Retained so existing call sites keep compiling, but NO LONGER used: the
+  /// mic renders one canonical look everywhere (see build). 22 of 44 call sites
+  /// passed a per-service accent here, which rendered as that colour at 10%
+  /// opacity behind a hairline border — a faint ring, not a filled control — so
+  /// one action wore three different appearances across the app. Per-service
+  /// colour still lives where it carries meaning (the chat icon's accent, the
+  /// voice sheet's header); the mic is now recognisable before it is read.
+  @Deprecated('The mic has one canonical appearance; this value is ignored.')
   final Color? iconColor;
 
-  /// Background color (defaults to white with opacity)
+  @Deprecated('The mic has one canonical appearance; this value is ignored.')
   final Color? backgroundColor;
 
   /// Icon size (defaults to 20.sp)
@@ -54,7 +62,9 @@ class ServiceVoiceButton extends StatelessWidget {
     super.key,
     required this.serviceName,
     this.suggestions,
+    // ignore: deprecated_member_use_from_same_package
     this.iconColor,
+    // ignore: deprecated_member_use_from_same_package
     this.backgroundColor,
     this.iconSize,
     this.buttonSize,
@@ -66,16 +76,27 @@ class ServiceVoiceButton extends StatelessWidget {
     final size = buttonSize ?? 44.w;
     final iconSz = iconSize ?? 20.sp;
 
+    // ONE canonical look for every service landing page: the filled
+    // brand-gradient mic the invoices screen established.
+    //
+    // This used to take `backgroundColor` / `iconColor`, and 22 of 44 call
+    // sites passed a per-service accent — which rendered as that accent at 10%
+    // opacity behind a thin border, NOT a filled control. The result was three
+    // different mics across the app (invisible white-on-white, a faint tinted
+    // ring, and invoices' gradient) for one identical action. Per-service
+    // colour still exists where it carries meaning — the chat icon's accent,
+    // the sheet's header — but the mic is now the same object everywhere, so
+    // it is recognisable before it is read.
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: (backgroundColor ?? Colors.white).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(size / 2),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
+        gradient: const LinearGradient(
+          colors: [Color.fromARGB(255, 78, 3, 208), Color(0xFF6366F1)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        borderRadius: BorderRadius.circular(size / 2),
       ),
       // Tap → voice command sheet. Long-press → per-service voice
       // settings (language, voice, prompt hint). Long-press is a
@@ -87,13 +108,14 @@ class ServiceVoiceButton extends StatelessWidget {
         child: IconButton(
           icon: Icon(
             Icons.mic_rounded,
-            color: iconColor ?? Colors.white,
+            color: Colors.white,
             size: iconSz,
           ),
           onPressed: () => _showVoiceCommandSheet(context),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
-          tooltip: 'Voice commands for $serviceName (long-press for settings)',
+          tooltip:
+              'Voice commands for ${serviceDisplayName(serviceName)} (long-press for settings)',
         ),
       ),
     );
@@ -228,7 +250,6 @@ class ServiceVoiceButtonCompact extends StatelessWidget {
     return ServiceVoiceButton(
       serviceName: serviceName,
       suggestions: suggestions,
-      iconColor: iconColor,
       buttonSize: 36.w,
       iconSize: 16.sp,
     );

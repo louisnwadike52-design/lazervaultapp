@@ -225,9 +225,8 @@ class _MoveStatusInfoSheet extends StatelessWidget {
                           ? Colors.white
                           : const Color(0xFF6B7280),
                       fontSize: 12.5.sp,
-                      fontWeight: steps[i].active
-                          ? FontWeight.w600
-                          : FontWeight.w500,
+                      fontWeight:
+                          steps[i].active ? FontWeight.w600 : FontWeight.w500,
                     ),
                   ),
                 ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import '../../utils/analytics_theme.dart';
 
 /// One beautified, centred empty state for the Linked Banks section — the
 /// single source of "no banks linked yet" messaging (previously duplicated as a
@@ -13,7 +14,7 @@ class LinkedBanksEmptyState extends StatelessWidget {
     required this.onLink,
     this.title = 'No banks linked yet',
     this.subtitle =
-        'Link a bank to see your balances, spending and credit score — all in one place.',
+        'Link a bank to see your balances, spending and credit score, all in one place.',
     this.buttonLabel = 'Link a bank account',
   });
 
@@ -62,7 +63,7 @@ class LinkedBanksEmptyState extends StatelessWidget {
                     color: purple.withValues(alpha: 0.18),
                   ),
                   child: Icon(Icons.account_balance_rounded,
-                      size: 24.sp, color: InvoiceThemeColors.primaryPurpleLight),
+                      size: 24.sp, color: AnalyticsTheme.accent),
                 ),
               ),
             ),

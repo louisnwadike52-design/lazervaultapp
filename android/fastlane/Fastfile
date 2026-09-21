@@ -220,6 +220,45 @@ platform :android do
     )
   end
 
+  desc "Upload ONLY the store-listing images (app icon) to Play — no build, no metadata text"
+  lane :listing_images do |options|
+    # Deliberately separate from the build lanes.
+    #
+    # The `dev`/`staging`/`production` lanes all set skip_upload_images: true so
+    # a routine build can never silently republish listing artwork. This lane is
+    # the inverse: images ONLY, no AAB, no changelog, no store text. Running it
+    # cannot ship code, and shipping code cannot run it.
+    #
+    # Source of truth is android/fastlane/metadata/android/en-US/images/icon.png
+    # (512x512, opaque — Play rejects anything else for the listing icon).
+    # Resolved by SEARCHING the likely roots rather than assuming one: fastlane's
+    # working directory differs depending on whether it is invoked from the
+    # project root or from android/, and a wrong guess here fails the lane with
+    # a confusing "missing" on a file that is plainly there.
+    icon = [
+      "fastlane/metadata/android/en-US/images/icon.png",
+      "metadata/android/en-US/images/icon.png",
+      "android/fastlane/metadata/android/en-US/images/icon.png",
+    ].map { |rel| File.expand_path(rel, Dir.pwd) }.find { |p| File.exist?(p) }
+    UI.user_error!("Listing icon not found. Looked under #{Dir.pwd}") if icon.nil?
+    UI.message("Listing icon: #{icon}")
+
+    upload_to_play_store(
+      package_name:            "com.lazervault.app",
+      json_key:                play_store_json_key_path,
+      skip_upload_aab:         true,
+      skip_upload_apk:         true,
+      skip_upload_metadata:    true,
+      skip_upload_changelogs:  true,
+      skip_upload_images:      false,   # the whole point of this lane
+      skip_upload_screenshots: true,    # screenshots are a separate decision
+      # No track/version: without a binary there is no release to attach to,
+      # and naming one would make supply look for an edit that does not exist.
+      validate_only:           options[:dry_run] ? true : false,
+    )
+    UI.success("Listing icon uploaded to Play (com.lazervault.app)")
+  end
+
   desc "Staging → Play Console closed (alpha) track (PROD build: prod backend/Firebase, auto-rolls to alpha testers)"
   lane :staging do |options|
     use_env("prod") # alpha track tests against the PROD backend

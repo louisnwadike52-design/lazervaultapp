@@ -16,7 +16,7 @@ class Contribution extends Equatable {
   final String createdBy;
   final List<ContributionPayment> payments;
   final Map<String, dynamic>? metadata;
-  
+
   // Enhanced scheduling fields
   final ContributionType type; // one_time, rotating_savings, investment_pool
   final ContributionFrequency? frequency; // weekly, monthly, etc.
@@ -25,13 +25,13 @@ class Contribution extends Equatable {
   final DateTime? startDate;
   final int? totalCycles; // Total number of payment cycles
   final int? currentCycle; // Current cycle number
-  
+
   // Payout rotation fields
   final List<PayoutSchedule> payoutSchedule; // Who gets paid when
   final String? currentPayoutRecipient; // Current person to receive payout
   final DateTime? nextPayoutDate;
   final List<PayoutTransaction> payoutHistory;
-  
+
   // Advanced settings
   final bool autoPayEnabled; // Automatic payment processing
   final double? penaltyAmount; // Penalty for missed payments
@@ -125,14 +125,18 @@ class Contribution extends Equatable {
   bool get isActive => status == ContributionStatus.active;
   bool get isRotatingSavings => type == ContributionType.rotatingSavings;
   bool get hasSchedule => frequency != null && regularAmount != null;
-  bool get isOverdue => nextPaymentDate != null && DateTime.now().isAfter(nextPaymentDate!);
-  bool get canPayout => currentAmount >= (minimumBalance ?? 0) && currentPayoutRecipient != null;
-  
-  double get progressPercentage => targetAmount > 0 ? (currentAmount / targetAmount * 100).clamp(0, 100) : 0;
-  
-  PayoutSchedule? get currentPayoutInfo => payoutSchedule.isNotEmpty 
-    ? payoutSchedule.firstWhere((p) => p.userId == currentPayoutRecipient, orElse: () => payoutSchedule.first)
-    : null;
+  bool get isOverdue =>
+      nextPaymentDate != null && DateTime.now().isAfter(nextPaymentDate!);
+  bool get canPayout =>
+      currentAmount >= (minimumBalance ?? 0) && currentPayoutRecipient != null;
+
+  double get progressPercentage =>
+      targetAmount > 0 ? (currentAmount / targetAmount * 100).clamp(0, 100) : 0;
+
+  PayoutSchedule? get currentPayoutInfo => payoutSchedule.isNotEmpty
+      ? payoutSchedule.firstWhere((p) => p.userId == currentPayoutRecipient,
+          orElse: () => payoutSchedule.first)
+      : null;
 
   Contribution copyWith({
     String? id,
@@ -191,7 +195,8 @@ class Contribution extends Equatable {
       totalCycles: totalCycles ?? this.totalCycles,
       currentCycle: currentCycle ?? this.currentCycle,
       payoutSchedule: payoutSchedule ?? this.payoutSchedule,
-      currentPayoutRecipient: currentPayoutRecipient ?? this.currentPayoutRecipient,
+      currentPayoutRecipient:
+          currentPayoutRecipient ?? this.currentPayoutRecipient,
       nextPayoutDate: nextPayoutDate ?? this.nextPayoutDate,
       payoutHistory: payoutHistory ?? this.payoutHistory,
       autoPayEnabled: autoPayEnabled ?? this.autoPayEnabled,
@@ -314,21 +319,25 @@ class ContributionMember extends Equatable {
   final double totalPaid;
   final double expectedAmount;
   final bool hasPaidCurrentCycle;
+
   /// Cumulative completed payments for the CURRENT cycle. ROSCA +
   /// allow_partial_payments members can pay their share in chunks;
   /// has_paid_current_cycle stays false until cumulative reaches
   /// regular_amount. Reset to 0 on cycle advance. Always 0 for
   /// one-time contributions.
   final double cyclePaidAmount;
+
   /// Number of cycles this member's row has missed (no completed
   /// payment by cycle close). Surfaced for the "X members behind"
   /// indicators on the contribution screen.
   final int missedCycles;
+
   /// Invite-first membership state. ACTIVE rows are full participants;
   /// PENDING_INVITE rows are shadow placeholders waiting on group
   /// invite acceptance and MUST be excluded from financial logic
   /// (member counts, cycle progress, receiver picker).
   final ContributionMembershipStatus membershipStatus;
+
   /// Linked GroupInvitation row ID when membership is pending. Lets
   /// the UI deep-link to the invite detail or surface "Invite Sent".
   final String? linkedInvitationId;
@@ -626,11 +635,11 @@ class ContributionCycle extends Equatable {
   bool get isLive => status == ContributionCycleStatus.inProgress;
   bool get isSettled => status == ContributionCycleStatus.closedSettled;
   bool get isFailed => status == ContributionCycleStatus.closedFailed;
-  bool get isCancelled =>
-      status == ContributionCycleStatus.closedCancelled;
+  bool get isCancelled => status == ContributionCycleStatus.closedCancelled;
 
-  double get progressPercent =>
-      targetAmount > 0 ? (raisedAmount / targetAmount * 100).clamp(0.0, 999.0) : 0.0;
+  double get progressPercent => targetAmount > 0
+      ? (raisedAmount / targetAmount * 100).clamp(0.0, 999.0)
+      : 0.0;
 
   @override
   List<Object?> get props => [

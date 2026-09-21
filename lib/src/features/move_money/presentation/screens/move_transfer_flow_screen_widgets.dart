@@ -88,18 +88,17 @@ class _AccountPickerSheetState extends State<_AccountPickerSheet> {
                     style: GoogleFonts.inter(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: 'Search bank or account...',
-                      hintStyle: GoogleFonts.inter(
-                          color: const Color(0xFF6B7280)),
-                      prefixIcon: const Icon(Icons.search,
-                          color: Color(0xFF6B7280)),
+                      hintStyle:
+                          GoogleFonts.inter(color: const Color(0xFF6B7280)),
+                      prefixIcon:
+                          const Icon(Icons.search, color: Color(0xFF6B7280)),
                       filled: true,
                       fillColor: const Color(0xFF0A0A0A),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 12.h),
+                      contentPadding: EdgeInsets.symmetric(vertical: 12.h),
                     ),
                   ),
                 ],
@@ -120,13 +119,12 @@ class _AccountPickerSheetState extends State<_AccountPickerSheet> {
                         width: 44.w,
                         height: 44.w,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF3B82F6)
-                              .withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFF3B82F6).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: Icon(Icons.add,
-                            color: const Color(0xFF3B82F6),
-                            size: 22.sp),
+                            color: const Color(0xFF3B82F6), size: 22.sp),
                       ),
                       title: Text(
                         'Link New Account',
@@ -161,10 +159,8 @@ class _AccountPickerSheetState extends State<_AccountPickerSheet> {
                       height: 44.w,
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFF10B981)
-                                .withValues(alpha: 0.15)
-                            : const Color(0xFF3B82F6)
-                                .withValues(alpha: 0.1),
+                            ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                            : const Color(0xFF3B82F6).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Icon(
@@ -178,9 +174,8 @@ class _AccountPickerSheetState extends State<_AccountPickerSheet> {
                     title: Text(
                       account.bankName,
                       style: GoogleFonts.inter(
-                        color: isExcluded
-                            ? const Color(0xFF6B7280)
-                            : Colors.white,
+                        color:
+                            isExcluded ? const Color(0xFF6B7280) : Colors.white,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

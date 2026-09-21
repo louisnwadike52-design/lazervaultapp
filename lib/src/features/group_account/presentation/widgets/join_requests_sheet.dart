@@ -92,8 +92,7 @@ class _JoinRequestsSheetState extends State<JoinRequestsSheet> {
       );
       if (!mounted) return;
       setState(() {
-        _requests =
-            _requests.where((r) => r.userId != member.userId).toList();
+        _requests = _requests.where((r) => r.userId != member.userId).toList();
         _deciding.remove(member.userId);
       });
       widget.onChanged?.call();
@@ -191,7 +190,8 @@ class _JoinRequestsSheetState extends State<JoinRequestsSheet> {
             Text(
               _error!,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
+              style:
+                  GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
             ),
             SizedBox(height: 12.h),
             TextButton(onPressed: _load, child: const Text('Try again')),
@@ -208,7 +208,8 @@ class _JoinRequestsSheetState extends State<JoinRequestsSheet> {
             SizedBox(height: 10.h),
             Text(
               'No one is waiting to join',
-              style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14.sp),
+              style:
+                  GoogleFonts.inter(color: Colors.grey[400], fontSize: 14.sp),
             ),
           ],
         ),
@@ -313,7 +314,8 @@ class _JoinRequestsSheetState extends State<JoinRequestsSheet> {
         decoration: BoxDecoration(
           color: filled ? colour : colour.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(8.r),
-          border: filled ? null : Border.all(color: colour.withValues(alpha: 0.4)),
+          border:
+              filled ? null : Border.all(color: colour.withValues(alpha: 0.4)),
         ),
         child: Text(
           label,

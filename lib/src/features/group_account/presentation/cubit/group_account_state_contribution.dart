@@ -2,9 +2,9 @@ part of 'group_account_state.dart';
 
 class GroupAccountContributionCreated extends GroupAccountState {
   final Contribution contribution;
-  
+
   const GroupAccountContributionCreated(this.contribution);
-  
+
   @override
   List<Object?> get props => [contribution];
 }
@@ -81,18 +81,18 @@ class ContributionPaymentFailed extends GroupAccountState {
 
 class GroupAccountReceiptGenerated extends GroupAccountState {
   final ContributionReceipt receipt;
-  
+
   const GroupAccountReceiptGenerated(this.receipt);
-  
+
   @override
   List<Object?> get props => [receipt];
 }
 
 class GroupAccountTranscriptGenerated extends GroupAccountState {
   final ContributionTranscript transcript;
-  
+
   const GroupAccountTranscriptGenerated(this.transcript);
-  
+
   @override
   List<Object?> get props => [transcript];
 }

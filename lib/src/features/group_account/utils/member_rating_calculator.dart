@@ -93,12 +93,12 @@ class MemberRatingCalculator {
         complianceCount++;
       }
     }
-    final complianceScore = complianceCount > 0
-        ? complianceSum / complianceCount
-        : 0.0;
+    final complianceScore =
+        complianceCount > 0 ? complianceSum / complianceCount : 0.0;
 
     // 2. Consistency (25%) - ratio of hasPaidCurrentCycle == true
-    final paidCycles = memberContributions.where((mc) => mc.hasPaidCurrentCycle).length;
+    final paidCycles =
+        memberContributions.where((mc) => mc.hasPaidCurrentCycle).length;
     final consistencyScore = memberContributions.isNotEmpty
         ? paidCycles / memberContributions.length
         : 0.0;
@@ -113,8 +113,7 @@ class MemberRatingCalculator {
     final tenureScore = min(daysSinceJoin / 90.0, 1.0);
 
     // Weighted average
-    final weightedAverage =
-        (complianceScore * 0.40) +
+    final weightedAverage = (complianceScore * 0.40) +
         (consistencyScore * 0.25) +
         (breadthScore * 0.20) +
         (tenureScore * 0.15);

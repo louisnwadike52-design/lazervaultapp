@@ -71,7 +71,8 @@ abstract class GroupAccountRepository {
     required String contributionId,
     required List<String> memberUserIds,
   });
-  Future<List<ContributionMember>> getContributionMembers(String contributionId);
+  Future<List<ContributionMember>> getContributionMembers(
+      String contributionId);
   Future<MemberExitResult> removeMemberFromContribution({
     required String contributionId,
     required String userId,
@@ -86,8 +87,7 @@ abstract class GroupAccountRepository {
   });
 
   // Cycle history.
-  Future<({List<ContributionCycle> cycles, int total})>
-      listContributionCycles({
+  Future<({List<ContributionCycle> cycles, int total})> listContributionCycles({
     required String contributionId,
     bool includeInProgress = true,
     int page = 1,
@@ -135,7 +135,8 @@ abstract class GroupAccountRepository {
   });
 
   // Payment methods
-  Future<List<ContributionPayment>> getContributionPayments(String contributionId);
+  Future<List<ContributionPayment>> getContributionPayments(
+      String contributionId);
   Future<ContributionPayment> makeContributionPayment({
     required String contributionId,
     required String groupId,
@@ -159,15 +160,17 @@ abstract class GroupAccountRepository {
   Future<List<ContributionReceipt>> getUserReceipts(String userId);
 
   // Transcript methods
-  Future<ContributionTranscript> generateContributionTranscript(String contributionId);
-  
+  Future<ContributionTranscript> generateContributionTranscript(
+      String contributionId);
+
   // Statistics methods
   Future<Map<String, dynamic>> getGroupStatistics(String groupId);
   Future<Map<String, dynamic>> getUserContributionStats(String userId);
 
   // Activity Log methods
   Future<List<ActivityLogEntry>> getGroupActivityLogs(String groupId);
-  Future<List<ActivityLogEntry>> getContributionActivityLogs(String contributionId);
+  Future<List<ActivityLogEntry>> getContributionActivityLogs(
+      String contributionId);
 
   // Public Group Discovery methods
   Future<List<GroupAccount>> listPublicGroups({

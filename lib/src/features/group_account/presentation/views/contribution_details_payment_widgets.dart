@@ -14,7 +14,6 @@ class _UserPaymentGroup extends _UserPaymentGroupBase {
     required super.latestPaymentDate,
     required super.currency,
   });
-
 }
 
 /// Thin private alias around the now-public `PaymentGroupCard`.
@@ -38,8 +37,7 @@ class _PaymentGroupCard extends StatelessWidget {
 class _PaymentBreakdownRow extends StatelessWidget {
   final ContributionPayment payment;
   final VoidCallback onTap;
-  const _PaymentBreakdownRow(
-      {required this.payment, required this.onTap});
+  const _PaymentBreakdownRow({required this.payment, required this.onTap});
   @override
   Widget build(BuildContext context) =>
       PaymentBreakdownRow(payment: payment, onTap: onTap);

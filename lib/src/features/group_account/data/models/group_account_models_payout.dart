@@ -27,11 +27,11 @@ class PayoutScheduleModel extends PayoutSchedule {
         (e) => e.toString().split('.').last == json['status'],
         orElse: () => PayoutStatus.pending,
       ),
-      receivedDate: json['receivedDate'] != null 
-          ? DateTime.parse(json['receivedDate'] as String) 
+      receivedDate: json['receivedDate'] != null
+          ? DateTime.parse(json['receivedDate'] as String)
           : null,
-      actualAmount: json['actualAmount'] != null 
-          ? (json['actualAmount'] as num).toDouble() 
+      actualAmount: json['actualAmount'] != null
+          ? (json['actualAmount'] as num).toDouble()
           : null,
       notes: json['notes'] as String?,
     );

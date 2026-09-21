@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import '../../utils/analytics_theme.dart';
 
 /// Budget Reminders Screen
 /// Displays budget alerts from the backend (threshold reached, budget exceeded, etc.)
@@ -40,7 +41,8 @@ class _BudgetRemindersScreenState extends State<BudgetRemindersScreen> {
         ),
         title: const Text(
           'Budget Alerts',
-          style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         actions: [
@@ -48,10 +50,13 @@ class _BudgetRemindersScreenState extends State<BudgetRemindersScreen> {
             builder: (context, state) {
               if (state is BudgetAlertsLoaded && state.unreadCount > 0) {
                 return TextButton(
-                  onPressed: () => context.read<BudgetCubit>().loadBudgetAlerts(unreadOnly: true),
+                  onPressed: () => context
+                      .read<BudgetCubit>()
+                      .loadBudgetAlerts(unreadOnly: true),
                   child: Text(
                     'Unread (${state.unreadCount})',
-                    style: const TextStyle(color: InvoiceThemeColors.primaryPurple, fontSize: 14),
+                    style: const TextStyle(
+                        color: AnalyticsTheme.accent, fontSize: 14),
                   ),
                 );
               }
@@ -102,7 +107,9 @@ class _BudgetRemindersScreenState extends State<BudgetRemindersScreen> {
                   return _AlertCard(
                     alert: state.alerts[index],
                     onMarkRead: () {
-                      context.read<BudgetCubit>().markAlertAsRead(state.alerts[index].id);
+                      context
+                          .read<BudgetCubit>()
+                          .markAlertAsRead(state.alerts[index].id);
                     },
                   );
                 },
@@ -135,10 +142,14 @@ class _BudgetRemindersScreenState extends State<BudgetRemindersScreen> {
                 width: 80.r,
                 height: 80.r,
                 decoration: BoxDecoration(
-                  color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
+                  color:
+                      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.notifications_none, color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5), size: 40.r),
+                child: Icon(Icons.notifications_none,
+                    color:
+                        InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5),
+                    size: 40.r),
               ),
               SizedBox(height: 16.h),
               Text(
@@ -213,13 +224,15 @@ class _AlertCard extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: alert.isRead ? null : [
-          BoxShadow(
-            color: alertColor.withValues(alpha: 0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: alert.isRead
+            ? null
+            : [
+                BoxShadow(
+                  color: alertColor.withValues(alpha: 0.1),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,19 +258,24 @@ class _AlertCard extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
-                        fontWeight: alert.isRead ? FontWeight.normal : FontWeight.bold,
+                        fontWeight:
+                            alert.isRead ? FontWeight.normal : FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 2.h),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                       decoration: BoxDecoration(
                         color: alertColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Text(
                         alertLabel,
-                        style: TextStyle(color: alertColor, fontSize: 11, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            color: alertColor,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
@@ -314,7 +332,7 @@ class _AlertCard extends StatelessWidget {
                 icon: const Icon(Icons.check, size: 16),
                 label: const Text('Mark as read'),
                 style: TextButton.styleFrom(
-                  foregroundColor: InvoiceThemeColors.primaryPurple,
+                  foregroundColor: AnalyticsTheme.accent,
                   padding: EdgeInsets.symmetric(horizontal: 12.w),
                 ),
               ),

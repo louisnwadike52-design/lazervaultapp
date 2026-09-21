@@ -109,6 +109,27 @@ String classifyDomain(String category, String description, String reference,
     if (cat.contains('fee')) return 'crowdfund_fee';
     return 'crowdfund';
   }
+
+  // Group-fund contributions. group-accounts-service names the money in the
+  // narration ("Contribution payment: <title>") but sent accounts-service no
+  // category and no metadata, so every contribution fell past the category arms
+  // below to `unknown` — the grey help-outline glyph — and, because the PDF
+  // export is gated on a known service type, its receipt Share button produced
+  // a flat screenshot instead of the branded document.
+  //
+  // Matched on the exact narration that service writes, or its service_name,
+  // rather than a bare "contribution" — otherwise an ordinary transfer someone
+  // described as "my contribution" would be swept in. Deliberately placed AFTER
+  // the crowdfund arm: donations carry category='crowdfund_contribution' and
+  // must stay crowdfund.
+  //
+  // The backend now also sends metadata.service='group_contribution' on new
+  // rows, but this text match is what retroactively fixes every contribution
+  // already written without it.
+  if (s.contains('contribution payment') ||
+      (svc.contains('group-accounts') && s.contains('contribution'))) {
+    return 'group_contribution';
+  }
   // Lazerfunds (uplift is its internal code name) writes through the same
   // multi-product service and sits in exactly the same trap.
   if (cat.startsWith('uplift')) {
@@ -290,6 +311,8 @@ TransactionServiceType? serviceTypeForDomain(String domain) {
     case 'crowdfund_fee':
       // Reuse the EXISTING fee enum value — see the note below.
       return TransactionServiceType.fee;
+    case 'group_contribution':
+      return TransactionServiceType.groupContribution;
     case 'uplift':
     case 'uplift_refund':
       return TransactionServiceType.lazerfunds;
@@ -482,7 +505,9 @@ TransactionServiceType inferServiceTypeFromCategory(
     return TransactionServiceType.autosave;
   } else if (cat.contains('lock') || cat.contains('piggy')) {
     return TransactionServiceType.lockFunds;
-  } else if (cat.contains('group') || cat.contains('contribution')) {
+  } else if (cat.contains('contribution') || text.contains('contribution payment')) {
+    return TransactionServiceType.groupContribution;
+  } else if (cat.contains('group')) {
     return TransactionServiceType.groupFunds;
   } else if (cat.contains('crowdfund') || cat.contains('donation')) {
     return TransactionServiceType.crowdfund;

@@ -2,7 +2,6 @@ import '../../domain/entities/group_entities.dart';
 part 'group_account_models_contribution.dart';
 part 'group_account_models_payout.dart';
 
-
 /// Parses a payment-status JSON value into the [PaymentStatus] enum,
 /// accepting both the dart enum-name (e.g. "awaitingVerification") and
 /// the canonical snake-case server value ("awaiting_verification"). The
@@ -84,7 +83,8 @@ class GroupAccountModel extends GroupAccount {
               .toList() ??
           [],
       contributions: (json['contributions'] as List<dynamic>?)
-              ?.map((x) => ContributionModel.fromJson(x as Map<String, dynamic>))
+              ?.map(
+                  (x) => ContributionModel.fromJson(x as Map<String, dynamic>))
               .toList() ??
           [],
       createdAt: DateTime.parse(json['createdAt'] as String),
@@ -117,7 +117,8 @@ class GroupAccountModel extends GroupAccount {
       'description': description,
       'adminId': adminId,
       'members': members.map((x) => (x as GroupMemberModel).toJson()).toList(),
-      'contributions': contributions.map((x) => (x as ContributionModel).toJson()).toList(),
+      'contributions':
+          contributions.map((x) => (x as ContributionModel).toJson()).toList(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'status': status.toString().split('.').last,
@@ -239,7 +240,8 @@ class GroupMemberModel extends GroupMember {
       phoneNumber: json['phoneNumber'] as String?,
       isPartial: json['isPartial'] as bool? ?? false,
       userUsername: json['userUsername'] as String?,
-      emailMatchesSearchQuery: json['emailMatchesSearchQuery'] as bool? ?? false,
+      emailMatchesSearchQuery:
+          json['emailMatchesSearchQuery'] as bool? ?? false,
       phoneMatchesSearchQueryExact:
           json['phoneMatchesSearchQueryExact'] as bool? ?? false,
     );
@@ -324,4 +326,4 @@ class GroupMemberModel extends GroupMember {
 // MemberExitPreview / MemberExitResult are domain entities, defined
 // in domain/entities/group_entities.dart and used directly by the
 // data source — no data-model wrapper needed since the shape is a
-// simple value type with no JSON / extra logic. 
+// simple value type with no JSON / extra logic.

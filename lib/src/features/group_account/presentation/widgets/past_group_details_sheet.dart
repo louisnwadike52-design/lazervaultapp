@@ -46,8 +46,7 @@ class PastGroupDetailsSheet extends StatefulWidget {
   }
 
   @override
-  State<PastGroupDetailsSheet> createState() =>
-      _PastGroupDetailsSheetState();
+  State<PastGroupDetailsSheet> createState() => _PastGroupDetailsSheetState();
 }
 
 class _PastGroupDetailsSheetState extends State<PastGroupDetailsSheet> {
@@ -70,9 +69,8 @@ class _PastGroupDetailsSheetState extends State<PastGroupDetailsSheet> {
       _error = null;
     });
     final auth = context.read<AuthenticationCubit>().state;
-    final token = auth is AuthenticationSuccess
-        ? auth.profile.session.accessToken
-        : null;
+    final token =
+        auth is AuthenticationSuccess ? auth.profile.session.accessToken : null;
     if (token == null) {
       setState(() {
         _loading = false;
@@ -110,8 +108,7 @@ class _PastGroupDetailsSheetState extends State<PastGroupDetailsSheet> {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(20.r)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       child: SafeArea(
         top: false,
@@ -194,8 +191,7 @@ class _PastGroupDetailsSheetState extends State<PastGroupDetailsSheet> {
               Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                    color: Colors.white, fontSize: 13.sp),
+                style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
               ),
               SizedBox(height: 12.h),
               ElevatedButton.icon(
@@ -203,8 +199,7 @@ class _PastGroupDetailsSheetState extends State<PastGroupDetailsSheet> {
                 icon: const Icon(Icons.refresh),
                 label: const Text('Retry'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      const Color.fromARGB(255, 78, 3, 208),
+                  backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                   foregroundColor: Colors.white,
                 ),
               ),
@@ -295,8 +290,7 @@ class _PastGroupDetailsSheetState extends State<PastGroupDetailsSheet> {
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(10.r),
-                border:
-                    Border.all(color: const Color(0xFF2D2D2D)),
+                border: Border.all(color: const Color(0xFF2D2D2D)),
               ),
               child: Text(
                 'You don\'t have any past contributions in this group.',
@@ -346,9 +340,7 @@ class _ContributionRow extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    c.title.isNotEmpty
-                        ? c.title
-                        : 'Contribution',
+                    c.title.isNotEmpty ? c.title : 'Contribution',
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 13.sp,
@@ -360,8 +352,7 @@ class _ContributionRow extends StatelessWidget {
                 ),
                 ContributionTypeBadge(type: c.type),
                 SizedBox(width: 8.w),
-                Icon(Icons.chevron_right,
-                    size: 18.sp, color: Colors.grey[600]),
+                Icon(Icons.chevron_right, size: 18.sp, color: Colors.grey[600]),
               ],
             ),
             SizedBox(height: 8.h),

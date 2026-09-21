@@ -30,11 +30,17 @@ class MemberStarRating extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        ...List.generate(5, (index) => Icon(
-          index < rating.starCount ? Icons.star_rounded : Icons.star_border_rounded,
-          color: index < rating.starCount ? _filledStarColor : _emptyStarColor,
-          size: 12.sp,
-        )),
+        ...List.generate(
+            5,
+            (index) => Icon(
+                  index < rating.starCount
+                      ? Icons.star_rounded
+                      : Icons.star_border_rounded,
+                  color: index < rating.starCount
+                      ? _filledStarColor
+                      : _emptyStarColor,
+                  size: 12.sp,
+                )),
         SizedBox(width: 4.w),
         Text(
           'Rating',
@@ -80,14 +86,20 @@ class MemberStarRating extends StatelessWidget {
           // Stars row with score and label
           Row(
             children: [
-              ...List.generate(5, (index) => Padding(
-                padding: EdgeInsets.only(right: 2.w),
-                child: Icon(
-                  index < rating.starCount ? Icons.star_rounded : Icons.star_border_rounded,
-                  color: index < rating.starCount ? _filledStarColor : _emptyStarColor,
-                  size: 20.sp,
-                ),
-              )),
+              ...List.generate(
+                  5,
+                  (index) => Padding(
+                        padding: EdgeInsets.only(right: 2.w),
+                        child: Icon(
+                          index < rating.starCount
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          color: index < rating.starCount
+                              ? _filledStarColor
+                              : _emptyStarColor,
+                          size: 20.sp,
+                        ),
+                      )),
               SizedBox(width: 8.w),
               Text(
                 rating.overallScore.toStringAsFixed(1),
@@ -117,13 +129,17 @@ class MemberStarRating extends StatelessWidget {
           ),
           SizedBox(height: 14.h),
           // Factor breakdown bars
-          _buildFactorBar('Payment Compliance', rating.complianceScore, const Color(0xFF3B82F6)),
+          _buildFactorBar('Payment Compliance', rating.complianceScore,
+              const Color(0xFF3B82F6)),
           SizedBox(height: 8.h),
-          _buildFactorBar('Consistency', rating.consistencyScore, const Color(0xFF10B981)),
+          _buildFactorBar(
+              'Consistency', rating.consistencyScore, const Color(0xFF10B981)),
           SizedBox(height: 8.h),
-          _buildFactorBar('Contribution Breadth', rating.breadthScore, const Color(0xFFF59E0B)),
+          _buildFactorBar('Contribution Breadth', rating.breadthScore,
+              const Color(0xFFF59E0B)),
           SizedBox(height: 8.h),
-          _buildFactorBar('Activity Tenure', rating.tenureScore, const Color.fromARGB(255, 78, 3, 208)),
+          _buildFactorBar('Activity Tenure', rating.tenureScore,
+              const Color.fromARGB(255, 78, 3, 208)),
         ],
       ),
     );

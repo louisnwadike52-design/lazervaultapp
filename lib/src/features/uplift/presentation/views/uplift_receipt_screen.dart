@@ -18,7 +18,7 @@ UnifiedTransaction upliftReceiptToUnified(up.UpliftReceiptMessage r) {
   final currency = r.currency.isEmpty ? 'NGN' : r.currency;
   final metadata = <String, dynamic>{
     'Fund': r.fundTitle,
-    'Type': isRelease ? 'Milestone release' : 'Escrow refund',
+    'Type': isRelease ? 'Milestone release' : 'Pool refund',
     'Receipt No.': r.receiptNumber,
   };
   // receipt_data for releases: {"gross":..,"fee":..,"net":..,"fee_type":".."}
@@ -146,7 +146,7 @@ class _UpliftReceiptsListScreenState extends State<UpliftReceiptsListScreen> {
                                 title: Text(
                                     isRelease
                                         ? 'Funding received'
-                                        : 'Escrow refund',
+                                        : 'Pool refund',
                                     style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w600)),

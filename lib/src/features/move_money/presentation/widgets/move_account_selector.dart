@@ -68,9 +68,8 @@ class MoveAccountSelector extends StatelessWidget {
               return MoveAccountCard(
                 account: account,
                 isSelected: account.id == selectedAccountId,
-                onTap: account.isActive
-                    ? () => onAccountSelected(account)
-                    : null,
+                onTap:
+                    account.isActive ? () => onAccountSelected(account) : null,
               );
             },
           ),

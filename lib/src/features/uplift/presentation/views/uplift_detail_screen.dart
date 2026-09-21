@@ -14,6 +14,17 @@ import 'package:lazervault/src/features/uplift/presentation/views/uplift_milesto
 import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_widgets.dart';
 import 'package:lazervault/src/generated/uplift.pbgrpc.dart' as up;
 
+/// True when the fund carries an application deadline that has already passed.
+///
+/// The server refuses late applications outright ("application deadline has
+/// passed"), so the CTA has to withdraw rather than fail on submit after the
+/// applicant has written a pitch. Compared in local time — the deadline arrives
+/// as a UTC timestamp.
+bool upApplicationsClosed(up.UpliftFundMessage f) {
+  if (!f.hasApplicationDeadline()) return false;
+  return DateTime.now().isAfter(f.applicationDeadline.toDateTime().toLocal());
+}
+
 /// Fund detail — the shared hub for both journeys. The funder sees the pool /
 /// escrow state, can commit funds (PIN), and reviews/selects applicants.
 /// Everyone else sees the fund story and can apply / endorse. An applicant with
@@ -459,7 +470,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
             Icon(Icons.account_balance_wallet_outlined,
                 size: 16, color: kUpPrimarySoft),
             SizedBox(width: 6),
-            Text('Pool & escrow',
+            Text('Pool & holdings',
                 style: TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w700)),
           ]),
@@ -473,7 +484,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
             _row('Available to allocate',
                 upNaira(f.escrowAvailable.toInt(), f.currency)),
             if (_escrow != null)
-              _row('Escrow wallet (live)',
+              _row('Pool wallet (live)',
                   upNaira(_escrow!.balance.toInt(), f.currency)),
           ],
           const SizedBox(height: 12),
@@ -565,10 +576,62 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
       s == up.UpliftFundStatus.UPLIFT_FUND_STATUS_REVIEWING ||
       s == up.UpliftFundStatus.UPLIFT_FUND_STATUS_PAUSED;
 
+  IconData _terminalIcon(up.UpliftFundStatus s) {
+    switch (s) {
+      case up.UpliftFundStatus.UPLIFT_FUND_STATUS_COMPLETED:
+        return Icons.check_circle_outline;
+      case up.UpliftFundStatus.UPLIFT_FUND_STATUS_EXPIRED:
+        return Icons.event_busy_outlined;
+      default:
+        return Icons.cancel_outlined;
+    }
+  }
+
+  Color _terminalColour(up.UpliftFundStatus s) {
+    switch (s) {
+      case up.UpliftFundStatus.UPLIFT_FUND_STATUS_COMPLETED:
+        return kUpSuccess;
+      case up.UpliftFundStatus.UPLIFT_FUND_STATUS_EXPIRED:
+        return kUpWarning;
+      default:
+        return kUpError;
+    }
+  }
+
+  /// Why this fund is closed, and — the part that matters to a funder — where
+  /// their money went. Expiry and cancellation both refund unreleased escrow,
+  /// so say so plainly rather than leaving them to infer it from a ₦0 pool.
+  String _terminalNote(up.UpliftFundMessage f) {
+    switch (f.status) {
+      case up.UpliftFundStatus.UPLIFT_FUND_STATUS_COMPLETED:
+        return 'This fund is complete. Every selected business was funded and '
+            'all milestones were released.';
+      case up.UpliftFundStatus.UPLIFT_FUND_STATUS_EXPIRED:
+        return 'This fund expired when its funding deadline passed. Anything in the '
+            'pool that had not been released was refunded to your wallet.';
+      default:
+        final why = f.cancelReason.trim();
+        return why.isEmpty
+            ? 'This fund was cancelled. Anything left in the pool was refunded '
+                'to your wallet.'
+            : 'This fund was cancelled — $why. Anything left in the pool was '
+                'refunded to your wallet.';
+    }
+  }
+
   List<Widget> _funderSection(up.UpliftFundMessage f) {
-    final actionable =
-        f.status != up.UpliftFundStatus.UPLIFT_FUND_STATUS_CANCELLED &&
-            f.status != up.UpliftFundStatus.UPLIFT_FUND_STATUS_COMPLETED;
+    // Terminal states. EXPIRED belongs here and was missing: the server refuses
+    // CommitEscrow on CANCELLED/COMPLETED/**EXPIRED** alike
+    // (uplift_funds_lifecycle.go:104), so leaving "Commit funds" live on an
+    // expired fund offered a button that could only ever return
+    // FailedPrecondition. Cancel is a different shape of wrong — the server DOES
+    // allow it on an expired fund, but the expiry sweep has already refunded the
+    // unreleased escrow, so it asks for a PIN and a 10-character reason to
+    // achieve nothing.
+    final isTerminal =
+        f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_CANCELLED ||
+            f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_COMPLETED ||
+            f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_EXPIRED;
     return [
       // Draft funds: prominent publish CTA before anything else.
       if (f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_DRAFT) ...[
@@ -587,6 +650,41 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
         _statsStrip(_stats!),
         const SizedBox(height: 14),
       ],
+      // A closed fund disabled both CTAs and said nothing. Greyed-out buttons
+      // are not an explanation — the funder's actual question is where their
+      // money went, and expiry and cancellation both refund unreleased escrow.
+      // _terminalIcon/_terminalColour/_terminalNote were written for exactly
+      // this and had no render site.
+      if (isTerminal) ...[
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: _terminalColour(f.status).withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+                color: _terminalColour(f.status).withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(_terminalIcon(f.status),
+                  color: _terminalColour(f.status), size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  _terminalNote(f),
+                  style: TextStyle(
+                    color: _terminalColour(f.status),
+                    fontSize: 13,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+      ],
       Row(children: [
         Expanded(
           child: ElevatedButton.icon(
@@ -594,7 +692,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
                 backgroundColor: kUpPrimary,
                 foregroundColor: Colors.white,
                 minimumSize: const Size.fromHeight(48)),
-            onPressed: actionable ? _commitPool : null,
+            onPressed: !isTerminal ? _commitPool : null,
             icon: const Icon(Icons.savings),
             label: const Text('Commit funds'),
           ),
@@ -606,7 +704,7 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
                 foregroundColor: kUpError,
                 minimumSize: const Size.fromHeight(48),
                 side: const BorderSide(color: kUpError)),
-            onPressed: actionable ? _cancelFund : null,
+            onPressed: !isTerminal ? _cancelFund : null,
             icon: const Icon(Icons.cancel),
             label: const Text('Cancel'),
           ),
@@ -871,7 +969,56 @@ class _UpliftDetailScreenState extends State<UpliftDetailScreen>
         ),
         const SizedBox(height: 12),
       ],
-      if (!hasApplied &&
+      // Your own raise is not something you can apply to. The backend refuses it
+      // outright (FailedPrecondition, "you cannot apply to your own fund"), so
+      // offering the button would only produce an error the user could not have
+      // predicted. `is_funder` is resolved server-side from the caller's token,
+      // which is what makes it safe to gate on here.
+      if (f.isFunder) ...[
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: kUpCard,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: kUpPrimary.withValues(alpha: 0.4)),
+          ),
+          child: Row(children: const [
+            Icon(Icons.workspace_premium_outlined, color: kUpPrimarySoft),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'This is your fund. Businesses apply to you — you review their '
+                'applications rather than applying yourself.',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ]),
+        ),
+        const SizedBox(height: 12),
+      ] else if (!hasApplied &&
+          f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_OPEN &&
+          upApplicationsClosed(f)) ...[
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: kUpCard,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: kUpWarning.withValues(alpha: 0.4)),
+          ),
+          child: Row(children: const [
+            Icon(Icons.event_busy_outlined, color: kUpWarning),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Applications have closed for this fund. The deadline set by '
+                'the funder has passed.',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ]),
+        ),
+        const SizedBox(height: 12),
+      ] else if (!hasApplied &&
           f.status == up.UpliftFundStatus.UPLIFT_FUND_STATUS_OPEN)
         ElevatedButton.icon(
           style: ElevatedButton.styleFrom(

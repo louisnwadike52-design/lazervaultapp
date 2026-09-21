@@ -146,7 +146,8 @@ class MoveTransferReceiptScreen extends StatelessWidget {
                     SizedBox(height: 10.h),
 
                     // Status badge
-                    MoveStatusBadge(status: transfer.status, transfer: transfer),
+                    MoveStatusBadge(
+                        status: transfer.status, transfer: transfer),
 
                     // Failure info
                     if (transfer.status == MoveTransferStatus.failed &&
@@ -156,8 +157,7 @@ class MoveTransferReceiptScreen extends StatelessWidget {
                         width: double.infinity,
                         padding: EdgeInsets.all(12.w),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444)
-                              .withValues(alpha: 0.1),
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: Column(
@@ -195,8 +195,7 @@ class MoveTransferReceiptScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: const Color(0xFF1F1F1F),
                         borderRadius: BorderRadius.circular(14.r),
-                        border:
-                            Border.all(color: const Color(0xFF2D2D2D)),
+                        border: Border.all(color: const Color(0xFF2D2D2D)),
                       ),
                       child: Column(
                         children: [
@@ -325,8 +324,7 @@ class MoveTransferReceiptScreen extends StatelessWidget {
                       style: GoogleFonts.inter(
                         color: valueColor ?? Colors.white,
                         fontSize: 13.sp,
-                        fontWeight:
-                            isBold ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
                       ),
                       textAlign: TextAlign.right,
                     ),
@@ -372,8 +370,7 @@ class MoveTransferReceiptScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // DirectPay authorization button
-          if (transfer.needsAuthorization &&
-              transfer.paymentUrl != null) ...[
+          if (transfer.needsAuthorization && transfer.paymentUrl != null) ...[
             SizedBox(
               width: double.infinity,
               height: 48.h,
@@ -416,7 +413,9 @@ class MoveTransferReceiptScreen extends StatelessWidget {
                   onPressed: () async {
                     final authState = context.read<AuthenticationCubit>().state;
                     if (authState is! AuthenticationSuccess) return;
-                    final userName = '${authState.profile.user.firstName} ${authState.profile.user.lastName}'.trim();
+                    final userName =
+                        '${authState.profile.user.firstName} ${authState.profile.user.lastName}'
+                            .trim();
 
                     try {
                       await MoveTransferPdfService.shareReceipt(
@@ -458,8 +457,7 @@ class MoveTransferReceiptScreen extends StatelessWidget {
               SizedBox(width: 12.w),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () =>
-                      Get.offNamed('/move-money/transfer'),
+                  onPressed: () => Get.offNamed('/move-money/transfer'),
                   icon: Icon(Icons.swap_horiz_rounded, size: 18.sp),
                   label: Text(
                     'Move More',

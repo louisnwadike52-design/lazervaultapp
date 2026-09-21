@@ -51,4 +51,47 @@ class CurrencyHoldingsService {
       return null;
     }
   }
+
+  /// Every ACTIVE account the user holds in [currency], newest balances first.
+  ///
+  /// Analytics needs this because "my LazerVault spending" is a question about
+  /// a SET of wallets: a user holds a personal, business, savings, family and
+  /// campaign account per currency, and production carries 24 to 40 accounts
+  /// per user. Scoping analytics to `activeAccountId` alone answered for one of
+  /// them and presented it as the whole picture.
+  ///
+  /// Scoped to a single [currency] deliberately. Wallets are only ever summed
+  /// within one currency: adding NGN 100 to USD 5 produces a number that means
+  /// nothing, so a cross-currency total must never be offered.
+  ///
+  /// Returns null when the lookup itself failed, so a caller can say "we could
+  /// not load your wallets" instead of silently showing one wallet as if it
+  /// were all of them. Never throws.
+  static Future<List<accounts_pb.AccountSummary>?> activeAccountsIn(
+      String currency) async {
+    final wanted = currency.trim().toUpperCase();
+    if (wanted.isEmpty) return null;
+    try {
+      final client = serviceLocator<accounts_grpc.AccountsServiceClient>();
+      final options = await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+      final response = await client.getUserAccounts(
+        // Same trap as above: the default response is locale-currency only.
+        accounts_pb.GetUserAccountsRequest(includeAllCurrencies: true),
+        options: options,
+      );
+
+      // `uuid` is the account identifier analytics keys on; `id` is an
+      // internal numeric surrogate and is NOT what the ledger references.
+      final out = response.accounts
+          .where((a) =>
+              a.currency.toUpperCase() == wanted &&
+              a.status == 'active' &&
+              a.uuid.isNotEmpty)
+          .toList();
+      out.sort((a, b) => b.balance.compareTo(a.balance));
+      return out;
+    } catch (_) {
+      return null;
+    }
+  }
 }

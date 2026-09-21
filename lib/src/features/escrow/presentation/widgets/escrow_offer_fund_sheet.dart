@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -26,10 +27,15 @@ import '../view/escrow_theme.dart';
 ///
 /// Returns the funded [EscrowDealEntity], or null when dismissed/failed.
 ///
-/// Account rules (product decision 2026-09-07):
-///  - ANY account in the offer's currency may fund; the DEFAULT is whichever
-///    account was active on the dashboard when Escrow Pay was opened
-///    (AccountManager stores its spendingAccountId), then primary, then first.
+/// Account rules:
+///  - The funding account is RESOLVED, not chosen: whichever account was
+///    active on the dashboard when Escrow Pay was opened (AccountManager
+///    stores its spendingAccountId), then primary, then first — filtered to
+///    the offer's currency and excluding frozen accounts.
+///  - It is NOT switchable in this sheet. Letting someone move the debit onto
+///    a different account moments before entering a transaction PIN is a
+///    foot-gun, and the account context is already established by the screen
+///    they came from.
 ///  - Selection and the wire value are the account's `spendingAccountId` —
 ///    for a family account the group `id` is NOT debitable, which was a live
 ///    bug in the old create flow's dropdown.
@@ -78,7 +84,8 @@ class _EscrowOfferFundSheetState extends State<_EscrowOfferFundSheet>
         final userId = context.read<AuthenticationCubit>().userId;
         if (userId != null) cubit.fetchAccountSummaries(userId: userId);
       } else {
-        _preSelectAccount(cubit.state as AccountCardsSummaryLoaded);
+        _preSelectAccount(
+            (cubit.state as AccountCardsSummaryLoaded).accountSummaries);
       }
       _loadQuote();
     });
@@ -113,10 +120,16 @@ class _EscrowOfferFundSheetState extends State<_EscrowOfferFundSheet>
 
   /// Default = the dashboard-ACTIVE account (AccountManager holds its
   /// spendingAccountId), then primary, then first. Latched so a later rebuild
-  /// never stomps a manual pick (cable-TV precedent).
-  void _preSelectAccount(AccountCardsSummaryLoaded state) {
+  /// never re-picks.
+  ///
+  /// Takes the account LIST rather than one state type: accounts arrive as
+  /// AccountCardsSummaryLoaded *or* AccountBalanceUpdated, and keying on only
+  /// the first meant a sheet opened right after a balance push never selected
+  /// an account — which, now that the account cannot be chosen by hand, would
+  /// leave the user unable to pay at all.
+  void _preSelectAccount(List<AccountSummaryEntity> all) {
     if (_accountAutoSelected) return;
-    final accounts = _eligible(state.accountSummaries);
+    final accounts = _eligible(all);
     if (accounts.isEmpty) return;
     final activeId = GetIt.I<AccountManager>().activeAccountId;
     final active = activeId == null
@@ -183,57 +196,15 @@ class _EscrowOfferFundSheetState extends State<_EscrowOfferFundSheet>
     }
   }
 
-  Future<void> _pickAccount(List<AccountSummaryEntity> accounts) async {
-    final picked = await showModalBottomSheet<AccountSummaryEntity>(
-      context: context,
-      backgroundColor: EscrowTheme.card,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(18.r))),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(height: 12.h),
-            Text('Fund from',
-                style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w700)),
-            SizedBox(height: 6.h),
-            for (final a in accounts)
-              ListTile(
-                leading: Icon(Icons.account_balance_wallet_outlined,
-                    color: EscrowTheme.primary, size: 22.sp),
-                title: Text(
-                    '${a.accountType}${a.accountNumberLast4.isNotEmpty ? ' •• ${a.accountNumberLast4}' : ''}',
-                    style: GoogleFonts.inter(
-                        color: Colors.white, fontSize: 14.sp)),
-                subtitle: Text(
-                    '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(a.availableBalance, a.currency)} available',
-                    style: GoogleFonts.inter(
-                        color: a.availableBalance >= _payable
-                            ? EscrowTheme.textSecondary
-                            : EscrowTheme.error,
-                        fontSize: 12.sp)),
-                trailing: a.spendingAccountId == _selected?.spendingAccountId
-                    ? Icon(Icons.check_circle,
-                        color: EscrowTheme.primary, size: 20.sp)
-                    : null,
-                onTap: () => Navigator.pop(ctx, a),
-              ),
-            SizedBox(height: 10.h),
-          ],
-        ),
-      ),
-    );
-    if (picked != null && mounted) setState(() => _selected = picked);
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<AccountCardsSummaryCubit, AccountCardsSummaryState>(
       listener: (context, state) {
-        if (state is AccountCardsSummaryLoaded) _preSelectAccount(state);
+        if (state is AccountCardsSummaryLoaded) {
+          _preSelectAccount(state.accountSummaries);
+        } else if (state is AccountBalanceUpdated) {
+          _preSelectAccount(state.accountSummaries);
+        }
       },
       child: Padding(
         padding: EdgeInsets.only(
@@ -271,10 +242,9 @@ class _EscrowOfferFundSheetState extends State<_EscrowOfferFundSheet>
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed:
-                    (_selected == null || !_hasEnough || _isProcessing)
-                        ? null
-                        : _fund,
+                onPressed: (_selected == null || !_hasEnough || _isProcessing)
+                    ? null
+                    : _fund,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: EscrowTheme.primary,
                   disabledBackgroundColor:
@@ -317,67 +287,94 @@ class _EscrowOfferFundSheetState extends State<_EscrowOfferFundSheet>
   Widget _fundFromTile() {
     return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
       builder: (context, state) {
-        final accounts = state is AccountCardsSummaryLoaded
+        // "Loaded" is a STATE, not an empty list. The tile used to infer
+        // loading from `accounts.isEmpty`, so a user whose accounts had
+        // finished loading but had none eligible for this currency sat in
+        // front of "Loading your accounts…" forever, with nothing to act on.
+        // Resolved and empty is a real answer and has to read as one.
+        final isResolved = state is AccountCardsSummaryLoaded ||
+            state is AccountBalanceUpdated;
+        // Whether an eligible account EXISTS is a separate question from
+        // whether one has been picked yet. Conflating them would print
+        // "no account available" at a user who has one, in the moment between
+        // the accounts arriving and pre-selection running.
+        final eligible = state is AccountCardsSummaryLoaded
             ? _eligible(state.accountSummaries)
-            : const <AccountSummaryEntity>[];
+            : state is AccountBalanceUpdated
+                ? _eligible(state.accountSummaries)
+                : const <AccountSummaryEntity>[];
+        final noneEligible = isResolved && eligible.isEmpty;
         final a = _selected;
-        return InkWell(
-          onTap: accounts.isEmpty ? null : () => _pickAccount(accounts),
-          borderRadius: BorderRadius.circular(12.r),
-          child: Container(
-            padding: EdgeInsets.all(14.w),
-            decoration: BoxDecoration(
-              color: EscrowTheme.bg,
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                  color: a == null ? EscrowTheme.border : EscrowTheme.primary),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.account_balance_wallet_outlined,
-                    color: EscrowTheme.primary, size: 20.sp),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: a == null
-                      ? Text(
-                          accounts.isEmpty
-                              ? 'Loading your accounts…'
-                              : 'Choose an account',
-                          style: GoogleFonts.inter(
-                              color: EscrowTheme.textSecondary,
-                              fontSize: 13.5.sp))
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                                '${a.accountType}${a.accountNumberLast4.isNotEmpty ? ' •• ${a.accountNumberLast4}' : ''}',
+
+        // The funding account is FIXED, not chosen here.
+        //
+        // Escrow Pay is opened from an account context and the source is
+        // resolved from it (dashboard-active, then primary, then first). Making
+        // it switchable mid-flow invited someone to move the debit onto an
+        // account they were not thinking about, moments before entering a
+        // transaction PIN. The tile is now a statement of fact, so no swap
+        // affordance and no tap.
+        return Container(
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            color: EscrowTheme.bg,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+                color: a == null ? EscrowTheme.border : EscrowTheme.primary),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.account_balance_wallet_outlined,
+                  color: EscrowTheme.primary, size: 20.sp),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: a == null
+                    ? Text(
+                        noneEligible
+                            ? 'No ${widget.offer.currency.toUpperCase()} account available to pay from'
+                            : 'Loading your accounts…',
+                        style: GoogleFonts.inter(
+                            color: noneEligible
+                                ? EscrowTheme.error
+                                : EscrowTheme.textSecondary,
+                            fontSize: 13.5.sp))
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                              '${a.accountType}${a.accountNumberLast4.isNotEmpty ? ' •• ${a.accountNumberLast4}' : ''}',
+                              style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w600)),
+                          SizedBox(height: 2.h),
+                          Text(
+                              '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(a.availableBalance, a.currency)} available',
+                              style: GoogleFonts.inter(
+                                  color: _hasEnough
+                                      ? EscrowTheme.textSecondary
+                                      : EscrowTheme.error,
+                                  fontSize: 12.sp)),
+                          if (!_hasEnough) ...[
+                            SizedBox(height: 4.h),
+                            // The account cannot be switched, so "not enough"
+                            // must name the way out instead of leaving the
+                            // user at a dead end.
+                            Text('Not enough — top up this account to pay',
                                 style: GoogleFonts.inter(
-                                    color: Colors.white,
-                                    fontSize: 14.sp,
+                                    color: EscrowTheme.error,
+                                    fontSize: 11.5.sp,
                                     fontWeight: FontWeight.w600)),
-                            SizedBox(height: 2.h),
-                            Text(
-                                '${currency_formatter.CurrencySymbols.formatAmountWithCurrency(a.availableBalance, a.currency)} available',
-                                style: GoogleFonts.inter(
-                                    color: _hasEnough
-                                        ? EscrowTheme.textSecondary
-                                        : EscrowTheme.error,
-                                    fontSize: 12.sp)),
-                            if (!_hasEnough) ...[
-                              SizedBox(height: 4.h),
-                              Text('Not enough for this purchase',
-                                  style: GoogleFonts.inter(
-                                      color: EscrowTheme.error,
-                                      fontSize: 11.5.sp,
-                                      fontWeight: FontWeight.w600)),
-                            ],
                           ],
-                        ),
-                ),
-                Icon(Icons.swap_horiz_rounded,
-                    color: EscrowTheme.textSecondary, size: 18.sp),
-              ],
-            ),
+                        ],
+                      ),
+              ),
+              // A small lock, not a swap arrow: the affordance has to match
+              // what the row can actually do.
+              if (a != null)
+                Icon(Icons.lock_outline_rounded,
+                    color: EscrowTheme.textSecondary, size: 15.sp),
+            ],
           ),
         );
       },

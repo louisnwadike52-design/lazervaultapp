@@ -36,9 +36,9 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
   SprayRoomCubit({
     required ISprayMeRepository repository,
     required SprayMeWebSocketService wsService,
-  })  : _repository = repository,
-        _wsService = wsService,
-        super(const SprayRoomState());
+  }) : _repository = repository,
+       _wsService = wsService,
+       super(const SprayRoomState());
 
   // ─── Initialize Room ─────────────────────────────────────────
 
@@ -48,19 +48,38 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
     // Resolve who we are (best-effort) so live earnings refresh + self-echo
     // suppression work. Non-fatal if it fails.
     try {
-      _currentUserId ??= await serviceLocator<SecureStorageService>().getUserId();
+      _currentUserId ??= await serviceLocator<SecureStorageService>()
+          .getUserId();
     } catch (_) {}
 
     try {
       // Load session (required), wallet/gifts/participants (best-effort)
       final sessionFuture = _repository.getSession(sessionId);
-      final walletFuture = _repository.getWallet().then<dynamic>((v) => v).catchError((_) => null);
-      final giftsFuture = _repository.getGiftCatalog().then<List>((v) => v).catchError((_) => <dynamic>[]);
-      final participantsFuture = _repository.getSessionParticipants(sessionId).then<List>((v) => v).catchError((_) => <dynamic>[]);
+      final walletFuture = _repository
+          .getWallet()
+          .then<dynamic>((v) => v)
+          .catchError((_) => null);
+      final giftsFuture = _repository
+          .getGiftCatalog()
+          .then<List>((v) => v)
+          .catchError((_) => <dynamic>[]);
+      final participantsFuture = _repository
+          .getSessionParticipants(sessionId)
+          .then<List>((v) => v)
+          .catchError((_) => <dynamic>[]);
       // Seed the comment feed so it isn't blank until the next live comment.
-      final commentsFuture = _repository.getComments(sessionId).then<List>((v) => v).catchError((_) => <dynamic>[]);
+      final commentsFuture = _repository
+          .getComments(sessionId)
+          .then<List>((v) => v)
+          .catchError((_) => <dynamic>[]);
 
-      final results = await Future.wait([sessionFuture, walletFuture, giftsFuture, participantsFuture, commentsFuture]);
+      final results = await Future.wait([
+        sessionFuture,
+        walletFuture,
+        giftsFuture,
+        participantsFuture,
+        commentsFuture,
+      ]);
 
       final session = results[0] as dynamic;
       final wallet = results[1] as dynamic;
@@ -69,37 +88,85 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
       final comments = results[4] as List;
 
       // Check if session has already ended
-      final isEnded = session.status == 'ended' || session.status == 'cancelled';
+      final isEnded =
+          session.status == 'ended' || session.status == 'cancelled';
 
-      emit(state.copyWith(
-        session: session,
-        wallet: wallet,
-        walletLoadFailed: wallet == null,
-        gifts: gifts.cast(),
-        participants: participants.cast(),
-        comments: comments.cast(),
-        totalLikes: session.totalLikes ?? 0,
-        totalLikeTaps: session.totalLikeTaps ?? 0,
-        liveLikeTaps: session.liveLikeTaps ?? 0,
-        totalSprayed: session.totalSprayed ?? 0,
-        totalGiftsValue: session.totalGifts ?? 0,
-        participantCount: session.participantCount ?? 0,
-        sessionEnded: isEnded,
-        isLoading: false,
-      ));
+      emit(
+        state.copyWith(
+          session: session,
+          wallet: wallet,
+          walletLoadFailed: wallet == null,
+          gifts: gifts.cast(),
+          participants: participants.cast(),
+          comments: comments.cast(),
+          totalLikes: session.totalLikes ?? 0,
+          totalLikeTaps: session.totalLikeTaps ?? 0,
+          liveLikeTaps: session.liveLikeTaps ?? 0,
+          totalSprayed: session.totalSprayed ?? 0,
+          totalGiftsValue: session.totalGifts ?? 0,
+          participantCount: session.participantCount ?? 0,
+          sessionEnded: isEnded,
+          isLoading: false,
+        ),
+      );
 
       // Leaderboard (best-effort, non-blocking).
       loadLeaderboard();
 
       // Only connect WebSocket if session is active
       if (!isEnded) {
+        // REGISTER PRESENCE before opening the socket.
+        //
+        // Entering the room did not tell the server we were here. Leaving
+        // does — `leaveSession` flips the participant offline and decrements
+        // ParticipantCount — so the two halves were asymmetric: every
+        // join → leave → re-enter cycle left the user marked OFFLINE with the
+        // count one below reality, and the "Re-enter session" / "Rejoin
+        // session" CTAs dropped the user into a room the server did not think
+        // they were in. They vanished from the participants list, the host's
+        // viewer count under-reported, and anything gated on online
+        // participation saw a ghost.
+        //
+        // The server already handles this correctly and was written expecting
+        // the call (see JoinSession: existing participants re-join, bypass the
+        // capacity cap, keep their host role, and only re-increment on an
+        // offline→online transition). It is idempotent, so calling it on a
+        // FIRST entry — where the Join screen already called it — is a no-op
+        // rather than a double count.
+        //
+        // Best-effort: presence is not worth blocking the room on. A failure
+        // here means a stale viewer count, not a broken session.
+        await _registerPresence(session);
+
         await _connectWebSocket(sessionId, accessToken);
       }
     } catch (e) {
-      emit(state.copyWith(
-        isLoading: false,
-        error: e.toString().replaceAll('Exception: ', ''),
-      ));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          error: e.toString().replaceAll('Exception: ', ''),
+        ),
+      );
+    }
+  }
+
+  /// Tell the server this user is present in the room.
+  ///
+  /// Joining by CODE is the only presence call the API exposes, and the room
+  /// is opened by session id — but the session we just fetched carries its own
+  /// code, so re-entry needs no code re-entry from the user. That is the whole
+  /// point of the "Re-enter session" CTA: no copy-code round trip.
+  ///
+  /// Deliberately swallows failures. Presence affects the viewer count and the
+  /// participants list; losing it is a cosmetic drift, and refusing to open a
+  /// live session over it would be a far worse trade for the host mid-stream.
+  Future<void> _registerPresence(dynamic session) async {
+    final code = (session?.sessionCode as String?)?.trim() ?? '';
+    if (code.isEmpty) return; // nothing to join with — leave the room usable
+    try {
+      await _repository.joinSession(code);
+    } catch (_) {
+      // Intentionally silent: see above.
     }
   }
 
@@ -122,15 +189,19 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
   Future<void> loadParticipants() async {
     if (state.session == null) return;
     try {
-      final participants = await _repository.getSessionParticipants(state.session!.id);
+      final participants = await _repository.getSessionParticipants(
+        state.session!.id,
+      );
       if (!isClosed) {
         // Reconcile the count with the actual roster so the top-bar number and
         // the viewer list can't drift (optimistic +/- on join/leave otherwise
         // diverges from participants.length).
-        emit(state.copyWith(
-          participants: participants,
-          participantCount: participants.length,
-        ));
+        emit(
+          state.copyWith(
+            participants: participants,
+            participantCount: participants.length,
+          ),
+        );
       }
     } catch (_) {
       // ignore — viewer list is non-critical
@@ -154,16 +225,20 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
         if (connected) {
           _disconnectCount = 0;
         } else if (connState == SprayWebSocketConnectionState.disconnected ||
-                   connState == SprayWebSocketConnectionState.error) {
+            connState == SprayWebSocketConnectionState.error) {
           _disconnectCount++;
         }
         // After 5+ disconnects (matching _maxReconnectAttempts), mark connection as failed
         final failed = _disconnectCount >= 5;
-        emit(state.copyWith(
-          isConnected: connected,
-          connectionFailed: failed,
-          error: failed && !state.sessionEnded ? 'Connection lost. Please rejoin the session.' : null,
-        ));
+        emit(
+          state.copyWith(
+            isConnected: connected,
+            connectionFailed: failed,
+            error: failed && !state.sessionEnded
+                ? 'Connection lost. Please rejoin the session.'
+                : null,
+          ),
+        );
       });
 
       emit(state.copyWith(isConnected: true));
@@ -186,32 +261,45 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
         // amount is the PER-UNIT gift price; multiply by quantity for the value.
         final giftAmount = (event.data['amount'] as num?)?.toInt() ?? 0;
         final quantity = (event.data['quantity'] as num?)?.toInt() ?? 1;
-        emit(state.copyWith(
-          recentEvents: updatedEvents,
-          // Only add to gift stats, NOT to totalSprayed (that's for cash sprays only)
-          totalGiftsValue: state.totalGiftsValue + (giftAmount * quantity),
-          totalGiftsCount: state.totalGiftsCount + quantity,
-        ));
+        emit(
+          state.copyWith(
+            recentEvents: updatedEvents,
+            // Only add to gift stats, NOT to totalSprayed (that's for cash sprays only)
+            totalGiftsValue: state.totalGiftsValue + (giftAmount * quantity),
+            totalGiftsCount: state.totalGiftsCount + quantity,
+          ),
+        );
         _refreshEarningsIfRecipient(event);
       case 'money_sprayed':
-        emit(state.copyWith(
-          recentEvents: updatedEvents,
-          totalSprayed: state.totalSprayed + ((event.data['total_amount'] as num?)?.toInt() ?? 0),
-        ));
+        emit(
+          state.copyWith(
+            recentEvents: updatedEvents,
+            totalSprayed:
+                state.totalSprayed +
+                ((event.data['total_amount'] as num?)?.toInt() ?? 0),
+          ),
+        );
         _refreshEarningsIfRecipient(event);
       case 'like_sent':
-        emit(state.copyWith(
-          recentEvents: updatedEvents,
-          totalLikes: (event.data['total_likes'] as num?)?.toInt() ?? state.totalLikes,
-          totalLikeTaps: (event.data['total_like_taps'] as num?)?.toInt() ??
-              state.totalLikeTaps + 1,
-          liveLikeTaps: (event.data['live_like_taps'] as num?)?.toInt() ??
-              state.liveLikeTaps + 1,
-        ));
+        emit(
+          state.copyWith(
+            recentEvents: updatedEvents,
+            totalLikes:
+                (event.data['total_likes'] as num?)?.toInt() ??
+                state.totalLikes,
+            totalLikeTaps:
+                (event.data['total_like_taps'] as num?)?.toInt() ??
+                state.totalLikeTaps + 1,
+            liveLikeTaps:
+                (event.data['live_like_taps'] as num?)?.toInt() ??
+                state.liveLikeTaps + 1,
+          ),
+        );
       case 'comment_added':
         final commentId = event.data['comment_id'] as String? ?? '';
         // Deduplicate: skip if comment with same ID already exists
-        if (commentId.isNotEmpty && state.comments.any((c) => c.id == commentId)) {
+        if (commentId.isNotEmpty &&
+            state.comments.any((c) => c.id == commentId)) {
           emit(state.copyWith(recentEvents: updatedEvents));
           return;
         }
@@ -228,33 +316,46 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
         if (updatedComments.length > 100) {
           updatedComments.removeRange(100, updatedComments.length);
         }
-        emit(state.copyWith(
-          recentEvents: updatedEvents,
-          comments: updatedComments,
-        ));
+        emit(
+          state.copyWith(
+            recentEvents: updatedEvents,
+            comments: updatedComments,
+          ),
+        );
       case 'participant_joined':
-        emit(state.copyWith(
-          recentEvents: updatedEvents,
-          participantCount: state.participantCount + 1,
-        ));
+        emit(
+          state.copyWith(
+            recentEvents: updatedEvents,
+            participantCount: state.participantCount + 1,
+          ),
+        );
         loadParticipants(); // refresh the viewer list with the new joiner
       case 'participant_left':
-        emit(state.copyWith(
-          recentEvents: updatedEvents,
-          participantCount: (state.participantCount - 1).clamp(0, 999999),
-        ));
+        emit(
+          state.copyWith(
+            recentEvents: updatedEvents,
+            participantCount: (state.participantCount - 1).clamp(0, 999999),
+          ),
+        );
         loadParticipants();
       case 'session_ended':
-        emit(state.copyWith(
-          recentEvents: updatedEvents,
-          totalSprayed: (event.data['total_sprayed'] as num?)?.toInt() ?? state.totalSprayed,
-          sessionEnded: true,
-          actionInProgress: false,
-        ));
+        emit(
+          state.copyWith(
+            recentEvents: updatedEvents,
+            totalSprayed:
+                (event.data['total_sprayed'] as num?)?.toInt() ??
+                state.totalSprayed,
+            sessionEnded: true,
+            actionInProgress: false,
+          ),
+        );
       case 'viewer_count':
-        emit(state.copyWith(
-          viewerCount: (event.data['count'] as num?)?.toInt() ?? state.viewerCount,
-        ));
+        emit(
+          state.copyWith(
+            viewerCount:
+                (event.data['count'] as num?)?.toInt() ?? state.viewerCount,
+          ),
+        );
       case 'seat_requested':
       case 'seat_approved':
       case 'seat_declined':
@@ -286,7 +387,11 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
   Future<String?> approveSeat(String userId, {String userName = ''}) async {
     if (state.session == null) return 'no session';
     try {
-      await _repository.approveSeat(state.session!.id, userId: userId, userName: userName);
+      await _repository.approveSeat(
+        state.session!.id,
+        userId: userId,
+        userName: userName,
+      );
       loadParticipants();
       return null;
     } catch (e) {
@@ -351,10 +456,12 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
   void incrementLikesOptimistically() {
     if (state.session == null || state.sessionEnded) return;
     if (!isClosed) {
-      emit(state.copyWith(
-        totalLikeTaps: state.totalLikeTaps + 1,
-        liveLikeTaps: state.liveLikeTaps + 1,
-      ));
+      emit(
+        state.copyWith(
+          totalLikeTaps: state.totalLikeTaps + 1,
+          liveLikeTaps: state.liveLikeTaps + 1,
+        ),
+      );
     }
   }
 
@@ -365,11 +472,13 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
     try {
       final r = await _repository.sendLike(state.session!.id, count: count);
       if (!isClosed) {
-        emit(state.copyWith(
-          totalLikes: r.totalLikes,
-          totalLikeTaps: r.totalLikeTaps,
-          liveLikeTaps: r.liveLikeTaps,
-        ));
+        emit(
+          state.copyWith(
+            totalLikes: r.totalLikes,
+            totalLikeTaps: r.totalLikeTaps,
+            liveLikeTaps: r.liveLikeTaps,
+          ),
+        );
       }
     } catch (e) {
       // Keep the optimistic counts on failure — the user still sees their taps.
@@ -378,7 +487,8 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
   }
 
   Future<void> sendGift(String giftId, {int quantity = 1}) async {
-    if (state.session == null || state.sessionEnded || !state.isConnected) return;
+    if (state.session == null || state.sessionEnded || !state.isConnected)
+      return;
     if (state.actionInProgress) return; // Prevent double-submit
 
     // Debounce rapid actions
@@ -401,10 +511,12 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
         // flash of 0 earnings/totals), then refresh authoritatively.
         final remaining = result.wallet?.balance;
         if (remaining != null && state.wallet != null) {
-          emit(state.copyWith(
-            wallet: state.wallet!.copyWith(balance: remaining),
-            actionInProgress: false,
-          ));
+          emit(
+            state.copyWith(
+              wallet: state.wallet!.copyWith(balance: remaining),
+              actionInProgress: false,
+            ),
+          );
         } else {
           emit(state.copyWith(actionInProgress: false));
         }
@@ -413,10 +525,12 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
       }
     } catch (e) {
       if (!isClosed) {
-        emit(state.copyWith(
-          error: e.toString().replaceAll('Exception: ', ''),
-          actionInProgress: false,
-        ));
+        emit(
+          state.copyWith(
+            error: e.toString().replaceAll('Exception: ', ''),
+            actionInProgress: false,
+          ),
+        );
       }
     }
   }
@@ -430,8 +544,10 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
   /// ONLY on acceptance (not on a debounced/blocked/failed tap that moved no
   /// money). Returns FALSE on any guard, debounce, or error.
   Future<bool> sprayMoney() async {
-    if (state.session == null || !state.canSpray || state.sessionEnded) return false;
-    if (state.wallet == null || state.selectedDenomination == null) return false;
+    if (state.session == null || !state.canSpray || state.sessionEnded)
+      return false;
+    if (state.wallet == null || state.selectedDenomination == null)
+      return false;
 
     // Debounce rapid spray taps
     final now = DateTime.now();
@@ -457,10 +573,12 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
         final mergedWallet = (remaining != null && state.wallet != null)
             ? state.wallet!.copyWith(balance: remaining)
             : state.wallet;
-        emit(state.copyWith(
-          wallet: mergedWallet,
-          sprayedSoFar: state.sprayedSoFar + denom,
-        ));
+        emit(
+          state.copyWith(
+            wallet: mergedWallet,
+            sprayedSoFar: state.sprayedSoFar + denom,
+          ),
+        );
         // Authoritative sync (non-blocking) so earnings/totals stay correct.
         refreshWallet();
       }
@@ -476,7 +594,8 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
   // ─── Comments ─────────────────────────────────────────────
 
   Future<void> sendComment(String text) async {
-    if (state.session == null || state.sessionEnded || text.trim().isEmpty) return;
+    if (state.session == null || state.sessionEnded || text.trim().isEmpty)
+      return;
     try {
       final comment = await _repository.addComment(
         sessionId: state.session!.id,
@@ -542,8 +661,10 @@ class SprayRoomCubit extends Cubit<SprayRoomState> {
   void _refreshEarningsIfRecipient(SprayRoomEvent event) {
     final me = _currentUserId;
     if (me == null || me.isEmpty) return;
-    if (event.senderId == me) return; // our own echo — no earnings change for us
-    final recipient = (event.data['recipient_user_id'] as String?)?.trim() ?? '';
+    if (event.senderId == me)
+      return; // our own echo — no earnings change for us
+    final recipient =
+        (event.data['recipient_user_id'] as String?)?.trim() ?? '';
     final hostId = state.session?.hostUserId ?? '';
     final addressedToMe = recipient.isNotEmpty ? recipient == me : hostId == me;
     if (addressedToMe) {

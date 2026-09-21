@@ -97,10 +97,29 @@ void main() {
       );
     });
 
-    test('labelForChatService maps known + falls back to raw name', () {
+    test('labelForChatService maps known services', () {
       expect(labelForChatService('crypto'), contains('Crypto'));
       expect(labelForChatService('transfers'), contains('Send'));
-      expect(labelForChatService('made_up_service'), 'made_up_service');
+    });
+
+    test('labelForChatService NEVER returns a raw slug', () {
+      // This assertion previously required the OPPOSITE — that an unmapped
+      // name was echoed verbatim. That was the bug, not the contract: the
+      // switch only ever covered the ~15 coarse chat-service names while every
+      // caller passes a ROUTING slug, so `split_bills`, `p2p_chat` and
+      // `lockfunds` rendered as database identifiers in a settings header.
+      // The fallback is now closed; worst case a service reads as words.
+      expect(labelForChatService('made_up_service'), 'Made Up Service');
+      expect(labelForChatService('split_bills'), 'Split Bills');
+      expect(labelForChatService('lazerbeam'), 'LazerBeam');
+
+      for (final slug in ['p2p_chat', 'lockfunds', 'financial_products']) {
+        final label = labelForChatService(slug);
+        expect(label, isNot(equals(slug)),
+            reason: '$slug reached the user unchanged');
+        expect(label.contains('_'), isFalse,
+            reason: '"$label" still looks like an identifier');
+      }
     });
   });
 

@@ -88,8 +88,7 @@ class _GroupJoinLinkScreenState extends State<GroupJoinLinkScreen> {
     if (token == null || preview == null || _joining) return;
     setState(() => _joining = true);
     try {
-      final res =
-          await _dataSource.join(token: token, linkToken: widget.token);
+      final res = await _dataSource.join(token: token, linkToken: widget.token);
       if (!mounted) return;
       Get.offNamed(AppRoutes.groupDetails, arguments: res.groupId);
       Get.snackbar(
@@ -220,8 +219,8 @@ class _GroupJoinLinkScreenState extends State<GroupJoinLinkScreen> {
               child: Text(
                 '${p.inviterName} invited you to join',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                    color: Colors.grey[400], fontSize: 13.sp),
+                style:
+                    GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
               ),
             ),
           ],
@@ -245,8 +244,7 @@ class _GroupJoinLinkScreenState extends State<GroupJoinLinkScreen> {
                   Divider(color: _border, height: 1),
                   SizedBox(height: 14.h),
                 ],
-                _row(Icons.people_outline, 'Members',
-                    '${p.memberCount}'),
+                _row(Icons.people_outline, 'Members', '${p.memberCount}'),
                 SizedBox(height: 10.h),
                 _row(Icons.badge_outlined, 'You join as',
                     p.role.isNotEmpty ? _titleCase(p.role) : 'Member'),
@@ -289,8 +287,8 @@ class _GroupJoinLinkScreenState extends State<GroupJoinLinkScreen> {
               onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
               child: Text(
                 'Not now',
-                style: GoogleFonts.inter(
-                    color: Colors.grey[400], fontSize: 13.sp),
+                style:
+                    GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
               ),
             ),
           ),

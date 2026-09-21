@@ -258,8 +258,8 @@ class _PublicGroupsScreenState extends State<PublicGroupsScreen> {
                       if (state.isStale)
                         const LinearProgressIndicator(
                           minHeight: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                              Color(0xFF3B82F6)),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
                           backgroundColor: Color(0xFF1F1F1F),
                         ),
                       Expanded(
@@ -323,9 +323,7 @@ class _PublicGroupsScreenState extends State<PublicGroupsScreen> {
               ),
               child: Center(
                 child: Text(
-                  group.name.isNotEmpty
-                      ? group.name[0].toUpperCase()
-                      : 'G',
+                  group.name.isNotEmpty ? group.name[0].toUpperCase() : 'G',
                   style: GoogleFonts.inter(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w700,
@@ -429,9 +427,7 @@ class _PublicGroupsScreenState extends State<PublicGroupsScreen> {
           ? null
           : () {
               setState(() => _joiningGroupIds.add(group.id));
-              context
-                  .read<GroupAccountCubit>()
-                  .joinPublicGroupById(group.id);
+              context.read<GroupAccountCubit>().joinPublicGroupById(group.id);
             },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),

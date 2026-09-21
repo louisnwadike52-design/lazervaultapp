@@ -1889,39 +1889,27 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     return sym == code ? '$sym ' : sym;
   }
 
-  // ── Redo (LazerBeam) ──────────────────────────────────────────────────────
-  // When the payload carries a `redoRoute` (Beam receipts, from the flow OR
-  // from a history tap) the receipt offers a "Redo" CTA that re-opens the
-  // correct transfer flow, best-effort pre-filled via `redoArgs`.
-  String? get _redoRoute {
-    final r = transferDetails['redoRoute'] as String?;
-    return (r != null && r.isNotEmpty) ? r : null;
-  }
-
-  void _onRedo() {
-    final route = _redoRoute;
-    if (route == null) return;
-    final args = transferDetails['redoArgs'];
-    Get.offNamed(route, arguments: args);
-  }
+  // ── Redo REMOVED ──────────────────────────────────────────────────────────
+  // The receipt used to carry a "Redo" CTA driven by `redoRoute`/`redoArgs`.
+  // It did not work: the flow screens that build this receipt synthesize a
+  // result with NO account ids, so `redoArgs` reduced to `{amount}` and the
+  // wallet flow reopened on its "Select Accounts" step with both slots empty —
+  // the user was asked to rebuild a transfer they had just made. It also used
+  // `Get.offNamed`, which REPLACED the receipt, so Back could not return to it.
+  //
+  // Repeating a transfer now lives where the data to repeat it actually
+  // exists: the transaction row, via `RepeatTransfer` (see
+  // `transaction_history/utils/repeat_transfer.dart`), which reconstructs the
+  // payee and pre-fills the send-funds form so only the PIN remains.
+  //
+  // `redoRoute`/`redoArgs` may still be present in payloads built by older
+  // call sites; they are simply ignored here.
 
   Widget _buildActions(BuildContext context) {
-    final redoLabel = (transferDetails['redoLabel'] as String?) ?? 'Redo';
-    final hasRedo = _redoRoute != null;
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 8.h),
       child: Row(
         children: [
-          if (hasRedo) ...[
-            Expanded(
-              child: _actionButton(
-                icon: Icons.replay_rounded,
-                label: redoLabel,
-                onTap: _onRedo,
-              ),
-            ),
-            SizedBox(width: 12.w),
-          ],
           Expanded(
             child: _actionButton(
               icon: _isDownloading ? null : Icons.download_outlined,

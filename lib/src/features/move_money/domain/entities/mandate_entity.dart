@@ -128,8 +128,7 @@ class MandateEntity extends Equatable {
 
   /// Whether this mandate is in a usable state for Direct Debit
   bool get isActive =>
-      status == MandateStatus.active ||
-      status == MandateStatus.readyToDebit;
+      status == MandateStatus.active || status == MandateStatus.readyToDebit;
 
   /// "Setting up" — the USER has finished their part (authorized at their bank)
   /// and only NIBSS / bank-side activation is left before it becomes debitable.

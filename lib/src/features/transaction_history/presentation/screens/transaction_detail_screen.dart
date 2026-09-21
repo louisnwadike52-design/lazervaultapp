@@ -8,6 +8,7 @@ import 'package:lazervault/core/types/unified_transaction.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_state.dart';
 import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
+import '../../utils/repeat_transfer.dart';
 
 /// The rich receipt for one transaction, opened from history and from every
 /// flow that reuses it (QR pay, batch items, …).
@@ -98,10 +99,34 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
           final tx = state is TransactionDetailsLoaded
               ? state.transaction
               : (_latest ?? widget.transaction);
+          // `UnifiedTransactionReceipt` has supported onRepeat all along, but
+          // nothing outside RMB ever passed it — so the main history receipt,
+          // the one people actually open, had no way to repeat a transfer at
+          // all. It gets the same reconstruction the history sheet uses, and
+          // only when the row carries enough to rebuild a payee, so the button
+          // is never present-but-dead.
+          final isIncoming = tx.flow == TransactionFlow.incoming;
+          final canRepeat = !isIncoming &&
+              tx.serviceType == TransactionServiceType.transfer &&
+              RepeatTransfer.canRepeat(
+                counterpartyName: tx.counterpartyName,
+                counterpartyAccount: tx.counterpartyAccount,
+                metadata: tx.metadata,
+              );
           return UnifiedTransactionReceipt(
             transaction: tx,
             fromHistory: true,
             onRefresh: _refresh,
+            onRepeat: canRepeat
+                ? () => RepeatTransfer.open(
+                      counterpartyName: tx.counterpartyName ?? '',
+                      counterpartyAccount: tx.counterpartyAccount ?? '',
+                      amount: tx.amount,
+                      metadata: tx.metadata,
+                      currency: tx.currency,
+                      description: tx.description,
+                    )
+                : null,
           );
         },
       ),

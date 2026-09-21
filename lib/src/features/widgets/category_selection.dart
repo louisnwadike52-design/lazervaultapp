@@ -7,6 +7,7 @@ import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:grpc/grpc.dart';
 part 'category_selection_widgets.dart';
 
 /// Category Selection Bottom Sheet
@@ -64,6 +65,11 @@ class _CategorySelectionBottomSheetState
   final TextEditingController _customNameController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   bool _isCreating = false;
+
+  /// Why the last create attempt failed. Shown inline so the sheet stays open
+  /// with the typed name intact, instead of closing on a category that was
+  /// never saved.
+  String? _createError;
   String _searchQuery = '';
 
   @override
@@ -350,8 +356,31 @@ class _CategorySelectionBottomSheetState
                   EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             ),
             textCapitalization: TextCapitalization.words,
+            onChanged: (_) {
+              if (_createError != null) setState(() => _createError = null);
+            },
             onSubmitted: (_) => _createCustomCategory(),
           ),
+          if (_createError != null) ...[
+            SizedBox(height: 12.h),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.error_outline_rounded,
+                    color: const Color(0xFFF87171), size: 16.sp),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    _createError!,
+                    style: TextStyle(
+                        color: const Color(0xFFF87171),
+                        fontSize: 12.5.sp,
+                        height: 1.35),
+                  ),
+                ),
+              ],
+            ),
+          ],
           SizedBox(height: 16.h),
           SizedBox(
             width: double.infinity,
@@ -405,19 +434,27 @@ class _CategorySelectionBottomSheetState
         displayName: name,
       );
 
-      if (created != null && mounted) {
+      if (!mounted) return;
+      if (created != null) {
+        setState(() => _createError = null);
         widget.onSelected(created);
-      } else if (mounted) {
-        // Fallback: create a local-only category
-        widget.onSelected(_buildLocalCategory(name));
+        return;
       }
+      // A null result means the server refused or could not be reached. It is
+      // NOT a reason to invent a category.
+      setState(() => _createError =
+          'We could not save that category. Check your connection and try again.');
+    } on GrpcError catch (e) {
+      // The server distinguishes these cases precisely; the user should see
+      // which one happened rather than a category that silently disappears.
+      if (!mounted) return;
+      setState(() => _createError = _messageForGrpc(e));
     } catch (e) {
       developer.log('Failed to create custom category',
           name: 'CategorySelection', error: e);
-      if (mounted) {
-        // Fallback on error
-        widget.onSelected(_buildLocalCategory(name));
-      }
+      if (!mounted) return;
+      setState(() => _createError =
+          'Something went wrong creating that category. Try again.');
     } finally {
       if (mounted) {
         setState(() => _isCreating = false);
@@ -425,16 +462,29 @@ class _CategorySelectionBottomSheetState
     }
   }
 
-  ServiceCategory _buildLocalCategory(String name) {
-    return ServiceCategory(
-      id: 'custom-${DateTime.now().millisecondsSinceEpoch}',
-      serviceName: widget.serviceName,
-      subCategoryName: name.toLowerCase().replaceAll(' ', '_'),
-      budgetCategory: 16,
-      displayName: name,
-      iconName: 'category',
-      color: const Color(0xFF95A5A6),
-      isCustom: true,
-    );
+  /// Turns the server's refusal into words that tell the user what to do.
+  ///
+  /// statistics-service already classifies these (AlreadyExists,
+  /// ResourceExhausted for the per-user cap, InvalidArgument for a bad name).
+  /// All of it used to be discarded.
+  String _messageForGrpc(GrpcError e) {
+    switch (e.code) {
+      case 6: // ALREADY_EXISTS
+        return 'You already have a category with that name. Pick a different one.';
+      case 8: // RESOURCE_EXHAUSTED
+        return e.message?.trim().isNotEmpty == true
+            ? e.message!
+            : 'You have reached the maximum number of custom categories.';
+      case 3: // INVALID_ARGUMENT
+        return e.message?.trim().isNotEmpty == true
+            ? e.message!
+            : 'That category name is not valid.';
+      case 16: // UNAUTHENTICATED
+        return 'Your session expired. Sign in again to add a category.';
+      case 14: // UNAVAILABLE
+        return 'Categories are unavailable right now. Try again shortly.';
+      default:
+        return 'We could not save that category. Try again.';
+    }
   }
 }

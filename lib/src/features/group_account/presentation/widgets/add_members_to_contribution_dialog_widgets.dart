@@ -102,7 +102,8 @@ class _MemberDetailsSheet extends StatelessWidget {
                 color: Colors.grey[400],
               ),
             )
-          else if (member.userUsername != null && member.userUsername!.isNotEmpty)
+          else if (member.userUsername != null &&
+              member.userUsername!.isNotEmpty)
             Text(
               '@${member.userUsername}',
               style: GoogleFonts.inter(
@@ -131,11 +132,13 @@ class _MemberDetailsSheet extends StatelessWidget {
           SizedBox(height: 24.h),
 
           // Details
-          _buildDetailRow(Icons.calendar_today, 'Joined', _formatDate(member.joinedAt)),
+          _buildDetailRow(
+              Icons.calendar_today, 'Joined', _formatDate(member.joinedAt)),
           if (member.phoneNumber != null && member.phoneNumber!.isNotEmpty)
             _buildDetailRow(Icons.phone, 'Phone', member.phoneNumber!),
           if (member.userUsername != null && member.userUsername!.isNotEmpty)
-            _buildDetailRow(Icons.alternate_email, 'Username', '@${member.userUsername}'),
+            _buildDetailRow(
+                Icons.alternate_email, 'Username', '@${member.userUsername}'),
           _buildDetailRow(
             Icons.check_circle,
             'Status',
@@ -175,7 +178,8 @@ class _MemberDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value, {Color? valueColor}) {
+  Widget _buildDetailRow(IconData icon, String label, String value,
+      {Color? valueColor}) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
@@ -217,8 +221,20 @@ class _MemberDetailsSheet extends StatelessWidget {
   }
 
   String _formatDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }

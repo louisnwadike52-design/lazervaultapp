@@ -71,7 +71,12 @@ class _CreateContributionCarouselState
   List<String> get _currentPageNames {
     if (_cubit.type == ContributionType.oneTime) {
       // Skip Schedule step for one-time contributions
-      return [_allPageNames[0], _allPageNames[1], _allPageNames[3], _allPageNames[4]];
+      return [
+        _allPageNames[0],
+        _allPageNames[1],
+        _allPageNames[3],
+        _allPageNames[4]
+      ];
     }
     return _allPageNames;
   }
@@ -159,15 +164,16 @@ class _CreateContributionCarouselState
             } else if (state is CreateContributionSuccess) {
               _showSuccessSnackBar(state.message);
               // Reload group details and close
-              context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
+              context
+                  .read<GroupAccountCubit>()
+                  .loadGroupDetails(widget.groupId);
               Navigator.of(context).pop();
             }
           },
           builder: (context, state) {
             final isSubmitting = state is CreateContributionSubmitting;
-            final currentStep = state is CreateContributionFormUpdated
-                ? state.currentStep
-                : 0;
+            final currentStep =
+                state is CreateContributionFormUpdated ? state.currentStep : 0;
             final contributionType = state is CreateContributionFormUpdated
                 ? state.type
                 : ContributionType.oneTime;
@@ -182,7 +188,8 @@ class _CreateContributionCarouselState
                     children: _buildPages(contributionType),
                   ),
                 ),
-                _buildNavigationButtons(currentStep, isSubmitting, contributionType),
+                _buildNavigationButtons(
+                    currentStep, isSubmitting, contributionType),
               ],
             );
           },
@@ -223,9 +230,8 @@ class _CreateContributionCarouselState
       ),
       title: BlocBuilder<CreateContributionCubit, CreateContributionState>(
         builder: (context, state) {
-          final currentStep = state is CreateContributionFormUpdated
-              ? state.currentStep
-              : 0;
+          final currentStep =
+              state is CreateContributionFormUpdated ? state.currentStep : 0;
           final type = state is CreateContributionFormUpdated
               ? state.type
               : ContributionType.oneTime;
@@ -284,7 +290,10 @@ class _CreateContributionCarouselState
                   gradient: LinearGradient(
                     colors: currentStep == totalSteps - 1
                         ? [Colors.green, Colors.green.shade700]
-                        : [const Color(0xFF4E03D0), const Color.fromARGB(255, 78, 3, 208)],
+                        : [
+                            const Color(0xFF4E03D0),
+                            const Color.fromARGB(255, 78, 3, 208)
+                          ],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
@@ -318,7 +327,8 @@ class _CreateContributionCarouselState
     );
   }
 
-  Widget _buildNavigationButtons(int currentStep, bool isSubmitting, ContributionType type) {
+  Widget _buildNavigationButtons(
+      int currentStep, bool isSubmitting, ContributionType type) {
     final totalSteps = type == ContributionType.oneTime ? 4 : 5;
     final isLastPage = currentStep == totalSteps - 1;
 
@@ -375,7 +385,10 @@ class _CreateContributionCarouselState
                     gradient: isSubmitting
                         ? null
                         : const LinearGradient(
-                            colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
+                            colors: [
+                              Color(0xFF4E03D0),
+                              Color.fromARGB(255, 78, 3, 208)
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),

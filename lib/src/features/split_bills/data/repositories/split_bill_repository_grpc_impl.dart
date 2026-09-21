@@ -207,6 +207,10 @@ class SplitBillRepositoryGrpcImpl implements SplitBillRepository {
             transactionReference: response.transaction.reference,
             message: response.message,
             updatedBill: _splitBillFromProto(response.splitBill),
+            // Carry the transaction's own outcome. `response.success` only
+            // means the request was accepted; the transfer can still be
+            // rejected by the rail, and that rejection arrives here.
+            transactionStatus: response.transaction.status,
           );
         } on GrpcError catch (e) {
           _handleGrpcError(e);

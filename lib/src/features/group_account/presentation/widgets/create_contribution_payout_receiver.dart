@@ -108,9 +108,7 @@ class PayoutReceiverPicker extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    member.userName.trim().isEmpty
-                        ? 'Member'
-                        : member.userName,
+                    member.userName.trim().isEmpty ? 'Member' : member.userName,
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
@@ -146,11 +144,8 @@ class PayoutReceiverPicker extends StatelessWidget {
   }
 
   static String _initials(String name) {
-    final parts = name
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((p) => p.isNotEmpty)
-        .toList();
+    final parts =
+        name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return '?';
     if (parts.length == 1) return parts.first.characters.first.toUpperCase();
     return (parts.first.characters.first + parts[1].characters.first)

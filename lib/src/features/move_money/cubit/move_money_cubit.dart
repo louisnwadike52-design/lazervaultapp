@@ -71,7 +71,8 @@ class MoveMoneyCubit extends Cubit<MoveMoneyState> {
 
     _feeRetryCount++;
     // Exponential backoff: 1s, 2s, 4s
-    final delay = Duration(milliseconds: pow(2, _feeRetryCount - 1).toInt() * 1000);
+    final delay =
+        Duration(milliseconds: pow(2, _feeRetryCount - 1).toInt() * 1000);
     await Future.delayed(delay);
     if (isClosed) return;
     await calculateFee(amountKobo);
@@ -158,7 +159,8 @@ class MoveMoneyCubit extends Cubit<MoveMoneyState> {
         ));
       case 'CROSS_CURRENCY':
         emit(MoveMoneyError(
-          message: 'Source and destination accounts must use the same currency.',
+          message:
+              'Source and destination accounts must use the same currency.',
           errorCode: e.code,
         ));
       case 'SAME_ACCOUNT':
@@ -178,7 +180,8 @@ class MoveMoneyCubit extends Cubit<MoveMoneyState> {
         ));
       case 'SERVICE_UNAVAILABLE' || 'PROVIDER_ERROR':
         emit(MoveMoneyError(
-          message: 'Bank service is temporarily unavailable. Please try again later.',
+          message:
+              'Bank service is temporarily unavailable. Please try again later.',
           errorCode: e.code,
         ));
       case 'PIN_VALIDATION_FAILED':
@@ -263,7 +266,8 @@ class MoveMoneyCubit extends Cubit<MoveMoneyState> {
       );
       emit(MoveTransferStatusLoaded(transfer: transfer));
     } catch (e) {
-      emit(MoveMoneyError(message: 'Failed to get transfer status: ${e.toString()}'));
+      emit(MoveMoneyError(
+          message: 'Failed to get transfer status: ${e.toString()}'));
     }
   }
 
@@ -285,7 +289,8 @@ class MoveMoneyCubit extends Cubit<MoveMoneyState> {
       );
       emit(MoveTransfersLoaded(transfers: transfers, total: total));
     } catch (e) {
-      emit(MoveMoneyError(message: 'Failed to load transfers: ${e.toString()}'));
+      emit(
+          MoveMoneyError(message: 'Failed to load transfers: ${e.toString()}'));
     }
   }
 

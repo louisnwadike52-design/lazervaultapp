@@ -313,8 +313,16 @@ class ReferralRepositoryImpl implements IReferralRepository {
   @override
   Future<Either<Failure, List<PointsConfigEntity>>> getPointsConfig() async {
     try {
+      // Authenticated like every other points call. Without this the gateway
+      // answered Unauthenticated ("authorization token not provided") and the
+      // LazerPoints screen silently lost its earn-rate config — the one call
+      // on this service that was missing it.
+      final callOptions = await _callOptionsHelper.withAuth();
       final request = referral_pb.GetPointsConfigRequest();
-      final response = await _referralServiceClient.getPointsConfig(request);
+      final response = await _referralServiceClient.getPointsConfig(
+        request,
+        options: callOptions,
+      );
 
       final configs = response.configs
           .map((proto) => PointsConfigModel.fromProto(proto))

@@ -9,7 +9,6 @@ part 'group_account_state_activity_report.dart';
 part 'group_account_state_public_invites.dart';
 part 'group_account_state_cycles_past.dart';
 
-
 abstract class GroupAccountState extends Equatable {
   const GroupAccountState();
 
@@ -21,9 +20,9 @@ class GroupAccountInitial extends GroupAccountState {}
 
 class GroupAccountLoading extends GroupAccountState {
   final String? message;
-  
+
   const GroupAccountLoading({this.message});
-  
+
   @override
   List<Object?> get props => [message];
 }
@@ -59,31 +58,31 @@ class GroupAccountGroupLoaded extends GroupAccountState {
   final GroupAccount group;
   final List<GroupMember> members;
   final List<Contribution> contributions;
-  
+
   const GroupAccountGroupLoaded({
     required this.group,
     required this.members,
     required this.contributions,
   });
-  
+
   @override
   List<Object?> get props => [group, members, contributions];
 }
 
 class GroupAccountGroupCreated extends GroupAccountState {
   final GroupAccount group;
-  
+
   const GroupAccountGroupCreated(this.group);
-  
+
   @override
   List<Object?> get props => [group];
 }
 
 class GroupAccountError extends GroupAccountState {
   final String message;
-  
+
   const GroupAccountError(this.message);
-  
+
   @override
   List<Object?> get props => [message];
 }

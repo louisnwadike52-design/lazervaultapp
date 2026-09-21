@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/group_entities.dart';
+import 'created_by_you_badge.dart';
 
 class GroupCard extends StatelessWidget {
   final GroupAccount group;
   final VoidCallback? onTap;
 
+  /// The signed-in user, used only to mark groups they created.
+  /// Null simply means the badge is not shown — never a wrong badge.
+  final String? currentUserId;
+
   const GroupCard({
+    this.currentUserId,
     super.key,
     required this.group,
     this.onTap,
@@ -18,13 +24,15 @@ class GroupCard extends StatelessWidget {
     final memberCount = group.members.length;
     final contributionCount = group.contributions.length;
     final totalTargetAmount = group.contributions.fold<double>(
-      0, (sum, contribution) => sum + contribution.targetAmount,
+      0,
+      (sum, contribution) => sum + contribution.targetAmount,
     );
     final totalCurrentAmount = group.contributions.fold<double>(
-      0, (sum, contribution) => sum + contribution.currentAmount,
+      0,
+      (sum, contribution) => sum + contribution.currentAmount,
     );
-    final progressPercentage = totalTargetAmount > 0 
-        ? (totalCurrentAmount / totalTargetAmount) * 100 
+    final progressPercentage = totalTargetAmount > 0
+        ? (totalCurrentAmount / totalTargetAmount) * 100
         : 0.0;
 
     return GestureDetector(
@@ -57,7 +65,8 @@ class GroupCard extends StatelessWidget {
                     gradient: LinearGradient(
                       colors: [
                         const Color.fromARGB(255, 78, 3, 208),
-                        const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.7),
+                        const Color.fromARGB(255, 78, 3, 208)
+                            .withValues(alpha: 0.7),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(10.r),
@@ -100,6 +109,12 @@ class GroupCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      if (currentUserId != null &&
+                          currentUserId!.isNotEmpty &&
+                          group.adminId == currentUserId) ...[
+                        SizedBox(height: 4.h),
+                        const CreatedByYouBadge(compact: true),
+                      ],
                     ],
                   ),
                 ),
@@ -169,10 +184,12 @@ class GroupCard extends StatelessWidget {
                           child: Stack(
                             children: [
                               FractionallySizedBox(
-                                widthFactor: (progressPercentage / 100).clamp(0.0, 1.0),
+                                widthFactor:
+                                    (progressPercentage / 100).clamp(0.0, 1.0),
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: const Color.fromARGB(255, 78, 3, 208),
+                                    color:
+                                        const Color.fromARGB(255, 78, 3, 208),
                                     borderRadius: BorderRadius.circular(2.r),
                                   ),
                                 ),
@@ -218,7 +235,6 @@ class GroupCard extends StatelessWidget {
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -256,7 +272,7 @@ class GroupCard extends StatelessWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays == 0) {
       return 'today';
     } else if (difference.inDays == 1) {
@@ -267,4 +283,4 @@ class GroupCard extends StatelessWidget {
       return '${date.day}/${date.month}/${date.year}';
     }
   }
-} 
+}

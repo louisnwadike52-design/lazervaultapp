@@ -126,7 +126,8 @@ _ScoreBreakdown _computeScore(FinancialHealthData data) {
     incomeTrendScore = 0;
   }
 
-  final total = savingsScore + budgetScore + expenseTrendScore + incomeTrendScore;
+  final total =
+      savingsScore + budgetScore + expenseTrendScore + incomeTrendScore;
   return _ScoreBreakdown(
     total: total.clamp(0, 100),
     savingsScore: savingsScore,
@@ -184,7 +185,8 @@ class _FinancialHealthScoreCardState extends State<FinancialHealthScoreCard>
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
+    _animation =
+        CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
     _controller.forward();
   }
 

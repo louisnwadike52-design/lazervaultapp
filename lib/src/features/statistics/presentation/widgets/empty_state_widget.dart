@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/src/features/statistics/utils/analytics_theme.dart';
 
 /// Empty State Widget for Statistics Screen
 /// Shows when no data is available
@@ -54,7 +55,7 @@ class EmptyStateWidget extends StatelessWidget {
             Text(
               message ??
                   'Start tracking your income and expenses to see your financial statistics here. '
-                  'You can add transactions manually or connect your bank account for automatic tracking.',
+                      'You can add transactions manually or connect your bank account for automatic tracking.',
               style: TextStyle(
                 fontSize: 14.sp,
                 color: const Color(0xFF6B7280),
@@ -90,7 +91,7 @@ class EmptyStateWidget extends StatelessWidget {
                 icon: const Icon(Icons.account_balance),
                 label: const Text('Connect Bank Account'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF4E03D0),
+                  foregroundColor: AnalyticsTheme.accent,
                   side: const BorderSide(
                     color: Color(0xFF4E03D0),
                     width: 2,

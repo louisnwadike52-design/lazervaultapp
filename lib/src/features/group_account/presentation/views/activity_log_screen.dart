@@ -67,7 +67,8 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
         case 'Payments':
           return ActivityActionType.paymentActions.contains(log.actionType);
         case 'Contributions':
-          return ActivityActionType.contributionActions.contains(log.actionType);
+          return ActivityActionType.contributionActions
+              .contains(log.actionType);
         case 'Payouts':
           return ActivityActionType.payoutActions.contains(log.actionType);
         case 'Settings':
@@ -523,7 +524,9 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
       case ActivityActionType.memberInvited:
         return '${details['email'] ?? 'Someone'} was invited to join';
       case ActivityActionType.paymentMade:
-        final amount = details['amount'] != null ? '\u20A6${NumberFormat('#,###').format(details['amount'])}' : '';
+        final amount = details['amount'] != null
+            ? '\u20A6${NumberFormat('#,###').format(details['amount'])}'
+            : '';
         return 'Paid $amount to ${details['contribution_title'] ?? 'contribution'}';
       case ActivityActionType.paymentFailed:
         return 'Payment attempt failed for ${details['contribution_title'] ?? 'contribution'}';
@@ -538,7 +541,9 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
       case ActivityActionType.contributionPaused:
         return '"${details['title'] ?? 'Contribution'}" was paused';
       case ActivityActionType.payoutProcessed:
-        final amount = details['amount'] != null ? '\u20A6${NumberFormat('#,###').format(details['amount'])}' : '';
+        final amount = details['amount'] != null
+            ? '\u20A6${NumberFormat('#,###').format(details['amount'])}'
+            : '';
         return '$amount paid out to ${details['recipient'] ?? 'recipient'}';
       case ActivityActionType.payoutRotationAdvanced:
         return 'Payout rotation moved to next member';

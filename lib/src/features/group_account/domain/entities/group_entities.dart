@@ -4,7 +4,6 @@ part 'group_entities_contribution.dart';
 part 'group_entities_payout.dart';
 part 'group_entities_activity.dart';
 
-
 /// UI-side mirror of the server's role-action matrix. Update both sides
 /// in lockstep; an out-of-sync table here is a UX bug, not a security
 /// bug (server still enforces).
@@ -260,22 +259,26 @@ class GroupAccount extends Equatable {
     final updatedMetadata = Map<String, dynamic>.from(metadata ?? {});
     if (whatsappGroupLink != null) {
       updatedMetadata['whatsapp_group_link'] = whatsappGroupLink;
-    } else if (whatsappGroupLink == '' && updatedMetadata.containsKey('whatsapp_group_link')) {
+    } else if (whatsappGroupLink == '' &&
+        updatedMetadata.containsKey('whatsapp_group_link')) {
       updatedMetadata.remove('whatsapp_group_link');
     }
     if (telegramGroupLink != null) {
       updatedMetadata['telegram_group_link'] = telegramGroupLink;
-    } else if (telegramGroupLink == '' && updatedMetadata.containsKey('telegram_group_link')) {
+    } else if (telegramGroupLink == '' &&
+        updatedMetadata.containsKey('telegram_group_link')) {
       updatedMetadata.remove('telegram_group_link');
     }
     if (facebookGroupLink != null) {
       updatedMetadata['facebook_group_link'] = facebookGroupLink;
-    } else if (facebookGroupLink == '' && updatedMetadata.containsKey('facebook_group_link')) {
+    } else if (facebookGroupLink == '' &&
+        updatedMetadata.containsKey('facebook_group_link')) {
       updatedMetadata.remove('facebook_group_link');
     }
     if (discordInviteLink != null) {
       updatedMetadata['discord_invite_link'] = discordInviteLink;
-    } else if (discordInviteLink == '' && updatedMetadata.containsKey('discord_invite_link')) {
+    } else if (discordInviteLink == '' &&
+        updatedMetadata.containsKey('discord_invite_link')) {
       updatedMetadata.remove('discord_invite_link');
     }
     return copyWith(metadata: updatedMetadata);

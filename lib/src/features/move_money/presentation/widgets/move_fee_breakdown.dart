@@ -49,7 +49,8 @@ class MoveFeeBreakdown extends StatelessWidget {
           if (feeCalculation.debitFee > 0)
             _buildRow('Bank debit (Mono)', feeCalculation.debitFee / 100.0),
           if (feeCalculation.transferFee > 0)
-            _buildRow('Payout (Flutterwave)', feeCalculation.transferFee / 100.0),
+            _buildRow(
+                'Payout (Flutterwave)', feeCalculation.transferFee / 100.0),
           if (feeCalculation.stampDuty > 0)
             _buildRow('Stamp duty (EMTL)', feeCalculation.stampDuty / 100.0),
           if (feeCalculation.serviceFee > 0)
@@ -139,9 +140,7 @@ class MoveFeeBreakdown extends StatelessWidget {
           style: GoogleFonts.inter(
             color: textColor,
             fontSize: isBold || isTotal ? 13.sp : 12.sp,
-            fontWeight: isBold || isTotal
-                ? FontWeight.w600
-                : FontWeight.w400,
+            fontWeight: isBold || isTotal ? FontWeight.w600 : FontWeight.w400,
           ),
         ),
         Text(
@@ -149,9 +148,7 @@ class MoveFeeBreakdown extends StatelessWidget {
           style: GoogleFonts.inter(
             color: valueColor,
             fontSize: isBold || isTotal ? 14.sp : 12.sp,
-            fontWeight: isBold || isTotal
-                ? FontWeight.w700
-                : FontWeight.w500,
+            fontWeight: isBold || isTotal ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
       ],

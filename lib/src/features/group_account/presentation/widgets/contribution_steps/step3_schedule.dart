@@ -45,7 +45,8 @@ class _Step3ScheduleState extends State<Step3Schedule> {
       builder: (context, state) {
         final cubit = context.read<CreateContributionCubit>();
         final formState = state is CreateContributionFormUpdated ? state : null;
-        final isRotatingSavings = formState?.type == ContributionType.rotatingSavings;
+        final isRotatingSavings =
+            formState?.type == ContributionType.rotatingSavings;
 
         return SingleChildScrollView(
           padding: EdgeInsets.all(20.w),
@@ -153,7 +154,8 @@ class _Step3ScheduleState extends State<Step3Schedule> {
                   ),
                 ),
                 SizedBox(height: 16.h),
-                _buildRotationOrderList(cubit, formState?.memberRotationOrder ?? []),
+                _buildRotationOrderList(
+                    cubit, formState?.memberRotationOrder ?? []),
               ],
 
               SizedBox(height: 40.h),
@@ -370,7 +372,8 @@ class _Step3ScheduleState extends State<Step3Schedule> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: memberOrder.length,
-        onReorder: (oldIndex, newIndex) => cubit.reorderMember(oldIndex, newIndex),
+        onReorder: (oldIndex, newIndex) =>
+            cubit.reorderMember(oldIndex, newIndex),
         itemBuilder: (context, index) {
           final userId = memberOrder[index];
           final member = groupMembers.firstWhere(
@@ -446,7 +449,9 @@ class _Step3ScheduleState extends State<Step3Schedule> {
                         ),
                       ),
                       Text(
-                        index == 0 ? 'First to receive payout' : 'Position ${index + 1}',
+                        index == 0
+                            ? 'First to receive payout'
+                            : 'Position ${index + 1}',
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           color: Colors.grey[500],

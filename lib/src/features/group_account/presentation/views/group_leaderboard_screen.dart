@@ -186,8 +186,7 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen>
           //   * a fresh PublicGroupsLoaded lands (captured in
           //     listener above), or
           //   * the user just joined a group (added to _justJoined).
-          final loaded =
-              state is PublicGroupsLoaded ? state : _lastLoaded;
+          final loaded = state is PublicGroupsLoaded ? state : _lastLoaded;
           if (loaded == null) {
             return _buildEmptyState();
           }
@@ -207,8 +206,7 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen>
               if (loaded.isStale)
                 const LinearProgressIndicator(
                   minHeight: 2,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
                   backgroundColor: Color(0xFF1F1F1F),
                 ),
               Expanded(
@@ -218,8 +216,8 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen>
                   backgroundColor: const Color(0xFF1F1F1F),
                   child: ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 16.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                     itemCount: visibleGroups.length,
                     itemBuilder: (context, index) {
                       final group = visibleGroups[index];

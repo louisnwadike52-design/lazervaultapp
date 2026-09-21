@@ -867,6 +867,12 @@ class TagPayPdfService {
         metadata['From'],
         metadata['sender_name'],
         metadata['senderAccount'],
+        // On an OUTGOING transfer the sender is, by definition, the logged-in
+        // user — the incoming branch above already relies on that for the
+        // recipient. Chat and voice receipts carry NO sender keys whatsoever
+        // (the receipt protocol emits none), so every one of the metadata
+        // lookups above misses and the PDF's "From" block rendered blank.
+        currentUserName,
       ]);
       sourceAccountInfo = _firstNonEmpty([
         metadata['senderAccount'],
@@ -1116,6 +1122,9 @@ class TagPayPdfService {
   /// addresses ride in that metadata, so one generator covers every crypto flow.
   static Future<File> generateCryptoReceipt({
     required UnifiedTransaction transaction,
+    /// Logged-in user's display name — the FROM party on a crypto BUY, which
+    /// has no on-chain sender address to fall back on.
+    String? currentUserName,
   }) async {
     await _loadFonts();
     final pdf = pw.Document();
@@ -1135,8 +1144,20 @@ class TagPayPdfService {
         : '${_currencySymbolFor(transaction.currency)}${_amountFormat.format(transaction.amount)}';
 
     // Sender: an explicit 'From address' (send flow) or the LazerVault identity.
-    final fromLabel = _pdfSafe(metadata['From address']?.toString() ??
-            metadata['From']?.toString()) ??
+    // A SEND has a real on-chain 'From address' and must keep it. A BUY has
+    // none, and used to fall through to the literal 'LazerVault Wallet' — so
+    // every purchase receipt claimed to be FROM the product rather than from
+    // the person who made it. The wallet is still named as the Payment method
+    // row, which is where that belongs.
+    // _firstNonEmpty (not `??` chaining): `_pdfSafe('')` returns '' rather than
+    // null, so an empty metadata value or an empty display name would satisfy
+    // `??` and render a BLANK "From" — the same failure this block exists to
+    // fix. _firstNonEmpty trims and skips empties, so the fallback actually runs.
+    final fromLabel = _pdfSafe(_firstNonEmpty([
+          metadata['From address'],
+          metadata['From'],
+          currentUserName,
+        ])) ??
         'LazerVault Wallet';
 
     // Every metadata entry becomes a label/value row, in insertion order.
@@ -1257,9 +1278,12 @@ class TagPayPdfService {
   static Future<String> downloadCryptoReceipt({
     required UnifiedTransaction transaction,
     ReceiptFileFormat format = ReceiptFileFormat.pdf,
+    String? currentUserName,
   }) async {
     final file = await generateCryptoReceiptFile(
-        transaction: transaction, format: format);
+        transaction: transaction,
+        format: format,
+        currentUserName: currentUserName);
     final safeRef = (transaction.transactionReference ?? transaction.id)
         .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
     return ReceiptDownload.saveAndOpen(
@@ -1274,8 +1298,10 @@ class TagPayPdfService {
   static Future<File> generateCryptoReceiptFile({
     required UnifiedTransaction transaction,
     ReceiptFileFormat format = ReceiptFileFormat.pdf,
+    String? currentUserName,
   }) async {
-    final pdfFile = await generateCryptoReceipt(transaction: transaction);
+    final pdfFile = await generateCryptoReceipt(
+        transaction: transaction, currentUserName: currentUserName);
     if (format == ReceiptFileFormat.pdf) return pdfFile;
     final safeRef = (transaction.transactionReference ?? transaction.id)
         .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
@@ -1290,9 +1316,12 @@ class TagPayPdfService {
     required UnifiedTransaction transaction,
     Rect? sharePositionOrigin,
     ReceiptFileFormat format = ReceiptFileFormat.pdf,
+    String? currentUserName,
   }) async {
     final file = await generateCryptoReceiptFile(
-        transaction: transaction, format: format);
+        transaction: transaction,
+        format: format,
+        currentUserName: currentUserName);
     await SharePlus.instance.share(ShareParams(
       files: [XFile(file.path)],
       text:

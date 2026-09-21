@@ -39,7 +39,8 @@ class _Step4AdvancedState extends State<Step4Advanced> {
     );
 
     // Show fields if they have values
-    _showPenaltyFields = cubit.penaltyAmount != null || cubit.gracePeriodDays != null;
+    _showPenaltyFields =
+        cubit.penaltyAmount != null || cubit.gracePeriodDays != null;
     _showMinimumBalance = cubit.minimumBalance != null;
   }
 
@@ -57,7 +58,8 @@ class _Step4AdvancedState extends State<Step4Advanced> {
       builder: (context, state) {
         final cubit = context.read<CreateContributionCubit>();
         final formState = state is CreateContributionFormUpdated ? state : null;
-        final isRotatingSavings = formState?.type == ContributionType.rotatingSavings;
+        final isRotatingSavings =
+            formState?.type == ContributionType.rotatingSavings;
 
         return SingleChildScrollView(
           padding: EdgeInsets.all(20.w),

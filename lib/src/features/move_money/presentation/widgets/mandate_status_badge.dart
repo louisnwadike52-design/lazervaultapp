@@ -7,7 +7,8 @@ import 'linked_account_state_chip.dart';
 /// Maps a [MandateEntity] (or null) to the canonical [LinkedAccountState] used
 /// by the shared chip — the single source of truth for mandate-state display.
 LinkedAccountState linkedAccountStateForMandate(MandateEntity? mandate) {
-  if (mandate == null) return LinkedAccountState.oneTime; // no mandate → DirectPay
+  if (mandate == null)
+    return LinkedAccountState.oneTime; // no mandate → DirectPay
   // A deposit-method switch awaiting Mono confirmation shows a transient
   // "Switching…" state everywhere, ahead of the (still-transitioning) status.
   if (mandate.switchProcessing) return LinkedAccountState.switching;

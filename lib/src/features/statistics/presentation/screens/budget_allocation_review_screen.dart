@@ -104,16 +104,16 @@ class _BudgetAllocationReviewScreenState
     super.dispose();
   }
 
-  double get _total => _rows
-      .where((r) => r.include)
-      .fold<double>(0, (sum, r) => sum + r.amount);
+  double get _total =>
+      _rows.where((r) => r.include).fold<double>(0, (sum, r) => sum + r.amount);
 
   int get _includedCount => _rows.where((r) => r.include).length;
 
   /// Turns EXPENSE_CATEGORY_FOOD_DINING into "Food dining" for rows where the
   /// model gave a raw enum and no display name.
   String _prettyCategory(String raw) {
-    final cleaned = raw.replaceFirst('EXPENSE_CATEGORY_', '').replaceAll('_', ' ');
+    final cleaned =
+        raw.replaceFirst('EXPENSE_CATEGORY_', '').replaceAll('_', ' ');
     if (cleaned.isEmpty) return 'Other';
     return cleaned[0].toUpperCase() + cleaned.substring(1).toLowerCase();
   }
@@ -136,8 +136,11 @@ class _BudgetAllocationReviewScreenState
 
     final cubit = context.read<BudgetCubit>();
     for (final row in selected) {
+      // createBudget REPORTS its outcome; it does not throw. The previous
+      // try/catch could never fire, so a rejected budget was counted as
+      // created and the summary below overstated what had been applied.
       try {
-        await cubit.createBudget(
+        final ok = await cubit.createBudget(
           name: row.categoryName,
           amount: row.amount,
           currency: widget.currency,
@@ -146,7 +149,11 @@ class _BudgetAllocationReviewScreenState
           enforcementMode: row.enforcement,
           alertThreshold: row.alertThreshold,
         );
-        _created++;
+        if (ok) {
+          _created++;
+        } else {
+          _failed.add(row.categoryName);
+        }
       } catch (_) {
         // Keep going: one rejected category must not strand the rest, and the
         // user is told exactly which ones did not make it.
@@ -288,8 +295,8 @@ class _BudgetAllocationReviewScreenState
                     decoration: InputDecoration(
                       prefixText: '$symbol ',
                       isDense: true,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: 10.w, vertical: 10.h),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.r),
                       ),
@@ -344,8 +351,7 @@ class _BudgetAllocationReviewScreenState
                               ),
                             ))
                         .toList(),
-                    onChanged: (v) =>
-                        setState(() => r.period = v ?? r.period),
+                    onChanged: (v) => setState(() => r.period = v ?? r.period),
                   ),
                 ),
                 SizedBox(width: 10.w),
@@ -426,7 +432,8 @@ class _BudgetAllocationReviewScreenState
                   ),
                 ),
                 Text(
-                  CurrencySymbols.formatAmountWithCurrency(_total, widget.currency),
+                  CurrencySymbols.formatAmountWithCurrency(
+                      _total, widget.currency),
                   style: GoogleFonts.inter(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
@@ -453,10 +460,9 @@ class _BudgetAllocationReviewScreenState
               width: double.infinity,
               height: 48.h,
               child: ElevatedButton(
-                onPressed:
-                    (_applying || _includedCount == 0 || _total <= 0)
-                        ? null
-                        : _apply,
+                onPressed: (_applying || _includedCount == 0 || _total <= 0)
+                    ? null
+                    : _apply,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: InvoiceThemeColors.primaryPurple,
                   foregroundColor: Colors.white,

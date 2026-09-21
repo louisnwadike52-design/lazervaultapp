@@ -26,7 +26,8 @@ class MandateCubit extends Cubit<MandateState> {
   /// Server-side authorization-attempt stamp (device-independent "Setting up"
   /// signal). Best-effort passthrough.
   Future<void> markAuthAttempt(String mandateId, {bool cleared = false}) =>
-      _dataSource.markMandateAuthAttempt(mandateId: mandateId, cleared: cleared);
+      _dataSource.markMandateAuthAttempt(
+          mandateId: mandateId, cleared: cleared);
 
   /// Classify a mandate failure, log it to Loki (flow: 'mandate'), and build a
   /// user-facing [MandateError]. A backend KYC_REQUIRED (the "no fake customer
@@ -153,7 +154,8 @@ class MandateCubit extends Cubit<MandateState> {
     var changed = false;
     for (final m in live) {
       try {
-        final fresh = await _dataSource.getMandate(mandateId: m.id, userId: userId);
+        final fresh =
+            await _dataSource.getMandate(mandateId: m.id, userId: userId);
         final existing = _mandatesByAccountId[fresh.linkedAccountId];
         // Same mandate → always take the fresh status. A DIFFERENT mandate on
         // the same account only replaces the cached one if it is genuinely
@@ -373,7 +375,8 @@ class MandateCubit extends Cubit<MandateState> {
     // nothing left to watch for.
     const maxPolls = 30;
     var polls = 0;
-    _mandatePollTimer = Timer.periodic(const Duration(seconds: 60), (timer) async {
+    _mandatePollTimer =
+        Timer.periodic(const Duration(seconds: 60), (timer) async {
       if (isClosed) {
         timer.cancel();
         return;
@@ -439,17 +442,20 @@ class MandateCubit extends Cubit<MandateState> {
   }) {
     _switchPollTimer?.cancel();
     var ticks = 0;
-    _switchPollTimer = Timer.periodic(const Duration(seconds: 12), (timer) async {
+    _switchPollTimer =
+        Timer.periodic(const Duration(seconds: 12), (timer) async {
       ticks++;
       if (isClosed || ticks > maxTicks) {
         timer.cancel();
         return;
       }
       try {
-        final fresh = await _dataSource.getMandate(mandateId: mandateId, userId: userId);
+        final fresh =
+            await _dataSource.getMandate(mandateId: mandateId, userId: userId);
         _mandatesByAccountId[fresh.linkedAccountId] = fresh;
         if (!isClosed) {
-          emit(UserMandatesLoaded(mandates: _mandatesByAccountId.values.toList()));
+          emit(UserMandatesLoaded(
+              mandates: _mandatesByAccountId.values.toList()));
         }
         if (!fresh.switchProcessing) {
           timer.cancel();
@@ -463,7 +469,9 @@ class MandateCubit extends Cubit<MandateState> {
   /// Prefer active/readyToDebit mandates over others.
   bool _isBetterMandate(MandateEntity candidate, MandateEntity existing) {
     if (candidate.isActive && !existing.isActive) return true;
-    if (candidate.isActivating && !existing.isActive && !existing.isActivating) {
+    if (candidate.isActivating &&
+        !existing.isActive &&
+        !existing.isActivating) {
       return true;
     }
     return false;

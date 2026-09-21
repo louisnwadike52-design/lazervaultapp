@@ -36,7 +36,8 @@ class BudgetRepository {
         ..currency = currency;
 
       return retryWithBackoff(
-        operation: () => _grpcClient.validateCategoryBudget(request, options: callOptions),
+        operation: () =>
+            _grpcClient.validateCategoryBudget(request, options: callOptions),
       );
     });
   }
@@ -52,7 +53,8 @@ class BudgetRepository {
     DateTime? endDate,
     bool enableAlerts = true,
     double alertThreshold = 80.0,
-    pb.BudgetEnforcementMode enforcementMode = pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE,
+    pb.BudgetEnforcementMode enforcementMode =
+        pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE,
   }) async {
     return _callOptionsHelper.executeWithTokenRotation(() async {
       final callOptions = await _callOptionsHelper.withAuth();
@@ -74,7 +76,8 @@ class BudgetRepository {
       }
 
       return retryWithBackoff(
-        operation: () => _grpcClient.createBudget(request, options: callOptions),
+        operation: () =>
+            _grpcClient.createBudget(request, options: callOptions),
       );
     });
   }
@@ -112,7 +115,8 @@ class BudgetRepository {
       final request = pb.GetBudgetByIdRequest()..budgetId = budgetId;
 
       return retryWithBackoff(
-        operation: () => _grpcClient.getBudgetById(request, options: callOptions),
+        operation: () =>
+            _grpcClient.getBudgetById(request, options: callOptions),
       );
     });
   }
@@ -159,7 +163,8 @@ class BudgetRepository {
       }
 
       return retryWithBackoff(
-        operation: () => _grpcClient.updateBudget(request, options: callOptions),
+        operation: () =>
+            _grpcClient.updateBudget(request, options: callOptions),
       );
     });
   }
@@ -171,7 +176,8 @@ class BudgetRepository {
       final request = pb.DeleteBudgetRequest()..budgetId = budgetId;
 
       return retryWithBackoff(
-        operation: () => _grpcClient.deleteBudget(request, options: callOptions),
+        operation: () =>
+            _grpcClient.deleteBudget(request, options: callOptions),
       );
     });
   }
@@ -184,12 +190,14 @@ class BudgetRepository {
       final callOptions = await _callOptionsHelper.withAuth();
       final request = pb.GetBudgetProgressRequest();
 
-      if (period != null && period != pb.BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED) {
+      if (period != null &&
+          period != pb.BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED) {
         request.period = period;
       }
 
       return retryWithBackoff(
-        operation: () => _grpcClient.getBudgetProgress(request, options: callOptions),
+        operation: () =>
+            _grpcClient.getBudgetProgress(request, options: callOptions),
       );
     });
   }
@@ -206,7 +214,8 @@ class BudgetRepository {
         ..limit = limit;
 
       return retryWithBackoff(
-        operation: () => _grpcClient.getBudgetAlerts(request, options: callOptions),
+        operation: () =>
+            _grpcClient.getBudgetAlerts(request, options: callOptions),
       );
     });
   }
@@ -218,7 +227,8 @@ class BudgetRepository {
       final request = pb.MarkAlertAsReadRequest()..alertId = alertId;
 
       return retryWithBackoff(
-        operation: () => _grpcClient.markAlertAsRead(request, options: callOptions),
+        operation: () =>
+            _grpcClient.markAlertAsRead(request, options: callOptions),
       );
     });
   }
@@ -235,7 +245,8 @@ class BudgetRepository {
       }
 
       return retryWithBackoff(
-        operation: () => _grpcClient.getFinancialGoals(request, options: callOptions),
+        operation: () =>
+            _grpcClient.getFinancialGoals(request, options: callOptions),
       );
     });
   }
@@ -269,7 +280,8 @@ class BudgetRepository {
       if (color != null) request.color = color;
 
       return retryWithBackoff(
-        operation: () => _grpcClient.createFinancialGoal(request, options: callOptions),
+        operation: () =>
+            _grpcClient.createFinancialGoal(request, options: callOptions),
       );
     });
   }
@@ -310,7 +322,8 @@ class BudgetRepository {
         ..amountToAdd = amountToAdd;
 
       return retryWithBackoff(
-        operation: () => _grpcClient.updateFinancialGoalProgress(request, options: callOptions),
+        operation: () => _grpcClient.updateFinancialGoalProgress(request,
+            options: callOptions),
       );
     });
   }
@@ -324,7 +337,8 @@ class BudgetRepository {
       final request = pb.GetUpcomingBillsRequest()..daysAhead = daysAhead;
 
       return retryWithBackoff(
-        operation: () => _grpcClient.getUpcomingBills(request, options: callOptions),
+        operation: () =>
+            _grpcClient.getUpcomingBills(request, options: callOptions),
       );
     });
   }
@@ -358,7 +372,8 @@ class BudgetRepository {
       if (icon != null) request.icon = icon;
 
       return retryWithBackoff(
-        operation: () => _grpcClient.createRecurringBill(request, options: callOptions),
+        operation: () =>
+            _grpcClient.createRecurringBill(request, options: callOptions),
       );
     });
   }
@@ -375,7 +390,8 @@ class BudgetRepository {
         ..activeOnly = activeOnly;
 
       return retryWithBackoff(
-        operation: () => _grpcClient.getServiceCategories(request, options: callOptions),
+        operation: () =>
+            _grpcClient.getServiceCategories(request, options: callOptions),
       );
     });
   }
@@ -398,19 +414,22 @@ class BudgetRepository {
         ..color = color;
 
       return retryWithBackoff(
-        operation: () => _grpcClient.createCustomCategory(request, options: callOptions),
+        operation: () =>
+            _grpcClient.createCustomCategory(request, options: callOptions),
       );
     });
   }
 
   /// Delete a custom category
-  Future<pb.DeleteCustomCategoryResponse> deleteCustomCategory(String categoryId) async {
+  Future<pb.DeleteCustomCategoryResponse> deleteCustomCategory(
+      String categoryId) async {
     return _callOptionsHelper.executeWithTokenRotation(() async {
       final callOptions = await _callOptionsHelper.withAuth();
       final request = pb.DeleteCustomCategoryRequest()..categoryId = categoryId;
 
       return retryWithBackoff(
-        operation: () => _grpcClient.deleteCustomCategory(request, options: callOptions),
+        operation: () =>
+            _grpcClient.deleteCustomCategory(request, options: callOptions),
       );
     });
   }

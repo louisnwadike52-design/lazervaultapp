@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:grpc/grpc.dart';
 import 'package:file_picker/file_picker.dart';
@@ -160,9 +161,14 @@ String upFriendlyError(Object e) {
 const Color kUpBg = Color(0xFF0A0A0A);
 const Color kUpCard = Color(0xFF1F1F1F);
 const Color kUpDivider = Color(0xFF2D2D2D);
-const Color kUpPrimary =
-    Color.fromARGB(255, 78, 3, 208); // #4E03D0 — crypto/joint-funds accent
-const Color kUpPrimarySoft = Color(0xFF7C3AED);
+// The accent is drawn on a near-black ground (#0A0A0A), and the app-bar buttons
+// render it twice over: the glyph at full strength on a circle of the SAME
+// colour at 10% alpha. The old #4E03D0 is far too dark for that — the icons,
+// borders and link text all sank into the background. These are lifted into the
+// violet-400/500 range so every purple element reads against black while a
+// filled button still carries white label text.
+const Color kUpPrimary = Color(0xFF8B5CF6);
+const Color kUpPrimarySoft = Color(0xFFA78BFA);
 const Color kUpSuccess = Color(0xFF10B981);
 const Color kUpWarning = Color(0xFFFB923C);
 const Color kUpError = Color(0xFFEF4444);
@@ -182,6 +188,48 @@ const LinearGradient kUpAccentGradient = LinearGradient(
   end: Alignment.bottomRight,
   colors: [kUpPrimary, kUpPrimarySoft],
 );
+
+/// An app-bar action styled to match [ServiceVoiceButton] and
+/// [MicroserviceChatIcon], which both draw a 34pt circle filled with their icon
+/// colour at 10% alpha.
+///
+/// A bare `IconButton` sits in a 48pt box with no circle, so the help action
+/// read as a different kind of control and lined up badly beside the other two.
+class UpAppBarIconButton extends StatelessWidget {
+  const UpAppBarIconButton({
+    super.key,
+    required this.icon,
+    required this.onTap,
+    this.tooltip,
+    this.color = kUpPrimary,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+  final String? tooltip;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final button = InkWell(
+      onTap: onTap,
+      customBorder: const CircleBorder(),
+      child: Container(
+        width: 34.w,
+        height: 34.w,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color.withValues(alpha: 0.1),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        child: Icon(icon, color: color, size: 17.sp),
+      ),
+    );
+    return tooltip == null
+        ? button
+        : Tooltip(message: tooltip!, child: button);
+  }
+}
 
 /// Wraps a page body in the crypto-style vertical gradient background AND sets
 /// the Inter default text style so every descendant `Text` (whose own style
@@ -1354,7 +1402,7 @@ class UpRecentActivitySection extends StatelessWidget {
   Widget _row(up.UpliftReceiptMessage r) {
     final isRelease = r.referenceType == 'milestone_release';
     final color = isRelease ? kUpSuccess : kUpPrimarySoft;
-    final title = isRelease ? 'Funding received' : 'Escrow refund';
+    final title = isRelease ? 'Funding received' : 'Pool refund';
     return GestureDetector(
       onTap: onTap == null ? null : () => onTap!(r),
       child: Container(

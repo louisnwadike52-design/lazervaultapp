@@ -64,7 +64,8 @@ class Step5Review extends StatelessWidget {
                 iconColor: const Color.fromARGB(255, 78, 3, 208),
                 children: [
                   _buildReviewItem('Title', formState.title),
-                  _buildReviewItem('Description', formState.description, isLong: true),
+                  _buildReviewItem('Description', formState.description,
+                      isLong: true),
                   _buildReviewItem(
                     'Target Amount',
                     '${formState.currency} ${_formatAmount(formState.targetAmount ?? 0)}',
@@ -341,7 +342,8 @@ class Step5Review extends StatelessWidget {
         );
 
         return Padding(
-          padding: EdgeInsets.only(bottom: index < memberOrder.length - 1 ? 8.h : 0),
+          padding:
+              EdgeInsets.only(bottom: index < memberOrder.length - 1 ? 8.h : 0),
           child: Row(
             children: [
               Container(

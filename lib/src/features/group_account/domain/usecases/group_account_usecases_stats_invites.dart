@@ -35,7 +35,8 @@ class GetGroupActivityLogs extends UseCase<List<ActivityLogEntry>, String> {
   }
 }
 
-class GetContributionActivityLogs extends UseCase<List<ActivityLogEntry>, String> {
+class GetContributionActivityLogs
+    extends UseCase<List<ActivityLogEntry>, String> {
   final GroupAccountRepository repository;
 
   GetContributionActivityLogs(this.repository);
@@ -45,8 +46,6 @@ class GetContributionActivityLogs extends UseCase<List<ActivityLogEntry>, String
     return repository.getContributionActivityLogs(contributionId);
   }
 }
-
- 
 
 // =====================================================================
 // Invite-first membership use cases (slice 5)
@@ -88,7 +87,8 @@ class RespondToGroupInviteParams {
   });
 }
 
-class RespondToGroupInvite extends UseCase<GroupInvitation, RespondToGroupInviteParams> {
+class RespondToGroupInvite
+    extends UseCase<GroupInvitation, RespondToGroupInviteParams> {
   final GroupAccountRepository repository;
   RespondToGroupInvite(this.repository);
   @override
@@ -115,7 +115,8 @@ class ListMyInvitationsParams {
   const ListMyInvitationsParams({this.statuses, this.limit = 50});
 }
 
-class ListMyInvitations extends UseCase<List<GroupInvitation>, ListMyInvitationsParams> {
+class ListMyInvitations
+    extends UseCase<List<GroupInvitation>, ListMyInvitationsParams> {
   final GroupAccountRepository repository;
   ListMyInvitations(this.repository);
   @override
@@ -135,7 +136,8 @@ class ListGroupInvitationsParams {
   });
 }
 
-class ListGroupInvitations extends UseCase<List<GroupInvitation>, ListGroupInvitationsParams> {
+class ListGroupInvitations
+    extends UseCase<List<GroupInvitation>, ListGroupInvitationsParams> {
   final GroupAccountRepository repository;
   ListGroupInvitations(this.repository);
   @override

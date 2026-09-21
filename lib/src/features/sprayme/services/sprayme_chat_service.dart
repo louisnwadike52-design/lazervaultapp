@@ -90,6 +90,12 @@ class SprayMeChatService {
           'user_id': userId,
           'session_id': sessionId,
           'access_token': token,
+          // Scope the read to this feature. The gateway treats a MISSING
+          // source_context as "return everything this user has ever said",
+          // which would spill the general assistant's banking conversation
+          // into a live spray room. sendMessage already tags outgoing
+          // messages with 'sprayme'; the read has to match it.
+          'source_context': 'sprayme',
           'limit': limit.toString(),
         },
         options: Options(

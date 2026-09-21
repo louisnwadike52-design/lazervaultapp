@@ -37,6 +37,8 @@ import 'package:lazervault/src/features/statistics/presentation/widgets/failed_t
 import 'package:lazervault/src/features/statistics/presentation/widgets/statistics_content_skeleton.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/error_state_widget.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/src/features/statistics/utils/analytics_theme.dart';
+import 'dart:async';
 part 'statistics_widgets.dart';
 
 /// Returns true for platform/internal fee categories that should be
@@ -169,6 +171,11 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
   // Selected linked-bank scope. Empty = ALL linked banks; one or more narrows
   // every external number on the page to that SUBSET of banks (multi-select).
   Set<String> _selectedBankIds = <String>{};
+  // Selected LazerVault wallet scope. Empty = ALL wallets in the active
+  // currency. A user holds a personal, business, savings, family and campaign
+  // wallet per currency, so the wallet leg is a question about a SET, not one
+  // account. Mirrors _selectedBankIds so both scopes behave identically.
+  Set<String> _selectedWalletIds = <String>{};
 
   /// The bank scope to send with credit-score / insight reads.
   ///
@@ -200,9 +207,12 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
       // leg (banking-service analytics) is included from the start.
       await _initOpenBanking();
       if (!mounted) return;
-      context.read<StatisticsCubit>()
+      final statsCubit = context.read<StatisticsCubit>()
         ..userId = _userId
         ..loadStatistics();
+      // Wallet list is informational for the selector; a failure leaves the
+      // scope at "all wallets" rather than narrowing anything.
+      unawaited(statsCubit.loadWallets());
     });
   }
 
@@ -551,9 +561,11 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                 SizedBox(width: 8.w),
                 _filterChip(
                     Icons.account_balance_wallet_rounded,
-                    'Wallet',
-                    () => _openFilterSheet(
-                        'Wallet account', _buildWalletSheet())),
+                    _selectedWalletIds.isEmpty
+                        ? 'All wallets'
+                        : '${_selectedWalletIds.length} wallet${_selectedWalletIds.length == 1 ? '' : 's'}',
+                    () => _openFilterSheet('Wallets', _buildWalletSheet()),
+                    active: _selectedWalletIds.isNotEmpty),
               ],
             ],
           ),
@@ -607,8 +619,14 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          padding: EdgeInsets.symmetric(vertical: 9.h),
+          // Vertical room so a 2-line label on a narrow phone has somewhere to
+          // go, and horizontal room so the text never touches the pill edge.
+          padding: EdgeInsets.symmetric(vertical: 9.h, horizontal: 6.w),
+          constraints: BoxConstraints(minHeight: 38.h),
           decoration: BoxDecoration(
+            // Deep brand violet fill with WHITE content on top (~15:1). A fill
+            // and the text on it have to move together: lightening only the
+            // fill left white on light violet at about 2:1.
             color: selected
                 ? InvoiceThemeColors.primaryPurple
                 : Colors.transparent,
@@ -621,16 +639,22 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                   size: 14.sp,
                   color: selected ? Colors.white : const Color(0xFF9CA3AF)),
               SizedBox(width: 6.w),
+              // Shrink-to-fit rather than ellipsize: "Lazervault" is the widest
+              // label and clipping it to "Lazerv..." hides which scope is
+              // active, which is the one thing this control exists to say.
               Flexible(
-                child: Text(label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                        color:
-                            selected ? Colors.white : const Color(0xFF9CA3AF),
-                        fontSize: 12.sp,
-                        fontWeight:
-                            selected ? FontWeight.w700 : FontWeight.w600)),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(label,
+                      maxLines: 1,
+                      style: GoogleFonts.inter(
+                          color:
+                              selected ? Colors.white : const Color(0xFF9CA3AF),
+                          fontSize: 12.sp,
+                          fontWeight:
+                              selected ? FontWeight.w700 : FontWeight.w600)),
+                ),
               ),
             ],
           ),
@@ -769,7 +793,7 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
             onPressed: () => Navigator.of(context).pop(),
             child: Text('Done',
                 style: GoogleFonts.inter(
-                    color: InvoiceThemeColors.primaryPurple,
+                    color: InvoiceThemeColors.primaryPurpleLight,
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w700)),
           ),
@@ -778,7 +802,95 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
     );
   }
 
-  Widget _buildWalletSheet() => _buildWalletAccountRow();
+  /// Wallet scope picker.
+  ///
+  /// This chip used to open the global account SWITCHER, which changes which
+  /// account the whole app is acting as. That answers a different question from
+  /// the one the filter bar asks ("which of my money are these numbers about?")
+  /// and made it impossible to see personal and business spending together.
+  /// It now scopes the analytics instead, exactly like the Banks chip.
+  Widget _buildWalletSheet() {
+    return BlocBuilder<StatisticsCubit, StatisticsState>(
+      builder: (context, state) {
+        final wallets =
+            state is StatisticsLoaded ? state.availableWallets : const <StatisticsWallet>[];
+        if (wallets.isEmpty) {
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 18.h),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 16.w,
+                  height: 16.w,
+                  child: const CircularProgressIndicator(
+                      strokeWidth: 2, color: Color(0xFFA78BFA)),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Text(
+                    'Loading your wallets',
+                    style: GoogleFonts.inter(
+                        color: AnalyticsTheme.textSecondary, fontSize: 12.5.sp),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        // One wallet means there is nothing to choose between; say so rather
+        // than showing a picker with a single option.
+        if (wallets.length == 1) {
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.h),
+            child: Row(
+              children: [
+                Icon(Icons.account_balance_wallet_rounded,
+                    size: 15.sp, color: const Color(0xFFFB923C)),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    'These numbers cover your ${wallets.first.typeLabel} wallet, the only one you hold in this currency.',
+                    style: GoogleFonts.inter(
+                        color: AnalyticsTheme.textSecondary, fontSize: 12.5.sp),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            WalletScopePills(
+              wallets: wallets,
+              selectedIds: _selectedWalletIds,
+              onChanged: _applyWalletFilter,
+            ),
+            SizedBox(height: 10.h),
+            Text(
+              _selectedWalletIds.isEmpty
+                  ? 'Showing all ${wallets.length} wallets in ${wallets.first.currency}'
+                  : '${_selectedWalletIds.length} of ${wallets.length} wallets in scope',
+              style: GoogleFonts.inter(
+                  color: AnalyticsTheme.textSecondary, fontSize: 11.5.sp),
+            ),
+            SizedBox(height: 8.h),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('Done',
+                    style: GoogleFonts.inter(
+                        color: InvoiceThemeColors.primaryPurpleLight,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   /// True when the loaded state carries any income/expense category rows — used
   /// to skip the Categories collapsible entirely when there's nothing to show.
@@ -929,30 +1041,6 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
   /// wallet/all scopes (hidden on the Banks tab, where the bank scope chips
   /// scope the numbers). Selecting an account re-scopes the wallet analytics
   /// leg via AccountManager + StatisticsCubit.refresh().
-  Widget _buildWalletAccountRow() {
-    if (_statsSource == StatisticsSource.bank) return const SizedBox.shrink();
-    final selector = _buildAccountSelector();
-    if (selector is SizedBox) return const SizedBox.shrink(); // no accounts
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 0),
-      child: Row(
-        children: [
-          Icon(Icons.account_balance_wallet_rounded,
-              size: 14.sp, color: const Color(0xFF9CA3AF)),
-          SizedBox(width: 6.w),
-          Text(
-            'Wallet account',
-            style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w500),
-          ),
-          const Spacer(),
-          selector,
-        ],
-      ),
-    );
-  }
 
   Widget _buildAccountSelector() {
     final accountManager = serviceLocator<AccountManager>();
@@ -1024,7 +1112,7 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                       child: Text(
                         account.currency,
                         style: TextStyle(
-                          color: InvoiceThemeColors.primaryPurple,
+                          color: InvoiceThemeColors.primaryPurpleLight,
                           fontSize: 10.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1385,7 +1473,10 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
         crossAxisCount: 2,
         mainAxisSpacing: 12.h,
         crossAxisSpacing: 12.w,
-        childAspectRatio: 1.5,
+        // 1.5 left no room for a second subtitle line, so "Smart
+        // recommendations" overflowed its card while the single-line siblings
+        // looked fine. Taller cells fit the longest description in the set.
+        childAspectRatio: 1.24,
       ),
       itemCount: features.length,
       itemBuilder: (context, index) {
@@ -1540,6 +1631,13 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
   /// on the page via the cubit. No billed live balance read is fired here —
   /// filtering analytics must never cost money. The Linked Banks rows carry
   /// their own explicit, cost-confirmed balance refresh.
+  void _applyWalletFilter(Set<String> ids) {
+    final next = Set<String>.from(ids);
+    if (setEquals(_selectedWalletIds, next)) return;
+    setState(() => _selectedWalletIds = next);
+    context.read<StatisticsCubit>().changeWallets(next.toList());
+  }
+
   void _applyBankFilter(Set<String> ids) {
     final next = Set<String>.from(ids);
     if (setEquals(_selectedBankIds, next)) return;
@@ -1693,7 +1791,7 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
       child: Text(
         label,
         style: GoogleFonts.inter(
-          color: InvoiceThemeColors.primaryPurple,
+          color: InvoiceThemeColors.primaryPurpleLight,
           fontSize: 11.sp,
           fontWeight: FontWeight.w600,
         ),
@@ -1792,7 +1890,7 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                 Text(
                   'See Details',
                   style: TextStyle(
-                    color: InvoiceThemeColors.primaryPurple,
+                    color: InvoiceThemeColors.primaryPurpleLight,
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1933,7 +2031,7 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                 Text(
                   'See Details',
                   style: TextStyle(
-                    color: InvoiceThemeColors.primaryPurple,
+                    color: InvoiceThemeColors.primaryPurpleLight,
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -2299,7 +2397,7 @@ class _StatisticsState extends State<Statistics> with TransactionPinMixin {
                     icon: Icons.link_off_rounded,
                     color: const Color(0xFFFB923C),
                     label: 'Reconnect bank',
-                    subtitle: 'This connection expired — reauthorize to sync',
+                    subtitle: 'This connection expired. Reauthorize to sync',
                     onTap: () {
                       Navigator.of(sheetCtx).pop();
                       startAccountReauthorization(context, account);

@@ -148,12 +148,17 @@ class ComparisonDetailScreen extends StatelessWidget {
             ),
           ),
           SizedBox(height: 16.h),
-          _buildComparisonRow('Income', currentIncome, previousIncome, Icons.trending_up, true),
-          _buildComparisonRow('Expenses', currentExpenses, previousExpenses, Icons.trending_down, false),
-          _buildComparisonRow('Savings', currentSavings, previousSavings, Icons.savings, true),
-          _buildComparisonRow('Net', currentNet, previousNet, Icons.account_balance, true),
+          _buildComparisonRow(
+              'Income', currentIncome, previousIncome, Icons.trending_up, true),
+          _buildComparisonRow('Expenses', currentExpenses, previousExpenses,
+              Icons.trending_down, false),
+          _buildComparisonRow(
+              'Savings', currentSavings, previousSavings, Icons.savings, true),
+          _buildComparisonRow(
+              'Net', currentNet, previousNet, Icons.account_balance, true),
           Divider(color: Colors.white.withValues(alpha: 0.1), height: 24.h),
-          _buildComparisonRowInt('Transactions', currentTxnCount, previousTxnCount, Icons.receipt_long),
+          _buildComparisonRowInt('Transactions', currentTxnCount,
+              previousTxnCount, Icons.receipt_long),
         ],
       ),
     );
@@ -166,10 +171,13 @@ class ComparisonDetailScreen extends StatelessWidget {
     IconData icon,
     bool isPositive,
   ) {
-    final change = previous != 0 ? ((current - previous) / previous * 100) : 0.0;
+    final change =
+        previous != 0 ? ((current - previous) / previous * 100) : 0.0;
     final isIncreased = current > previous;
     final bothZero = current == 0 && previous == 0;
-    final changeText = bothZero ? '--' : '${isIncreased ? '+' : ''}${change.toStringAsFixed(1)}%';
+    final changeText = bothZero
+        ? '--'
+        : '${isIncreased ? '+' : ''}${change.toStringAsFixed(1)}%';
 
     return Container(
       padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -185,7 +193,9 @@ class ComparisonDetailScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: (bothZero
                       ? Colors.grey
-                      : (isIncreased == isPositive ? Colors.green : Colors.red))[300]!
+                      : (isIncreased == isPositive
+                          ? Colors.green
+                          : Colors.red))[300]!
                   .withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8.r),
             ),
@@ -193,7 +203,9 @@ class ComparisonDetailScreen extends StatelessWidget {
               icon,
               color: (bothZero
                   ? Colors.grey
-                  : (isIncreased == isPositive ? Colors.green : Colors.red))[300],
+                  : (isIncreased == isPositive
+                      ? Colors.green
+                      : Colors.red))[300],
               size: 18.r,
             ),
           ),
@@ -202,13 +214,15 @@ class ComparisonDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(color: Colors.white, fontSize: 14.sp)),
+                Text(label,
+                    style: TextStyle(color: Colors.white, fontSize: 14.sp)),
                 SizedBox(height: 4.h),
                 Row(
                   children: [
                     Text(
                       'Current: ${CurrencySymbols.formatAmount(current)}',
-                      style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                      style: TextStyle(
+                          color: const Color(0xFF9CA3AF), fontSize: 12.sp),
                     ),
                     SizedBox(width: 12.w),
                     Text(
@@ -225,7 +239,9 @@ class ComparisonDetailScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: (bothZero
                       ? Colors.grey
-                      : (isIncreased == isPositive ? Colors.green : Colors.red))[300]!
+                      : (isIncreased == isPositive
+                          ? Colors.green
+                          : Colors.red))[300]!
                   .withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
@@ -234,7 +250,9 @@ class ComparisonDetailScreen extends StatelessWidget {
               style: TextStyle(
                 color: bothZero
                     ? Colors.white60
-                    : (isIncreased == isPositive ? Colors.green : Colors.red)[300],
+                    : (isIncreased == isPositive
+                        ? Colors.green
+                        : Colors.red)[300],
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -251,10 +269,13 @@ class ComparisonDetailScreen extends StatelessWidget {
     int previous,
     IconData icon,
   ) {
-    final change = previous != 0 ? ((current - previous) / previous * 100) : 0.0;
+    final change =
+        previous != 0 ? ((current - previous) / previous * 100) : 0.0;
     final isIncreased = current > previous;
     final bothZero = current == 0 && previous == 0;
-    final changeText = bothZero ? '--' : '${isIncreased ? '+' : ''}${change.toStringAsFixed(1)}%';
+    final changeText = bothZero
+        ? '--'
+        : '${isIncreased ? '+' : ''}${change.toStringAsFixed(1)}%';
 
     return Container(
       padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -273,11 +294,13 @@ class ComparisonDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(color: Colors.white, fontSize: 14.sp)),
+                Text(label,
+                    style: TextStyle(color: Colors.white, fontSize: 14.sp)),
                 SizedBox(height: 4.h),
                 Text(
                   'Current: $current  |  Previous: $previous',
-                  style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                  style: TextStyle(
+                      color: const Color(0xFF9CA3AF), fontSize: 12.sp),
                 ),
               ],
             ),
@@ -285,7 +308,8 @@ class ComparisonDetailScreen extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: (bothZero ? Colors.grey[300]! : const Color(0xFFA78BFA)).withValues(alpha: 0.2),
+              color: (bothZero ? Colors.grey[300]! : const Color(0xFFA78BFA))
+                  .withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(
@@ -345,8 +369,10 @@ class ComparisonDetailScreen extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           _buildMetricRow('Savings Rate', '${savingsRate.toStringAsFixed(1)}%'),
-          _buildMetricRow('Income Change', '${analytics.incomeChangePercent >= 0 ? '+' : ''}${analytics.incomeChangePercent.toStringAsFixed(1)}%'),
-          _buildMetricRow('Expense Change', '${analytics.expenseChangePercent >= 0 ? '+' : ''}${analytics.expenseChangePercent.toStringAsFixed(1)}%'),
+          _buildMetricRow('Income Change',
+              '${analytics.incomeChangePercent >= 0 ? '+' : ''}${analytics.incomeChangePercent.toStringAsFixed(1)}%'),
+          _buildMetricRow('Expense Change',
+              '${analytics.expenseChangePercent >= 0 ? '+' : ''}${analytics.expenseChangePercent.toStringAsFixed(1)}%'),
         ],
       ),
     );
@@ -363,7 +389,9 @@ class ComparisonDetailScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 14.sp)),
+          Text(label,
+              style:
+                  TextStyle(color: const Color(0xFFD1D5DB), fontSize: 14.sp)),
           Text(
             value,
             style: TextStyle(

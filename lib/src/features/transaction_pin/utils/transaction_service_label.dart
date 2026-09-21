@@ -73,6 +73,10 @@ const Map<String, String> _serviceNouns = {
   // Generic bill hub entries
   'bill_payment': 'bill payment',
   'purchase': 'purchase',
+  // Split bills — settling your share is not a transfer and must not be worded
+  // as one. Unmapped it fell through to the bare "payment" on a screen that is
+  // specifically paying a share of a named bill.
+  'split_bill_payment': 'split bill payment',
 };
 
 /// Map a [transactionType] to a friendly service noun for the tx-PIN sheet.

@@ -40,6 +40,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
   bool _hasMore = true;
   String? _accountId;
   AccountSummaryEntity? _primaryAccount;
+  Set<String> _ownAccountNumbers = const {};
   // Set when a load fails; drives the inline AppErrorView on first-load
   // failure (vs a transient pagination error which keeps the existing list).
   Object? _loadError;
@@ -75,6 +76,10 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
       );
       _accountId = primary.id;
       _primaryAccount = primary;
+      // Kept so the list can be scoped to the user's OWN wallet-to-wallet
+      // moves; without it this screen showed every payment from the account.
+      _ownAccountNumbers =
+          accounts.map((a) => a.accountNumber).whereType<String>().toSet();
       _loadTransfers(reset: true);
     } else {
       // Accounts not loaded yet — fetch them first
@@ -101,6 +106,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
           accountId: _accountId!,
           limit: _pageSize,
           offset: reset ? 0 : _transfers.length,
+          ownAccountNumbers: _ownAccountNumbers,
         );
   }
 
@@ -160,7 +166,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return AppGradientBackground(
-      child: Scaffold(
+        child: Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -329,9 +335,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
               label: Text(
                 filter.$2,
                 style: GoogleFonts.inter(
-                  color: isActive
-                      ? Colors.white
-                      : const Color(0xFF9CA3AF),
+                  color: isActive ? Colors.white : const Color(0xFF9CA3AF),
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -556,8 +560,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
                   width: 220.w,
                   height: 44.h,
                   child: ElevatedButton(
-                    onPressed: () =>
-                        Get.toNamed(AppRoutes.walletTransfer),
+                    onPressed: () => Get.toNamed(AppRoutes.walletTransfer),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3B82F6),
                       shape: RoundedRectangleBorder(

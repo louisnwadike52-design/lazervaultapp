@@ -128,7 +128,8 @@ class ContributionChatCubit extends ChangeNotifier {
 
   Future<void> _loadInitial() async {
     try {
-      final list = await _ds.list(token: _token(), contributionId: contributionId);
+      final list =
+          await _ds.list(token: _token(), contributionId: contributionId);
       messages
         ..clear()
         ..addAll(list);
@@ -194,8 +195,8 @@ class ContributionChatCubit extends ChangeNotifier {
   Future<void> _pollState() async {
     if (_disposed || !_visible) return;
     try {
-      final s = await _ds.chatState(
-          token: _token(), contributionId: contributionId);
+      final s =
+          await _ds.chatState(token: _token(), contributionId: contributionId);
       readers = s.readers;
       typing = s.typing;
       unreadCount = s.unreadCount;
@@ -310,7 +311,8 @@ class ContributionChatCubit extends ChangeNotifier {
   /// [mentionedUserIds] are people @-tagged in [body]. Already reconciled
   /// against the final text by the composer, so a name deleted after being
   /// picked is not in this list.
-  Future<void> send(String body, {List<String> mentionedUserIds = const []}) async {
+  Future<void> send(String body,
+      {List<String> mentionedUserIds = const []}) async {
     final text = body.trim();
     if (text.isEmpty) return;
     final clientId = _uuid.v4();
@@ -416,8 +418,7 @@ class ContributionChatCubit extends ChangeNotifier {
       );
       final i = messages.indexWhere((x) => x.id == m.id);
       if (i >= 0) {
-        messages[i] =
-            messages[i].copyWith(deletedForEveryone: true, body: '');
+        messages[i] = messages[i].copyWith(deletedForEveryone: true, body: '');
       }
       _safeNotify();
     } catch (e) {

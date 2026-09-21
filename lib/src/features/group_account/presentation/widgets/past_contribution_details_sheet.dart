@@ -17,14 +17,12 @@ import 'status_pill.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'past_contribution_details_sheet_widgets.dart';
 
-
 /// Opens a breakdown sheet listing every attempt the user made,
 /// mirroring the Payments-tab drill-in. Each row uses
 /// `PaymentBreakdownRow` from the shared widget file. Tapping a row
 /// pops back here so the breakdown stays inside the modal stack the
 /// user already opened.
-void _showCallerBreakdownSheet(
-    BuildContext context, UserPaymentGroup group) {
+void _showCallerBreakdownSheet(BuildContext context, UserPaymentGroup group) {
   showModalBottomSheet(
     context: context,
     backgroundColor: const Color(0xFF1A1A1A),
@@ -75,8 +73,8 @@ void _showCallerBreakdownSheet(
                 child: ListView.separated(
                   itemBuilder: (_, i) => PaymentBreakdownRow(
                     payment: group.payments[i],
-                    onTap: () => _showAttemptDetailsDialog(
-                        sheetCtx, group.payments[i]),
+                    onTap: () =>
+                        _showAttemptDetailsDialog(sheetCtx, group.payments[i]),
                   ),
                   separatorBuilder: (_, __) => SizedBox(height: 8.h),
                   itemCount: group.payments.length,
@@ -132,8 +130,8 @@ void _showAttemptDetailsDialog(
           );
       return Dialog(
         backgroundColor: const Color(0xFF1A1A1A),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         child: Padding(
           padding: EdgeInsets.all(20.w),
           child: Column(
@@ -172,16 +170,16 @@ void _showAttemptDetailsDialog(
               ),
               const Divider(color: Color(0xFF2D2D2D)),
               SizedBox(height: 8.h),
-              kv('Amount',
-                  '${payment.currency} ${fmt.format(payment.amount)}'),
+              kv('Amount', '${payment.currency} ${fmt.format(payment.amount)}'),
               kv('Status', payment.status.displayName),
-              kv('Date',
-                  DateFormat('MMM d, yyyy • HH:mm:ss').format(payment.paymentDate)),
+              kv(
+                  'Date',
+                  DateFormat('MMM d, yyyy • HH:mm:ss')
+                      .format(payment.paymentDate)),
               if (payment.transactionId != null &&
                   payment.transactionId!.isNotEmpty)
                 kv('Transaction ID', payment.transactionId!),
-              if (payment.receiptId != null &&
-                  payment.receiptId!.isNotEmpty)
+              if (payment.receiptId != null && payment.receiptId!.isNotEmpty)
                 kv('Receipt ID', payment.receiptId!),
               if (payment.notes != null && payment.notes!.isNotEmpty)
                 kv('Notes', payment.notes!),
@@ -268,8 +266,7 @@ class _PastDetailsBody extends StatelessWidget {
                           ? Icons.logout
                           : Icons.person_remove_alt_1_outlined,
                     ),
-                  if (StatusPill.refund(status: summary.refundStatus) !=
-                      null)
+                  if (StatusPill.refund(status: summary.refundStatus) != null)
                     StatusPill.refund(status: summary.refundStatus)!,
                   if (summary.refundAmount > 0)
                     StatusPill(
@@ -334,8 +331,7 @@ class _PastDetailsBody extends StatelessWidget {
         ),
         SizedBox(height: 8.h),
         if (details.myPayments.isEmpty)
-          _emptySection(
-              'No payments made',
+          _emptySection('No payments made',
               'You exited this contribution before making a payment.')
         else
           () {

@@ -373,6 +373,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
             // this the batch flow completed but showed no receipt cards.
             if (response.receiptCard != null)
               'receipt_card': response.receiptCard,
+              'recipient_card': response.recipientCard,
             // Surface the classified LLM-provider error code (set by
             // chat-agent-gateway's llm_failover module) so the chat content
             // widget can render the downgrade banner + retry CTA. The
@@ -497,6 +498,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
                 'receipt_data': response.receiptData,
               if (response.receiptCard != null)
                 'receipt_card': response.receiptCard,
+                'recipient_card': response.recipientCard,
             },
           );
           _currentMessages.add(botMessage);

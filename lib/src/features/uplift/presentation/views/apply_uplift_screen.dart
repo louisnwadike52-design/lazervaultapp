@@ -64,6 +64,18 @@ class _ApplyUpliftScreenState extends State<ApplyUpliftScreen> {
   int get _capKobo => widget.fund.perBusinessCap.toInt();
 
   Future<void> _submit() async {
+    // Last line of defence. The Discover list and the detail screen both hide
+    // the entry point for your own fund, but this screen can also be reached
+    // from a deep link or a stale list, and the refusal is far clearer here
+    // than as a gRPC FailedPrecondition surfacing after the form is filled in.
+    if (widget.fund.isFunder) {
+      Get.snackbar('This is your fund',
+          'You review the applications that come in — you cannot apply to your own raise.',
+          backgroundColor: kUpError,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
     if (!_form.currentState!.validate()) return;
     final amountKobo = (double.parse(_amount.text.trim()) * 100).round();
     if (amountKobo > _capKobo) {

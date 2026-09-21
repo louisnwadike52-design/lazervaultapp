@@ -95,7 +95,7 @@ class _LinkedBankStatementExportSheetState
 
       if (rows.isEmpty) {
         _snack(
-            'No transactions in this period yet — refresh the bank balance to sync its latest statement.',
+            'No transactions in this period yet. Refresh the bank balance to sync its latest statement.',
             error: false);
         return;
       }
@@ -103,8 +103,7 @@ class _LinkedBankStatementExportSheetState
       final file = _asPdf ? await _writePdf(rows) : await _writeCsv(rows);
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
-        text:
-            '${widget.account.bankName} statement · Lazervault AI analytics',
+        text: '${widget.account.bankName} statement · Lazervault AI analytics',
         // iOS: non-zero popover anchor required (CGRectZero throws).
         sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
       ));
@@ -150,8 +149,8 @@ class _LinkedBankStatementExportSheetState
     }
     final csv = const ListToCsvConverter().convert(data);
     final dir = await getTemporaryDirectory();
-    final safeBank = widget.account.bankName
-        .replaceAll(RegExp(r'[^A-Za-z0-9]'), '_');
+    final safeBank =
+        widget.account.bankName.replaceAll(RegExp(r'[^A-Za-z0-9]'), '_');
     final file = File(
         '${dir.path}/${safeBank}_statement_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv');
     await file.writeAsString(csv);
@@ -176,18 +175,17 @@ class _LinkedBankStatementExportSheetState
                   style: pw.TextStyle(
                       fontSize: 18, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 2),
-              pw.Text('$bank — bank statement',
+              pw.Text('$bank statement',
                   style: const pw.TextStyle(fontSize: 12)),
               pw.SizedBox(height: 2),
               pw.Text(
                   '${rows.length} transaction${rows.length == 1 ? '' : 's'} · synced via secure open banking',
-                  style: pw.TextStyle(
-                      fontSize: 9, color: PdfColors.grey600)),
+                  style: pw.TextStyle(fontSize: 9, color: PdfColors.grey600)),
               pw.SizedBox(height: 10),
             ],
             pw.TableHelper.fromTextArray(
-              headerStyle: pw.TextStyle(
-                  fontSize: 8, fontWeight: pw.FontWeight.bold),
+              headerStyle:
+                  pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
               cellStyle: const pw.TextStyle(fontSize: 7.5),
               headerDecoration:
                   const pw.BoxDecoration(color: PdfColors.grey200),
@@ -214,15 +212,13 @@ class _LinkedBankStatementExportSheetState
             pw.Spacer(),
             pw.Text(
                 'Generated ${DateFormat('d MMM yyyy, h:mm a').format(DateTime.now())} · page ${p + 1}/$pages',
-                style:
-                    pw.TextStyle(fontSize: 7, color: PdfColors.grey500)),
+                style: pw.TextStyle(fontSize: 7, color: PdfColors.grey500)),
           ],
         ),
       ));
     }
     final dir = await getTemporaryDirectory();
-    final safeBank =
-        bank.replaceAll(RegExp(r'[^A-Za-z0-9]'), '_');
+    final safeBank = bank.replaceAll(RegExp(r'[^A-Za-z0-9]'), '_');
     final file = File(
         '${dir.path}/${safeBank}_statement_${DateFormat('yyyyMMdd').format(DateTime.now())}.pdf');
     await file.writeAsBytes(await pdf.save());
@@ -311,9 +307,7 @@ class _LinkedBankStatementExportSheetState
           SizedBox(height: 18.h),
           Text('Period',
               style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                  color: _sub)),
+                  fontSize: 13.sp, fontWeight: FontWeight.w500, color: _sub)),
           SizedBox(height: 10.h),
           Wrap(spacing: 8.w, runSpacing: 8.h, children: [
             _rangeChip('Last 30 days', 30),
@@ -324,9 +318,7 @@ class _LinkedBankStatementExportSheetState
           SizedBox(height: 18.h),
           Text('Format',
               style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                  color: _sub)),
+                  fontSize: 13.sp, fontWeight: FontWeight.w500, color: _sub)),
           SizedBox(height: 10.h),
           Row(children: [
             _formatOption('CSV', Icons.table_chart_outlined, false),

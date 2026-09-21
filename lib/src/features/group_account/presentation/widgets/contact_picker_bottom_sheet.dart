@@ -507,172 +507,172 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-        backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  'Select Contact Info',
-                  style: GoogleFonts.inter(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+          backgroundColor: const Color(0xFF1F1F1F),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Select Contact Info',
+                    style: GoogleFonts.inter(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              if (isOnPlatform) ...[
+                SizedBox(height: 8.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        color: const Color(0xFF10B981),
+                        size: 14.sp,
+                      ),
+                      SizedBox(width: 4.w),
+                      Text(
+                        'On Lazervault',
+                        style: GoogleFonts.inter(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF10B981),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
-            ),
-            if (isOnPlatform) ...[
-              SizedBox(height: 8.h),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(6.r),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      color: const Color(0xFF10B981),
-                      size: 14.sp,
-                    ),
-                    SizedBox(width: 4.w),
-                    Text(
-                      'On Lazervault',
-                      style: GoogleFonts.inter(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF10B981),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              contact.displayName,
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 16.h),
-            if (contact.emails.isNotEmpty) ...[
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                'Email Addresses',
+                contact.displayName,
+                style: GoogleFonts.inter(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 16.h),
+              if (contact.emails.isNotEmpty) ...[
+                Text(
+                  'Email Addresses',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[400],
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                ...contact.emails.map((email) => _buildSelectionTile(
+                      icon: Icons.email,
+                      label: email.address,
+                      isOnPlatform: widget.platformUsers?.containsKey(
+                              email.address.toLowerCase().trim()) ??
+                          false,
+                      isSelected: selectedLabel == email.address &&
+                          selectedType == ContactIdentifierType.email,
+                      onTap: () => setDialogState(() {
+                        selectedLabel = email.address;
+                        selectedType = ContactIdentifierType.email;
+                      }),
+                    )),
+                SizedBox(height: 12.h),
+              ],
+              if (contact.phones.isNotEmpty) ...[
+                Text(
+                  'Phone Numbers',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[400],
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                ...contact.phones.map((phone) => _buildSelectionTile(
+                      icon: Icons.phone,
+                      label: phone.number,
+                      isOnPlatform: widget.platformUsers
+                              ?.containsKey(_normalizePhone(phone.number)) ??
+                          false,
+                      isSelected: selectedLabel == phone.number &&
+                          selectedType == ContactIdentifierType.phone,
+                      onTap: () => setDialogState(() {
+                        selectedLabel = phone.number;
+                        selectedType = ContactIdentifierType.phone;
+                      }),
+                    )),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.grey[400],
                 ),
               ),
-              SizedBox(height: 8.h),
-              ...contact.emails.map((email) => _buildSelectionTile(
-                    icon: Icons.email,
-                    label: email.address,
-                    isOnPlatform: widget.platformUsers
-                            ?.containsKey(email.address.toLowerCase().trim()) ??
-                        false,
-                    isSelected: selectedLabel == email.address &&
-                        selectedType == ContactIdentifierType.email,
-                    onTap: () => setDialogState(() {
-                      selectedLabel = email.address;
-                      selectedType = ContactIdentifierType.email;
-                    }),
-                  )),
-              SizedBox(height: 12.h),
-            ],
-            if (contact.phones.isNotEmpty) ...[
-              Text(
-                'Phone Numbers',
+            ),
+            // The explicit commit. Disabled until a handle is chosen, so the
+            // dialog can never be dismissed into a half-made selection.
+            ElevatedButton(
+              onPressed: selectedLabel == null || selectedType == null
+                  ? null
+                  : () {
+                      final label = selectedLabel!;
+                      final type = selectedType!;
+                      // Close the details dialog AND the contact list beneath
+                      // it, returning the caller to the add-member sheet with
+                      // the contact applied — same two pops as before, just
+                      // moved behind a deliberate confirm.
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                      widget.onContactSelected(
+                        contact.displayName,
+                        label,
+                        type,
+                      );
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4E03D0),
+                disabledBackgroundColor: const Color(0xFF2D2D2D),
+                foregroundColor: Colors.white,
+                disabledForegroundColor: Colors.grey[600],
+                padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+              ),
+              child: Text(
+                'Use this contact',
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey[400],
                 ),
               ),
-              SizedBox(height: 8.h),
-              ...contact.phones.map((phone) => _buildSelectionTile(
-                    icon: Icons.phone,
-                    label: phone.number,
-                    isOnPlatform: widget.platformUsers
-                            ?.containsKey(_normalizePhone(phone.number)) ??
-                        false,
-                    isSelected: selectedLabel == phone.number &&
-                        selectedType == ContactIdentifierType.phone,
-                    onTap: () => setDialogState(() {
-                      selectedLabel = phone.number;
-                      selectedType = ContactIdentifierType.phone;
-                    }),
-                  )),
-            ],
+            ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[400],
-              ),
-            ),
-          ),
-          // The explicit commit. Disabled until a handle is chosen, so the
-          // dialog can never be dismissed into a half-made selection.
-          ElevatedButton(
-            onPressed: selectedLabel == null || selectedType == null
-                ? null
-                : () {
-                    final label = selectedLabel!;
-                    final type = selectedType!;
-                    // Close the details dialog AND the contact list beneath
-                    // it, returning the caller to the add-member sheet with
-                    // the contact applied — same two pops as before, just
-                    // moved behind a deliberate confirm.
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                    widget.onContactSelected(
-                      contact.displayName,
-                      label,
-                      type,
-                    );
-                  },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4E03D0),
-              disabledBackgroundColor: const Color(0xFF2D2D2D),
-              foregroundColor: Colors.white,
-              disabledForegroundColor: Colors.grey[600],
-              padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-            ),
-            child: Text(
-              'Use this contact',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
       ),
     );
   }
@@ -752,9 +752,8 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
                   isSelected
                       ? Icons.radio_button_checked
                       : Icons.radio_button_unchecked,
-                  color: isSelected
-                      ? PayFlowTheme.accentOnDark
-                      : Colors.grey[600],
+                  color:
+                      isSelected ? PayFlowTheme.accentOnDark : Colors.grey[600],
                   size: 18.sp,
                 ),
               ],

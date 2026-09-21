@@ -11,6 +11,7 @@ import '../../../../../core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/shared_widgets/app_error_view.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import '../../utils/analytics_theme.dart';
 
 /// Budget Detail Screen
 class BudgetDetailScreen extends StatefulWidget {
@@ -76,7 +77,8 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
         ),
         title: const Text(
           'Budget Details',
-          style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         actions: [
@@ -87,7 +89,8 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
               if (value == 'edit') {
                 final budget = _findBudget(context.read<BudgetCubit>().state);
                 if (budget != null) {
-                  Get.toNamed(AppRoutes.createBudget, arguments: {'budget': budget});
+                  Get.toNamed(AppRoutes.createBudget,
+                      arguments: {'budget': budget});
                 }
               } else if (value == 'delete') {
                 _showDeleteDialog(context);
@@ -97,7 +100,8 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
               const PopupMenuItem(value: 'edit', child: Text('Edit Budget')),
               const PopupMenuItem(
                 value: 'delete',
-                child: Text('Delete Budget', style: TextStyle(color: Color(0xFFEF4444))),
+                child: Text('Delete Budget',
+                    style: TextStyle(color: Color(0xFFEF4444))),
               ),
             ],
           ),
@@ -167,11 +171,15 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.search_off, size: 48.sp, color: const Color(0xFF9CA3AF)),
+                  Icon(Icons.search_off,
+                      size: 48.sp, color: const Color(0xFF9CA3AF)),
                   SizedBox(height: 16.h),
                   const Text(
                     'Budget not found',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8.h),
                   const Text(
@@ -210,7 +218,8 @@ class _BudgetDetailScreenState extends State<BudgetDetailScreen> {
     if (_isDeleting) return;
     Get.defaultDialog(
       title: 'Delete Budget',
-      middleText: 'Are you sure you want to delete this budget? This action cannot be undone.',
+      middleText:
+          'Are you sure you want to delete this budget? This action cannot be undone.',
       textConfirm: 'Delete',
       textCancel: 'Cancel',
       confirmTextColor: Colors.white,
@@ -269,14 +278,15 @@ class _BudgetDetailView extends StatelessWidget {
                               ? const Color(0xFFEF4444)
                               : percentage >= 70
                                   ? const Color(0xFFFB923C)
-                                  : InvoiceThemeColors.primaryPurple,
+                                  : AnalyticsTheme.accent,
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const Text(
                         'Used',
-                        style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                        style:
+                            TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
                       ),
                     ],
                   ),
@@ -296,9 +306,15 @@ class _BudgetDetailView extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _StatItem(label: 'Spent', value: CurrencySymbols.formatAmount(budget.spentAmount)),
-              _StatItem(label: 'Remaining', value: CurrencySymbols.formatAmount(remaining)),
-              _StatItem(label: 'Daily Avg', value: CurrencySymbols.formatAmount(budget.spentAmount / 30)),
+              _StatItem(
+                  label: 'Spent',
+                  value: CurrencySymbols.formatAmount(budget.spentAmount)),
+              _StatItem(
+                  label: 'Remaining',
+                  value: CurrencySymbols.formatAmount(remaining)),
+              _StatItem(
+                  label: 'Daily Avg',
+                  value: CurrencySymbols.formatAmount(budget.spentAmount / 30)),
             ],
           ),
         ),
@@ -314,23 +330,32 @@ class _BudgetDetailView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Details', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              const Text('Details',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
               SizedBox(height: 16.h),
               _DetailRow(
                   label: 'Category',
-                  value: ExpenseCategoryHelpers.getCategoryDisplayName(budget.category)),
+                  value: ExpenseCategoryHelpers.getCategoryDisplayName(
+                      budget.category)),
               _DetailRow(
                   label: 'Period',
-                  value: ExpenseCategoryHelpers.getPeriodDisplayName(budget.period)),
+                  value: ExpenseCategoryHelpers.getPeriodDisplayName(
+                      budget.period)),
               _DetailRow(
                   label: 'Status',
-                  value: ExpenseCategoryHelpers.getStatusDisplayName(budget.status)),
+                  value: ExpenseCategoryHelpers.getStatusDisplayName(
+                      budget.status)),
               _DetailRow(
                   label: 'Enforcement',
-                  value: budget.enforcementMode == pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_STRICT
+                  value: budget.enforcementMode ==
+                          pb.BudgetEnforcementMode
+                              .BUDGET_ENFORCEMENT_MODE_STRICT
                       ? 'Strict (blocks transactions)'
                       : 'Flexible (warns only)'),
-              _DetailRow(label: 'Alerts', value: budget.enableAlerts ? 'Enabled' : 'Disabled'),
+              _DetailRow(
+                  label: 'Alerts',
+                  value: budget.enableAlerts ? 'Enabled' : 'Disabled'),
             ],
           ),
         ),
@@ -338,45 +363,50 @@ class _BudgetDetailView extends StatelessWidget {
 
         // Projection
         if (percentage >= 70)
-            Container(
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: percentage >= 90
-                    ? const Color(0xFFEF4444).withValues(alpha: 0.1)
-                    : const Color(0xFFFB923C).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        percentage >= 90 ? Icons.warning : Icons.info_outline,
-                        color: percentage >= 90 ? const Color(0xFFEF4444) : const Color(0xFFFB923C),
-                      ),
-                      SizedBox(width: 8.w),
-                      Expanded(
-                        child: Text(
-                          percentage >= 90
-                              ? 'Budget will be exceeded'
-                              : 'Approaching budget limit',
-                          style: TextStyle(
-                            color: percentage >= 90 ? const Color(0xFFEF4444) : const Color(0xFFFB923C),
-                            fontWeight: FontWeight.bold,
-                          ),
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: percentage >= 90
+                  ? const Color(0xFFEF4444).withValues(alpha: 0.1)
+                  : const Color(0xFFFB923C).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      percentage >= 90 ? Icons.warning : Icons.info_outline,
+                      color: percentage >= 90
+                          ? const Color(0xFFEF4444)
+                          : const Color(0xFFFB923C),
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        percentage >= 90
+                            ? 'Budget will be exceeded'
+                            : 'Approaching budget limit',
+                        style: TextStyle(
+                          color: percentage >= 90
+                              ? const Color(0xFFEF4444)
+                              : const Color(0xFFFB923C),
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ],
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    'At your current spending rate, you will exceed this budget by the end of the period.',
-                    style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'At your current spending rate, you will exceed this budget by the end of the period.',
+                  style:
+                      const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                ),
+              ],
             ),
+          ),
       ],
     );
   }
@@ -392,9 +422,14 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(value,
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold)),
         SizedBox(height: 4.h),
-        Text(label, style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12)),
+        Text(label,
+            style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12)),
       ],
     );
   }

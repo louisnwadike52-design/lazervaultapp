@@ -59,8 +59,10 @@ class CreateContributionCubit extends Cubit<CreateContributionState> {
   double? get regularAmount => _regularAmount;
   DateTime? get startDate => _startDate;
   int? get totalCycles => _totalCycles;
-  List<String> get memberRotationOrder => List.unmodifiable(_memberRotationOrder);
+  List<String> get memberRotationOrder =>
+      List.unmodifiable(_memberRotationOrder);
   String? get payoutReceiverUserId => _payoutReceiverUserId;
+
   /// One_time goals must name a receiver; rotating ones derive it from the
   /// rotation order, so the picker is only shown (and required) for one_time.
   bool get requiresPayoutReceiver => _type == ContributionType.oneTime;
@@ -107,7 +109,8 @@ class CreateContributionCubit extends Cubit<CreateContributionState> {
       _autoPayEnabled = false;
     } else if (type == ContributionType.rotatingSavings) {
       _frequency ??= ContributionFrequency.monthly;
-      _autoPayEnabled = false; // Manual payments for transparency in rotating savings
+      _autoPayEnabled =
+          false; // Manual payments for transparency in rotating savings
     } else {
       _frequency ??= ContributionFrequency.monthly;
     }
@@ -177,7 +180,8 @@ class CreateContributionCubit extends Cubit<CreateContributionState> {
 
   /// Update who receives the payout when the goal matures.
   void updatePayoutReceiver(String? userId) {
-    _payoutReceiverUserId = (userId != null && userId.isNotEmpty) ? userId : null;
+    _payoutReceiverUserId =
+        (userId != null && userId.isNotEmpty) ? userId : null;
     _emitFormUpdated();
   }
 
@@ -349,7 +353,9 @@ class CreateContributionCubit extends Cubit<CreateContributionState> {
     }
 
     // Start date validation (if provided)
-    if (_startDate != null && _startDate!.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
+    if (_startDate != null &&
+        _startDate!
+            .isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
       errors['startDate'] = 'Start date must be today or in the future';
     }
 
@@ -403,9 +409,10 @@ class CreateContributionCubit extends Cubit<CreateContributionState> {
 
   /// Validate Step 5: Review (validates all previous steps)
   bool validateStep5() {
-    return validateStep1() && validateStep2() &&
-           (shouldShowScheduleStep ? validateStep3() : true) &&
-           validateStep4();
+    return validateStep1() &&
+        validateStep2() &&
+        (shouldShowScheduleStep ? validateStep3() : true) &&
+        validateStep4();
   }
 
   /// Submit the contribution
@@ -446,7 +453,8 @@ class CreateContributionCubit extends Cubit<CreateContributionState> {
         minimumBalance: _minimumBalance,
         // Only meaningful for one_time; the server ignores it for rotating
         // savings, whose receiver is member_rotation_order[0].
-        payoutReceiverUserId: requiresPayoutReceiver ? _payoutReceiverUserId : null,
+        payoutReceiverUserId:
+            requiresPayoutReceiver ? _payoutReceiverUserId : null,
       );
 
       if (isClosed) return;

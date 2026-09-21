@@ -24,7 +24,8 @@ class GroupAccountPdfService {
   }) async {
     final pdf = pw.Document();
     final dateFormat = DateFormat('MMMM d, yyyy');
-    final currencyFormat = NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
+    final currencyFormat =
+        NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
 
     pdf.addPage(
       pw.MultiPage(
@@ -71,12 +72,19 @@ class GroupAccountPdfService {
   }) async {
     final pdf = pw.Document();
     final dateFormat = DateFormat('MMMM d, yyyy');
-    final currencyFormat = NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
+    final currencyFormat =
+        NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
 
-    final totalTarget = contributions.fold<double>(0, (sum, c) => sum + c.targetAmount);
-    final totalCurrent = contributions.fold<double>(0, (sum, c) => sum + c.currentAmount);
-    final activeContributions = contributions.where((c) => c.status == ContributionStatus.active).length;
-    final completedContributions = contributions.where((c) => c.status == ContributionStatus.completed).length;
+    final totalTarget =
+        contributions.fold<double>(0, (sum, c) => sum + c.targetAmount);
+    final totalCurrent =
+        contributions.fold<double>(0, (sum, c) => sum + c.currentAmount);
+    final activeContributions = contributions
+        .where((c) => c.status == ContributionStatus.active)
+        .length;
+    final completedContributions = contributions
+        .where((c) => c.status == ContributionStatus.completed)
+        .length;
 
     pdf.addPage(
       pw.MultiPage(
@@ -204,7 +212,8 @@ class GroupAccountPdfService {
   }) async {
     final pdf = pw.Document();
     final dateFormat = DateFormat('MMMM d, yyyy');
-    final currencyFormat = NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
+    final currencyFormat =
+        NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
 
     final totalPaid = payments.fold<double>(0, (sum, p) => sum + p.amount);
 
@@ -235,7 +244,8 @@ class GroupAccountPdfService {
               children: [
                 pw.Text(
                   'Total Payments:',
-                  style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+                  style: pw.TextStyle(
+                      fontSize: 14, fontWeight: pw.FontWeight.bold),
                 ),
                 pw.Text(
                   currencyFormat.format(totalPaid / 100),
@@ -255,7 +265,8 @@ class GroupAccountPdfService {
       ),
     );
 
-    return _savePdf(pdf, 'payment_statement_${DateTime.now().millisecondsSinceEpoch}');
+    return _savePdf(
+        pdf, 'payment_statement_${DateTime.now().millisecondsSinceEpoch}');
   }
 
   // Helper methods for building PDF sections
@@ -334,10 +345,13 @@ class GroupAccountPdfService {
       child: pw.Column(
         children: [
           _buildSummaryRow('Type', _getTypeLabel(contribution.type)),
-          _buildSummaryRow('Target Amount', currencyFormat.format(contribution.targetAmount / 100)),
-          _buildSummaryRow('Current Amount', currencyFormat.format(contribution.currentAmount / 100)),
+          _buildSummaryRow('Target Amount',
+              currencyFormat.format(contribution.targetAmount / 100)),
+          _buildSummaryRow('Current Amount',
+              currencyFormat.format(contribution.currentAmount / 100)),
           _buildSummaryRow('Status', _getStatusLabel(contribution.status)),
-          _buildSummaryRow('Deadline', dateFormat.format(contribution.deadline)),
+          _buildSummaryRow(
+              'Deadline', dateFormat.format(contribution.deadline)),
         ],
       ),
     );
@@ -358,7 +372,8 @@ class GroupAccountPdfService {
 
   static pw.Widget _buildProgressSection(Contribution contribution) {
     final progress = contribution.targetAmount > 0
-        ? (contribution.currentAmount / contribution.targetAmount).clamp(0.0, 1.0)
+        ? (contribution.currentAmount / contribution.targetAmount)
+            .clamp(0.0, 1.0)
         : 0.0;
 
     return pw.Container(
@@ -397,7 +412,8 @@ class GroupAccountPdfService {
             child: pw.Stack(
               children: [
                 pw.Container(
-                  width: 400 * progress, // Using a fixed max width for progress bar
+                  width: 400 *
+                      progress, // Using a fixed max width for progress bar
                   height: 12,
                   decoration: pw.BoxDecoration(
                     color: _successColor,
@@ -420,7 +436,8 @@ class GroupAccountPdfService {
     // Calculate total paid per member
     final memberTotals = <String, double>{};
     for (final payment in payments) {
-      memberTotals[payment.userId] = (memberTotals[payment.userId] ?? 0) + payment.amount;
+      memberTotals[payment.userId] =
+          (memberTotals[payment.userId] ?? 0) + payment.amount;
     }
 
     return pw.Column(
@@ -445,7 +462,8 @@ class GroupAccountPdfService {
             ),
             ...members.map((member) {
               final totalPaid = memberTotals[member.userId] ?? 0;
-              final paymentCount = payments.where((p) => p.userId == member.userId).length;
+              final paymentCount =
+                  payments.where((p) => p.userId == member.userId).length;
 
               return pw.TableRow(
                 children: [
@@ -748,15 +766,25 @@ class GroupAccountPdfService {
     final memberTotals = <String, double>{};
     final memberPaymentCount = <String, int>{};
     for (final payment in payments) {
-      memberTotals[payment.userId] = (memberTotals[payment.userId] ?? 0) + payment.amount;
-      memberPaymentCount[payment.userId] = (memberPaymentCount[payment.userId] ?? 0) + 1;
+      memberTotals[payment.userId] =
+          (memberTotals[payment.userId] ?? 0) + payment.amount;
+      memberPaymentCount[payment.userId] =
+          (memberPaymentCount[payment.userId] ?? 0) + 1;
     }
 
     final rows = <List<String>>[
       ['Group: $groupName'],
       ['Generated: ${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now())}'],
       [],
-      ['Name', 'Email', 'Role', 'Status', 'Joined Date', 'Total Paid', 'Payment Count'],
+      [
+        'Name',
+        'Email',
+        'Role',
+        'Status',
+        'Joined Date',
+        'Total Paid',
+        'Payment Count'
+      ],
     ];
 
     for (final member in members) {
@@ -778,7 +806,8 @@ class GroupAccountPdfService {
     final dir = await getTemporaryDirectory();
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
     final sanitizedName = groupName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
-    final file = File('${dir.path}/member_stats_${sanitizedName}_$timestamp.csv');
+    final file =
+        File('${dir.path}/member_stats_${sanitizedName}_$timestamp.csv');
     await file.writeAsString(csvString);
     return file;
   }
@@ -793,12 +822,22 @@ class GroupAccountPdfService {
       ['Group: $groupName'],
       ['Generated: ${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now())}'],
       [],
-      ['Title', 'Type', 'Target Amount', 'Current Amount', 'Progress %', 'Status', 'Deadline', 'Created Date'],
+      [
+        'Title',
+        'Type',
+        'Target Amount',
+        'Current Amount',
+        'Progress %',
+        'Status',
+        'Deadline',
+        'Created Date'
+      ],
     ];
 
     for (final contribution in contributions) {
       final progress = contribution.targetAmount > 0
-          ? ((contribution.currentAmount / contribution.targetAmount) * 100).toStringAsFixed(1)
+          ? ((contribution.currentAmount / contribution.targetAmount) * 100)
+              .toStringAsFixed(1)
           : '0.0';
 
       rows.add([
@@ -817,7 +856,8 @@ class GroupAccountPdfService {
     final dir = await getTemporaryDirectory();
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
     final sanitizedName = groupName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
-    final file = File('${dir.path}/contribution_stats_${sanitizedName}_$timestamp.csv');
+    final file =
+        File('${dir.path}/contribution_stats_${sanitizedName}_$timestamp.csv');
     await file.writeAsString(csvString);
     return file;
   }
@@ -833,7 +873,16 @@ class GroupAccountPdfService {
       ['Contribution: $contributionTitle'],
       ['Generated: ${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now())}'],
       [],
-      ['Date', 'Time', 'Member', 'Amount', 'Currency', 'Status', 'Transaction ID', 'Notes'],
+      [
+        'Date',
+        'Time',
+        'Member',
+        'Amount',
+        'Currency',
+        'Status',
+        'Transaction ID',
+        'Notes'
+      ],
     ];
 
     for (final payment in payments) {
@@ -852,8 +901,10 @@ class GroupAccountPdfService {
     final csvString = const ListToCsvConverter().convert(rows);
     final dir = await getTemporaryDirectory();
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-    final sanitizedTitle = contributionTitle.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
-    final file = File('${dir.path}/payment_history_${sanitizedTitle}_$timestamp.csv');
+    final sanitizedTitle =
+        contributionTitle.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+    final file =
+        File('${dir.path}/payment_history_${sanitizedTitle}_$timestamp.csv');
     await file.writeAsString(csvString);
     return file;
   }

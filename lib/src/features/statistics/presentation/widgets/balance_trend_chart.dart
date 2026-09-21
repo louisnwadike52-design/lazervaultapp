@@ -23,9 +23,8 @@ class BalanceTrendChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final change = balance - previousBalance;
-    final changePercent = previousBalance != 0
-        ? (change / previousBalance.abs() * 100)
-        : 0.0;
+    final changePercent =
+        previousBalance != 0 ? (change / previousBalance.abs() * 100) : 0.0;
     final isPositive = change >= 0;
 
     return Container(
@@ -92,7 +91,8 @@ class BalanceTrendChart extends StatelessWidget {
                   ],
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   decoration: BoxDecoration(
                     color: (isPositive
                             ? const Color(0xFF10B981)
@@ -183,9 +183,8 @@ class BalanceTrendChart extends StatelessWidget {
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,
-            color: isPositive
-                ? const Color(0xFF10B981)
-                : const Color(0xFFEF4444),
+            color:
+                isPositive ? const Color(0xFF10B981) : const Color(0xFFEF4444),
           ),
         ),
       ],

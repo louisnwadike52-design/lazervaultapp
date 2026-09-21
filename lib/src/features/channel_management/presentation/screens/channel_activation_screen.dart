@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -20,6 +22,32 @@ class ChannelActivationScreen extends StatefulWidget {
 
 class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
   final _phoneController = TextEditingController();
+
+  /// Phone banking always uses the number on the profile; WhatsApp does not.
+  ///
+  /// A voice/SMS channel that answers for an arbitrary number is a way to reach
+  /// someone's money from a second handset, so the server pins telephony to
+  /// `users.phone` and ignores whatever the client sends. An editable box here
+  /// would invite a change the backend then refuses. WhatsApp stays editable on
+  /// purpose — people routinely run it on a different number — and is merely
+  /// SEEDED from the profile.
+  bool get _numberIsFixed => widget.channelType == 'telephony';
+
+  String get _profilePhone {
+    try {
+      final auth = serviceLocator<AuthenticationCubit>().state;
+      if (auth is AuthenticationSuccess) return auth.profile.user.phoneNumber ?? '';
+    } catch (_) {
+      // Empty seed just means the user types it themselves.
+    }
+    return '';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _phoneController.text = _profilePhone;
+  }
   final _otpController = TextEditingController();
   bool _otpSent = false;
   String _maskedPhone = '';
@@ -132,8 +160,21 @@ class _ChannelActivationScreenState extends State<ChannelActivationScreen> {
                     TextField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
-                      style: const TextStyle(color: Colors.white),
+                      readOnly: _numberIsFixed,
+                      enabled: !_numberIsFixed,
+                      style: TextStyle(
+                          color: _numberIsFixed
+                              ? const Color(0xFF9CA3AF)
+                              : Colors.white),
                       decoration: InputDecoration(
+                        helperText: _numberIsFixed
+                            ? 'Taken from your profile. To change it, update your profile number.'
+                            : 'Defaults to your profile number — change it if your WhatsApp uses another.',
+                        helperStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
+                        helperMaxLines: 2,
+                        suffixIcon: _numberIsFixed
+                            ? const Icon(Icons.lock_outline, color: Color(0xFF6B7280), size: 18)
+                            : null,
                         hintText: '+234 800 000 0000',
                         hintStyle:
                             const TextStyle(color: Color(0xFF9CA3AF)),

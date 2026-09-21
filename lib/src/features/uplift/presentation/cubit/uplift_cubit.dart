@@ -68,8 +68,17 @@ class UpliftCubit extends Cubit<UpliftState> {
   static const _pageSize = 20;
   int _discoverPage = 1;
 
+  /// Every load path here emits AFTER an await, and the screen closes this cubit
+  /// in `dispose()` — so popping LazerFunds while a refresh is in flight would
+  /// throw `Cannot emit new states after calling close`. Dropping the late state
+  /// is correct: nothing is listening any more.
+  void _safeEmit(UpliftState next) {
+    if (isClosed) return;
+    emit(next);
+  }
+
   Future<void> loadAll() async {
-    emit(state.copyWith(loading: true, clearError: true));
+    _safeEmit(state.copyWith(loading: true, clearError: true));
     try {
       _discoverPage = 1;
       final results = await Future.wait([
@@ -88,7 +97,7 @@ class UpliftCubit extends Cubit<UpliftState> {
       try {
         receipts = await _repo.listReceipts(pageSize: 5);
       } catch (_) {}
-      emit(state.copyWith(
+      _safeEmit(state.copyWith(
         loading: false,
         discover: discover,
         myFunds: results[1] as List<up.UpliftFundMessage>,
@@ -97,7 +106,7 @@ class UpliftCubit extends Cubit<UpliftState> {
         recentReceipts: receipts,
       ));
     } catch (e) {
-      emit(state.copyWith(loading: false, error: upFriendlyError(e)));
+      _safeEmit(state.copyWith(loading: false, error: upFriendlyError(e)));
     }
   }
 
@@ -106,24 +115,24 @@ class UpliftCubit extends Cubit<UpliftState> {
   Future<void> searchDiscover({String? query, String? category}) async {
     final q = query ?? state.query;
     final c = category ?? state.category;
-    emit(
+    _safeEmit(
         state.copyWith(query: q, category: c, loading: true, clearError: true));
     try {
       _discoverPage = 1;
       final funds = await _repo.listFunds(
           status: 'open', page: 1, pageSize: _pageSize, query: q, category: c);
-      emit(state.copyWith(
+      _safeEmit(state.copyWith(
           loading: false,
           discover: funds,
           discoverHasMore: funds.length >= _pageSize));
     } catch (e) {
-      emit(state.copyWith(loading: false, error: upFriendlyError(e)));
+      _safeEmit(state.copyWith(loading: false, error: upFriendlyError(e)));
     }
   }
 
   Future<void> loadMoreDiscover() async {
     if (state.discoverLoadingMore || !state.discoverHasMore) return;
-    emit(state.copyWith(discoverLoadingMore: true));
+    _safeEmit(state.copyWith(discoverLoadingMore: true));
     try {
       final next = _discoverPage + 1;
       final more = await _repo.listFunds(
@@ -133,13 +142,13 @@ class UpliftCubit extends Cubit<UpliftState> {
           query: state.query,
           category: state.category);
       _discoverPage = next;
-      emit(state.copyWith(
+      _safeEmit(state.copyWith(
         discover: [...state.discover, ...more],
         discoverHasMore: more.length >= _pageSize,
         discoverLoadingMore: false,
       ));
     } catch (e) {
-      emit(state.copyWith(
+      _safeEmit(state.copyWith(
           discoverLoadingMore: false, error: upFriendlyError(e)));
     }
   }
@@ -150,9 +159,46 @@ class UpliftCubit extends Cubit<UpliftState> {
     try {
       final funds = await _repo.myFunds();
       final apps = await _repo.listApplications(mineOnly: true);
-      emit(state.copyWith(myFunds: funds, myApplications: apps));
+      _safeEmit(state.copyWith(myFunds: funds, myApplications: apps));
     } catch (e) {
-      emit(state.copyWith(error: upFriendlyError(e)));
+      _safeEmit(state.copyWith(error: upFriendlyError(e)));
+    }
+  }
+
+  /// Re-reads EVERY list after the user creates, edits or cancels a fund.
+  ///
+  /// A fund is created with status OPEN, so it lands in Discover as well as in
+  /// My Funds. Refreshing only "mine" left the tab the user was most likely
+  /// looking at showing a list without the thing they had just made, which
+  /// reads as a failed save until they pull to refresh.
+  ///
+  /// Unlike [loadAll] this never raises `loading`: the lists are already on
+  /// screen and swapping them for a full-screen spinner is a flash, not
+  /// feedback. Discover paging resets to page 1 because the list it was paging
+  /// through no longer exists.
+  Future<void> refreshAfterFundChange() async {
+    try {
+      final results = await Future.wait([
+        _repo.listFunds(
+            status: 'open',
+            page: 1,
+            pageSize: _pageSize,
+            query: state.query,
+            category: state.category),
+        _repo.myFunds(),
+        _repo.listApplications(mineOnly: true),
+      ]);
+      _discoverPage = 1;
+      final discover = results[0] as List<up.UpliftFundMessage>;
+      _safeEmit(state.copyWith(
+        discover: discover,
+        myFunds: results[1] as List<up.UpliftFundMessage>,
+        myApplications: results[2] as List<up.UpliftApplicationMessage>,
+        discoverHasMore: discover.length >= _pageSize,
+        clearError: true,
+      ));
+    } catch (e) {
+      _safeEmit(state.copyWith(error: upFriendlyError(e)));
     }
   }
 }

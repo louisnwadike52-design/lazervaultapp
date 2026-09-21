@@ -70,6 +70,14 @@ class SendFundsLauncher {
     int? prefillAmountMinor,
     String? prefillCurrency,
     bool checkRecurring = false,
+
+    /// Narration to pre-fill (a repeat carries the original transfer's note).
+    ///
+    /// Honoured by the LONG flow only: the short flow's amount sheet has no
+    /// note field at all — which is exactly why its recurring-rule narration
+    /// falls back to category defaults — so forwarding it there would be a
+    /// silent no-op that reads like a bug later.
+    String? prefillDescription,
   }) {
     // Each flow is launched with `offNamedUntil(_isCleanBase)` rather than a bare
     // `toNamed`: it (a) atomically removes any stale send-flow route/transient
@@ -117,6 +125,8 @@ class SendFundsLauncher {
           'recipient': recipient,
           if (prefillAmountMinor != null) 'prefillAmount': prefillAmountMinor,
           if (prefillCurrency != null) 'prefillCurrency': prefillCurrency,
+          if (prefillDescription != null && prefillDescription.trim().isNotEmpty)
+            'prefillDescription': prefillDescription.trim(),
           if (prefillAmountMinor != null) 'autoShowConfirm': true,
           if (checkRecurring) 'checkRecurring': true,
         },

@@ -240,7 +240,8 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.sync, color: const Color(0xFF818CF8), size: 18.sp),
+                        Icon(Icons.sync,
+                            color: const Color(0xFF818CF8), size: 18.sp),
                         SizedBox(width: 8.w),
                         Expanded(
                           child: Text(
@@ -591,9 +592,7 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
       height: 48.h,
       child: ElevatedButton.icon(
         onPressed: isLoading ? null : onPressed,
-        icon: isLoading
-            ? LazerVaultLoader(size: 18)
-            : Icon(icon, size: 20.sp),
+        icon: isLoading ? LazerVaultLoader(size: 18) : Icon(icon, size: 20.sp),
         label: Text(
           label,
           style: GoogleFonts.inter(

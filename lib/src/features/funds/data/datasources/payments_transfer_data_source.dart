@@ -192,6 +192,18 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
           type: p.transferType.isNotEmpty
               ? p.transferType
               : (p.type.isNotEmpty ? p.type : null),
+          // Carry the direction we just derived. It used to be computed for the
+          // counterparty and discarded, leaving receipts unable to tell a
+          // sender's copy from a beneficiary's — which is how a fee the
+          // receiver never paid ended up on their receipt.
+          //
+          // Note the backend populates neither account id on this endpoint, so
+          // this is null in practice today; a null must therefore mean
+          // "unknown", and callers must not assume outgoing.
+          isIncoming: (p.destinationAccountId.isNotEmpty ||
+                  p.sourceAccountId.isNotEmpty)
+              ? isIncoming
+              : null,
         );
       }).toList();
 

@@ -20,8 +20,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/open_banking/presentation/helpers/link_account_gate.dart';
 import 'package:lazervault/src/features/statistics/presentation/widgets/linked_bank_statement_export_sheet.dart';
+import 'package:lazervault/src/features/statistics/utils/analytics_theme.dart';
 part 'linked_banks_widget_widgets.dart';
-
 
 /// Compact Linked Banks Widget for Statistics Page
 /// Shows first 2 linked banks with "View All" option
@@ -32,9 +32,11 @@ class LinkedBanksWidget extends StatelessWidget {
   final VoidCallback? onRefresh;
   final String userId;
   final String accessToken;
+
   /// Parent has narrowed the budgeting scope to this bank. Highlights
   /// the matching card so users know which bank the stats above reflect.
   final String? selectedAccountId;
+
   /// Tap on a bank card. Used by the budgeting screen to pivot the
   /// statistics filter to a single bank (or back to all). When null the
   /// card falls through to its default account-detail navigation.
@@ -60,9 +62,8 @@ class LinkedBanksWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasAccounts = linkedAccounts.isNotEmpty;
-    final displayAccounts = hasAccounts
-        ? linkedAccounts.take(2).toList()
-        : <LinkedBankAccount>[];
+    final displayAccounts =
+        hasAccounts ? linkedAccounts.take(2).toList() : <LinkedBankAccount>[];
     final hasMore = linkedAccounts.length > 2;
 
     return BlocConsumer<OpenBankingCubit, OpenBankingState>(
@@ -139,83 +140,86 @@ class LinkedBanksWidget extends StatelessWidget {
             state is BalanceRefreshing ? state.accountId : null;
 
         return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.account_balance_rounded,
-                        color: const Color(0xFF9CA3AF),
-                        size: 18.sp,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.account_balance_rounded,
+                      color: const Color(0xFF9CA3AF),
+                      size: 18.sp,
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'Linked Banks',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
                       ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        'Linked Banks',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
+                    ),
+                    if (hasAccounts) ...[
+                      SizedBox(width: 6.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color:
+                              const Color(0xFF10B981).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6.r),
                         ),
-                      ),
-                      if (hasAccounts) ...[
-                        SizedBox(width: 6.w),
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(6.r),
-                          ),
-                          child: Text(
-                            '${linkedAccounts.length}',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF10B981),
-                              fontSize: 11.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      // Bulk "sync all banks" icon removed — refreshing every
-                      // linked bank at once fanned out cost-incurring Mono reads.
-                      // Each bank card carries its own fee-gated refresh instead.
-                      GestureDetector(
-                        onTap: hasAccounts
-                            ? () => Get.toNamed(AppRoutes.linkedBanks)
-                            : () => _linkNewBank(context),
                         child: Text(
-                          hasAccounts ? 'Manage' : 'Link Bank',
+                          '${linkedAccounts.length}',
                           style: GoogleFonts.inter(
-                            color: const Color(0xFF10B981),
-                            fontSize: 13.sp,
+                            color: AnalyticsTheme.accentStrong,
+                            fontSize: 11.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     ],
-                  ),
-                ],
-              ),
-              SizedBox(height: 12.h),
+                  ],
+                ),
+                Row(
+                  children: [
+                    // Bulk "sync all banks" icon removed — refreshing every
+                    // linked bank at once fanned out cost-incurring Mono reads.
+                    // Each bank card carries its own fee-gated refresh instead.
+                    GestureDetector(
+                      onTap: hasAccounts
+                          ? () => Get.toNamed(AppRoutes.linkedBanks)
+                          : () => _linkNewBank(context),
+                      child: Text(
+                        hasAccounts ? 'Manage' : 'Link Bank',
+                        style: GoogleFonts.inter(
+                          color: AnalyticsTheme.accentStrong,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 12.h),
 
-              // Honesty signal now lives per-card: each bank shows "Updated Xm
-              // ago" + its own fee-gated refresh. The old bulk "tap to refresh
-              // all" advisory was removed with the cost-incurring bulk sync.
+            // Honesty signal now lives per-card: each bank shows "Updated Xm
+            // ago" + its own fee-gated refresh. The old bulk "tap to refresh
+            // all" advisory was removed with the cost-incurring bulk sync.
 
-              // Content
-              if (!hasAccounts)
-                _buildEmptyState(context)
-              else
-                _buildAccountsList(context, displayAccounts, hasMore, syncingAccountId, isSyncing, refreshingAccountId),
-            ],
-          );
+            // Content
+            if (!hasAccounts)
+              _buildEmptyState(context)
+            else
+              _buildAccountsList(context, displayAccounts, hasMore,
+                  syncingAccountId, isSyncing, refreshingAccountId),
+          ],
+        );
       },
     );
   }
@@ -235,28 +239,28 @@ class LinkedBanksWidget extends StatelessWidget {
     return Column(
       children: [
         ...accounts.map((account) => Padding(
-          padding: EdgeInsets.only(bottom: 8.h),
-          child: _BankAccountItem(
-            account: account,
-            isSyncing: isSyncing && syncingAccountId == account.id,
-            isRefreshingBalance: refreshingAccountId == account.id,
-            onRefreshBalance: onRefreshBalance,
-            isSelected: selectedAccountId == account.id,
-            // When the parent supplied a tap handler (budgeting filter
-            // pivot) we route the tap through it; otherwise fall back to
-            // the legacy "open linked banks screen" navigation.
-            onTap: onBankTap != null
-                ? () => onBankTap!(account)
-                : () => Get.toNamed(
-                      AppRoutes.linkedBanks,
-                      arguments: {
-                        'highlightAccountId': account.id,
-                        'fromStatistics': true,
-                      },
-                    ),
-            onSync: () => _syncAccount(context, account.id),
-          ),
-        )),
+              padding: EdgeInsets.only(bottom: 8.h),
+              child: _BankAccountItem(
+                account: account,
+                isSyncing: isSyncing && syncingAccountId == account.id,
+                isRefreshingBalance: refreshingAccountId == account.id,
+                onRefreshBalance: onRefreshBalance,
+                isSelected: selectedAccountId == account.id,
+                // When the parent supplied a tap handler (budgeting filter
+                // pivot) we route the tap through it; otherwise fall back to
+                // the legacy "open linked banks screen" navigation.
+                onTap: onBankTap != null
+                    ? () => onBankTap!(account)
+                    : () => Get.toNamed(
+                          AppRoutes.linkedBanks,
+                          arguments: {
+                            'highlightAccountId': account.id,
+                            'fromStatistics': true,
+                          },
+                        ),
+                onSync: () => _syncAccount(context, account.id),
+              ),
+            )),
         if (hasMore)
           GestureDetector(
             onTap: () => Get.toNamed(
@@ -315,18 +319,25 @@ class LinkedBanksWidget extends StatelessWidget {
 
     if (result != null && context.mounted) {
       final obc = context.read<OpenBankingCubit>();
+      // Second dead period: Mono's sheet closes and the link round-trip runs
+      // with nothing on screen. Keep the user informed until the bank appears
+      // in the list.
       // Fee already consented above — link straight through (no second notice).
-      await obc.linkAccount(
-        userId: user.id,
-        code: result.code,
-        accessToken: authState.profile.session.accessToken,
-        setAsDefault: linkedAccounts.isEmpty,
-        transactionId: txnId,
-        // This links a bank for READ-ONLY financial insights (spending
-        // analytics / credit score). Never auto-create a Direct Debit mandate
-        // here — the user linking to see their spending did NOT consent to us
-        // being able to debit their account. Deposits set up their own mandate.
-        autoCreateMandate: false,
+      await runWithLinkProgress(
+        context,
+        'Linking your bank…',
+        () => obc.linkAccount(
+          userId: user.id,
+          code: result.code,
+          accessToken: authState.profile.session.accessToken,
+          setAsDefault: linkedAccounts.isEmpty,
+          transactionId: txnId,
+          // This links a bank for READ-ONLY financial insights (spending
+          // analytics / credit score). Never auto-create a Direct Debit mandate
+          // here — the user linking to see their spending did NOT consent to us
+          // being able to debit their account. Deposits set up their own mandate.
+          autoCreateMandate: false,
+        ),
       );
     }
   }

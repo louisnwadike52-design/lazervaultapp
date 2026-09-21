@@ -19,9 +19,24 @@ import 'package:lazervault/src/features/sprayme/presentation/screens/sprayme_wal
 import 'package:lazervault/src/features/sprayme/presentation/widgets/spray_wallet_action_sheet.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/session_detail_screen.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/my_sessions_screen.dart';
+import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_tabs.dart';
+
+/// Bottom-nav index of the Lifestyle tab, which is the tab this screen lives
+/// under. Named so the nav row below cannot drift from it.
+const int _lifestyleTabIndex = 4;
 
 class SprayMeHomeScreen extends StatefulWidget {
-  const SprayMeHomeScreen({super.key});
+  /// Switches the host dashboard's bottom-nav tab.
+  ///
+  /// This screen is a full route pushed OVER the dashboard, and it draws its
+  /// own copy of the bottom nav. Without this callback the only way to honour
+  /// a nav tap was to pop with the index and let the dashboard switch
+  /// afterwards — which left the tab underneath on screen for the whole pop
+  /// animation before it jumped to the tab the user actually tapped.
+  /// Switching first and popping second reveals the correct tab immediately.
+  final void Function(int tabIndex)? onSwitchTab;
+
+  const SprayMeHomeScreen({super.key, this.onSwitchTab});
 
   @override
   State<SprayMeHomeScreen> createState() => _SprayMeHomeScreenState();
@@ -30,6 +45,13 @@ class SprayMeHomeScreen extends StatefulWidget {
 class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
   SprayWallet? _wallet;
   List<SpraySession> _sessions = [];
+
+  /// The signed-in user's id, used only to word the resume banner correctly
+  /// ("Re-enter your session" for the host vs "Rejoin session" for a guest).
+  /// Null until resolved — the banner then falls back to the guest wording,
+  /// which is the safe default: telling a guest it is "your session" is a
+  /// worse error than being vague at a host.
+  String? _currentUserId;
   MySprayStats? _stats;
   bool _isLoadingWallet = true;
   bool _isLoadingSessions = true;
@@ -43,7 +65,17 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
   @override
   void initState() {
     super.initState();
+    _resolveCurrentUser();
     _loadAll();
+  }
+
+  Future<void> _resolveCurrentUser() async {
+    try {
+      final id = await serviceLocator<SecureStorageService>().getUserId();
+      if (mounted && id != null) setState(() => _currentUserId = id);
+    } catch (_) {
+      // Non-fatal: only affects the banner's wording.
+    }
   }
 
   void _loadAll() {
@@ -163,6 +195,9 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
                 children: [
                   _buildHeader(),
                   SizedBox(height: 20.h),
+                  // Sits ABOVE the wallet, because a session you are still
+                  // live in outranks everything else on this page.
+                  _buildResumeBanner(),
                   _buildWalletCard(),
                   SizedBox(height: 20.h),
                   _buildQuickActions(),
@@ -198,11 +233,17 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(Icons.dashboard_outlined, 'Dashboard', 0),
-              _buildNavItem(Icons.pie_chart_outline, 'Budget', 1),
-              _buildNavItem(Icons.chat_bubble_outline, 'AI Chat', 2),
-              _buildNavItem(Icons.contactless_outlined, 'Beam', 3),
-              _buildNavItem(Icons.spa_outlined, 'Lifestyle', 4, isActive: true),
+              // Labels and icons come from the shared destination list, so this
+              // nav names a tab exactly as the dashboard's own navs do. It used
+              // to call index 1 "Budget" while the dashboard's curved nav called
+              // it "Statistics" and the MotionTabBar called it "AI Analytics".
+              for (var i = 0; i < kDashboardTabs.length; i++)
+                _buildNavItem(
+                  kDashboardTabs[i].icon,
+                  kDashboardTabs[i].label,
+                  i,
+                  isActive: i == _lifestyleTabIndex,
+                ),
             ],
           ),
         ),
@@ -210,12 +251,25 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, int tabIndex, {bool isActive = false}) {
+  Widget _buildNavItem(IconData icon, String label, int tabIndex,
+      {bool isActive = false}) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
         if (isActive) return; // Already on lifestyle
-        // Pop with tabIndex result — the caller handles switching
+        HapticFeedback.lightImpact();
+
+        final switchTab = widget.onSwitchTab;
+        if (switchTab != null) {
+          // Switch FIRST so the dashboard underneath has already rebuilt on the
+          // target tab by the time the pop animation uncovers it. Popping first
+          // and switching in the route's .then() is what made the previous tab
+          // flash on screen before the requested one appeared.
+          switchTab(tabIndex);
+          Navigator.of(context).pop();
+          return;
+        }
+        // No callback (e.g. opened from a route that does not host the tabs):
+        // fall back to returning the index so the caller can still switch.
         Navigator.of(context).pop(tabIndex);
       },
       behavior: HitTestBehavior.opaque,
@@ -226,14 +280,17 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
           children: [
             Icon(
               icon,
-              color: isActive ? const Color(0xFF7C3AED) : const Color(0xFF6B7280),
+              color:
+                  isActive ? const Color(0xFF7C3AED) : const Color(0xFF6B7280),
               size: 22.sp,
             ),
             SizedBox(height: 2.h),
             Text(
               label,
               style: TextStyle(
-                color: isActive ? const Color(0xFF7C3AED) : const Color(0xFF6B7280),
+                color: isActive
+                    ? const Color(0xFF7C3AED)
+                    : const Color(0xFF6B7280),
                 fontSize: 10.sp,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
               ),
@@ -343,16 +400,21 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.3)),
+          border:
+              Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.3)),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.wifi_off_rounded, color: const Color(0xFFFB923C), size: 26.sp),
+            Icon(Icons.wifi_off_rounded,
+                color: const Color(0xFFFB923C), size: 26.sp),
             SizedBox(height: 8.h),
             Text(
               "Couldn't load your wallet",
-              style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600),
             ),
             SizedBox(height: 4.h),
             Text(
@@ -367,15 +429,20 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
                 decoration: BoxDecoration(
                   color: const Color(0xFF7C3AED).withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.4)),
+                  border: Border.all(
+                      color: const Color(0xFF7C3AED).withValues(alpha: 0.4)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.refresh_rounded, color: const Color(0xFFB794F6), size: 15.sp),
+                    Icon(Icons.refresh_rounded,
+                        color: const Color(0xFFB794F6), size: 15.sp),
                     SizedBox(width: 6.w),
                     Text('Retry',
-                        style: TextStyle(color: const Color(0xFFB794F6), fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                        style: TextStyle(
+                            color: const Color(0xFFB794F6),
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),
@@ -478,7 +545,8 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
           // Earnings (received gifts) — withdrawable to personal.
           Row(
             children: [
-              Icon(Icons.savings_outlined, color: const Color(0xFF34D399), size: 15.sp),
+              Icon(Icons.savings_outlined,
+                  color: const Color(0xFF34D399), size: 15.sp),
               SizedBox(width: 6.w),
               Text(
                 'Earnings  NGN ${_formatAmount(earnings)}',
@@ -787,10 +855,148 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
       );
     }
 
+    // ACTIVE SESSIONS FIRST, and never truncated away.
+    //
+    // The server returns sessions ordered by created_at DESC with no notion of
+    // which are live, and this list showed only the first five. So a host with
+    // six or more sessions whose live one was not among the most recent had no
+    // visible way back into it — the "Join" CTA on the row existed, but the row
+    // itself never rendered. A session you are still live in is the single most
+    // actionable thing on this screen; it cannot be paged off the bottom.
+    final active = _sessions.where((s) => s.isActive).toList();
+    final past = _sessions.where((s) => !s.isActive).toList();
+    final shown = <SpraySession>[
+      ...active,
+      ...past.take(5 - active.length.clamp(0, 5)),
+    ];
+
     return Column(
-      children: _sessions.take(5).map((session) {
+      children: shown.map((session) {
         return _buildSessionTile(session);
       }).toList(),
+    );
+  }
+
+  /// Sessions the user can walk straight back into — hosted or joined.
+  List<SpraySession> get _resumableSessions =>
+      _sessions.where((s) => s.isActive).toList();
+
+  /// "You're still live" banner.
+  ///
+  /// The resume CTAs already existed on the session rows and in My Sessions,
+  /// but both required the user to go looking — and the row could be pushed out
+  /// of the five shown here entirely. Someone who backgrounded the app mid-
+  /// stream should not have to hunt for the way back into their own broadcast,
+  /// so the live session is surfaced at the top of the page, above the wallet.
+  ///
+  /// Hidden entirely when nothing is live: an empty banner reserving space is
+  /// worse than no banner.
+  Widget _buildResumeBanner() {
+    final live = _resumableSessions;
+    if (live.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      children: [
+        ...live.map(_buildResumeCard),
+        SizedBox(height: 20.h),
+      ],
+    );
+  }
+
+  Widget _buildResumeCard(SpraySession session) {
+    // A host is re-entering their OWN broadcast; a guest is returning to
+    // someone else's. Same destination, different promise — so the wording
+    // differs rather than showing everyone a generic "Open".
+    final isHost =
+        _currentUserId != null && session.hostUserId == _currentUserId;
+    final verb = isHost ? 'Re-enter your session' : 'Rejoin session';
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 10.h),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF10B981), Color(0xFF059669)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16.r),
+          onTap: () => _openSession(session),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            child: Row(
+              children: [
+                Container(
+                  width: 38.w,
+                  height: 38.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.podcasts_rounded,
+                      color: Colors.white, size: 20.sp),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 7.w,
+                            height: 7.w,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          SizedBox(width: 6.w),
+                          Text(
+                            'LIVE NOW',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.1,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 3.h),
+                      Text(
+                        session.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.5.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        verb,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.arrow_forward_rounded,
+                    color: Colors.white, size: 20.sp),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -874,7 +1080,8 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
               GestureDetector(
                 onTap: () => _openSession(session),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF10B981), Color(0xFF059669)],
@@ -997,7 +1204,8 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
                 child: _buildStatItem(
                   icon: Icons.arrow_upward,
                   label: 'Sprayed',
-                  value: 'NGN ${_formatAmount((_stats?.totalSprayed ?? 0) / 100)}',
+                  value:
+                      'NGN ${_formatAmount((_stats?.totalSprayed ?? 0) / 100)}',
                   color: const Color(0xFFEF4444),
                 ),
               ),
@@ -1005,7 +1213,8 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
                 child: _buildStatItem(
                   icon: Icons.arrow_downward,
                   label: 'Received',
-                  value: 'NGN ${_formatAmount((_stats?.totalReceived ?? 0) / 100)}',
+                  value:
+                      'NGN ${_formatAmount((_stats?.totalReceived ?? 0) / 100)}',
                   color: const Color(0xFF10B981),
                 ),
               ),
@@ -1081,11 +1290,15 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
       ),
       child: Column(
         children: [
-          Icon(Icons.wifi_off_rounded, size: 30.sp, color: const Color(0xFFFB923C)),
+          Icon(Icons.wifi_off_rounded,
+              size: 30.sp, color: const Color(0xFFFB923C)),
           SizedBox(height: 10.h),
           Text(
             message,
-            style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600),
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600),
           ),
           SizedBox(height: 10.h),
           GestureDetector(
@@ -1095,15 +1308,20 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF7C3AED).withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(20.r),
-                border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.4)),
+                border: Border.all(
+                    color: const Color(0xFF7C3AED).withValues(alpha: 0.4)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.refresh_rounded, color: const Color(0xFFB794F6), size: 15.sp),
+                  Icon(Icons.refresh_rounded,
+                      color: const Color(0xFFB794F6), size: 15.sp),
                   SizedBox(width: 6.w),
                   Text('Retry',
-                      style: TextStyle(color: const Color(0xFFB794F6), fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                      style: TextStyle(
+                          color: const Color(0xFFB794F6),
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600)),
                 ],
               ),
             ),

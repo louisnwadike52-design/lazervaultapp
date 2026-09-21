@@ -46,12 +46,15 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.group.name);
-    _descriptionController = TextEditingController(text: widget.group.description);
+    _descriptionController =
+        TextEditingController(text: widget.group.description);
     _whatsappLinkController = TextEditingController(
-      text: stripCanonicalPrefix(widget.group.whatsappGroupLink, whatsappLinkPrefix),
+      text: stripCanonicalPrefix(
+          widget.group.whatsappGroupLink, whatsappLinkPrefix),
     );
     _telegramLinkController = TextEditingController(
-      text: stripCanonicalPrefix(widget.group.telegramGroupLink, telegramLinkPrefix),
+      text: stripCanonicalPrefix(
+          widget.group.telegramGroupLink, telegramLinkPrefix),
     );
     _selectedStatus = widget.group.status;
 
@@ -113,8 +116,12 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
   void _onFieldChanged() {
     final hasChanges = _nameController.text != widget.group.name ||
         _descriptionController.text != widget.group.description ||
-        _whatsappLinkController.text != stripCanonicalPrefix(widget.group.whatsappGroupLink, whatsappLinkPrefix) ||
-        _telegramLinkController.text != stripCanonicalPrefix(widget.group.telegramGroupLink, telegramLinkPrefix) ||
+        _whatsappLinkController.text !=
+            stripCanonicalPrefix(
+                widget.group.whatsappGroupLink, whatsappLinkPrefix) ||
+        _telegramLinkController.text !=
+            stripCanonicalPrefix(
+                widget.group.telegramGroupLink, telegramLinkPrefix) ||
         _selectedStatus != widget.group.status;
 
     if (hasChanges != _hasChanges) {
@@ -173,7 +180,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
               SnackBar(
                 content: Text('Group updated successfully'),
                 backgroundColor: const Color(0xFF10B981),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r)),
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -186,7 +194,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: const Color(0xFFEF4444),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r)),
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -240,7 +249,9 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
         ),
         child: Center(
           child: Text(
-            _nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : 'G',
+            _nameController.text.isNotEmpty
+                ? _nameController.text[0].toUpperCase()
+                : 'G',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 32.sp,
@@ -297,7 +308,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                 width: 1,
               ),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             counterStyle: GoogleFonts.inter(
               color: Colors.grey[500],
               fontSize: 11.sp,
@@ -328,7 +340,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
           maxLines: 4,
           maxLength: GroupValidators.descriptionMaxLength,
           inputFormatters: [
-            LengthLimitingTextInputFormatter(GroupValidators.descriptionMaxLength),
+            LengthLimitingTextInputFormatter(
+                GroupValidators.descriptionMaxLength),
           ],
           autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: InputDecoration(
@@ -354,7 +367,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                 width: 1,
               ),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             counterStyle: GoogleFonts.inter(
               color: Colors.grey[500],
               fontSize: 11.sp,
@@ -395,7 +409,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                   _onFieldChanged();
                 },
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: status != GroupAccountStatus.values.last
@@ -546,8 +561,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
           errorText: _whatsappError,
           // Validator runs on the FormField raw value (suffix); rebuild
           // the full URL before delegating to GroupValidators.
-          validator: (v) =>
-              GroupValidators.whatsappLink(buildSocialFullUrl(v ?? '', whatsappLinkPrefix)),
+          validator: (v) => GroupValidators.whatsappLink(
+              buildSocialFullUrl(v ?? '', whatsappLinkPrefix)),
         ),
         SizedBox(height: 16.h),
         _buildLinkField(
@@ -559,8 +574,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
           icon: Icons.send,
           color: const Color(0xFF0088CC),
           errorText: _telegramError,
-          validator: (v) =>
-              GroupValidators.telegramLink(buildSocialFullUrl(v ?? '', telegramLinkPrefix)),
+          validator: (v) => GroupValidators.telegramLink(
+              buildSocialFullUrl(v ?? '', telegramLinkPrefix)),
         ),
       ],
     );
@@ -634,7 +649,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
             prefix: prefixText != null
                 ? Text(
                     prefixText,
-                    style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14.sp),
+                    style: GoogleFonts.inter(
+                        color: Colors.grey[400], fontSize: 14.sp),
                   )
                 : null,
             prefixIcon: Icon(
@@ -654,7 +670,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                     },
                   )
                 : null,
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           ),
         ),
       ],
@@ -741,7 +758,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
 
       // Update WhatsApp link — controller holds suffix only; rebuild
       // the full URL using the canonical prefix.
-      final whatsappFull = buildSocialFullUrl(_whatsappLinkController.text, whatsappLinkPrefix);
+      final whatsappFull =
+          buildSocialFullUrl(_whatsappLinkController.text, whatsappLinkPrefix);
       if (whatsappFull != null) {
         metadata['whatsapp_group_link'] = whatsappFull;
       } else {
@@ -749,7 +767,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
       }
 
       // Update Telegram link
-      final telegramFull = buildSocialFullUrl(_telegramLinkController.text, telegramLinkPrefix);
+      final telegramFull =
+          buildSocialFullUrl(_telegramLinkController.text, telegramLinkPrefix);
       if (telegramFull != null) {
         metadata['telegram_group_link'] = telegramFull;
       } else {
@@ -792,7 +811,9 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              context.read<GroupAccountCubit>().deleteGroupAccount(widget.group.id);
+              context
+                  .read<GroupAccountCubit>()
+                  .deleteGroupAccount(widget.group.id);
               Get.back(result: 'deleted');
             },
             child: Text(

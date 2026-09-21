@@ -39,6 +39,7 @@ import 'package:lazervault/src/features/pending_actions/data/pending_payments_pr
 import 'package:lazervault/src/features/pending_actions/domain/pending_action.dart';
 import 'package:lazervault/src/features/pending_actions/presentation/cubit/pending_actions_cubit.dart';
 import 'package:lazervault/src/features/pending_actions/presentation/widgets/pending_payments_prompt_sheet.dart';
+import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_tabs.dart';
 
 /// Set to `true` to show the voice banking setup bottom sheet when the dashboard loads.
 const bool _kShowVoiceSetupDashboardPrompt = false;
@@ -86,11 +87,22 @@ class _DashboardScreenState extends State<DashboardScreen>
     // can react to becoming visible. Set even when the index is unchanged is
     // harmless (ValueNotifier only fires on a real value change).
     _activeTab.value = index;
-    _tabController.animateTo(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+
+    // Adjacent tabs slide; distant ones jump.
+    //
+    // TabBarView cannot animate across a gap without first warping to a page
+    // next to the destination, so animating 4 → 1 paints an unrelated tab for
+    // a frame before the real one arrives. That warp is the flicker users see
+    // as "it goes somewhere else first". A jump has no intermediate state.
+    if ((_tabController.index - index).abs() > 1) {
+      _tabController.index = index;
+    } else {
+      _tabController.animateTo(
+        index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   /// Open the dashboard on a specific bottom-nav tab when navigated with an
@@ -757,24 +769,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  IconData _getIconData(int index) {
-    switch (index) {
-      case 0:
-        return Icons.dashboard_rounded;
-      case 1:
-        return Icons.analytics_rounded;
-      case 2:
-        return Icons.smart_toy_rounded;
-      case 3:
-        return Icons.swap_horiz_rounded;
-      case 4:
-        return Icons.event_note_rounded;
-      case 5:
-        return Icons.party_mode;
-      default:
-        return Icons.circle;
-    }
-  }
+  IconData _getIconData(int index) => dashboardTabIcon(index);
 
   Widget _buildLifestyleTab() {
     return NewLifestyleScreen(onSwitchTab: _handleOnTabChange);
@@ -812,21 +807,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  // Add this helper method to get tab labels
-  String _getTabLabel(int index) {
-    switch (index) {
-      case 0:
-        return 'Dashboard';
-      case 1:
-        return 'Statistics';
-      case 2:
-        return 'AI Chat';
-      case 3:
-        return 'Beam';
-      case 4:
-        return 'Lifestyle';
-      default:
-        return '';
-    }
-  }
+  /// Nav labels come from the shared destination list so this bar and the
+  /// MotionTabBar can never disagree about what a tab is called.
+  String _getTabLabel(int index) => dashboardTabLabel(index);
 }

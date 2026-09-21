@@ -27,12 +27,21 @@ class _StatisticsSourceSheet extends StatelessWidget {
   final StatisticsSource current;
 
   static const _options = <(StatisticsSource, IconData, String)>[
-    (StatisticsSource.lazervault, Icons.account_balance_wallet_rounded,
-        'Spending and income from your Lazervault wallet only'),
-    (StatisticsSource.bank, Icons.account_balance_rounded,
-        'Activity from your linked external bank accounts only'),
-    (StatisticsSource.both, Icons.dashboard_rounded,
-        'Everything combined across Lazervault and your banks'),
+    (
+      StatisticsSource.lazervault,
+      Icons.account_balance_wallet_rounded,
+      'Spending and income from your Lazervault wallet only'
+    ),
+    (
+      StatisticsSource.bank,
+      Icons.account_balance_rounded,
+      'Activity from your linked external bank accounts only'
+    ),
+    (
+      StatisticsSource.both,
+      Icons.dashboard_rounded,
+      'Everything combined across Lazervault and your banks'
+    ),
   ];
 
   @override
@@ -110,7 +119,9 @@ class _OptionTile extends StatelessWidget {
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
         decoration: BoxDecoration(
-          color: selected ? accent.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.04),
+          color: selected
+              ? accent.withValues(alpha: 0.12)
+              : Colors.white.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: selected ? accent : Colors.white.withValues(alpha: 0.08),
@@ -123,10 +134,12 @@ class _OptionTile extends StatelessWidget {
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: (selected ? accent : Colors.white).withValues(alpha: 0.12),
+                color:
+                    (selected ? accent : Colors.white).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10.r),
               ),
-              child: Icon(icon, color: selected ? accent : Colors.white, size: 20.sp),
+              child: Icon(icon,
+                  color: selected ? accent : Colors.white, size: 20.sp),
             ),
             SizedBox(width: 14.w),
             Expanded(
@@ -153,7 +166,8 @@ class _OptionTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (selected) Icon(Icons.check_circle_rounded, color: accent, size: 22.sp),
+            if (selected)
+              Icon(Icons.check_circle_rounded, color: accent, size: 22.sp),
           ],
         ),
       ),

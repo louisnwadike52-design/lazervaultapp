@@ -818,15 +818,16 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                   style: _inter(size: 12.sp, weight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.8))),
             ],
           ),
-          // Transparency: the aggregated fee = our platform margin + the bank payout
-          // cost we pay Flutterwave. Shown once the backend quote lands.
-          if ((_quotedProviderCostKobo ?? 0) > 0) ...[
-            SizedBox(height: 3.h),
-            Text(
-                'incl. ${_money((_quotedProviderCostKobo ?? 0) / 100.0)} bank payout · '
-                '${_money((_quotedPlatformFeeKobo ?? 0) / 100.0)} service fee',
-                style: _inter(size: 10.5.sp, color: _textSecondary)),
-          ],
+          // The fee the user pays is ONE number.
+          //
+          // This used to print "incl. ₦10.75 bank payout · ₦10.00 service fee",
+          // which splits our cost of sale out in front of the customer. What
+          // we pay Flutterwave to move the money is our commercial arrangement,
+          // not a line item the person withdrawing has any use for — and, like
+          // fund holds, it invites questions about internal mechanics in the
+          // middle of a money flow. The split is still recorded on the
+          // transaction (provider_fee_kobo / platform_fee_kobo) and is where it
+          // belongs: the admin dashboard's fee auditing.
           SizedBox(height: 3.h),
           Text('You receive ${_money(_enteredAmount)} at your bank',
               style: _inter(size: 11.sp, weight: FontWeight.w500, color: _accent)),

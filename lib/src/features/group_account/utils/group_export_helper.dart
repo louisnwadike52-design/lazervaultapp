@@ -18,7 +18,8 @@ class GroupExportHelper {
     final buffer = StringBuffer();
 
     // CSV Header
-    buffer.writeln('Payment ID,Date,Member Name,Amount (Kobo),Amount (Naira),Currency,Status,Transaction ID,Notes');
+    buffer.writeln(
+        'Payment ID,Date,Member Name,Amount (Kobo),Amount (Naira),Currency,Status,Transaction ID,Notes');
 
     // Data rows
     for (final payment in payments) {
@@ -37,7 +38,8 @@ class GroupExportHelper {
       buffer.writeln(row);
     }
 
-    final filename = 'payments_${contribution.id}_${DateTime.now().millisecondsSinceEpoch}.csv';
+    final filename =
+        'payments_${contribution.id}_${DateTime.now().millisecondsSinceEpoch}.csv';
     return _saveCSV(buffer.toString(), filename);
   }
 
@@ -64,7 +66,8 @@ class GroupExportHelper {
     final buffer = StringBuffer();
 
     // CSV Header
-    buffer.writeln('Member Name,Email,Phone,Expected Amount,Total Paid,Remaining,Payment Count,Status,Last Payment Date');
+    buffer.writeln(
+        'Member Name,Email,Phone,Expected Amount,Total Paid,Remaining,Payment Count,Status,Last Payment Date');
 
     // Data rows
     for (final member in members) {
@@ -87,7 +90,8 @@ class GroupExportHelper {
       DateTime? lastPaymentDate;
       for (final p in memberPaymentList) {
         if (p.status == PaymentStatus.completed) {
-          if (lastPaymentDate == null || p.paymentDate.isAfter(lastPaymentDate)) {
+          if (lastPaymentDate == null ||
+              p.paymentDate.isAfter(lastPaymentDate)) {
             lastPaymentDate = p.paymentDate;
           }
         }
@@ -118,11 +122,15 @@ class GroupExportHelper {
     buffer.writeln('');
     buffer.writeln('SUMMARY');
     buffer.writeln('Total Members,${members.length}');
-    buffer.writeln('Total Expected,${currencyFormat.format(totalExpected / 100)}');
-    buffer.writeln('Total Collected,${currencyFormat.format(totalCollected / 100)}');
-    buffer.writeln('Total Remaining,${currencyFormat.format(totalRemaining / 100)}');
+    buffer.writeln(
+        'Total Expected,${currencyFormat.format(totalExpected / 100)}');
+    buffer.writeln(
+        'Total Collected,${currencyFormat.format(totalCollected / 100)}');
+    buffer.writeln(
+        'Total Remaining,${currencyFormat.format(totalRemaining / 100)}');
 
-    final filename = 'member_summary_${contribution.id}_${DateTime.now().millisecondsSinceEpoch}.csv';
+    final filename =
+        'member_summary_${contribution.id}_${DateTime.now().millisecondsSinceEpoch}.csv';
     return _saveCSV(buffer.toString(), filename);
   }
 
@@ -144,7 +152,8 @@ class GroupExportHelper {
     final buffer = StringBuffer();
 
     // CSV Header
-    buffer.writeln('Position,Member Name,Scheduled Date,Expected Amount,Status,Received Date,Actual Amount');
+    buffer.writeln(
+        'Position,Member Name,Scheduled Date,Expected Amount,Status,Received Date,Actual Amount');
 
     // Data rows
     for (final entry in schedule) {
@@ -156,14 +165,19 @@ class GroupExportHelper {
         _escapeCSV(dateFormat.format(entry.scheduledDate)),
         _escapeCSV(currencyFormat.format(entry.expectedAmount / 100)),
         _escapeCSV(_getPayoutStatusLabel(entry.status)),
-        entry.receivedDate != null ? dateFormat.format(entry.receivedDate!) : '-',
-        entry.actualAmount != null ? currencyFormat.format(entry.actualAmount! / 100) : '-',
+        entry.receivedDate != null
+            ? dateFormat.format(entry.receivedDate!)
+            : '-',
+        entry.actualAmount != null
+            ? currencyFormat.format(entry.actualAmount! / 100)
+            : '-',
       ].join(',');
 
       buffer.writeln(row);
     }
 
-    final filename = 'payout_schedule_${contribution.id}_${DateTime.now().millisecondsSinceEpoch}.csv';
+    final filename =
+        'payout_schedule_${contribution.id}_${DateTime.now().millisecondsSinceEpoch}.csv';
     return _saveCSV(buffer.toString(), filename);
   }
 
@@ -193,7 +207,8 @@ class GroupExportHelper {
       buffer.writeln(row);
     }
 
-    final filename = 'members_${group.id}_${DateTime.now().millisecondsSinceEpoch}.csv';
+    final filename =
+        'members_${group.id}_${DateTime.now().millisecondsSinceEpoch}.csv';
     return _saveCSV(buffer.toString(), filename);
   }
 
@@ -208,12 +223,14 @@ class GroupExportHelper {
     final buffer = StringBuffer();
 
     // CSV Header
-    buffer.writeln('Title,Type,Target Amount,Current Amount,Progress %,Status,Deadline,Created Date');
+    buffer.writeln(
+        'Title,Type,Target Amount,Current Amount,Progress %,Status,Deadline,Created Date');
 
     // Data rows
     for (final contribution in contributions) {
       final progress = contribution.targetAmount > 0
-          ? ((contribution.currentAmount / contribution.targetAmount) * 100).toStringAsFixed(1)
+          ? ((contribution.currentAmount / contribution.targetAmount) * 100)
+              .toStringAsFixed(1)
           : '0.0';
 
       final row = [
@@ -230,7 +247,8 @@ class GroupExportHelper {
       buffer.writeln(row);
     }
 
-    final filename = 'contributions_${group.id}_${DateTime.now().millisecondsSinceEpoch}.csv';
+    final filename =
+        'contributions_${group.id}_${DateTime.now().millisecondsSinceEpoch}.csv';
     return _saveCSV(buffer.toString(), filename);
   }
 
@@ -241,7 +259,8 @@ class GroupExportHelper {
     required List<ContributionPayment> payments,
   }) async {
     final dateFormat = DateFormat('yyyy-MM-dd');
-    final currencyFormat = NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
+    final currencyFormat =
+        NumberFormat.currency(symbol: '\u20A6', decimalDigits: 0);
 
     // Calculate expected amount per member
     final expectedAmount = contribution.regularAmount ??
@@ -262,13 +281,16 @@ class GroupExportHelper {
     buffer.writeln('CONTRIBUTION PAYMENT STATUS REPORT');
     buffer.writeln('');
     buffer.writeln('Contribution,"${_escapeCSV(contribution.title)}"');
-    buffer.writeln('Target Amount,"${currencyFormat.format(contribution.targetAmount / 100)}"');
-    buffer.writeln('Current Amount,"${currencyFormat.format(contribution.currentAmount / 100)}"');
+    buffer.writeln(
+        'Target Amount,"${currencyFormat.format(contribution.targetAmount / 100)}"');
+    buffer.writeln(
+        'Current Amount,"${currencyFormat.format(contribution.currentAmount / 100)}"');
     buffer.writeln('Deadline,"${dateFormat.format(contribution.deadline)}"');
     buffer.writeln('');
 
     // CSV Header
-    buffer.writeln('Member,Email,Phone,Expected,Paid,Remaining,Status,Last Payment');
+    buffer.writeln(
+        'Member,Email,Phone,Expected,Paid,Remaining,Status,Last Payment');
 
     // Separate paid and unpaid
     final paidMembers = <GroupMember>[];
@@ -277,7 +299,8 @@ class GroupExportHelper {
 
     for (final member in members) {
       final memberPaymentList = memberPayments[member.userId] ?? [];
-      final totalPaid = memberPaymentList.fold<double>(0, (sum, p) => sum + p.amount);
+      final totalPaid =
+          memberPaymentList.fold<double>(0, (sum, p) => sum + p.amount);
 
       if (totalPaid >= expectedAmount) {
         paidMembers.add(member);
@@ -292,12 +315,15 @@ class GroupExportHelper {
     void writeMemberRows(List<GroupMember> memberList, String status) {
       for (final member in memberList) {
         final memberPaymentList = memberPayments[member.userId] ?? [];
-        final totalPaid = memberPaymentList.fold<double>(0, (sum, p) => sum + p.amount);
-        final remaining = (expectedAmount - totalPaid).clamp(0, double.infinity);
+        final totalPaid =
+            memberPaymentList.fold<double>(0, (sum, p) => sum + p.amount);
+        final remaining =
+            (expectedAmount - totalPaid).clamp(0, double.infinity);
 
         DateTime? lastPaymentDate;
         for (final p in memberPaymentList) {
-          if (lastPaymentDate == null || p.paymentDate.isAfter(lastPaymentDate)) {
+          if (lastPaymentDate == null ||
+              p.paymentDate.isAfter(lastPaymentDate)) {
             lastPaymentDate = p.paymentDate;
           }
         }
@@ -346,7 +372,8 @@ class GroupExportHelper {
     buffer.writeln('Partial Payment,${partialMembers.length}');
     buffer.writeln('Unpaid,${unpaidMembers.length}');
 
-    final filename = 'paid_unpaid_${contribution.id}_${DateTime.now().millisecondsSinceEpoch}.csv';
+    final filename =
+        'paid_unpaid_${contribution.id}_${DateTime.now().millisecondsSinceEpoch}.csv';
     return _saveCSV(buffer.toString(), filename);
   }
 

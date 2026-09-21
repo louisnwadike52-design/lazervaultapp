@@ -55,7 +55,8 @@ class ContributionModel extends Contribution {
       ),
       createdBy: json['createdBy'] as String,
       payments: (json['payments'] as List<dynamic>?)
-              ?.map((x) => ContributionPaymentModel.fromJson(x as Map<String, dynamic>))
+              ?.map((x) =>
+                  ContributionPaymentModel.fromJson(x as Map<String, dynamic>))
               .toList() ??
           [],
       metadata: json['metadata'] as Map<String, dynamic>?,
@@ -71,32 +72,34 @@ class ContributionModel extends Contribution {
               orElse: () => ContributionFrequency.monthly,
             )
           : null,
-      regularAmount: json['regularAmount'] != null 
-          ? (json['regularAmount'] as num).toDouble() 
+      regularAmount: json['regularAmount'] != null
+          ? (json['regularAmount'] as num).toDouble()
           : null,
-      nextPaymentDate: json['nextPaymentDate'] != null 
-          ? DateTime.parse(json['nextPaymentDate'] as String) 
+      nextPaymentDate: json['nextPaymentDate'] != null
+          ? DateTime.parse(json['nextPaymentDate'] as String)
           : null,
-      startDate: json['startDate'] != null 
-          ? DateTime.parse(json['startDate'] as String) 
+      startDate: json['startDate'] != null
+          ? DateTime.parse(json['startDate'] as String)
           : null,
       totalCycles: json['totalCycles'] as int?,
       currentCycle: json['currentCycle'] as int?,
       payoutSchedule: (json['payoutSchedule'] as List<dynamic>?)
-              ?.map((x) => PayoutScheduleModel.fromJson(x as Map<String, dynamic>))
+              ?.map((x) =>
+                  PayoutScheduleModel.fromJson(x as Map<String, dynamic>))
               .toList() ??
           [],
       currentPayoutRecipient: json['currentPayoutRecipient'] as String?,
-      nextPayoutDate: json['nextPayoutDate'] != null 
-          ? DateTime.parse(json['nextPayoutDate'] as String) 
+      nextPayoutDate: json['nextPayoutDate'] != null
+          ? DateTime.parse(json['nextPayoutDate'] as String)
           : null,
       payoutHistory: (json['payoutHistory'] as List<dynamic>?)
-              ?.map((x) => PayoutTransactionModel.fromJson(x as Map<String, dynamic>))
+              ?.map((x) =>
+                  PayoutTransactionModel.fromJson(x as Map<String, dynamic>))
               .toList() ??
           [],
       autoPayEnabled: json['autoPayEnabled'] as bool? ?? false,
-      penaltyAmount: json['penaltyAmount'] != null 
-          ? (json['penaltyAmount'] as num).toDouble() 
+      penaltyAmount: json['penaltyAmount'] != null
+          ? (json['penaltyAmount'] as num).toDouble()
           : null,
       gracePeriodDays: json['gracePeriodDays'] as int?,
       allowPartialPayments: json['allowPartialPayments'] as bool? ?? true,
@@ -105,7 +108,8 @@ class ContributionModel extends Contribution {
           : null,
       autoPayoutEnabled: json['autoPayoutEnabled'] as bool? ?? false,
       members: (json['members'] as List<dynamic>?)
-              ?.map((x) => ContributionMemberModel.fromJson(x as Map<String, dynamic>))
+              ?.map((x) =>
+                  ContributionMemberModel.fromJson(x as Map<String, dynamic>))
               .toList() ??
           [],
     );
@@ -125,7 +129,9 @@ class ContributionModel extends Contribution {
       'updatedAt': updatedAt.toIso8601String(),
       'status': status.toString().split('.').last,
       'createdBy': createdBy,
-      'payments': payments.map((x) => (x as ContributionPaymentModel).toJson()).toList(),
+      'payments': payments
+          .map((x) => (x as ContributionPaymentModel).toJson())
+          .toList(),
       'metadata': metadata,
       'type': type.toString().split('.').last,
       'frequency': frequency?.toString().split('.').last,
@@ -134,17 +140,22 @@ class ContributionModel extends Contribution {
       'startDate': startDate?.toIso8601String(),
       'totalCycles': totalCycles,
       'currentCycle': currentCycle,
-      'payoutSchedule': payoutSchedule.map((x) => (x as PayoutScheduleModel).toJson()).toList(),
+      'payoutSchedule': payoutSchedule
+          .map((x) => (x as PayoutScheduleModel).toJson())
+          .toList(),
       'currentPayoutRecipient': currentPayoutRecipient,
       'nextPayoutDate': nextPayoutDate?.toIso8601String(),
-      'payoutHistory': payoutHistory.map((x) => (x as PayoutTransactionModel).toJson()).toList(),
+      'payoutHistory': payoutHistory
+          .map((x) => (x as PayoutTransactionModel).toJson())
+          .toList(),
       'autoPayEnabled': autoPayEnabled,
       'penaltyAmount': penaltyAmount,
       'gracePeriodDays': gracePeriodDays,
       'allowPartialPayments': allowPartialPayments,
       'minimumBalance': minimumBalance,
       'autoPayoutEnabled': autoPayoutEnabled,
-      'members': members.map((x) => (x as ContributionMemberModel).toJson()).toList(),
+      'members':
+          members.map((x) => (x as ContributionMemberModel).toJson()).toList(),
     };
   }
 
@@ -244,7 +255,8 @@ class ContributionModel extends Contribution {
       totalCycles: totalCycles ?? this.totalCycles,
       currentCycle: currentCycle ?? this.currentCycle,
       payoutSchedule: payoutSchedule ?? this.payoutSchedule,
-      currentPayoutRecipient: currentPayoutRecipient ?? this.currentPayoutRecipient,
+      currentPayoutRecipient:
+          currentPayoutRecipient ?? this.currentPayoutRecipient,
       nextPayoutDate: nextPayoutDate ?? this.nextPayoutDate,
       payoutHistory: payoutHistory ?? this.payoutHistory,
       autoPayEnabled: autoPayEnabled ?? this.autoPayEnabled,
@@ -506,7 +518,8 @@ class ContributionTranscriptModel extends ContributionTranscript {
       groupId: json['groupId'] as String,
       generatedAt: DateTime.parse(json['generatedAt'] as String),
       payments: (json['payments'] as List<dynamic>)
-          .map((x) => ContributionPaymentModel.fromJson(x as Map<String, dynamic>))
+          .map((x) =>
+              ContributionPaymentModel.fromJson(x as Map<String, dynamic>))
           .toList(),
       totalAmount: (json['totalAmount'] as num).toDouble(),
       currency: json['currency'] as String,
@@ -524,14 +537,17 @@ class ContributionTranscriptModel extends ContributionTranscript {
       'contributionId': contributionId,
       'groupId': groupId,
       'generatedAt': generatedAt.toIso8601String(),
-      'payments': payments.map((x) => (x as ContributionPaymentModel).toJson()).toList(),
+      'payments': payments
+          .map((x) => (x as ContributionPaymentModel).toJson())
+          .toList(),
       'totalAmount': totalAmount,
       'currency': currency,
       'memberContributions': memberContributions,
     };
   }
 
-  factory ContributionTranscriptModel.fromEntity(ContributionTranscript entity) {
+  factory ContributionTranscriptModel.fromEntity(
+      ContributionTranscript entity) {
     return ContributionTranscriptModel(
       id: entity.id,
       contributionId: entity.contributionId,

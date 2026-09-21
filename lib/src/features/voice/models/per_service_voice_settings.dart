@@ -15,6 +15,8 @@ library;
 
 import 'dart:convert';
 
+import '../../widgets/service_display_name.dart';
+
 class PerServiceVoiceSettings {
   /// The chat-*-service this preference targets. One of:
   /// transfers, crypto, investments, insurance, exchange, banking,
@@ -173,6 +175,11 @@ String labelForChatService(String serviceName) {
     case 'onboarding':
       return 'Onboarding';
     default:
-      return serviceName;
+      // CLOSED fallback. This switch only ever covered the ~15 coarse
+      // chat-service names, but every caller passes a ROUTING slug, so
+      // `split_bills`, `p2p_chat`, `lockfunds` and friends echoed straight
+      // back and rendered a database identifier in a settings header.
+      // serviceDisplayName never returns a slug.
+      return serviceDisplayName(serviceName);
   }
 }

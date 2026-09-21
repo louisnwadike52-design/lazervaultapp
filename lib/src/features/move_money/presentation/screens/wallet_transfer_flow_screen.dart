@@ -154,8 +154,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
     if (amount == null || amount == 0) return null;
     // No arbitrary client cap — the backend is authoritative (see note above).
     if (_sourceAccount != null && amount > _sourceAccount!.availableBalance) {
-      return 'Insufficient balance (${_formatCurrency(
-        _sourceAccount!.availableBalance, _sourceAccount!.currency)})';
+      return 'Insufficient balance (${_formatCurrency(_sourceAccount!.availableBalance, _sourceAccount!.currency)})';
     }
     return null;
   }
@@ -259,7 +258,8 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
       amount: amount,
       currency: currency,
       title: 'Beam Money',
-      message: 'Confirm Lazerbeam transfer of $currency ${amount.toStringAsFixed(2)}',
+      message:
+          'Confirm Lazerbeam transfer of $currency ${amount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         final cubit = context.read<WalletTransferCubit>();
         await cubit.transferBetweenAccounts(
@@ -317,7 +317,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
   @override
   Widget build(BuildContext context) {
     return AppGradientBackground(
-      child: Scaffold(
+        child: Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -498,77 +498,77 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
       padding: EdgeInsets.all(12.w),
       decoration: BeamStyle.card(radius: 20),
       child: Column(
-      children: [
-        // FROM card — drag source + drop target
-        _buildDraggableSlot(
-          dragData: 'from',
-          acceptData: 'to',
-          isHovering: _isHoveringFrom,
-          onHoverChanged: (h) => setState(() => _isHoveringFrom = h),
-          child: _buildDraggableAccountCard(
-            label: 'From',
-            account: _sourceAccount,
-            onTap: () => _showAccountPicker(
-              accounts: accounts,
-              excludeId: _destinationAccount?.id,
-              onSelected: (account) {
-                setState(() {
-                  _sourceAccount = account;
-                  _amountController.clear();
-                });
-              },
+        children: [
+          // FROM card — drag source + drop target
+          _buildDraggableSlot(
+            dragData: 'from',
+            acceptData: 'to',
+            isHovering: _isHoveringFrom,
+            onHoverChanged: (h) => setState(() => _isHoveringFrom = h),
+            child: _buildDraggableAccountCard(
+              label: 'From',
+              account: _sourceAccount,
+              onTap: () => _showAccountPicker(
+                accounts: accounts,
+                excludeId: _destinationAccount?.id,
+                onSelected: (account) {
+                  setState(() {
+                    _sourceAccount = account;
+                    _amountController.clear();
+                  });
+                },
+              ),
+              highlight: _isHoveringFrom,
             ),
-            highlight: _isHoveringFrom,
-          ),
-          feedbackChild: _buildDraggableAccountCard(
-            label: 'From',
-            account: _sourceAccount,
-            highlight: true,
-          ),
-          ghostChild: _buildDraggableAccountCard(
-            label: 'From',
-            account: _sourceAccount,
-          ),
-        ),
-        // Swap button — purple gradient square, equal spacing above and below
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.h),
-          child: BeamSwapButton(
-            onTap: (_sourceAccount != null || _destinationAccount != null)
-                ? _swapAccounts
-                : null,
-          ),
-        ),
-        // TO card — drag source + drop target
-        _buildDraggableSlot(
-          dragData: 'to',
-          acceptData: 'from',
-          isHovering: _isHoveringTo,
-          onHoverChanged: (h) => setState(() => _isHoveringTo = h),
-          child: _buildDraggableAccountCard(
-            label: 'To',
-            account: _destinationAccount,
-            onTap: () => _showAccountPicker(
-              accounts: accounts,
-              excludeId: _sourceAccount?.id,
-              onSelected: (account) {
-                setState(() => _destinationAccount = account);
-              },
+            feedbackChild: _buildDraggableAccountCard(
+              label: 'From',
+              account: _sourceAccount,
+              highlight: true,
             ),
-            highlight: _isHoveringTo,
+            ghostChild: _buildDraggableAccountCard(
+              label: 'From',
+              account: _sourceAccount,
+            ),
           ),
-          feedbackChild: _buildDraggableAccountCard(
-            label: 'To',
-            account: _destinationAccount,
-            highlight: true,
+          // Swap button — purple gradient square, equal spacing above and below
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.h),
+            child: BeamSwapButton(
+              onTap: (_sourceAccount != null || _destinationAccount != null)
+                  ? _swapAccounts
+                  : null,
+            ),
           ),
-          ghostChild: _buildDraggableAccountCard(
-            label: 'To',
-            account: _destinationAccount,
+          // TO card — drag source + drop target
+          _buildDraggableSlot(
+            dragData: 'to',
+            acceptData: 'from',
+            isHovering: _isHoveringTo,
+            onHoverChanged: (h) => setState(() => _isHoveringTo = h),
+            child: _buildDraggableAccountCard(
+              label: 'To',
+              account: _destinationAccount,
+              onTap: () => _showAccountPicker(
+                accounts: accounts,
+                excludeId: _sourceAccount?.id,
+                onSelected: (account) {
+                  setState(() => _destinationAccount = account);
+                },
+              ),
+              highlight: _isHoveringTo,
+            ),
+            feedbackChild: _buildDraggableAccountCard(
+              label: 'To',
+              account: _destinationAccount,
+              highlight: true,
+            ),
+            ghostChild: _buildDraggableAccountCard(
+              label: 'To',
+              account: _destinationAccount,
+            ),
           ),
-        ),
-      ],
-    ),
+        ],
+      ),
     );
   }
 
@@ -692,7 +692,8 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      _formatCurrency(account.availableBalance, account.currency),
+                      _formatCurrency(
+                          account.availableBalance, account.currency),
                       style: GoogleFonts.inter(
                         color: const Color(0xFF9CA3AF),
                         fontSize: 13.sp,
@@ -763,8 +764,7 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
     required String? excludeId,
     required ValueChanged<AccountSummaryEntity> onSelected,
   }) {
-    final filtered =
-        accounts.where((a) => a.id != excludeId).toList();
+    final filtered = accounts.where((a) => a.id != excludeId).toList();
 
     showModalBottomSheet(
       context: context,
@@ -807,7 +807,8 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
                       ),
                     ),
                     subtitle: Text(
-                      _formatCurrency(account.availableBalance, account.currency),
+                      _formatCurrency(
+                          account.availableBalance, account.currency),
                       style: GoogleFonts.inter(
                         color: const Color(0xFF9CA3AF),
                         fontSize: 13.sp,
@@ -1069,8 +1070,8 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
                       borderRadius: BorderRadius.circular(14.r),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16.w, vertical: 20.h),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
                     errorText: error,
                     errorStyle: GoogleFonts.inter(
                       color: const Color(0xFFEF4444),
@@ -1159,8 +1160,8 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
                       borderRadius: BorderRadius.circular(14.r),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16.w, vertical: 14.h),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                     counterStyle: GoogleFonts.inter(
                         color: const Color(0xFF6B7280), fontSize: 11.sp),
                   ),
@@ -1247,14 +1248,12 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
                   ),
                   child: Column(
                     children: [
-                      _buildReviewRow(
-                          'From', _accountDisplayLabel(source)),
+                      _buildReviewRow('From', _accountDisplayLabel(source)),
+                      _buildReviewDivider(),
+                      _buildReviewRow('To', _accountDisplayLabel(destination)),
                       _buildReviewDivider(),
                       _buildReviewRow(
-                          'To', _accountDisplayLabel(destination)),
-                      _buildReviewDivider(),
-                      _buildReviewRow('Amount',
-                          _formatCurrency(amount, source.currency)),
+                          'Amount', _formatCurrency(amount, source.currency)),
                       _buildReviewDivider(),
                       _buildReviewRow(
                         'Fee',

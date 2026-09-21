@@ -23,7 +23,8 @@ class TrendingCrowdfundsLoaded extends DiscoveryState {
   final List<Crowdfund> crowdfunds;
   final bool isStale;
 
-  const TrendingCrowdfundsLoaded({required this.crowdfunds, this.isStale = false});
+  const TrendingCrowdfundsLoaded(
+      {required this.crowdfunds, this.isStale = false});
 
   @override
   List<Object?> get props => [crowdfunds, isStale];

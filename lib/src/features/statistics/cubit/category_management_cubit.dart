@@ -90,7 +90,8 @@ class CategoryManagementCubit extends Cubit<CategoryManagementState> {
         allCategories: uniqueCategories,
       ));
     } catch (e) {
-      emit(CategoryManagementError(friendlyError(e, context: 'load your categories')));
+      emit(CategoryManagementError(
+          friendlyError(e, context: 'load your categories')));
     }
   }
 
@@ -108,7 +109,8 @@ class CategoryManagementCubit extends Cubit<CategoryManagementState> {
           '"$originalCategory" renamed to "$customCategory"'));
       await loadCategories();
     } catch (e) {
-      emit(CategoryManagementError(friendlyError(e, context: 'rename the category')));
+      emit(CategoryManagementError(
+          friendlyError(e, context: 'rename the category')));
     }
   }
 
@@ -127,7 +129,8 @@ class CategoryManagementCubit extends Cubit<CategoryManagementState> {
           '"$originalCategory" moved under "$parentCategory"'));
       await loadCategories();
     } catch (e) {
-      emit(CategoryManagementError(friendlyError(e, context: 'move the category')));
+      emit(CategoryManagementError(
+          friendlyError(e, context: 'move the category')));
     }
   }
 
@@ -139,7 +142,8 @@ class CategoryManagementCubit extends Cubit<CategoryManagementState> {
       emit(const CategoriesReordered());
       await loadCategories();
     } catch (e) {
-      emit(CategoryManagementError(friendlyError(e, context: 'reorder your categories')));
+      emit(CategoryManagementError(
+          friendlyError(e, context: 'reorder your categories')));
     }
   }
 }

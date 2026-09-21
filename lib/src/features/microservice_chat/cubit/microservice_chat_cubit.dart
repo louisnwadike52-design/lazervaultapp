@@ -292,6 +292,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             // next round-trip doesn't re-send.
             final pinPrompt = _entities.remove('_pin_prompt_pending');
             final receiptCard = _entities.remove('_receipt_card_pending');
+            final recipientCard = _entities.remove('_recipient_card_pending');
 
             final messageMetadata = <String, dynamic>{};
             if (receiptData is Map<String, dynamic>) {
@@ -314,6 +315,14 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             if (receiptCard != null) {
               messageMetadata['receipt_card'] = receiptCard;
               _invalidateTransferRelatedCaches();
+            }
+            // The confirmed counterparty, as data — same sentinel mechanism as the
+            // receipt card. The direct gRPC path carries no top-level metadata, so
+            // the payload rides in entities and is stripped here so it cannot
+            // re-send on the next turn.
+            if (recipientCard is Map) {
+              messageMetadata['recipient_card'] =
+                  Map<String, dynamic>.from(recipientCard);
             }
 
             final botMessage = MicroserviceChatMessageEntity(
@@ -364,6 +373,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           // New chat protocol — pin_prompt + receipt_card sentinels.
           final pinPrompt = responseEntities.remove('_pin_prompt_pending');
           final receiptCard = responseEntities.remove('_receipt_card_pending');
+          final recipientCard = responseEntities.remove('_recipient_card_pending');
 
           final messageMetadata = <String, dynamic>{};
           if (receiptData is Map<String, dynamic>) {
@@ -386,6 +396,14 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           if (receiptCard != null) {
             messageMetadata['receipt_card'] = receiptCard;
             _invalidateTransferRelatedCaches();
+          }
+          // The confirmed counterparty, as data — same sentinel mechanism as the
+          // receipt card. The direct gRPC path carries no top-level metadata, so
+          // the payload rides in entities and is stripped here so it cannot
+          // re-send on the next turn.
+          if (recipientCard is Map) {
+            messageMetadata['recipient_card'] =
+                Map<String, dynamic>.from(recipientCard);
           }
           // AI "jump to message": the locate tool returns deterministic anchors
           // under the TRANSIENT `_jump_to_messages` key. Remove it (so it never
@@ -486,6 +504,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             _entities.addAll(_scopeEntities); // keep conversation scope bound
             final receiptData = _entities.remove('_receipt_data');
             final receiptCard = _entities.remove('_receipt_card_pending');
+            final recipientCard = _entities.remove('_recipient_card_pending');
             final pinPrompt = _entities.remove('_pin_prompt_pending');
             final messageMetadata = <String, dynamic>{};
             if (receiptData is Map<String, dynamic>) {
@@ -495,6 +514,14 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             if (receiptCard != null) {
               messageMetadata['receipt_card'] = receiptCard;
               _invalidateTransferRelatedCaches();
+            }
+            // The confirmed counterparty, as data — same sentinel mechanism as the
+            // receipt card. The direct gRPC path carries no top-level metadata, so
+            // the payload rides in entities and is stripped here so it cannot
+            // re-send on the next turn.
+            if (recipientCard is Map) {
+              messageMetadata['recipient_card'] =
+                  Map<String, dynamic>.from(recipientCard);
             }
             if (pinPrompt is Map) {
               messageMetadata['pin_prompt'] =
@@ -541,10 +568,19 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           final responseEntities =
               Map<String, dynamic>.from(chatResponse.entities);
           final receiptCard = responseEntities.remove('_receipt_card_pending');
+          final recipientCard = responseEntities.remove('_recipient_card_pending');
           final messageMetadata = <String, dynamic>{};
           if (receiptCard != null) {
             messageMetadata['receipt_card'] = receiptCard;
             _invalidateTransferRelatedCaches();
+          }
+          // The confirmed counterparty, as data — same sentinel mechanism as the
+          // receipt card. The direct gRPC path carries no top-level metadata, so
+          // the payload rides in entities and is stripped here so it cannot
+          // re-send on the next turn.
+          if (recipientCard is Map) {
+            messageMetadata['recipient_card'] =
+                Map<String, dynamic>.from(recipientCard);
           }
           final botMessage = MicroserviceChatMessageEntity(
             text: chatResponse.response,

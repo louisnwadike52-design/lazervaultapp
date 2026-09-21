@@ -55,20 +55,22 @@ class GroupAccountReportService {
         'member_count': members?.length ?? group.members.length,
         'created_at': group.createdAt.toIso8601String(),
         'metadata': group.metadata,
-        'contributions': contributions.map((c) => {
-          'id': c.id,
-          'title': c.title,
-          'description': c.description,
-          'target_amount': c.targetAmount,
-          'current_amount': c.currentAmount,
-          'currency': c.currency,
-          'deadline': c.deadline.toIso8601String(),
-          'type': c.type.toString(),
-          'status': c.status.toString(),
-          'created_by': c.createdBy,
-          'member_count': c.members.length,
-          'created_at': c.createdAt.toIso8601String(),
-        }).toList(),
+        'contributions': contributions
+            .map((c) => {
+                  'id': c.id,
+                  'title': c.title,
+                  'description': c.description,
+                  'target_amount': c.targetAmount,
+                  'current_amount': c.currentAmount,
+                  'currency': c.currency,
+                  'deadline': c.deadline.toIso8601String(),
+                  'type': c.type.toString(),
+                  'status': c.status.toString(),
+                  'created_by': c.createdBy,
+                  'member_count': c.members.length,
+                  'created_at': c.createdAt.toIso8601String(),
+                })
+            .toList(),
         'report_type': reportType,
       };
 
@@ -115,7 +117,8 @@ class GroupAccountReportService {
       );
 
       if (response.statusCode == 200) {
-        return GroupAccountReport.fromJson(response.data as Map<String, dynamic>);
+        return GroupAccountReport.fromJson(
+            response.data as Map<String, dynamic>);
       } else {
         throw ReportGenerationException(
           'Failed to generate report: ${response.statusMessage}',
@@ -138,8 +141,10 @@ class GroupAccountReportService {
   }
 
   /// Share report to WhatsApp
-  Future<void> shareToWhatsApp(GroupAccountReport report, {String? groupUrl}) async {
-    final text = _buildShareText(report.sharingText['whatsapp'] ?? report.summary, report, groupUrl);
+  Future<void> shareToWhatsApp(GroupAccountReport report,
+      {String? groupUrl}) async {
+    final text = _buildShareText(
+        report.sharingText['whatsapp'] ?? report.summary, report, groupUrl);
     final whatsappUrl = Uri.parse(
       'whatsapp://send?text=${Uri.encodeComponent(text)}',
     );
@@ -158,7 +163,8 @@ class GroupAccountReportService {
   /// Share report to Telegram
   Future<void> shareToTelegram(GroupAccountReport report,
       {String? groupUrl, Rect? sharePositionOrigin}) async {
-    final text = _buildShareText(report.sharingText['telegram'] ?? report.summary, report, groupUrl);
+    final text = _buildShareText(
+        report.sharingText['telegram'] ?? report.summary, report, groupUrl);
     final telegramUrl = Uri.parse(
       'https://t.me/share/url?url=${Uri.encodeComponent(groupUrl ?? '')}&text=${Uri.encodeComponent(text)}',
     );
@@ -186,8 +192,10 @@ class GroupAccountReportService {
   }
 
   /// Share report to Twitter/X
-  Future<void> shareToTwitter(GroupAccountReport report, {String? groupUrl}) async {
-    final text = _buildShareText(report.sharingText['twitter'] ?? report.summary, report, groupUrl);
+  Future<void> shareToTwitter(GroupAccountReport report,
+      {String? groupUrl}) async {
+    final text = _buildShareText(
+        report.sharingText['twitter'] ?? report.summary, report, groupUrl);
     final hashtags = report.hashtags.join(',');
     final twitterUrl = Uri.parse(
       'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(text)}&hashtags=$hashtags',
@@ -204,7 +212,8 @@ class GroupAccountReportService {
   /// [shareOriginFromContext]; null/zero falls back to a valid rect.
   Future<void> shareGeneral(GroupAccountReport report,
       {String? groupUrl, Rect? sharePositionOrigin}) async {
-    final text = _buildShareText(report.sharingText['general'] ?? report.summary, report, groupUrl);
+    final text = _buildShareText(
+        report.sharingText['general'] ?? report.summary, report, groupUrl);
 
     await SharePlus.instance.share(ShareParams(
       text: text,
@@ -232,9 +241,8 @@ class GroupAccountReportService {
     );
 
     final tempDir = await getTemporaryDirectory();
-    final safeTitle = _sanitizeFilename(report.title.isNotEmpty
-        ? report.title
-        : (groupName ?? 'group-report'));
+    final safeTitle = _sanitizeFilename(
+        report.title.isNotEmpty ? report.title : (groupName ?? 'group-report'));
     final stamp = DateFormat('yyyyMMdd-HHmmss').format(report.generatedAt);
     final file = File('${tempDir.path}/$safeTitle-$stamp.pdf');
     await file.writeAsBytes(pdfBytes, flush: true);
@@ -416,7 +424,8 @@ class GroupAccountReportService {
   /// The full report text for copy-to-clipboard. Robust: never empty just
   /// because the AI left `sharingText['general']`/summary blank.
   String getShareableText(GroupAccountReport report, {String? groupUrl}) {
-    return _buildShareText(report.sharingText['general'] ?? report.summary, report, groupUrl);
+    return _buildShareText(
+        report.sharingText['general'] ?? report.summary, report, groupUrl);
   }
 
   /// Compose the shareable text. Prefers [baseText]; when blank, falls back to a

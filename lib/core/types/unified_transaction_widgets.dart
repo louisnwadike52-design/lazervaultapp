@@ -64,6 +64,14 @@ enum TransactionServiceType {
   // donation, and the receipt says so.
   lazerfunds('Lazerfunds', Icons.rocket_launch_outlined, Color(0xFF4E03D0)),
   groupFunds('Group Funds', Icons.groups_2_outlined, Color(0xFFA855F7)),
+  // A contribution INTO a group pot, as opposed to the group's own money
+  // movements. It had no constant, so every contribution payment resolved to
+  // `unknown` — the grey help-outline glyph — and lost its PDF receipt: the
+  // same hole escrow and lazerfunds each had. Own constant rather than folding
+  // it into groupFunds, because paying your share and the group spending the
+  // pot are different events and a receipt that cannot tell them apart is the
+  // one a member queries. Same purple family so they still read as one product.
+  groupContribution('Contribution', Icons.savings_outlined, Color(0xFFA855F7)),
   exchange('Exchange', Icons.currency_exchange, Color(0xFFFB923C)),
 
   // Account-level money flow.

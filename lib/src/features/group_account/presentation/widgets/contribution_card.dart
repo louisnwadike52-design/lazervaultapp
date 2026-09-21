@@ -4,13 +4,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/group_entities.dart';
 import 'contribution_type_badge.dart';
+import 'created_by_you_badge.dart';
 
 class ContributionCard extends StatelessWidget {
   final Contribution contribution;
   final VoidCallback? onTap;
   final VoidCallback? onPayment;
 
+  /// The signed-in user, used only to mark contributions they created.
+  /// Null means the badge is not shown — never a wrong badge.
+  final String? currentUserId;
+
   const ContributionCard({
+    this.currentUserId,
     super.key,
     required this.contribution,
     this.onTap,
@@ -31,13 +37,12 @@ class ContributionCard extends StatelessWidget {
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,18 +57,28 @@ class ContributionCard extends StatelessWidget {
                     children: [
                       Text(
                         contribution.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
-                          fontSize: 16.sp,
+                          fontSize: 14.5.sp,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
+                          height: 1.2,
                         ),
                       ),
+                      if (currentUserId != null &&
+                          currentUserId!.isNotEmpty &&
+                          contribution.isCreator(currentUserId!)) ...[
+                        SizedBox(height: 4.h),
+                        const CreatedByYouBadge(compact: true),
+                      ],
                       SizedBox(height: 4.h),
                       Text(
                         contribution.description,
                         style: GoogleFonts.inter(
-                          fontSize: 13.sp,
+                          fontSize: 12.sp,
                           color: Colors.grey[400],
+                          height: 1.25,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -84,9 +99,9 @@ class ContributionCard extends StatelessWidget {
                 _buildStatusBadge(contribution.status, isOverdue),
               ],
             ),
-            
+
             SizedBox(height: 16.h),
-            
+
             // Progress Section
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +121,9 @@ class ContributionCard extends StatelessWidget {
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
-                        color: isCompleted ? const Color(0xFF10B981) : Colors.white,
+                        color: isCompleted
+                            ? const Color(0xFF10B981)
+                            : Colors.white,
                       ),
                     ),
                   ],
@@ -124,9 +141,9 @@ class ContributionCard extends StatelessWidget {
                         widthFactor: (progressPercentage / 100).clamp(0.0, 1.0),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isCompleted 
+                            color: isCompleted
                                 ? const Color(0xFF10B981)
-                                : isOverdue 
+                                : isOverdue
                                     ? const Color(0xFFEF4444)
                                     : const Color.fromARGB(255, 78, 3, 208),
                             borderRadius: BorderRadius.circular(4.r),
@@ -138,9 +155,9 @@ class ContributionCard extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             SizedBox(height: 16.h),
-            
+
             // Amount Section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -169,9 +186,9 @@ class ContributionCard extends StatelessWidget {
                 _buildTargetColumn(),
               ],
             ),
-            
+
             SizedBox(height: 16.h),
-            
+
             // Footer Section
             Row(
               children: [
@@ -192,13 +209,15 @@ class ContributionCard extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w500,
-                          color: isOverdue ? const Color(0xFFEF4444) : Colors.grey[300],
+                          color: isOverdue
+                              ? const Color(0xFFEF4444)
+                              : Colors.grey[300],
                         ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 // Payment button — only rendered when the parent
                 // wires an onPayment callback. The parent uses the
                 // role-permission helper to decide whether the
@@ -211,7 +230,8 @@ class ContributionCard extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                       foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 16.w, vertical: 10.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.r),
                       ),
@@ -235,18 +255,18 @@ class ContributionCard extends StatelessWidget {
                 ] else ...[
                   SizedBox(width: 12.w),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8.r),
                       boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -271,7 +291,7 @@ class ContributionCard extends StatelessWidget {
                 ],
               ],
             ),
-            
+
             // Payments count
             if (contribution.payments.isNotEmpty) ...[
               SizedBox(height: 12.h),
@@ -312,7 +332,7 @@ class ContributionCard extends StatelessWidget {
     Color textColor;
     String displayText;
     IconData icon;
-    
+
     if (isOverdue) {
       backgroundColor = const Color(0xFFEF4444).withValues(alpha: 0.2);
       textColor = const Color(0xFFEF4444);
@@ -359,7 +379,6 @@ class ContributionCard extends StatelessWidget {
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -457,7 +476,7 @@ class ContributionCard extends StatelessWidget {
   String _formatDeadline(DateTime deadline) {
     final now = DateTime.now();
     final difference = deadline.difference(now);
-    
+
     if (difference.inDays < 0) {
       return 'Overdue by ${(-difference.inDays)} days';
     } else if (difference.inDays == 0) {
@@ -472,4 +491,4 @@ class ContributionCard extends StatelessWidget {
       return '${deadline.day}/${deadline.month}/${deadline.year}';
     }
   }
-} 
+}

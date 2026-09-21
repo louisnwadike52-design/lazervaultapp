@@ -61,25 +61,30 @@ _ChipCfg _configFor(LinkedAccountState s) {
     case LinkedAccountState.directDebit:
       return const _ChipCfg(Color(0xFF10B981), Icons.autorenew, 'Direct Debit');
     case LinkedAccountState.settingUp:
-      return const _ChipCfg(Color(0xFFFB923C), Icons.hourglass_bottom, 'Setting up');
+      return const _ChipCfg(
+          Color(0xFFFB923C), Icons.hourglass_bottom, 'Setting up');
     case LinkedAccountState.finishSetup:
-      return const _ChipCfg(Color(0xFFF59E0B), Icons.touch_app_outlined, 'Finish setup');
+      return const _ChipCfg(
+          Color(0xFFF59E0B), Icons.touch_app_outlined, 'Finish setup');
     case LinkedAccountState.oneTime:
       return const _ChipCfg(Color(0xFF9CA3AF), Icons.bolt, 'One-time');
     case LinkedAccountState.verified:
-      return const _ChipCfg(Color(0xFF10B981), Icons.verified_rounded, 'Verified');
+      return const _ChipCfg(
+          Color(0xFF10B981), Icons.verified_rounded, 'Verified');
     case LinkedAccountState.connected:
       return const _ChipCfg(Color(0xFF10B981), Icons.link_rounded, 'Connected');
     case LinkedAccountState.reconnect:
       return const _ChipCfg(Color(0xFFFB923C), Icons.refresh, 'Reconnect');
     case LinkedAccountState.paused:
-      return const _ChipCfg(Color(0xFFFBBF24), Icons.pause_circle_outline, 'Paused');
+      return const _ChipCfg(
+          Color(0xFFFBBF24), Icons.pause_circle_outline, 'Paused');
     case LinkedAccountState.switching:
       return const _ChipCfg(Color(0xFF818CF8), Icons.sync, 'Switching…');
     case LinkedAccountState.expired:
       return const _ChipCfg(Color(0xFFEF4444), Icons.error_outline, 'Expired');
     case LinkedAccountState.cancelled:
-      return const _ChipCfg(Color(0xFF6B7280), Icons.cancel_outlined, 'Cancelled');
+      return const _ChipCfg(
+          Color(0xFF6B7280), Icons.cancel_outlined, 'Cancelled');
     case LinkedAccountState.rejected:
       return const _ChipCfg(Color(0xFFEF4444), Icons.block, 'Rejected');
   }
@@ -116,10 +121,14 @@ class LinkedAccountStateChip extends StatelessWidget {
           Icon(cfg.icon, color: cfg.color, size: 11.sp),
           SizedBox(width: 3.w),
           Text(cfg.label,
-              style: TextStyle(color: cfg.color, fontSize: 10.sp, fontWeight: FontWeight.w700)),
+              style: TextStyle(
+                  color: cfg.color,
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w700)),
           if (showInfoAffordance) ...[
             SizedBox(width: 4.w),
-            Icon(Icons.info_outline, color: cfg.color.withValues(alpha: 0.70), size: 10.sp),
+            Icon(Icons.info_outline,
+                color: cfg.color.withValues(alpha: 0.70), size: 10.sp),
           ],
         ],
       ),

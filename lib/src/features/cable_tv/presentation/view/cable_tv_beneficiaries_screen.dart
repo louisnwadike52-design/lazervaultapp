@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/shared_widgets/app_error_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -120,24 +121,16 @@ class _CableTVBeneficiariesScreenState
   Widget _buildBody() {
     if (_error != null &&
         (_beneficiaries == null || _beneficiaries!.isEmpty)) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline,
-                size: 48.sp, color: const Color(0xFFEF4444)),
-            SizedBox(height: 16.h),
-            Text(_error!,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
-            SizedBox(height: 24.h),
-            ElevatedButton(
-              onPressed: () => context.read<CableTVBeneficiaryCubit>().load(),
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
+      // Was printing the raw thrown string, which put
+      // "SocketException: Failed host lookup: 'api.lazervault.app' (OS Error:
+      // nodename nor servname provided, errno = 8)" in front of the user.
+      // AppErrorView runs it through friendlyError(), which already classifies
+      // host-lookup / socket / timeout failures as a connectivity problem and
+      // says so in plain words.
+      return AppErrorView(
+        error: _error,
+        context: 'load your saved smart cards',
+        onRetry: () => context.read<CableTVBeneficiaryCubit>().load(),
       );
     }
     if (_loading && _beneficiaries == null) {

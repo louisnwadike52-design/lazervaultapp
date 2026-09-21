@@ -26,19 +26,22 @@ class BudgetAIInsightsResponse {
     return BudgetAIInsightsResponse(
       summary: json['summary'] as String? ?? '',
       budgetRecommendations: (json['budget_recommendations'] as List?)
-              ?.map((item) => BudgetRecommendationItem.fromJson(item as Map<String, dynamic>))
+              ?.map((item) => BudgetRecommendationItem.fromJson(
+                  item as Map<String, dynamic>))
               .toList() ??
           [],
       savingsOpportunities: (json['savings_opportunities'] as List?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      spendingPatterns: (json['spending_patterns'] as Map<String, dynamic>?) ?? {},
+      spendingPatterns:
+          (json['spending_patterns'] as Map<String, dynamic>?) ?? {},
       recommendedSavingsRate:
           (json['recommended_savings_rate'] as num?)?.toDouble() ?? 0.0,
       riskLevel: json['risk_level'] as String? ?? 'moderate',
       categoryInsights: (json['category_insights'] as List?)
-              ?.map((item) => CategoryInsightItem.fromJson(item as Map<String, dynamic>))
+              ?.map((item) =>
+                  CategoryInsightItem.fromJson(item as Map<String, dynamic>))
               .toList() ??
           [],
     );
@@ -53,8 +56,7 @@ class BudgetAIInsightsResponse {
       'spending_patterns': spendingPatterns,
       'recommended_savings_rate': recommendedSavingsRate,
       'risk_level': riskLevel,
-      'category_insights':
-          categoryInsights.map((c) => c.toJson()).toList(),
+      'category_insights': categoryInsights.map((c) => c.toJson()).toList(),
     };
   }
 }
@@ -145,13 +147,13 @@ class CategoryInsightItem {
       categoryName: json['category_name'] as String? ?? '',
       analysis: json['analysis'] as String? ?? '',
       subCategories: (json['sub_categories'] as List?)
-              ?.map((item) => SubCategoryInsightItem.fromJson(item as Map<String, dynamic>))
+              ?.map((item) =>
+                  SubCategoryInsightItem.fromJson(item as Map<String, dynamic>))
               .toList() ??
           [],
-      actionItems: (json['action_items'] as List?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
+      actionItems:
+          (json['action_items'] as List?)?.map((e) => e.toString()).toList() ??
+              [],
     );
   }
 

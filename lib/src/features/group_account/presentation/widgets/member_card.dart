@@ -42,13 +42,12 @@ class MemberCard extends StatelessWidget {
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -68,7 +67,9 @@ class MemberCard extends StatelessWidget {
                 child: Text(
                   displayName.startsWith('@') && displayName.length > 1
                       ? displayName[1].toUpperCase()
-                      : displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
+                      : displayName.isNotEmpty
+                          ? displayName[0].toUpperCase()
+                          : '?',
                   style: GoogleFonts.inter(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w600,
@@ -125,28 +126,35 @@ class MemberCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 6.h),
-                  Row(
+                  // Wrap, not Row. A pending invite carries THREE chips
+                  // (role + status + "Invite Sent") and a rigid Row had no way
+                  // to give: the third chip ran past the card and collided
+                  // with the "Invited / Yesterday" column on its right.
+                  // Wrapping lets the invite badge drop to its own line, which
+                  // is also the right reading order — it qualifies the two
+                  // chips above it.
+                  Wrap(
+                    spacing: 8.w,
+                    runSpacing: 6.h,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       _buildRoleBadge(member.role),
-                      SizedBox(width: 8.w),
                       _buildStatusBadge(member.status),
-                      if (member.isPendingInvite) ...[
-                        SizedBox(width: 8.w),
-                        _buildInviteBadge(),
-                      ],
+                      if (member.isPendingInvite) _buildInviteBadge(),
                     ],
                   ),
                   if (contributions.isNotEmpty) ...[
                     SizedBox(height: 4.h),
                     MemberStarRating(
-                      rating: MemberRatingCalculator.calculateRating(member, contributions),
+                      rating: MemberRatingCalculator.calculateRating(
+                          member, contributions),
                       compact: true,
                     ),
                   ],
                 ],
               ),
             ),
-            
+
             // Joined / Invited date.
             //
             // joined_at is stamped at row creation for BOTH an accepted member
@@ -178,7 +186,7 @@ class MemberCard extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             SizedBox(width: 8.w),
             Icon(
               Icons.chevron_right,
@@ -194,7 +202,7 @@ class MemberCard extends StatelessWidget {
   Widget _buildRoleBadge(GroupMemberRole role) {
     Color backgroundColor;
     Color textColor;
-    
+
     switch (role) {
       case GroupMemberRole.admin:
         backgroundColor = const Color(0xFFEF4444).withValues(alpha: 0.2);
@@ -226,7 +234,6 @@ class MemberCard extends StatelessWidget {
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Text(
         role.displayName,
@@ -242,7 +249,7 @@ class MemberCard extends StatelessWidget {
   Widget _buildStatusBadge(GroupMemberStatus status) {
     Color backgroundColor;
     Color textColor;
-    
+
     switch (status) {
       case GroupMemberStatus.active:
         backgroundColor = const Color(0xFF10B981).withValues(alpha: 0.2);
@@ -274,7 +281,6 @@ class MemberCard extends StatelessWidget {
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Text(
         status.displayName,
@@ -343,4 +349,4 @@ class MemberCard extends StatelessWidget {
       return '${date.day}/${date.month}/${date.year}';
     }
   }
-} 
+}

@@ -21,7 +21,8 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 class ContributionCyclesHistoryScreen extends StatefulWidget {
   final Contribution contribution;
 
-  const ContributionCyclesHistoryScreen({super.key, required this.contribution});
+  const ContributionCyclesHistoryScreen(
+      {super.key, required this.contribution});
 
   @override
   State<ContributionCyclesHistoryScreen> createState() =>
@@ -153,8 +154,7 @@ class _ContributionCyclesHistoryScreenState
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.timeline,
-                  size: 64.sp, color: const Color(0xFF6B7280)),
+              Icon(Icons.timeline, size: 64.sp, color: const Color(0xFF6B7280)),
               SizedBox(height: 16.h),
               Text(
                 'No cycles yet',
@@ -232,8 +232,7 @@ class _ContributionCyclesHistoryScreenState
             Row(
               children: [
                 Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 8.w, vertical: 4.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: accent.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8.r),
@@ -250,8 +249,7 @@ class _ContributionCyclesHistoryScreenState
                 SizedBox(width: 8.w),
                 _buildStatusPill(c.status, accent),
                 const Spacer(),
-                Icon(Icons.chevron_right,
-                    color: Colors.grey[600], size: 20.sp),
+                Icon(Icons.chevron_right, color: Colors.grey[600], size: 20.sp),
               ],
             ),
             SizedBox(height: 12.h),
@@ -461,6 +459,5 @@ class _ContributionCyclesHistoryScreenState
     );
   }
 
-  String _fmtAmount(double amount) =>
-      NumberFormat('#,##0.00').format(amount);
+  String _fmtAmount(double amount) => NumberFormat('#,##0.00').format(amount);
 }

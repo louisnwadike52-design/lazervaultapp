@@ -564,7 +564,8 @@ class _AddMemberForContributionSheetState
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: PayFlowTheme.accentOnDark, width: 2),
+              borderSide:
+                  const BorderSide(color: PayFlowTheme.accentOnDark, width: 2),
             ),
             contentPadding:
                 EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),

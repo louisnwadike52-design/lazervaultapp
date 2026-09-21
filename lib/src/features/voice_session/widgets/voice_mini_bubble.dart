@@ -130,10 +130,14 @@ class _VoiceMiniBubbleState extends State<_VoiceMiniBubble>
         final isSpeaking = cubit.isAgentSpeaking;
         final isListening = state is VoiceSessionLocalUserSpeaking;
         final active = isSpeaking || isListening;
+        // Same palette as the full sheet: the ACTIVE colours have to be light
+        // to read on the dark bubble. The old speaking violet was darker than
+        // the ring around it, so the docked bar gave no sign the AI was
+        // talking.
         final color = isSpeaking
-            ? const Color(0xFF5B45C9)
+            ? const Color(0xFFA78BFA)
             : isListening
-                ? const Color(0xFF10B981)
+                ? const Color(0xFF34D399)
                 : const Color(0xFF3D2F8B);
 
         return Container(

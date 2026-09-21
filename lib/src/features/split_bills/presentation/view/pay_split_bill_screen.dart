@@ -26,6 +26,13 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
 
   bool _isProcessing = false;
 
+  /// True while the settlement is running INSIDE the transaction-PIN sheet.
+  ///
+  /// The sheet renders the outcome itself in that window, so the BlocListener
+  /// must not also raise an error snackbar — the user would get the same
+  /// failure twice, once inside the sheet and once behind it.
+  bool _settlingInPinSheet = false;
+
   late final String splitBillId;
   late final double amount;
   late final String currency;
@@ -158,31 +165,61 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
         splitBillId.length >= 8 ? splitBillId.substring(0, 8) : splitBillId;
     final transactionId = 'SPLIT-PAY-$idPrefix';
 
-    String? verificationToken;
-    final success = await validateTransactionPin(
-      context: context,
-      transactionId: transactionId,
-      transactionType: 'split_bill_payment',
-      amount: amount,
-      currency: currency,
-      title: 'Confirm Payment',
-      message:
-          'Confirm split bill payment of $currency ${amount.toStringAsFixed(2)}',
-      onPinValidated: (token) async {
-        verificationToken = token;
-      },
-    );
-
-    if (!success || verificationToken == null) return;
-    if (!mounted) return;
-
+    // SETTLE INSIDE THE CALLBACK, NOT AFTER IT.
+    //
+    // The mixin's contract is that [onPinValidated] PERFORMS the work: it shows
+    // the success phase when the callback returns and the failure phase when it
+    // throws. This callback used to do nothing but capture the token, so it
+    // could never throw — the sheet therefore announced "Transaction
+    // Successful!" on the strength of a valid PIN alone, popped itself, and
+    // only then started the payment. A settlement that failed a moment later
+    // arrived as a red snackbar contradicting the tick the user had just seen.
+    //
+    // Running the payment here makes every phase mean what it says: Processing
+    // covers the real settlement, and success is only ever shown for money that
+    // actually moved.
+    final cubit = context.read<SplitBillCubit>();
     setState(() => _isProcessing = true);
-
-    context.read<SplitBillCubit>().payShare(
-          splitBillId: splitBillId,
-          sourceAccountId: sourceAccountId,
-          transactionPin: verificationToken!,
-        );
+    try {
+      await validateTransactionPin(
+        context: context,
+        transactionId: transactionId,
+        transactionType: 'split_bill_payment',
+        amount: amount,
+        currency: currency,
+        title: 'Confirm Payment',
+        message:
+            'Confirm split bill payment of $currency ${amount.toStringAsFixed(2)}',
+        // Our own failure already carries the server's user-facing message; the
+        // default builder would relabel it "complete your transfer", which is
+        // both the wrong noun and less specific than what the server said.
+        failureMessageBuilder: (e) => e is SplitBillPaymentFailure
+            ? _friendlyPaymentError(e.message)
+            : _friendlyPaymentError(e.toString()),
+        onPinValidated: (token) async {
+          // The sheet renders the outcome, so suppress the duplicate snackbar
+          // the BlocListener would otherwise raise for the same failure.
+          _settlingInPinSheet = true;
+          try {
+            await cubit.payShare(
+              splitBillId: splitBillId,
+              sourceAccountId: sourceAccountId,
+              transactionPin: token,
+            );
+          } finally {
+            _settlingInPinSheet = false;
+          }
+          final result = cubit.state;
+          if (result is SplitBillError) {
+            // Surface the real reason through the mixin so the sheet shows the
+            // failure phase instead of a success tick.
+            throw SplitBillPaymentFailure(result.message);
+          }
+        },
+      );
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
   }
 
   @override
@@ -256,6 +293,9 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
             );
           } else if (state is SplitBillError) {
             setState(() => _isProcessing = false);
+            // The PIN sheet is showing this same failure inline; a snackbar on
+            // top of it would report the error twice.
+            if (_settlingInPinSheet) return;
             Get.snackbar(
               'Payment Failed',
               _friendlyPaymentError(state.message),
@@ -542,4 +582,18 @@ class _PaySplitBillViewState extends State<_PaySplitBillView>
       ),
     );
   }
+}
+
+/// Carries a settlement failure out of the transaction-PIN callback.
+///
+/// The mixin decides success vs failure by whether [onPinValidated] throws, so
+/// a failed settlement has to leave the callback as an exception rather than a
+/// return value. Holding the server's own message means the sheet can show the
+/// real reason instead of a generic one.
+class SplitBillPaymentFailure implements Exception {
+  final String message;
+  const SplitBillPaymentFailure(this.message);
+
+  @override
+  String toString() => message;
 }

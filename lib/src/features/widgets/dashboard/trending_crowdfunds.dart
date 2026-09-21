@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/widgets/dashboard/dashboard_light_style.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -41,10 +42,12 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
           return Column(
             children: [
               if (state.isStale)
-                const LinearProgressIndicator(
+                LinearProgressIndicator(
                   minHeight: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                  backgroundColor: Color(0xFF1F1F1F),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                      Color(0xFF3B82F6)),
+                  // A dark track is invisible on a light card.
+                  backgroundColor: DashboardLightStyle.trackColor,
                 ),
               _buildContent(entries),
             ],
@@ -70,7 +73,7 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1F2937),
+                  color: DashboardLightStyle.textPrimary,
                 ),
               ),
               GestureDetector(
@@ -122,7 +125,7 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1F2937),
+                  color: DashboardLightStyle.textPrimary,
                 ),
               ),
               Text(
@@ -158,7 +161,8 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
         width: 200.w,
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          gradient: DashboardLightStyle.cardGradient,
+          boxShadow: DashboardLightStyle.cardShadow,
           borderRadius: BorderRadius.circular(16.r),
         ),
         child: Column(
@@ -168,7 +172,7 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
               width: 120.w,
               height: 14.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF2D2D2D),
+                color: DashboardLightStyle.shimmerBase,
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
@@ -177,7 +181,7 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
               width: 80.w,
               height: 10.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF2D2D2D),
+                color: DashboardLightStyle.shimmerBase,
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
@@ -186,7 +190,7 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
               width: double.infinity,
               height: 6.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF2D2D2D),
+                color: DashboardLightStyle.shimmerBase,
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
@@ -195,7 +199,7 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
               width: 100.w,
               height: 10.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF2D2D2D),
+                color: DashboardLightStyle.shimmerBase,
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
@@ -234,7 +238,8 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
         width: 200.w,
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          gradient: DashboardLightStyle.cardGradient,
+          boxShadow: DashboardLightStyle.cardShadow,
           borderRadius: BorderRadius.circular(16.r),
         ),
         child: Column(
@@ -247,7 +252,7 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w700,
-                color: Colors.white,
+                color: DashboardLightStyle.textPrimary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -258,7 +263,7 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
               'by ${crowdfund.creator.displayName}',
               style: TextStyle(
                 fontSize: 12.sp,
-                color: const Color(0xFF9CA3AF),
+                color: DashboardLightStyle.textSecondary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -270,7 +275,7 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 6.h,
-                backgroundColor: const Color(0xFF2D2D2D),
+                backgroundColor: DashboardLightStyle.trackColor,
                 valueColor: const AlwaysStoppedAnimation<Color>(
                   Color(0xFF3B82F6),
                 ),
@@ -298,14 +303,14 @@ class _TrendingCrowdfundsState extends State<TrendingCrowdfunds> {
                     Icon(
                       Icons.people_outline,
                       size: 14.sp,
-                      color: const Color(0xFF9CA3AF),
+                      color: DashboardLightStyle.textSecondary,
                     ),
                     SizedBox(width: 4.w),
                     Text(
                       '${crowdfund.donorCount} donors',
                       style: TextStyle(
                         fontSize: 11.sp,
-                        color: const Color(0xFF9CA3AF),
+                        color: DashboardLightStyle.textSecondary,
                       ),
                     ),
                   ],

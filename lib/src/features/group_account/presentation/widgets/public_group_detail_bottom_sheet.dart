@@ -198,8 +198,8 @@ class _PublicGroupDetailBottomSheetState
     final stats = detail.statistics;
     final activeContributions =
         stats?['active_contributions']?.toString() ?? '0';
-    final totalCollected =
-        stats?['total_collected']?.toString() ?? group.totalRaised.toStringAsFixed(2);
+    final totalCollected = stats?['total_collected']?.toString() ??
+        group.totalRaised.toStringAsFixed(2);
 
     return Column(
       mainAxisSize: MainAxisSize.min,

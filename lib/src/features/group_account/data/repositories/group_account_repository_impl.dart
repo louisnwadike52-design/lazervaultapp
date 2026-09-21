@@ -156,7 +156,8 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
   @override
   Future<List<Contribution>> getGroupContributions(String groupId) async {
     try {
-      final contributionModels = await remoteDataSource.getGroupContributions(groupId);
+      final contributionModels =
+          await remoteDataSource.getGroupContributions(groupId);
       return contributionModels.cast<Contribution>();
     } catch (e) {
       throw Exception('Failed to get group contributions: $e');
@@ -166,7 +167,8 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
   @override
   Future<Contribution> getContributionById(String contributionId) async {
     try {
-      final contributionModel = await remoteDataSource.getContributionById(contributionId);
+      final contributionModel =
+          await remoteDataSource.getContributionById(contributionId);
       return contributionModel;
     } catch (e) {
       throw Exception('Failed to get contribution: $e');
@@ -231,7 +233,8 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
   Future<Contribution> updateContribution(Contribution contribution) async {
     try {
       final contributionModel = ContributionModel.fromEntity(contribution);
-      final updatedContributionModel = await remoteDataSource.updateContribution(contributionModel);
+      final updatedContributionModel =
+          await remoteDataSource.updateContribution(contributionModel);
       return updatedContributionModel;
     } catch (e) {
       throw Exception('Failed to update contribution: $e');
@@ -264,9 +267,11 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
   }
 
   @override
-  Future<List<ContributionMember>> getContributionMembers(String contributionId) async {
+  Future<List<ContributionMember>> getContributionMembers(
+      String contributionId) async {
     try {
-      final memberModels = await remoteDataSource.getContributionMembers(contributionId);
+      final memberModels =
+          await remoteDataSource.getContributionMembers(contributionId);
       return memberModels.cast<ContributionMember>();
     } catch (e) {
       throw Exception('Failed to get contribution members: $e');
@@ -304,8 +309,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
   }
 
   @override
-  Future<({List<ContributionCycle> cycles, int total})>
-      listContributionCycles({
+  Future<({List<ContributionCycle> cycles, int total})> listContributionCycles({
     required String contributionId,
     bool includeInProgress = true,
     int page = 1,
@@ -373,9 +377,11 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
   }
 
   @override
-  Future<List<ContributionPayment>> getContributionPayments(String contributionId) async {
+  Future<List<ContributionPayment>> getContributionPayments(
+      String contributionId) async {
     try {
-      final paymentModels = await remoteDataSource.getContributionPayments(contributionId);
+      final paymentModels =
+          await remoteDataSource.getContributionPayments(contributionId);
       return paymentModels.cast<ContributionPayment>();
     } catch (e) {
       throw Exception('Failed to get contribution payments: $e');
@@ -453,9 +459,11 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
   }
 
   @override
-  Future<ContributionTranscript> generateContributionTranscript(String contributionId) async {
+  Future<ContributionTranscript> generateContributionTranscript(
+      String contributionId) async {
     try {
-      final transcriptModel = await remoteDataSource.generateContributionTranscript(contributionId);
+      final transcriptModel =
+          await remoteDataSource.generateContributionTranscript(contributionId);
       return transcriptModel;
     } catch (e) {
       throw Exception('Failed to generate contribution transcript: $e');
@@ -491,9 +499,11 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
   }
 
   @override
-  Future<List<ActivityLogEntry>> getContributionActivityLogs(String contributionId) async {
+  Future<List<ActivityLogEntry>> getContributionActivityLogs(
+      String contributionId) async {
     try {
-      final logModels = await remoteDataSource.getContributionActivityLogs(contributionId);
+      final logModels =
+          await remoteDataSource.getContributionActivityLogs(contributionId);
       return logModels.map((m) => m.toEntity()).toList();
     } catch (e) {
       throw Exception('Failed to get contribution activity logs: $e');

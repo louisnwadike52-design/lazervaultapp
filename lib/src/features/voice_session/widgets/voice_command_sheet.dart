@@ -95,6 +95,17 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   // second VoiceSessionPinRequired emit (e.g. a caption re-emit) from
   // stacking a duplicate sheet.
   bool _isPinSheetShowing = false;
+
+  /// How many times the transaction-PIN pad is re-presented after the user
+  /// dismisses it without entering a PIN.
+  ///
+  /// One. A dismissal is ambiguous — the PIN mixin reports the same (null)
+  /// reason for a deliberate Cancel and for a sheet swiped away by accident —
+  /// so a single re-prompt recovers the accident without trapping anyone who
+  /// meant it. Never applied to a lockout or exhausted attempts: those are the
+  /// server's final answer and re-prompting would only invite a guaranteed
+  /// rejection.
+  static const int _kPinReopenAttempts = 1;
   // Re-entrancy guard for the receipt sheet, keyed by reference so a re-emitted
   // success state doesn't stack duplicate receipt sheets.
   bool _isReceiptSheetShowing = false;
@@ -2493,13 +2504,16 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     // Avatar shrunk further (compact header was 44, full was 132) so the
     // conversation gets more vertical room.
     final double size = compact ? 34.w : 76.w;
+    // The avatar sits on a near-black sheet, so the ACTIVE colours have to be
+    // light to read at all: #5B45C9 speaking-violet was darker than the glow
+    // ring behind it, which is why "the AI is talking" was invisible. Idle
+    // stays deep — the contrast between deep-idle and light-active is the
+    // whole signal.
     final Color glowColor = isSpeaking
-        ? const Color(0xFF5B45C9)
+        ? const Color(0xFFA78BFA)
         : isListening
-            ? const Color(0xFF10B981)
-            : isThinking
-                ? const Color(0xFF3D2F8B)
-                : const Color(0xFF3D2F8B);
+            ? const Color(0xFF34D399)
+            : const Color(0xFF3D2F8B);
     final bool animate = isSpeaking || isListening;
 
     final Widget avatar = AnimatedBuilder(
@@ -2509,10 +2523,11 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       animation: Listenable.merge([_avatarController, _waveController]),
       builder: (context, child) {
         final t = _avatarController.value; // 0..1 (reverses)
-        final scale = animate ? 1.0 + (t * (isSpeaking ? 0.06 : 0.04)) : 1.0;
+        // A 6% pulse is below the threshold you notice on a 34px avatar.
+        final scale = animate ? 1.0 + (t * (isSpeaking ? 0.14 : 0.10)) : 1.0;
         final glowAlpha =
-            animate ? 0.18 + (t * (isSpeaking ? 0.4 : 0.25)) : 0.12;
-        final ringAlpha = animate ? 0.25 + (t * 0.45) : 0.2;
+            animate ? 0.30 + (t * (isSpeaking ? 0.55 : 0.40)) : 0.12;
+        final ringAlpha = animate ? 0.45 + (t * 0.5) : 0.2;
 
         return SizedBox(
           width: size * (compact ? 1.0 : 1.5),
@@ -2528,19 +2543,29 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               // chase each other and read as sound leaving the avatar, rather
               // than one ring breathing — which is what the glow ring below
               // already does, and means something calmer.
-              if (isSpeaking)
-                ...List.generate(3, (i) {
-                  final phase = (_waveController.value + i / 3) % 1.0;
+              // Rendered while EITHER party has the floor. This was
+              // `if (isSpeaking)`, so a user talking got no outgoing waves at
+              // all and had no way to tell the mic was live — the one thing
+              // they most need to see. Green while they speak, violet while
+              // the AI answers, same motion, so "who has the floor" reads
+              // without looking at the captions.
+              if (animate)
+                ...List.generate(4, (i) {
+                  final phase = (_waveController.value + i / 4) % 1.0;
                   final w = Curves.easeOut.transform(phase);
                   return IgnorePointer(
                     child: Container(
-                      width: size * (1.32 + 0.38 * w),
-                      height: size * (1.32 + 0.38 * w),
+                      // Travels further (to ~2x) so the ring is clearly
+                      // LEAVING the avatar rather than hugging it.
+                      width: size * (1.28 + 0.72 * w),
+                      height: size * (1.28 + 0.72 * w),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: glowColor.withValues(alpha: 0.5 * (1 - w)),
-                          width: compact ? 1.2 : 2,
+                          // Starts near-opaque; the old 0.5 peak on a dark
+                          // violet never rose above the background.
+                          color: glowColor.withValues(alpha: 0.9 * (1 - w)),
+                          width: compact ? 1.8 : 3,
                         ),
                       ),
                     ),
@@ -4237,12 +4262,18 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     ).whenComplete(() => _isReceiptSheetShowing = false);
   }
 
-  Future<void> _showPinEntrySheet(Map<String, dynamic> payload) async {
-    if (_isPinSheetShowing || !mounted) return;
-    _isPinSheetShowing = true;
-    // Force-release the re-entrancy guard if the PIN flow never completes
-    // (stalled await / dropped sheet) — otherwise the flag stays true and
-    // blocks every future PIN sheet for the rest of the session.
+  /// (Re)arms the stalled-PIN-flow safety net.
+  ///
+  /// Force-releases the re-entrancy guard if a PIN flow never completes
+  /// (stalled await / dropped sheet); without it the flag stays true and blocks
+  /// every future PIN sheet for the rest of the session.
+  ///
+  /// Re-armed per ATTEMPT rather than once per flow, because the pad is now
+  /// re-presented after a dismissal: one 60s budget covering both attempts
+  /// could expire while the second pad was still legitimately on screen, clear
+  /// the guard under it, and let a fresh `VoiceSessionPinRequired` stack a
+  /// SECOND pad on top of the live one.
+  void _armPinSheetGuard() {
     _pinSheetTimeoutTimer?.cancel();
     _pinSheetTimeoutTimer = Timer(const Duration(seconds: 60), () {
       if (_isPinSheetShowing) {
@@ -4253,6 +4284,12 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         _isPinSheetShowing = false;
       }
     });
+  }
+
+  Future<void> _showPinEntrySheet(Map<String, dynamic> payload) async {
+    if (_isPinSheetShowing || !mounted) return;
+    _isPinSheetShowing = true;
+    _armPinSheetGuard();
 
     // Amounts in the payload are already MAJOR units (Naira) — do NOT divide.
     final amount = double.tryParse(payload['amount']?.toString() ?? '0') ?? 0.0;
@@ -4287,54 +4324,92 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         cubit.selectedLanguage?.code == 'en' ? _buildCustomVoiceButton() : null;
 
     bool verified = false;
+    String? reason;
     try {
-      final success = await validateTransactionPin(
-        context: context,
-        // The voice-agent sheet is itself a modal bottom sheet; a cancelled PIN
-        // must close ONLY the PIN sheet on top, leaving the voice sheet open so
-        // the user can continue the conversation.
-        preserveHostSheet: true,
-        headerAction: pinHeaderAction,
-        transactionId: transactionId,
-        transactionType: transactionType,
-        amount: amount,
-        currency: currency,
-        title: _pinTitleForType(transactionType),
-        message: recipientSummary.isEmpty
-            ? 'Enter your PIN to continue.'
-            : recipientSummary,
-        fee: fee,
-        totalAmount: total,
-        onPinValidated: (verificationToken) async {
-          verified = true;
-          // Modern callback_intent path — single-use token round-trips to the
-          // agent so it can resume the original tool call. Legacy payloads
-          // (no callback_intent) fall back to the binary pin_completed signal.
-          if (callbackIntent.isNotEmpty) {
-            await cubit.submitPinVerification(
-              verificationToken: verificationToken,
-              callbackIntent: callbackIntent,
-              callbackArgs: callbackArgs,
-            );
-          } else {
-            await cubit.notifyPinCompleted(true, reference: verificationToken);
-          }
-        },
-      );
+      // A dismissed PIN sheet used to end the whole transfer: the agent was told
+      // "pin_entry_cancelled", then spoke "the secure PIN pad has opened on your
+      // device" while nothing was open — and the user, with no pad to type into,
+      // resorted to SAYING the PIN out loud, which we then (correctly) refuse.
+      //
+      // The pad is now re-presented once, because a dismissal is ambiguous: the
+      // mixin reports the same null reason for a deliberate Cancel and for a
+      // sheet swiped away by accident, and mid-conversation the accident is the
+      // common case. Exactly ONE re-prompt — a second dismissal is taken at face
+      // value, so someone who genuinely wants out is never trapped in a loop.
+      for (var attempt = 0; attempt <= _kPinReopenAttempts; attempt++) {
+        final isRetry = attempt > 0;
+        // Fresh 60s budget for this attempt (see _armPinSheetGuard).
+        if (isRetry) _armPinSheetGuard();
+        final success = await validateTransactionPin(
+          context: context,
+          // The voice-agent sheet is itself a modal bottom sheet; a cancelled PIN
+          // must close ONLY the PIN sheet on top, leaving the voice sheet open so
+          // the user can continue the conversation.
+          preserveHostSheet: true,
+          headerAction: pinHeaderAction,
+          transactionId: transactionId,
+          transactionType: transactionType,
+          amount: amount,
+          currency: currency,
+          title: _pinTitleForType(transactionType),
+          // On the re-prompt, say why it came back: reappearing with identical
+          // copy reads as a glitch rather than a deliberate second chance.
+          message: isRetry
+              ? 'PIN entry was dismissed. Enter your PIN to complete this transfer.'
+              : (recipientSummary.isEmpty
+                  ? 'Enter your PIN to continue.'
+                  : recipientSummary),
+          fee: fee,
+          totalAmount: total,
+          onPinValidated: (verificationToken) async {
+            verified = true;
+            // Modern callback_intent path — single-use token round-trips to the
+            // agent so it can resume the original tool call. Legacy payloads
+            // (no callback_intent) fall back to the binary pin_completed signal.
+            if (callbackIntent.isNotEmpty) {
+              await cubit.submitPinVerification(
+                verificationToken: verificationToken,
+                callbackIntent: callbackIntent,
+                callbackArgs: callbackArgs,
+              );
+            } else {
+              await cubit.notifyPinCompleted(true, reference: verificationToken);
+            }
+          },
+        );
 
-      // Cancelled / exhausted / locked WITHOUT a validated PIN — tell the agent
-      // WHY (from the mixin's lastPinFailureReason) so it speaks the right outcome:
-      // a lockout/exhaustion must NOT be offered a retry the server will reject.
-      if (!success && !verified) {
-        final reason =
-            lastPinFailureReason; // 'locked' | 'exhausted' | null (cancelled)
+        if (success || verified) return;
+
+        reason = lastPinFailureReason; // 'locked' | 'exhausted' | null (cancelled)
+        // A lockout or an exhausted attempt count is the server's FINAL answer.
+        // Re-presenting the pad there would invite the user to type into
+        // something guaranteed to reject them.
+        if (reason == 'locked' || reason == 'exhausted') break;
+        // Don't re-present the pad into a session that is going away: the user
+        // may have ended the call in the gap, and the verification token from a
+        // pad shown after teardown has nothing left to resume.
+        if (!mounted || _isClosing) break;
+        // Let the dismissal animation settle before the pad returns — a re-open
+        // that races the close can be swallowed by the navigator.
+        if (attempt < _kPinReopenAttempts) {
+          await Future.delayed(const Duration(milliseconds: 350));
+          if (!mounted || _isClosing) break;
+        }
+      }
+
+      // Still no validated PIN — tell the agent WHY, so it speaks the right
+      // outcome rather than a generic failure.
+      if (!verified) {
         await cubit.notifyPinCompleted(
           false,
           error: reason == 'locked'
               ? 'account locked'
               : reason == 'exhausted'
                   ? 'incorrect pin — no attempts remaining'
-                  : 'pin_entry_cancelled',
+                  // Human copy, not a raw enum — this string is rendered
+                  // verbatim on the failure card, which showed the user
+                  // "pin_entry_cancelled".
+                  : 'PIN entry cancelled',
           isLocked: reason == 'locked',
           remainingAttempts: (reason == 'locked' || reason == 'exhausted')
               ? 0

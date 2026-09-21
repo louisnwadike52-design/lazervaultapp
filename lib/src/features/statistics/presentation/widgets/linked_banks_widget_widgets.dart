@@ -5,12 +5,15 @@ class _BankAccountItem extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onSync;
   final bool isSyncing;
+
   /// A fee-gated live balance refresh is in flight for THIS account — the
   /// trailing shows a spinner instead of the balance.
   final bool isRefreshingBalance;
+
   /// Parent's fee-gated per-account refresh. The refresh icon calls this;
   /// hidden when null or when the connection needs reauthorization.
   final void Function(LinkedBankAccount account)? onRefreshBalance;
+
   /// Parent has narrowed the budgeting filter to this account — paints a
   /// purple ring around the card so the user can see at a glance which
   /// bank the statistics scope is pinned to.
@@ -45,7 +48,9 @@ class _BankAccountItem extends StatelessWidget {
     return GestureDetector(
       // When the data session expired, tapping anywhere runs the reconnect flow
       // so budgeting insights refresh; otherwise the normal tap action.
-      onTap: needsReauth ? () => startAccountReauthorization(context, account) : onTap,
+      onTap: needsReauth
+          ? () => startAccountReauthorization(context, account)
+          : onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
         padding: EdgeInsets.all(12.w),
@@ -97,15 +102,17 @@ class _BankAccountItem extends StatelessWidget {
                       if (account.isDefault) ...[
                         SizedBox(width: 6.w),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 5.w, vertical: 1.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
+                            color:
+                                const Color(0xFF4E03D0).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Text(
                             'Default',
                             style: GoogleFonts.inter(
-                              color: const Color(0xFF4E03D0),
+                              color: AnalyticsTheme.accent,
                               fontSize: 9.sp,
                               fontWeight: FontWeight.w600,
                             ),
@@ -175,7 +182,9 @@ class _BankAccountItem extends StatelessWidget {
                 // Grey = never fetched, green = fresh (<3min), amber = stale.
                 final dot = !hasBalance
                     ? const Color(0xFF6B7280)
-                    : (fresh ? const Color(0xFF10B981) : const Color(0xFFFB923C));
+                    : (fresh
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFFB923C));
                 return Row(mainAxisSize: MainAxisSize.min, children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -183,7 +192,8 @@ class _BankAccountItem extends StatelessWidget {
                     children: [
                       Text(
                         hasBalance
-                            ? CurrencySymbols.formatAmount(account.lastKnownBalance)
+                            ? CurrencySymbols.formatAmount(
+                                account.lastKnownBalance)
                             : 'Balance hidden',
                         style: GoogleFonts.inter(
                           color: hasBalance
@@ -227,7 +237,8 @@ class _BankAccountItem extends StatelessWidget {
                           width: 32.w,
                           height: 32.w,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(9.r),
                           ),
                           child: Icon(Icons.refresh_rounded,

@@ -9,7 +9,6 @@ import '../cubit/group_account_state.dart';
 import 'contribution_payment_confirmation_screen.dart';
 part 'contribution_payment_processing_screen_widgets.dart';
 
-
 /// Payment processing screen that shows progress while the backend processes the payment.
 /// This screen listens to the GroupAccountCubit for payment state changes.
 class ContributionPaymentProcessingScreen extends StatefulWidget {
@@ -33,12 +32,13 @@ class ContributionPaymentProcessingScreen extends StatefulWidget {
   });
 
   @override
-  State<ContributionPaymentProcessingScreen> createState() => _ContributionPaymentProcessingScreenState();
+  State<ContributionPaymentProcessingScreen> createState() =>
+      _ContributionPaymentProcessingScreenState();
 }
 
-class _ContributionPaymentProcessingScreenState extends State<ContributionPaymentProcessingScreen>
+class _ContributionPaymentProcessingScreenState
+    extends State<ContributionPaymentProcessingScreen>
     with TickerProviderStateMixin {
-
   late AnimationController _pulseAnimationController;
   late AnimationController _rotationAnimationController;
 
@@ -110,10 +110,12 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
     );
 
     _pulseAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
-      CurvedAnimation(parent: _pulseAnimationController, curve: Curves.easeInOut),
+      CurvedAnimation(
+          parent: _pulseAnimationController, curve: Curves.easeInOut),
     );
     _rotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _rotationAnimationController, curve: Curves.linear),
+      CurvedAnimation(
+          parent: _rotationAnimationController, curve: Curves.linear),
     );
 
     _pulseAnimationController.repeat(reverse: true);
@@ -234,9 +236,7 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isComplete 
-                      ? 'Payment Successful!'
-                      : 'Processing Payment...',
+                  _isComplete ? 'Payment Successful!' : 'Processing Payment...',
                   style: GoogleFonts.inter(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
@@ -302,13 +302,12 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
             ),
             builder: (context, child) {
@@ -327,7 +326,10 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
-                  colors: [Color.fromARGB(255, 78, 3, 208), Color.fromARGB(255, 78, 3, 208)],
+                  colors: [
+                    Color.fromARGB(255, 78, 3, 208),
+                    Color.fromARGB(255, 78, 3, 208)
+                  ],
                 ),
               ),
               child: Icon(
@@ -427,7 +429,7 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
                 height: 20.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isCompleted 
+                  color: isCompleted
                       ? const Color(0xFF10B981)
                       : isCurrent
                           ? const Color.fromARGB(255, 78, 3, 208)
@@ -497,7 +499,10 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
                 height: 56.h,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color.fromARGB(255, 78, 3, 208), Color.fromARGB(255, 78, 3, 208)],
+                    colors: [
+                      Color.fromARGB(255, 78, 3, 208),
+                      Color.fromARGB(255, 78, 3, 208)
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(16.r),
                 ),
@@ -539,4 +544,4 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
   void _retryPayment() {
     Get.back();
   }
-} 
+}

@@ -86,6 +86,12 @@ class EndpointRegistry {
     // action + whether scanned identifiers resolve to internal users.
     'scan_account_details_enabled',
     'scan_resolve_users_enabled',
+    // Default participant layout for a Lazerspray live
+    // ('grid' | 'sidebar' | 'spotlight'). Cached like the other admin knobs so
+    // the room renders the admin's layout on its FIRST frame — a live that
+    // opens in one arrangement and re-lays-out a moment later is worse than
+    // one that was simply right to begin with.
+    'sprayme_default_layout_mode',
     // Standalone signup BVN screen (admin-toggled, OFF by default). Gates
     // whether signup shows the dedicated BVN screen; the default onboarding
     // uses Mono Prove (whose webhook auto-provisions the virtual account).

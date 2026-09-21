@@ -193,19 +193,30 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 24.sp bold could not fit "Payment Request Details" on one
+                // line, so the header wrapped and pushed the back button and
+                // the status pill out of alignment. The longest title this
+                // builds is the constraint, not the shortest — and it must
+                // still sit on one line beside both of them.
                 Text(
                   '${invoice.typeDisplayName} Details',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     color: Colors.white,
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
                   ),
                 ),
+                SizedBox(height: 2.h),
                 Text(
                   invoice.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),
-                    fontSize: 14.sp,
+                    fontSize: 13.sp,
                   ),
                 ),
               ],

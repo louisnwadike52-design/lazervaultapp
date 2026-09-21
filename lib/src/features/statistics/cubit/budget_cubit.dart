@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/widgets/category_selection.dart';
 import 'package:lazervault/src/features/widgets/budget_warning_widget.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:grpc/grpc.dart';
 
 /// Cubit for managing budget state
 ///
@@ -52,7 +53,8 @@ class BudgetCubit extends Cubit<BudgetState> {
         totalSpentAmount: response.totalSpentAmount,
       ));
     } catch (e) {
-      emit(BudgetError(message: friendlyError(e, context: 'load your budgets')));
+      emit(
+          BudgetError(message: friendlyError(e, context: 'load your budgets')));
     }
   }
 
@@ -71,7 +73,8 @@ class BudgetCubit extends Cubit<BudgetState> {
         overallPercentage: response.overallPercentage,
       ));
     } catch (e) {
-      emit(BudgetError(message: friendlyError(e, context: 'load your budget progress')));
+      emit(BudgetError(
+          message: friendlyError(e, context: 'load your budget progress')));
     }
   }
 
@@ -97,15 +100,17 @@ class BudgetCubit extends Cubit<BudgetState> {
         budgetLimit: response.budgetLimit,
         percentageUsed: response.percentageUsed,
         remaining: response.remaining,
-        matchingBudgets: response.matchingBudgets.map((b) => BudgetInfo(
-          budgetId: b.budgetId,
-          budgetName: b.budgetName,
-          amount: b.amount,
-          spent: b.spent,
-          percentage: b.percentage,
-          daysRemaining: b.daysRemaining,
-          currency: b.currency,
-        )).toList(),
+        matchingBudgets: response.matchingBudgets
+            .map((b) => BudgetInfo(
+                  budgetId: b.budgetId,
+                  budgetName: b.budgetName,
+                  amount: b.amount,
+                  spent: b.spent,
+                  percentage: b.percentage,
+                  daysRemaining: b.daysRemaining,
+                  currency: b.currency,
+                ))
+            .toList(),
       );
     } catch (e) {
       developer.log('Budget validation failed', name: 'BudgetCubit', error: e);
@@ -114,7 +119,7 @@ class BudgetCubit extends Cubit<BudgetState> {
   }
 
   /// Create a new budget
-  Future<void> createBudget({
+  Future<bool> createBudget({
     required String name,
     required double amount,
     required String currency,
@@ -124,8 +129,16 @@ class BudgetCubit extends Cubit<BudgetState> {
     DateTime? endDate,
     bool enableAlerts = true,
     double alertThreshold = 80.0,
-    pb.BudgetEnforcementMode enforcementMode = pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE,
+    pb.BudgetEnforcementMode enforcementMode =
+        pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE,
   }) async {
+    // Returns whether the budget was actually created.
+    //
+    // This used to return void and swallow every failure into a BudgetError
+    // emit, so a caller applying SEVERAL budgets in a loop could not tell which
+    // ones landed: its try/catch never fired (nothing throws) and it counted
+    // every attempt as a success. The AI allocation review reported "N budgets
+    // applied" for budgets that did not exist.
     emit(const BudgetLoading(message: 'Creating budget...'));
     try {
       final response = await _budgetRepository.createBudget(
@@ -145,11 +158,14 @@ class BudgetCubit extends Cubit<BudgetState> {
         emit(BudgetCreated(message: response.message));
         // Reload budgets after creation
         await loadBudgets();
-      } else {
-        emit(BudgetError(message: response.message));
+        return true;
       }
+      emit(BudgetError(message: response.message));
+      return false;
     } catch (e) {
-      emit(BudgetError(message: friendlyError(e, context: 'create the budget')));
+      emit(
+          BudgetError(message: friendlyError(e, context: 'create the budget')));
+      return false;
     }
   }
 
@@ -187,7 +203,8 @@ class BudgetCubit extends Cubit<BudgetState> {
         emit(BudgetError(message: response.message));
       }
     } catch (e) {
-      emit(BudgetError(message: friendlyError(e, context: 'update the budget')));
+      emit(
+          BudgetError(message: friendlyError(e, context: 'update the budget')));
     }
   }
 
@@ -205,7 +222,8 @@ class BudgetCubit extends Cubit<BudgetState> {
         emit(BudgetError(message: response.message));
       }
     } catch (e) {
-      emit(BudgetError(message: friendlyError(e, context: 'delete the budget')));
+      emit(
+          BudgetError(message: friendlyError(e, context: 'delete the budget')));
     }
   }
 
@@ -304,7 +322,8 @@ class BudgetCubit extends Cubit<BudgetState> {
 
       emit(BudgetAIInsightsLoaded(insights: insights));
     } catch (e) {
-      emit(BudgetAIInsightsError(message: friendlyError(e, context: 'load your AI insights')));
+      emit(BudgetAIInsightsError(
+          message: friendlyError(e, context: 'load your AI insights')));
     }
   }
 
@@ -312,7 +331,8 @@ class BudgetCubit extends Cubit<BudgetState> {
   Future<void> loadFinancialGoals({pb.GoalStatus? status}) async {
     emit(const BudgetLoading(message: 'Loading goals...'));
     try {
-      final response = await _budgetRepository.getFinancialGoals(status: status);
+      final response =
+          await _budgetRepository.getFinancialGoals(status: status);
       final goalsList = response.goalsList;
 
       emit(FinancialGoalsLoaded(
@@ -388,7 +408,8 @@ class BudgetCubit extends Cubit<BudgetState> {
         emit(BudgetError(message: response.message));
       }
     } catch (e) {
-      emit(BudgetError(message: friendlyError(e, context: 'add money to your goal')));
+      emit(BudgetError(
+          message: friendlyError(e, context: 'add money to your goal')));
     }
   }
 
@@ -414,7 +435,8 @@ class BudgetCubit extends Cubit<BudgetState> {
         emit(BudgetError(message: response.message));
       }
     } catch (e) {
-      emit(BudgetError(message: friendlyError(e, context: 'withdraw from your goal')));
+      emit(BudgetError(
+          message: friendlyError(e, context: 'withdraw from your goal')));
     }
   }
 
@@ -422,7 +444,8 @@ class BudgetCubit extends Cubit<BudgetState> {
   Future<void> loadRecurringBills({int daysAhead = 30}) async {
     emit(const BudgetLoading(message: 'Loading bills...'));
     try {
-      final response = await _budgetRepository.getUpcomingBills(daysAhead: daysAhead);
+      final response =
+          await _budgetRepository.getUpcomingBills(daysAhead: daysAhead);
       final billsList = response.billsList;
 
       emit(RecurringBillsLoaded(
@@ -473,7 +496,8 @@ class BudgetCubit extends Cubit<BudgetState> {
 
   /// Load service categories from backend, with in-memory cache and fallback.
   /// Deduplicates concurrent calls for the same serviceName.
-  Future<List<ServiceCategory>> loadServiceCategories(String serviceName) async {
+  Future<List<ServiceCategory>> loadServiceCategories(
+      String serviceName) async {
     if (_categoryCache.containsKey(serviceName)) {
       return _categoryCache[serviceName]!;
     }
@@ -490,7 +514,8 @@ class BudgetCubit extends Cubit<BudgetState> {
     }
   }
 
-  Future<List<ServiceCategory>> _fetchServiceCategories(String serviceName) async {
+  Future<List<ServiceCategory>> _fetchServiceCategories(
+      String serviceName) async {
     try {
       final response = await _budgetRepository.getServiceCategories(
         serviceName: serviceName,
@@ -501,7 +526,8 @@ class BudgetCubit extends Cubit<BudgetState> {
       _categoryCache[serviceName] = categories;
       return categories;
     } catch (e) {
-      developer.log('Failed to load service categories for $serviceName', name: 'BudgetCubit', error: e);
+      developer.log('Failed to load service categories for $serviceName',
+          name: 'BudgetCubit', error: e);
       return ServiceCategory.commonTransferCategories;
     }
   }
@@ -534,7 +560,8 @@ class BudgetCubit extends Cubit<BudgetState> {
         try {
           return await loadServiceCategories(service);
         } catch (e) {
-          developer.log('Failed to load categories for $service', name: 'BudgetCubit', error: e);
+          developer.log('Failed to load categories for $service',
+              name: 'BudgetCubit', error: e);
           return <ServiceCategory>[];
         }
       }),
@@ -582,14 +609,24 @@ class BudgetCubit extends Cubit<BudgetState> {
         return ServiceCategory.fromProto(response.category);
       }
       return null;
+    } on GrpcError catch (e) {
+      // Propagate. statistics-service classifies these precisely (the name is
+      // taken, the per-user cap is reached, the session expired) and the caller
+      // renders that reason. Collapsing them to null was why a refused create
+      // looked like a category that appeared and then vanished.
+      developer.log('Create custom category "$displayName" refused: ${e.code}',
+          name: 'BudgetCubit', error: e);
+      rethrow;
     } catch (e) {
-      developer.log('Failed to create custom category "$displayName"', name: 'BudgetCubit', error: e);
-      return null;
+      developer.log('Failed to create custom category "$displayName"',
+          name: 'BudgetCubit', error: e);
+      rethrow;
     }
   }
 
   /// Delete a custom category and clear cache
-  Future<bool> deleteCustomCategory(String categoryId, String serviceName) async {
+  Future<bool> deleteCustomCategory(
+      String categoryId, String serviceName) async {
     try {
       final response = await _budgetRepository.deleteCustomCategory(categoryId);
       if (response.success) {
@@ -597,7 +634,8 @@ class BudgetCubit extends Cubit<BudgetState> {
       }
       return response.success;
     } catch (e) {
-      developer.log('Failed to delete custom category $categoryId', name: 'BudgetCubit', error: e);
+      developer.log('Failed to delete custom category $categoryId',
+          name: 'BudgetCubit', error: e);
       return false;
     }
   }

@@ -23,21 +23,34 @@ class FinancialAnalyticsRepository {
   String? get _accountId => accountManager.activeAccountId;
   String get _locale => localeManager.currentLocale;
 
+  /// Currency of the active locale. Wallet analytics are only ever aggregated
+  /// within one currency, so this is what bounds the wallet selector.
+  String get activeCurrency => localeManager.currentCurrency;
+
   /// Get financial analytics with period comparison (current vs previous)
   Future<GetFinancialAnalyticsResponse> getFinancialAnalytics({
     String period = 'month',
     DateTime? startDate,
     DateTime? endDate,
     bool includeExternalBanks = true,
+
+    /// Scope the wallet leg to ONE specific wallet.
+    ///
+    /// A user holds several accounts per currency (personal, business, savings,
+    /// family), so analytics for "my LazerVault money" is a question about a SET
+    /// of wallets. The caller fans out over the selected ids and merges; this
+    /// parameter is how it names each one. Null keeps the previous behaviour of
+    /// using the active account.
+    String? accountId,
   }) async {
-    final accountId = _accountId;
-    if (accountId == null || accountId.isEmpty) {
+    final resolved = accountId ?? _accountId;
+    if (resolved == null || resolved.isEmpty) {
       return GetFinancialAnalyticsResponse();
     }
 
     return retryWithBackoff(
       operation: () => grpcClient.getFinancialAnalytics(
-        accountId: accountId,
+        accountId: resolved,
         locale: _locale,
         period: period,
         startDate: startDate,
@@ -52,15 +65,24 @@ class FinancialAnalyticsRepository {
     DateTime? startDate,
     DateTime? endDate,
     bool includeExternalBanks = true,
+
+    /// Scope the wallet leg to ONE specific wallet.
+    ///
+    /// A user holds several accounts per currency (personal, business, savings,
+    /// family), so analytics for "my LazerVault money" is a question about a SET
+    /// of wallets. The caller fans out over the selected ids and merges; this
+    /// parameter is how it names each one. Null keeps the previous behaviour of
+    /// using the active account.
+    String? accountId,
   }) async {
-    final accountId = _accountId;
-    if (accountId == null || accountId.isEmpty) {
+    final resolved = accountId ?? _accountId;
+    if (resolved == null || resolved.isEmpty) {
       return GetCategoryAnalyticsResponse();
     }
 
     return retryWithBackoff(
       operation: () => grpcClient.getCategoryAnalytics(
-        accountId: accountId,
+        accountId: resolved,
         locale: _locale,
         startDate: startDate,
         endDate: endDate,
@@ -73,15 +95,24 @@ class FinancialAnalyticsRepository {
   Future<GetMonthlyTrendsResponse> getMonthlyTrends({
     int months = 6,
     bool includeExternalBanks = true,
+
+    /// Scope the wallet leg to ONE specific wallet.
+    ///
+    /// A user holds several accounts per currency (personal, business, savings,
+    /// family), so analytics for "my LazerVault money" is a question about a SET
+    /// of wallets. The caller fans out over the selected ids and merges; this
+    /// parameter is how it names each one. Null keeps the previous behaviour of
+    /// using the active account.
+    String? accountId,
   }) async {
-    final accountId = _accountId;
-    if (accountId == null || accountId.isEmpty) {
+    final resolved = accountId ?? _accountId;
+    if (resolved == null || resolved.isEmpty) {
       return GetMonthlyTrendsResponse();
     }
 
     return retryWithBackoff(
       operation: () => grpcClient.getMonthlyTrends(
-        accountId: accountId,
+        accountId: resolved,
         locale: _locale,
         months: months,
         includeExternalBanks: includeExternalBanks,
@@ -94,15 +125,24 @@ class FinancialAnalyticsRepository {
     DateTime? startDate,
     DateTime? endDate,
     bool includeExternalBanks = true,
+
+    /// Scope the wallet leg to ONE specific wallet.
+    ///
+    /// A user holds several accounts per currency (personal, business, savings,
+    /// family), so analytics for "my LazerVault money" is a question about a SET
+    /// of wallets. The caller fans out over the selected ids and merges; this
+    /// parameter is how it names each one. Null keeps the previous behaviour of
+    /// using the active account.
+    String? accountId,
   }) async {
-    final accountId = _accountId;
-    if (accountId == null || accountId.isEmpty) {
+    final resolved = accountId ?? _accountId;
+    if (resolved == null || resolved.isEmpty) {
       return GetExpenseTimeSeriesResponse();
     }
 
     return retryWithBackoff(
       operation: () => grpcClient.getExpenseTimeSeries(
-        accountId: accountId,
+        accountId: resolved,
         locale: _locale,
         startDate: startDate,
         endDate: endDate,
@@ -117,9 +157,18 @@ class FinancialAnalyticsRepository {
     DateTime? endDate,
     int limit = 50,
     bool includeExternalBanks = true,
+
+    /// Scope the wallet leg to ONE specific wallet.
+    ///
+    /// A user holds several accounts per currency (personal, business, savings,
+    /// family), so analytics for "my LazerVault money" is a question about a SET
+    /// of wallets. The caller fans out over the selected ids and merges; this
+    /// parameter is how it names each one. Null keeps the previous behaviour of
+    /// using the active account.
+    String? accountId,
   }) async {
-    final accountId = _accountId;
-    if (accountId == null || accountId.isEmpty) {
+    final resolved = accountId ?? _accountId;
+    if (resolved == null || resolved.isEmpty) {
       return GetTransactionHistoryResponse();
     }
 
@@ -129,7 +178,7 @@ class FinancialAnalyticsRepository {
       try {
         return await retryWithBackoff(
           operation: () => grpcClient.getTransactionHistory(
-            accountId: accountId,
+            accountId: resolved,
             locale: _locale,
             status: status,
             startDate: startDate,

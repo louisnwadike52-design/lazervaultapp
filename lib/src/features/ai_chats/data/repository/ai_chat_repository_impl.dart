@@ -71,6 +71,14 @@ class AiChatRepositoryImpl implements IAiChatRepository {
           protoResponse.entities['_receipt_card'] = jsonEncode(receiptCard);
         }
 
+        // Same channel for the recipient card — who the money is going to,
+        // as data, so the chat can render an avatar card instead of a line of
+        // prose at the one moment a misread costs money.
+        final recipientCard = response['recipient_card'];
+        if (recipientCard != null && recipientCard is Map) {
+          protoResponse.entities['_recipient_card'] = jsonEncode(recipientCard);
+        }
+
         // Same channel for the scannable QR card. A QR code that only ever
         // appears as TEXT cannot be scanned or shown to anyone, which is the
         // one thing it is for.

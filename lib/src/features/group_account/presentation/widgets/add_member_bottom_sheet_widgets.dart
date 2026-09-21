@@ -14,5 +14,6 @@ class _PendingInvite {
   final String fullName;
   GroupMemberRole role;
 
-  _PendingInvite({required this.email, required this.fullName, required this.role});
+  _PendingInvite(
+      {required this.email, required this.fullName, required this.role});
 }

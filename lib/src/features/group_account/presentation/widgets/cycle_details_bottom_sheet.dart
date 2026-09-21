@@ -184,8 +184,7 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
           Row(
             children: [
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: accent.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8.r),
@@ -204,8 +203,7 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
               const Spacer(),
               GestureDetector(
                 onTap: () => Navigator.of(context).maybePop(),
-                child: Icon(Icons.close,
-                    color: Colors.grey[400], size: 20.sp),
+                child: Icon(Icons.close, color: Colors.grey[400], size: 20.sp),
               ),
             ],
           ),
@@ -347,8 +345,7 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
       return _emptyState(
           icon: Icons.group_outlined,
           title: 'No members captured',
-          message:
-              'This cycle ran without any active members at close.');
+          message: 'This cycle ran without any active members at close.');
     }
     return ListView.builder(
       padding: EdgeInsets.all(16.w),
@@ -474,9 +471,8 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
       itemBuilder: (_, i) {
         final p = d.payments[i];
         final completed = p.status == PaymentStatus.completed;
-        final tint = completed
-            ? const Color(0xFF10B981)
-            : const Color(0xFFFB923C);
+        final tint =
+            completed ? const Color(0xFF10B981) : const Color(0xFFFB923C);
         // Tappable: a contribution is proof you paid into the pot, and in a
         // savings circle that proof is precisely what members end up arguing
         // about. It was display-only — a name, a date and an amount with no way
@@ -485,76 +481,76 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
           onTap: () => _openPaymentDetails(p, d),
           borderRadius: BorderRadius.circular(12.r),
           child: Container(
-          margin: EdgeInsets.only(bottom: 10.h),
-          padding: EdgeInsets.all(14.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(12.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.25),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 36.w,
-                height: 36.w,
-                decoration: BoxDecoration(
-                  color: tint.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(18.r),
+            margin: EdgeInsets.only(bottom: 10.h),
+            padding: EdgeInsets.all(14.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(12.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
-                child: Icon(
-                  completed ? Icons.check_circle : Icons.access_time,
-                  size: 18.sp,
-                  color: tint,
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36.w,
+                  height: 36.w,
+                  decoration: BoxDecoration(
+                    color: tint.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(18.r),
+                  ),
+                  child: Icon(
+                    completed ? Icons.check_circle : Icons.access_time,
+                    size: 18.sp,
+                    color: tint,
+                  ),
                 ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      p.userName.isNotEmpty ? p.userName : 'Member',
-                      style: GoogleFonts.inter(
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        p.userName.isNotEmpty ? p.userName : 'Member',
+                        style: GoogleFonts.inter(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      dateFmt.format(p.paymentDate.toLocal()),
-                      style: GoogleFonts.inter(
-                        fontSize: 11.sp,
-                        color: Colors.grey[500],
+                      SizedBox(height: 2.h),
+                      Text(
+                        dateFmt.format(p.paymentDate.toLocal()),
+                        style: GoogleFonts.inter(
+                          fontSize: 11.sp,
+                          color: Colors.grey[500],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                '${p.currency} ${_fmt(p.amount)}',
-                style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                SizedBox(width: 8.w),
+                Text(
+                  '${p.currency} ${_fmt(p.amount)}',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              SizedBox(width: 4.w),
-              // Without this the row gives no sign it opens anything, and a
-              // tappable row that looks inert is only discovered by accident.
-              Icon(Icons.chevron_right_rounded,
-                  size: 18.sp, color: Colors.grey[600]),
-            ],
-          ),
+                SizedBox(width: 4.w),
+                // Without this the row gives no sign it opens anything, and a
+                // tappable row that looks inert is only discovered by accident.
+                Icon(Icons.chevron_right_rounded,
+                    size: 18.sp, color: Colors.grey[600]),
+              ],
+            ),
           ),
         );
       },
@@ -668,8 +664,8 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
         ),
       );
     }
-    final hasReceiver = (s.receiverUserId ?? '').isNotEmpty ||
-        s.receiverName.trim().isNotEmpty;
+    final hasReceiver =
+        (s.receiverUserId ?? '').isNotEmpty || s.receiverName.trim().isNotEmpty;
     if (!hasReceiver) {
       return _emptyState(
           icon: Icons.person_outline,
@@ -750,8 +746,7 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
               // other service uses.
               InkWell(
                 onTap: () {
-                  final viewerId =
-                      context.read<AuthenticationCubit>().userId;
+                  final viewerId = context.read<AuthenticationCubit>().userId;
                   Get.to(() => TransactionDetailScreen(
                         transaction: roscaPayoutToUnified(
                           s,
@@ -826,8 +821,7 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
             padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 16.h),
             children: [
               if (showStarted && partial.isNotEmpty) ...[
-                _sectionLabel(
-                    'Started but incomplete (${partial.length})'),
+                _sectionLabel('Started but incomplete (${partial.length})'),
                 SizedBox(height: 8.h),
                 ...partial.map(_buildMemberRow),
                 SizedBox(height: 12.h),
@@ -1044,9 +1038,9 @@ class _CycleDetailsBottomSheetState extends State<CycleDetailsBottomSheet>
     return (first + last).toUpperCase();
   }
 
-  String _fmt(double amount) =>
-      NumberFormat('#,##0.00').format(amount);
+  String _fmt(double amount) => NumberFormat('#,##0.00').format(amount);
 
-  String _shortId(String id) =>
-      id.length <= 12 ? id : '${id.substring(0, 8)}…${id.substring(id.length - 4)}';
+  String _shortId(String id) => id.length <= 12
+      ? id
+      : '${id.substring(0, 8)}…${id.substring(id.length - 4)}';
 }

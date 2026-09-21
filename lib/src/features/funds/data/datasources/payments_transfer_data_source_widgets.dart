@@ -62,6 +62,14 @@ class PaymentsTransferResult {
   final String? destinationBankName;
   final String? type; // "internal" | "external"
 
+  /// Direction from the QUERIED account's point of view, when it is known.
+  ///
+  /// The data source already worked this out and then threw it away, so a
+  /// receipt built from a history row had no way to tell whose document it was
+  /// and rendered the sender's fee either way. null = not determined; callers
+  /// must treat that as "do not assert a fee", never as "outgoing".
+  final bool? isIncoming;
+
   PaymentsTransferResult({
     required this.success,
     this.transferId,
@@ -83,6 +91,7 @@ class PaymentsTransferResult {
     this.destinationAccountId,
     this.destinationBankName,
     this.type,
+    this.isIncoming,
   });
 
   /// Create result from SendFundsResponse (Transfer Gateway API)

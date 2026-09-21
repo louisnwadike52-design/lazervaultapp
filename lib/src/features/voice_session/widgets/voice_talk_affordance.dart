@@ -38,14 +38,14 @@ class VoiceTalkMode {
       case doubleTap:
         return 'Double-tap to talk';
       default:
-        return 'Always listening';
+        return 'Hands-free';
     }
   }
 
   /// The instruction shown ON the control, in the imperative, describing the
   /// gesture that starts a recording right now.
   static String action(String mode, {required bool capturing}) {
-    if (mode == continuous) return capturing ? 'Listening' : 'Always listening';
+    if (mode == continuous) return capturing ? 'Listening' : 'Hands-free';
     if (capturing) {
       // While capturing, the useful instruction is how to STOP — which differs
       // per mode and is the half people never discover.

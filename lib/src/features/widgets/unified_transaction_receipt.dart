@@ -620,6 +620,12 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // details (where the raw metadata is shown), never to the user.
       // e.g. "source: stale_transfer_reconciler" on a reconciler-settled
       // transfer read as noise/alarming on a customer receipt.
+      // Group-contribution plumbing. `service` is the classifier's hint and the
+      // three ids are internal joins — all four would otherwise print as raw
+      // snake_case rows of UUIDs on a receipt whose whole job is to be legible.
+      // group_name and contribution_title are deliberately NOT hidden: they are
+      // the answer to "what did I pay for, and to whom".
+      'service', 'group_id', 'contribution_id', 'contribution_payment_id',
       'source', 'reconciliation_source', 'rollback_trigger',
       'changed_by', 'recovered_by', 'reconciled_at',
       'provider', 'provider_ref', 'provider_reference',
@@ -658,12 +664,45 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       'platform_fee_gross_kobo',
       'platform_fee_charged_kobo',
       'platform_fee_discount_kobo',
+      // THE PROVIDER'S OWN FEE. banking-service stamps `provider_fee_kobo` on
+      // the incoming credit of a deposit (webhook_nomba.go:227). It is what the
+      // PSP charged US to move the money: the customer is not party to it, and
+      // on a RECEIVER's receipt it is money they never paid.
+      //
+      // It also rendered RAW. The humanizer only formats keys containing
+      // "minor" (receipt_metadata_humanizer.dart), and this one says "kobo", so
+      // it fell through to the generic branch and printed the integer:
+      // "Provider fee kobo   5000".
+      'provider_fee_kobo',
+      'provider_fee_minor',
+      'provider_fee_minor_actual',
+      'provider_fee_minor_estimate',
     };
     // Swap/send legs are already rendered as first-class rows above (From/To/
     // Currency + the To counterparty), so the raw metadata keys would repeat
     // them at full ledger precision ("To amount: 1.080000000000000000").
     final hiddenKeys = {
       ...baseHiddenKeys,
+      // THE RECEIVER NEVER PAID THE FEE.
+      //
+      // A fee is the SENDER's cost. The export path already knows this
+      // (`showFee = !copyType.isRecipient`, tag_pay_pdf_service.dart), but that
+      // rule only ever applied to the generated PDF — the ON-SCREEN rows
+      // rendered whatever fee metadata the backend attached, in both
+      // directions. So an incoming transfer showed the sender's fee to the
+      // person who received the money.
+      //
+      // Direction is the honest test here: `incoming` means this device's user
+      // is the beneficiary.
+      if (tx.flow == TransactionFlow.incoming) ...{
+        'fee',
+        'fee_minor',
+        'total_fee_minor',
+        'platform_fee_minor',
+        'transfer_fee',
+        'transfer_fee_minor',
+        'stamp_duty_minor',
+      },
       if (isSwap || isSend) ...{
         'op',
         'from_amount',
@@ -897,6 +936,16 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       // banking-service has no AppServiceName mapping, so every deposit
       // resolved to `unknown` and could never match this list.
       tx.serviceType == TransactionServiceType.deposit ||
+      // Group funds: paying your share of a contribution is a real money
+      // movement with a named counterparty (the group) and a reference, and
+      // proof of having paid is the entire reason a member opens this receipt.
+      // Both were exporting a flat screenshot — contributions because they had
+      // no enum constant at all and resolved to `unknown`. The group name and
+      // payer identity ride along in metadata (written by group-accounts-
+      // service), so the document names both parties instead of reading as an
+      // anonymous debit.
+      tx.serviceType == TransactionServiceType.groupContribution ||
+      tx.serviceType == TransactionServiceType.groupFunds ||
       tx.serviceType == TransactionServiceType.withdrawal;
 
   /// Invoice-payload rows for the PDF body — mirrored from the metadata the
@@ -919,6 +968,27 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       for (final k in keys)
         if ((md[k] ?? '').toString().trim().isNotEmpty)
           MapEntry(k, md[k].toString()),
+    ];
+  }
+
+  /// Contribution-payload rows for the PDF body, mirroring _invoiceRows.
+  /// group-accounts-service writes these onto the debit, so the exported
+  /// document says which group and which contribution the money settled —
+  /// without them the PDF reads as an anonymous debit for an arbitrary amount,
+  /// which is useless as proof of payment. Empty for every other service type.
+  List<MapEntry<String, String>> get _contributionRows {
+    if (tx.serviceType != TransactionServiceType.groupContribution) {
+      return const [];
+    }
+    final md = tx.metadata ?? {};
+    const keys = <String, String>{
+      'group_name': 'Group',
+      'contribution_title': 'Contribution',
+    };
+    return [
+      for (final e in keys.entries)
+        if ((md[e.key] ?? '').toString().trim().isNotEmpty)
+          MapEntry(e.value, md[e.key].toString()),
     ];
   }
 
@@ -1378,14 +1448,19 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
 
       final filePath = tx.serviceType == TransactionServiceType.crypto
           ? await TagPayPdfService.downloadCryptoReceipt(
-              transaction: tx, format: _chosenFormat)
+              transaction: tx,
+              format: _chosenFormat,
+              // Without this the crypto PDF's FROM block fell back to the
+              // literal 'LazerVault Wallet' — the transfer branch below has
+              // always passed it.
+              currentUserName: _currentUserName)
           : await TagPayPdfService.downloadUnifiedTransferReceipt(
               transaction: tx,
               copyType: _chosenCopy,
               format: _chosenFormat,
               // The card the on-screen receipt resolved, so the SAVED document
               // names it too rather than being a strictly poorer copy.
-              extraRows: _giftCard?.rows ?? _invoiceRows,
+              extraRows: _giftCard?.rows ?? _invoiceRows + _contributionRows,
               currentUserName: _currentUserName,
             );
 
@@ -1407,13 +1482,14 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
           transaction: tx,
           sharePositionOrigin: _shareOrigin(),
           format: _chosenFormat,
+          currentUserName: _currentUserName,
         );
       } else {
         await TagPayPdfService.shareUnifiedTransferReceipt(
           transaction: tx,
           copyType: _chosenCopy,
           format: _chosenFormat,
-          extraRows: _giftCard?.rows ?? _invoiceRows,
+          extraRows: _giftCard?.rows ?? _invoiceRows + _contributionRows,
           currentUserName: _currentUserName,
           // Anchors the iPad share popover; omitted it anchored top-left.
           sharePositionOrigin: _shareOrigin(),

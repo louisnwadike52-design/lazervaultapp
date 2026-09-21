@@ -159,7 +159,7 @@ class AddMemberParams {
   final String userName;
   final String email;
   final String? profileImage;
-  final String? username;  // LazerTag username for user lookup
+  final String? username; // LazerTag username for user lookup
   final GroupMemberRole role;
 
   AddMemberParams({

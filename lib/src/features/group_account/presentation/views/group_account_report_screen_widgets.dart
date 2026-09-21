@@ -68,7 +68,8 @@ class _GroupAccountReportContent extends StatefulWidget {
       _GroupAccountReportContentState();
 }
 
-class _GroupAccountReportContentState extends State<_GroupAccountReportContent> {
+class _GroupAccountReportContentState
+    extends State<_GroupAccountReportContent> {
   late PageController _pageController;
   int _currentPage = 0;
 
@@ -286,63 +287,64 @@ class _ErrorView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Color(0xFF9CA3AF),
-              ),
-              SizedBox(height: 24.h),
-              Text(
-                'Report Generation Failed',
-                style: GoogleFonts.inter(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                const Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Color(0xFF9CA3AF),
                 ),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                message,
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 13.sp,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 32.h),
-              ElevatedButton.icon(
-                onPressed: onRetry,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+                SizedBox(height: 24.h),
+                Text(
+                  'Report Generation Failed',
+                  style: GoogleFonts.inter(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
                   ),
                 ),
-                icon: const Icon(Icons.refresh),
-                label: Text(
-                  'Try Again',
-                  style: GoogleFonts.inter(fontSize: 14.sp),
-                ),
-              ),
-              SizedBox(height: 12.h),
-              TextButton(
-                onPressed: onClose,
-                child: Text(
-                  'Go Back',
+                SizedBox(height: 8.h),
+                Text(
+                  message,
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),
-                    fontSize: 14.sp,
+                    fontSize: 13.sp,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 32.h),
+                ElevatedButton.icon(
+                  onPressed: onRetry,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    foregroundColor: Colors.white,
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  icon: const Icon(Icons.refresh),
+                  label: Text(
+                    'Try Again',
+                    style: GoogleFonts.inter(fontSize: 14.sp),
                   ),
                 ),
-              ),
-            ],
+                SizedBox(height: 12.h),
+                TextButton(
+                  onPressed: onClose,
+                  child: Text(
+                    'Go Back',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 }
 
@@ -387,8 +389,7 @@ class _LoadedView extends StatelessWidget {
         // defensive) from triggering an unintended pop.
         NotificationListener<OverscrollNotification>(
           onNotification: (notification) {
-            if (currentPage == totalCards - 1 &&
-                notification.overscroll > 0) {
+            if (currentPage == totalCards - 1 && notification.overscroll > 0) {
               onClose();
               return true;
             }
@@ -468,7 +469,10 @@ class _SummaryCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color.fromARGB(255, 78, 3, 208), Color.fromARGB(255, 78, 3, 208)],
+          colors: [
+            Color.fromARGB(255, 78, 3, 208),
+            Color.fromARGB(255, 78, 3, 208)
+          ],
         ),
       ),
       child: SafeArea(
@@ -680,7 +684,8 @@ class _ContributorHighlightsCard extends StatelessWidget {
                                     width: 32.w,
                                     height: 32.h,
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.3),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.3),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Center(
@@ -781,7 +786,8 @@ class _MilestonesCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(12.r),
                                 border: isReached
                                     ? Border.all(
-                                        color: Colors.white.withValues(alpha: 0.5),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.5),
                                         width: 2,
                                       )
                                     : null,
@@ -789,17 +795,21 @@ class _MilestonesCard extends StatelessWidget {
                               child: Row(
                                 children: [
                                   Icon(
-                                    isReached ? Icons.check_circle : Icons.radio_button_unchecked,
+                                    isReached
+                                        ? Icons.check_circle
+                                        : Icons.radio_button_unchecked,
                                     color: Colors.white,
                                     size: 28,
                                   ),
                                   SizedBox(width: 12.w),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          milestone['title']?.toString() ?? 'Milestone',
+                                          milestone['title']?.toString() ??
+                                              'Milestone',
                                           style: GoogleFonts.inter(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
@@ -810,7 +820,8 @@ class _MilestonesCard extends StatelessWidget {
                                           Text(
                                             milestone['description'].toString(),
                                             style: GoogleFonts.inter(
-                                              color: Colors.white.withValues(alpha: 0.8),
+                                              color: Colors.white
+                                                  .withValues(alpha: 0.8),
                                               fontSize: 13.sp,
                                             ),
                                           ),
@@ -853,9 +864,8 @@ class _ProgressIndicator extends StatelessWidget {
           width: isActive ? 24.w : 8.w,
           height: 8.h,
           decoration: BoxDecoration(
-            color: isActive
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.3),
+            color:
+                isActive ? Colors.white : Colors.white.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(4.r),
           ),
         );

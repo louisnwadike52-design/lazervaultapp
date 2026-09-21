@@ -52,7 +52,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
 
   // My Groups tab state
   int _myGroupsTabIndex = 0; // 0 = Private, 1 = Public
-  final TextEditingController _myGroupsSearchController = TextEditingController();
+  final TextEditingController _myGroupsSearchController =
+      TextEditingController();
   String _myGroupsSearchQuery = '';
   // Scroll controller on the My Groups CustomScrollView so we can
   // animate to the top after a new group is created (the cubit's
@@ -137,9 +138,9 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       _userIdSet = true;
       final user = authState.profile.user;
       context.read<GroupAccountCubit>().setUserId(
-        user.id,
-        userName: '${user.firstName} ${user.lastName}'.trim(),
-      );
+            user.id,
+            userName: '${user.firstName} ${user.lastName}'.trim(),
+          );
     }
   }
 
@@ -151,9 +152,9 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           _userIdSet = true;
           final user = authState.profile.user;
           context.read<GroupAccountCubit>().setUserId(
-            user.id,
-            userName: '${user.firstName} ${user.lastName}'.trim(),
-          );
+                user.id,
+                userName: '${user.firstName} ${user.lastName}'.trim(),
+              );
         }
       },
       builder: (context, authState) {
@@ -203,14 +204,14 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
             Expanded(
               child: ServiceEntranceAnimation(
                 child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildMyGroupsTab(),
-                  _buildDiscoverTab(),
-                  _buildInvitesTab(),
-                  _buildLeaderboardTab(),
-                ],
-              ),
+                  controller: _tabController,
+                  children: [
+                    _buildMyGroupsTab(),
+                    _buildDiscoverTab(),
+                    _buildInvitesTab(),
+                    _buildLeaderboardTab(),
+                  ],
+                ),
               ),
             ),
           ],
@@ -555,7 +556,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
 
     // Filter by search query
     final query = _myGroupsSearchQuery.toLowerCase();
-    final filteredGroups = _myGroupsTabIndex == 0 ? privateGroups : publicGroups;
+    final filteredGroups =
+        _myGroupsTabIndex == 0 ? privateGroups : publicGroups;
     final displayGroups = query.isEmpty
         ? filteredGroups
         : filteredGroups
@@ -621,7 +623,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                     fontSize: 13.sp,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Search ${_myGroupsTabIndex == 0 ? 'private' : 'public'} groups...',
+                    hintText:
+                        'Search ${_myGroupsTabIndex == 0 ? 'private' : 'public'} groups...',
                     hintStyle: GoogleFonts.inter(
                       color: const Color(0xFF9CA3AF),
                       fontSize: 13.sp,
@@ -681,7 +684,11 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      query.isNotEmpty ? Icons.search_off : (_myGroupsTabIndex == 0 ? Icons.lock_outline : Icons.public),
+                      query.isNotEmpty
+                          ? Icons.search_off
+                          : (_myGroupsTabIndex == 0
+                              ? Icons.lock_outline
+                              : Icons.public),
                       size: 40.sp,
                       color: const Color(0xFF9CA3AF),
                     ),
@@ -710,6 +717,11 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                       padding: EdgeInsets.only(bottom: 10.h),
                       child: GroupCard(
                         group: group,
+                        // Marks the groups this user started, so a list of
+                        // joint funds distinguishes the ones they run from the
+                        // ones they merely belong to.
+                        currentUserId:
+                            context.read<AuthenticationCubit>().userId,
                         onTap: () => _navigateToGroupDetails(group),
                       ),
                     );
@@ -770,8 +782,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                       ? const Color.fromARGB(255, 78, 3, 208)
                       : const Color(0xFF9CA3AF),
                   fontSize: 13.sp,
-                  fontWeight:
-                      isSelected ? FontWeight.w600 : FontWeight.w400,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
             ],
@@ -809,8 +820,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color:
-                const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -1026,60 +1036,60 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
               child: _buildStatsCard(null),
             ),
           ),
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: Center(
-            child: Padding(
-              padding: EdgeInsets.all(32.w),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 48.sp,
-                    color: const Color(0xFFEF4444),
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Oops! Something went wrong',
-                    style: GoogleFonts.inter(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(32.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 48.sp,
+                      color: const Color(0xFFEF4444),
                     ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    message,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      color: Colors.grey[400],
-                    ),
-                  ),
-                  SizedBox(height: 24.h),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<GroupAccountCubit>().loadUserGroups();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 24.w, vertical: 12.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'Oops! Something went wrong',
+                      style: GoogleFonts.inter(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
                       ),
                     ),
-                    child: Text('Try Again'),
-                  ),
-                ],
+                    SizedBox(height: 8.h),
+                    Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                    SizedBox(height: 24.h),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<GroupAccountCubit>().loadUserGroups();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 24.w, vertical: 12.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                      ),
+                      child: Text('Try Again'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        SliverPadding(padding: EdgeInsets.only(bottom: 80.h)),
-      ],
+          SliverPadding(padding: EdgeInsets.only(bottom: 80.h)),
+        ],
       ),
     );
   }
@@ -1264,8 +1274,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                     if (state.isStale)
                       const LinearProgressIndicator(
                         minHeight: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xFF3B82F6)),
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
                         backgroundColor: Color(0xFF1F1F1F),
                       ),
                     Expanded(
@@ -1357,9 +1367,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
               ),
               child: Center(
                 child: Text(
-                  group.name.isNotEmpty
-                      ? group.name[0].toUpperCase()
-                      : 'G',
+                  group.name.isNotEmpty ? group.name[0].toUpperCase() : 'G',
                   style: GoogleFonts.inter(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w700,
@@ -1517,9 +1525,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           ? null
           : () {
               setState(() => _joiningGroupIds.add(group.id));
-              context
-                  .read<GroupAccountCubit>()
-                  .joinPublicGroupById(group.id);
+              context.read<GroupAccountCubit>().joinPublicGroupById(group.id);
             },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
@@ -1589,8 +1595,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   Widget _buildInvitesTab() {
     return BlocConsumer<GroupAccountCubit, GroupAccountState>(
       listenWhen: (prev, curr) =>
-          curr is GroupAccountInvitationResponded ||
-          curr is GroupAccountError,
+          curr is GroupAccountInvitationResponded || curr is GroupAccountError,
       listener: (ctx, state) {
         if (state is GroupAccountInvitationResponded) {
           final group = state.invitation.groupName.isNotEmpty
@@ -1602,9 +1607,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           ScaffoldMessenger.of(ctx).showSnackBar(
             SnackBar(
               content: Text(msg),
-              backgroundColor: state.accepted
-                  ? const Color(0xFF10B981)
-                  : Colors.grey[800],
+              backgroundColor:
+                  state.accepted ? const Color(0xFF10B981) : Colors.grey[800],
             ),
           );
           if (mounted) setState(() => _busyInvitations.clear());
@@ -1617,7 +1621,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           curr is GroupAccountLoading ||
           curr is GroupAccountError,
       builder: (ctx, state) {
-        if (state is GroupAccountLoading && (state.message ?? '').contains('invit')) {
+        if (state is GroupAccountLoading &&
+            (state.message ?? '').contains('invit')) {
           return const Center(
             child: LazerVaultLoader.small(),
           );
@@ -1760,7 +1765,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           child: BlocBuilder<GroupAccountCubit, GroupAccountState>(
             buildWhen: (previous, current) {
               return current is PublicGroupsLoaded ||
-                  (current is GroupAccountLoading && _tabController.index == 2) ||
+                  (current is GroupAccountLoading &&
+                      _tabController.index == 2) ||
                   (current is GroupAccountError && _tabController.index == 2);
             },
             builder: (context, state) {
@@ -1783,8 +1789,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                     if (state.isStale)
                       const LinearProgressIndicator(
                         minHeight: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xFF3B82F6)),
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
                         backgroundColor: Color(0xFF1F1F1F),
                       ),
                     Expanded(

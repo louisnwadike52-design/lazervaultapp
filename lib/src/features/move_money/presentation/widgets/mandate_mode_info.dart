@@ -44,13 +44,17 @@ void showMandateModeInfoModal(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('How $bank ${actionNoun}s work',
-                style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700)),
             SizedBox(height: 16.h),
             _modeRow(
               icon: Icons.autorenew,
               color: green,
               title: 'Direct Debit (recurring)',
-              body: 'Authorize once, then ${actionNoun}s debit automatically with no bank approval each time.',
+              body:
+                  'Authorize once, then ${actionNoun}s debit automatically with no bank approval each time.',
               active: current == MandateModeView.directDebit,
             ),
             if (current == MandateModeView.settingUp) ...[
@@ -59,7 +63,8 @@ void showMandateModeInfoModal(
                 icon: Icons.hourglass_bottom,
                 color: amber,
                 title: 'Setting up Direct Debit',
-                body: 'You authorized it. Your bank is activating it with NIBSS, which can take a little while. Until then ${actionNoun}s use one-time approval.',
+                body:
+                    'You authorized it. Your bank is activating it with NIBSS, which can take a little while. Until then ${actionNoun}s use one-time approval.',
                 active: true,
               ),
             ],
@@ -68,18 +73,25 @@ void showMandateModeInfoModal(
               icon: Icons.bolt,
               color: purple,
               title: 'One-time (DirectPay)',
-              body: 'You approve each $actionNoun at your bank. No recurring authorization is stored.',
+              body:
+                  'You approve each $actionNoun at your bank. No recurring authorization is stored.',
               active: current == MandateModeView.oneTime,
             ),
             SizedBox(height: 16.h),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.swap_horiz, color: Colors.white.withValues(alpha: 0.55), size: 15.sp),
+                Icon(Icons.swap_horiz,
+                    color: Colors.white.withValues(alpha: 0.55), size: 15.sp),
                 SizedBox(width: 8.w),
                 Expanded(
-                  child: Text(switchHint ?? 'Use the account options to switch between them.',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12.sp, height: 1.4)),
+                  child: Text(
+                      switchHint ??
+                          'Use the account options to switch between them.',
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 12.sp,
+                          height: 1.4)),
                 ),
               ],
             ),
@@ -88,8 +100,11 @@ void showMandateModeInfoModal(
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                style: TextButton.styleFrom(foregroundColor: const Color(0xFF3B82F6)),
-                child: Text('Got it', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700)),
+                style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF3B82F6)),
+                child: Text('Got it',
+                    style: TextStyle(
+                        fontSize: 14.sp, fontWeight: FontWeight.w700)),
               ),
             ),
           ],
@@ -109,9 +124,14 @@ Widget _modeRow({
   return Container(
     padding: EdgeInsets.all(12.w),
     decoration: BoxDecoration(
-      color: active ? color.withValues(alpha: 0.10) : Colors.white.withValues(alpha: 0.03),
+      color: active
+          ? color.withValues(alpha: 0.10)
+          : Colors.white.withValues(alpha: 0.03),
       borderRadius: BorderRadius.circular(12.r),
-      border: Border.all(color: active ? color.withValues(alpha: 0.45) : Colors.white.withValues(alpha: 0.08)),
+      border: Border.all(
+          color: active
+              ? color.withValues(alpha: 0.45)
+              : Colors.white.withValues(alpha: 0.08)),
     ),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,25 +146,35 @@ Widget _modeRow({
                 children: [
                   Flexible(
                     child: Text(title,
-                        style: TextStyle(color: Colors.white, fontSize: 13.5.sp, fontWeight: FontWeight.w700)),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13.5.sp,
+                            fontWeight: FontWeight.w700)),
                   ),
                   if (active) ...[
                     SizedBox(width: 8.w),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
                       decoration: BoxDecoration(
                         color: color.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(5.r),
                       ),
                       child: Text('Current',
-                          style: TextStyle(color: color, fontSize: 9.sp, fontWeight: FontWeight.w800)),
+                          style: TextStyle(
+                              color: color,
+                              fontSize: 9.sp,
+                              fontWeight: FontWeight.w800)),
                     ),
                   ],
                 ],
               ),
               SizedBox(height: 4.h),
               Text(body,
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12.sp, height: 1.4)),
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 12.sp,
+                      height: 1.4)),
             ],
           ),
         ),

@@ -11,9 +11,10 @@ abstract class ContributionPaymentRepository {
     String? notes,
     String? paymentMethod,
   });
-  
-  Future<List<ContributionPayment>> getPaymentsByContribution(String contributionId);
+
+  Future<List<ContributionPayment>> getPaymentsByContribution(
+      String contributionId);
   Future<List<ContributionPayment>> getPaymentsByUser(String userId);
   Future<ContributionPayment?> getPaymentById(String paymentId);
   Future<void> deletePayment(String paymentId);
-} 
+}

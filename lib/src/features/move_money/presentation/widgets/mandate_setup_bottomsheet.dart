@@ -124,7 +124,8 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
                     'your bank — this can take up to 30 minutes and completes '
                     'automatically. No need to authorize again.',
                 snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.92),
+                backgroundColor:
+                    const Color(0xFF10B981).withValues(alpha: 0.92),
                 colorText: Colors.white,
                 duration: const Duration(seconds: 5),
               );
@@ -309,9 +310,12 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
               SizedBox(height: 8.h),
 
               // Benefits
-              _buildBenefitRow(Icons.flash_on_rounded, 'Instant transfers — no bank approval each time'),
-              _buildBenefitRow(Icons.lock_outline_rounded, 'You control limits & can cancel'),
-              _buildBenefitRow(Icons.shield_outlined, 'Bank-level security & encryption'),
+              _buildBenefitRow(Icons.flash_on_rounded,
+                  'Instant transfers — no bank approval each time'),
+              _buildBenefitRow(Icons.lock_outline_rounded,
+                  'You control limits & can cancel'),
+              _buildBenefitRow(
+                  Icons.shield_outlined, 'Bank-level security & encryption'),
               SizedBox(height: 16.h),
 
               // Inline error message
@@ -391,7 +395,8 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
 
               // Not now button
               TextButton(
-                onPressed: isLoading ? null : () => Navigator.of(context).pop(false),
+                onPressed:
+                    isLoading ? null : () => Navigator.of(context).pop(false),
                 child: Text(
                   'Not Now',
                   style: GoogleFonts.inter(

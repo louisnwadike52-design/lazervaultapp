@@ -28,6 +28,7 @@ class UserPaymentGroup {
   final double totalRefunded;
   final double expectedAmount;
   final double remaining;
+
   /// When this payer last actually PAID — i.e. the newest COMPLETED payment.
   /// Null when they have none, which is different from "never attempted":
   /// a failed or in-flight attempt leaves this null on purpose, because
@@ -104,9 +105,8 @@ class UserPaymentGroup {
       final latest = list.first;
       // Date of the newest payment that actually moved money. list is already
       // sorted newest-first, so the first completed entry is the latest one.
-      final lastSettled = list
-          .where((p) => p.status == PaymentStatus.completed)
-          .firstOrNull;
+      final lastSettled =
+          list.where((p) => p.status == PaymentStatus.completed).firstOrNull;
 
       out.add(UserPaymentGroup(
         userId: userId,
@@ -171,9 +171,7 @@ class PaymentGroupCard extends StatelessWidget {
                   backgroundColor: const Color.fromARGB(255, 78, 3, 208)
                       .withValues(alpha: 0.2),
                   child: Text(
-                    displayName.isNotEmpty
-                        ? displayName[0].toUpperCase()
-                        : '?',
+                    displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
@@ -260,8 +258,7 @@ class PaymentGroupCard extends StatelessWidget {
                 if (group.isComplete)
                   _badge('Fully Paid', const Color(0xFF10B981)),
                 if (group.isPartial)
-                  _badge(
-                      '${group.progressPercent.toStringAsFixed(0)}% Partial',
+                  _badge('${group.progressPercent.toStringAsFixed(0)}% Partial',
                       const Color(0xFFFB923C)),
                 if (group.isInFlightOnly)
                   _badge('Pending', const Color(0xFFF59E0B)),
@@ -378,8 +375,7 @@ class PaymentBreakdownRow extends StatelessWidget {
                 ),
                 SizedBox(height: 2.h),
                 Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 6.w, vertical: 2.h),
+                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(4.r),
@@ -396,8 +392,7 @@ class PaymentBreakdownRow extends StatelessWidget {
               ],
             ),
             SizedBox(width: 4.w),
-            Icon(Icons.chevron_right,
-                size: 18.sp, color: Colors.grey[600]),
+            Icon(Icons.chevron_right, size: 18.sp, color: Colors.grey[600]),
           ],
         ),
       ),
@@ -446,7 +441,6 @@ class PaymentBreakdownRow extends StatelessWidget {
     }
   }
 }
-
 
 /// Subtitle under a payer's name on the Payments tab.
 ///

@@ -258,14 +258,13 @@ class _MoveTransferDetailScreenState extends State<MoveTransferDetailScreen> {
           // Stages row
           Row(
             children: List.generate(_stages.length, (index) {
-              final isComplete =
-                  !isFailed && activeStage >= index;
-              final isActive =
-                  !isFailed && activeStage == index;
+              final isComplete = !isFailed && activeStage >= index;
+              final isActive = !isFailed && activeStage == index;
               final isFailedStage = isFailed;
 
               Color circleColor;
-              if (isFailedStage && index <= (activeStage < 0 ? 0 : activeStage)) {
+              if (isFailedStage &&
+                  index <= (activeStage < 0 ? 0 : activeStage)) {
                 circleColor = const Color(0xFFEF4444);
               } else if (isComplete) {
                 circleColor = const Color(0xFF10B981);
@@ -275,7 +274,8 @@ class _MoveTransferDetailScreenState extends State<MoveTransferDetailScreen> {
 
               Color lineColor;
               if (index > 0) {
-                if (isFailedStage && index <= (activeStage < 0 ? 0 : activeStage)) {
+                if (isFailedStage &&
+                    index <= (activeStage < 0 ? 0 : activeStage)) {
                   lineColor = const Color(0xFFEF4444);
                 } else if (!isFailed && activeStage >= index) {
                   lineColor = const Color(0xFF10B981);
@@ -405,8 +405,7 @@ class _MoveTransferDetailScreenState extends State<MoveTransferDetailScreen> {
           _buildRow('To Name', _transfer.destinationAccountName),
           _buildRow('Amount', _formatNaira(_transfer.amountNaira)),
           _buildRow('Currency', _transfer.currency),
-          if (_transfer.narration != null &&
-              _transfer.narration!.isNotEmpty)
+          if (_transfer.narration != null && _transfer.narration!.isNotEmpty)
             _buildRow('Narration', _transfer.narration!),
         ],
       ),
@@ -628,8 +627,7 @@ class _MoveTransferDetailScreenState extends State<MoveTransferDetailScreen> {
                       style: GoogleFonts.inter(
                         color: valueColor ?? Colors.white,
                         fontSize: 13.sp,
-                        fontWeight:
-                            isBold ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
                       ),
                       textAlign: TextAlign.right,
                     ),

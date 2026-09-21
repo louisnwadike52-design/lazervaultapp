@@ -19,7 +19,6 @@ class GroupContributionPdfService {
   static pw.Font? _regularFont;
   static pw.Font? _boldFont;
 
-  /// Get currency symbol - using ASCII-safe alternatives for PDF compatibility
   /// Real payment status — a receipt for a pending/refunding payment must
   /// say so, never 'Completed'.
   static String _paymentStatusLabel(PaymentStatus status) {
@@ -41,8 +40,10 @@ class GroupContributionPdfService {
     }
   }
 
-  static String _currencySymbolFor(String code) =>
-      receiptCurrencySymbol(code);
+  /// Real glyphs (₦, ₵, …) when the embedded receipt fonts loaded, ASCII
+  /// fallbacks otherwise — `receiptCurrencySymbol` owns that decision for every
+  /// PDF on the platform, so a receipt cannot end up with a tofu box.
+  static String _currencySymbolFor(String code) => receiptCurrencySymbol(code);
 
   /// Get display currency name
   static String _currencyNameFor(String code) {
@@ -174,7 +175,8 @@ class GroupContributionPdfService {
     );
 
     final output = await getTemporaryDirectory();
-    final sanitizedId = (payment.transactionId ?? payment.id).replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+    final sanitizedId = (payment.transactionId ?? payment.id)
+        .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
     final fileName = 'contribution_receipt_$sanitizedId.pdf';
     final file = File('${output.path}/$fileName');
     await file.writeAsBytes(await pdf.save());
@@ -245,7 +247,9 @@ class GroupContributionPdfService {
         ),
         pw.SizedBox(height: 4),
         pw.Text(
-          payment.userName.isNotEmpty ? payment.userName.toUpperCase() : 'LAZERVAULT USER',
+          payment.userName.isNotEmpty
+              ? payment.userName.toUpperCase()
+              : 'LAZERVAULT USER',
           style: _getTextStyle(fontSize: 14, isBold: true),
         ),
         // No user id. A receipt identifies the payer by name; the internal
@@ -345,7 +349,8 @@ class GroupContributionPdfService {
           ),
           child: pw.Column(
             children: [
-              _buildDetailRow('Amount Paid', '$currencySymbol$amount', isBold: true),
+              _buildDetailRow('Amount Paid', '$currencySymbol$amount',
+                  isBold: true),
               _buildDetailRow('Currency', _currencyNameFor(currency)),
               // The payment reference (GRP-…) is the identifier a person can
               // actually quote back to support. The raw row UUID is only shown
@@ -371,7 +376,8 @@ class GroupContributionPdfService {
   }) {
     final newTotal = contribution.currentAmount + payment.amount;
     final remaining = contribution.targetAmount - newTotal;
-    final progress = ((newTotal / contribution.targetAmount) * 100).clamp(0.0, 100.0);
+    final progress =
+        ((newTotal / contribution.targetAmount) * 100).clamp(0.0, 100.0);
 
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -393,11 +399,15 @@ class GroupContributionPdfService {
               _buildDetailRow('Contribution Name', contribution.title),
               if (contribution.description.isNotEmpty)
                 _buildDetailRow('Description', contribution.description),
-              _buildDetailRow('Target Amount', '$currencySymbol${contribution.targetAmount.toStringAsFixed(2)}'),
-              _buildDetailRow('New Total', '$currencySymbol${newTotal.toStringAsFixed(2)}'),
-              _buildDetailRow('Remaining', '$currencySymbol${remaining.toStringAsFixed(2)}'),
+              _buildDetailRow('Target Amount',
+                  '$currencySymbol${contribution.targetAmount.toStringAsFixed(2)}'),
+              _buildDetailRow(
+                  'New Total', '$currencySymbol${newTotal.toStringAsFixed(2)}'),
+              _buildDetailRow('Remaining',
+                  '$currencySymbol${remaining.toStringAsFixed(2)}'),
               _buildDetailRow('Progress', '${progress.toStringAsFixed(0)}%'),
-              _buildDetailRow('Deadline', _displayDateFormat.format(contribution.deadline)),
+              _buildDetailRow(
+                  'Deadline', _displayDateFormat.format(contribution.deadline)),
             ],
           ),
         ),
@@ -405,7 +415,8 @@ class GroupContributionPdfService {
     );
   }
 
-  static pw.Widget _buildDetailRow(String label, String value, {bool isBold = false}) {
+  static pw.Widget _buildDetailRow(String label, String value,
+      {bool isBold = false}) {
     return pw.Container(
       padding: const pw.EdgeInsets.symmetric(vertical: 6),
       child: pw.Row(
@@ -534,7 +545,8 @@ class GroupContributionPdfService {
         // PlatformException and the share silently fails on iPhone/iPad.
         sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         files: [XFile(file.path)],
-        text: 'Contribution Payment Receipt - $currencySymbol$amount to ${contribution.title}',
+        text:
+            'Contribution Payment Receipt - $currencySymbol$amount to ${contribution.title}',
         subject: 'Lazervault Group Contribution Receipt',
       ));
     } catch (e) {

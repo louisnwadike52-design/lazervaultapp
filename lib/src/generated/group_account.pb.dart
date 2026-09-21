@@ -2635,6 +2635,10 @@ class ScheduledPayoutMessage extends $pb.GeneratedMessage {
     $fixnum.Int64? version,
     $1.Timestamp? createdAt,
     $1.Timestamp? updatedAt,
+    $core.String? failureCode,
+    $core.bool? failureRecoverable,
+    $core.String? failureHint,
+    $core.bool? manualEligible,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -2661,6 +2665,11 @@ class ScheduledPayoutMessage extends $pb.GeneratedMessage {
     if (version != null) result.version = version;
     if (createdAt != null) result.createdAt = createdAt;
     if (updatedAt != null) result.updatedAt = updatedAt;
+    if (failureCode != null) result.failureCode = failureCode;
+    if (failureRecoverable != null)
+      result.failureRecoverable = failureRecoverable;
+    if (failureHint != null) result.failureHint = failureHint;
+    if (manualEligible != null) result.manualEligible = manualEligible;
     return result;
   }
 
@@ -2715,6 +2724,10 @@ class ScheduledPayoutMessage extends $pb.GeneratedMessage {
         subBuilder: $1.Timestamp.create)
     ..aOM<$1.Timestamp>(22, _omitFieldNames ? '' : 'updatedAt',
         subBuilder: $1.Timestamp.create)
+    ..aOS(23, _omitFieldNames ? '' : 'failureCode')
+    ..aOB(24, _omitFieldNames ? '' : 'failureRecoverable')
+    ..aOS(25, _omitFieldNames ? '' : 'failureHint')
+    ..aOB(26, _omitFieldNames ? '' : 'manualEligible')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2949,6 +2962,49 @@ class ScheduledPayoutMessage extends $pb.GeneratedMessage {
   void clearUpdatedAt() => $_clearField(22);
   @$pb.TagNumber(22)
   $1.Timestamp ensureUpdatedAt() => $_ensure(21);
+
+  /// Why this payout failed, in terms the member can act on. Derived from
+  /// last_error by the service so the app and the admin console cannot drift
+  /// into two different readings of the same string.
+  ///   failure_code       — stable enum-ish code (RECIPIENT_ACCOUNT_INACTIVE, …)
+  ///   failure_recoverable— the USER can fix it; only false routes to support
+  ///   failure_hint       — one sentence telling them what to do
+  ///   manual_eligible    — re-firing by hand is a sensible next step
+  @$pb.TagNumber(23)
+  $core.String get failureCode => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set failureCode($core.String value) => $_setString(22, value);
+  @$pb.TagNumber(23)
+  $core.bool hasFailureCode() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearFailureCode() => $_clearField(23);
+
+  @$pb.TagNumber(24)
+  $core.bool get failureRecoverable => $_getBF(23);
+  @$pb.TagNumber(24)
+  set failureRecoverable($core.bool value) => $_setBool(23, value);
+  @$pb.TagNumber(24)
+  $core.bool hasFailureRecoverable() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearFailureRecoverable() => $_clearField(24);
+
+  @$pb.TagNumber(25)
+  $core.String get failureHint => $_getSZ(24);
+  @$pb.TagNumber(25)
+  set failureHint($core.String value) => $_setString(24, value);
+  @$pb.TagNumber(25)
+  $core.bool hasFailureHint() => $_has(24);
+  @$pb.TagNumber(25)
+  void clearFailureHint() => $_clearField(25);
+
+  @$pb.TagNumber(26)
+  $core.bool get manualEligible => $_getBF(25);
+  @$pb.TagNumber(26)
+  set manualEligible($core.bool value) => $_setBool(25, value);
+  @$pb.TagNumber(26)
+  $core.bool hasManualEligible() => $_has(25);
+  @$pb.TagNumber(26)
+  void clearManualEligible() => $_clearField(26);
 }
 
 class PayoutEventMessage extends $pb.GeneratedMessage {
@@ -3567,6 +3623,141 @@ class ClearPayoutReceiverResponse extends $pb.GeneratedMessage {
   void clearScheduledPayout() => $_clearField(2);
   @$pb.TagNumber(2)
   ScheduledPayoutMessage ensureScheduledPayout() => $_ensure(1);
+}
+
+class SwitchPayoutToManualRequest extends $pb.GeneratedMessage {
+  factory SwitchPayoutToManualRequest({
+    $core.String? contributionId,
+    $core.int? cycleIndex,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    if (cycleIndex != null) result.cycleIndex = cycleIndex;
+    return result;
+  }
+
+  SwitchPayoutToManualRequest._();
+
+  factory SwitchPayoutToManualRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SwitchPayoutToManualRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SwitchPayoutToManualRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'cycleIndex', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SwitchPayoutToManualRequest clone() =>
+      SwitchPayoutToManualRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SwitchPayoutToManualRequest copyWith(
+          void Function(SwitchPayoutToManualRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as SwitchPayoutToManualRequest))
+          as SwitchPayoutToManualRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SwitchPayoutToManualRequest create() =>
+      SwitchPayoutToManualRequest._();
+  @$core.override
+  SwitchPayoutToManualRequest createEmptyInstance() => create();
+  static $pb.PbList<SwitchPayoutToManualRequest> createRepeated() =>
+      $pb.PbList<SwitchPayoutToManualRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SwitchPayoutToManualRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SwitchPayoutToManualRequest>(create);
+  static SwitchPayoutToManualRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get cycleIndex => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set cycleIndex($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCycleIndex() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCycleIndex() => $_clearField(2);
+}
+
+class SwitchPayoutToManualResponse extends $pb.GeneratedMessage {
+  factory SwitchPayoutToManualResponse({
+    ScheduledPayoutMessage? scheduledPayout,
+  }) {
+    final result = create();
+    if (scheduledPayout != null) result.scheduledPayout = scheduledPayout;
+    return result;
+  }
+
+  SwitchPayoutToManualResponse._();
+
+  factory SwitchPayoutToManualResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SwitchPayoutToManualResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SwitchPayoutToManualResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'),
+      createEmptyInstance: create)
+    ..aOM<ScheduledPayoutMessage>(1, _omitFieldNames ? '' : 'scheduledPayout',
+        subBuilder: ScheduledPayoutMessage.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SwitchPayoutToManualResponse clone() =>
+      SwitchPayoutToManualResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SwitchPayoutToManualResponse copyWith(
+          void Function(SwitchPayoutToManualResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as SwitchPayoutToManualResponse))
+          as SwitchPayoutToManualResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SwitchPayoutToManualResponse create() =>
+      SwitchPayoutToManualResponse._();
+  @$core.override
+  SwitchPayoutToManualResponse createEmptyInstance() => create();
+  static $pb.PbList<SwitchPayoutToManualResponse> createRepeated() =>
+      $pb.PbList<SwitchPayoutToManualResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SwitchPayoutToManualResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SwitchPayoutToManualResponse>(create);
+  static SwitchPayoutToManualResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ScheduledPayoutMessage get scheduledPayout => $_getN(0);
+  @$pb.TagNumber(1)
+  set scheduledPayout(ScheduledPayoutMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasScheduledPayout() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearScheduledPayout() => $_clearField(1);
+  @$pb.TagNumber(1)
+  ScheduledPayoutMessage ensureScheduledPayout() => $_ensure(0);
 }
 
 class TriggerManualPayoutRequest extends $pb.GeneratedMessage {
@@ -11591,6 +11782,7 @@ class ContributionMessageProto extends $pb.GeneratedMessage {
     $core.String? replyToSender,
     $core.String? editedAt,
     $core.bool? deletedForEveryone,
+    $core.Iterable<$core.String>? mentionedUserIds,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -11609,6 +11801,8 @@ class ContributionMessageProto extends $pb.GeneratedMessage {
     if (editedAt != null) result.editedAt = editedAt;
     if (deletedForEveryone != null)
       result.deletedForEveryone = deletedForEveryone;
+    if (mentionedUserIds != null)
+      result.mentionedUserIds.addAll(mentionedUserIds);
     return result;
   }
 
@@ -11640,6 +11834,7 @@ class ContributionMessageProto extends $pb.GeneratedMessage {
     ..aOS(13, _omitFieldNames ? '' : 'replyToSender')
     ..aOS(14, _omitFieldNames ? '' : 'editedAt')
     ..aOB(15, _omitFieldNames ? '' : 'deletedForEveryone')
+    ..pPS(16, _omitFieldNames ? '' : 'mentionedUserIds')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -11804,6 +11999,11 @@ class ContributionMessageProto extends $pb.GeneratedMessage {
   $core.bool hasDeletedForEveryone() => $_has(14);
   @$pb.TagNumber(15)
   void clearDeletedForEveryone() => $_clearField(15);
+
+  /// User ids @-mentioned in `body`. Lets the bubble highlight the right names
+  /// and lets a client tell "you were tagged" without a second lookup.
+  @$pb.TagNumber(16)
+  $pb.PbList<$core.String> get mentionedUserIds => $_getList(15);
 }
 
 class SendContributionMessageRequest extends $pb.GeneratedMessage {
@@ -11815,6 +12015,7 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
     $core.int? durationMs,
     $core.String? clientMessageId,
     $core.String? replyToMessageId,
+    $core.Iterable<$core.String>? mentionedUserIds,
   }) {
     final result = create();
     if (contributionId != null) result.contributionId = contributionId;
@@ -11824,6 +12025,8 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
     if (durationMs != null) result.durationMs = durationMs;
     if (clientMessageId != null) result.clientMessageId = clientMessageId;
     if (replyToMessageId != null) result.replyToMessageId = replyToMessageId;
+    if (mentionedUserIds != null)
+      result.mentionedUserIds.addAll(mentionedUserIds);
     return result;
   }
 
@@ -11847,6 +12050,7 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
     ..a<$core.int>(5, _omitFieldNames ? '' : 'durationMs', $pb.PbFieldType.O3)
     ..aOS(6, _omitFieldNames ? '' : 'clientMessageId')
     ..aOS(7, _omitFieldNames ? '' : 'replyToMessageId')
+    ..pPS(8, _omitFieldNames ? '' : 'mentionedUserIds')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -11939,6 +12143,17 @@ class SendContributionMessageRequest extends $pb.GeneratedMessage {
   $core.bool hasReplyToMessageId() => $_has(6);
   @$pb.TagNumber(7)
   void clearReplyToMessageId() => $_clearField(7);
+
+  /// User ids @-mentioned in `body`, in the order they appear.
+  ///
+  /// Sent as ids rather than parsed out of the text server-side: the client
+  /// already knows exactly who was picked, and re-deriving targets from
+  /// "@Ada" would guess wrong the moment two members share a first name.
+  /// The server does NOT trust them — every id is checked against the group's
+  /// active membership before it is stored or notified, because a mention
+  /// sends a push carrying a preview of a private group's messages.
+  @$pb.TagNumber(8)
+  $pb.PbList<$core.String> get mentionedUserIds => $_getList(7);
 }
 
 class SendContributionMessageResponse extends $pb.GeneratedMessage {

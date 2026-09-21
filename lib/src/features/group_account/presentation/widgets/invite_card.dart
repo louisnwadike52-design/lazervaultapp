@@ -49,9 +49,8 @@ class InviteCard extends StatelessWidget {
     final groupName = invitation.groupName.isNotEmpty
         ? invitation.groupName
         : 'Group invitation';
-    final inviterName = invitation.inviterName.isNotEmpty
-        ? invitation.inviterName
-        : null;
+    final inviterName =
+        invitation.inviterName.isNotEmpty ? invitation.inviterName : null;
     final countdown = _expiryCountdown();
     final formattedInvitedAt =
         DateFormat('MMM d, y · h:mm a').format(invitation.invitedAt.toLocal());
@@ -82,8 +81,7 @@ class InviteCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(Icons.groups,
-                    color: const Color.fromARGB(255, 78, 3, 208),
-                    size: 20.sp),
+                    color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -199,8 +197,7 @@ class InviteCard extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: busy ? null : onAccept,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          const Color.fromARGB(255, 78, 3, 208),
+                      backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                       foregroundColor: Colors.white,
                       disabledBackgroundColor: Colors.grey[800],
                       padding: EdgeInsets.symmetric(vertical: 10.h),

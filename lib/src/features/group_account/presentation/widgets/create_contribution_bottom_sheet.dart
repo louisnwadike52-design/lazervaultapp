@@ -631,9 +631,8 @@ class _CreateContributionBottomSheetState
       metadata: metadata,
       // one_time only. A rotating contribution's receiver is its rotation
       // order's first position, and the server ignores the field for it.
-      payoutReceiverUserId: _selectedType == ContributionType.oneTime
-          ? _payoutReceiverId
-          : null,
+      payoutReceiverUserId:
+          _selectedType == ContributionType.oneTime ? _payoutReceiverId : null,
     );
   }
 
@@ -2628,7 +2627,8 @@ class _CreateContributionBottomSheetState
                     color: PayFlowTheme.accentOnDark.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                     border: Border.all(
-                        color: PayFlowTheme.accentOnDark.withValues(alpha: 0.5)),
+                        color:
+                            PayFlowTheme.accentOnDark.withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -2872,7 +2872,8 @@ class _CreateContributionBottomSheetState
                     color: PayFlowTheme.accentOnDark.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                     border: Border.all(
-                        color: PayFlowTheme.accentOnDark.withValues(alpha: 0.5)),
+                        color:
+                            PayFlowTheme.accentOnDark.withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

@@ -195,13 +195,15 @@ class _BudgetCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: ExpenseCategoryHelpers.getCategoryColor(budget.category)
-                        .withValues(alpha: 0.2),
+                    color:
+                        ExpenseCategoryHelpers.getCategoryColor(budget.category)
+                            .withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
                     ExpenseCategoryHelpers.getCategoryIcon(budget.category),
-                    color: ExpenseCategoryHelpers.getCategoryColor(budget.category),
+                    color: ExpenseCategoryHelpers.getCategoryColor(
+                        budget.category),
                     size: 24.sp,
                   ),
                 ),
@@ -220,7 +222,8 @@ class _BudgetCard extends StatelessWidget {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        ExpenseCategoryHelpers.getCategoryDisplayName(budget.category),
+                        ExpenseCategoryHelpers.getCategoryDisplayName(
+                            budget.category),
                         style: const TextStyle(
                           color: Color(0xFF9CA3AF),
                           fontSize: 12,
@@ -230,7 +233,8 @@ class _BudgetCard extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: ExpenseCategoryHelpers.getStatusColor(budget.status)
                         .withValues(alpha: 0.2),
@@ -239,7 +243,8 @@ class _BudgetCard extends StatelessWidget {
                   child: Text(
                     ExpenseCategoryHelpers.getStatusDisplayName(budget.status),
                     style: TextStyle(
-                      color: ExpenseCategoryHelpers.getStatusColor(budget.status),
+                      color:
+                          ExpenseCategoryHelpers.getStatusColor(budget.status),
                       fontSize: 12.sp,
                       fontWeight: FontWeight.bold,
                     ),
@@ -279,11 +284,13 @@ class _BudgetCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (budget.enforcementMode == pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_STRICT)
+                if (budget.enforcementMode ==
+                    pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_STRICT)
                   Padding(
                     padding: EdgeInsets.only(right: 8.w),
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEF4444).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4.r),

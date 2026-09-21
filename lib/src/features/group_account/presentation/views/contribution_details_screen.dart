@@ -32,7 +32,6 @@ part 'contribution_details_sheets.dart';
 part 'contribution_details_banners.dart';
 part 'contribution_details_payment_widgets.dart';
 
-
 class ContributionDetailsScreen extends StatefulWidget {
   final String contributionId;
   final Contribution? contribution;
@@ -44,7 +43,8 @@ class ContributionDetailsScreen extends StatefulWidget {
   });
 
   @override
-  State<ContributionDetailsScreen> createState() => _ContributionDetailsScreenState();
+  State<ContributionDetailsScreen> createState() =>
+      _ContributionDetailsScreenState();
 }
 
 class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
@@ -117,7 +117,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       // Also re-sync group state so pending-invite shadow rows get
       // promoted to active (or removed on decline/expire) without
       // requiring a manual pull-to-refresh.
-      final groupId = _currentContribution?.groupId ?? widget.contribution?.groupId;
+      final groupId =
+          _currentContribution?.groupId ?? widget.contribution?.groupId;
       if (groupId != null && groupId.isNotEmpty) {
         context.read<GroupAccountCubit>().loadGroupDetails(groupId);
       }
@@ -126,7 +127,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
   Future<void> _loadLocalPayments() async {
     try {
-      final payments = await context.read<GroupAccountCubit>().getContributionPayments.call(widget.contributionId);
+      final payments = await context
+          .read<GroupAccountCubit>()
+          .getContributionPayments
+          .call(widget.contributionId);
       if (mounted) {
         setState(() {
           _localPayments = payments;
@@ -141,7 +145,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // Load contribution details if not provided
     if (_currentContribution == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<GroupAccountCubit>().loadContributionDetails(widget.contributionId);
+        context
+            .read<GroupAccountCubit>()
+            .loadContributionDetails(widget.contributionId);
       });
     }
   }
@@ -166,7 +172,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 SnackBar(
                   content: Text(state.message),
                   backgroundColor: const Color(0xFFEF4444),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r)),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -179,9 +186,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               final cubit = context.read<GroupAccountCubit>();
               final myUserId = cubit.currentUserId;
               final myMember = myUserId != null
-                  ? state.members
-                      .where((m) => m.userId == myUserId)
-                      .firstOrNull
+                  ? state.members.where((m) => m.userId == myUserId).firstOrNull
                   : null;
               if (updatedContribution != null && mounted) {
                 setState(() {
@@ -199,7 +204,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 SnackBar(
                   content: Text(state.message),
                   backgroundColor: const Color(0xFF10B981),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r)),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -314,7 +320,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // Get current user info for permission display
     final cubit = context.read<GroupAccountCubit>();
     final currentUserId = cubit.currentUserId;
-    final isCreator = currentUserId != null && contribution.createdBy == currentUserId;
+    final isCreator =
+        currentUserId != null && contribution.createdBy == currentUserId;
     final isMember = currentUserId != null &&
         contribution.members.any((m) => m.userId == currentUserId);
     // Group admin is anyone who is either the group's adminId OR a
@@ -334,8 +341,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         group != null &&
         group.id == contribution.groupId &&
         (group.adminId == currentUserId ||
-            group.members.any(
-                (m) => m.userId == currentUserId && m.role == GroupMemberRole.admin));
+            group.members.any((m) =>
+                m.userId == currentUserId && m.role == GroupMemberRole.admin));
     final isAdmin = isCreator || isGroupAdmin;
 
     return Column(
@@ -370,7 +377,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         // elevation, and opens a styled dialog with the full detail
         // when tapped. Wraps to two rows on narrow screens.
         _buildStatusChipsRow(contribution, isCreator, isMember, isAdmin),
-        if (contribution.hasExternalLinks) _buildExternalLinksSection(contribution),
+        if (contribution.hasExternalLinks)
+          _buildExternalLinksSection(contribution),
         SizedBox(height: 8.h),
         _buildTabBar(),
         Expanded(
@@ -438,8 +446,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       final hasPaid = me.hasPaidCurrentCycle;
       chips.add(_StatusChip(
         icon: hasPaid ? Icons.check_circle : Icons.bolt,
-        iconColor:
-            hasPaid ? const Color(0xFF10B981) : const Color(0xFFFB923C),
+        iconColor: hasPaid ? const Color(0xFF10B981) : const Color(0xFFFB923C),
         label: 'Auto-debit',
         value: hasPaid ? 'Covered' : 'On',
         onTap: () => _showAutoDebitDialog(contribution, hasPaid: hasPaid),
@@ -511,8 +518,11 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     );
   }
 
-  String _roleLabel(bool isCreator, bool isMember) =>
-      isCreator ? 'Creator' : isMember ? 'Member' : 'Viewer';
+  String _roleLabel(bool isCreator, bool isMember) => isCreator
+      ? 'Creator'
+      : isMember
+          ? 'Member'
+          : 'Viewer';
 
   Color _roleColor(bool isCreator, bool isMember) => isCreator
       ? const Color(0xFFEF4444)
@@ -520,12 +530,21 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           ? const Color(0xFF10B981)
           : const Color(0xFF3B82F6);
 
-  IconData _roleIcon(bool isCreator, bool isMember) =>
-      isCreator ? Icons.star : isMember ? Icons.person : Icons.visibility;
+  IconData _roleIcon(bool isCreator, bool isMember) => isCreator
+      ? Icons.star
+      : isMember
+          ? Icons.person
+          : Icons.visibility;
 
-  void _showRoleDialog(Contribution contribution, bool isCreator, bool isMember) {
+  void _showRoleDialog(
+      Contribution contribution, bool isCreator, bool isMember) {
     final permissions = isCreator
-        ? const ['Edit contribution', 'Add members', 'View all payments', 'Delete contribution']
+        ? const [
+            'Edit contribution',
+            'Add members',
+            'View all payments',
+            'Delete contribution'
+          ]
         : isMember
             ? const ['Make payments', 'View payments', 'Download receipts']
             : const ['View contribution', 'Request to join'];
@@ -564,12 +583,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     );
   }
 
-  void _showAutoDebitDialog(Contribution contribution, {required bool hasPaid}) {
+  void _showAutoDebitDialog(Contribution contribution,
+      {required bool hasPaid}) {
     final due = contribution.nextPaymentDate;
     final dueLabel = due != null
         ? DateFormat('MMM dd, yyyy').format(due)
         : 'the next cycle close';
-    final amountLabel = contribution.regularAmount != null && contribution.regularAmount! > 0
+    final amountLabel = contribution.regularAmount != null &&
+            contribution.regularAmount! > 0
         ? '${contribution.currency} ${_fmtAmount(contribution.regularAmount!)}'
         : null;
 
@@ -601,7 +622,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text(
           'Join Contribution',
           style: GoogleFonts.inter(
@@ -714,8 +736,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   padding: EdgeInsets.only(top: 4.h),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child:
-                        ContributionTypeBadge(type: contribution.type),
+                    child: ContributionTypeBadge(type: contribution.type),
                   ),
                 ),
               ],
@@ -739,7 +760,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     child: Container(
                       padding: EdgeInsets.symmetric(
                           horizontal: _chatUnread > 9 ? 4.w : 0, vertical: 1.h),
-                      constraints: BoxConstraints(minWidth: 15.w, minHeight: 15.w),
+                      constraints:
+                          BoxConstraints(minWidth: 15.w, minHeight: 15.w),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEF4444),
                         borderRadius: BorderRadius.circular(9.r),
@@ -783,8 +805,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                       mentionCandidates: cubit.state is GroupAccountGroupLoaded
                           ? (cubit.state as GroupAccountGroupLoaded)
                               .members
-                              .where((m) =>
-                                  m.status == GroupMemberStatus.active)
+                              .where(
+                                  (m) => m.status == GroupMemberStatus.active)
                               .map((m) => MentionCandidate(
                                     userId: m.userId,
                                     name: m.userName.trim().isNotEmpty
@@ -869,8 +891,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   value: 'history',
                   child: Row(
                     children: [
-                      Icon(Icons.timeline,
-                          color: Colors.white, size: 20.sp),
+                      Icon(Icons.timeline, color: Colors.white, size: 20.sp),
                       SizedBox(width: 12.w),
                       Text(
                         'View Cycles History',
@@ -887,8 +908,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   value: 'past_contributions',
                   child: Row(
                     children: [
-                      Icon(Icons.history_edu,
-                          color: Colors.white, size: 20.sp),
+                      Icon(Icons.history_edu, color: Colors.white, size: 20.sp),
                       SizedBox(width: 12.w),
                       Text(
                         'Past contributions',
@@ -996,7 +1016,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             children: [
               _buildContribStat(
                 title: 'Raised',
-                value: '${contribution.currency} ${_fmtAmount(contribution.currentAmount)}',
+                value:
+                    '${contribution.currency} ${_fmtAmount(contribution.currentAmount)}',
                 icon: Icons.account_balance_wallet,
               ),
               Container(
@@ -1027,7 +1048,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 // below so users see "X partial, Y fully paid" instead
                 // of the percentage being skewed by in-flight money.
                 title: 'Progress',
-                value: '${progressPercentage.toStringAsFixed(progressPercentage < 10 && progressPercentage > 0 ? 1 : 0)}%',
+                value:
+                    '${progressPercentage.toStringAsFixed(progressPercentage < 10 && progressPercentage > 0 ? 1 : 0)}%',
                 icon: Icons.trending_up,
               ),
             ],
@@ -1035,8 +1057,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           if (partialCount > 0 || fullyPaidCount > 0) ...[
             SizedBox(height: 8.h),
             Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: 10.w, vertical: 6.h),
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
@@ -1176,7 +1197,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.white.withValues(alpha: 0.8), size: 14.sp),
+              Icon(icon,
+                  color: Colors.white.withValues(alpha: 0.8), size: 14.sp),
               SizedBox(width: 4.w),
               Flexible(
                 child: Text(
@@ -1380,9 +1402,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // Remaining is clamped at zero. Server caps overpay (validator on
     // the pay screen + DB check), but a brief over-shoot during a
     // race could otherwise surface as a negative "Remaining" — bad UX.
-    final remaining =
-        (contribution.targetAmount - contribution.currentAmount)
-            .clamp(0.0, double.infinity);
+    final remaining = (contribution.targetAmount - contribution.currentAmount)
+        .clamp(0.0, double.infinity);
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
@@ -1391,8 +1412,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         children: [
           _buildStatCard(
             title: 'Remaining Amount',
-            value:
-                '${contribution.currency} ${remaining.toStringAsFixed(2)}',
+            value: '${contribution.currency} ${remaining.toStringAsFixed(2)}',
             icon: Icons.account_balance_wallet,
             color: const Color(0xFF3B82F6),
           ),
@@ -1461,11 +1481,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // Add static payments, but avoid duplicates
     for (final staticPayment in contribution.payments) {
       final isDuplicate = allPayments.any((localPayment) =>
-        localPayment.id == staticPayment.id ||
-        (localPayment.transactionId != null &&
-         staticPayment.transactionId != null &&
-         localPayment.transactionId == staticPayment.transactionId)
-      );
+          localPayment.id == staticPayment.id ||
+          (localPayment.transactionId != null &&
+              staticPayment.transactionId != null &&
+              localPayment.transactionId == staticPayment.transactionId));
 
       if (!isDuplicate) {
         allPayments.add(staticPayment);
@@ -1586,9 +1605,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       final latest = list.isNotEmpty ? list.first : null;
       // Only settled money sets "last paid". A failed attempt used to supply
       // this date, producing "Last paid <date>" beside a ₦0 total.
-      final lastSettled = list
-          .where((p) => p.status == PaymentStatus.completed)
-          .firstOrNull;
+      final lastSettled =
+          list.where((p) => p.status == PaymentStatus.completed).firstOrNull;
 
       out.add(_UserPaymentGroup(
         userId: userId,
@@ -1685,10 +1703,11 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // before AddMembersToContribution), so a fresh invite re-issues
     // cleanly without the user noticing the prior decline.
     final contributionMembers = contribution.members
-        .where((m) =>
-            m.membershipStatus != ContributionMembershipStatus.declined)
+        .where(
+            (m) => m.membershipStatus != ContributionMembershipStatus.declined)
         .toList();
-    final hasMembers = contributionMembers.isNotEmpty || userPayments.isNotEmpty;
+    final hasMembers =
+        contributionMembers.isNotEmpty || userPayments.isNotEmpty;
 
     // ContributionMember doesn't carry user_username — that field
     // lives on GroupMember. Pull the parent group's roster from the
@@ -1768,14 +1787,18 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           _buildEmptyMembersInline()
         else
           ...List.generate(
-            contributionMembers.length + userPayments.entries.where((e) =>
-                !contributionMembers.any((m) => m.userId == e.key)).length,
+            contributionMembers.length +
+                userPayments.entries
+                    .where((e) =>
+                        !contributionMembers.any((m) => m.userId == e.key))
+                    .length,
             (index) {
               // Show assigned members first
               if (index < contributionMembers.length) {
                 final member = contributionMembers[index];
                 final payments = userPayments[member.userId] ?? [];
-                final totalPaid = payments.fold<double>(0, (sum, p) => sum + p.amount);
+                final totalPaid =
+                    payments.fold<double>(0, (sum, p) => sum + p.amount);
 
                 return _buildMemberCard(
                   userName: member.userName,
@@ -1795,13 +1818,15 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
               // Show payers who aren't assigned members
               final nonAssignedPayers = userPayments.entries
-                  .where((e) => !contributionMembers.any((m) => m.userId == e.key))
+                  .where(
+                      (e) => !contributionMembers.any((m) => m.userId == e.key))
                   .toList();
               final payerIndex = index - contributionMembers.length;
               if (payerIndex < nonAssignedPayers.length) {
                 final entry = nonAssignedPayers[payerIndex];
                 final payments = entry.value;
-                final totalAmount = payments.fold<double>(0, (sum, p) => sum + p.amount);
+                final totalAmount =
+                    payments.fold<double>(0, (sum, p) => sum + p.amount);
 
                 return _buildMemberCard(
                   userName: payments.first.userName,
@@ -1884,8 +1909,12 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         ? userName
         : (username != null && username.isNotEmpty)
             ? '@$username'
-            : (email != null && email.isNotEmpty ? email.split('@').first : 'Unknown User');
-    final progressPercent = expectedAmount > 0 ? (totalPaid / expectedAmount * 100).clamp(0.0, 100.0) : 0.0;
+            : (email != null && email.isNotEmpty
+                ? email.split('@').first
+                : 'Unknown User');
+    final progressPercent = expectedAmount > 0
+        ? (totalPaid / expectedAmount * 100).clamp(0.0, 100.0)
+        : 0.0;
     // PREVIOUS BUG: `isPaid = totalPaid >= expectedAmount` was true
     // when expectedAmount==0 (a brand-new member with no expected
     // share computed yet) → "Fully Paid" badge on someone who's never
@@ -1930,10 +1959,13 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             CircleAvatar(
               radius: 20.r,
               backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-              backgroundImage: profileImage != null ? NetworkImage(profileImage) : null,
+              backgroundImage:
+                  profileImage != null ? NetworkImage(profileImage) : null,
               child: profileImage == null
                   ? Text(
-                      displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
+                      displayName.isNotEmpty
+                          ? displayName[0].toUpperCase()
+                          : 'U',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -1967,16 +1999,15 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                           padding: EdgeInsets.symmetric(
                               horizontal: 6.w, vertical: 2.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFB923C)
-                                .withValues(alpha: 0.2),
+                            color:
+                                const Color(0xFFFB923C).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.mail_outline,
-                                  size: 10.sp,
-                                  color: const Color(0xFFFB923C)),
+                                  size: 10.sp, color: const Color(0xFFFB923C)),
                               SizedBox(width: 3.w),
                               Text(
                                 'Invite Sent',
@@ -1992,9 +2023,11 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                       ] else if (isPaid) ...[
                         SizedBox(width: 8.w),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Text(
@@ -2009,9 +2042,11 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                       ] else if (showCurrentCycle) ...[
                         SizedBox(width: 8.w),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                            color:
+                                const Color(0xFF3B82F6).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Text(
@@ -2036,7 +2071,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                       padding: EdgeInsets.only(top: 2.h),
                       child: Text(
                         [
-                          if (username != null && username.isNotEmpty) '@$username',
+                          if (username != null && username.isNotEmpty)
+                            '@$username',
                           if (email != null && email.isNotEmpty) email,
                         ].join(' · '),
                         maxLines: 1,
@@ -2119,10 +2155,11 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         group != null &&
         group.id == c.groupId &&
         (group.adminId == myUserId ||
-            group.members.any(
-                (m) => m.userId == myUserId && m.role == GroupMemberRole.admin));
+            group.members.any((m) =>
+                m.userId == myUserId && m.role == GroupMemberRole.admin));
     final isAdmin = isCreator || isGroupAdmin;
-    final isSelf = member != null && myUserId != null && member.userId == myUserId;
+    final isSelf =
+        member != null && myUserId != null && member.userId == myUserId;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -2204,7 +2241,6 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       actorIsSelf: true,
     );
   }
-
 
   Widget _buildStatCard({
     required String title,
@@ -2350,9 +2386,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         // links are surfaced separately on the contribution details body
         // (creator section), so we don't need bespoke buttons here.
         SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+          // iOS: a non-zero popover anchor is required — CGRectZero throws
+          // PlatformException and the share silently fails on iPhone/iPad.
+          sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
           text: _buildShareText(contribution),
           subject: contribution.title,
         ));
@@ -2390,8 +2426,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         Get.to(
           () => BlocProvider<GroupAccountCubit>.value(
             value: histCubit,
-            child: ContributionCyclesHistoryScreen(
-                contribution: contribution),
+            child: ContributionCyclesHistoryScreen(contribution: contribution),
           ),
         );
         break;
@@ -2410,8 +2445,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   }
 
   String _buildShareText(Contribution contribution) {
-    final raised = '${contribution.currency} ${_fmtAmount(contribution.currentAmount)}';
-    final target = '${contribution.currency} ${_fmtAmount(contribution.targetAmount)}';
+    final raised =
+        '${contribution.currency} ${_fmtAmount(contribution.currentAmount)}';
+    final target =
+        '${contribution.currency} ${_fmtAmount(contribution.targetAmount)}';
     final deadline = DateFormat('MMM dd, yyyy').format(contribution.deadline);
     return [
       contribution.title,
@@ -2504,7 +2541,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             content: Text('Transcript failed: ${state.message}'),
             backgroundColor: const Color(0xFFEF4444),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r)),
           ),
         );
       }
@@ -2513,7 +2551,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     cubit.generateTranscriptForContribution(contribution.id);
   }
 
-  void _showTranscriptDialog(ContributionTranscript transcript, Contribution contribution) {
+  void _showTranscriptDialog(
+      ContributionTranscript transcript, Contribution contribution) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -2568,17 +2607,20 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                                 contribution.title,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
+                                style: GoogleFonts.inter(
+                                    color: Colors.grey[400], fontSize: 13.sp),
                               ),
                             ],
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.copy_outlined, color: Colors.white, size: 20.sp),
+                          icon: Icon(Icons.copy_outlined,
+                              color: Colors.white, size: 20.sp),
                           tooltip: 'Copy summary',
                           onPressed: () async {
                             await Clipboard.setData(ClipboardData(
-                              text: _buildTranscriptText(transcript, contribution),
+                              text: _buildTranscriptText(
+                                  transcript, contribution),
                             ));
                             if (!sheetCtx.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -2586,20 +2628,24 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                                 content: const Text('Transcript copied'),
                                 backgroundColor: const Color(0xFF10B981),
                                 behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.r)),
                               ),
                             );
                           },
                         ),
                         IconButton(
-                          icon: Icon(Icons.ios_share, color: Colors.white, size: 20.sp),
+                          icon: Icon(Icons.ios_share,
+                              color: Colors.white, size: 20.sp),
                           tooltip: 'Share transcript',
                           onPressed: () {
                             SharePlus.instance.share(ShareParams(
-        // iOS: a non-zero popover anchor is required — CGRectZero throws
-        // PlatformException and the share silently fails on iPhone/iPad.
-        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
-                              text: _buildTranscriptText(transcript, contribution),
+                              // iOS: a non-zero popover anchor is required — CGRectZero throws
+                              // PlatformException and the share silently fails on iPhone/iPad.
+                              sharePositionOrigin:
+                                  const Rect.fromLTWH(0, 0, 1, 1),
+                              text: _buildTranscriptText(
+                                  transcript, contribution),
                               subject: 'Transcript ${contribution.title}',
                             ));
                           },
@@ -2616,7 +2662,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   controller: scrollController,
                   padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
                   children: [
-                    _transcriptKv('Generated', DateFormat('MMM dd, yyyy · HH:mm').format(transcript.generatedAt)),
+                    _transcriptKv(
+                        'Generated',
+                        DateFormat('MMM dd, yyyy · HH:mm')
+                            .format(transcript.generatedAt)),
                     _transcriptKv('Total raised',
                         '${transcript.currency} ${_fmtAmount(transcript.totalAmount)}'),
                     _transcriptKv('Payments', '${transcript.payments.length}'),
@@ -2632,11 +2681,13 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     SizedBox(height: 8.h),
                     if (transcript.memberContributions.isEmpty)
                       Text('No member breakdown available.',
-                          style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 12.sp))
+                          style: GoogleFonts.inter(
+                              color: Colors.grey[500], fontSize: 12.sp))
                     else
                       ...transcript.memberContributions.entries.map((e) {
                         return Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 10.h),
                           margin: EdgeInsets.only(bottom: 6.h),
                           decoration: BoxDecoration(
                             color: const Color(0xFF0A0A0A),
@@ -2648,7 +2699,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                               Expanded(
                                 child: Text(
                                   e.key,
-                                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
+                                  style: GoogleFonts.inter(
+                                      color: Colors.white, fontSize: 13.sp),
                                 ),
                               ),
                               Text(
@@ -2675,11 +2727,13 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     SizedBox(height: 8.h),
                     if (transcript.payments.isEmpty)
                       Text('No payments yet.',
-                          style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 12.sp))
+                          style: GoogleFonts.inter(
+                              color: Colors.grey[500], fontSize: 12.sp))
                     else
                       ...transcript.payments.map((p) {
                         return Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 10.h),
                           margin: EdgeInsets.only(bottom: 6.h),
                           decoration: BoxDecoration(
                             color: const Color(0xFF0A0A0A),
@@ -2693,15 +2747,19 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      p.userName.isNotEmpty ? p.userName : 'Unknown',
+                                      p.userName.isNotEmpty
+                                          ? p.userName
+                                          : 'Unknown',
                                       style: GoogleFonts.inter(
                                           color: Colors.white, fontSize: 13.sp),
                                     ),
                                     SizedBox(height: 2.h),
                                     Text(
-                                      DateFormat('MMM dd, yyyy · HH:mm').format(p.paymentDate),
+                                      DateFormat('MMM dd, yyyy · HH:mm')
+                                          .format(p.paymentDate),
                                       style: GoogleFonts.inter(
-                                          color: Colors.grey[500], fontSize: 11.sp),
+                                          color: Colors.grey[500],
+                                          fontSize: 11.sp),
                                     ),
                                   ],
                                 ),
@@ -2733,16 +2791,21 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 12.sp)),
+          Text(label,
+              style:
+                  GoogleFonts.inter(color: Colors.grey[400], fontSize: 12.sp)),
           Text(value,
               style: GoogleFonts.inter(
-                  color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600)),
         ],
       ),
     );
   }
 
-  String _buildTranscriptText(ContributionTranscript transcript, Contribution contribution) {
+  String _buildTranscriptText(
+      ContributionTranscript transcript, Contribution contribution) {
     final lines = <String>[
       'Transcript: ${contribution.title}',
       'Generated: ${DateFormat('yyyy-MM-dd HH:mm').format(transcript.generatedAt)}',
@@ -2882,8 +2945,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   const Color(0xFF1F1F35).withValues(alpha: 0.98),
                 ],
               ),
-              borderRadius:
-                  BorderRadius.vertical(top: Radius.circular(24.r)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
             ),
             child: ListView(
               controller: scrollController,
@@ -3005,8 +3067,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           Row(
             children: [
               Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: 8.w, vertical: 4.h),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: accentColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6.r),
@@ -3047,8 +3108,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                       ? '${group.currency} ${formatter.format(group.remaining)}'
                       : '—',
                   group.remaining > 0 ? accentColor : const Color(0xFF10B981)),
-              _summaryStat(
-                  'Attempts', '${group.attemptCount}', Colors.white),
+              _summaryStat('Attempts', '${group.attemptCount}', Colors.white),
             ],
           ),
           if (group.totalInFlight > 0 || group.totalRefunded > 0) ...[
@@ -3125,7 +3185,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               const Color(0xFF1F1F35).withValues(alpha: 0.98),
             ],
           ),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),          boxShadow: [
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+          boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 20,
@@ -3181,16 +3242,16 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: _getPaymentStatusColor(payment.status).withValues(alpha: 0.2),
+                    color: _getPaymentStatusColor(payment.status)
+                        .withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                     boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Text(
                     payment.status.displayName.toUpperCase(),
@@ -3223,7 +3284,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           ],
         ),
         SizedBox(height: 20.h),
-        
+
         // Amount display
         Container(
           width: double.infinity,
@@ -3238,7 +3299,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
-                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                color: const Color.fromARGB(255, 78, 3, 208)
+                    .withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -3372,13 +3434,12 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             children: [
@@ -3463,19 +3524,20 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             children: [
-              _buildAmountRow('Contribution Amount', '${payment.currency} ${payment.amount.toStringAsFixed(2)}'),
+              _buildAmountRow('Contribution Amount',
+                  '${payment.currency} ${payment.amount.toStringAsFixed(2)}'),
               SizedBox(height: 8.h),
-              _buildAmountRow('Processing Fee', '${payment.currency} 0.00', isSubtle: true),
+              _buildAmountRow('Processing Fee', '${payment.currency} 0.00',
+                  isSubtle: true),
               SizedBox(height: 12.h),
               Container(
                 height: 1.h,
@@ -3512,8 +3574,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         ),
         child: Row(
           children: [
-            Icon(Icons.lock_outline,
-                size: 18.sp, color: Colors.grey[400]),
+            Icon(Icons.lock_outline, size: 18.sp, color: Colors.grey[400]),
             SizedBox(width: 10.w),
             Expanded(
               child: Text(
@@ -3583,7 +3644,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     try {
       // Close the bottom sheet first
       Navigator.pop(context);
-      
+
       // Show loading dialog
       showDialog(
         context: context,
@@ -3623,10 +3684,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
       // Simulate receipt generation delay
       await Future.delayed(const Duration(milliseconds: 1500));
-      
+
       // Close loading dialog
       if (mounted) Navigator.pop(context);
-      
+
       // Navigate to receipt screen.
       //
       // cameFromPayment=false because this branch is the "Generate
@@ -3645,7 +3706,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           ),
         );
       }
-      
+
       // Show success message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -3658,7 +3719,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               ],
             ),
             backgroundColor: const Color(0xFF10B981),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r)),
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 3),
           ),
@@ -3667,7 +3729,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     } catch (e) {
       // Close loading dialog if still open
       if (mounted) Navigator.pop(context);
-      
+
       // Show error message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -3680,7 +3742,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               ],
             ),
             backgroundColor: const Color(0xFFEF4444),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r)),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -3692,22 +3755,23 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     try {
       // Generate shareable text
       final shareText = _generateShareText(payment);
-      
+
       // Use HapticFeedback for better UX
       HapticFeedback.lightImpact();
-      
+
       // Close the bottom sheet first
       Navigator.pop(context);
-      
+
       // Share the payment details
       await SharePlus.instance.share(ShareParams(
         // iOS: a non-zero popover anchor is required — CGRectZero throws
         // PlatformException and the share silently fails on iPhone/iPad.
         sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
         text: shareText,
-        subject: 'Payment Receipt for ${_currentContribution?.title ?? 'Contribution'}',
+        subject:
+            'Payment Receipt for ${_currentContribution?.title ?? 'Contribution'}',
       ));
-      
+
       // Show success message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -3720,7 +3784,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               ],
             ),
             backgroundColor: const Color(0xFF10B981),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r)),
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 2),
           ),
@@ -3739,7 +3804,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               ],
             ),
             backgroundColor: const Color(0xFFEF4444),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r)),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -3750,7 +3816,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   String _generateShareText(ContributionPayment payment) {
     final contribution = _currentContribution;
     final paymentMethod = _getPaymentMethodName(payment);
-    
+
     return '''
 🎉 PAYMENT RECEIPT 🎉
 
@@ -3795,10 +3861,10 @@ Powered by LazerVault 🚀
             offset: Offset(0, 2),
           ),
         ],
-        
       ),
       child: Row(
-        crossAxisAlignment: isMultiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        crossAxisAlignment:
+            isMultiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
         children: [
           if (icon != null) ...[
             Icon(
@@ -3854,7 +3920,8 @@ Powered by LazerVault 🚀
     );
   }
 
-  Widget _buildAmountRow(String label, String amount, {bool isSubtle = false, bool isTotal = false}) {
+  Widget _buildAmountRow(String label, String amount,
+      {bool isSubtle = false, bool isTotal = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -3871,7 +3938,9 @@ Powered by LazerVault 🚀
           style: GoogleFonts.inter(
             fontSize: isTotal ? 18.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.bold : FontWeight.w500,
-            color: isTotal ? const Color(0xFF10B981) : (isSubtle ? Colors.grey[500] : Colors.white),
+            color: isTotal
+                ? const Color(0xFF10B981)
+                : (isSubtle ? Colors.grey[500] : Colors.white),
           ),
         ),
       ],
@@ -3972,7 +4041,9 @@ Powered by LazerVault 🚀
           onMembersAdded: () {
             _refreshPayments();
             // Also reload contribution details to update the members list
-            context.read<GroupAccountCubit>().loadContributionDetails(contribution.id);
+            context
+                .read<GroupAccountCubit>()
+                .loadContributionDetails(contribution.id);
           },
         ),
       ),
@@ -3983,7 +4054,7 @@ Powered by LazerVault 🚀
     try {
       await Clipboard.setData(ClipboardData(text: text));
       HapticFeedback.lightImpact();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -3998,7 +4069,8 @@ Powered by LazerVault 🚀
               ],
             ),
             backgroundColor: const Color(0xFF10B981),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r)),
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 1),
           ),
@@ -4019,7 +4091,8 @@ Powered by LazerVault 🚀
               ],
             ),
             backgroundColor: const Color(0xFFEF4444),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r)),
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 1),
           ),

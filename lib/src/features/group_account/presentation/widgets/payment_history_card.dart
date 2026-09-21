@@ -37,7 +37,8 @@ class PaymentHistoryCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 18.r,
-                  backgroundColor: _getStatusColor(payment.status).withValues(alpha: 0.2),
+                  backgroundColor:
+                      _getStatusColor(payment.status).withValues(alpha: 0.2),
                   child: Icon(
                     _getStatusIcon(payment.status),
                     color: _getStatusColor(payment.status),
@@ -59,7 +60,8 @@ class PaymentHistoryCard extends StatelessWidget {
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        DateFormat('MMM dd, yyyy HH:mm').format(payment.paymentDate),
+                        DateFormat('MMM dd, yyyy HH:mm')
+                            .format(payment.paymentDate),
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           color: Colors.grey[400],
@@ -81,18 +83,19 @@ class PaymentHistoryCard extends StatelessWidget {
                     ),
                     SizedBox(height: 2.h),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(payment.status).withValues(alpha: 0.1),
+                        color: _getStatusColor(payment.status)
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6.r),
                         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 6,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Text(
                         payment.status.displayName,
@@ -201,4 +204,4 @@ class PaymentHistoryCard extends StatelessWidget {
         return Icons.report_problem;
     }
   }
-} 
+}

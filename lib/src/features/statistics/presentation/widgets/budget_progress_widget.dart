@@ -79,7 +79,8 @@ class _BudgetProgressItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percentage = progress.budgetAmount > 0
-        ? (progress.spentAmount / progress.budgetAmount * 100).clamp(0, 100) as double
+        ? (progress.spentAmount / progress.budgetAmount * 100).clamp(0, 100)
+            as double
         : 0.0;
 
     final status = _getBudgetStatus(percentage);

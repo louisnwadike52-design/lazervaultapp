@@ -17,8 +17,7 @@ import 'package:lazervault/src/features/transaction_history/presentation/widgets
 import 'package:lazervault/src/features/transaction_history/utils/transaction_export_helper.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
-import 'package:lazervault/src/features/funds/presentation/send_funds_launcher.dart';
-import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import '../../utils/repeat_transfer.dart';
 
 /// Revolut-style dashboard transaction history screen
 class DashboardTransactionHistoryScreen extends StatefulWidget {
@@ -72,7 +71,8 @@ class _DashboardTransactionHistoryScreenState
   }
 
   void _onFiltersChanged(TransactionFilters updatedFilters) {
-    setState(() => _activeFilters = updatedFilters.hasFilters ? updatedFilters : null);
+    setState(() =>
+        _activeFilters = updatedFilters.hasFilters ? updatedFilters : null);
     // Merge with current search query
     final merged = _searchController.text.isNotEmpty
         ? updatedFilters.copyWith(searchQuery: _searchController.text)
@@ -90,13 +90,15 @@ class _DashboardTransactionHistoryScreenState
 
   void _showTransactionDetailDialog(UnifiedTransaction tx) {
     final isIncoming = tx.flow == TransactionFlow.incoming;
-    final dateStr = DateFormat('EEEE, dd MMM yyyy \'at\' HH:mm').format(tx.createdAt);
+    final dateStr =
+        DateFormat('EEEE, dd MMM yyyy \'at\' HH:mm').format(tx.createdAt);
     final symbol = tx.currency == 'NGN'
         ? '\u20A6'
         : tx.currency == 'USD'
             ? '\$'
             : tx.currency;
-    final amtStr = '${isIncoming ? '+' : ''}$symbol${tx.amount.toStringAsFixed(2)}';
+    final amtStr =
+        '${isIncoming ? '+' : ''}$symbol${tx.amount.toStringAsFixed(2)}';
 
     showModalBottomSheet(
       context: context,
@@ -266,8 +268,7 @@ class _DashboardTransactionHistoryScreenState
             Builder(builder: (_) {
               final bank = TransferBankDisplay.resolve(
                 tx.metadata,
-                isTransfer:
-                    tx.serviceType == TransactionServiceType.transfer,
+                isTransfer: tx.serviceType == TransactionServiceType.transfer,
               );
               if (bank == null) return const SizedBox.shrink();
               return Padding(
@@ -305,78 +306,34 @@ class _DashboardTransactionHistoryScreenState
             Row(
               children: [
                 // Repeat transaction
+                // canRepeat, not just "has a name": without an account
+                // number AND without a stamped user id there is nothing to
+                // rebuild a payee from, and the button would open an empty
+                // form — a dead control is worse than an absent one.
                 if (tx.serviceType == TransactionServiceType.transfer &&
                     !isIncoming &&
-                    tx.counterpartyName != null)
+                    RepeatTransfer.canRepeat(
+                      counterpartyName: tx.counterpartyName,
+                      counterpartyAccount: tx.counterpartyAccount,
+                      metadata: tx.metadata,
+                    ))
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
                         Navigator.pop(ctx);
-                        // Re-initiate a pre-filled send via the shared
-                        // launcher (honors the short/long flow preference).
-                        // Carry the payee's user id (stamped in tx metadata) so
-                        // a save dedups by internal_user_id, not account number.
-                        final counterpartyUid =
-                            (tx.metadata?['counterparty_user_id'] ??
-                                    tx.metadata?['recipient_user_id'])
-                                ?.toString();
-                        // EXTERNAL transfers must repeat as EXTERNAL: the old
-                        // hardcoded type:'internal' routed the beneficiary's
-                        // BANK account number into the Lazervault-user lookup,
-                        // which correctly 404s ("couldn't find that recipient")
-                        // — every external repeat failed. The capture row's
-                        // metadata carries the destination bank name/code.
-                        final md = tx.metadata ?? const <String, dynamic>{};
-                        String mdStr(List<String> keys) {
-                          for (final k in keys) {
-                            final v = md[k]?.toString().trim() ?? '';
-                            if (v.isNotEmpty) return v;
-                          }
-                          return '';
-                        }
-
-                        final bankName = mdStr([
-                          'recipient_bank_name',
-                          'destination_bank_name',
-                          'bank_name',
-                        ]);
-                        final bankCode = mdStr([
-                          'destination_bank_code',
-                          'bank_code',
-                        ]);
-                        final hasInternalUid = counterpartyUid != null &&
-                            counterpartyUid.isNotEmpty;
-                        // Internal requires PROOF — a resolved LazerVault
-                        // user id, or a bank explicitly named LazerVault.
-                        // Requiring `bankName.isNotEmpty` for external meant a
-                        // row whose metadata simply never captured the bank
-                        // fell through to INTERNAL, and repeating it routed an
-                        // ordinary bank transfer as LazerVault-to-LazerVault —
-                        // which the backend rejects outright. Absent proof,
-                        // external is the read that can still complete.
-                        final isExternal = !hasInternalUid &&
-                            !bankName.toLowerCase().contains('lazervault');
-                        final recipient = RecipientModel(
-                          id: '',
-                          name: tx.counterpartyName ?? '',
-                          accountNumber: tx.counterpartyAccount ?? '',
-                          bankName: isExternal ? bankName : 'LazerVault',
-                          isFavorite: false,
-                          sortCode: isExternal ? bankCode : '',
-                          type: isExternal ? 'external' : 'internal',
-                          internalUserId: hasInternalUid ? counterpartyUid : null,
-                        );
-                        SendFundsLauncher.open(
-                          recipient: recipient,
-                          autoContinue: true,
-                          // Pre-fill the ACTUAL transfer amount, never amount+fee.
-                          // A COMPLETED external transfer's history row is the
-                          // capture ledger row whose amount = principal + fee, so
-                          // we prefer the backend-stamped `principal_minor`, then
-                          // subtract `total_fee_minor` if only the total is known;
-                          // internal/no-fee rows carry neither key → amount as-is.
-                          prefillAmountMinor: _repeatPrefillAmountMinor(tx),
-                          prefillCurrency: tx.currency,
+                        // Reconstruction lives in RepeatTransfer so the receipt
+                        // screens repeat a transfer EXACTLY the way this sheet
+                        // does — the rail inference (internal requires proof),
+                        // the principal-not-principal+fee amount, and the
+                        // payee's stamped user id are one implementation, not
+                        // three that drift.
+                        RepeatTransfer.open(
+                          counterpartyName: tx.counterpartyName ?? '',
+                          counterpartyAccount: tx.counterpartyAccount ?? '',
+                          amount: tx.amount,
+                          metadata: tx.metadata,
+                          currency: tx.currency,
+                          description: tx.description,
                         );
                       },
                       child: Container(
@@ -388,7 +345,8 @@ class _DashboardTransactionHistoryScreenState
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.replay, color: Colors.white, size: 18.sp),
+                            Icon(Icons.replay,
+                                color: Colors.white, size: 18.sp),
                             SizedBox(width: 8.w),
                             Text(
                               'Repeat',
@@ -427,7 +385,8 @@ class _DashboardTransactionHistoryScreenState
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.receipt_outlined, color: Colors.white, size: 18.sp),
+                          Icon(Icons.receipt_outlined,
+                              color: Colors.white, size: 18.sp),
                           SizedBox(width: 8.w),
                           Text(
                             'Receipt',
@@ -453,24 +412,12 @@ class _DashboardTransactionHistoryScreenState
     );
   }
 
-  /// The ACTUAL transfer amount (minor units) to pre-fill on Repeat — never
-  /// amount+fee. Prefers the backend-stamped `principal_minor`; else subtracts
-  /// `total_fee_minor` from the (fee-inclusive) captured amount; else uses the
-  /// amount as-is (internal / no-fee rows carry neither key).
-  int _repeatPrefillAmountMinor(UnifiedTransaction tx) {
-    final meta = tx.metadata;
-    final principal = int.tryParse('${meta?['principal_minor'] ?? ''}') ?? 0;
-    if (principal > 0) return principal;
-    final total = (tx.amount * 100).round();
-    final fee = int.tryParse('${meta?['total_fee_minor'] ?? ''}') ?? 0;
-    return (fee > 0 && fee < total) ? total - fee : total;
-  }
-
   Map<DateTime, List<UnifiedTransaction>> _groupByDate(
       List<UnifiedTransaction> transactions) {
     final grouped = <DateTime, List<UnifiedTransaction>>{};
     for (var tx in transactions) {
-      final date = DateTime(tx.createdAt.year, tx.createdAt.month, tx.createdAt.day);
+      final date =
+          DateTime(tx.createdAt.year, tx.createdAt.month, tx.createdAt.day);
       (grouped[date] ??= []).add(tx);
     }
     return Map.fromEntries(
@@ -494,7 +441,9 @@ class _DashboardTransactionHistoryScreenState
                   final merged = (_activeFilters ?? const TransactionFilters())
                       .copyWith(searchQuery: query.isNotEmpty ? query : null);
                   if (merged.hasFilters) {
-                    context.read<TransactionHistoryCubit>().applyFilters(merged);
+                    context
+                        .read<TransactionHistoryCubit>()
+                        .applyFilters(merged);
                   } else {
                     context.read<TransactionHistoryCubit>().clearFilters();
                   }
@@ -504,7 +453,9 @@ class _DashboardTransactionHistoryScreenState
                 _searchController.clear();
                 if (_activeFilters != null && _activeFilters!.hasFilters) {
                   // Keep other filters, just clear search
-                  context.read<TransactionHistoryCubit>().applyFilters(_activeFilters!);
+                  context
+                      .read<TransactionHistoryCubit>()
+                      .applyFilters(_activeFilters!);
                 } else {
                   context.read<TransactionHistoryCubit>().clearFilters();
                 }
@@ -518,7 +469,8 @@ class _DashboardTransactionHistoryScreenState
             ),
             SizedBox(height: 8.h),
             Expanded(
-              child: BlocBuilder<TransactionHistoryCubit, TransactionHistoryState>(
+              child:
+                  BlocBuilder<TransactionHistoryCubit, TransactionHistoryState>(
                 builder: (context, state) {
                   if (state is TransactionHistoryLoading) {
                     return const TransactionInitialLoading();
@@ -527,7 +479,8 @@ class _DashboardTransactionHistoryScreenState
                   } else if (state is TransactionHistoryEmpty) {
                     return TransactionEmptyState(
                       message: state.message,
-                      action: (_activeFilters != null || _searchController.text.isNotEmpty)
+                      action: (_activeFilters != null ||
+                              _searchController.text.isNotEmpty)
                           ? _buildClearFiltersButton()
                           : null,
                     );
@@ -658,7 +611,8 @@ class _DashboardTransactionHistoryScreenState
     final grouped = _groupByDate(transactions);
 
     return RefreshIndicator(
-      onRefresh: () => context.read<TransactionHistoryCubit>().refreshTransactions(),
+      onRefresh: () =>
+          context.read<TransactionHistoryCubit>().refreshTransactions(),
       backgroundColor: const Color(0xFF1F1F1F),
       color: const Color(0xFF581CD9),
       child: ListView.builder(

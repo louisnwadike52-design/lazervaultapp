@@ -184,7 +184,8 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
     // now live again.
     if (_mentionBoundary > value.length) _mentionBoundary = 0;
     final q = MentionText.queryAt(value, caret, notBefore: _mentionBoundary);
-    if (q?.term != _mentionQuery?.term || (q == null) != (_mentionQuery == null)) {
+    if (q?.term != _mentionQuery?.term ||
+        (q == null) != (_mentionQuery == null)) {
       setState(() => _mentionQuery = q);
     } else {
       _mentionQuery = q;
@@ -217,8 +218,8 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
   /// "@word", because names contain spaces: an "@word" rule would colour
   /// "@Praiz" and leave "Onah Flw" plain, reading as a rendering fault.
   Widget _bodyWithMentions(ContributionMessage m) {
-    final base = GoogleFonts.inter(
-        color: Colors.white, fontSize: 14.sp, height: 1.35);
+    final base =
+        GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, height: 1.35);
 
     if (m.mentionedUserIds.isEmpty) return Text(m.body, style: base);
 
@@ -437,8 +438,7 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
         final prev = i > 0 ? _chat.messages[i - 1] : null;
         // Date separator when the day changes — cheap orientation in a long
         // scrollback.
-        final showDate = prev == null ||
-            !_sameDay(prev.createdAt, m.createdAt);
+        final showDate = prev == null || !_sameDay(prev.createdAt, m.createdAt);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -480,8 +480,7 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
           borderRadius: BorderRadius.circular(10.r),
         ),
         child: Text(label,
-            style:
-                GoogleFonts.inter(color: Colors.grey[500], fontSize: 10.sp)),
+            style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 10.sp)),
       ),
     );
   }
@@ -648,7 +647,8 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
         return Icon(Icons.error_outline,
             size: 12.sp, color: const Color(0xFFFCA5A5));
       case ChatDeliveryStatus.read:
-        return Icon(Icons.done_all, size: 13.sp, color: const Color(0xFF7DD3FC));
+        return Icon(Icons.done_all,
+            size: 13.sp, color: const Color(0xFF7DD3FC));
       case ChatDeliveryStatus.sent:
         return Icon(Icons.done,
             size: 13.sp, color: Colors.white.withValues(alpha: 0.7));
@@ -742,42 +742,42 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
             ),
           if (_isRecording) _buildRecordingBar(),
           if (!_isRecording)
-          Expanded(
-            child: TextField(
-              controller: _input,
-              onChanged: (v) {
-                _chat.onTypingChanged(v);
-                _onComposerChanged(v);
-                final has = v.trim().isNotEmpty;
-                if (has != _hasText) setState(() => _hasText = has);
-              },
-              minLines: 1,
-              maxLines: 5,
-              textCapitalization: TextCapitalization.sentences,
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
-              decoration: InputDecoration(
-                hintText: 'Message',
-                hintStyle:
-                    GoogleFonts.inter(color: Colors.grey[600], fontSize: 14.sp),
-                filled: true,
-                fillColor: _card,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(22.r),
-                  borderSide: const BorderSide(color: _border),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(22.r),
-                  borderSide: const BorderSide(color: _border),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(22.r),
-                  borderSide: const BorderSide(color: _mine, width: 1.5),
+            Expanded(
+              child: TextField(
+                controller: _input,
+                onChanged: (v) {
+                  _chat.onTypingChanged(v);
+                  _onComposerChanged(v);
+                  final has = v.trim().isNotEmpty;
+                  if (has != _hasText) setState(() => _hasText = has);
+                },
+                minLines: 1,
+                maxLines: 5,
+                textCapitalization: TextCapitalization.sentences,
+                style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                decoration: InputDecoration(
+                  hintText: 'Message',
+                  hintStyle: GoogleFonts.inter(
+                      color: Colors.grey[600], fontSize: 14.sp),
+                  filled: true,
+                  fillColor: _card,
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(22.r),
+                    borderSide: const BorderSide(color: _border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(22.r),
+                    borderSide: const BorderSide(color: _border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(22.r),
+                    borderSide: const BorderSide(color: _mine, width: 1.5),
+                  ),
                 ),
               ),
             ),
-          ),
           SizedBox(width: 8.w),
           // Send when there is text to send, microphone when there is not.
           // One control rather than two: a composer with a permanently greyed
@@ -962,7 +962,8 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
   void _toast(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: const Color(0xFFEF4444)),
+      SnackBar(
+          content: Text(message), backgroundColor: const Color(0xFFEF4444)),
     );
   }
 
@@ -1027,8 +1028,7 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
           Icon(Icons.graphic_eq, color: Colors.white70, size: 18.sp),
           SizedBox(width: 8.w),
           Text('$mm:$ss',
-              style: GoogleFonts.inter(
-                  color: Colors.white, fontSize: 13.sp)),
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
         ],
       ),
     );
@@ -1108,13 +1108,14 @@ class _ContributionChatScreenState extends State<ContributionChatScreen>
     );
   }
 
-  Widget _action(BuildContext ctx, IconData icon, String label, VoidCallback onTap,
+  Widget _action(
+      BuildContext ctx, IconData icon, String label, VoidCallback onTap,
       {bool danger = false}) {
     final color = danger ? const Color(0xFFEF4444) : Colors.white;
     return ListTile(
       leading: Icon(icon, color: color, size: 20.sp),
-      title: Text(label,
-          style: GoogleFonts.inter(color: color, fontSize: 14.sp)),
+      title:
+          Text(label, style: GoogleFonts.inter(color: color, fontSize: 14.sp)),
       onTap: () {
         Navigator.pop(ctx);
         onTap();

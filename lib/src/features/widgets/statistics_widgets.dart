@@ -96,7 +96,7 @@ class _FeatureCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Get.toNamed(feature.route, arguments: feature.arguments),
       child: Container(
-        padding: EdgeInsets.all(16.w),
+        padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 10.h),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
@@ -114,44 +114,63 @@ class _FeatureCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          // Content decides the height within the cell; the grid gives it room
+          // (see childAspectRatio where this card is built). "Smart
+          // recommendations" wraps to two lines while its siblings are one, and
+          // the fixed-height cell used to clip it.
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: EdgeInsets.all(10.w),
+                  padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
                     color: feature.color.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Icon(
                     feature.icon,
                     color: feature.color,
-                    size: 22.sp,
+                    size: 20.sp,
                   ),
                 ),
                 Icon(
                   Icons.chevron_right,
                   color: feature.color.withValues(alpha: 0.5),
-                  size: 20.sp,
+                  size: 18.sp,
                 ),
               ],
             ),
-            const Spacer(),
+            SizedBox(height: 8.h),
             Text(
               feature.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 16.sp,
+                fontSize: 15.sp,
                 fontWeight: FontWeight.bold,
               ),
             ),
             SizedBox(height: 2.h),
-            Text(
-              feature.description,
-              style: TextStyle(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 12.sp,
+            // Flexible, not a bare Text. A GridView cell hands down a FIXED
+            // height, so an unflexed child lays out at its intrinsic height and
+            // spills past the card — which is exactly what "Smart
+            // recommendations" did once it needed a second line while its
+            // single-line siblings fit. Flexible lets this line give up space
+            // instead of overflowing, so no combination of description length
+            // and the user's text-scale setting can break the card again.
+            Flexible(
+              child: Text(
+                feature.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 11.5.sp,
+                  height: 1.2,
+                ),
               ),
             ),
           ],

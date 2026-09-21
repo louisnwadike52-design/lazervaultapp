@@ -49,7 +49,6 @@ import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_l
 import 'package:lazervault/src/features/open_banking/presentation/helpers/link_account_gate.dart';
 part 'move_transfer_flow_screen_widgets.dart';
 
-
 /// Single-screen Move Money transfer flow (modelled after the Exchange Convert flow).
 ///
 /// Layout:
@@ -65,8 +64,7 @@ class MoveTransferFlowScreen extends StatefulWidget {
   const MoveTransferFlowScreen({super.key});
 
   @override
-  State<MoveTransferFlowScreen> createState() =>
-      _MoveTransferFlowScreenState();
+  State<MoveTransferFlowScreen> createState() => _MoveTransferFlowScreenState();
 }
 
 class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
@@ -196,8 +194,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   final Set<String> _refreshingBalanceIds = <String>{};
 
   void _listenForBalanceRefreshes() {
-    _balanceRefreshSub ??=
-        context.read<OpenBankingCubit>().stream.listen((s) {
+    _balanceRefreshSub ??= context.read<OpenBankingCubit>().stream.listen((s) {
       if (!mounted) return;
       if (s is LinkedAccountsLoaded) {
         _applyRedoIfReady();
@@ -267,9 +264,11 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     if (amountKobo > 0) {
       String? error;
       if (amountKobo < _minAmountKobo) {
-        error = 'Minimum amount is NGN ${(_minAmountKobo / 100).toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}';
+        error =
+            'Minimum amount is NGN ${(_minAmountKobo / 100).toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}';
       } else if (amountKobo > _maxAmountKobo) {
-        error = 'Maximum amount is NGN ${(_maxAmountKobo / 100).toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}';
+        error =
+            'Maximum amount is NGN ${(_maxAmountKobo / 100).toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}';
       }
       setState(() {
         _amountError = error;
@@ -315,9 +314,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         accounts: accounts,
         selectedId: selectedId,
         excludeId: excludeId,
-        title: isSource
-            ? 'Select Source Account'
-            : 'Select Destination Account',
+        title:
+            isSource ? 'Select Source Account' : 'Select Destination Account',
         onSelected: (account) {
           setState(() {
             if (isSource) {
@@ -616,7 +614,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                       ),
                       SizedBox(width: 6.w),
                       Icon(Icons.info_outline,
-                          color: Colors.white.withValues(alpha: 0.4), size: 13.sp),
+                          color: Colors.white.withValues(alpha: 0.4),
+                          size: 13.sp),
                     ],
                   ),
                   SizedBox(height: 2.h),
@@ -632,35 +631,35 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                 ],
               ),
             ),
-          if (actionLabel != null)
-            TextButton(
-              onPressed: () async {
-                await _showMandateManagement(_sourceAccount!, mandate);
-                // The sheet may have created/authorized a mandate — reload so
-                // this row (and the submit rail) reflect the new state.
-                if (!mounted) return;
-                final authState = context.read<AuthenticationCubit>().state;
-                if (authState is AuthenticationSuccess) {
-                  context.read<MandateCubit>().fetchUserMandates(
-                        userId: authState.profile.userId,
-                      );
-                }
-                setState(() {});
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF3B82F6),
-                padding: EdgeInsets.symmetric(horizontal: 10.w),
-              ),
-              child: Text(
-                actionLabel,
-                style: GoogleFonts.inter(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
+            if (actionLabel != null)
+              TextButton(
+                onPressed: () async {
+                  await _showMandateManagement(_sourceAccount!, mandate);
+                  // The sheet may have created/authorized a mandate — reload so
+                  // this row (and the submit rail) reflect the new state.
+                  if (!mounted) return;
+                  final authState = context.read<AuthenticationCubit>().state;
+                  if (authState is AuthenticationSuccess) {
+                    context.read<MandateCubit>().fetchUserMandates(
+                          userId: authState.profile.userId,
+                        );
+                  }
+                  setState(() {});
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF3B82F6),
+                  padding: EdgeInsets.symmetric(horizontal: 10.w),
+                ),
+                child: Text(
+                  actionLabel,
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-            ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -699,8 +698,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: const Text('Unlink bank',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
         content: Text(
@@ -712,13 +711,13 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Keep',
-                style: TextStyle(color: Color(0xFF9CA3AF))),
+            child:
+                const Text('Keep', style: TextStyle(color: Color(0xFF9CA3AF))),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Unlink',
-                style: TextStyle(color: Colors.redAccent)),
+            child:
+                const Text('Unlink', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),
@@ -777,7 +776,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       linkedAccountId: accountId,
       userEmail: user.email.isNotEmpty ? user.email : null,
       userName: '${user.firstName} ${user.lastName}'.trim(),
-      userPhone: (user.phoneNumber?.isNotEmpty ?? false) ? user.phoneNumber : null,
+      userPhone:
+          (user.phoneNumber?.isNotEmpty ?? false) ? user.phoneNumber : null,
     );
   }
 
@@ -801,7 +801,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   /// Returns null if ready, or an error message string.
   String? _checkSourceAccountReady() {
     if (_sourceAccount == null) return 'Please select a source account';
-    if (_destinationAccount == null) return 'Please select a destination account';
+    if (_destinationAccount == null)
+      return 'Please select a destination account';
 
     if (_sourceAccount!.needsReauthorization) {
       return 'Source account requires re-authorization. Please re-link the account.';
@@ -845,8 +846,6 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
 
     return null;
   }
-
-
 
   /// Beam → SendFunds receipt payload. One receipt experience platform-wide
   /// (LazerVault logo top-right, QR with the reference, no extra CTAs); only
@@ -932,9 +931,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         SizedBox(width: 5.w),
         Icon(Icons.refresh,
             size: 12.sp,
-            color: isLive
-                ? const Color(0xFF10B981)
-                : const Color(0xFF9CA3AF)),
+            color: isLive ? const Color(0xFF10B981) : const Color(0xFF9CA3AF)),
         if (everFetched) ...[
           SizedBox(width: 4.w),
           Flexible(
@@ -960,14 +957,16 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       return 'Could not refresh this balance (last updated '
           '${_formatLastRefresh(_sourceAccount!)}). Tap the balance to retry.';
     }
-    if (_sourceAccount!.lastKnownBalance <= 0 && !_sourceAccount!.isBalanceStale) {
+    if (_sourceAccount!.lastKnownBalance <= 0 &&
+        !_sourceAccount!.isBalanceStale) {
       return 'Balance information unavailable for this account.';
     }
     return null;
   }
 
   String _formatLastRefresh(LinkedBankAccount account) {
-    final refreshTime = account.lastBalanceRefreshAt ?? account.balanceUpdatedAt;
+    final refreshTime =
+        account.lastBalanceRefreshAt ?? account.balanceUpdatedAt;
     if (refreshTime == null) return 'never';
     final diff = DateTime.now().difference(refreshTime);
     if (diff.inMinutes < 1) return 'just now';
@@ -1056,7 +1055,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) {
       Get.snackbar('Error', 'Authentication required',
-          backgroundColor: const Color(0xFFEF4444), colorText: Colors.white,
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
           snackPosition: SnackPosition.TOP);
       return;
     }
@@ -1072,7 +1072,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         Get.snackbar('Fee unavailable',
             "We couldn't confirm the transfer fee. Please try again.",
             snackPosition: SnackPosition.TOP,
-            backgroundColor: const Color(0xFFEF4444), colorText: Colors.white);
+            backgroundColor: const Color(0xFFEF4444),
+            colorText: Colors.white);
         return;
       }
       setState(() => _feeCalculation = feeCalc);
@@ -1094,7 +1095,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       totalAmount: feeCalc.totalDebit / 100.0,
       currency: 'NGN',
       title: 'Beam Money',
-      message: 'Confirm Lazerbeam transfer of NGN ${amountNaira.toStringAsFixed(2)}',
+      message:
+          'Confirm Lazerbeam transfer of NGN ${amountNaira.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         final cubit = context.read<MoveMoneyCubit>();
         // The debit rail is derived LIVE from the source's mandate state —
@@ -1151,9 +1153,9 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         if (authSuccess) {
           // Start polling transfer status
           context.read<MoveMoneyCubit>().startPollingTransferStatus(
-            transferId: currentState.transfer.id,
-            userId: authState.profile.userId,
-          );
+                transferId: currentState.transfer.id,
+                userId: authState.profile.userId,
+              );
           Get.offNamed(AppRoutes.transferProof,
               arguments: _beamReceiptPayload(currentState.transfer));
         } else {
@@ -1210,7 +1212,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     });
 
     return AppGradientBackground(
-      child: Scaffold(
+        child: Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -1232,371 +1234,373 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       body: BlocProvider<TransferPredictionCubit>.value(
         value: _predictionCubit,
         child: MultiBlocListener(
-        listeners: [
-          BlocListener<MoveMoneyCubit, MoveMoneyState>(
-            listener: (context, state) {
-              if (state is MoveMoneyFeeCalculated) {
-                setState(() {
-                  _feeError = false;
-                  _feeCalculation = state.feeCalculation;
-                  // Adopt the authoritative, admin-tunable bounds from the server
-                  // so the client enforces/displays the SAME cap as the backend.
-                  if (state.feeCalculation.minAmount > 0) {
-                    _minAmountKobo = state.feeCalculation.minAmount;
-                  }
-                  if (state.feeCalculation.maxAmount > 0) {
-                    _maxAmountKobo = state.feeCalculation.maxAmount;
-                  }
-                  _isCalculatingFee = false;
-                });
-              } else if (state is MoveMoneyFeeError) {
-                setState(() {
-                  _isCalculatingFee = false;
-                  _feeCalculation = null;
-                  _feeError = true;
-                });
-              } else if (state is MoveMoneyInsufficientFunds) {
-                Get.snackbar(
-                  'Insufficient Funds',
-                  state.message,
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: const Color(0xFF1F1F1F),
-                  colorText: const Color(0xFFEF4444),
-                  duration: const Duration(seconds: 5),
-                  mainButton: TextButton(
-                    onPressed: () {
-                      // Fee-gated shared refresh (a live Mono balance read is billed)
-                      // — never a free direct bypass read.
-                      if (_sourceAccount != null) {
-                        _manualRefreshBalance(_sourceAccount!);
-                      }
-                    },
-                    child: Text(
-                      'Refresh',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF3B82F6),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                );
-              } else if (state is MoveMoneyNeedsReauth) {
-                // Mark source account as needing reauth in local state
-                if (_sourceAccount != null &&
-                    _sourceAccount!.id == state.accountId) {
+          listeners: [
+            BlocListener<MoveMoneyCubit, MoveMoneyState>(
+              listener: (context, state) {
+                if (state is MoveMoneyFeeCalculated) {
                   setState(() {
-                    _sourceAccount = _sourceAccount!.copyWith(
-                      status: LinkedAccountStatus.reauthorize,
-                    );
+                    _feeError = false;
+                    _feeCalculation = state.feeCalculation;
+                    // Adopt the authoritative, admin-tunable bounds from the server
+                    // so the client enforces/displays the SAME cap as the backend.
+                    if (state.feeCalculation.minAmount > 0) {
+                      _minAmountKobo = state.feeCalculation.minAmount;
+                    }
+                    if (state.feeCalculation.maxAmount > 0) {
+                      _maxAmountKobo = state.feeCalculation.maxAmount;
+                    }
+                    _isCalculatingFee = false;
                   });
-                }
-                Get.snackbar(
-                  'Re-link Required',
-                  state.message,
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: const Color(0xFF1F1F1F),
-                  colorText: const Color(0xFFFB923C),
-                  duration: const Duration(seconds: 5),
-                  mainButton: TextButton(
-                    onPressed: () {
-                      if (_sourceAccount != null) {
-                        _handleReauthorization(_sourceAccount!);
-                      }
-                    },
-                    child: Text(
-                      'Re-link',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF3B82F6),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                );
-              } else if (state is MoveMoneyMandateRequired) {
-                _handleMandateRequired(state.accountId);
-              } else if (state is MoveMoneyRateLimited) {
-                // Temporarily disable the transfer button during rate limit
-                setState(() => _isTransferInProgress = true);
-                Future.delayed(state.retryAfter, () {
-                  if (mounted) setState(() => _isTransferInProgress = false);
-                });
-                Get.snackbar(
-                  'Please Wait',
-                  'Too many requests. Try again in ${state.retryAfter.inSeconds} seconds.',
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: const Color(0xFF1F1F1F),
-                  colorText: const Color(0xFFFB923C),
-                  duration: state.retryAfter + const Duration(seconds: 1),
-                );
-              } else if (state is MoveMoneyTransferTimeout) {
-                Get.snackbar(
-                  'Transfer Processing',
-                  state.message,
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: const Color(0xFF1F1F1F),
-                  colorText: const Color(0xFF3B82F6),
-                  duration: const Duration(seconds: 6),
-                  mainButton: TextButton(
-                    onPressed: () => Get.toNamed('/move-money/history'),
-                    child: Text(
-                      'View History',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF3B82F6),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                );
-              } else if (state is MoveMoneyError) {
-                if (isKYCRequiredError(state.errorCode) ||
-                    isKYCRequiredError(state.message)) {
-                  _showKYCRequiredSheet(context);
-                } else {
-                  // Page-contained + friendly: stays on the Beam flow's
-                  // Scaffold (not over the dashboard once the flow pops) and
-                  // never shows the raw server message.
-                  _showPageError(state.message,
-                      context: 'complete your transfer');
-                }
-              }
-            },
-          ),
-          BlocListener<OpenBankingCubit, OpenBankingState>(
-            listener: (context, state) async {
-              // Auto-select newly linked account on the side that triggered linking
-              if ((state is AccountLinked || state is AccountLinkedWithMandate) &&
-                  _pendingLinkIsSource != null) {
-                final account = state is AccountLinkedWithMandate
-                    ? state.account
-                    : (state as AccountLinked).account;
-                setState(() {
-                  if (_pendingLinkIsSource!) {
-                    _sourceAccount = account;
-                  } else {
-                    _destinationAccount = account;
-                  }
-                  _pendingLinkIsSource = null;
-                });
-                // Refresh accounts list and mandates
-                _loadAccounts();
-                final authState = context.read<AuthenticationCubit>().state;
-                if (authState is AuthenticationSuccess) {
-                  context.read<MandateCubit>().fetchUserMandates(
-                        userId: authState.profile.userId,
-                      );
-                }
-
-                if (state is AccountLinkedWithMandate && state.mandateFailed) {
+                } else if (state is MoveMoneyFeeError) {
+                  setState(() {
+                    _isCalculatingFee = false;
+                    _feeCalculation = null;
+                    _feeError = true;
+                  });
+                } else if (state is MoveMoneyInsufficientFunds) {
                   Get.snackbar(
-                    'Direct Debit Pending',
-                    'Account linked. Direct Debit setup will retry automatically.',
-                    backgroundColor: const Color(0xFFFB923C),
-                    colorText: Colors.white,
+                    'Insufficient Funds',
+                    state.message,
                     snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    colorText: const Color(0xFFEF4444),
+                    duration: const Duration(seconds: 5),
+                    mainButton: TextButton(
+                      onPressed: () {
+                        // Fee-gated shared refresh (a live Mono balance read is billed)
+                        // — never a free direct bypass read.
+                        if (_sourceAccount != null) {
+                          _manualRefreshBalance(_sourceAccount!);
+                        }
+                      },
+                      child: Text(
+                        'Refresh',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF3B82F6),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   );
+                } else if (state is MoveMoneyNeedsReauth) {
+                  // Mark source account as needing reauth in local state
+                  if (_sourceAccount != null &&
+                      _sourceAccount!.id == state.accountId) {
+                    setState(() {
+                      _sourceAccount = _sourceAccount!.copyWith(
+                        status: LinkedAccountStatus.reauthorize,
+                      );
+                    });
+                  }
+                  Get.snackbar(
+                    'Re-link Required',
+                    state.message,
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    colorText: const Color(0xFFFB923C),
+                    duration: const Duration(seconds: 5),
+                    mainButton: TextButton(
+                      onPressed: () {
+                        if (_sourceAccount != null) {
+                          _handleReauthorization(_sourceAccount!);
+                        }
+                      },
+                      child: Text(
+                        'Re-link',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF3B82F6),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  );
+                } else if (state is MoveMoneyMandateRequired) {
+                  _handleMandateRequired(state.accountId);
+                } else if (state is MoveMoneyRateLimited) {
+                  // Temporarily disable the transfer button during rate limit
+                  setState(() => _isTransferInProgress = true);
+                  Future.delayed(state.retryAfter, () {
+                    if (mounted) setState(() => _isTransferInProgress = false);
+                  });
+                  Get.snackbar(
+                    'Please Wait',
+                    'Too many requests. Try again in ${state.retryAfter.inSeconds} seconds.',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    colorText: const Color(0xFFFB923C),
+                    duration: state.retryAfter + const Duration(seconds: 1),
+                  );
+                } else if (state is MoveMoneyTransferTimeout) {
+                  Get.snackbar(
+                    'Transfer Processing',
+                    state.message,
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    colorText: const Color(0xFF3B82F6),
+                    duration: const Duration(seconds: 6),
+                    mainButton: TextButton(
+                      onPressed: () => Get.toNamed('/move-money/history'),
+                      child: Text(
+                        'View History',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF3B82F6),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  );
+                } else if (state is MoveMoneyError) {
+                  if (isKYCRequiredError(state.errorCode) ||
+                      isKYCRequiredError(state.message)) {
+                    _showKYCRequiredSheet(context);
+                  } else {
+                    // Page-contained + friendly: stays on the Beam flow's
+                    // Scaffold (not over the dashboard once the flow pops) and
+                    // never shows the raw server message.
+                    _showPageError(state.message,
+                        context: 'complete your transfer');
+                  }
                 }
-              } else if (state is OpenBankingError &&
-                  state.operation == 'linkAccount') {
-                // Linked-bank cap (admin-tunable default 3) / provider capacity
-                // exhausted — styled modal with a "Manage banks" CTA, not a toast.
-                // Nothing was charged (both checked before any fee). Clear the
-                // pending side so the next link attempt isn't misrouted.
-                setState(() => _pendingLinkIsSource = null);
-                if (state.errorCode == kLinkLimitReachedCode) {
-                  showLinkLimitReachedDialog(context, state.message);
-                } else if (state.errorCode == kLinkingCapacityCode) {
-                  showLinkingCapacityDialog(context);
-                }
-              }
-            },
-          ),
-          // Rebuild From/To cards when mandate data loads (for badge updates)
-          BlocListener<MandateCubit, MandateState>(
-            listener: (context, state) {
-              if (state is UserMandatesLoaded ||
-                  state is MandateCreated ||
-                  state is MandatePaused ||
-                  state is MandateReinstated ||
-                  state is MandateCancelled) {
-                setState(() {}); // Trigger rebuild so badges reflect new state
-              } else if (state is MandateError) {
-                // Page-contained + friendly: Direct Debit setup failures stay
-                // on this flow, never the raw server message on the dashboard.
-                _showPageError(state.message,
-                    context: 'set up Direct Debit');
-              }
-            },
-          ),
-        ],
-        child: BlocBuilder<OpenBankingCubit, OpenBankingState>(
-          builder: (context, obState) {
-            if (obState is OpenBankingLoading) {
-              return const Center(
-                child: LazerVaultLoader.small(),
-              );
-            }
+              },
+            ),
+            BlocListener<OpenBankingCubit, OpenBankingState>(
+              listener: (context, state) async {
+                // Auto-select newly linked account on the side that triggered linking
+                if ((state is AccountLinked ||
+                        state is AccountLinkedWithMandate) &&
+                    _pendingLinkIsSource != null) {
+                  final account = state is AccountLinkedWithMandate
+                      ? state.account
+                      : (state as AccountLinked).account;
+                  setState(() {
+                    if (_pendingLinkIsSource!) {
+                      _sourceAccount = account;
+                    } else {
+                      _destinationAccount = account;
+                    }
+                    _pendingLinkIsSource = null;
+                  });
+                  // Refresh accounts list and mandates
+                  _loadAccounts();
+                  final authState = context.read<AuthenticationCubit>().state;
+                  if (authState is AuthenticationSuccess) {
+                    context.read<MandateCubit>().fetchUserMandates(
+                          userId: authState.profile.userId,
+                        );
+                  }
 
-            return Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.all(16.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Reauth overlay for source account
-                        if (_sourceAccount != null &&
-                            _sourceAccount!.needsReauthorization)
-                          Padding(
-                            padding: EdgeInsets.only(bottom: 8.h),
-                            child: ReauthRequiredOverlay(
-                              bankName: _sourceAccount!.bankName,
-                              accountName: _sourceAccount!.accountName,
-                              onReauthorize: () =>
-                                  _handleReauthorization(_sourceAccount!),
+                  if (state is AccountLinkedWithMandate &&
+                      state.mandateFailed) {
+                    Get.snackbar(
+                      'Direct Debit Pending',
+                      'Account linked. Direct Debit setup will retry automatically.',
+                      backgroundColor: const Color(0xFFFB923C),
+                      colorText: Colors.white,
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  }
+                } else if (state is OpenBankingError &&
+                    state.operation == 'linkAccount') {
+                  // Linked-bank cap (admin-tunable default 3) / provider capacity
+                  // exhausted — styled modal with a "Manage banks" CTA, not a toast.
+                  // Nothing was charged (both checked before any fee). Clear the
+                  // pending side so the next link attempt isn't misrouted.
+                  setState(() => _pendingLinkIsSource = null);
+                  if (state.errorCode == kLinkLimitReachedCode) {
+                    showLinkLimitReachedDialog(context, state.message);
+                  } else if (state.errorCode == kLinkingCapacityCode) {
+                    showLinkingCapacityDialog(context);
+                  }
+                }
+              },
+            ),
+            // Rebuild From/To cards when mandate data loads (for badge updates)
+            BlocListener<MandateCubit, MandateState>(
+              listener: (context, state) {
+                if (state is UserMandatesLoaded ||
+                    state is MandateCreated ||
+                    state is MandatePaused ||
+                    state is MandateReinstated ||
+                    state is MandateCancelled) {
+                  setState(
+                      () {}); // Trigger rebuild so badges reflect new state
+                } else if (state is MandateError) {
+                  // Page-contained + friendly: Direct Debit setup failures stay
+                  // on this flow, never the raw server message on the dashboard.
+                  _showPageError(state.message, context: 'set up Direct Debit');
+                }
+              },
+            ),
+          ],
+          child: BlocBuilder<OpenBankingCubit, OpenBankingState>(
+            builder: (context, obState) {
+              if (obState is OpenBankingLoading) {
+                return const Center(
+                  child: LazerVaultLoader.small(),
+                );
+              }
+
+              return Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.all(16.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Reauth overlay for source account
+                          if (_sourceAccount != null &&
+                              _sourceAccount!.needsReauthorization)
+                            Padding(
+                              padding: EdgeInsets.only(bottom: 8.h),
+                              child: ReauthRequiredOverlay(
+                                bankName: _sourceAccount!.bankName,
+                                accountName: _sourceAccount!.accountName,
+                                onReauthorize: () =>
+                                    _handleReauthorization(_sourceAccount!),
+                              ),
                             ),
-                          ),
 
-                        // Mandate activating banner for source account
-                        if (_sourceAccount != null &&
-                            !_sourceAccount!.needsReauthorization) ...[
-                          Builder(builder: (context) {
-                            final mandate = context
-                                .read<MandateCubit>()
-                                .getMandateForAccount(_sourceAccount!.id);
-                            if (mandate != null && mandate.isActivating) {
-                              return Padding(
-                                padding: EdgeInsets.only(bottom: 8.h),
-                                child: MandateActivatingBanner(
-                                  mandate: mandate,
-                                  bankName: _sourceAccount!.bankName,
-                                ),
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          }),
-                        ],
-
-                        // From / swap / To – with drag-to-swap
-                        _buildDraggableAccountPair(),
-                        SizedBox(height: 16.h),
-
-                        // Debit method — DirectPay (default) vs Direct Debit
-                        _buildDebitModeToggle(),
-
-                        // Amount input
-                        _buildAmountInput(),
-                        SizedBox(height: 16.h),
-
-                        // Fee breakdown
-                        if (_isCalculatingFee)
-                          _buildCalculatingFees()
-                        else if (_feeCalculation != null)
-                          MoveFeeBreakdown(feeCalculation: _feeCalculation!)
-                        else
-                          BlocBuilder<MoveMoneyCubit, MoveMoneyState>(
-                            buildWhen: (prev, curr) =>
-                                curr is MoveMoneyFeeError,
-                            builder: (context, state) {
-                              if (state is MoveMoneyFeeError) {
-                                return _buildFeeRetry(state);
+                          // Mandate activating banner for source account
+                          if (_sourceAccount != null &&
+                              !_sourceAccount!.needsReauthorization) ...[
+                            Builder(builder: (context) {
+                              final mandate = context
+                                  .read<MandateCubit>()
+                                  .getMandateForAccount(_sourceAccount!.id);
+                              if (mandate != null && mandate.isActivating) {
+                                return Padding(
+                                  padding: EdgeInsets.only(bottom: 8.h),
+                                  child: MandateActivatingBanner(
+                                    mandate: mandate,
+                                    bankName: _sourceAccount!.bankName,
+                                  ),
+                                );
                               }
                               return const SizedBox.shrink();
-                            },
-                          ),
-                        SizedBox(height: 16.h),
+                            }),
+                          ],
 
-                        // Stale balance warning
-                        Builder(builder: (context) {
-                          final warning = _getBalanceWarning();
-                          if (warning == null) return const SizedBox.shrink();
-                          return Padding(
-                            padding: EdgeInsets.only(bottom: 12.h),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.info_outline_rounded,
-                                  color: const Color(0xFFFB923C),
-                                  size: 14.sp,
-                                ),
-                                SizedBox(width: 6.w),
-                                Expanded(
-                                  child: Text(
-                                    warning,
-                                    style: GoogleFonts.inter(
-                                      color: const Color(0xFFFB923C),
-                                      fontSize: 11.sp,
+                          // From / swap / To – with drag-to-swap
+                          _buildDraggableAccountPair(),
+                          SizedBox(height: 16.h),
+
+                          // Debit method — DirectPay (default) vs Direct Debit
+                          _buildDebitModeToggle(),
+
+                          // Amount input
+                          _buildAmountInput(),
+                          SizedBox(height: 16.h),
+
+                          // Fee breakdown
+                          if (_isCalculatingFee)
+                            _buildCalculatingFees()
+                          else if (_feeCalculation != null)
+                            MoveFeeBreakdown(feeCalculation: _feeCalculation!)
+                          else
+                            BlocBuilder<MoveMoneyCubit, MoveMoneyState>(
+                              buildWhen: (prev, curr) =>
+                                  curr is MoveMoneyFeeError,
+                              builder: (context, state) {
+                                if (state is MoveMoneyFeeError) {
+                                  return _buildFeeRetry(state);
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
+                          SizedBox(height: 16.h),
+
+                          // Stale balance warning
+                          Builder(builder: (context) {
+                            final warning = _getBalanceWarning();
+                            if (warning == null) return const SizedBox.shrink();
+                            return Padding(
+                              padding: EdgeInsets.only(bottom: 12.h),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.info_outline_rounded,
+                                    color: const Color(0xFFFB923C),
+                                    size: 14.sp,
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  Expanded(
+                                    child: Text(
+                                      warning,
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFFFB923C),
+                                        fontSize: 11.sp,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                // Inline refresh CTA — re-pulls the live balance
-                                // from the linked bank (Mono) for this account.
-                                GestureDetector(
-                                  onTap: () {
-                                    // Fee-gated shared refresh (a live Mono balance
-                                    // read is billed) — not a free bypass read.
-                                    if (_sourceAccount == null) return;
-                                    _manualRefreshBalance(_sourceAccount!);
-                                  },
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.refresh_rounded,
-                                        color: const Color(0xFFFB923C),
-                                        size: 14.sp,
-                                      ),
-                                      SizedBox(width: 3.w),
-                                      Text(
-                                        'Refresh',
-                                        style: GoogleFonts.inter(
+                                  // Inline refresh CTA — re-pulls the live balance
+                                  // from the linked bank (Mono) for this account.
+                                  GestureDetector(
+                                    onTap: () {
+                                      // Fee-gated shared refresh (a live Mono balance
+                                      // read is billed) — not a free bypass read.
+                                      if (_sourceAccount == null) return;
+                                      _manualRefreshBalance(_sourceAccount!);
+                                    },
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.refresh_rounded,
                                           color: const Color(0xFFFB923C),
-                                          fontSize: 11.sp,
-                                          fontWeight: FontWeight.w600,
+                                          size: 14.sp,
                                         ),
-                                      ),
-                                    ],
+                                        SizedBox(width: 3.w),
+                                        Text(
+                                          'Refresh',
+                                          style: GoogleFonts.inter(
+                                            color: const Color(0xFFFB923C),
+                                            fontSize: 11.sp,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
+                                ],
+                              ),
+                            );
+                          }),
 
-                        // Narration
-                        _buildNarrationInput(),
+                          // Narration
+                          _buildNarrationInput(),
 
-                        // Informational, READ-ONLY transfer success prediction
-                        // (bank network + recipient trust). Shown BEFORE the
-                        // PIN/Transfer action; never blocks or moves money.
-                        if (_destinationAccount != null)
-                          const TransferPredictionAlert(),
+                          // Informational, READ-ONLY transfer success prediction
+                          // (bank network + recipient trust). Shown BEFORE the
+                          // PIN/Transfer action; never blocks or moves money.
+                          if (_destinationAccount != null)
+                            const TransferPredictionAlert(),
 
-                        SizedBox(height: 80.h),
-                      ],
+                          SizedBox(height: 80.h),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                // CTA button pinned at bottom
-                SafeArea(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 8.h),
-                    child: BeamGradientButton(
-                      label: 'Transfer',
-                      icon: Icons.bolt_rounded,
-                      enabled: canProceed,
-                      isLoading: _isTransferInProgress,
-                      onTap: _onMoveMoneyTap,
+                  // CTA button pinned at bottom
+                  SafeArea(
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 8.h),
+                      child: BeamGradientButton(
+                        label: 'Transfer',
+                        icon: Icons.bolt_rounded,
+                        enabled: canProceed,
+                        isLoading: _isTransferInProgress,
+                        onTap: _onMoveMoneyTap,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
-      ),
       ),
     ));
   }
@@ -1612,68 +1616,68 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       padding: EdgeInsets.all(12.w),
       decoration: BeamStyle.card(radius: 20),
       child: Column(
-      children: [
-        // FROM card – drag source + drop target
-        _buildDraggableSlot(
-          dragData: 'from',
-          acceptData: 'to',
-          isHovering: _isHoveringFrom,
-          onHoverChanged: (h) => setState(() => _isHoveringFrom = h),
-          child: _buildAccountCard(
-            label: 'From',
-            account: _sourceAccount,
-            onTap: () => _showAccountPicker(isSource: true),
-            highlight: _isHoveringFrom,
-            showDragHandle: true,
+        children: [
+          // FROM card – drag source + drop target
+          _buildDraggableSlot(
+            dragData: 'from',
+            acceptData: 'to',
+            isHovering: _isHoveringFrom,
+            onHoverChanged: (h) => setState(() => _isHoveringFrom = h),
+            child: _buildAccountCard(
+              label: 'From',
+              account: _sourceAccount,
+              onTap: () => _showAccountPicker(isSource: true),
+              highlight: _isHoveringFrom,
+              showDragHandle: true,
+            ),
+            feedbackChild: _buildAccountCard(
+              label: 'From',
+              account: _sourceAccount,
+              highlight: true,
+              showDragHandle: true,
+            ),
+            ghostChild: _buildAccountCard(
+              label: 'From',
+              account: _sourceAccount,
+              showDragHandle: true,
+            ),
           ),
-          feedbackChild: _buildAccountCard(
-            label: 'From',
-            account: _sourceAccount,
-            highlight: true,
-            showDragHandle: true,
+          // Swap button — purple gradient square, equal spacing above and below
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.h),
+            child: BeamSwapButton(
+              onTap: (_sourceAccount != null || _destinationAccount != null)
+                  ? _swapAccounts
+                  : null,
+            ),
           ),
-          ghostChild: _buildAccountCard(
-            label: 'From',
-            account: _sourceAccount,
-            showDragHandle: true,
+          // TO card – drag source + drop target
+          _buildDraggableSlot(
+            dragData: 'to',
+            acceptData: 'from',
+            isHovering: _isHoveringTo,
+            onHoverChanged: (h) => setState(() => _isHoveringTo = h),
+            child: _buildAccountCard(
+              label: 'To',
+              account: _destinationAccount,
+              onTap: () => _showAccountPicker(isSource: false),
+              highlight: _isHoveringTo,
+              showDragHandle: true,
+            ),
+            feedbackChild: _buildAccountCard(
+              label: 'To',
+              account: _destinationAccount,
+              highlight: true,
+              showDragHandle: true,
+            ),
+            ghostChild: _buildAccountCard(
+              label: 'To',
+              account: _destinationAccount,
+              showDragHandle: true,
+            ),
           ),
-        ),
-        // Swap button — purple gradient square, equal spacing above and below
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.h),
-          child: BeamSwapButton(
-            onTap: (_sourceAccount != null || _destinationAccount != null)
-                ? _swapAccounts
-                : null,
-          ),
-        ),
-        // TO card – drag source + drop target
-        _buildDraggableSlot(
-          dragData: 'to',
-          acceptData: 'from',
-          isHovering: _isHoveringTo,
-          onHoverChanged: (h) => setState(() => _isHoveringTo = h),
-          child: _buildAccountCard(
-            label: 'To',
-            account: _destinationAccount,
-            onTap: () => _showAccountPicker(isSource: false),
-            highlight: _isHoveringTo,
-            showDragHandle: true,
-          ),
-          feedbackChild: _buildAccountCard(
-            label: 'To',
-            account: _destinationAccount,
-            highlight: true,
-            showDragHandle: true,
-          ),
-          ghostChild: _buildAccountCard(
-            label: 'To',
-            account: _destinationAccount,
-            showDragHandle: true,
-          ),
-        ),
-      ],
-    ),
+        ],
+      ),
     );
   }
 
@@ -1914,8 +1918,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
               Expanded(
                 child: TextField(
                   controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[\d,.]')),
                   ],

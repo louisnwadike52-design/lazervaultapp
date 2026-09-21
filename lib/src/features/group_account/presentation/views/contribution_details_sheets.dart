@@ -21,12 +21,14 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
   final bool canLeave;
   final VoidCallback? onRemove;
   final VoidCallback? onLeave;
+
   /// Per-member payment history (newest first preferred). When this
   /// list has more than one element OR the single element is a
   /// partial, the sheet renders a "Payment breakdown" section so the
   /// caller can drill into each attempt. Empty list = hide the
   /// section entirely.
   final List<ContributionPayment> memberPayments;
+
   /// Tapped from a breakdown row. Caller is responsible for popping
   /// this sheet first if it wants to chain another modal (the sheet
   /// itself does not pop on tap).
@@ -90,14 +92,11 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
           CircleAvatar(
             radius: 40.r,
             backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-            backgroundImage: profileImage != null
-                ? NetworkImage(profileImage!)
-                : null,
+            backgroundImage:
+                profileImage != null ? NetworkImage(profileImage!) : null,
             child: profileImage == null
                 ? Text(
-                    userName.isNotEmpty
-                        ? userName[0].toUpperCase()
-                        : 'U',
+                    userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
                     style: GoogleFonts.inter(
                       fontSize: 28.sp,
                       fontWeight: FontWeight.w600,
@@ -232,8 +231,14 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: isPaid
-                                  ? [const Color(0xFF10B981), const Color(0xFF34D399)]
-                                  : [const Color.fromARGB(255, 78, 3, 208), const Color.fromARGB(255, 78, 3, 208)],
+                                  ? [
+                                      const Color(0xFF10B981),
+                                      const Color(0xFF34D399)
+                                    ]
+                                  : [
+                                      const Color.fromARGB(255, 78, 3, 208),
+                                      const Color.fromARGB(255, 78, 3, 208)
+                                    ],
                             ),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
@@ -276,12 +281,15 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
             (member?.isPendingInvite ?? false) ? 'Invited' : 'Joined',
             _formatDate(joinedAt),
           ),
-          _buildDetailRow(Icons.payment, 'Payments Made', '$paymentCount payment${paymentCount == 1 ? '' : 's'}'),
+          _buildDetailRow(Icons.payment, 'Payments Made',
+              '$paymentCount payment${paymentCount == 1 ? '' : 's'}'),
           _buildDetailRow(
             Icons.account_balance_wallet,
             'Remaining',
             '$currency ${remaining.toStringAsFixed(2)}',
-            valueColor: remaining > 0 ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
+            valueColor: remaining > 0
+                ? const Color(0xFFF59E0B)
+                : const Color(0xFF10B981),
           ),
 
           // Per-attempt payment breakdown. Mirrors the Payments-tab
@@ -323,9 +331,8 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
                     padding: EdgeInsets.only(bottom: 8.h),
                     child: _PaymentBreakdownRow(
                       payment: p,
-                      onTap: onPaymentTap == null
-                          ? () {}
-                          : () => onPaymentTap!(p),
+                      onTap:
+                          onPaymentTap == null ? () {} : () => onPaymentTap!(p),
                     ),
                   ));
             })(),
@@ -344,8 +351,7 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: onRemove,
-                icon: Icon(Icons.person_remove_alt_1_outlined,
-                    size: 18.sp),
+                icon: Icon(Icons.person_remove_alt_1_outlined, size: 18.sp),
                 label: Text(
                   'Remove from contribution',
                   style: GoogleFonts.inter(
@@ -361,8 +367,8 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
                   padding: EdgeInsets.symmetric(vertical: 14.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
-                    side: const BorderSide(
-                        color: Color(0xFFEF4444), width: 1.2),
+                    side:
+                        const BorderSide(color: Color(0xFFEF4444), width: 1.2),
                   ),
                 ),
               ),
@@ -390,8 +396,8 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
                   padding: EdgeInsets.symmetric(vertical: 14.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
-                    side: const BorderSide(
-                        color: Color(0xFFEF4444), width: 1.2),
+                    side:
+                        const BorderSide(color: Color(0xFFEF4444), width: 1.2),
                   ),
                 ),
               ),
@@ -427,7 +433,8 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value, {Color? valueColor}) {
+  Widget _buildDetailRow(IconData icon, String label, String value,
+      {Color? valueColor}) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
@@ -456,8 +463,20 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
   }
 
   String _formatDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }
@@ -517,9 +536,11 @@ class _StatusDetailDialog extends StatelessWidget {
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(Icons.close, color: Colors.grey[400], size: 20.sp),
+                    icon:
+                        Icon(Icons.close, color: Colors.grey[400], size: 20.sp),
                     padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(minWidth: 32.w, minHeight: 32.w),
+                    constraints:
+                        BoxConstraints(minWidth: 32.w, minHeight: 32.w),
                     tooltip: 'Close',
                   ),
                 ],

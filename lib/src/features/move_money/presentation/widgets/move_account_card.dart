@@ -74,8 +74,8 @@ class MoveAccountCard extends StatelessWidget {
                   width: 36.w,
                   height: 36.w,
                   decoration: BoxDecoration(
-                    color: _getBankColor(account.bankName)
-                        .withValues(alpha: 0.15),
+                    color:
+                        _getBankColor(account.bankName).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Icon(
@@ -146,9 +146,7 @@ class MoveAccountCard extends StatelessWidget {
                       3;
               final dot = !hasBalance
                   ? const Color(0xFF6B7280)
-                  : (fresh
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFFB923C));
+                  : (fresh ? const Color(0xFF10B981) : const Color(0xFFFB923C));
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -173,7 +171,8 @@ class MoveAccountCard extends StatelessWidget {
                       ),
                       // Refresh hidden when the Mono session needs reauth — a
                       // live read would just fail at the provider.
-                      if (onRefresh != null && !account.needsReauthorization) ...[
+                      if (onRefresh != null &&
+                          !account.needsReauthorization) ...[
                         SizedBox(width: 6.w),
                         _refreshButton(),
                       ],
@@ -221,9 +220,7 @@ class MoveAccountCard extends StatelessWidget {
                   ),
                   SizedBox(width: 4.w),
                   Text(
-                    account.needsReauthorization
-                        ? 'Reauthorize'
-                        : 'Inactive',
+                    account.needsReauthorization ? 'Reauthorize' : 'Inactive',
                     style: GoogleFonts.inter(
                       color: const Color(0xFFFB923C),
                       fontSize: 10.sp,
@@ -268,8 +265,18 @@ class MoveAccountCard extends StatelessWidget {
   }
 
   static const List<String> _monthsShort = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
   ];
 
   /// Short "last updated" label — relative for recent refreshes, short date once

@@ -93,7 +93,8 @@ class GroupFeeRemoteDataSource {
         return GroupFeeQuote.none;
       }
       final b = jsonDecode(res.body) as Map<String, dynamic>;
-      double minor(dynamic v) => (num.tryParse('${v ?? 0}') ?? 0).toDouble() / 100.0;
+      double minor(dynamic v) =>
+          (num.tryParse('${v ?? 0}') ?? 0).toDouble() / 100.0;
       return GroupFeeQuote(
         feeApplies: (b['feeApplies'] ?? b['fee_applies']) as bool? ?? false,
         fee: minor(b['feeMinor'] ?? b['fee_minor']),

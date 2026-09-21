@@ -150,6 +150,11 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
     );
     context.read<WalletTransferCubit>().getRecentWalletTransfers(
           accountId: primary.id,
+          // Scope the list to the user's OWN wallet-to-wallet moves. Without
+          // this the tab listed every payment made from the account — money
+          // sent to other people included — under Beam branding.
+          ownAccountNumbers:
+              accounts.map((a) => a.accountNumber).whereType<String>().toSet(),
         );
   }
 
@@ -442,21 +447,27 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             ),
             centerTitle: true,
             actions: [
-              // Per-service voice + chat icons — Beam moves money so
-              // pins the session to chat-transfers-service via
-              // DIRECT_ROUTES['transfers']. Canonical pattern.
+              // Per-service voice + chat icons.
+              //
+              // Beam is a bank<->bank move between the user's OWN linked
+              // accounts, and the tools that perform it (show_move_summary ->
+              // request_move_pin_prompt -> confirm_move_transfer) live in
+              // chat-banking-service. Pinning 'transfers' put the session on
+              // an agent whose boundary EXCLUDES banking, so asking the beam
+              // assistant to move money was refused by the very screen that
+              // exists to move it. 'lazerbeam' routes to banking in both
+              // gateways (DIRECT_ROUTES and the Go ServiceURLMap) while
+              // keeping transfers allowed so history questions still answer.
               ServiceVoiceButton(
-                serviceName: 'transfers',
+                serviceName: 'lazerbeam',
                 iconColor: const Color(0xFF4834D4),
                 backgroundColor: const Color(0xFF4834D4),
               ),
               SizedBox(width: 8.w),
               MicroserviceChatIcon(
                 // Display name only (the chat sheet renders "<serviceName> Assistant").
-                // Routing is driven by sourceContext:'transfers', so this is safe to
-                // brand as Lazerbeam.
                 serviceName: 'Lazerbeam',
-                sourceContext: 'transfers',
+                sourceContext: 'lazerbeam',
                 icon: Icons.chat_bubble_outline,
                 iconColor: const Color(0xFF4834D4),
               ),

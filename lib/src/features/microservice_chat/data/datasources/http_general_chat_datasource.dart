@@ -128,6 +128,10 @@ class GeneralChatResponse {
   // ReceiptCard V2 payload surfaced top-level by the gateway — a single dict OR
   // a list (batch transfer). Drives ChatReceiptCardV2 / ChatReceiptCardV2List.
   final dynamic receiptCard;
+
+  /// `recipient_card` — the confirmed transfer counterparty, surfaced
+  /// top-level by chat-agent-gateway exactly like receipt_card.
+  final dynamic recipientCard;
   // Classified LLM-provider error code (insufficient_credit /
   // model_not_found / auth_failed / provider_rate_limit / timeout / …).
   // Surfaced top-level by the chat-agent-gateway so the cubit can
@@ -147,6 +151,7 @@ class GeneralChatResponse {
     this.receiptData,
     this.pinPrompt,
     this.receiptCard,
+    this.recipientCard,
     this.llmErrorCode,
     this.metadata,
   });
@@ -174,6 +179,7 @@ class GeneralChatResponse {
       pinPrompt: json['pin_prompt'] as Map<String, dynamic>?,
       // receipt_card is a Map (single) or a List (batch) — keep it dynamic.
       receiptCard: json['receipt_card'],
+      recipientCard: json['recipient_card'],
       llmErrorCode: json['llm_error_code'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
     );

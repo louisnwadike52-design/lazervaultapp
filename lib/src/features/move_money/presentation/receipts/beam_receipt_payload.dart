@@ -7,8 +7,12 @@ import 'package:lazervault/src/features/move_money/domain/entities/move_transfer
 /// only the payload varies per money product. Factored out of the two flow
 /// screens so the flows AND history taps produce identical receipts.
 ///
-/// Both builders attach `redoRoute`/`redoArgs` so the receipt can offer a
-/// "Redo" CTA that re-opens the correct transfer flow.
+/// These builders used to attach `redoRoute`/`redoArgs` for a "Redo" CTA on
+/// the receipt. That CTA is gone: it reopened the wallet flow on its "Select
+/// Accounts" step with both slots empty, because the flow screens synthesize a
+/// result carrying no account ids — so it asked the user to rebuild a transfer
+/// they had just made. Repeating now happens from the transaction row, where
+/// the data to rebuild the payee actually exists (`RepeatTransfer`).
 
 /// Interbank (External Banks) LazerBeam transfer → receipt payload.
 ///
@@ -55,15 +59,6 @@ Map<String, dynamic> beamReceiptPayloadFromMoveTransfer(
     'narration': t.narration,
     'timestamp': t.createdAt.toLocal(),
     'createdAt': t.createdAt.toLocal(),
-    // Redo → re-open the interbank flow, pre-selecting the destination and
-    // pre-filling the amount/narration (best-effort; the flow re-resolves the
-    // destination account by its linked-account id).
-    'redoRoute': AppRoutes.moveMoneyTransfer,
-    'redoArgs': <String, dynamic>{
-      'destinationLinkedAccountId': t.destinationLinkedAccountId,
-      'amount': t.amount / 100.0,
-      'narration': t.narration,
-    },
   };
 }
 
@@ -119,7 +114,20 @@ Map<String, dynamic> beamReceiptPayloadFromWalletTransfer(
     // the product name.
     'transferType': isExternal ? 'Bank transfer' : 'Wallet transfer',
     'amount': (r.amount ?? 0) / 100.0,
-    'fee': (r.fee ?? 0) / 100.0,
+    // A FEE IS THE SENDER'S COST.
+    //
+    // This was set unconditionally, so opening an INCOMING wallet transfer
+    // from Beam history rendered "+ ₦X fee · ₦Y total" and a Fee row for money
+    // the beneficiary never paid.
+    //
+    // The test is `!= true`, not `== false`, and the distinction matters:
+    // `isIncoming` is null whenever direction could not be determined, and
+    // that is the NORMAL case here. PaymentsTransferResult only ever describes
+    // a payment this user MADE — the post-transfer result, and history rows
+    // read from `payments`, which is written by the sender. So unknown means
+    // outgoing in this payload, and suppressing the fee on null would delete
+    // it from the sender's own receipt, hiding a charge they did pay.
+    'fee': (r.isIncoming != true) ? (r.fee ?? 0) / 100.0 : 0.0,
     'currency': ccy,
     'status': status,
     'internalReference': r.reference,
@@ -140,26 +148,5 @@ Map<String, dynamic> beamReceiptPayloadFromWalletTransfer(
     'createdAt': date.toLocal(),
     'backRoute': backRoute,
     'backArgs': const <String, dynamic>{'initialTab': 3},
-    // Redo → re-open the flow THIS transfer actually used. Sending someone
-    // back to the wallet flow to repeat a bank payout is the bug this fixes:
-    // the destination is not a Lazervault account, so the flow could never
-    // pre-select it and the user would have to start over on the right rail.
-    //
-    // The external branch carries no destination id: the wallet record
-    // identifies the payee by account number + bank, not by the linked-account
-    // id the interbank flow pre-selects on. Amount and narration still
-    // pre-fill, and the flow opens on the correct rail — which is the part
-    // that was broken.
-    'redoRoute':
-        isExternal ? AppRoutes.moveMoneyTransfer : AppRoutes.walletTransfer,
-    'redoArgs': <String, dynamic>{
-      if (!isExternal && r.sourceAccountId != null)
-        'sourceAccountId': r.sourceAccountId,
-      if (!isExternal && r.destinationAccountId != null)
-        'destinationAccountId': r.destinationAccountId,
-      'amount': (r.amount ?? 0) / 100.0,
-      if (isExternal && (r.description?.isNotEmpty ?? false))
-        'narration': r.description,
-    },
   };
 }

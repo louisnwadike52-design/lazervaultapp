@@ -227,7 +227,8 @@ class _CompactRoleBannerState extends State<_CompactRoleBanner> {
                   GestureDetector(
                     onTap: widget.onJoin,
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: widget.roleColor,
                         borderRadius: BorderRadius.circular(6.r),

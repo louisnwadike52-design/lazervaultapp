@@ -60,8 +60,10 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
       _amountController.text = _editingBudget!.amount.toString();
       _selectedPeriod = _editingBudget!.period;
       _selectedEnforcementMode = _editingBudget!.enforcementMode;
-      if (_selectedEnforcementMode == pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_UNSPECIFIED) {
-        _selectedEnforcementMode = pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE;
+      if (_selectedEnforcementMode ==
+          pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_UNSPECIFIED) {
+        _selectedEnforcementMode =
+            pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE;
       }
       _enableAlerts = _editingBudget!.enableAlerts;
       _alertThreshold = _editingBudget!.alertThreshold;
@@ -84,10 +86,11 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
       // Pre-select category in edit mode
       if (_isEditMode && _editingBudget != null) {
         final editCategoryValue = _editingBudget!.category.value;
-        _selectedServiceCategory = categories.cast<ServiceCategory?>().firstWhere(
-          (c) => c!.budgetCategory == editCategoryValue,
-          orElse: () => null,
-        );
+        _selectedServiceCategory =
+            categories.cast<ServiceCategory?>().firstWhere(
+                  (c) => c!.budgetCategory == editCategoryValue,
+                  orElse: () => null,
+                );
       }
     });
   }
@@ -105,12 +108,14 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
         break;
       case pb.BudgetPeriod.BUDGET_PERIOD_MONTHLY:
         _startDate = DateTime(now.year, now.month, 1);
-        _endDate = DateTime(now.year, now.month + 1, 1).subtract(const Duration(days: 1));
+        _endDate = DateTime(now.year, now.month + 1, 1)
+            .subtract(const Duration(days: 1));
         break;
       case pb.BudgetPeriod.BUDGET_PERIOD_QUARTERLY:
         final quarter = ((now.month - 1) ~/ 3) + 1;
         _startDate = DateTime(now.year, (quarter - 1) * 3 + 1, 1);
-        _endDate = DateTime(now.year, quarter * 3 + 1, 1).subtract(const Duration(days: 1));
+        _endDate = DateTime(now.year, quarter * 3 + 1, 1)
+            .subtract(const Duration(days: 1));
         break;
       case pb.BudgetPeriod.BUDGET_PERIOD_YEARLY:
         _startDate = DateTime(now.year, 1, 1);
@@ -118,7 +123,8 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
         break;
       default:
         _startDate = DateTime(now.year, now.month, 1);
-        _endDate = DateTime(now.year, now.month + 1, 1).subtract(const Duration(days: 1));
+        _endDate = DateTime(now.year, now.month + 1, 1)
+            .subtract(const Duration(days: 1));
     }
   }
 
@@ -159,35 +165,36 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
     }
 
     // Derive proto ExpenseCategory from ServiceCategory.budgetCategory
-    final protoCategory = pb.ExpenseCategory.valueOf(_selectedServiceCategory!.budgetCategory)
-        ?? pb.ExpenseCategory.EXPENSE_CATEGORY_OTHER;
+    final protoCategory =
+        pb.ExpenseCategory.valueOf(_selectedServiceCategory!.budgetCategory) ??
+            pb.ExpenseCategory.EXPENSE_CATEGORY_OTHER;
 
     _isSaving = true;
     if (_isEditMode && _editingBudget != null) {
       context.read<BudgetCubit>().updateBudget(
-        budgetId: _editingBudget!.id,
-        name: _nameController.text.isNotEmpty ? _nameController.text : null,
-        amount: amount > 0 ? amount : null,
-        period: _selectedPeriod,
-        startDate: _startDate,
-        endDate: _endDate,
-        enableAlerts: _enableAlerts,
-        alertThreshold: _alertThreshold,
-        enforcementMode: _selectedEnforcementMode,
-      );
+            budgetId: _editingBudget!.id,
+            name: _nameController.text.isNotEmpty ? _nameController.text : null,
+            amount: amount > 0 ? amount : null,
+            period: _selectedPeriod,
+            startDate: _startDate,
+            endDate: _endDate,
+            enableAlerts: _enableAlerts,
+            alertThreshold: _alertThreshold,
+            enforcementMode: _selectedEnforcementMode,
+          );
     } else {
       context.read<BudgetCubit>().createBudget(
-        name: _nameController.text.trim(),
-        amount: amount,
-        currency: CurrencySymbols.currentCurrency,
-        category: protoCategory,
-        period: _selectedPeriod,
-        startDate: _startDate,
-        endDate: _endDate,
-        enableAlerts: _enableAlerts,
-        alertThreshold: _alertThreshold,
-        enforcementMode: _selectedEnforcementMode,
-      );
+            name: _nameController.text.trim(),
+            amount: amount,
+            currency: CurrencySymbols.currentCurrency,
+            category: protoCategory,
+            period: _selectedPeriod,
+            startDate: _startDate,
+            endDate: _endDate,
+            enableAlerts: _enableAlerts,
+            alertThreshold: _alertThreshold,
+            enforcementMode: _selectedEnforcementMode,
+          );
     }
   }
 
@@ -199,7 +206,9 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
           _isSaving = false;
           Get.snackbar(
             'Success',
-            state is BudgetCreated ? state.message : (state as BudgetUpdated).message,
+            state is BudgetCreated
+                ? state.message
+                : (state as BudgetUpdated).message,
             backgroundColor: InvoiceThemeColors.primaryPurple,
             colorText: Colors.white,
             snackPosition: SnackPosition.BOTTOM,
@@ -216,7 +225,9 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
             SnackBar(
               content: Text(
                 friendlyError(state.message,
-                    context: _isEditMode ? 'update your budget' : 'create your budget'),
+                    context: _isEditMode
+                        ? 'update your budget'
+                        : 'create your budget'),
                 style: const TextStyle(color: Colors.white),
               ),
               backgroundColor: const Color(0xFF1F1F1F),
@@ -276,7 +287,8 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
                 SizedBox(height: 24.h),
 
                 // Date Range (for custom period)
-                if (_selectedPeriod == pb.BudgetPeriod.BUDGET_PERIOD_CUSTOM) ...[
+                if (_selectedPeriod ==
+                    pb.BudgetPeriod.BUDGET_PERIOD_CUSTOM) ...[
                   _buildSectionTitle('Date Range'),
                   _buildDateRangeSelector(),
                   SizedBox(height: 24.h),
@@ -442,7 +454,8 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
               Expanded(
                 child: Text(
                   'Select Category',
-                  style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 16),
+                  style:
+                      const TextStyle(color: Color(0xFF9CA3AF), fontSize: 16),
                 ),
               ),
             const Icon(Icons.keyboard_arrow_down, color: Color(0xFF9CA3AF)),
@@ -453,8 +466,10 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
   }
 
   Widget _buildEnforcementModeSelector() {
-    final isFlexible = _selectedEnforcementMode == pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE;
-    final isStrict = _selectedEnforcementMode == pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_STRICT;
+    final isFlexible = _selectedEnforcementMode ==
+        pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE;
+    final isStrict = _selectedEnforcementMode ==
+        pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_STRICT;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -470,7 +485,8 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
                 isSelected: isFlexible,
                 onTap: () {
                   setState(() {
-                    _selectedEnforcementMode = pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE;
+                    _selectedEnforcementMode = pb
+                        .BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_FLEXIBLE;
                   });
                 },
               ),
@@ -485,7 +501,8 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
                 isSelected: isStrict,
                 onTap: () {
                   setState(() {
-                    _selectedEnforcementMode = pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_STRICT;
+                    _selectedEnforcementMode =
+                        pb.BudgetEnforcementMode.BUDGET_ENFORCEMENT_MODE_STRICT;
                   });
                 },
               ),
@@ -514,7 +531,9 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
               : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? InvoiceThemeColors.primaryPurple : const Color(0xFF2D2D2D),
+            color: isSelected
+                ? InvoiceThemeColors.primaryPurple
+                : const Color(0xFF2D2D2D),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -535,7 +554,8 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
                 ),
                 const Spacer(),
                 if (isSelected)
-                  Icon(Icons.check_circle, color: InvoiceThemeColors.primaryPurple, size: 18.sp),
+                  Icon(Icons.check_circle,
+                      color: InvoiceThemeColors.primaryPurple, size: 18.sp),
               ],
             ),
             SizedBox(height: 4.h),
@@ -579,7 +599,9 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
           selectedColor: InvoiceThemeColors.primaryPurple,
           backgroundColor: const Color(0xFF1F1F1F),
           side: BorderSide(
-            color: isSelected ? InvoiceThemeColors.primaryPurple : const Color(0xFF2D2D2D),
+            color: isSelected
+                ? InvoiceThemeColors.primaryPurple
+                : const Color(0xFF2D2D2D),
           ),
         );
       }).toList(),
@@ -641,7 +663,7 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
-          ),
+        ),
         child: Row(
           children: [
             Text(
@@ -731,7 +753,8 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: InvoiceThemeColors.primaryPurple,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5),
+          disabledBackgroundColor:
+              InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
           ),

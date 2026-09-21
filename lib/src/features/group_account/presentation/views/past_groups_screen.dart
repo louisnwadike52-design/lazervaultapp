@@ -68,8 +68,7 @@ class _PastGroupsScreenState extends State<PastGroupsScreen>
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(12.r),
-                border:
-                    Border.all(color: const Color(0xFF2D2D2D), width: 1),
+                border: Border.all(color: const Color(0xFF2D2D2D), width: 1),
               ),
               child: TabBar(
                 controller: _tab,
@@ -145,9 +144,8 @@ class _PastGroupsListState extends State<_PastGroupsList>
 
   void _load() {
     final auth = context.read<AuthenticationCubit>().state;
-    final token = auth is AuthenticationSuccess
-        ? auth.profile.session.accessToken
-        : null;
+    final token =
+        auth is AuthenticationSuccess ? auth.profile.session.accessToken : null;
     context.read<GroupAccountCubit>().loadPastGroups(
           filter: widget.filter,
           accessToken: token,
@@ -200,8 +198,8 @@ class _PastGroupsListState extends State<_PastGroupsList>
                   Text(
                     state.message,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                        color: Colors.white, fontSize: 14.sp),
+                    style:
+                        GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
                   ),
                   SizedBox(height: 12.h),
                   ElevatedButton.icon(
@@ -212,8 +210,7 @@ class _PastGroupsListState extends State<_PastGroupsList>
                     icon: const Icon(Icons.refresh),
                     label: const Text('Retry'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          const Color.fromARGB(255, 78, 3, 208),
+                      backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                       foregroundColor: Colors.white,
                     ),
                   ),
@@ -292,8 +289,8 @@ class _PastGroupCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 22.r,
-              backgroundColor: const Color.fromARGB(255, 78, 3, 208)
-                  .withValues(alpha: 0.2),
+              backgroundColor:
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
               child: Text(
                 entry.group.name.isNotEmpty
                     ? entry.group.name[0].toUpperCase()
@@ -311,9 +308,7 @@ class _PastGroupCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    entry.group.name.isNotEmpty
-                        ? entry.group.name
-                        : 'Group',
+                    entry.group.name.isNotEmpty ? entry.group.name : 'Group',
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 14.sp,
@@ -356,8 +351,7 @@ class _PastGroupCard extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right,
-                size: 20.sp, color: Colors.grey[600]),
+            Icon(Icons.chevron_right, size: 20.sp, color: Colors.grey[600]),
           ],
         ),
       ),

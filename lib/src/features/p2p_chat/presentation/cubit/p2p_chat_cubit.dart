@@ -867,6 +867,11 @@ class P2PChatCubit extends Cubit<P2PChatState> {
     final response = await _accountsClient.getTransactionHistory(
       accountId: accountId,
       locale: _localeManager.currentLocale,
+      // 'transfer' is a FAMILY name, not a stored column value — no writer
+      // ever persists it (the real ones are transfer_out / transfer_in /
+      // transfer_hold / hold_capture). accounts-service resolves it through
+      // the same vocabulary that labels the rows, so this matches every
+      // transfer rail; it used to return an empty list.
       category: 'transfer',
       limit: 50,
     );

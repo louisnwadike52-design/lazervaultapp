@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/widgets/dashboard/dashboard_light_style.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -74,11 +75,12 @@ class _PublicGroupsState extends State<PublicGroups> {
             return Column(
               children: [
                 if (loaded.isStale)
-                  const LinearProgressIndicator(
+                  LinearProgressIndicator(
                     minHeight: 2,
                     valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                    backgroundColor: Color(0xFF1F1F1F),
+                        const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                    // A dark track is invisible on a light card.
+                    backgroundColor: DashboardLightStyle.trackColor,
                   ),
                 _buildContent(loaded),
               ],
@@ -121,7 +123,8 @@ class _PublicGroupsState extends State<PublicGroups> {
         width: 220.w,
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
+          gradient: DashboardLightStyle.cardGradient,
+          boxShadow: DashboardLightStyle.cardShadow,
           borderRadius: BorderRadius.circular(16.r),
         ),
         child: Column(
@@ -133,7 +136,7 @@ class _PublicGroupsState extends State<PublicGroups> {
                   width: 40.w,
                   height: 40.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2D2D2D),
+                    color: DashboardLightStyle.shimmerBase,
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
@@ -142,7 +145,7 @@ class _PublicGroupsState extends State<PublicGroups> {
                   width: 100.w,
                   height: 14.h,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2D2D2D),
+                    color: DashboardLightStyle.shimmerBase,
                     borderRadius: BorderRadius.circular(4.r),
                   ),
                 ),
@@ -153,7 +156,7 @@ class _PublicGroupsState extends State<PublicGroups> {
               width: 160.w,
               height: 10.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF2D2D2D),
+                color: DashboardLightStyle.shimmerBase,
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
@@ -162,7 +165,7 @@ class _PublicGroupsState extends State<PublicGroups> {
               width: double.infinity,
               height: 30.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF2D2D2D),
+                color: DashboardLightStyle.shimmerBase,
                 borderRadius: BorderRadius.circular(8.r),
               ),
             ),
@@ -183,7 +186,7 @@ class _PublicGroupsState extends State<PublicGroups> {
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF1F2937),
+              color: DashboardLightStyle.textPrimary,
             ),
           ),
           GestureDetector(
@@ -242,106 +245,119 @@ class _PublicGroupsState extends State<PublicGroups> {
   }
 
   Widget _buildGroupCard(GroupAccount group, bool isMember) {
-    return GestureDetector(
-      onTap: () => _openGroup(group, isMember),
-      child: Container(
-        width: 220.w,
-        padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Avatar + name
-            Row(
-              children: [
-                Container(
-                  width: 40.w,
-                  height: 40.w,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF3B82F6),
-                        const Color(0xFF3B82F6).withValues(alpha: 0.7),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Center(
-                    child: Text(
-                      group.name.isNotEmpty ? group.name[0].toUpperCase() : 'G',
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
+    // Material + InkWell rather than a bare GestureDetector: this card opens
+    // a group, and with no ripple and no chevron it read as a static tile —
+    // nothing about it said it could be tapped.
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _openGroup(group, isMember),
+        borderRadius: BorderRadius.circular(16.r),
+        child: Container(
+          width: 220.w,
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            gradient: DashboardLightStyle.cardGradient,
+            boxShadow: DashboardLightStyle.cardShadow,
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Avatar + name
+              Row(
+                children: [
+                  Container(
+                    width: 40.w,
+                    height: 40.w,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF3B82F6),
+                          const Color(0xFF3B82F6).withValues(alpha: 0.7),
+                        ],
                       ),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
-                  ),
-                ),
-                SizedBox(width: 10.w),
-                Expanded(
-                  child: Text(
-                    group.name,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 10.h),
-            // Description
-            Text(
-              group.description,
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: const Color(0xFF9CA3AF),
-                height: 1.3,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const Spacer(),
-            // Footer: member count + CTA
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.people_outline,
-                        size: 14.sp,
-                        color: const Color(0xFF9CA3AF),
-                      ),
-                      SizedBox(width: 4.w),
-                      Flexible(
-                        child: Text(
-                          '${group.memberCount} '
-                          '${group.memberCount == 1 ? 'member' : 'members'}',
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            color: const Color(0xFF9CA3AF),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                    child: Center(
+                      child: Text(
+                        group.name.isNotEmpty
+                            ? group.name[0].toUpperCase()
+                            : 'G',
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
                         ),
                       ),
-                    ],
+                    ),
                   ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      group.name,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        color: DashboardLightStyle.textPrimary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Icon(Icons.chevron_right_rounded,
+                      size: 18.sp,
+                      color: DashboardLightStyle.brand.withValues(alpha: 0.55)),
+                ],
+              ),
+              SizedBox(height: 10.h),
+              // Description
+              Text(
+                group.description,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: DashboardLightStyle.textSecondary,
+                  height: 1.3,
                 ),
-                SizedBox(width: 8.w),
-                _buildCta(group, isMember),
-              ],
-            ),
-          ],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const Spacer(),
+              // Footer: member count + CTA
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.people_outline,
+                          size: 14.sp,
+                          color: DashboardLightStyle.textSecondary,
+                        ),
+                        SizedBox(width: 4.w),
+                        Flexible(
+                          child: Text(
+                            '${group.memberCount} '
+                            '${group.memberCount == 1 ? 'member' : 'members'}',
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              color: DashboardLightStyle.textSecondary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  _buildCta(group, isMember),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

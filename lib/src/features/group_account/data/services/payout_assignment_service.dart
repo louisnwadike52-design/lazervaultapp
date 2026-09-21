@@ -116,6 +116,23 @@ class PayoutAssignmentService {
     return _client.triggerManualPayout(req, options: await _opts());
   }
 
+  /// Take a stuck payout off automation so the manual trigger works again.
+  ///
+  /// The scheduler stops burning attempts on a condition it cannot resolve
+  /// (an inactive receiver account, a pot still filling), and the row is
+  /// re-armed to `ready` — which is the state [triggerManualPayout] accepts.
+  /// Idempotent: switching an already-manual payout returns the same row.
+  Future<pb_msg.SwitchPayoutToManualResponse> switchPayoutToManual({
+    required String contributionId,
+    int cycleIndex = 0,
+  }) async {
+    final req = pb_msg.SwitchPayoutToManualRequest(
+      contributionId: contributionId,
+      cycleIndex: cycleIndex,
+    );
+    return _client.switchPayoutToManual(req, options: await _opts());
+  }
+
   // --------------------------------------------------------------------------
   // Scheduled-payout queries
   // --------------------------------------------------------------------------

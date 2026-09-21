@@ -9,7 +9,6 @@ import '../../services/group_account_report_service.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'group_account_report_screen_widgets.dart';
 
-
 class _ShareCard extends StatelessWidget {
   final GroupAccountReport report;
   final VoidCallback onShare;
@@ -71,7 +70,8 @@ class _ShareCard extends StatelessWidget {
                   alignment: WrapAlignment.center,
                   children: report.hashtags.map((tag) {
                     return Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(16.r),

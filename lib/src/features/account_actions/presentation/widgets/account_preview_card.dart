@@ -147,14 +147,20 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
     return '';
   }
 
-  String get _money => '${widget.currencySymbol}${_available.toStringAsFixed(2)}';
+  String get _money =>
+      '${widget.currencySymbol}${_available.toStringAsFixed(2)}';
 
   /// Currencies for which a real deposit account (bank-transfer number) can be
   /// issued: NGN today (Flutterwave v3), and GHS/KES/ZAR via v4 once enabled on
   /// the account. Any other currency (e.g. USD/GBP) has NO deposit number — it is
   /// funded by CONVERTING from another wallet, so we show that state rather than a
   /// perpetual "being set up".
-  static const Set<String> _depositCapableCurrencies = {'NGN', 'GHS', 'KES', 'ZAR'};
+  static const Set<String> _depositCapableCurrencies = {
+    'NGN',
+    'GHS',
+    'KES',
+    'ZAR'
+  };
 
   /// Currencies with a real FOREIGN virtual-account path (Fincra individual
   /// accounts: USD ACH/Swift, GBP FPS/CHAPS, EUR SEPA) — offered as an
@@ -240,6 +246,39 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
     return lines.join('\n');
   }
 
+  /// The message that goes out when the user SHARES, as opposed to copies.
+  ///
+  /// Sharing and copying are different acts and deserve different text. A copy
+  /// is pasted into a transfer form, so it stays the bare fields — a greeting
+  /// pasted into a bank's "account number" box is noise. A share is sent TO
+  /// somebody, and arriving as three unlabelled lines reads like a fragment;
+  /// one line of context makes it a message a person can act on.
+  ///
+  /// Kept short deliberately: warm enough to be from a person, formal enough
+  /// to sit in a work chat, and short enough that the numbers stay the thing
+  /// the eye lands on. The blank lines matter — every messaging client
+  /// collapses a wall of text, and the details need to survive that.
+  String get _shareMessage {
+    final digits = ((widget.accountArgs['accountNumber'] as String?) ?? '')
+        .replaceAll(RegExp(r'[^0-9]'), '');
+
+    final details = <String>[
+      if (_holderName.isNotEmpty) 'Account name:    $_holderName',
+      if (_bankName.isNotEmpty) 'Bank:            $_bankName',
+      'Account number:  $digits',
+    ];
+
+    return [
+      'Hello,',
+      '',
+      'Here are my LazerVault account details for your transfer.',
+      '',
+      ...details,
+      '',
+      'Thank you.',
+    ].join('\n');
+  }
+
   void _copyDetails() {
     Clipboard.setData(ClipboardData(text: _shareableDetails));
     Get.snackbar('Copied', 'Account details copied to clipboard',
@@ -257,12 +296,15 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
   /// the call returns fine and no sheet ever appears.
   Future<void> _shareDetails(BuildContext context) async {
     final origin = ShareOrigin.of(context);
-    final text = _shareableDetails;
+    // The guard below still tests the bare details: whether there is anything
+    // worth sharing is a question about the NUMBER, not about the greeting
+    // wrapped around it.
+    final text = _shareMessage;
 
     // Never open the sheet on nothing. An un-provisioned account has no number
     // to send, and sharing a block that says "Account number: " is worse than
     // saying so plainly.
-    if (text.trim().isEmpty || !_hasRealNumber) {
+    if (_shareableDetails.trim().isEmpty || !_hasRealNumber) {
       Get.snackbar(
         'Not ready yet',
         'This account has no number to share yet.',
@@ -277,7 +319,7 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
     try {
       await SharePlus.instance.share(ShareParams(
         text: text,
-        subject: 'My account details',
+        subject: 'My LazerVault account details',
         sharePositionOrigin: origin,
       ));
     } catch (e) {
@@ -307,16 +349,16 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
       message: tooltip,
       child: Builder(
         builder: (iconContext) => InkWell(
-        onTap: () => onTap(iconContext),
-        borderRadius: BorderRadius.circular(10.r),
-        child: Container(
-          padding: EdgeInsets.all(7.w),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(10.r),
+          onTap: () => onTap(iconContext),
+          borderRadius: BorderRadius.circular(10.r),
+          child: Container(
+            padding: EdgeInsets.all(7.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Icon(icon, color: Colors.white, size: 16.sp),
           ),
-          child: Icon(icon, color: Colors.white, size: 16.sp),
-        ),
         ),
       ),
     );
@@ -430,9 +472,11 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
                   ),
                 ),
                 if (_hasRealNumber) ...[
-                  _numberActionIcon(Icons.copy_rounded, 'Copy', (_) => _copyDetails()),
+                  _numberActionIcon(
+                      Icons.copy_rounded, 'Copy', (_) => _copyDetails()),
                   SizedBox(width: 8.w),
-                  _numberActionIcon(Icons.ios_share_rounded, 'Share', _shareDetails),
+                  _numberActionIcon(
+                      Icons.ios_share_rounded, 'Share', _shareDetails),
                 ],
               ],
             ),
@@ -731,8 +775,7 @@ class _AccountPreviewCardState extends State<AccountPreviewCard>
     final held = _unavailable;
     final parts = <String>[
       'Total ${widget.currencySymbol}${_balance.toStringAsFixed(2)}',
-      if (held > 0)
-        'Held ${widget.currencySymbol}${held.toStringAsFixed(2)}',
+      if (held > 0) 'Held ${widget.currencySymbol}${held.toStringAsFixed(2)}',
     ];
 
     final line = Row(

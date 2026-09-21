@@ -91,12 +91,14 @@ class GroupAccountMyInvitationsLoaded extends GroupAccountState {
 
   /// Convenience for the Invites-tab badge — count rows that still
   /// need the user's decision.
-  int get pendingCount =>
-      invitations.where((i) => i.status == GroupInvitationStatus.pending).length;
+  int get pendingCount => invitations
+      .where((i) => i.status == GroupInvitationStatus.pending)
+      .length;
 }
 
 class GroupAccountInvitationResponded extends GroupAccountState {
   final GroupInvitation invitation;
+
   /// True if the user accepted; false if they declined. Drives the
   /// success-snackbar copy without the listener having to inspect
   /// the invitation status.

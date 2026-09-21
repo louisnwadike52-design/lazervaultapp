@@ -140,7 +140,7 @@ class _UpliftFundingActivityScreenState
           final r = _refunds[i];
           return _activityTile(
             title:
-                'Escrow refund${r.reason.isNotEmpty ? ' (${r.reason})' : ''}',
+                'Pool refund${r.reason.isNotEmpty ? ' (${r.reason})' : ''}',
             amount: r.amount.toInt(),
             status: r.status,
             attempt: r.attemptCount,

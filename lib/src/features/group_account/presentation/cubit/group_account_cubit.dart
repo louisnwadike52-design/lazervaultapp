@@ -365,7 +365,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         // Background refresh failed but the user already sees cached data.
         // Stay quiet. Logging only so we don't trigger an error UI for
         // what the user perceives as a working screen.
-        debugPrint('[GroupAccountCubit] background refresh of groups failed: $e');
+        debugPrint(
+            '[GroupAccountCubit] background refresh of groups failed: $e');
         return;
       }
       emit(GroupAccountError('Failed to load groups: ${e.toString()}'));
@@ -447,11 +448,13 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         // Background refresh of a screen that's already showing cached
         // data — don't surface to the UI; just log. The user sees the
         // last good snapshot rather than a regression to an error view.
-        debugPrint('[GroupAccountCubit] background refresh of group $groupId failed: $e');
+        debugPrint(
+            '[GroupAccountCubit] background refresh of group $groupId failed: $e');
         return;
       }
       if (!silent) {
-        emit(GroupAccountError('Failed to load group details: ${e.toString()}'));
+        emit(
+            GroupAccountError('Failed to load group details: ${e.toString()}'));
       }
     }
   }
@@ -530,8 +533,10 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       // Re-emit the loaded snapshot first so any BlocBuilder reading
       // group state goes back to the rendered tree (otherwise it
       // stays stuck on Loading until something else emits Loaded).
-      if (_lastLoadedGroup != null && _lastLoadedGroup!.id == group.id &&
-          _lastLoadedMembers != null && _lastLoadedContributions != null) {
+      if (_lastLoadedGroup != null &&
+          _lastLoadedGroup!.id == group.id &&
+          _lastLoadedMembers != null &&
+          _lastLoadedContributions != null) {
         emit(GroupAccountGroupLoaded(
           group: _lastLoadedGroup!,
           members: _lastLoadedMembers!,
@@ -592,7 +597,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     required String userName,
     required String email,
     String? profileImage,
-    String? username,  // LazerTag username for user lookup
+    String? username, // LazerTag username for user lookup
     GroupMemberRole role = GroupMemberRole.member,
   }) async {
     if (isClosed) return null;
@@ -615,7 +620,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       // Optimistically append to the cached snapshot so the group-details
       // members list updates instantly when the bottom sheet pops. The
       // backend has already committed the row.
-      if (_lastLoadedGroup != null && _lastLoadedGroup!.id == groupId &&
+      if (_lastLoadedGroup != null &&
+          _lastLoadedGroup!.id == groupId &&
           _lastLoadedMembers != null) {
         final dedup = _lastLoadedMembers!
             .where((m) => m.userId != newMember.userId)
@@ -679,8 +685,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     if (isClosed) return;
     final snapshot = _snapshotLoaded();
     if (snapshot != null && snapshot.group.id == groupId) {
-      final patched =
-          snapshot.members.where((m) => m.id != memberId).toList();
+      final patched = snapshot.members.where((m) => m.id != memberId).toList();
       _patchLoaded(members: patched);
     }
     try {
@@ -754,20 +759,24 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
 
       // Automatically add members from rotation order to the contribution
       if (memberRotationOrder != null && memberRotationOrder.isNotEmpty) {
-        debugPrint('🔵 Auto-adding ${memberRotationOrder.length} members to contribution ${contribution.id}');
+        debugPrint(
+            '🔵 Auto-adding ${memberRotationOrder.length} members to contribution ${contribution.id}');
         try {
-          final addedMembers = await addMembersToContribution(AddMembersToContributionParams(
+          final addedMembers =
+              await addMembersToContribution(AddMembersToContributionParams(
             contributionId: contribution.id,
             memberUserIds: memberRotationOrder,
           ));
-          debugPrint('🟢 Successfully added ${addedMembers.length} members to contribution');
+          debugPrint(
+              '🟢 Successfully added ${addedMembers.length} members to contribution');
 
           // Update contribution with the added members
           contribution = contribution.copyWith(
             members: addedMembers,
           );
         } catch (e) {
-          debugPrint('🟡 Failed to auto-add members: $e (contribution still created)');
+          debugPrint(
+              '🟡 Failed to auto-add members: $e (contribution still created)');
           // Don't fail the whole operation if member addition fails
         }
       }
@@ -818,13 +827,13 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     }
   }
 
-  Future<void> deleteContributionFromGroup(String contributionId, String groupId) async {
+  Future<void> deleteContributionFromGroup(
+      String contributionId, String groupId) async {
     if (isClosed) return;
     final snapshot = _snapshotLoaded();
     if (snapshot != null && snapshot.group.id == groupId) {
-      final patched = snapshot.contributions
-          .where((c) => c.id != contributionId)
-          .toList();
+      final patched =
+          snapshot.contributions.where((c) => c.id != contributionId).toList();
       _patchLoaded(contributions: patched);
     }
     try {
@@ -845,7 +854,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     required List<String> memberUserIds,
   }) async {
     if (isClosed) return;
-    emit(const GroupAccountLoading(message: 'Adding members to contribution...'));
+    emit(const GroupAccountLoading(
+        message: 'Adding members to contribution...'));
     try {
       // Pre-clear any declined shadow rows so a re-invite isn't
       // blocked by AddMembersToContribution's dedup. The DELETE is a
@@ -864,7 +874,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
           }
         }
       }
-      final members = await addMembersToContribution(AddMembersToContributionParams(
+      final members =
+          await addMembersToContribution(AddMembersToContributionParams(
         contributionId: contributionId,
         memberUserIds: memberUserIds,
       ));
@@ -877,11 +888,13 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       await loadGroupDetails(groupId);
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to add members to contribution: ${e.toString()}'));
+      emit(GroupAccountError(
+          'Failed to add members to contribution: ${e.toString()}'));
     }
   }
 
-  Future<List<ContributionMember>> loadContributionMembers(String contributionId) async {
+  Future<List<ContributionMember>> loadContributionMembers(
+      String contributionId) async {
     try {
       final members = await getContributionMembers(contributionId);
       return members;
@@ -959,7 +972,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         ));
       } else if (status == PaymentStatus.failed) {
         emit(ContributionPaymentFailed(
-          error: 'Payment failed. Please try again with a different amount or account.',
+          error:
+              'Payment failed. Please try again with a different amount or account.',
           isInsufficientBalance: false,
           isPinInvalid: false,
           isDuplicate: false,
@@ -975,7 +989,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         return;
       } else if (status == PaymentStatus.refunding) {
         emit(const ContributionPaymentFailed(
-          error: 'Payment failed after debit. Your refund is being processed and will appear in your account shortly.',
+          error:
+              'Payment failed after debit. Your refund is being processed and will appear in your account shortly.',
           isInsufficientBalance: false,
           isPinInvalid: false,
           isDuplicate: false,
@@ -996,7 +1011,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         return;
       } else if (status == PaymentStatus.manualReview) {
         emit(const ContributionPaymentFailed(
-          error: 'Your payment is under review by our team. Please contact support; do not retry.',
+          error:
+              'Your payment is under review by our team. Please contact support; do not retry.',
           isInsufficientBalance: false,
           isPinInvalid: false,
           isDuplicate: false,
@@ -1073,7 +1089,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       // NEVER queue payments offline - security tokens expire, balances change
       if (_isNetworkError(e)) {
         emit(const ContributionPaymentFailed(
-          error: 'No internet connection. Please check your network and try again.',
+          error:
+              'No internet connection. Please check your network and try again.',
           isInsufficientBalance: false,
           isPinInvalid: false,
           isDuplicate: false,
@@ -1087,8 +1104,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
           errorMessage.contains('balance');
       final isPinInvalid =
           errorMessage.contains('PIN') || errorMessage.contains('pin');
-      final isDuplicate =
-          errorMessage.contains('duplicate') || errorMessage.contains('already');
+      final isDuplicate = errorMessage.contains('duplicate') ||
+          errorMessage.contains('already');
 
       emit(ContributionPaymentFailed(
         error: 'Failed to process payment: $errorMessage',
@@ -1116,7 +1133,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(const GroupAccountSuccess('Payment status updated'));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to update payment status: ${e.toString()}'));
+      emit(GroupAccountError(
+          'Failed to update payment status: ${e.toString()}'));
     }
   }
 
@@ -1194,7 +1212,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(GroupAccountSuccess('User statistics loaded'));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to load user statistics: ${e.toString()}'));
+      emit(
+          GroupAccountError('Failed to load user statistics: ${e.toString()}'));
     }
   }
 
@@ -1249,7 +1268,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     if (isClosed) return;
 
     // Remove @ prefix if present
-    final cleanTag = lazerTag.startsWith('@') ? lazerTag.substring(1) : lazerTag;
+    final cleanTag =
+        lazerTag.startsWith('@') ? lazerTag.substring(1) : lazerTag;
 
     emit(const UserSearchLoading());
     try {
@@ -1363,7 +1383,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       if (isClosed) return true;
 
       // Optimistic append, same pattern as addMemberToGroupAccount.
-      if (_lastLoadedGroup != null && _lastLoadedGroup!.id == groupId &&
+      if (_lastLoadedGroup != null &&
+          _lastLoadedGroup!.id == groupId &&
           _lastLoadedMembers != null) {
         final dedup = _lastLoadedMembers!
             .where((m) => m.userId != invited.userId || invited.userId.isEmpty)
@@ -1450,7 +1471,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     try {
       final logs = await getContributionActivityLogs!(contributionId);
       if (isClosed) return;
-      emit(ContributionActivityLogsLoaded(logs: logs, contributionId: contributionId));
+      emit(ContributionActivityLogsLoaded(
+          logs: logs, contributionId: contributionId));
     } catch (e) {
       if (isClosed) return;
       emit(GroupAccountError('Failed to load activity logs: ${e.toString()}'));
@@ -1613,7 +1635,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       ));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountReportShareError('Failed to generate report: ${e.toString()}'));
+      emit(GroupAccountReportShareError(
+          'Failed to generate report: ${e.toString()}'));
     }
   }
 
@@ -1780,7 +1803,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       );
 
   /// Share report to Telegram
-  Future<void> shareReportToTelegram(GroupAccountReport report, String? groupUrl,
+  Future<void> shareReportToTelegram(
+          GroupAccountReport report, String? groupUrl,
           {Rect? sharePositionOrigin}) =>
       _runReportShare(
         () => reportService!.shareToTelegram(report,
@@ -1789,7 +1813,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       );
 
   /// Share report to Facebook
-  Future<void> shareReportToFacebook(GroupAccountReport report, String? groupUrl,
+  Future<void> shareReportToFacebook(
+          GroupAccountReport report, String? groupUrl,
           {Rect? sharePositionOrigin}) =>
       _runReportShare(
         () => reportService!.shareToFacebook(report,
@@ -1908,7 +1933,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
 
     // SWR: emit cached data immediately if available (fresh load, no search, page 1)
     final isFreshLoad = search == null && page == 1;
-    if (isFreshLoad && _cachedPublicGroups != null && _cachedPublicGroups!.isNotEmpty) {
+    if (isFreshLoad &&
+        _cachedPublicGroups != null &&
+        _cachedPublicGroups!.isNotEmpty) {
       emit(PublicGroupsLoaded(
         groups: _cachedPublicGroups!,
         totalCount: _cachedPublicGroups!.length,
@@ -1940,7 +1967,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     } catch (e) {
       if (isClosed) return;
       // On error with cached data, keep showing cached
-      if (isFreshLoad && _cachedPublicGroups != null && _cachedPublicGroups!.isNotEmpty) {
+      if (isFreshLoad &&
+          _cachedPublicGroups != null &&
+          _cachedPublicGroups!.isNotEmpty) {
         return;
       }
       emit(GroupAccountError('Failed to load public groups: ${e.toString()}'));
@@ -2009,7 +2038,8 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       if (isClosed) return;
       final errorMsg = e.toString();
       // Distinguish "already a member" errors
-      if (errorMsg.contains('AlreadyExists') || errorMsg.contains('already a member')) {
+      if (errorMsg.contains('AlreadyExists') ||
+          errorMsg.contains('already a member')) {
         emit(const GroupAccountError('You are already a member of this group'));
       } else {
         emit(GroupAccountError('Failed to join group: $errorMsg'));
@@ -2072,8 +2102,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       return result;
     } catch (e) {
       if (isClosed) return null;
-      emit(GroupAccountError(
-          accept ? 'Failed to accept invite: $e' : 'Failed to decline invite: $e'));
+      emit(GroupAccountError(accept
+          ? 'Failed to accept invite: $e'
+          : 'Failed to decline invite: $e'));
       return null;
     }
   }
@@ -2372,4 +2403,4 @@ class _LoadedSnapshot {
     required this.members,
     required this.contributions,
   });
-} 
+}

@@ -12,8 +12,8 @@ import '../../../../../core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/shared_widgets/app_error_view.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import '../../utils/analytics_theme.dart';
 part 'budget_list_screen_widgets.dart';
-
 
 class _SummaryCard extends StatelessWidget {
   final double totalBudgetAmount;
@@ -149,10 +149,11 @@ class _SummaryCard extends StatelessWidget {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    CurrencySymbols.formatAmount(totalBudgetAmount - totalSpentAmount),
+                    CurrencySymbols.formatAmount(
+                        totalBudgetAmount - totalSpentAmount),
                     style: TextStyle(
                       color: (totalBudgetAmount - totalSpentAmount) >= 0
-                          ? InvoiceThemeColors.primaryPurple
+                          ? AnalyticsTheme.accent
                           : const Color(0xFFEF4444),
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/src/features/uplift/data/services/uplift_guide_preference.dart';
+import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_widgets.dart';
 
 /// What each LazerFunds tab is for, in the user's terms.
 ///
@@ -89,7 +90,7 @@ class UpliftGuideCard extends StatelessWidget {
         color: const Color(0xFF1A1430),
         borderRadius: BorderRadius.circular(14.r),
         border:
-            Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.35)),
+            Border.all(color: kUpPrimary.withValues(alpha: 0.35)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,7 +98,7 @@ class UpliftGuideCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(copy.icon, color: const Color(0xFF9B6DFF), size: 20.sp),
+              Icon(copy.icon, color: kUpPrimarySoft, size: 20.sp),
               SizedBox(width: 10.w),
               Expanded(
                 child: Text(
@@ -139,7 +140,7 @@ class UpliftGuideCard extends StatelessWidget {
                 child: Text(
                   "Don't show these again",
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF9B6DFF),
+                    color: kUpPrimarySoft,
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
                   ),

@@ -39,7 +39,8 @@ class MoveMoneyGrpcDataSource {
     String? transactionId,
     bool useDirectDebit = false,
   }) async {
-    final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+    final response =
+        await _callOptionsHelper.executeWithTokenRotation(() async {
       final callOptions = await _callOptionsHelper.withAuth();
       return await _client.initiateMoveTransfer(
         banking_pb.InitiateMoveTransferRequest(
@@ -64,7 +65,9 @@ class MoveMoneyGrpcDataSource {
     if (!response.success) {
       throw MoveMoneyException(
         code: response.errorCode.isNotEmpty ? response.errorCode : 'UNKNOWN',
-        message: response.errorMessage.isNotEmpty ? response.errorMessage : 'Transfer failed',
+        message: response.errorMessage.isNotEmpty
+            ? response.errorMessage
+            : 'Transfer failed',
       );
     }
 
@@ -89,7 +92,9 @@ class MoveMoneyGrpcDataSource {
 
     if (!response.success) {
       throw Exception(
-        response.errorMessage.isNotEmpty ? response.errorMessage : 'Transfer not found',
+        response.errorMessage.isNotEmpty
+            ? response.errorMessage
+            : 'Transfer not found',
       );
     }
 
@@ -118,7 +123,9 @@ class MoveMoneyGrpcDataSource {
 
     if (!response.success) {
       throw Exception(
-        response.errorMessage.isNotEmpty ? response.errorMessage : 'Failed to fetch transfers',
+        response.errorMessage.isNotEmpty
+            ? response.errorMessage
+            : 'Failed to fetch transfers',
       );
     }
 
@@ -144,7 +151,9 @@ class MoveMoneyGrpcDataSource {
 
     if (!response.success) {
       throw Exception(
-        response.errorMessage.isNotEmpty ? response.errorMessage : 'Fee calculation failed',
+        response.errorMessage.isNotEmpty
+            ? response.errorMessage
+            : 'Fee calculation failed',
       );
     }
 
@@ -200,8 +209,10 @@ class MoveMoneyGrpcDataSource {
       currency: pb.currency,
       narration: pb.narration.isEmpty ? null : pb.narration,
       createdAt: pb.createdAt.toDateTime(),
-      debitCompletedAt: pb.hasDebitCompletedAt() ? pb.debitCompletedAt.toDateTime() : null,
-      payoutCompletedAt: pb.hasPayoutCompletedAt() ? pb.payoutCompletedAt.toDateTime() : null,
+      debitCompletedAt:
+          pb.hasDebitCompletedAt() ? pb.debitCompletedAt.toDateTime() : null,
+      payoutCompletedAt:
+          pb.hasPayoutCompletedAt() ? pb.payoutCompletedAt.toDateTime() : null,
       completedAt: pb.hasCompletedAt() ? pb.completedAt.toDateTime() : null,
       failedAt: pb.hasFailedAt() ? pb.failedAt.toDateTime() : null,
     );

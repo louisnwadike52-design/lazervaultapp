@@ -2100,9 +2100,19 @@ class AppRouter {
     GetPage(
       name: AppRoutes.contributionDetails,
       page: () {
-        final args = Get.arguments as Map<String, dynamic>;
-        final contributionId = args['contributionId'] as String;
+        // Guarded for exactly the reason makePayment below is: an unguarded
+        // `Get.arguments as Map<String, dynamic>` throws inside the page builder
+        // for ANY caller passing something else (a bare id String, or a deep
+        // link with no arguments at all), and a builder that throws paints a
+        // blank grey screen the user cannot navigate out of. Degrade to a clean
+        // pop with a message instead.
+        final args = safeArgs<Map<String, dynamic>>() ?? const {};
+        final contributionId = args['contributionId'] as String? ?? '';
         final contribution = args['contribution'] as Contribution?;
+        if (contributionId.isEmpty) {
+          popMissingArgs('this contribution');
+          return const Scaffold(backgroundColor: Color(0xFF0A0A0A));
+        }
         return BlocProvider.value(
           value: serviceLocator<GroupAccountCubit>(),
           child: ContributionDetailsScreen(

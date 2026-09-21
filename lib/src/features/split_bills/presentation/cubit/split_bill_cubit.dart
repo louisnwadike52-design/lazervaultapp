@@ -145,6 +145,24 @@ class SplitBillCubit extends Cubit<SplitBillState> {
         transactionPin: transactionPin,
       );
       if (isClosed) return;
+      // A REJECTED TRANSFER IS NOT A PAID SHARE.
+      //
+      // `success` on the envelope means "we accepted and attempted the
+      // payment"; the rail can still refuse it, and when it does the server
+      // returns the transaction with status `failed`. Emitting SharePaid on
+      // that path sent the payer to a receipt reading "Payment Pending" for
+      // money that never moved, and pull-to-refresh then re-read the
+      // participant as `pending` forever — so the failure was never shown at
+      // all. The hold is released server-side, so nothing is owed.
+      if (result.didFail) {
+        emit(SplitBillError(
+          result.message.trim().isNotEmpty
+              ? result.message
+              : 'That payment could not be completed, so nothing left your '
+                  'account. You can try again.',
+        ));
+        return;
+      }
       emit(SplitBillSharePaid(
         transactionReference: result.transactionReference,
         message: result.message,

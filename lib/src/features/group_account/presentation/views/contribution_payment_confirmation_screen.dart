@@ -96,8 +96,8 @@ class _ContributionPaymentConfirmationScreenState
       'type': 'group_contribution',
       'ref': ref,
       'amount': p.amount.toStringAsFixed(2),
-      'currency': (p.currency.isNotEmpty ? p.currency : c.currency)
-          .toUpperCase(),
+      'currency':
+          (p.currency.isNotEmpty ? p.currency : c.currency).toUpperCase(),
       'to': c.title,
       'date': p.paymentDate.toIso8601String(),
     });
@@ -135,8 +135,7 @@ class _ContributionPaymentConfirmationScreenState
     //     group → contribution-details. Dashboard flicker here is
     //     acceptable because we genuinely have no prior state.
     Get.until((route) =>
-        route.settings.name == AppRoutes.contributionDetails ||
-        route.isFirst);
+        route.settings.name == AppRoutes.contributionDetails || route.isFirst);
     final landed = Get.currentRoute == AppRoutes.contributionDetails;
     if (landed) return false;
     Get.offAllNamed(AppRoutes.dashboard);
@@ -144,9 +143,20 @@ class _ContributionPaymentConfirmationScreenState
       AppRoutes.groupDetails,
       arguments: widget.contribution.groupId,
     );
+    // The contributionDetails route takes a MAP ({contributionId, contribution}),
+    // not a bare id — passing the raw String made its `Get.arguments as
+    // Map<String, dynamic>` cast throw inside the page builder, which renders as
+    // a blank grey screen. This branch only runs when contributionDetails was
+    // never on the stack, which is exactly the "contribute from the group's
+    // Contributions tab" path — hence the bug showing up mostly from there.
+    // Passing the object too means the screen paints immediately instead of
+    // flashing empty while it refetches by id.
     Get.toNamed(
       AppRoutes.contributionDetails,
-      arguments: widget.contribution.id,
+      arguments: {
+        'contributionId': widget.contribution.id,
+        'contribution': widget.contribution,
+      },
     );
     return false;
   }
@@ -287,8 +297,8 @@ class _ContributionPaymentConfirmationScreenState
     final symbol = _currencySymbol(currency);
     final statusLabel = _formatStatus(p.status);
     final timestamp = p.paymentDate;
-    final isCompleted =
-        p.status == PaymentStatus.completed || p.status == PaymentStatus.processing;
+    final isCompleted = p.status == PaymentStatus.completed ||
+        p.status == PaymentStatus.processing;
 
     return Column(
       children: [
@@ -296,9 +306,8 @@ class _ContributionPaymentConfirmationScreenState
           width: 48.w,
           height: 48.w,
           decoration: BoxDecoration(
-            color: isCompleted
-                ? const Color(0xFF10B981)
-                : const Color(0xFFFB923C),
+            color:
+                isCompleted ? const Color(0xFF10B981) : const Color(0xFFFB923C),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -389,18 +398,15 @@ class _ContributionPaymentConfirmationScreenState
           ),
           SizedBox(height: 14.h),
           _buildDetailRow('Contribution', c.title),
-          if (p.userName.trim().isNotEmpty)
-            _buildDetailRow('From', p.userName),
+          if (p.userName.trim().isNotEmpty) _buildDetailRow('From', p.userName),
           if (ref.isNotEmpty) _buildDetailRow('Transaction Ref', ref),
           if (paymentId.isNotEmpty && paymentId != ref)
             _buildDetailRow('Payment ID', paymentId),
           if (p.notes != null && p.notes!.trim().isNotEmpty)
             _buildDetailRow('Notes', p.notes!),
-          _buildDetailRow(
-              'Amount',
+          _buildDetailRow('Amount',
               '${(_currencySymbol(p.currency.isNotEmpty ? p.currency : c.currency))}${p.amount.toStringAsFixed(2)}'),
-          _buildDetailRow(
-              'Currency',
+          _buildDetailRow('Currency',
               (p.currency.isNotEmpty ? p.currency : c.currency).toUpperCase()),
           // Divider before QR — same visual rhythm as the
           // transfer receipt.
@@ -418,8 +424,7 @@ class _ContributionPaymentConfirmationScreenState
                 version: QrVersions.auto,
                 size: 80.w,
                 backgroundColor: Colors.transparent,
-                dataModuleStyle:
-                    const QrDataModuleStyle(color: Colors.white),
+                dataModuleStyle: const QrDataModuleStyle(color: Colors.white),
                 eyeStyle: const QrEyeStyle(color: Colors.white),
               ),
             ),

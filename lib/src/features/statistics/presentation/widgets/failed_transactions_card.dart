@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
+import 'package:lazervault/src/features/statistics/utils/analytics_theme.dart';
 
 /// Failed/Reversed Transactions Card
 ///
@@ -28,9 +29,12 @@ class _FailedTransactionsCardState extends State<FailedTransactionsCard> {
   Widget build(BuildContext context) {
     if (widget.transactions.isEmpty) return const SizedBox.shrink();
 
-    final failedCount = widget.transactions.where((t) => t.status == 'failed').length;
-    final reversedCount = widget.transactions.where((t) => t.status == 'reversed').length;
-    final totalAmount = widget.transactions.fold<double>(0, (sum, t) => sum + t.amount);
+    final failedCount =
+        widget.transactions.where((t) => t.status == 'failed').length;
+    final reversedCount =
+        widget.transactions.where((t) => t.status == 'reversed').length;
+    final totalAmount =
+        widget.transactions.fold<double>(0, (sum, t) => sum + t.amount);
     final displayTransactions = _isExpanded
         ? widget.transactions
         : widget.transactions.take(3).toList();
@@ -145,7 +149,7 @@ class _FailedTransactionsCardState extends State<FailedTransactionsCard> {
                           ? 'Show less'
                           : 'Show all ${widget.transactions.length} issues',
                       style: TextStyle(
-                        color: const Color(0xFF4E03D0),
+                        color: AnalyticsTheme.accent,
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -171,21 +175,25 @@ class _FailedTransactionsCardState extends State<FailedTransactionsCard> {
     );
   }
 
-  Widget _buildPatternAnalysis(int failedCount, int reversedCount, double totalAmount) {
+  Widget _buildPatternAnalysis(
+      int failedCount, int reversedCount, double totalAmount) {
     String insight;
     IconData icon;
     Color color;
 
     if (failedCount > reversedCount && failedCount >= 3) {
-      insight = 'Multiple failed transactions detected. This may indicate insufficient funds or network issues. Consider keeping a buffer balance.';
+      insight =
+          'Multiple failed transactions detected. This may indicate insufficient funds or network issues. Consider keeping a buffer balance.';
       icon = Icons.info_outline;
       color = const Color(0xFFEF4444);
     } else if (reversedCount > failedCount && reversedCount >= 3) {
-      insight = 'Several reversed transactions this period. These funds have been returned to your account. Check for duplicate payments.';
+      insight =
+          'Several reversed transactions this period. These funds have been returned to your account. Check for duplicate payments.';
       icon = Icons.refresh;
       color = const Color(0xFFFB923C);
     } else if (totalAmount > 0) {
-      insight = 'Review these transactions to understand failure patterns. Contact support if issues persist.';
+      insight =
+          'Review these transactions to understand failure patterns. Contact support if issues persist.';
       icon = Icons.lightbulb_outline;
       color = const Color(0xFF4E03D0);
     } else {
@@ -254,7 +262,20 @@ class _TransactionRow extends StatelessWidget {
     if (dateStr.isEmpty) return '';
     try {
       final date = DateTime.parse(dateStr);
-      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      final months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec'
+      ];
       return '${months[date.month - 1]} ${date.day}';
     } catch (_) {
       return dateStr.length > 10 ? dateStr.substring(0, 10) : dateStr;
@@ -264,7 +285,8 @@ class _TransactionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isFailed = transaction.status == 'failed';
-    final statusColor = isFailed ? const Color(0xFFEF4444) : const Color(0xFFFB923C);
+    final statusColor =
+        isFailed ? const Color(0xFFEF4444) : const Color(0xFFFB923C);
     final statusLabel = isFailed ? 'Failed' : 'Reversed';
 
     return Padding(
@@ -315,7 +337,8 @@ class _TransactionRow extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 4.w, vertical: 1.h),
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(3.r),

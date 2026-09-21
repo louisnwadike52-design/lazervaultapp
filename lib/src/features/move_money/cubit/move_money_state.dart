@@ -105,7 +105,8 @@ class MoveMoneyNeedsReauth extends MoveMoneyState {
 
   const MoveMoneyNeedsReauth({
     required this.accountId,
-    this.message = 'Source account requires re-authorization. Please re-link the account.',
+    this.message =
+        'Source account requires re-authorization. Please re-link the account.',
   });
 
   @override
@@ -149,7 +150,8 @@ class MoveMoneyTransferTimeout extends MoveMoneyState {
   const MoveMoneyTransferTimeout({
     required this.transferId,
     required this.reference,
-    this.message = 'Transfer is still processing. Check your transfer history for updates.',
+    this.message =
+        'Transfer is still processing. Check your transfer history for updates.',
   });
 
   @override

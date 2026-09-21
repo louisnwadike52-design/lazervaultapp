@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/src/features/channel_management/presentation/screens/phone_banking_channel_screen.dart';
+import 'package:lazervault/src/features/channel_management/presentation/screens/whatsapp_banking_channel_screen.dart';
+import 'package:lazervault/src/features/channel_management/cubit/channel_management_cubit.dart';
+import 'package:lazervault/src/features/channel_management/presentation/screens/channel_management_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -149,11 +153,28 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.lockFunds:
         Get.toNamed(AppRoutes.lockFunds);
         break;
+      // WhatsApp and phone banking are INDEPENDENT services that happen to
+      // share one registration backend. These tiles used to overlap: WhatsApp
+      // opened whatsapp_banking while "Phone Banking" opened the combined
+      // channel screen, which ALSO rendered a WhatsApp card — so WhatsApp
+      // appeared under both tiles. Each now opens its own channel, scoped.
+      // Two Quick Services, two screens. They were one screen taking a
+      // `channelType` argument, which is not a separation: the number rules are
+      // opposite (WhatsApp editable, telephony pinned to the profile), the
+      // settings differ (voice recognition means nothing in a text thread), and
+      // only WhatsApp has a second account-link step. One screen could serve
+      // both only by hiding half of each.
       case AppServiceName.whatsappIntegration:
-        Get.toNamed(AppRoutes.whatsappBanking);
+        Get.to(() => BlocProvider(
+              create: (_) => serviceLocator<ChannelManagementCubit>(),
+              child: const WhatsAppBankingChannelScreen(),
+            ));
         break;
       case AppServiceName.phoneBanking:
-        Get.toNamed(AppRoutes.channelManagement);
+        Get.to(() => BlocProvider(
+              create: (_) => serviceLocator<ChannelManagementCubit>(),
+              child: const PhoneBankingChannelScreen(),
+            ));
         break;
       case AppServiceName.idPay:
         Get.toNamed(AppRoutes.idPayHome);

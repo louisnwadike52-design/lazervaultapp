@@ -83,8 +83,7 @@ class _AutoPayoutScheduledChipState extends State<AutoPayoutScheduledChip> {
     // Light polling. The chip is informational, so a 30s tick is
     // plenty — it doesn't need the 3s cadence the banner uses for
     // in_flight states.
-    _pollTimer =
-        Timer.periodic(const Duration(seconds: 30), (_) => _load());
+    _pollTimer = Timer.periodic(const Duration(seconds: 30), (_) => _load());
   }
 
   @override
@@ -130,10 +129,9 @@ class _AutoPayoutScheduledChipState extends State<AutoPayoutScheduledChip> {
       context: context,
       contribution: widget.contribution,
       cycleIndex: widget.cycleIndex,
-      currentReceiverUserId:
-          _state?.receiver.recipientUserId.isNotEmpty == true
-              ? _state!.receiver.recipientUserId
-              : null,
+      currentReceiverUserId: _state?.receiver.recipientUserId.isNotEmpty == true
+          ? _state!.receiver.recipientUserId
+          : null,
     );
     if (res != null) {
       await _load();
@@ -265,8 +263,7 @@ class AutoPayoutScheduledDialog extends StatelessWidget {
 
     return Dialog(
       backgroundColor: const Color(0xFF1F1F1F),
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
       insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 420.w),
@@ -301,8 +298,8 @@ class AutoPayoutScheduledDialog extends StatelessWidget {
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(Icons.close,
-                        color: Colors.grey[400], size: 20.sp),
+                    icon:
+                        Icon(Icons.close, color: Colors.grey[400], size: 20.sp),
                     padding: EdgeInsets.zero,
                     constraints:
                         BoxConstraints(minWidth: 32.w, minHeight: 32.w),

@@ -7,7 +7,6 @@ import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'category_management_screen_widgets.dart';
 
-
 String _friendlyCategoryName(String raw) => switch (raw.toLowerCase()) {
       'transfer' => 'Transfers',
       'deposit' => 'Deposits',
@@ -246,8 +245,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     );
   }
 
-  Widget _buildCategoryTile(
-      _CategoryDisplayItem cat, Color color, int index) {
+  Widget _buildCategoryTile(_CategoryDisplayItem cat, Color color, int index) {
     final friendlyName = _friendlyCategoryName(cat.displayName);
 
     return Container(
@@ -281,13 +279,13 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
         subtitle: cat.parentCategory.isNotEmpty
             ? Text(
                 'Under: ${_friendlyCategoryName(cat.parentCategory)}',
-                style: TextStyle(
-                    color: const Color(0xFF6B7280), fontSize: 11.sp),
+                style:
+                    TextStyle(color: const Color(0xFF6B7280), fontSize: 11.sp),
               )
             : Text(
                 '${cat.transactionCount} transactions',
-                style: TextStyle(
-                    color: const Color(0xFF6B7280), fontSize: 11.sp),
+                style:
+                    TextStyle(color: const Color(0xFF6B7280), fontSize: 11.sp),
               ),
         trailing: PopupMenuButton<String>(
           icon: Icon(Icons.more_vert, color: Colors.white60, size: 20.sp),
@@ -301,8 +299,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                   Icon(Icons.edit, color: Colors.white70, size: 18.sp),
                   SizedBox(width: 8.w),
                   Text('Rename',
-                      style: TextStyle(
-                          color: Colors.white, fontSize: 13.sp)),
+                      style: TextStyle(color: Colors.white, fontSize: 13.sp)),
                 ],
               ),
             ),
@@ -314,8 +311,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                       color: Colors.white70, size: 18.sp),
                   SizedBox(width: 8.w),
                   Text('Move to...',
-                      style: TextStyle(
-                          color: Colors.white, fontSize: 13.sp)),
+                      style: TextStyle(color: Colors.white, fontSize: 13.sp)),
                 ],
               ),
             ),
@@ -327,8 +323,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                     Icon(Icons.restore, color: Colors.orange, size: 18.sp),
                     SizedBox(width: 8.w),
                     Text('Reset Name',
-                        style: TextStyle(
-                            color: Colors.orange, fontSize: 13.sp)),
+                        style:
+                            TextStyle(color: Colors.orange, fontSize: 13.sp)),
                   ],
                 ),
               ),
@@ -418,8 +414,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
               Navigator.pop(dialogContext);
             },
             child: Text('Save',
-                style: TextStyle(
-                    color: const Color(0xFF10B981), fontSize: 14.sp)),
+                style:
+                    TextStyle(color: const Color(0xFF10B981), fontSize: 14.sp)),
           ),
         ],
       ),
@@ -450,13 +446,9 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                   leading: Icon(Icons.remove_circle_outline,
                       color: Colors.orange, size: 20.sp),
                   title: Text('None (top level)',
-                      style: TextStyle(
-                          color: Colors.white, fontSize: 13.sp)),
+                      style: TextStyle(color: Colors.white, fontSize: 13.sp)),
                   onTap: () {
-                    this
-                        .context
-                        .read<CategoryManagementCubit>()
-                        .moveCategory(
+                    this.context.read<CategoryManagementCubit>().moveCategory(
                           originalCategory: cat.originalName,
                           parentCategory: '',
                         );
@@ -470,21 +462,16 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                   width: 12.w,
                   height: 12.w,
                   decoration: BoxDecoration(
-                    color: categoryColors[
-                        (index - 1) % categoryColors.length],
+                    color: categoryColors[(index - 1) % categoryColors.length],
                     shape: BoxShape.circle,
                   ),
                 ),
                 title: Text(
                   _friendlyCategoryName(target.displayName),
-                  style:
-                      TextStyle(color: Colors.white, fontSize: 13.sp),
+                  style: TextStyle(color: Colors.white, fontSize: 13.sp),
                 ),
                 onTap: () {
-                  this
-                      .context
-                      .read<CategoryManagementCubit>()
-                      .moveCategory(
+                  this.context.read<CategoryManagementCubit>().moveCategory(
                         originalCategory: cat.originalName,
                         parentCategory: target.originalName,
                       );

@@ -14,7 +14,7 @@ abstract class GroupAccountRemoteDataSource {
   });
   Future<GroupAccountModel> updateGroup(GroupAccountModel group);
   Future<void> deleteGroup(String groupId);
-  
+
   Future<List<GroupMemberModel>> getGroupMembers(String groupId);
   Future<GroupMemberModel> addMemberToGroup({
     required String groupId,
@@ -22,7 +22,7 @@ abstract class GroupAccountRemoteDataSource {
     required String userName,
     required String email,
     String? profileImage,
-    String? username,  // LazerTag username for user lookup
+    String? username, // LazerTag username for user lookup
     GroupMemberRole role = GroupMemberRole.member,
   });
   Future<GroupMemberModel> updateMemberRole({
@@ -35,7 +35,7 @@ abstract class GroupAccountRemoteDataSource {
     required String memberId,
   });
   Future<List<GroupMemberModel>> searchUsers(String query);
-  
+
   Future<List<ContributionModel>> getGroupContributions(String groupId);
   Future<ContributionModel> getContributionById(String contributionId);
   Future<ContributionModel> createContribution({
@@ -69,7 +69,8 @@ abstract class GroupAccountRemoteDataSource {
     required String contributionId,
     required List<String> memberUserIds,
   });
-  Future<List<ContributionMemberModel>> getContributionMembers(String contributionId);
+  Future<List<ContributionMemberModel>> getContributionMembers(
+      String contributionId);
   Future<MemberExitResult> removeMemberFromContribution({
     required String contributionId,
     required String userId,
@@ -115,7 +116,8 @@ abstract class GroupAccountRemoteDataSource {
     int limit = 100,
   });
 
-  Future<List<ContributionPaymentModel>> getContributionPayments(String contributionId);
+  Future<List<ContributionPaymentModel>> getContributionPayments(
+      String contributionId);
   Future<ContributionPaymentModel> makeContributionPayment({
     required String contributionId,
     required String groupId,
@@ -133,7 +135,7 @@ abstract class GroupAccountRemoteDataSource {
     required PaymentStatus status,
     String? transactionId,
   });
-  
+
   Future<ContributionModel> processScheduledPayments(String contributionId);
   Future<List<ContributionModel>> getOverdueContributions(String userId);
   Future<ContributionModel> updatePaymentSchedule({
@@ -141,7 +143,7 @@ abstract class GroupAccountRemoteDataSource {
     required DateTime nextPaymentDate,
     int? currentCycle,
   });
-  
+
   Future<List<PayoutScheduleModel>> getPayoutSchedule(String contributionId);
   Future<PayoutTransactionModel> processPayoutTransaction({
     required String contributionId,
@@ -157,19 +159,21 @@ abstract class GroupAccountRemoteDataSource {
   });
   Future<ContributionModel> calculateAndProcessPayout(String contributionId);
   Future<ContributionModel> advancePayoutRotation(String contributionId);
-  
+
   Future<ContributionReceiptModel> generateReceipt(String paymentId);
   Future<List<ContributionReceiptModel>> getUserReceipts(String userId);
-  
-  Future<ContributionTranscriptModel> generateContributionTranscript(String contributionId);
-  
+
+  Future<ContributionTranscriptModel> generateContributionTranscript(
+      String contributionId);
+
   Future<Map<String, dynamic>> getGroupStatistics(String groupId);
   Future<Map<String, dynamic>> getUserContributionStats(String userId);
   Future<Map<String, dynamic>> getContributionAnalytics(String contributionId);
 
   // Activity Log methods
   Future<List<ActivityLogEntryModel>> getGroupActivityLogs(String groupId);
-  Future<List<ActivityLogEntryModel>> getContributionActivityLogs(String contributionId);
+  Future<List<ActivityLogEntryModel>> getContributionActivityLogs(
+      String contributionId);
 
   // Public Group Discovery methods
   Future<List<GroupAccountModel>> listPublicGroups({
@@ -199,8 +203,7 @@ abstract class GroupAccountRemoteDataSource {
   Future<void> withdrawJoinRequest(String groupId);
 
   // Cycle history.
-  Future<({List<ContributionCycle> cycles, int total})>
-      listContributionCycles({
+  Future<({List<ContributionCycle> cycles, int total})> listContributionCycles({
     required String contributionId,
     bool includeInProgress = true,
     int page = 1,
@@ -258,4 +261,4 @@ class ActivityLogEntryModel {
       createdAt: createdAt,
     );
   }
-} 
+}

@@ -32,6 +32,7 @@ class ExitContributionBottomSheet extends StatefulWidget {
   final String groupId;
   final String memberUserId;
   final String memberDisplayName;
+
   /// True when the current user is exiting themselves; false when an
   /// admin is removing someone else. Drives copy.
   final bool actorIsSelf;
@@ -268,8 +269,8 @@ class _ExitContributionBottomSheetState
       decoration: BoxDecoration(
         color: const Color(0xFFFB923C).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(
-            color: const Color(0xFFFB923C).withValues(alpha: 0.4)),
+        border:
+            Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -424,9 +425,8 @@ class _ExitContributionBottomSheetState
       children: [
         Expanded(
           child: TextButton(
-            onPressed: _confirming
-                ? null
-                : () => Navigator.of(context).pop(false),
+            onPressed:
+                _confirming ? null : () => Navigator.of(context).pop(false),
             style: TextButton.styleFrom(
               padding: EdgeInsets.symmetric(vertical: 12.h),
               shape: RoundedRectangleBorder(

@@ -23,6 +23,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 Dev → Play Console internal track (PROD build: prod backend/Firebase, auto-rolls to internal testers)
 
+### android listing_images
+
+```sh
+[bundle exec] fastlane android listing_images
+```
+
+Upload ONLY the store-listing images (app icon) to Play — no build, no metadata text
+
 ### android staging
 
 ```sh

@@ -42,7 +42,8 @@ class PayoutSchedule extends Equatable {
 
   bool get isCompleted => status == PayoutStatus.completed;
   bool get isPending => status == PayoutStatus.pending;
-  bool get isOverdue => status == PayoutStatus.pending && DateTime.now().isAfter(scheduledDate);
+  bool get isOverdue =>
+      status == PayoutStatus.pending && DateTime.now().isAfter(scheduledDate);
 
   PayoutSchedule copyWith({
     String? id,

@@ -161,9 +161,32 @@ class ExchangeRates extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               itemBuilder: (context, index) {
+                final rate = state.rates[index];
                 return Padding(
                   padding: EdgeInsets.only(right: 16.w),
-                  child: CountryRateCard(rate: state.rates[index]),
+                  // Tapping a rate opens Exchange already pointed at that pair:
+                  // source = the currency these rates are quoted IN (the active
+                  // locale's base), target = the one tapped. Reading a rate and
+                  // then having to re-pick both sides of it was busywork.
+                  child: InkWell(
+                    onTap: () {
+                      // A rate quoted in its own currency would make
+                      // source == target, which is not a convertible pair;
+                      // open Exchange plainly rather than on a dead form.
+                      final from = rate.baseCurrency.trim().toUpperCase();
+                      final to = rate.currencyCode.trim().toUpperCase();
+                      final usable =
+                          from.isNotEmpty && to.isNotEmpty && from != to;
+                      Get.toNamed(
+                        AppRoutes.exchangeHome,
+                        arguments: usable
+                            ? {'fromCurrency': from, 'toCurrency': to}
+                            : null,
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(16.r),
+                    child: CountryRateCard(rate: rate),
+                  ),
                 );
               },
             ),

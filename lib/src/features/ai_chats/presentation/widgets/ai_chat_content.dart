@@ -31,6 +31,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_media_bubble.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_voice_note_player.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_prompt_card.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_recipient_card.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card_v2.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_qr_card.dart';
@@ -1585,6 +1586,14 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             // on the same message.
             if (!isUser && message.qrCard != null)
               ChatQrCard(payload: message.qrCard!),
+            // The confirmed counterparty, as a card with their avatar. The
+            // voice HUD has rendered this identity all along; chat showed a
+            // line of prose at the one moment a misread costs money.
+            if (!isUser && message.recipientCard != null)
+              ChatRecipientCard(
+                data: message.recipientCard!,
+                onChangeRecipient: () => _handleSubmitted('change recipient'),
+              ),
             // PIN prompt card — chat-driven money moves collect the PIN inline.
             // "Enter PIN" opens the native modal; on success the single-use
             // token round-trips to the agent (submitPinVerification) and the

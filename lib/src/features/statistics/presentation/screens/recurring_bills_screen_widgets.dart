@@ -16,7 +16,8 @@ class _BillCard extends StatelessWidget {
             : const Color(0xFF10B981);
 
     final recurrenceLabel = bill.recurrencePattern.isNotEmpty
-        ? bill.recurrencePattern[0].toUpperCase() + bill.recurrencePattern.substring(1)
+        ? bill.recurrencePattern[0].toUpperCase() +
+            bill.recurrencePattern.substring(1)
         : 'Monthly';
 
     return Container(
@@ -64,7 +65,10 @@ class _BillCard extends StatelessWidget {
                   children: [
                     Text(
                       bill.name,
-                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
                     ),
                     if (bill.merchant.isNotEmpty) ...[
                       SizedBox(height: 2.h),
@@ -81,11 +85,15 @@ class _BillCard extends StatelessWidget {
                 children: [
                   Text(
                     CurrencySymbols.formatAmount(bill.amount),
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 2.h),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8.r),
@@ -110,7 +118,8 @@ class _BillCard extends StatelessWidget {
                 Icon(Icons.calendar_today, size: 14.r, color: Colors.grey[500]),
                 SizedBox(width: 4.w),
                 Text(
-                  DateFormat('MMM d, yyyy').format(bill.nextDueDate.toDateTime()),
+                  DateFormat('MMM d, yyyy')
+                      .format(bill.nextDueDate.toDateTime()),
                   style: TextStyle(color: Colors.grey[400], fontSize: 12),
                 ),
                 SizedBox(width: 16.w),
@@ -123,9 +132,11 @@ class _BillCard extends StatelessWidget {
               ),
               const Spacer(),
               if (bill.autoPayEnabled) ...[
-                Icon(Icons.autorenew, size: 14.r, color: const Color(0xFF10B981)),
+                Icon(Icons.autorenew,
+                    size: 14.r, color: const Color(0xFF10B981)),
                 SizedBox(width: 4.w),
-                const Text('Auto-pay', style: TextStyle(color: Color(0xFF10B981), fontSize: 12)),
+                const Text('Auto-pay',
+                    style: TextStyle(color: Color(0xFF10B981), fontSize: 12)),
               ],
             ],
           ),
@@ -185,15 +196,20 @@ class _SummaryItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12.sp)),
+        Text(label,
+            style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.8), fontSize: 12.sp)),
         SizedBox(height: 4.h),
         Text(
           value,
-          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         Text(
           subtext,
-          style: TextStyle(color: subtextColor ?? Colors.white.withValues(alpha: 0.6), fontSize: 11.sp),
+          style: TextStyle(
+              color: subtextColor ?? Colors.white.withValues(alpha: 0.6),
+              fontSize: 11.sp),
         ),
       ],
     );

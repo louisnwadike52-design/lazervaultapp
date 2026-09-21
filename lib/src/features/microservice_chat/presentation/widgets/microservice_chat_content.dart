@@ -19,6 +19,7 @@ import 'chat_media_input_bar.dart';
 import 'chat_receipt_card.dart';
 import 'chat_receipt_card_v2.dart';
 import 'chat_pin_prompt_card.dart';
+import 'chat_recipient_card.dart';
 import 'chat_reply_widgets.dart';
 import 'quick_action_chips.dart';
 
@@ -621,6 +622,17 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                   // receipt_card (e.g. batch transfers).
                   else if (!isUser && message.metadata?['receipt_card'] != null)
                     _buildReceiptCardV2(message.metadata!['receipt_card']),
+                  // The confirmed counterparty, as a card with their avatar.
+                  // The same identity the voice HUD has always rendered — chat
+                  // showed a line of prose at the one moment a misread costs
+                  // money.
+                  if (!isUser && message.metadata?['recipient_card'] is Map)
+                    ChatRecipientCard(
+                      data: Map<String, dynamic>.from(
+                        message.metadata!['recipient_card'] as Map,
+                      ),
+                      onChangeRecipient: () => _sendText('change recipient'),
+                    ),
                   // PinPromptIntent — money-moving tools emit this
                   // when they need the user's PIN. The card opens the
                   // native TransactionPinMixin modal; on success the

@@ -10,64 +10,39 @@ import 'package:lazervault/src/features/statistics/data/budget_ai_service.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../../utils/transaction_category_labels.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import '../../utils/analytics_theme.dart';
 
 /// Maps category names from backend to display-friendly names.
-String _friendlyCategoryName(String raw) => switch (raw.toLowerCase()) {
-  // Backend display names (pass through as-is)
-  'p2p transfers' || 'bank transfers' || 'international transfers' ||
-  'gift cards' || 'bills & utilities' ||
-  'service fees' || 'tagpay' || 'invoices' || 'investments' ||
-  'payroll' || 'crowdfunding' || 'deposits' || 'withdrawals' ||
-  'reversals' || 'transfers' || 'banking' || 'payments' ||
-  'food & drinks' || 'shopping' || 'transportation' || 'entertainment' => raw,
-
-  // PiggyVault (Lock Funds) — savings product
-  'piggyvault' || 'piggy vault' || 'lock funds' || 'lock_funds' => 'Piggyvault',
-  'autosave' => 'AutoSave',
-  'savings & products' => 'Savings & Products',
-
-  // Legacy raw category values
-  'transfer' || 'c2c_transfer' => 'P2P Transfers',
-  'domestic_transfer' => 'Bank Transfers',
-  'international_transfer' => 'International Transfers',
-  'deposit' => 'Deposits',
-  'withdrawal' => 'Withdrawals',
-  'fee' => 'Service Fees',
-  'reversal' => 'Reversals',
-  'payment' || 'invoice_payment' => 'Payments',
-  'tag-pay' => 'TagPay',
-  'invoice' => 'Invoices',
-  'giftcards' || 'gift-cards' || 'gift_card' => 'Gift Cards',
-  'airtime' || 'bill_payment' => 'Bills & Utilities',
-  'investment' || 'investments' => 'Investments',
-
-  // Raw service names (fallback)
-  'core-payments-service' || 'core-payments' => 'Transfers',
-  'banking-service' => 'Banking',
-  'invoice-service' => 'Invoices',
-  'giftcards-service' => 'Gift Cards',
-  'utility-payments-service' => 'Bills & Utilities',
-  'tag-pay-service' => 'TagPay',
-  'financial-products-service' => 'Savings & Products',
-  'investments-service' => 'Investments',
-  'payroll-service' => 'Payroll',
-  'crowdfund-service' => 'Crowdfunding',
-  'accounts-service' => 'Other',
-
-  // Fallback: capitalize and clean up
-  _ => raw.replaceAll('-', ' ').replaceAll('_', ' ').split(' ').map((w) =>
-      w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
-};
+///
+/// Delegates to the single closed vocabulary shared with the backend. This was
+/// a second, drifted copy of the same switch that lived in the spending screen,
+/// and both ended in a title-case fallback that dressed up raw values instead
+/// of removing them.
+String _friendlyCategoryName(String raw) =>
+    TransactionCategoryLabels.displayLabel(raw);
 
 /// Returns true for platform/internal fee categories that should be
 /// hidden from the UI breakdown (totals still include them).
 bool _isPlatformFee(String categoryName) {
-  final n = categoryName.toLowerCase().replaceAll('-', '_').replaceAll(' ', '_');
+  final n =
+      categoryName.toLowerCase().replaceAll('-', '_').replaceAll(' ', '_');
   return const {
-    'fee', 'fees', 'service_fees', 'service_fee',
-    'transfer_fee', 'transfer_fees', 'exchange_margin',
-    'exchange_fee', 'platform_fee', 'platform_fees',
-    'processing_fee', 'processing_fees', 'commission', 'commissions',
+    'fee',
+    'fees',
+    'service_fees',
+    'service_fee',
+    'transfer_fee',
+    'transfer_fees',
+    'exchange_margin',
+    'exchange_fee',
+    'platform_fee',
+    'platform_fees',
+    'processing_fee',
+    'processing_fees',
+    'commission',
+    'commissions',
   }.contains(n);
 }
 
@@ -80,10 +55,12 @@ class CategoryAnalysisDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<CategoryAnalysisDetailScreen> createState() => _CategoryAnalysisDetailScreenState();
+  State<CategoryAnalysisDetailScreen> createState() =>
+      _CategoryAnalysisDetailScreenState();
 }
 
-class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScreen> {
+class _CategoryAnalysisDetailScreenState
+    extends State<CategoryAnalysisDetailScreen> {
   bool get isIncome => widget.analysisType == 'income';
 
   // Track which categories are expanded (by name to avoid stale indices on refresh)
@@ -112,10 +89,13 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
     if (_aiLoading) return;
 
     final statsState = context.read<StatisticsCubit>().state;
-    if (statsState is! StatisticsLoaded || statsState.categoryAnalytics == null) return;
+    if (statsState is! StatisticsLoaded || statsState.categoryAnalytics == null)
+      return;
 
     final catAnalytics = statsState.categoryAnalytics!;
-    final categories = isIncome ? catAnalytics.incomeCategories : catAnalytics.expenseCategories;
+    final categories = isIncome
+        ? catAnalytics.incomeCategories
+        : catAnalytics.expenseCategories;
     if (categories.isEmpty) return;
 
     setState(() {
@@ -133,12 +113,16 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
       // Build spending data with sub-categories
       final spendingData = <Map<String, dynamic>>[];
       for (final cat in categories) {
-        final subCats = cat.subCategories.map((sub) => {
-          'name': sub.name,
-          'amount': sub.amount,
-          'transaction_count': sub.transactionCount,
-          'percentage': cat.amount > 0 ? (sub.amount / cat.amount * 100).round() : 0,
-        }).toList();
+        final subCats = cat.subCategories
+            .map((sub) => {
+                  'name': sub.name,
+                  'amount': sub.amount,
+                  'transaction_count': sub.transactionCount,
+                  'percentage': cat.amount > 0
+                      ? (sub.amount / cat.amount * 100).round()
+                      : 0,
+                })
+            .toList();
 
         final total = isIncome ? catAnalytics.totalIncome : totalExpenses;
         spendingData.add({
@@ -152,7 +136,10 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
 
       final aiService = serviceLocator<BudgetAIService>();
       final response = await aiService.getAIInsights(
-        monthlyIncome: monthlyIncome > 0 ? monthlyIncome : 500000,
+        // Pass the REAL income even when it is 0. A fabricated placeholder
+        // made the AI reason about money the user does not have, and the
+        // sibling budget screen already refuses to do this.
+        monthlyIncome: monthlyIncome,
         spendingData: spendingData,
         activeBudgets: const [],
         goals: const ['Optimize spending'],
@@ -253,7 +240,8 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
           children: [
             Row(
               children: [
-                Icon(Icons.auto_awesome, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
+                Icon(Icons.auto_awesome,
+                    color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
@@ -267,7 +255,8 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
                 ),
                 GestureDetector(
                   onTap: _loadAIAnalysis,
-                  child: Icon(Icons.refresh, color: const Color(0xFF9CA3AF), size: 18.sp),
+                  child: Icon(Icons.refresh,
+                      color: const Color(0xFF9CA3AF), size: 18.sp),
                 ),
               ],
             ),
@@ -275,7 +264,10 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
               SizedBox(height: 10.h),
               Text(
                 _aiInsights!.summary,
-                style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 13.sp, height: 1.5),
+                style: TextStyle(
+                    color: const Color(0xFFD1D5DB),
+                    fontSize: 13.sp,
+                    height: 1.5),
               ),
             ],
             if (_aiInsights!.savingsOpportunities.isNotEmpty) ...[
@@ -294,12 +286,16 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.lightbulb_outline, color: const Color(0xFFFB923C), size: 14.sp),
+                        Icon(Icons.lightbulb_outline,
+                            color: const Color(0xFFFB923C), size: 14.sp),
                         SizedBox(width: 6.w),
                         Expanded(
                           child: Text(
                             tip,
-                            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp, height: 1.4),
+                            style: TextStyle(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 12.sp,
+                                height: 1.4),
                           ),
                         ),
                       ],
@@ -343,14 +339,21 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
         ),
         child: Row(
           children: [
-            Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 18.sp),
+            Icon(Icons.error_outline,
+                color: const Color(0xFFEF4444), size: 18.sp),
             SizedBox(width: 8.w),
             Expanded(
-              child: Text(_aiError!, style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+              child: Text(_aiError!,
+                  style: TextStyle(
+                      color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
             ),
             GestureDetector(
               onTap: _loadAIAnalysis,
-              child: Text('Retry', style: TextStyle(color: const Color.fromARGB(255, 78, 3, 208), fontSize: 12.sp, fontWeight: FontWeight.w600)),
+              child: Text('Retry',
+                  style: TextStyle(
+                      color: AnalyticsTheme.accent,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -377,12 +380,13 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.auto_awesome, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
+            Icon(Icons.auto_awesome,
+                color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
             SizedBox(width: 10.w),
             Text(
               'Get AI Spending Analysis',
               style: TextStyle(
-                color: const Color.fromARGB(255, 78, 3, 208),
+                color: AnalyticsTheme.accent,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -396,8 +400,12 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
   Widget _buildPieChart(StatisticsLoaded state) {
     final catAnalytics = state.categoryAnalytics;
     final List<accounts_pb.CategoryBreakdownItem> rawCategories = isIncome
-        ? List<accounts_pb.CategoryBreakdownItem>.from(catAnalytics?.incomeCategories ?? <accounts_pb.CategoryBreakdownItem>[])
-        : List<accounts_pb.CategoryBreakdownItem>.from(catAnalytics?.expenseCategories ?? <accounts_pb.CategoryBreakdownItem>[]);
+        ? List<accounts_pb.CategoryBreakdownItem>.from(
+            catAnalytics?.incomeCategories ??
+                <accounts_pb.CategoryBreakdownItem>[])
+        : List<accounts_pb.CategoryBreakdownItem>.from(
+            catAnalytics?.expenseCategories ??
+                <accounts_pb.CategoryBreakdownItem>[]);
     // Hide platform fees from expense display (totals still include them)
     final List<accounts_pb.CategoryBreakdownItem> categories = isIncome
         ? rawCategories
@@ -422,7 +430,8 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
               SizedBox(height: 12.h),
               Text(
                 'No ${isIncome ? 'income' : 'expense'} data available',
-                style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                style:
+                    TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
               ),
             ],
           ),
@@ -507,8 +516,12 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
   Widget _buildCategoryList(StatisticsLoaded state) {
     final catAnalytics = state.categoryAnalytics;
     final List<accounts_pb.CategoryBreakdownItem> rawCategories = isIncome
-        ? List<accounts_pb.CategoryBreakdownItem>.from(catAnalytics?.incomeCategories ?? <accounts_pb.CategoryBreakdownItem>[])
-        : List<accounts_pb.CategoryBreakdownItem>.from(catAnalytics?.expenseCategories ?? <accounts_pb.CategoryBreakdownItem>[]);
+        ? List<accounts_pb.CategoryBreakdownItem>.from(
+            catAnalytics?.incomeCategories ??
+                <accounts_pb.CategoryBreakdownItem>[])
+        : List<accounts_pb.CategoryBreakdownItem>.from(
+            catAnalytics?.expenseCategories ??
+                <accounts_pb.CategoryBreakdownItem>[]);
     // Hide platform fees from expense display (totals still include them)
     final List<accounts_pb.CategoryBreakdownItem> categories = isIncome
         ? rawCategories
@@ -580,19 +593,24 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
                               Flexible(
                                 child: Text(
                                   _friendlyCategoryName(cat.categoryName),
-                                  style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 14.sp),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               SizedBox(width: 8.w),
                               Text(
                                 '${percentage.toStringAsFixed(1)}%',
-                                style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                                style: TextStyle(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 12.sp),
                               ),
                               if (hasSubCats || _aiInsights != null) ...[
                                 SizedBox(width: 4.w),
                                 Icon(
-                                  isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                                  isExpanded
+                                      ? Icons.keyboard_arrow_up
+                                      : Icons.keyboard_arrow_down,
                                   color: const Color(0xFF9CA3AF),
                                   size: 18.sp,
                                 ),
@@ -636,16 +654,22 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
                         child: Column(
                           children: cat.subCategories.map((sub) {
                             final subPct = cat.amount > 0
-                                ? (sub.amount / cat.amount * 100).toStringAsFixed(1)
+                                ? (sub.amount / cat.amount * 100)
+                                    .toStringAsFixed(1)
                                 : '0.0';
                             final subBarValue = cat.amount > 0
                                 ? (sub.amount / cat.amount).clamp(0.0, 1.0)
                                 : 0.0;
                             // Find AI tip for this sub-category
-                            final aiCat = _categoryAIMap[cat.categoryName.toLowerCase()] ??
-                                _categoryAIMap[_friendlyCategoryName(cat.categoryName).toLowerCase()];
+                            final aiCat = _categoryAIMap[
+                                    cat.categoryName.toLowerCase()] ??
+                                _categoryAIMap[
+                                    _friendlyCategoryName(cat.categoryName)
+                                        .toLowerCase()];
                             final aiSub = aiCat?.subCategories
-                                .where((s) => s.name.toLowerCase() == sub.name.toLowerCase())
+                                .where((s) =>
+                                    s.name.toLowerCase() ==
+                                    sub.name.toLowerCase())
                                 .firstOrNull;
 
                             return Padding(
@@ -654,7 +678,8 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Row(
@@ -663,16 +688,20 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
                                               width: 8.w,
                                               height: 8.w,
                                               decoration: BoxDecoration(
-                                                color: color.withValues(alpha: 0.6),
+                                                color: color.withValues(
+                                                    alpha: 0.6),
                                                 shape: BoxShape.circle,
                                               ),
                                             ),
                                             SizedBox(width: 8.w),
                                             Flexible(
                                               child: Text(
-                                                sub.name.isNotEmpty ? sub.name : 'Other',
+                                                sub.name.isNotEmpty
+                                                    ? sub.name
+                                                    : 'Other',
                                                 style: TextStyle(
-                                                  color: const Color(0xFF9CA3AF),
+                                                  color:
+                                                      const Color(0xFF9CA3AF),
                                                   fontSize: 13.sp,
                                                 ),
                                                 overflow: TextOverflow.ellipsis,
@@ -690,7 +719,8 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
                                         ),
                                       ),
                                       Text(
-                                        CurrencySymbols.formatAmount(sub.amount),
+                                        CurrencySymbols.formatAmount(
+                                            sub.amount),
                                         style: TextStyle(
                                           color: const Color(0xFFD1D5DB),
                                           fontSize: 13.sp,
@@ -701,18 +731,24 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
                                   SizedBox(height: 4.h),
                                   LinearProgressIndicator(
                                     value: subBarValue,
-                                    backgroundColor: Colors.white.withValues(alpha: 0.05),
-                                    valueColor: AlwaysStoppedAnimation<Color>(color.withValues(alpha: 0.5)),
+                                    backgroundColor:
+                                        Colors.white.withValues(alpha: 0.05),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        color.withValues(alpha: 0.5)),
                                     minHeight: 3.h,
                                     borderRadius: BorderRadius.circular(2.r),
                                   ),
                                   // AI tip for this sub-category
-                                  if (aiSub != null && aiSub.insight.isNotEmpty) ...[
+                                  if (aiSub != null &&
+                                      aiSub.insight.isNotEmpty) ...[
                                     SizedBox(height: 4.h),
                                     Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Icon(Icons.lightbulb_outline, color: const Color(0xFFFB923C), size: 12.sp),
+                                        Icon(Icons.lightbulb_outline,
+                                            color: const Color(0xFFFB923C),
+                                            size: 12.sp),
                                         SizedBox(width: 4.w),
                                         Expanded(
                                           child: Text(
@@ -771,12 +807,13 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
           // AI analysis text
           Row(
             children: [
-              Icon(Icons.auto_awesome, color: const Color.fromARGB(255, 78, 3, 208), size: 14.sp),
+              Icon(Icons.auto_awesome,
+                  color: const Color.fromARGB(255, 78, 3, 208), size: 14.sp),
               SizedBox(width: 6.w),
               Text(
                 'AI Analysis',
                 style: TextStyle(
-                  color: const Color.fromARGB(255, 78, 3, 208),
+                  color: AnalyticsTheme.accent,
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -786,7 +823,8 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
           SizedBox(height: 6.h),
           Text(
             aiCat.analysis,
-            style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 12.sp, height: 1.4),
+            style: TextStyle(
+                color: const Color(0xFFD1D5DB), fontSize: 12.sp, height: 1.4),
           ),
 
           // AI sub-category insights (for categories without real sub-categories)
@@ -821,7 +859,8 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
                           text: TextSpan(
                             children: [
                               TextSpan(
-                                text: '${sub.name.isNotEmpty ? sub.name : 'Other'}: ',
+                                text:
+                                    '${sub.name.isNotEmpty ? sub.name : 'Other'}: ',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 11.sp,
@@ -830,12 +869,17 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
                               ),
                               if (sub.amount > 0)
                                 TextSpan(
-                                  text: '${CurrencySymbols.formatAmount(sub.amount)} — ',
-                                  style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp),
+                                  text:
+                                      '${CurrencySymbols.formatAmount(sub.amount)} · ',
+                                  style: TextStyle(
+                                      color: const Color(0xFF9CA3AF),
+                                      fontSize: 11.sp),
                                 ),
                               TextSpan(
                                 text: sub.insight,
-                                style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp),
+                                style: TextStyle(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 11.sp),
                               ),
                             ],
                           ),
@@ -854,12 +898,16 @@ class _CategoryAnalysisDetailScreenState extends State<CategoryAnalysisDetailScr
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 13.sp),
+                      Icon(Icons.check_circle,
+                          color: const Color(0xFF10B981), size: 13.sp),
                       SizedBox(width: 6.w),
                       Expanded(
                         child: Text(
                           item,
-                          style: TextStyle(color: const Color(0xFFD1D5DB), fontSize: 11.sp, height: 1.3),
+                          style: TextStyle(
+                              color: const Color(0xFFD1D5DB),
+                              fontSize: 11.sp,
+                              height: 1.3),
                         ),
                       ),
                     ],

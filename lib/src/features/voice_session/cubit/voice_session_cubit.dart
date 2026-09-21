@@ -179,8 +179,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // server-STT path (publish mic, server captions) verbatim.
   bool _onDeviceMode = true;
 
+  /// What the SERVER asked for this session ('livekit' or on-device). Kept so a
+  /// mid-session talk-mode switch can re-resolve capture without a reconnect.
+  String? _serverInputMode;
+
   /// How the user talks to the agent (UX preference; on-device mode only):
-  ///   'continuous'  — always-listening VAD (default; auto re-arms hands-free);
+  ///   'continuous'  — hands-free VAD (default; auto re-arms hands-free);
   ///   'hold'        — press-and-hold the talk button, release to send;
   ///   'tap'         — tap to start, tap again to stop/send;
   ///   'double_tap'  — double-tap to toggle a capture window.
@@ -974,10 +978,22 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           final roomName = data['roomName'] as String;
           final livekitToken = data['livekitToken'] as String;
           _currentSessionId = data['sessionId'] as String? ?? roomName;
-          // Admin speech-capture mode (default on_device). on_device → run the
-          // on-device recognizer + suppress the LiveKit mic; livekit → legacy
-          // server-side STT. Read once per session from the start response.
-          _onDeviceMode = (data['inputMode'] as String?) != 'livekit';
+          // Admin speech-capture mode. on_device → run the on-device recognizer
+          // + suppress the LiveKit mic; livekit → legacy server-side STT.
+          //
+          // PUSH-TO-TALK ALWAYS CAPTURES ON DEVICE, whatever the admin setting
+          // says. In hold/tap/double-tap the user has already told us exactly
+          // when their turn starts and ends, so there is nothing for server-side
+          // VAD to decide — and routing those turns through the LiveKit mic is
+          // what produced split and half-missed transcripts. The device path is
+          // the same one voice notes use, which transcribes these turns
+          // noticeably better.
+          //
+          // Hands-free (continuous) keeps following the admin setting, because
+          // there the server's turn detection and barge-in handling are doing
+          // real work that a gesture is not replacing.
+          _serverInputMode = (data['inputMode'] as String?);
+          _onDeviceMode = _resolveOnDeviceMode();
           print(
               'VoiceSessionCubit: inputMode=${data['inputMode'] ?? 'on_device(default)'} -> onDeviceMode=$_onDeviceMode');
           // Admin biometrics policy (drives on_device verification + enforcement).
@@ -1171,6 +1187,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       if (isClosed) return;
       emit(VoiceSessionConnected(_room!));
 
+      // Declare who owns the mic BEFORE any capture starts. The agent gates its
+      // STT, its turn handling and its audio-biometrics wait on this; announcing
+      // late means it spends the first turn (and a 30s biometrics timeout)
+      // believing it should be transcribing a track we never publish.
+      _announceCaptureMode();
+
       // Kick off on-device capture: a once-per-session background voice
       // verification (fail-open) followed by the live listening loop.
       if (_onDeviceMode && !isClosed) {
@@ -1281,6 +1303,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     return !_awaitingAgentReply;
   }
 
+  /// Capture owner for the CURRENT talk mode.
+  ///
+  /// Push-to-talk always captures on device; hands-free follows the admin
+  /// setting. See the session-start handler for why.
+  bool _resolveOnDeviceMode() =>
+      isPushToTalk || _serverInputMode != 'livekit';
+
   /// Whether the current interaction mode is a push-to-talk style (not continuous).
   bool get isPushToTalk =>
       _interactionMode == 'hold' ||
@@ -1304,6 +1333,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     if (next == _interactionMode) return;
     final wasPtt = isPushToTalk;
     _interactionMode = next;
+    // Switching between hands-free and tap-to-speak changes WHO captures the
+    // mic, so re-resolve it here too: the session-start value was correct only
+    // for the mode in force at connect time.
+    _onDeviceMode = _resolveOnDeviceMode();
+    // The capture owner may have just flipped; tell the agent so its STT
+    // gating follows, instead of waiting for the next spoken turn to correct it.
+    _announceCaptureMode();
     // The gesture the button binds, its label, and the docked bar's hint all
     // read the mode — repaint them, or the UI keeps offering the old gesture.
     _emitCaptionUpdate();
@@ -1623,6 +1659,40 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       _emitCaptionUpdate();
     }
     _publishUserText(text);
+  }
+
+  /// Tell the agent, on connect, that THIS client owns the mic.
+  ///
+  /// The server otherwise decides from an admin setting resolved before the app
+  /// joined, and it gates three things on that decision: whether on-device text
+  /// packets are accepted, whether server-STT turns are dropped, and whether it
+  /// waits for a mic track to run audio biometrics. Push-to-talk captures on
+  /// device regardless of the setting, so without this announcement the two
+  /// sides disagree for the whole session — the first spoken turn is what would
+  /// otherwise correct it, and by then biometrics has already started waiting
+  /// for a track that will never be published.
+  ///
+  /// Best-effort: the agent also adopts on-device on the first user_text packet,
+  /// so a dropped announcement costs a slower correction, never a lost turn.
+  void _announceCaptureMode() {
+    final room = _room;
+    if (room == null || !_onDeviceMode) return;
+    try {
+      final payload = utf8.encode(jsonEncode({
+        'type': 'client_capture',
+        'mode': 'on_device',
+        'interaction': _interactionMode,
+      }));
+      unawaited(room.localParticipant?.publishData(
+            payload,
+            reliable: true,
+            topic: _userTextTopic,
+          ) ??
+          Future.value());
+      print('VoiceSessionCubit: announced on-device capture ($_interactionMode)');
+    } catch (e) {
+      print('VoiceSessionCubit: capture announcement failed: $e');
+    }
   }
 
   /// Send the final recognized text to the agent over the LiveKit data channel.
@@ -3001,24 +3071,46 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _turnSilenceTimer = null;
     _endOfTurnTimer?.cancel();
     _endOfTurnTimer = null;
-    try {
+    // ORDER MATTERS, and this order is the fix for "End / X doesn't close the
+    // call". The room disconnect used to run LAST, behind three unbounded
+    // awaits on platform audio plugins. `_speech.cancel()` and
+    // `_bioRecorder.stop()` both cross a platform channel into the OS audio
+    // session, which is exactly the thing that wedges when a call is torn down
+    // mid-utterance — and a wedge there meant teardown never reached
+    // `room.disconnect()`. The user got a dismissed sheet on top of a LiveKit
+    // room that was still connected, still publishing their mic, and still
+    // billing, until the server swept it.
+    //
+    // So: close the CONNECTION first, then release local audio. Every step is
+    // independently bounded — one stuck plugin can no longer hold the others
+    // hostage, and none of them can hold the disconnect hostage.
+    Future<void> step(String what, Future<void> Function() body,
+        [int seconds = 3]) async {
+      try {
+        await body().timeout(Duration(seconds: seconds));
+      } catch (e) {
+        // Teardown is best-effort by definition: the refs are already nulled,
+        // so a failure here must never propagate and strand the caller.
+        print('VoiceSessionCubit: $what failed/timed out (ignored): $e');
+      }
+    }
+
+    // 1. The connection itself — first, and never skipped.
+    //    5s is well past a healthy WebRTC close.
+    await step('room disconnect', () async => room?.disconnect(), 5);
+
+    // 2. Stop listening for events on a room that is already gone.
+    await step('room listener dispose', () async => listener?.dispose(), 2);
+
+    // 3. Local audio resources, so the next session (or another mic consumer)
+    //    gets a clean audio session. Safe to be last now: if either of these
+    //    wedges, the call is already closed.
+    await step('speech recognizer cancel', () async {
       if (_speech.isListening) await _speech.cancel();
-    } catch (_) {}
-    try {
+    });
+    await step('biometric recorder stop', () async {
       if (await _bioRecorder.isRecording()) await _bioRecorder.stop();
-    } catch (_) {}
-    try {
-      await listener?.dispose();
-    } catch (e) {
-      print('VoiceSessionCubit: room listener dispose error (ignored): $e');
-    }
-    try {
-      // Bound the disconnect — a stuck WebRTC teardown must never hang cleanup or
-      // the user is trapped on a dead session. 5s is well past a healthy close.
-      await room?.disconnect().timeout(const Duration(seconds: 5));
-    } catch (e) {
-      print('VoiceSessionCubit: room disconnect error/timeout (ignored): $e');
-    }
+    });
   }
 
   /// Reset the session state (for reconnection scenarios)

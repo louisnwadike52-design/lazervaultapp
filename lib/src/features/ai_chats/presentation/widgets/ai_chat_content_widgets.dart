@@ -68,6 +68,10 @@ class ChatMessage {
   final Map<String, dynamic>? qrCard;
   final Map<String, dynamic>? pinPrompt;
 
+  /// `recipient_card` — the confirmed transfer counterparty, rendered with
+  /// their avatar instead of a line of prose.
+  final Map<String, dynamic>? recipientCard;
+
   ChatMessage({
     required this.text,
     required this.isUser,
@@ -84,6 +88,7 @@ class ChatMessage {
     this.receiptCard,
     this.qrCard,
     this.pinPrompt,
+    this.recipientCard,
   });
 
   factory ChatMessage.fromEntity(ChatMessageEntity entity) {
@@ -100,6 +105,7 @@ class ChatMessage {
       audioDurationMs: entity.audioDurationMs,
       transcript: entity.transcript,
       receiptData: entity.receiptData,
+      recipientCard: entity.recipientCard,
       receiptCard: entity.receiptCard,
       qrCard: entity.qrCard,
       pinPrompt: entity.pinPrompt,

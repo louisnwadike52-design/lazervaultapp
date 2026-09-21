@@ -16,9 +16,9 @@ class PastContributionEntry {
   final DateTime? removedAt;
   final String removalReason;
   final int removedAtCycleIndex;
-  final String refundStatus;       // none|pending|completed|failed
-  final int refundAmount;          // minor units
-  final int forfeitedAmount;       // minor units
+  final String refundStatus; // none|pending|completed|failed
+  final int refundAmount; // minor units
+  final int forfeitedAmount; // minor units
   final String refundFailedReason;
   final bool selfExit;
 
@@ -133,7 +133,9 @@ class PastMembershipsRemoteDataSource {
     }
     final body = jsonDecode(res.body) as Map<String, dynamic>;
     final entries = (body['entries'] as List?) ?? const [];
-    return entries.map((e) => _entryFromJson(e as Map<String, dynamic>)).toList(growable: false);
+    return entries
+        .map((e) => _entryFromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
   }
 
   Future<List<PastGroupEntry>> listPastGroups({
@@ -171,10 +173,10 @@ class PastMembershipsRemoteDataSource {
     }
     final body = jsonDecode(res.body) as Map<String, dynamic>;
     return PastContributionDetails(
-      contribution: _contributionFromJson(
-          body['contribution'] as Map<String, dynamic>),
-      membershipSummary: _entryFromJson(
-          body['membershipSummary'] as Map<String, dynamic>),
+      contribution:
+          _contributionFromJson(body['contribution'] as Map<String, dynamic>),
+      membershipSummary:
+          _entryFromJson(body['membershipSummary'] as Map<String, dynamic>),
       members: ((body['members'] as List?) ?? const [])
           .map((m) => _memberFromJson(m as Map<String, dynamic>))
           .toList(growable: false),
@@ -184,10 +186,9 @@ class PastMembershipsRemoteDataSource {
       allPaymentsPage: ((body['allPaymentsPage'] as List?) ?? const [])
           .map((p) => _paymentFromJson(p as Map<String, dynamic>))
           .toList(growable: false),
-      closedCycles:
-          ((body['closedCycles'] as List?) ?? const []).cast<Map<String, dynamic>>(),
-      activeCycleAtExit:
-          body['activeCycleAtExit'] as Map<String, dynamic>?,
+      closedCycles: ((body['closedCycles'] as List?) ?? const [])
+          .cast<Map<String, dynamic>>(),
+      activeCycleAtExit: body['activeCycleAtExit'] as Map<String, dynamic>?,
     );
   }
 
@@ -197,12 +198,11 @@ class PastMembershipsRemoteDataSource {
       PastContributionEntry(
         contribution: _contributionFromJson(
             (m['contribution'] as Map<String, dynamic>?) ?? const {}),
-        group: _groupFromJson(
-            (m['group'] as Map<String, dynamic>?) ?? const {}),
+        group:
+            _groupFromJson((m['group'] as Map<String, dynamic>?) ?? const {}),
         removedAt: _ts(m['removedAt']),
         removalReason: m['removalReason'] as String? ?? '',
-        removedAtCycleIndex:
-            (m['removedAtCycleIndex'] as num?)?.toInt() ?? 0,
+        removedAtCycleIndex: (m['removedAtCycleIndex'] as num?)?.toInt() ?? 0,
         refundStatus: m['refundStatus'] as String? ?? 'none',
         refundAmount: int.tryParse('${m['refundAmount'] ?? 0}') ?? 0,
         forfeitedAmount: int.tryParse('${m['forfeitedAmount'] ?? 0}') ?? 0,
@@ -210,10 +210,9 @@ class PastMembershipsRemoteDataSource {
         selfExit: (m['selfExit'] as bool?) ?? false,
       );
 
-  PastGroupEntry _groupEntryFromJson(Map<String, dynamic> m) =>
-      PastGroupEntry(
-        group: _groupFromJson(
-            (m['group'] as Map<String, dynamic>?) ?? const {}),
+  PastGroupEntry _groupEntryFromJson(Map<String, dynamic> m) => PastGroupEntry(
+        group:
+            _groupFromJson((m['group'] as Map<String, dynamic>?) ?? const {}),
         leftAt: _ts(m['leftAt']),
         selfExit: (m['selfExit'] as bool?) ?? false,
         activeContributionsAtExit:
@@ -258,7 +257,8 @@ class PastMembershipsRemoteDataSource {
       updatedAt: _ts(m['updatedAt']) ?? DateTime.now(),
       type: type,
       currentCycle: (m['currentCycle'] as num?)?.toInt(),
-      regularAmount: m['regularAmount'] == null ? null : _money(m['regularAmount']),
+      regularAmount:
+          m['regularAmount'] == null ? null : _money(m['regularAmount']),
       autoPayEnabled: (m['autoPayEnabled'] as bool?) ?? false,
       allowPartialPayments: (m['allowPartialPayments'] as bool?) ?? false,
     );
@@ -275,8 +275,7 @@ class PastMembershipsRemoteDataSource {
       joinedAt: _ts(m['joinedAt']) ?? DateTime.now(),
       totalPaid: _money(m['totalPaid']),
       expectedAmount: _money(m['expectedAmount']),
-      hasPaidCurrentCycle:
-          (m['hasPaidCurrentCycle'] as bool?) ?? false,
+      hasPaidCurrentCycle: (m['hasPaidCurrentCycle'] as bool?) ?? false,
       cyclePaidAmount: _money(m['cyclePaidAmount']),
       missedCycles: (m['missedCycles'] as num?)?.toInt() ?? 0,
       membershipStatus:

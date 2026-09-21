@@ -57,9 +57,12 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
 
     _titleController = TextEditingController(text: c.title);
     _descriptionController = TextEditingController(text: c.description);
-    _targetAmountController = TextEditingController(text: (c.targetAmount / 100).toStringAsFixed(0));
+    _targetAmountController =
+        TextEditingController(text: (c.targetAmount / 100).toStringAsFixed(0));
     _regularAmountController = TextEditingController(
-      text: c.regularAmount != null ? (c.regularAmount! / 100).toStringAsFixed(0) : '',
+      text: c.regularAmount != null
+          ? (c.regularAmount! / 100).toStringAsFixed(0)
+          : '',
     );
     // Strip the canonical prefix so the controller holds only the
     // suffix; the prefix is rendered as InputDecoration.prefixText so
@@ -83,7 +86,10 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
       c.deadline.year,
       c.deadline.month,
       c.deadline.day,
-      23, 59, 59, 999,
+      23,
+      59,
+      59,
+      999,
     );
     _selectedStatus = c.status;
     _autoPayEnabled = c.autoPayEnabled;
@@ -93,7 +99,9 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
       text: c.gracePeriodDays?.toString() ?? '0',
     );
     _penaltyAmountController = TextEditingController(
-      text: c.penaltyAmount != null ? (c.penaltyAmount! / 100).toStringAsFixed(0) : '0',
+      text: c.penaltyAmount != null
+          ? (c.penaltyAmount! / 100).toStringAsFixed(0)
+          : '0',
     );
 
     _hasPayments = c.currentAmount > 0;
@@ -126,8 +134,7 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
     // Compare deadlines by date (year+month+day) only — we normalize
     // _deadline to end-of-day on load so the time component would
     // otherwise always differ from a midnight-stored historical value.
-    final deadlineDateChanged =
-        _deadline.year != c.deadline.year ||
+    final deadlineDateChanged = _deadline.year != c.deadline.year ||
         _deadline.month != c.deadline.month ||
         _deadline.day != c.deadline.day;
     final hasChanges = _titleController.text != c.title ||
@@ -137,8 +144,10 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
         _autoPayEnabled != c.autoPayEnabled ||
         _autoPayoutEnabled != c.autoPayoutEnabled ||
         _allowPartialPayments != c.allowPartialPayments ||
-        _whatsappLinkController.text != stripCanonicalPrefix(c.whatsappGroupLink, whatsappLinkPrefix) ||
-        _telegramLinkController.text != stripCanonicalPrefix(c.telegramGroupLink, telegramLinkPrefix);
+        _whatsappLinkController.text !=
+            stripCanonicalPrefix(c.whatsappGroupLink, whatsappLinkPrefix) ||
+        _telegramLinkController.text !=
+            stripCanonicalPrefix(c.telegramGroupLink, telegramLinkPrefix);
 
     if (hasChanges != _hasChanges) {
       setState(() {
@@ -196,7 +205,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
               SnackBar(
                 content: const Text('Contribution updated successfully'),
                 backgroundColor: const Color(0xFF10B981),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r)),
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -209,7 +219,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: const Color(0xFFEF4444),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r)),
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -268,7 +279,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+              color:
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(
@@ -330,8 +342,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
           enabled: false,
           style: GoogleFonts.inter(color: Colors.white70),
           decoration: _inputDecoration('Enter contribution title').copyWith(
-            suffixIcon: Icon(Icons.lock_outline,
-                size: 16.sp, color: Colors.grey[500]),
+            suffixIcon:
+                Icon(Icons.lock_outline, size: 16.sp, color: Colors.grey[500]),
             helperText: 'Title cannot be changed after creation',
             helperStyle: GoogleFonts.inter(
               color: Colors.grey[500],
@@ -567,8 +579,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
                 child: Opacity(
                   opacity: allowed ? 1.0 : 0.45,
                   child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 16.w, vertical: 14.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: status != options.last
@@ -664,7 +676,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
             // state). User sees what the field is for at a glance.
             prefix: Text(
               whatsappLinkPrefix,
-              style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 16.sp),
+              style:
+                  GoogleFonts.inter(color: Colors.grey[400], fontSize: 16.sp),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
@@ -687,7 +700,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
             ),
             prefix: Text(
               telegramLinkPrefix,
-              style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 16.sp),
+              style:
+                  GoogleFonts.inter(color: Colors.grey[400], fontSize: 16.sp),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
@@ -860,7 +874,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
                   borderRadius: BorderRadius.circular(8.r),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
               ),
             ),
           ),
@@ -995,7 +1010,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
   }
 
   bool _canDelete() {
-    return !_hasPayments && widget.contribution.status != ContributionStatus.completed;
+    return !_hasPayments &&
+        widget.contribution.status != ContributionStatus.completed;
   }
 
   void _handleBack() {
@@ -1060,7 +1076,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
     if (picked != null) {
       // Normalize to end-of-day local time (showDatePicker returns 00:00).
       // A contribution due "Apr 28" must remain valid until Apr 29 00:00.
-      final normalized = DateTime(picked.year, picked.month, picked.day, 23, 59, 59, 999);
+      final normalized =
+          DateTime(picked.year, picked.month, picked.day, 23, 59, 59, 999);
       if (normalized != _deadline) {
         setState(() {
           _deadline = normalized;
@@ -1079,7 +1096,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
 
       // Update WhatsApp link — re-prepend the canonical prefix that
       // the input decoration showed but didn't store in the controller.
-      final whatsappFull = buildSocialFullUrl(_whatsappLinkController.text, whatsappLinkPrefix);
+      final whatsappFull =
+          buildSocialFullUrl(_whatsappLinkController.text, whatsappLinkPrefix);
       if (whatsappFull != null) {
         metadata['whatsapp_group_link'] = whatsappFull;
       } else {
@@ -1087,7 +1105,8 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
       }
 
       // Update Telegram link
-      final telegramFull = buildSocialFullUrl(_telegramLinkController.text, telegramLinkPrefix);
+      final telegramFull =
+          buildSocialFullUrl(_telegramLinkController.text, telegramLinkPrefix);
       if (telegramFull != null) {
         metadata['telegram_group_link'] = telegramFull;
       } else {
@@ -1106,7 +1125,9 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
         metadata: metadata,
       );
 
-      context.read<GroupAccountCubit>().updateContributionDetails(updatedContribution);
+      context
+          .read<GroupAccountCubit>()
+          .updateContributionDetails(updatedContribution);
     }
   }
 
@@ -1134,7 +1155,9 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              context.read<GroupAccountCubit>().deleteContribution(widget.contribution.id);
+              context
+                  .read<GroupAccountCubit>()
+                  .deleteContribution(widget.contribution.id);
               Get.back(result: 'deleted');
             },
             child: Text(

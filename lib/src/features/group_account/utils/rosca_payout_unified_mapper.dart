@@ -39,7 +39,8 @@ UnifiedTransaction roscaPayoutToUnified(
     currency: cycle.currency,
     createdAt: cycle.endedAt ?? cycle.startedAt,
     status: UnifiedTransactionStatus.completed,
-    flow: viewerIsReceiver ? TransactionFlow.incoming : TransactionFlow.outgoing,
+    flow:
+        viewerIsReceiver ? TransactionFlow.incoming : TransactionFlow.outgoing,
     transactionReference: cycle.payoutTransactionId ?? cycle.id,
     counterpartyName: viewerIsReceiver ? contributionTitle : receiver,
     counterpartyAccount: null,
@@ -96,8 +97,7 @@ UnifiedTransaction contributionPaymentToUnified(
         : (payer != null
             ? 'Contribution from $payer'
             : 'Contribution to $contributionTitle'),
-    description:
-        cycleIndex != null ? 'Cycle $cycleIndex' : contributionTitle,
+    description: cycleIndex != null ? 'Cycle $cycleIndex' : contributionTitle,
     amount: payment.amount,
     currency: payment.currency,
     createdAt: payment.paymentDate,

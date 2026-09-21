@@ -12,70 +12,19 @@ import 'package:lazervault/src/features/statistics/presentation/widgets/error_st
 import 'package:lazervault/src/features/statistics/data/budget_ai_service.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import '../../utils/transaction_category_labels.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import '../../utils/analytics_theme.dart';
 
 /// Maps category names from backend to display-friendly names.
-String _friendlyCategoryName(String raw) => switch (raw.toLowerCase()) {
-      'p2p transfers' ||
-      'bank transfers' ||
-      'international transfers' ||
-      'gift cards' ||
-      'bills & utilities' ||
-      'service fees' ||
-      'tagpay' ||
-      'invoices' ||
-      'investments' ||
-      'payroll' ||
-      'crowdfunding' ||
-      'deposits' ||
-      'withdrawals' ||
-      'reversals' ||
-      'transfers' ||
-      'banking' ||
-      'payments' ||
-      'food & drinks' ||
-      'shopping' ||
-      'transportation' ||
-      'entertainment' =>
-        raw,
-      'piggyvault' ||
-      'piggy vault' ||
-      'lock funds' ||
-      'lock_funds' =>
-        'Piggyvault',
-      'autosave' => 'AutoSave',
-      'savings & products' => 'Savings & Products',
-      'transfer' || 'c2c_transfer' => 'P2P Transfers',
-      'domestic_transfer' => 'Bank Transfers',
-      'international_transfer' => 'International Transfers',
-      'deposit' => 'Deposits',
-      'withdrawal' => 'Withdrawals',
-      'fee' => 'Service Fees',
-      'reversal' => 'Reversals',
-      'payment' || 'invoice_payment' => 'Payments',
-      'tag-pay' => 'TagPay',
-      'invoice' => 'Invoices',
-      'giftcards' || 'gift-cards' || 'gift_card' => 'Gift Cards',
-      'airtime' || 'bill_payment' => 'Bills & Utilities',
-      'investment' || 'investments' => 'Investments',
-      'core-payments-service' || 'core-payments' => 'Transfers',
-      'banking-service' => 'Banking',
-      'invoice-service' => 'Invoices',
-      'giftcards-service' => 'Gift Cards',
-      'utility-payments-service' => 'Bills & Utilities',
-      'tag-pay-service' => 'TagPay',
-      'financial-products-service' => 'Savings & Products',
-      'investments-service' => 'Investments',
-      'payroll-service' => 'Payroll',
-      'crowdfund-service' => 'Crowdfunding',
-      'accounts-service' => 'Other',
-      _ => raw
-          .replaceAll('-', ' ')
-          .replaceAll('_', ' ')
-          .split(' ')
-          .map((w) =>
-              w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
-          .join(' '),
-    };
+///
+/// Delegates to the single closed vocabulary shared with the backend. The
+/// switch that used to live here ended in a title-case fallback, so an
+/// unmapped value was not removed but merely dressed up: `hold_capture`
+/// surfaced as "Hold Capture". An identical copy sat in the sibling category
+/// screen and the two had already drifted apart.
+String _friendlyCategoryName(String raw) =>
+    TransactionCategoryLabels.displayLabel(raw);
 
 class SpendingDetailScreen extends StatefulWidget {
   const SpendingDetailScreen({super.key});
@@ -99,6 +48,11 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
   // AI state
   bool _aiLoading = false;
   String? _aiError;
+
+  /// Why the analysis cannot run right now. Distinct from [_aiError]: this is
+  /// an expected, explainable situation (data still loading, nothing spent in
+  /// the period), not a failure, so it renders as guidance rather than red.
+  String? _aiNotice;
   BudgetAIInsightsResponse? _aiInsights;
   Map<String, CategoryInsightItem> _categoryAIMap = {};
 
@@ -123,17 +77,35 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
     // Prevent concurrent calls
     if (_aiLoading) return;
 
+    // Every path below MUST change state. This method used to `return` silently
+    // when the stats had not loaded or the period held no spending, so tapping
+    // "Get AI Spending Analysis" did nothing at all: no spinner, no message,
+    // no error. The button looked broken because, from the user's side, it was.
     final statsState = context.read<StatisticsCubit>().state;
-    if (statsState is! StatisticsLoaded || statsState.categoryAnalytics == null)
+    if (statsState is! StatisticsLoaded ||
+        statsState.categoryAnalytics == null) {
+      setState(() {
+        _aiNotice =
+            'Your spending data is still loading. Give it a moment and try again.';
+        _aiError = null;
+      });
       return;
+    }
 
     final catAnalytics = statsState.categoryAnalytics!;
-    // Nothing to analyze if no expense categories
-    if (catAnalytics.expenseCategories.isEmpty) return;
+    if (catAnalytics.expenseCategories.isEmpty) {
+      setState(() {
+        _aiNotice =
+            'There is no spending in this period to analyse yet. Pick a wider date range, or come back once you have made a few transactions.';
+        _aiError = null;
+      });
+      return;
+    }
 
     setState(() {
       _aiLoading = true;
       _aiError = null;
+      _aiNotice = null;
     });
 
     try {
@@ -169,7 +141,10 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
 
       final aiService = serviceLocator<BudgetAIService>();
       final response = await aiService.getAIInsights(
-        monthlyIncome: monthlyIncome > 0 ? monthlyIncome : 500000,
+        // Pass the REAL income even when it is 0. A fabricated placeholder
+        // made the AI reason about money the user does not have, and the
+        // sibling budget screen already refuses to do this.
+        monthlyIncome: monthlyIncome,
         spendingData: spendingData,
         activeBudgets: const [],
         goals: const ['Optimize spending'],
@@ -192,7 +167,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _aiError = 'Failed to load AI analysis. Try again.';
+        _aiError =
+            'We could not reach the analysis service. Check your connection and try again.';
         _aiLoading = false;
       });
     }
@@ -974,7 +950,7 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
               onTap: _loadAIAnalysis,
               child: Text('Retry',
                   style: TextStyle(
-                      color: const Color.fromARGB(255, 78, 3, 208),
+                      color: AnalyticsTheme.accent,
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600)),
             ),
@@ -983,39 +959,83 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
       );
     }
 
-    return GestureDetector(
-      onTap: _loadAIAnalysis,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Explains why a tap did not start an analysis. Without this the CTA
+        // simply did nothing and read as broken.
+        if (_aiNotice != null) ...[
+          Container(
+            padding: EdgeInsets.all(14.w),
+            decoration: BoxDecoration(
+              color:
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(
+                  color: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.55)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline_rounded,
+                    color: const Color(0xFF9CA3AF), size: 18.sp),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Text(
+                    _aiNotice!,
+                    style: TextStyle(
+                        color: const Color(0xFFD1D5DB),
+                        fontSize: 12.5.sp,
+                        height: 1.4),
+                  ),
+                ),
+              ],
+            ),
           ),
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.auto_awesome,
-                color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
-            SizedBox(width: 10.w),
-            Text(
-              'Get AI Spending Analysis',
-              style: TextStyle(
-                color: const Color.fromARGB(255, 78, 3, 208),
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
+          SizedBox(height: 10.h),
+        ],
+        GestureDetector(
+          onTap: _loadAIAnalysis,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(
+                color: const Color.fromARGB(255, 78, 3, 208)
+                    .withValues(alpha: 0.3),
+                width: 1,
               ),
             ),
-          ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.auto_awesome,
+                    color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
+                SizedBox(width: 10.w),
+                Flexible(
+                  child: Text(
+                    _aiNotice != null
+                        ? 'Try analysis again'
+                        : 'Get AI Spending Analysis',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AnalyticsTheme.accent,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -1049,7 +1069,7 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
               Text(
                 'AI Analysis',
                 style: TextStyle(
-                  color: const Color.fromARGB(255, 78, 3, 208),
+                  color: AnalyticsTheme.accent,
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1095,7 +1115,7 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
                               if (sub.amount > 0)
                                 TextSpan(
                                   text:
-                                      '${CurrencySymbols.formatAmount(sub.amount)} — ',
+                                      '${CurrencySymbols.formatAmount(sub.amount)} · ',
                                   style: TextStyle(
                                       color: const Color(0xFF9CA3AF),
                                       fontSize: 10.sp),

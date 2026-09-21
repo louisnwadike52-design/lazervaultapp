@@ -8,6 +8,8 @@ import '../../open_banking/data/datasources/open_banking_grpc_datasource.dart';
 import '../data/financial_analytics_repository.dart';
 import 'statistics_state.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
+import 'package:lazervault/core/services/currency_holdings_service.dart';
+import '../utils/wallet_analytics_fold.dart';
 
 /// Cubit for the AI budgeting / statistics screen.
 ///
@@ -44,6 +46,11 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   // Selected linked-bank scope. Empty = ALL linked banks; one or more narrows
   // every external number on the page to that SUBSET of banks (multi-select).
   List<String> _selectedBankAccountIds = const [];
+  // Selected LazerVault wallet scope. Empty = ALL wallets in the active
+  // currency; one or more narrows every wallet number on the page to that
+  // SUBSET. Mirrors _selectedBankAccountIds so both sides share one mechanism.
+  List<String> _selectedWalletIds = const [];
+  List<StatisticsWallet> _availableWallets = const [];
   String _userId = '';
   bool _isLoading = false;
   final _periodDebouncer = Debouncer.typing();
@@ -61,11 +68,97 @@ class StatisticsCubit extends Cubit<StatisticsState> {
 
   /// Back-compat single-bank getter: the one selected bank, or null when the
   /// scope is "all banks" or a multi-bank subset.
-  String? get selectedBankAccountId =>
-      _selectedBankAccountIds.length == 1 ? _selectedBankAccountIds.first : null;
+  String? get selectedBankAccountId => _selectedBankAccountIds.length == 1
+      ? _selectedBankAccountIds.first
+      : null;
 
   /// True when the given linked-account id is part of the active scope.
   bool isBankSelected(String id) => _selectedBankAccountIds.contains(id);
+
+  /// Wallets the user can scope to, in the active currency (see loadWallets).
+  List<StatisticsWallet> get availableWallets => _availableWallets;
+
+  /// Selected wallet scope (empty = all wallets in the active currency).
+  List<String> get selectedWalletIds => _selectedWalletIds;
+
+  /// True when the given wallet id is part of the active scope.
+  bool isWalletSelected(String id) => _selectedWalletIds.contains(id);
+
+  /// Change the wallet scope to a SET of wallets: empty = ALL wallets in the
+  /// active currency, otherwise only those. No-op for the bank-only source,
+  /// exactly as changeBanks is a no-op for the wallet-only source.
+  void changeWallets(List<String> walletIds) {
+    final normalized = _normalizeIds(walletIds);
+    if (setEquals(_selectedWalletIds.toSet(), normalized.toSet())) return;
+    _selectedWalletIds = normalized;
+    if (_source == StatisticsSource.bank) return;
+    _switchScope();
+  }
+
+  /// The masked form to show beneath a wallet's name.
+  ///
+  /// Uses the server's mask when it sent one. Otherwise keeps the last four
+  /// digits only — enough to distinguish two wallets, and never the full
+  /// number, which has no business on a filter chip.
+  static String _maskAccountNumber(String masked, String raw) {
+    final m = masked.trim();
+    if (m.isNotEmpty) return m;
+    final r = raw.trim();
+    if (r.length < 4) return '';
+    return '••••${r.substring(r.length - 4)}';
+  }
+
+  /// Load the wallets this user holds in the active currency.
+  ///
+  /// Never narrows the scope on its own: a failed lookup leaves the previous
+  /// list in place and the analytics keep answering for all wallets, rather
+  /// than silently collapsing to one and presenting it as the whole picture.
+  Future<void> loadWallets() async {
+    final currency = analyticsRepository.activeCurrency;
+    if (currency.isEmpty) return;
+    final accounts = await CurrencyHoldingsService.activeAccountsIn(currency);
+    if (accounts == null || isClosed) return;
+    _availableWallets = [
+      for (final a in accounts)
+        StatisticsWallet(
+          id: a.uuid,
+          name: a.accountName.trim().isEmpty ? a.accountType : a.accountName,
+          accountType: a.accountType,
+          currency: a.currency,
+          balance: a.balance.toDouble() / 100,
+          // Prefer the server's mask; fall back to masking the raw number
+          // ourselves so the scope selector can always tell two same-named
+          // wallets apart. Never render the full number here — this is a
+          // filter chip, not an account-details screen.
+          maskedAccountNumber: _maskAccountNumber(
+            a.maskedAccountNumber,
+            a.accountNumber,
+          ),
+        ),
+    ];
+    // Drop any selection that no longer exists (a closed or frozen wallet)
+    // so the scope can never reference a wallet the user cannot see.
+    final live = _availableWallets.map((w) => w.id).toSet();
+    final pruned = _selectedWalletIds.where(live.contains).toList();
+    final changed = pruned.length != _selectedWalletIds.length;
+    _selectedWalletIds = pruned;
+    if (state is StatisticsLoaded) {
+      emit((state as StatisticsLoaded).copyWith(
+        availableWallets: _availableWallets,
+        selectedWalletIds: _selectedWalletIds,
+      ));
+    }
+    if (changed) _switchScope();
+  }
+
+  /// Test-only: set a multi-wallet scope without triggering the reload.
+  @visibleForTesting
+  void changeWalletsForTest(List<String> ids) =>
+      _selectedWalletIds = _normalizeIds(ids);
+
+  @visibleForTesting
+  void setAvailableWalletsForTest(List<StatisticsWallet> w) =>
+      _availableWallets = w;
 
   /// User id used for banking-service calls; set once by the screen.
   // ignore: avoid_setters_without_getters
@@ -83,7 +176,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   /// Test-only: set a multi-bank scope without triggering the reload.
   @visibleForTesting
   void changeBanksForTest(List<String> ids) =>
-      _selectedBankAccountIds = _normalizeBankIds(ids);
+      _selectedBankAccountIds = _normalizeIds(ids);
 
   @override
   Future<void> close() {
@@ -106,11 +199,14 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     if (_source == source) return;
     _source = source;
     _selectedBankAccountIds = const [];
+    // Same reasoning as the bank scope: switching tabs must not leave the new
+    // tab silently pinned to a wallet subset the user picked earlier.
+    _selectedWalletIds = const [];
     _switchScope();
   }
 
   /// Dedupe + drop empties so the scope is a clean set of ids.
-  static List<String> _normalizeBankIds(List<String> ids) {
+  static List<String> _normalizeIds(List<String> ids) {
     final seen = <String>{};
     final out = <String>[];
     for (final id in ids) {
@@ -123,7 +219,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   /// Change the external-bank scope to a SET of linked banks: empty = ALL banks,
   /// otherwise only those banks (multi-select). No-op for wallet-only source.
   void changeBanks(List<String> linkedAccountIds) {
-    final normalized = _normalizeBankIds(linkedAccountIds);
+    final normalized = _normalizeIds(linkedAccountIds);
     if (setEquals(_selectedBankAccountIds.toSet(), normalized.toSet())) return;
     _selectedBankAccountIds = normalized;
     if (_source == StatisticsSource.lazervault) return;
@@ -131,8 +227,10 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   }
 
   /// Back-compat single-bank entry point: null/empty = all banks.
-  void changeBank(String? linkedAccountId) => changeBanks(
-      (linkedAccountId == null || linkedAccountId.isEmpty) ? const [] : [linkedAccountId]);
+  void changeBank(String? linkedAccountId) =>
+      changeBanks((linkedAccountId == null || linkedAccountId.isEmpty)
+          ? const []
+          : [linkedAccountId]);
 
   /// Switch scope (source/bank tab). Flip the content to the shimmer skeleton
   /// IMMEDIATELY and synchronously — a cheap rebuild — so the tab highlights and
@@ -260,20 +358,76 @@ class StatisticsCubit extends Cubit<StatisticsState> {
       accounts_pb.GetCategoryAnalyticsResponse? walletCategory;
       accounts_pb.GetExpenseTimeSeriesResponse? walletSeries;
       if (includesWallet) {
-        final walletResults = await Future.wait([
-          analyticsRepository.getFinancialAnalytics(
-              period: _currentPeriod, includeExternalBanks: false),
-          analyticsRepository.getCategoryAnalytics(
-              startDate: start, endDate: end, includeExternalBanks: false),
-          analyticsRepository.getExpenseTimeSeries(
-              startDate: start, endDate: end, includeExternalBanks: false),
-        ]).timeout(_statsLoadTimeout);
-        walletFinancial =
-            walletResults[0] as accounts_pb.GetFinancialAnalyticsResponse;
-        walletCategory =
-            walletResults[1] as accounts_pb.GetCategoryAnalyticsResponse;
-        walletSeries =
-            walletResults[2] as accounts_pb.GetExpenseTimeSeriesResponse;
+        // Fan out over EVERY wallet in scope and fold the results.
+        //
+        // The wallet leg used to ask accounts-service about
+        // `accountManager.activeAccountId` and nothing else, so a user holding
+        // a personal, business and savings wallet saw one of them presented as
+        // their whole LazerVault picture. An empty selection means "all of my
+        // wallets in this currency", which is what the LazerVault tab claims,
+        // and a non-empty selection narrows to that subset.
+        //
+        // One wallet (or a list that has not loaded yet) keeps the single
+        // unscoped call, so the common case costs exactly what it did before.
+        final walletIds = _effectiveWalletIds();
+        if (walletIds.length <= 1) {
+          final one = walletIds.isEmpty ? null : walletIds.first;
+          final walletResults = await Future.wait([
+            analyticsRepository.getFinancialAnalytics(
+                period: _currentPeriod,
+                includeExternalBanks: false,
+                accountId: one),
+            analyticsRepository.getCategoryAnalytics(
+                startDate: start,
+                endDate: end,
+                includeExternalBanks: false,
+                accountId: one),
+            analyticsRepository.getExpenseTimeSeries(
+                startDate: start,
+                endDate: end,
+                includeExternalBanks: false,
+                accountId: one),
+          ]).timeout(_statsLoadTimeout);
+          walletFinancial =
+              walletResults[0] as accounts_pb.GetFinancialAnalyticsResponse;
+          walletCategory =
+              walletResults[1] as accounts_pb.GetCategoryAnalyticsResponse;
+          walletSeries =
+              walletResults[2] as accounts_pb.GetExpenseTimeSeriesResponse;
+        } else {
+          final perWallet = await Future.wait([
+            for (final id in walletIds)
+              Future.wait([
+                analyticsRepository.getFinancialAnalytics(
+                    period: _currentPeriod,
+                    includeExternalBanks: false,
+                    accountId: id),
+                analyticsRepository.getCategoryAnalytics(
+                    startDate: start,
+                    endDate: end,
+                    includeExternalBanks: false,
+                    accountId: id),
+                analyticsRepository.getExpenseTimeSeries(
+                    startDate: start,
+                    endDate: end,
+                    includeExternalBanks: false,
+                    accountId: id),
+              ]),
+          ]).timeout(_statsLoadTimeout);
+
+          walletFinancial = WalletAnalyticsFold.financial([
+            for (final r in perWallet)
+              r[0] as accounts_pb.GetFinancialAnalyticsResponse
+          ]);
+          walletCategory = WalletAnalyticsFold.categories([
+            for (final r in perWallet)
+              r[1] as accounts_pb.GetCategoryAnalyticsResponse
+          ]);
+          walletSeries = WalletAnalyticsFold.series([
+            for (final r in perWallet)
+              r[2] as accounts_pb.GetExpenseTimeSeriesResponse
+          ]);
+        }
       }
 
       // ---- External leg (banking-service, all banks or one) ----
@@ -318,10 +472,8 @@ class StatisticsCubit extends Cubit<StatisticsState> {
       }
 
       // ---- Compose per the source contract ----
-      final financialAnalytics =
-          _composeFinancial(walletFinancial, external);
-      final categoryAnalytics =
-          _composeCategories(walletCategory, external);
+      final financialAnalytics = _composeFinancial(walletFinancial, external);
+      final categoryAnalytics = _composeCategories(walletCategory, external);
       final expenseTimeSeries =
           _composeSeries(walletSeries, external, start, end);
 
@@ -337,7 +489,8 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         } catch (_) {}
       }
 
-      final monthlyTrends = await monthlyTrendsFuture.timeout(_statsLoadTimeout);
+      final monthlyTrends =
+          await monthlyTrendsFuture.timeout(_statsLoadTimeout);
 
       if (isClosed) return;
       final loaded = StatisticsLoaded(
@@ -352,6 +505,8 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         includeExternalBanks: includesExternal,
         source: loadSource,
         selectedBankAccountIds: loadBanks,
+        availableWallets: _availableWallets,
+        selectedWalletIds: _selectedWalletIds,
         externalStatus: externalStatus,
         externalError: externalError,
       );
@@ -375,8 +530,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
       _isLoading = false;
       // A source/bank switch landed while this load was in flight — bring the
       // screen up to the scope the user is actually on now.
-      if (!isClosed &&
-          (_source != loadSource || !_sameBankScope(loadBanks))) {
+      if (!isClosed && (_source != loadSource || !_sameBankScope(loadBanks))) {
         _switchScope();
       }
     }
@@ -386,12 +540,25 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   bool _sameBankScope(List<String> snapshot) =>
       setEquals(_selectedBankAccountIds.toSet(), snapshot.toSet());
 
+  /// Wallet ids the numbers must reflect: the explicit selection, else every
+  /// wallet the user holds in the active currency. Empty means the wallet list
+  /// has not loaded, in which case the caller falls back to the active account.
+  List<String> _effectiveWalletIds() {
+    if (_selectedWalletIds.isNotEmpty) return _selectedWalletIds;
+    return [for (final w in _availableWallets) w.id];
+  }
+
+  // ===== Wallet-side folds =====
+  //
+  // Reduce N wallet responses to one, so the wallet+bank compose step below
+  // stays the only place the two SOURCES are combined. Aggregates are additive
+  // and every wallet in scope shares one currency, so summing is exact rather
+  // than an approximation.
+
   // ===== Composition (additive merges — exact for the aggregates shown) =====
 
-  static double _changePct(double cur, double prev) {
-    if (prev <= 0) return cur > 0 ? 100.0 : 0.0;
-    return ((cur - prev) / prev) * 100.0;
-  }
+  static double _changePct(double cur, double prev) =>
+      WalletAnalyticsFold.changePercent(cur, prev);
 
   accounts_pb.GetFinancialAnalyticsResponse _composeFinancial(
     accounts_pb.GetFinancialAnalyticsResponse? wallet,
@@ -403,7 +570,8 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     if (external != null) {
       d.currentPeriod.totalIncome += external.currentPeriod.totalIncome;
       d.currentPeriod.totalExpenses += external.currentPeriod.totalExpenses;
-      d.currentPeriod.transactionCount += external.currentPeriod.transactionCount;
+      d.currentPeriod.transactionCount +=
+          external.currentPeriod.transactionCount;
       d.previousPeriod.totalIncome += external.previousPeriod.totalIncome;
       d.previousPeriod.totalExpenses += external.previousPeriod.totalExpenses;
     }
@@ -461,11 +629,9 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     }
   }
 
-  void _repercent(List<accounts_pb.CategoryBreakdownItem> items, double total) {
-    for (final it in items) {
-      it.percentage = total > 0 ? (it.amount / total) * 100.0 : 0.0;
-    }
-  }
+  void _repercent(
+          List<accounts_pb.CategoryBreakdownItem> items, double total) =>
+      WalletAnalyticsFold.repercent(items, total);
 
   accounts_pb.GetExpenseTimeSeriesResponse _composeSeries(
     accounts_pb.GetExpenseTimeSeriesResponse? wallet,

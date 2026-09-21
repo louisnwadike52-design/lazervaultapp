@@ -80,6 +80,10 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     // previously initState read only from/to and dropped amount/mode/
     // repeatPrefill, leaving the user on an empty form with a disabled button.
     bool isRepeatPrefill = false;
+    // Did the caller name a pair explicitly? Any caller that does — the repeat
+    // sheet, or a dashboard rate tile — has a more specific intent than the
+    // remembered source currency, so the restore below must not overwrite it.
+    bool hasExplicitPair = false;
     if (args is Map) {
       final from = args['fromCurrency'] as String?;
       final to = args['toCurrency'] as String?;
@@ -88,6 +92,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
           from.isNotEmpty &&
           to.isNotEmpty) {
         cubit.setCurrencyPair(from, to);
+        hasExplicitPair = true;
       }
       // Mode (Convert vs Send Abroad); the history sheet routes Send Abroad to
       // the recipient screen, so here we only expect 'convert'.
@@ -109,20 +114,73 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         cubit.setAmount(amt);
       }
     }
-    cubit.loadHome();
+    // Captured: supportedCurrencies only exist once this resolves, and an
+    // explicit pair has to be checked against them (see below).
+    final homeLoaded = cubit.loadHome();
     _amountController.addListener(_onAmountChanged);
-    if (isRepeatPrefill) {
-      // Fetch a rate for the prefilled amount so the form is immediately
-      // actionable. Do NOT restore the last-used source currency here — it
-      // would clobber the fromCurrency the repeat just set.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _fetchRate();
+    if (isRepeatPrefill || hasExplicitPair) {
+      // Fetch a rate immediately so the pair is live on arrival — with an
+      // amount when one was prefilled, indicative otherwise (_fetchRate passes
+      // null below zero). Do NOT restore the last-used source currency on this
+      // path: it would clobber the fromCurrency the caller just asked for,
+      // which is how a tap on the GHS tile could land you on some other pair.
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        // Wait for the currency list before quoting: a caller can name a pair
+        // this service does not actually trade (the dashboard rate strip is fed
+        // by a different source than Exchange's supported list), and quoting an
+        // impossible pair just produces an error the user cannot act on.
+        await homeLoaded;
+        if (!mounted) return;
+        if (hasExplicitPair) _dropUnsupportedTarget();
+        if (!mounted) return;
+        _fetchRate();
       });
     } else {
       // Restore the last-used source currency for the active mode (best
       // effort; ignored if SharedPreferences fails or no prior choice exists).
       _restoreLastSourceCurrency();
     }
+  }
+
+  /// Undo a requested target this mode cannot actually trade, keeping the source.
+  ///
+  /// Mirrors the currency picker's own rule rather than "is it in the list":
+  /// the picker RENDERS non-convertible currencies but disables them, so a pair
+  /// arriving from elsewhere (a dashboard rate tile, a deep link) can name a
+  /// target the user could never have selected by hand.
+  ///
+  /// Silent on an empty list — that means the lookup failed, not that nothing
+  /// is supported, and discarding the user's intent on a network blip would be
+  /// worse than letting the rate call report the problem.
+  void _dropUnsupportedTarget() {
+    final cubit = context.read<ExchangeCubit>();
+    final supported = cubit.supportedCurrencies;
+    if (supported.isEmpty) return;
+
+    bool usable(SupportedCurrencyInfo c) => _mode == ExchangeMode.convert
+        ? c.supportsConversion
+        : c.supportsInternational;
+
+    final to = cubit.toCurrency.toUpperCase();
+    final from = cubit.fromCurrency.toUpperCase();
+    final match = supported.where((c) => c.code.toUpperCase() == to);
+    if (match.isNotEmpty && usable(match.first)) return;
+
+    final fallback = supported.firstWhere(
+      (c) => usable(c) && c.code.toUpperCase() != from,
+      orElse: () => SupportedCurrencyInfo(
+        code: '',
+        name: '',
+        symbol: '',
+        country: '',
+        supportsConversion: false,
+        supportsInternational: false,
+        minAmount: 0,
+        maxAmount: 0,
+      ),
+    );
+    if (fallback.code.isEmpty) return;
+    cubit.setCurrencyPair(cubit.fromCurrency, fallback.code.toUpperCase());
   }
 
   Future<void> _restoreLastSourceCurrency() async {

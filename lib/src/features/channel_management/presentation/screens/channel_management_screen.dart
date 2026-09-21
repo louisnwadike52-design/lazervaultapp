@@ -13,7 +13,31 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/shared_widgets/service_entrance_animation.dart';
 
 class ChannelManagementScreen extends StatelessWidget {
-  const ChannelManagementScreen({super.key});
+  /// Which channel this screen manages, or null for the combined view.
+  ///
+  /// WhatsApp and phone banking are DIFFERENT products that happen to share one
+  /// registration backend, and putting both on one screen made them read as a
+  /// single setting with two switches. Each Quick Services tile now opens its
+  /// own channel; the combined view is kept for Settings, where "all my banking
+  /// channels" is the question actually being asked.
+  const ChannelManagementScreen({super.key, this.channelType});
+
+  final String? channelType;
+
+  bool get _isWhatsApp => channelType == 'whatsapp';
+  bool get _isTelephony => channelType == 'telephony';
+
+  String get _title => _isWhatsApp
+      ? 'WhatsApp Banking'
+      : _isTelephony
+          ? 'Phone & SMS Banking'
+          : 'Banking Channels';
+
+  String get _blurb => _isWhatsApp
+      ? 'Bank from WhatsApp. Messages are only accepted from the number linked below — anything sent from another number is ignored.'
+      : _isTelephony
+          ? 'Bank by phone call and SMS. This always uses the number on your profile, so a swapped or stolen SIM cannot be pointed at your money.'
+          : 'Manage your banking channels to access Lazervault from WhatsApp, phone calls, and SMS.';
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +52,9 @@ class ChannelManagementScreen extends StatelessWidget {
             onPressed: () => Get.back(),
             icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
-          title: const Text(
-            'WhatsApp/Phone Banking',
-            style: TextStyle(color: Colors.white, fontSize: 18),
+          title: Text(
+            _title,
+            style: const TextStyle(color: Colors.white, fontSize: 18),
           ),
           centerTitle: true,
         ),
@@ -108,12 +132,13 @@ class ChannelManagementScreen extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
-            'Manage your banking channels to access Lazervault from WhatsApp, phone calls, and SMS.',
-            style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+          Text(
+            _blurb,
+            style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
           ),
           const SizedBox(height: 24),
-          _buildChannelCard(
+          if (channelType == null || _isWhatsApp)
+            _buildChannelCard(
             context: context,
             channelType: 'whatsapp',
             title: 'WhatsApp Banking',
@@ -123,8 +148,9 @@ class ChannelManagementScreen extends StatelessWidget {
             registration: state.getRegistration('whatsapp'),
             pinStatus: state.getPinStatus('whatsapp'),
           ),
-          const SizedBox(height: 16),
-          _buildChannelCard(
+          if (channelType == null) const SizedBox(height: 16),
+          if (channelType == null || _isTelephony)
+            _buildChannelCard(
             context: context,
             channelType: 'telephony',
             title: 'Phone & SMS Banking',

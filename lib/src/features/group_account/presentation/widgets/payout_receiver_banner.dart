@@ -36,15 +36,21 @@ import 'package:lazervault/src/features/group_account/domain/entities/group_enti
 import 'package:lazervault/src/generated/group_account.pb.dart' as pb;
 import 'package:lazervault/src/generated/group_account.pbenum.dart' as pb_enum;
 
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/src/features/support/data/support_api.dart';
 import 'select_payout_receiver_bottom_sheet.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 part 'payout_receiver_banner_widgets.dart';
-
 
 class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
   pb.GetPayoutReceiverResponse? _state;
   bool _loading = true;
   bool _triggering = false;
+
+  /// Admin-only reveal for the raw server error.
+  bool _showRawError = false;
+  bool _switchingManual = false;
+  bool _raisingTicket = false;
 
   /// True when the pot can actually fund a payout.
   ///
@@ -69,6 +75,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
     return 'Needs at least ${_formatAmount(min)} $ccy before a payout can run '
         '(currently ${_formatAmount(pot)} $ccy).';
   }
+
   String? _error;
   Timer? _pollTimer;
 
@@ -126,7 +133,8 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
       // without the user pulling-to-refresh. Stops itself once the
       // status leaves in_flight.
       final status = res.scheduledPayout.status;
-      if (status == pb_enum.ScheduledPayoutStatus.SCHEDULED_PAYOUT_STATUS_IN_FLIGHT) {
+      if (status ==
+          pb_enum.ScheduledPayoutStatus.SCHEDULED_PAYOUT_STATUS_IN_FLIGHT) {
         _pollTimer?.cancel();
         _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) => _load());
       } else {
@@ -161,6 +169,124 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
   /// (e.g. closing the receiver picker) so the banner reflects the
   /// new state without polling.
   Future<void> reload() => _load();
+
+  /// Take this payout off automation and re-arm it for a manual trigger.
+  Future<void> _switchToManual() async {
+    if (_switchingManual) return;
+    setState(() => _switchingManual = true);
+    try {
+      await serviceLocator<PayoutAssignmentService>().switchPayoutToManual(
+        contributionId: widget.contribution.id,
+        cycleIndex: widget.cycleIndex,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+              "You're in control of this payout now — run it when you're ready."),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      await _load();
+      widget.onStateChanged?.call();
+    } on GrpcError catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          // FailedPrecondition carries a real reason (already settled, etc.);
+          // anything else is not worth quoting verbatim at a user.
+          content: Text(e.code == StatusCode.failedPrecondition
+              ? (e.message ?? "Couldn't switch this payout to manual.")
+              : "Couldn't switch this payout to manual."),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Couldn't switch this payout to manual."),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _switchingManual = false);
+    }
+  }
+
+  /// Open a support ticket that already contains what an admin needs.
+  ///
+  /// The old banner sent people to support with nothing — they would describe
+  /// "my payout failed" and an agent would spend the first three replies
+  /// establishing which payout, in which cycle, failing how. Every one of
+  /// those facts is on screen here, so the ticket carries them: the payout id
+  /// is what the admin console's Scheduled Payouts tab searches on.
+  Future<void> _openPrefilledTicket() async {
+    if (_raisingTicket) return;
+    final p = _state?.scheduledPayout;
+    if (p == null) return;
+    setState(() => _raisingTicket = true);
+    try {
+      // Constructed the same way the support screens do — SupportApi is not
+      // registered in the locator, and asking for it there throws at runtime.
+      final api = SupportApi(serviceLocator<SecureStorageService>());
+      final subject =
+          'Group funds payout stuck — ${widget.contribution.title} (payout ${_shortId(p.id)})';
+      final body = StringBuffer()
+        ..writeln('A group-funds payout could not complete automatically.')
+        ..writeln()
+        ..writeln('Payout ID: ${p.id}')
+        ..writeln(
+            'Contribution: ${widget.contribution.title} (${widget.contribution.id})')
+        ..writeln('Cycle: ${widget.cycleIndex}')
+        ..writeln('Amount: ${widget.contribution.currency} '
+            '${(p.amountMinor.toInt() / 100).toStringAsFixed(2)}')
+        ..writeln(
+            'Recipient: ${p.recipientName.isEmpty ? p.recipientUserId : p.recipientName}')
+        ..writeln('Attempts: ${p.attempts}')
+        ..writeln('Failure code: ${p.failureCode}')
+        ..writeln('Reported error: ${p.lastError}');
+      final ticket = await api.createTicket(
+        subject: subject,
+        message: body.toString(),
+        category: 'payments',
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Ticket ${_shortId(ticket.id)} opened with the payout details.'),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } on SupportTicketLimitException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Couldn't open a ticket. Please try again."),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _raisingTicket = false);
+    }
+  }
+
+  static String _shortId(String id) => id.length <= 8 ? id : id.substring(0, 8);
 
   Future<void> _openReceiverPicker() async {
     final res = await SelectPayoutReceiverBottomSheet.show(
@@ -236,8 +362,8 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text('Trigger payout?',
             style: GoogleFonts.inter(
                 color: Colors.white,
@@ -316,7 +442,8 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
           LazerVaultLoader.tiny(),
           SizedBox(width: 12.w),
           Text('Loading payout status…',
-              style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 12.sp)),
+              style:
+                  GoogleFonts.inter(color: Colors.grey[400], fontSize: 12.sp)),
         ]),
         accent: const Color(0xFF2D2D2D),
       );
@@ -329,7 +456,8 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
           SizedBox(width: 8.w),
           Expanded(
             child: Text(_error!,
-                style: GoogleFonts.inter(color: Colors.grey[300], fontSize: 12.sp)),
+                style: GoogleFonts.inter(
+                    color: Colors.grey[300], fontSize: 12.sp)),
           ),
           TextButton(onPressed: _load, child: const Text('Retry')),
         ]),
@@ -359,15 +487,19 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
     // back to the pending-receiver banner. Better to ask the admin to
     // set a receiver than to render "Ready to pay (unknown member)".
     if (!hasReceiver &&
-        status != pb_enum.ScheduledPayoutStatus.SCHEDULED_PAYOUT_STATUS_PENDING_RECEIVER &&
-        status != pb_enum.ScheduledPayoutStatus.SCHEDULED_PAYOUT_STATUS_CANCELED) {
+        status !=
+            pb_enum.ScheduledPayoutStatus
+                .SCHEDULED_PAYOUT_STATUS_PENDING_RECEIVER &&
+        status !=
+            pb_enum.ScheduledPayoutStatus.SCHEDULED_PAYOUT_STATUS_CANCELED) {
       return widget.isAdmin
           ? _pendingReceiverBanner(hasRow: true)
           : _readOnlyPendingBanner();
     }
 
     switch (status) {
-      case pb_enum.ScheduledPayoutStatus.SCHEDULED_PAYOUT_STATUS_PENDING_RECEIVER:
+      case pb_enum
+            .ScheduledPayoutStatus.SCHEDULED_PAYOUT_STATUS_PENDING_RECEIVER:
         return widget.isAdmin
             ? _pendingReceiverBanner(hasRow: true)
             : _readOnlyPendingBanner();
@@ -423,7 +555,9 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
           ),
           SizedBox(height: 10.h),
           _filledCta(
-              label: 'Set Receiver', onPressed: _openReceiverPicker, color: color),
+              label: 'Set Receiver',
+              onPressed: _openReceiverPicker,
+              color: color),
         ],
       ),
       accent: color,
@@ -523,8 +657,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Icon(Icons.schedule,
-                color: const Color(0xFF4E03D0), size: 18.sp),
+            Icon(Icons.schedule, color: const Color(0xFF4E03D0), size: 18.sp),
             SizedBox(width: 8.w),
             Text('Auto-payout scheduled',
                 style: GoogleFonts.inter(
@@ -539,7 +672,8 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
           ),
           if (widget.isAdmin) ...[
             SizedBox(height: 10.h),
-            _outlineCta(label: 'Change Receiver', onPressed: _openReceiverPicker),
+            _outlineCta(
+                label: 'Change Receiver', onPressed: _openReceiverPicker),
           ],
         ],
       ),
@@ -570,8 +704,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
         : null;
     return _shell(
       Row(children: [
-        Icon(Icons.check_circle,
-            color: const Color(0xFF10B981), size: 18.sp),
+        Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 18.sp),
         SizedBox(width: 8.w),
         Expanded(
           child: Column(
@@ -596,75 +729,235 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
     );
   }
 
+  /// True when the payout is blocked by WHERE it is going, not by a passing
+  /// condition. group-accounts classifies this server-side
+  /// (pkg/payoutfailure/classify.go) and both banners must read the same
+  /// answer: firing again at a closed, frozen or missing account produces the
+  /// identical rejection, so "we'll retry" would be a promise we cannot keep.
+  static bool _receiverBlocked(String code) =>
+      code == 'RECIPIENT_ACCOUNT_INACTIVE' ||
+      code == 'RECIPIENT_ACCOUNT_FROZEN' ||
+      code == 'RECIPIENT_KYC_INSUFFICIENT' ||
+      code == 'NO_RECEIVER' ||
+      code == 'RECEIVER_ACCOUNT_MISSING';
+
+  /// A payout that failed but still has automatic attempts left.
+  ///
+  /// This used to show the RAW server error and always promise a retry:
+  ///
+  ///   Payout failed. Will retry
+  ///   failed to credit recipient account: credit rejected: ACCOUNT_INACTIVE
+  ///   - account is not active (status: closed)
+  ///
+  /// Two things were wrong with that. The text is an internal message with an
+  /// error code in it, shown to an ordinary member. And for a closed account
+  /// the promise is false: every remaining attempt rejects identically, so
+  /// "Retry Now" was the loudest button on a screen where it could not work.
+  ///
+  /// group-accounts already classifies the cause and sends a written hint, the
+  /// same fields the exhausted banner uses; this now reads them too.
   Widget _failedBanner(pb.GetPayoutReceiverResponse state) {
-    final last = state.scheduledPayout.lastError.isNotEmpty
-        ? state.scheduledPayout.lastError
-        : 'Provider returned an error.';
+    final p = state.scheduledPayout;
+    final blocked = _receiverBlocked(p.failureCode);
+    final hint = p.failureHint.isNotEmpty
+        ? p.failureHint
+        : 'We could not complete this payout. We will try again shortly.';
+
+    // Amber, not red, when the fix is in the user's hands: red plus "failed"
+    // reads as money lost, and the money is still in the pot.
+    final accent = blocked ? const Color(0xFFFB923C) : const Color(0xFFEF4444);
+
     return _shell(
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Icon(Icons.error_outline,
-                color: const Color(0xFFEF4444), size: 18.sp),
+            Icon(blocked ? Icons.warning_amber_rounded : Icons.error_outline,
+                color: accent, size: 18.sp),
             SizedBox(width: 8.w),
-            Text('Payout failed. Will retry',
-                style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600)),
+            Expanded(
+              child: Text(
+                  blocked
+                      ? 'Payout needs a change'
+                      : 'Payout failed. We will retry',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600)),
+            ),
           ]),
           SizedBox(height: 6.h),
-          Text(last,
+          Text(hint,
               style: GoogleFonts.inter(
-                  color: Colors.grey[300], fontSize: 12.sp)),
+                  color: Colors.grey[300], fontSize: 12.sp, height: 1.4)),
           if (widget.isAdmin) ...[
             SizedBox(height: 10.h),
-            // A failed payout is very often failing *because of who it is
-            // paying* — the receiver has no wallet in the contribution's
-            // currency, or their account could not be resolved. Retrying the
-            // same receiver then fails identically until the row exhausts.
-            // The backend allows reassignment from `failed` (only in_flight /
-            // settled / canceled are locked), so offer the fix next to the
-            // retry instead of making Retry Now the only move.
+            // Lead with the action that can actually succeed. A blocked
+            // destination is fixed by changing it; a passing condition is
+            // fixed by trying again.
             Row(children: [
-              Expanded(
-                child: _filledCta(
-                  label: _triggering ? 'Retrying…' : 'Retry Now',
+              if (blocked) ...[
+                Expanded(
+                  child: _filledCta(
+                    label: 'Change receiver',
+                    onPressed: _openReceiverPicker,
+                    color: const Color(0xFF9B6DFF),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                _outlineCta(
+                  label: _triggering ? 'Retrying…' : 'Try again',
                   onPressed: _triggering ? null : _triggerManualPayout,
-                  color: const Color(0xFFEF4444),
+                ),
+              ] else ...[
+                Expanded(
+                  child: _filledCta(
+                    label: _triggering ? 'Retrying…' : 'Retry Now',
+                    onPressed: _triggering ? null : _triggerManualPayout,
+                    color: const Color(0xFFEF4444),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                _outlineCta(label: 'Change', onPressed: _openReceiverPicker),
+              ],
+            ]),
+            // The raw message still matters to whoever has to debug it, so it
+            // stays reachable — behind a tap, for admins, instead of being the
+            // first thing every member reads.
+            if (p.lastError.isNotEmpty) ...[
+              SizedBox(height: 8.h),
+              GestureDetector(
+                onTap: () => setState(() => _showRawError = !_showRawError),
+                child: Text(
+                  _showRawError
+                      ? 'Hide technical details'
+                      : 'Technical details',
+                  style: GoogleFonts.inter(
+                      color: Colors.grey[500],
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
-              SizedBox(width: 8.w),
-              _outlineCta(label: 'Change', onPressed: _openReceiverPicker),
-            ]),
+              if (_showRawError) ...[
+                SizedBox(height: 6.h),
+                SelectableText(
+                  p.lastError,
+                  style: GoogleFonts.robotoMono(
+                      color: Colors.grey[500], fontSize: 10.5.sp, height: 1.35),
+                ),
+              ],
+            ],
           ],
         ],
       ),
-      accent: const Color(0xFFEF4444),
+      accent: accent,
     );
   }
 
+  /// The payout ran out of automatic retries.
+  ///
+  /// This used to say "Contact support to investigate" and offer nothing —
+  /// a dead end in front of money the group can see but cannot move. In
+  /// production the blocking reason was usually something the creator could
+  /// fix in seconds (the receiver's account was inactive), and support was
+  /// the only door.
+  ///
+  /// Now the server classifies the failure (see payout_failure_classifier.go)
+  /// and the banner offers the action that actually resolves THAT cause.
+  /// Support is the last resort, reached only when the fault is genuinely
+  /// ours — and it opens a ticket already carrying the identifiers an admin
+  /// needs, instead of asking the user to describe a payout they can't see
+  /// the internals of.
   Widget _exhaustedBanner(pb.GetPayoutReceiverResponse state) {
+    final p = state.scheduledPayout;
+    final code = p.failureCode;
+    final hint = p.failureHint.isNotEmpty
+        ? p.failureHint
+        : 'Automatic retries stopped after ${p.attempts} attempts.';
+    final isPlatform = !p.failureRecoverable;
+
+    // Which action actually clears THIS cause. A blocked destination account
+    // is not fixed by firing again, so "Change receiver" leads there; a pot
+    // still filling is, so manual control leads there.
+    final receiverBlocked = _receiverBlocked(code);
+
     return _shell(
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Icon(Icons.warning_amber,
+            Icon(isPlatform ? Icons.error_outline : Icons.warning_amber,
                 color: const Color(0xFFFB923C), size: 18.sp),
             SizedBox(width: 8.w),
-            Text('Payout needs review',
-                style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600)),
+            Expanded(
+              child: Text(
+                  isPlatform
+                      ? 'Payout needs our help'
+                      : 'Payout needs a change',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600)),
+            ),
           ]),
           SizedBox(height: 6.h),
-          Text(
-            'Automatic retries gave up after ${state.scheduledPayout.attempts} attempts. Contact support to investigate.',
-            style: GoogleFonts.inter(color: Colors.grey[300], fontSize: 12.sp),
-          ),
+          Text(hint,
+              style:
+                  GoogleFonts.inter(color: Colors.grey[300], fontSize: 12.sp)),
+          SizedBox(height: 10.h),
+          if (isPlatform)
+            Row(children: [
+              Expanded(
+                child: _filledCta(
+                  label: _raisingTicket ? 'Opening…' : 'Contact support',
+                  onPressed: _raisingTicket ? null : _openPrefilledTicket,
+                  color: const Color(0xFFFB923C),
+                ),
+              ),
+            ])
+          else ...[
+            Row(children: [
+              if (receiverBlocked)
+                Expanded(
+                  child: _filledCta(
+                    label: 'Change receiver',
+                    onPressed: _openReceiverPicker,
+                    color: const Color(0xFF9B6DFF),
+                  ),
+                )
+              else
+                Expanded(
+                  child: _filledCta(
+                    label:
+                        _switchingManual ? 'Switching…' : 'Take manual control',
+                    onPressed: _switchingManual ? null : _switchToManual,
+                    color: const Color(0xFF9B6DFF),
+                  ),
+                ),
+              SizedBox(width: 8.w),
+              _outlineCta(
+                label: _triggering ? 'Retrying…' : 'Try again',
+                onPressed: _triggering ? null : _triggerManualPayout,
+              ),
+            ]),
+            if (receiverBlocked) ...[
+              SizedBox(height: 8.h),
+              // Still offered, because the creator may have just fixed the
+              // account and wants control rather than another automatic cycle.
+              GestureDetector(
+                onTap: _switchingManual ? null : _switchToManual,
+                child: Text(
+                  _switchingManual
+                      ? 'Switching to manual…'
+                      : 'Or take manual control of this payout',
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF9B6DFF),
+                      fontSize: 11.5.sp,
+                      fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ],
         ],
       ),
       accent: const Color(0xFFFB923C),
@@ -714,11 +1007,11 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
         side: BorderSide(color: Colors.grey[600]!),
         foregroundColor: Colors.white,
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
       ),
       child: Text(label,
-          style: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600)),
+          style:
+              GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600)),
     );
   }
 }

@@ -115,7 +115,7 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return AppGradientBackground(
-      child: Scaffold(
+        child: Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -150,8 +150,7 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
                       _transfers.addAll(state.transfers);
                     } else {
                       // Append new items for pagination
-                      final existingIds =
-                          _transfers.map((t) => t.id).toSet();
+                      final existingIds = _transfers.map((t) => t.id).toSet();
                       for (final t in state.transfers) {
                         if (!existingIds.contains(t.id)) {
                           _transfers.add(t);
@@ -184,8 +183,7 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
                 }
 
                 return RefreshIndicator(
-                  onRefresh: () async =>
-                      _loadTransfers(reset: true),
+                  onRefresh: () async => _loadTransfers(reset: true),
                   color: const Color(0xFF3B82F6),
                   backgroundColor: const Color(0xFF1F1F1F),
                   child: ListView.separated(
@@ -195,10 +193,8 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
                       horizontal: 16.w,
                       vertical: 8.h,
                     ),
-                    itemCount:
-                        _transfers.length + (_hasMore ? 1 : 0),
-                    separatorBuilder: (_, __) =>
-                        SizedBox(height: 8.h),
+                    itemCount: _transfers.length + (_hasMore ? 1 : 0),
+                    separatorBuilder: (_, __) => SizedBox(height: 8.h),
                     itemBuilder: (context, index) {
                       if (index == _transfers.length) {
                         return Center(
@@ -244,9 +240,7 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
               label: Text(
                 filter.$2,
                 style: GoogleFonts.inter(
-                  color: isActive
-                      ? Colors.white
-                      : const Color(0xFF9CA3AF),
+                  color: isActive ? Colors.white : const Color(0xFF9CA3AF),
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -286,12 +280,13 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
       final userId =
           authState is AuthenticationSuccess ? authState.profile.userId : '';
       final ds = serviceLocator<MoveMoneyGrpcDataSource>();
-      fetch =
-          () => ds.getMoveTransferStatus(transferId: transfer.id, userId: userId);
+      fetch = () =>
+          ds.getMoveTransferStatus(transferId: transfer.id, userId: userId);
     }
     Get.toNamed(
       AppRoutes.transferProof,
-      arguments: beamReceiptPayloadFromMoveTransfer(transfer, statusFetch: fetch),
+      arguments:
+          beamReceiptPayloadFromMoveTransfer(transfer, statusFetch: fetch),
     );
   }
 
@@ -446,8 +441,7 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
                   width: 200.w,
                   height: 44.h,
                   child: ElevatedButton(
-                    onPressed: () =>
-                        Get.toNamed('/move-money/transfer'),
+                    onPressed: () => Get.toNamed('/move-money/transfer'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF10B981),
                       shape: RoundedRectangleBorder(

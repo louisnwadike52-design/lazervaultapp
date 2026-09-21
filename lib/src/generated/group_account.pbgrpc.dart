@@ -341,6 +341,16 @@ class GroupAccountServiceClient extends $grpc.Client {
     return $createUnaryCall(_$triggerManualPayout, request, options: options);
   }
 
+  /// SwitchPayoutToManual takes a payout off automation so the creator can fire
+  /// it themselves once they have fixed whatever blocked it. The alternative we
+  /// shipped with was "contact support", which is not a flow.
+  $grpc.ResponseFuture<$0.SwitchPayoutToManualResponse> switchPayoutToManual(
+    $0.SwitchPayoutToManualRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$switchPayoutToManual, request, options: options);
+  }
+
   $grpc.ResponseFuture<$0.ListScheduledPayoutsResponse> listScheduledPayouts(
     $0.ListScheduledPayoutsRequest request, {
     $grpc.CallOptions? options,
@@ -831,6 +841,11 @@ class GroupAccountServiceClient extends $grpc.Client {
       '/group_accounts.GroupAccountService/TriggerManualPayout',
       ($0.TriggerManualPayoutRequest value) => value.writeToBuffer(),
       $0.TriggerManualPayoutResponse.fromBuffer);
+  static final _$switchPayoutToManual = $grpc.ClientMethod<
+          $0.SwitchPayoutToManualRequest, $0.SwitchPayoutToManualResponse>(
+      '/group_accounts.GroupAccountService/SwitchPayoutToManual',
+      ($0.SwitchPayoutToManualRequest value) => value.writeToBuffer(),
+      $0.SwitchPayoutToManualResponse.fromBuffer);
   static final _$listScheduledPayouts = $grpc.ClientMethod<
           $0.ListScheduledPayoutsRequest, $0.ListScheduledPayoutsResponse>(
       '/group_accounts.GroupAccountService/ListScheduledPayouts',
@@ -1368,6 +1383,15 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.TriggerManualPayoutRequest.fromBuffer(value),
         ($0.TriggerManualPayoutResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SwitchPayoutToManualRequest,
+            $0.SwitchPayoutToManualResponse>(
+        'SwitchPayoutToManual',
+        switchPayoutToManual_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SwitchPayoutToManualRequest.fromBuffer(value),
+        ($0.SwitchPayoutToManualResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.ListScheduledPayoutsRequest,
             $0.ListScheduledPayoutsResponse>(
         'ListScheduledPayouts',
@@ -2019,6 +2043,15 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
 
   $async.Future<$0.TriggerManualPayoutResponse> triggerManualPayout(
       $grpc.ServiceCall call, $0.TriggerManualPayoutRequest request);
+
+  $async.Future<$0.SwitchPayoutToManualResponse> switchPayoutToManual_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.SwitchPayoutToManualRequest> $request) async {
+    return switchPayoutToManual($call, await $request);
+  }
+
+  $async.Future<$0.SwitchPayoutToManualResponse> switchPayoutToManual(
+      $grpc.ServiceCall call, $0.SwitchPayoutToManualRequest request);
 
   $async.Future<$0.ListScheduledPayoutsResponse> listScheduledPayouts_Pre(
       $grpc.ServiceCall $call,

@@ -6,9 +6,11 @@ import 'package:lazervault/src/generated/group_account.pbgrpc.dart' as pb;
 import 'package:lazervault/src/generated/group_account.pbenum.dart' as pb_enum;
 import '../models/group_account_models.dart';
 import '../../domain/entities/group_entities.dart';
-import 'group_account_remote_data_source.dart' show GroupAccountRemoteDataSource, ActivityLogEntryModel;
+import 'group_account_remote_data_source.dart'
+    show GroupAccountRemoteDataSource, ActivityLogEntryModel;
 import 'package:fixnum/fixnum.dart' as fixnum;
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as $pb_timestamp;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
+    as $pb_timestamp;
 
 class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   final pb.GroupAccountServiceClient _client;
@@ -24,8 +26,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   // GROUP MANAGEMENT
   // ============================================================================
 
-  
-    // NOTE: _map*ToProto functions convert domain -> proto enums
+  // NOTE: _map*ToProto functions convert domain -> proto enums
   // NOTE: _map*FromProto functions convert proto -> domain enums
 
   // Helper to convert DateTime to protobuf Timestamp
@@ -56,7 +57,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         ..pageSize = 100;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.listUserGroups(request, options: callOptions);
+      final response =
+          await _client.listUserGroups(request, options: callOptions);
 
       return response.groups.map((group) => _mapGroupFromProto(group)).toList();
     } on GrpcError catch (e) {
@@ -163,9 +165,12 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final request = pb.GetGroupMembersRequest()..groupId = groupId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getGroupMembers(request, options: callOptions);
+      final response =
+          await _client.getGroupMembers(request, options: callOptions);
 
-      return response.members.map((member) => _mapMemberFromProto(member)).toList();
+      return response.members
+          .map((member) => _mapMemberFromProto(member))
+          .toList();
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to get group members'));
     } catch (e) {
@@ -180,7 +185,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     required String userName,
     required String email,
     String? profileImage,
-    String? username,  // LazerTag username for user lookup
+    String? username, // LazerTag username for user lookup
     GroupMemberRole role = GroupMemberRole.member,
   }) async {
     try {
@@ -235,7 +240,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         ..newRole = _mapRoleToProto(newRole);
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.updateMemberRole(request, options: callOptions);
+      final response =
+          await _client.updateMemberRole(request, options: callOptions);
 
       return _mapMemberFromProto(response.member);
     } on GrpcError catch (e) {
@@ -270,19 +276,23 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.searchUsers(request, options: callOptions);
 
-      return response.users.map((user) => GroupMemberModel(
-        id: user.userId,
-        userId: user.userId,
-        userName: user.userName,
-        email: user.email,
-        profileImage: user.profileImage.isNotEmpty ? user.profileImage : null,
-        role: GroupMemberRole.member,
-        joinedAt: DateTime.now(),
-        status: GroupMemberStatus.active,
-        userUsername: user.userUsername.isNotEmpty ? user.userUsername : null,
-        emailMatchesSearchQuery: user.emailMatchesSearchQuery,
-        phoneMatchesSearchQueryExact: user.phoneMatchesSearchQueryExact,
-      )).toList();
+      return response.users
+          .map((user) => GroupMemberModel(
+                id: user.userId,
+                userId: user.userId,
+                userName: user.userName,
+                email: user.email,
+                profileImage:
+                    user.profileImage.isNotEmpty ? user.profileImage : null,
+                role: GroupMemberRole.member,
+                joinedAt: DateTime.now(),
+                status: GroupMemberStatus.active,
+                userUsername:
+                    user.userUsername.isNotEmpty ? user.userUsername : null,
+                emailMatchesSearchQuery: user.emailMatchesSearchQuery,
+                phoneMatchesSearchQueryExact: user.phoneMatchesSearchQueryExact,
+              ))
+          .toList();
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to search users'));
     }
@@ -301,9 +311,12 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         ..pageSize = 100;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.listGroupContributions(request, options: callOptions);
+      final response =
+          await _client.listGroupContributions(request, options: callOptions);
 
-      return response.contributions.map((contribution) => _mapContributionFromProto(contribution)).toList();
+      return response.contributions
+          .map((contribution) => _mapContributionFromProto(contribution))
+          .toList();
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to get contributions'));
     } catch (e) {
@@ -314,10 +327,12 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   @override
   Future<ContributionModel> getContributionById(String contributionId) async {
     try {
-      final request = pb.GetContributionRequest()..contributionId = contributionId;
+      final request = pb.GetContributionRequest()
+        ..contributionId = contributionId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getContribution(request, options: callOptions);
+      final response =
+          await _client.getContribution(request, options: callOptions);
 
       return _mapContributionFromProto(response.contribution);
     } on GrpcError catch (e) {
@@ -375,7 +390,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         request.totalCycles = totalCycles;
       }
       if (memberRotationOrder != null && memberRotationOrder.isNotEmpty) {
-        request.memberRotationOrder.addAll(memberRotationOrder);  // Pass UUID strings directly
+        request.memberRotationOrder
+            .addAll(memberRotationOrder); // Pass UUID strings directly
       }
       if (penaltyAmount != null) {
         request.penaltyAmount = _amountToInt64(penaltyAmount);
@@ -400,7 +416,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       }
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.createContribution(request, options: callOptions);
+      final response =
+          await _client.createContribution(request, options: callOptions);
 
       return _mapContributionFromProto(response.contribution);
     } on GrpcError catch (e) {
@@ -409,7 +426,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   }
 
   @override
-  Future<ContributionModel> updateContribution(ContributionModel contribution) async {
+  Future<ContributionModel> updateContribution(
+      ContributionModel contribution) async {
     try {
       final request = pb.UpdateContributionRequest()
         ..contributionId = contribution.id
@@ -431,7 +449,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       }
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.updateContribution(request, options: callOptions);
+      final response =
+          await _client.updateContribution(request, options: callOptions);
 
       return _mapContributionFromProto(response.contribution);
     } on GrpcError catch (e) {
@@ -442,7 +461,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   @override
   Future<void> deleteContribution(String contributionId) async {
     try {
-      final request = pb.DeleteContributionRequest()..contributionId = contributionId;
+      final request = pb.DeleteContributionRequest()
+        ..contributionId = contributionId;
 
       final callOptions = await _callOptionsHelper.withAuth();
       await _client.deleteContribution(request, options: callOptions);
@@ -457,40 +477,52 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     required List<String> memberUserIds,
   }) async {
     // Filter out empty or invalid UUIDs
-    final validUserIds = memberUserIds.where((id) =>
-      id.isNotEmpty && id != '00000000-0000-0000-0000-000000000000'
-    ).toList();
+    final validUserIds = memberUserIds
+        .where((id) =>
+            id.isNotEmpty && id != '00000000-0000-0000-0000-000000000000')
+        .toList();
 
     if (validUserIds.isEmpty) {
-      throw Exception('No valid user IDs to add. All provided IDs were empty or invalid.');
+      throw Exception(
+          'No valid user IDs to add. All provided IDs were empty or invalid.');
     }
 
     try {
       final request = pb.AddMembersToContributionRequest()
         ..contributionId = contributionId
-        ..memberUserIds.addAll(validUserIds);  // Pass only valid UUIDs
+        ..memberUserIds.addAll(validUserIds); // Pass only valid UUIDs
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.addMembersToContribution(request, options: callOptions);
+      final response =
+          await _client.addMembersToContribution(request, options: callOptions);
 
       // Extract members from the updated contribution
-      return response.contribution.members.map((m) => _mapContributionMemberFromProto(m)).toList();
+      return response.contribution.members
+          .map((m) => _mapContributionMemberFromProto(m))
+          .toList();
     } on GrpcError catch (e) {
-      throw Exception(friendlyGrpcError(e, 'Failed to add members to contribution'));
+      throw Exception(
+          friendlyGrpcError(e, 'Failed to add members to contribution'));
     }
   }
 
   @override
-  Future<List<ContributionMemberModel>> getContributionMembers(String contributionId) async {
+  Future<List<ContributionMemberModel>> getContributionMembers(
+      String contributionId) async {
     try {
-      final request = pb.GetContributionMembersRequest()..contributionId = contributionId;
+      final request = pb.GetContributionMembersRequest()
+        ..contributionId = contributionId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getContributionMembers(request, options: callOptions);
+      final response =
+          await _client.getContributionMembers(request, options: callOptions);
 
-      return response.members.map((m) => _mapContributionMemberFromProto(m)).toList();
+      return response.members
+          .map((m) => _mapContributionMemberFromProto(m))
+          .toList();
     } on GrpcError catch (e) {
-      throw Exception(friendlyGrpcError(e, 'Failed to get contribution members'));
+      throw Exception(
+          friendlyGrpcError(e, 'Failed to get contribution members'));
     }
   }
 
@@ -518,7 +550,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         removalReason: resp.removalReason,
       );
     } on GrpcError catch (e) {
-      throw Exception(friendlyGrpcError(e, 'Failed to remove member from contribution'));
+      throw Exception(
+          friendlyGrpcError(e, 'Failed to remove member from contribution'));
     }
   }
 
@@ -533,8 +566,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         ..memberUserId = userId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final resp = await _client.removeContributionShadow(request,
-          options: callOptions);
+      final resp =
+          await _client.removeContributionShadow(request, options: callOptions);
       return resp.removedCount;
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to clear declined invite'));
@@ -555,8 +588,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         ..page = page
         ..pageSize = pageSize;
       final callOptions = await _callOptionsHelper.withAuth();
-      final resp = await _client.listContributionCycles(request,
-          options: callOptions);
+      final resp =
+          await _client.listContributionCycles(request, options: callOptions);
       final cycles = resp.cycles.map(_mapCycleSummaryFromProto).toList();
       return (cycles: cycles, total: resp.totalCount);
     } on GrpcError catch (e) {
@@ -579,8 +612,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final d = resp.details;
       return ContributionCycleDetails(
         summary: _mapCycleSummaryFromProto(d.summary),
-        members:
-            d.members.map(_mapCycleMemberSnapshotFromProto).toList(),
+        members: d.members.map(_mapCycleMemberSnapshotFromProto).toList(),
         payments: d.payments.map((p) => _mapPaymentFromProto(p)).toList(),
       );
     } on GrpcError catch (e) {
@@ -603,19 +635,19 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         request.newTargetAmount = _amountToInt64(newTargetAmount);
       }
       if (newDeadline != null) {
-        request.newDeadline = $pb_timestamp.Timestamp.fromDateTime(newDeadline.toUtc());
+        request.newDeadline =
+            $pb_timestamp.Timestamp.fromDateTime(newDeadline.toUtc());
       }
       final callOptions = await _callOptionsHelper.withAuth();
-      final resp = await _client.restartContribution(request,
-          options: callOptions);
+      final resp =
+          await _client.restartContribution(request, options: callOptions);
       return _mapContributionFromProto(resp.contribution);
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to restart contribution'));
     }
   }
 
-  ContributionCycle _mapCycleSummaryFromProto(
-      pb.ContributionCycleSummary s) {
+  ContributionCycle _mapCycleSummaryFromProto(pb.ContributionCycleSummary s) {
     return ContributionCycle(
       id: s.id,
       contributionId: s.contributionId,
@@ -628,8 +660,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       deficitAmount: _int64ToAmount(s.deficitAmount),
       payoutTransactionId:
           s.payoutTransactionId.isNotEmpty ? s.payoutTransactionId : null,
-      receiverUserId:
-          s.receiverUserId.isNotEmpty ? s.receiverUserId : null,
+      receiverUserId: s.receiverUserId.isNotEmpty ? s.receiverUserId : null,
       receiverName: s.receiverName,
       paymentCount: s.paymentCount,
       membersCount: s.membersCount,
@@ -679,8 +710,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         currentCycle: resp.currentCycle,
       );
     } on GrpcError catch (e) {
-      throw Exception(
-          friendlyGrpcError(e, 'Failed to preview member exit'));
+      throw Exception(friendlyGrpcError(e, 'Failed to preview member exit'));
     }
   }
 
@@ -689,7 +719,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   // ============================================================================
 
   @override
-  Future<List<ContributionPaymentModel>> getContributionPayments(String contributionId) async {
+  Future<List<ContributionPaymentModel>> getContributionPayments(
+      String contributionId) async {
     try {
       final request = pb.GetContributionPaymentsRequest()
         ..contributionId = contributionId
@@ -697,9 +728,12 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         ..pageSize = 100;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getContributionPayments(request, options: callOptions);
+      final response =
+          await _client.getContributionPayments(request, options: callOptions);
 
-      return response.payments.map((payment) => _mapPaymentFromProto(payment)).toList();
+      return response.payments
+          .map((payment) => _mapPaymentFromProto(payment))
+          .toList();
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to get payments'));
     }
@@ -767,7 +801,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       }
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.updatePaymentStatus(request, options: callOptions);
+      final response =
+          await _client.updatePaymentStatus(request, options: callOptions);
 
       return _mapPaymentFromProto(response.payment);
     } on GrpcError catch (e) {
@@ -776,16 +811,20 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   }
 
   @override
-  Future<ContributionModel> processScheduledPayments(String contributionId) async {
+  Future<ContributionModel> processScheduledPayments(
+      String contributionId) async {
     try {
-      final request = pb.ProcessScheduledPaymentsRequest()..contributionId = contributionId;
+      final request = pb.ProcessScheduledPaymentsRequest()
+        ..contributionId = contributionId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.processScheduledPayments(request, options: callOptions);
+      final response =
+          await _client.processScheduledPayments(request, options: callOptions);
 
       return _mapContributionFromProto(response.contribution);
     } on GrpcError catch (e) {
-      throw Exception(friendlyGrpcError(e, 'Failed to process scheduled payments'));
+      throw Exception(
+          friendlyGrpcError(e, 'Failed to process scheduled payments'));
     }
   }
 
@@ -795,11 +834,15 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final request = pb.GetOverdueContributionsRequest();
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getOverdueContributions(request, options: callOptions);
+      final response =
+          await _client.getOverdueContributions(request, options: callOptions);
 
-      return response.contributions.map((contribution) => _mapContributionFromProto(contribution)).toList();
+      return response.contributions
+          .map((contribution) => _mapContributionFromProto(contribution))
+          .toList();
     } on GrpcError catch (e) {
-      throw Exception(friendlyGrpcError(e, 'Failed to get overdue contributions'));
+      throw Exception(
+          friendlyGrpcError(e, 'Failed to get overdue contributions'));
     }
   }
 
@@ -811,14 +854,17 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   }) async {
     try {
       // This might need to be done via update contribution
-      final request = pb.GetContributionRequest()..contributionId = contributionId;
+      final request = pb.GetContributionRequest()
+        ..contributionId = contributionId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getContribution(request, options: callOptions);
+      final response =
+          await _client.getContribution(request, options: callOptions);
 
       return _mapContributionFromProto(response.contribution);
     } on GrpcError catch (e) {
-      throw Exception(friendlyGrpcError(e, 'Failed to update payment schedule'));
+      throw Exception(
+          friendlyGrpcError(e, 'Failed to update payment schedule'));
     }
   }
 
@@ -827,14 +873,19 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   // ============================================================================
 
   @override
-  Future<List<PayoutScheduleModel>> getPayoutSchedule(String contributionId) async {
+  Future<List<PayoutScheduleModel>> getPayoutSchedule(
+      String contributionId) async {
     try {
-      final request = pb.GetPayoutScheduleRequest()..contributionId = contributionId;
+      final request = pb.GetPayoutScheduleRequest()
+        ..contributionId = contributionId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getPayoutSchedule(request, options: callOptions);
+      final response =
+          await _client.getPayoutSchedule(request, options: callOptions);
 
-      return response.schedule.map((schedule) => _mapPayoutScheduleFromProto(schedule)).toList();
+      return response.schedule
+          .map((schedule) => _mapPayoutScheduleFromProto(schedule))
+          .toList();
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to get payout schedule'));
     }
@@ -848,10 +899,12 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     String? paymentMethod,
   }) async {
     try {
-      final request = pb.ProcessPayoutRequest()..contributionId = contributionId;
+      final request = pb.ProcessPayoutRequest()
+        ..contributionId = contributionId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.processPayout(request, options: callOptions);
+      final response =
+          await _client.processPayout(request, options: callOptions);
 
       return _mapPayoutTransactionFromProto(response.transaction);
     } on GrpcError catch (e) {
@@ -879,7 +932,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       }
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.updatePayoutStatus(request, options: callOptions);
+      final response =
+          await _client.updatePayoutStatus(request, options: callOptions);
 
       return _mapPayoutTransactionFromProto(response.payout);
     } on GrpcError catch (e) {
@@ -888,34 +942,42 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   }
 
   @override
-  Future<ContributionModel> calculateAndProcessPayout(String contributionId) async {
+  Future<ContributionModel> calculateAndProcessPayout(
+      String contributionId) async {
     try {
-      final request = pb.ProcessPayoutRequest()..contributionId = contributionId;
+      final request = pb.ProcessPayoutRequest()
+        ..contributionId = contributionId;
 
       final callOptions = await _callOptionsHelper.withAuth();
       await _client.processPayout(request, options: callOptions);
 
       // Get updated contribution
-      final getRequest = pb.GetContributionRequest()..contributionId = contributionId;
-      final getResponse = await _client.getContribution(getRequest, options: callOptions);
+      final getRequest = pb.GetContributionRequest()
+        ..contributionId = contributionId;
+      final getResponse =
+          await _client.getContribution(getRequest, options: callOptions);
 
       return _mapContributionFromProto(getResponse.contribution);
     } on GrpcError catch (e) {
-      throw Exception(friendlyGrpcError(e, 'Failed to calculate and process payout'));
+      throw Exception(
+          friendlyGrpcError(e, 'Failed to calculate and process payout'));
     }
   }
 
   @override
   Future<ContributionModel> advancePayoutRotation(String contributionId) async {
     try {
-      final request = pb.AdvancePayoutRotationRequest()..contributionId = contributionId;
+      final request = pb.AdvancePayoutRotationRequest()
+        ..contributionId = contributionId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.advancePayoutRotation(request, options: callOptions);
+      final response =
+          await _client.advancePayoutRotation(request, options: callOptions);
 
       return _mapContributionFromProto(response.contribution);
     } on GrpcError catch (e) {
-      throw Exception(friendlyGrpcError(e, 'Failed to advance payout rotation'));
+      throw Exception(
+          friendlyGrpcError(e, 'Failed to advance payout rotation'));
     }
   }
 
@@ -929,7 +991,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final request = pb.GenerateReceiptRequest()..paymentId = paymentId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.generateReceipt(request, options: callOptions);
+      final response =
+          await _client.generateReceipt(request, options: callOptions);
 
       return _mapReceiptFromProto(response.receipt);
     } on GrpcError catch (e) {
@@ -945,25 +1008,32 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         ..pageSize = 100;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getUserReceipts(request, options: callOptions);
+      final response =
+          await _client.getUserReceipts(request, options: callOptions);
 
-      return response.receipts.map((receipt) => _mapReceiptFromProto(receipt)).toList();
+      return response.receipts
+          .map((receipt) => _mapReceiptFromProto(receipt))
+          .toList();
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to get user receipts'));
     }
   }
 
   @override
-  Future<ContributionTranscriptModel> generateContributionTranscript(String contributionId) async {
+  Future<ContributionTranscriptModel> generateContributionTranscript(
+      String contributionId) async {
     try {
-      final request = pb.GenerateTranscriptRequest()..contributionId = contributionId;
+      final request = pb.GenerateTranscriptRequest()
+        ..contributionId = contributionId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.generateTranscript(request, options: callOptions);
+      final response =
+          await _client.generateTranscript(request, options: callOptions);
 
       return _mapTranscriptFromProto(response.transcript);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to generate transcript'}');
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to generate transcript'}');
     }
   }
 
@@ -977,7 +1047,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final request = pb.GetGroupStatisticsRequest()..groupId = groupId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getGroupStatistics(request, options: callOptions);
+      final response =
+          await _client.getGroupStatistics(request, options: callOptions);
 
       // Amount fields come back from the gRPC server as MINOR units
       // (kobo). Every other read path on this data source converts to
@@ -1001,7 +1072,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         'completionRate': response.completionRate,
       };
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get group statistics'}');
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get group statistics'}');
     }
   }
 
@@ -1011,7 +1083,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final request = pb.GetUserContributionStatsRequest();
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getUserContributionStats(request, options: callOptions);
+      final response =
+          await _client.getUserContributionStats(request, options: callOptions);
 
       return {
         'totalPayments': response.totalPayments,
@@ -1020,17 +1093,21 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         'averagePayment': response.averagePayment,
       };
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get user contribution stats'}');
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get user contribution stats'}');
     }
   }
 
   @override
-  Future<Map<String, dynamic>> getContributionAnalytics(String contributionId) async {
+  Future<Map<String, dynamic>> getContributionAnalytics(
+      String contributionId) async {
     try {
-      final request = pb.GetContributionAnalyticsRequest()..contributionId = contributionId;
+      final request = pb.GetContributionAnalyticsRequest()
+        ..contributionId = contributionId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getContributionAnalytics(request, options: callOptions);
+      final response =
+          await _client.getContributionAnalytics(request, options: callOptions);
 
       return {
         'contributionId': response.contributionId,
@@ -1042,7 +1119,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         'targetAmount': response.targetAmount,
         'memberParticipation': {
           'totalMembers': response.memberParticipation.totalMembers,
-          'participatingMembers': response.memberParticipation.participatingMembers,
+          'participatingMembers':
+              response.memberParticipation.participatingMembers,
           'participationRate': response.memberParticipation.participationRate,
         },
         'schedule': {
@@ -1056,7 +1134,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         },
       };
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get contribution analytics'}');
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get contribution analytics'}');
     }
   }
 
@@ -1069,13 +1148,14 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       id: group.id,
       name: group.name,
       description: group.description,
-      adminId: group.adminId,  // Now a string in proto
+      adminId: group.adminId, // Now a string in proto
       members: group.members.map((m) => _mapMemberFromProto(m)).toList(),
       contributions: [],
       createdAt: _timestampToDateTime(group.createdAt),
       updatedAt: _timestampToDateTime(group.updatedAt),
       status: _mapGroupStatusFromProto(group.status),
-      metadata: group.metadata.isNotEmpty ? _decodeMetadata(group.metadata) : null,
+      metadata:
+          group.metadata.isNotEmpty ? _decodeMetadata(group.metadata) : null,
       visibility: _visibilityFromProto(group.visibility),
       memberCount: group.memberCount,
       totalRaised: _int64ToAmount(group.totalRaised),
@@ -1136,7 +1216,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     );
   }
 
-  ContributionModel _mapContributionFromProto(pb.ContributionMessage contribution) {
+  ContributionModel _mapContributionFromProto(
+      pb.ContributionMessage contribution) {
     return ContributionModel(
       id: contribution.id,
       groupId: contribution.groupId,
@@ -1149,36 +1230,53 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       createdAt: _timestampToDateTime(contribution.createdAt),
       updatedAt: _timestampToDateTime(contribution.updatedAt),
       status: _mapContributionStatusFromProto(contribution.status),
-      createdBy: contribution.createdBy,  // Now a string in proto
+      createdBy: contribution.createdBy, // Now a string in proto
       payments: [],
       type: _mapContributionTypeFromProto(contribution.type),
-      frequency: contribution.hasFrequency() ? _mapFrequencyFromProto(contribution.frequency) : null,
-      regularAmount: contribution.hasRegularAmount() ? _int64ToAmount(contribution.regularAmount) : null,
+      frequency: contribution.hasFrequency()
+          ? _mapFrequencyFromProto(contribution.frequency)
+          : null,
+      regularAmount: contribution.hasRegularAmount()
+          ? _int64ToAmount(contribution.regularAmount)
+          : null,
       nextPaymentDate: contribution.hasNextPaymentDate()
           ? _timestampToDateTime(contribution.nextPaymentDate)
           : null,
       startDate: contribution.hasStartDate()
           ? _timestampToDateTime(contribution.startDate)
           : null,
-      totalCycles: contribution.hasTotalCycles() ? contribution.totalCycles : null,
-      currentCycle: contribution.hasCurrentCycle() ? contribution.currentCycle : null,
+      totalCycles:
+          contribution.hasTotalCycles() ? contribution.totalCycles : null,
+      currentCycle:
+          contribution.hasCurrentCycle() ? contribution.currentCycle : null,
       payoutSchedule: [],
-      currentPayoutRecipient: contribution.currentPayoutRecipient.isNotEmpty ? contribution.currentPayoutRecipient : null,  // Now a string in proto
+      currentPayoutRecipient: contribution.currentPayoutRecipient.isNotEmpty
+          ? contribution.currentPayoutRecipient
+          : null, // Now a string in proto
       nextPayoutDate: contribution.hasNextPayoutDate()
           ? _timestampToDateTime(contribution.nextPayoutDate)
           : null,
       payoutHistory: [],
       autoPayEnabled: contribution.autoPayEnabled,
-      penaltyAmount: contribution.hasPenaltyAmount() ? _int64ToAmount(contribution.penaltyAmount) : null,
-      gracePeriodDays: contribution.hasGracePeriodDays() ? contribution.gracePeriodDays : null,
+      penaltyAmount: contribution.hasPenaltyAmount()
+          ? _int64ToAmount(contribution.penaltyAmount)
+          : null,
+      gracePeriodDays: contribution.hasGracePeriodDays()
+          ? contribution.gracePeriodDays
+          : null,
       allowPartialPayments: contribution.allowPartialPayments,
-      minimumBalance: contribution.hasMinimumBalance() ? _int64ToAmount(contribution.minimumBalance) : null,
+      minimumBalance: contribution.hasMinimumBalance()
+          ? _int64ToAmount(contribution.minimumBalance)
+          : null,
       autoPayoutEnabled: contribution.autoPayoutEnabled,
-      members: contribution.members.map((m) => _mapContributionMemberFromProto(m)).toList(),
+      members: contribution.members
+          .map((m) => _mapContributionMemberFromProto(m))
+          .toList(),
     );
   }
 
-  ContributionMemberModel _mapContributionMemberFromProto(pb.ContributionMemberMessage member) {
+  ContributionMemberModel _mapContributionMemberFromProto(
+      pb.ContributionMemberMessage member) {
     return ContributionMemberModel(
       id: member.id,
       contributionId: member.contributionId,
@@ -1194,8 +1292,9 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       missedCycles: member.missedCycles,
       membershipStatus:
           ContributionMembershipStatus.fromString(member.membershipStatus),
-      linkedInvitationId:
-          member.linkedInvitationId.isNotEmpty ? member.linkedInvitationId : null,
+      linkedInvitationId: member.linkedInvitationId.isNotEmpty
+          ? member.linkedInvitationId
+          : null,
     );
   }
 
@@ -1283,7 +1382,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     try {
       final req = pb.ListMyInvitationsRequest()..limit = limit;
       if (statuses != null) {
-        req.statuses.addAll(statuses.map((s) => s.wireValue).where((s) => s.isNotEmpty));
+        req.statuses.addAll(
+            statuses.map((s) => s.wireValue).where((s) => s.isNotEmpty));
       }
       final opts = await _callOptionsHelper.withAuth();
       final resp = await _client.listMyInvitations(req, options: opts);
@@ -1303,7 +1403,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         ..groupId = groupId
         ..limit = limit;
       if (statuses != null) {
-        req.statuses.addAll(statuses.map((s) => s.wireValue).where((s) => s.isNotEmpty));
+        req.statuses.addAll(
+            statuses.map((s) => s.wireValue).where((s) => s.isNotEmpty));
       }
       final opts = await _callOptionsHelper.withAuth();
       final resp = await _client.listGroupInvitations(req, options: opts);
@@ -1313,7 +1414,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     }
   }
 
-  ContributionPaymentModel _mapPaymentFromProto(pb.ContributionPaymentMessage payment) {
+  ContributionPaymentModel _mapPaymentFromProto(
+      pb.ContributionPaymentMessage payment) {
     return ContributionPaymentModel(
       id: payment.id,
       contributionId: payment.contributionId,
@@ -1324,12 +1426,14 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       currency: payment.currency,
       paymentDate: _timestampToDateTime(payment.paymentDate),
       status: _mapPaymentStatusFromProto(payment.status),
-      transactionId: payment.transactionId.isNotEmpty ? payment.transactionId : null,
+      transactionId:
+          payment.transactionId.isNotEmpty ? payment.transactionId : null,
       notes: payment.notes.isNotEmpty ? payment.notes : null,
     );
   }
 
-  PayoutScheduleModel _mapPayoutScheduleFromProto(pb.PayoutScheduleMessage schedule) {
+  PayoutScheduleModel _mapPayoutScheduleFromProto(
+      pb.PayoutScheduleMessage schedule) {
     return PayoutScheduleModel(
       id: schedule.id,
       userId: schedule.userId,
@@ -1341,11 +1445,14 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       receivedDate: schedule.hasReceivedDate()
           ? _timestampToDateTime(schedule.receivedDate)
           : null,
-      actualAmount: schedule.hasActualAmount() ? _int64ToAmount(schedule.actualAmount) : null,
+      actualAmount: schedule.hasActualAmount()
+          ? _int64ToAmount(schedule.actualAmount)
+          : null,
     );
   }
 
-  PayoutTransactionModel _mapPayoutTransactionFromProto(pb.PayoutTransactionMessage payout) {
+  PayoutTransactionModel _mapPayoutTransactionFromProto(
+      pb.PayoutTransactionMessage payout) {
     return PayoutTransactionModel(
       id: payout.id,
       contributionId: payout.contributionId,
@@ -1356,13 +1463,16 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       currency: payout.currency,
       payoutDate: _timestampToDateTime(payout.payoutDate),
       status: _mapPayoutTransactionStatusFromProto(payout.status),
-      transactionId: payout.transactionId.isNotEmpty ? payout.transactionId : null,
-      paymentMethod: payout.paymentMethod.isNotEmpty ? payout.paymentMethod : null,
+      transactionId:
+          payout.transactionId.isNotEmpty ? payout.transactionId : null,
+      paymentMethod:
+          payout.paymentMethod.isNotEmpty ? payout.paymentMethod : null,
       failureReason: payout.hasFailureReason() ? payout.failureReason : null,
     );
   }
 
-  ContributionReceiptModel _mapReceiptFromProto(pb.ContributionReceiptMessage receipt) {
+  ContributionReceiptModel _mapReceiptFromProto(
+      pb.ContributionReceiptMessage receipt) {
     return ContributionReceiptModel(
       id: receipt.id,
       paymentId: receipt.paymentId,
@@ -1381,18 +1491,22 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     );
   }
 
-  ContributionTranscriptModel _mapTranscriptFromProto(pb.ContributionTranscriptMessage transcript) {
+  ContributionTranscriptModel _mapTranscriptFromProto(
+      pb.ContributionTranscriptMessage transcript) {
     return ContributionTranscriptModel(
       id: transcript.id,
       contributionId: transcript.contributionId,
       groupId: transcript.groupId,
       generatedAt: _timestampToDateTime(transcript.generatedAt),
-      payments: transcript.payments.map((p) => _mapPaymentFromProto(p)).toList(),
+      payments:
+          transcript.payments.map((p) => _mapPaymentFromProto(p)).toList(),
       totalAmount: _int64ToAmount(transcript.totalAmount),
       currency: transcript.currency,
       memberContributions: transcript.memberContributions.isNotEmpty
           ? Map<String, double>.from(
-              (jsonDecode(transcript.memberContributions) as Map<String, dynamic>).map(
+              (jsonDecode(transcript.memberContributions)
+                      as Map<String, dynamic>)
+                  .map(
                 (k, v) => MapEntry(k, (v as num).toDouble()),
               ),
             )
@@ -1401,7 +1515,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   }
 
   // Enum mappers
-  GroupAccountStatus _mapGroupStatusFromProto(pb_enum.GroupAccountStatus status) {
+  GroupAccountStatus _mapGroupStatusFromProto(
+      pb_enum.GroupAccountStatus status) {
     switch (status) {
       case pb_enum.GroupAccountStatus.GROUP_ACCOUNT_STATUS_ACTIVE:
         return GroupAccountStatus.active;
@@ -1453,7 +1568,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     }
   }
 
-  GroupMemberStatus _mapMemberStatusFromProto(pb_enum.GroupMemberStatus status) {
+  GroupMemberStatus _mapMemberStatusFromProto(
+      pb_enum.GroupMemberStatus status) {
     switch (status) {
       case pb_enum.GroupMemberStatus.GROUP_MEMBER_STATUS_ACTIVE:
         return GroupMemberStatus.active;
@@ -1468,7 +1584,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     }
   }
 
-  ContributionType _mapContributionTypeFromProto(pb_enum.ContributionType type) {
+  ContributionType _mapContributionTypeFromProto(
+      pb_enum.ContributionType type) {
     switch (type) {
       case pb_enum.ContributionType.CONTRIBUTION_TYPE_ONE_TIME:
         return ContributionType.oneTime;
@@ -1488,7 +1605,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     }
   }
 
-  ContributionStatus _mapContributionStatusFromProto(pb_enum.ContributionStatus status) {
+  ContributionStatus _mapContributionStatusFromProto(
+      pb_enum.ContributionStatus status) {
     switch (status) {
       case pb_enum.ContributionStatus.CONTRIBUTION_STATUS_ACTIVE:
         return ContributionStatus.active;
@@ -1503,7 +1621,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     }
   }
 
-  pb_enum.ContributionStatus _mapContributionStatusToProto(ContributionStatus status) {
+  pb_enum.ContributionStatus _mapContributionStatusToProto(
+      ContributionStatus status) {
     switch (status) {
       case ContributionStatus.active:
         return pb_enum.ContributionStatus.CONTRIBUTION_STATUS_ACTIVE;
@@ -1516,7 +1635,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     }
   }
 
-  ContributionFrequency? _mapFrequencyFromProto(pb_enum.ContributionFrequency frequency) {
+  ContributionFrequency? _mapFrequencyFromProto(
+      pb_enum.ContributionFrequency frequency) {
     switch (frequency) {
       case pb_enum.ContributionFrequency.CONTRIBUTION_FREQUENCY_DAILY:
         return ContributionFrequency.daily;
@@ -1535,7 +1655,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     }
   }
 
-  pb_enum.ContributionFrequency _mapFrequencyToProto(ContributionFrequency frequency) {
+  pb_enum.ContributionFrequency _mapFrequencyToProto(
+      ContributionFrequency frequency) {
     switch (frequency) {
       case ContributionFrequency.daily:
         return pb_enum.ContributionFrequency.CONTRIBUTION_FREQUENCY_DAILY;
@@ -1586,7 +1707,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       case PaymentStatus.failed:
         return pb_enum.PaymentStatus.PAYMENT_STATUS_FAILED;
       case PaymentStatus.cancelled:
-        return pb_enum.PaymentStatus.PAYMENT_STATUS_FAILED; // legacy: no proto equivalent
+        return pb_enum
+            .PaymentStatus.PAYMENT_STATUS_FAILED; // legacy: no proto equivalent
       case PaymentStatus.refunding:
         return pb_enum.PaymentStatus.PAYMENT_STATUS_REFUNDING;
       case PaymentStatus.refunded:
@@ -1615,7 +1737,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     }
   }
 
-  PayoutTransactionStatus _mapPayoutTransactionStatusFromProto(pb_enum.PayoutTransactionStatus status) {
+  PayoutTransactionStatus _mapPayoutTransactionStatusFromProto(
+      pb_enum.PayoutTransactionStatus status) {
     switch (status) {
       case pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_PENDING:
         return PayoutTransactionStatus.pending;
@@ -1632,20 +1755,26 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     }
   }
 
-  pb_enum.PayoutTransactionStatus _mapPayoutStatusToProtoTransaction(PayoutTransactionStatus status) {
+  pb_enum.PayoutTransactionStatus _mapPayoutStatusToProtoTransaction(
+      PayoutTransactionStatus status) {
     switch (status) {
       case PayoutTransactionStatus.pending:
-        return pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_PENDING;
+        return pb_enum
+            .PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_PENDING;
       case PayoutTransactionStatus.processing:
-        return pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_PENDING; // Map to pending as fallback
+        return pb_enum.PayoutTransactionStatus
+            .PAYOUT_TRANSACTION_STATUS_PENDING; // Map to pending as fallback
       case PayoutTransactionStatus.completed:
-        return pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_COMPLETED;
+        return pb_enum
+            .PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_COMPLETED;
       case PayoutTransactionStatus.failed:
         return pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_FAILED;
       case PayoutTransactionStatus.cancelled:
-        return pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_FAILED; // Map to failed as fallback
+        return pb_enum.PayoutTransactionStatus
+            .PAYOUT_TRANSACTION_STATUS_FAILED; // Map to failed as fallback
       case PayoutTransactionStatus.refunded:
-        return pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_REFUNDED;
+        return pb_enum
+            .PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_REFUNDED;
     }
   }
 
@@ -1654,7 +1783,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   // ============================================================================
 
   @override
-  Future<List<ActivityLogEntryModel>> getGroupActivityLogs(String groupId) async {
+  Future<List<ActivityLogEntryModel>> getGroupActivityLogs(
+      String groupId) async {
     try {
       final request = pb.GetGroupActivityLogsRequest()
         ..groupId = groupId
@@ -1662,18 +1792,21 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         ..pageSize = 50;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getGroupActivityLogs(request, options: callOptions);
+      final response =
+          await _client.getGroupActivityLogs(request, options: callOptions);
 
       return response.logs.map((log) => _mapActivityLogFromProto(log)).toList();
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get group activity logs'}');
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get group activity logs'}');
     } catch (e) {
       rethrow;
     }
   }
 
   @override
-  Future<List<ActivityLogEntryModel>> getContributionActivityLogs(String contributionId) async {
+  Future<List<ActivityLogEntryModel>> getContributionActivityLogs(
+      String contributionId) async {
     try {
       final request = pb.GetContributionActivityLogsRequest()
         ..contributionId = contributionId
@@ -1681,17 +1814,20 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         ..pageSize = 50;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getContributionActivityLogs(request, options: callOptions);
+      final response = await _client.getContributionActivityLogs(request,
+          options: callOptions);
 
       return response.logs.map((log) => _mapActivityLogFromProto(log)).toList();
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get contribution activity logs'}');
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get contribution activity logs'}');
     } catch (e) {
       rethrow;
     }
   }
 
-  ActivityLogEntryModel _mapActivityLogFromProto(pb.GroupActivityLogMessage log) {
+  ActivityLogEntryModel _mapActivityLogFromProto(
+      pb.GroupActivityLogMessage log) {
     // Parse details JSON string to Map
     Map<String, dynamic>? detailsMap;
     if (log.details.isNotEmpty) {
@@ -1713,7 +1849,9 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       targetType: log.targetType.isNotEmpty ? log.targetType : null,
       targetId: log.targetId.isNotEmpty ? log.targetId : null,
       details: detailsMap,
-      createdAt: log.hasCreatedAt() ? _timestampToDateTime(log.createdAt) : DateTime.now(),
+      createdAt: log.hasCreatedAt()
+          ? _timestampToDateTime(log.createdAt)
+          : DateTime.now(),
     );
   }
 
@@ -1774,11 +1912,13 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       }
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.listPublicGroups(request, options: callOptions);
+      final response =
+          await _client.listPublicGroups(request, options: callOptions);
 
       return response.groups.map((group) => _mapGroupFromProto(group)).toList();
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to list public groups'}');
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to list public groups'}');
     }
   }
 
@@ -1788,28 +1928,36 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final request = pb.GetPublicGroupRequest()..groupId = groupId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.getPublicGroup(request, options: callOptions);
+      final response =
+          await _client.getPublicGroup(request, options: callOptions);
 
       final group = _mapGroupFromProto(response.group);
-      final topContributors = response.topContributors.map((c) =>
-        PublicGroupContributor(
-          userId: c.userId,
-          displayName: c.displayName,
-          totalContributed: _int64ToAmount(c.totalContributed),
-          contributionCount: c.contributionCount,
-          profileImage: c.profileImage.isNotEmpty ? c.profileImage : null,
-        ),
-      ).toList();
+      final topContributors = response.topContributors
+          .map(
+            (c) => PublicGroupContributor(
+              userId: c.userId,
+              displayName: c.displayName,
+              totalContributed: _int64ToAmount(c.totalContributed),
+              contributionCount: c.contributionCount,
+              profileImage: c.profileImage.isNotEmpty ? c.profileImage : null,
+            ),
+          )
+          .toList();
 
-      final stats = response.hasStatistics() ? <String, dynamic>{
-        'memberCount': response.statistics.memberCount,
-        'activeContributions': response.statistics.activeContributions,
-        'totalContributions': response.statistics.totalContributions,
-        'completedContributions': response.statistics.completedContributions,
-        'totalTargetAmount': _int64ToAmount(response.statistics.totalTargetAmount),
-        'totalCurrentAmount': _int64ToAmount(response.statistics.totalCurrentAmount),
-        'completionRate': response.statistics.completionRate,
-      } : null;
+      final stats = response.hasStatistics()
+          ? <String, dynamic>{
+              'memberCount': response.statistics.memberCount,
+              'activeContributions': response.statistics.activeContributions,
+              'totalContributions': response.statistics.totalContributions,
+              'completedContributions':
+                  response.statistics.completedContributions,
+              'totalTargetAmount':
+                  _int64ToAmount(response.statistics.totalTargetAmount),
+              'totalCurrentAmount':
+                  _int64ToAmount(response.statistics.totalCurrentAmount),
+              'completionRate': response.statistics.completionRate,
+            }
+          : null;
 
       return PublicGroupDetailModel(
         group: group,
@@ -1818,11 +1966,13 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         isMember: response.isMember,
       );
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get public group'}');
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get public group'}');
     }
   }
 
   @override
+
   /// The admin's queue of outstanding join requests for one group.
   ///
   /// Server-side authorisation: a non-admin gets PERMISSION_DENIED rather than
@@ -1884,11 +2034,13 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final request = pb.JoinPublicGroupRequest()..groupId = groupId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.joinPublicGroup(request, options: callOptions);
+      final response =
+          await _client.joinPublicGroup(request, options: callOptions);
 
       return _mapGroupFromProto(response.group);
     } on GrpcError catch (e) {
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to join public group'}');
+      throw Exception(
+          'gRPC Error (${e.codeName}): ${e.message ?? 'Failed to join public group'}');
     }
   }
 

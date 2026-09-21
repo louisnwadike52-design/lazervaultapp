@@ -90,7 +90,8 @@ class OpenBankingStatusCard extends StatelessWidget {
                 ),
                 if (isConnected)
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981),
                       borderRadius: BorderRadius.circular(12.r),
@@ -192,12 +193,14 @@ class OpenBankingStatusCard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: isSyncing ? null : (isConnected ? onSync : onConnectBank),
+                onPressed:
+                    isSyncing ? null : (isConnected ? onSync : onConnectBank),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: const Color(0xFF4E03D0),
                   disabledBackgroundColor: Colors.white.withValues(alpha: 0.6),
-                  disabledForegroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.5),
+                  disabledForegroundColor:
+                      const Color(0xFF4E03D0).withValues(alpha: 0.5),
                   padding: EdgeInsets.symmetric(vertical: 14.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
@@ -266,7 +269,8 @@ class _LinkedAccountRow extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8.r),
             ),
-            child: Icon(Icons.account_balance, color: Colors.white, size: 18.sp),
+            child:
+                Icon(Icons.account_balance, color: Colors.white, size: 18.sp),
           ),
           SizedBox(width: 10.w),
           Expanded(

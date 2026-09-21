@@ -99,8 +99,8 @@ class WalletTransferReceiptScreen extends StatelessWidget {
 
                     // Free transfer badge
                     Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 12.w, vertical: 6.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(20.r),
@@ -267,7 +267,9 @@ class WalletTransferReceiptScreen extends StatelessWidget {
                   onPressed: () async {
                     final authState = context.read<AuthenticationCubit>().state;
                     if (authState is! AuthenticationSuccess) return;
-                    final userName = '${authState.profile.user.firstName} ${authState.profile.user.lastName}'.trim();
+                    final userName =
+                        '${authState.profile.user.firstName} ${authState.profile.user.lastName}'
+                            .trim();
 
                     // Create a PaymentsTransferResult from the args
                     final transfer = PaymentsTransferResult(
@@ -281,8 +283,10 @@ class WalletTransferReceiptScreen extends StatelessWidget {
                     );
 
                     // Get account names from args
-                    final sourceName = _args['sourceAccount'] as String? ?? 'Source Account';
-                    final destName = _args['destinationAccount'] as String? ?? 'Destination Account';
+                    final sourceName =
+                        _args['sourceAccount'] as String? ?? 'Source Account';
+                    final destName = _args['destinationAccount'] as String? ??
+                        'Destination Account';
 
                     try {
                       await WalletTransferPdfService.shareReceipt(
@@ -322,8 +326,7 @@ class WalletTransferReceiptScreen extends StatelessWidget {
               SizedBox(width: 12.w),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () =>
-                      Get.offNamed(AppRoutes.walletTransfer),
+                  onPressed: () => Get.offNamed(AppRoutes.walletTransfer),
                   icon: Icon(Icons.swap_horiz_rounded, size: 18.sp),
                   label: Text(
                     'Transfer More',

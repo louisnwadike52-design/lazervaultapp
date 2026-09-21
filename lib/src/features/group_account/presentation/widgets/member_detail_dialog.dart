@@ -8,7 +8,6 @@ import 'member_star_rating.dart';
 import 'package:lazervault/src/features/widgets/pay_flow_theme.dart';
 part 'member_detail_dialog_widgets.dart';
 
-
 /// Dialog showing detailed member information with permission-based actions
 class MemberDetailDialog extends StatelessWidget {
   final GroupMember member;
@@ -43,8 +42,10 @@ class MemberDetailDialog extends StatelessWidget {
     final currentMember = group.getMember(currentUserId);
     if (currentMember == null) return false;
     if (member.userId == currentUserId) return false; // not yourself
-    if (member.userId == group.adminId) return false; // never the original admin
-    if (!GroupRolePermissions.canMember(currentMember, GroupAction.changeMemberRole)) {
+    if (member.userId == group.adminId)
+      return false; // never the original admin
+    if (!GroupRolePermissions.canMember(
+        currentMember, GroupAction.changeMemberRole)) {
       return false;
     }
     // Moderators cannot change roles of other admins.
@@ -61,7 +62,8 @@ class MemberDetailDialog extends StatelessWidget {
     if (currentMember == null) return false;
     if (member.userId == currentUserId) return false;
     if (member.userId == group.adminId) return false;
-    if (!GroupRolePermissions.canMember(currentMember, GroupAction.removeMember)) {
+    if (!GroupRolePermissions.canMember(
+        currentMember, GroupAction.removeMember)) {
       return false;
     }
     // Moderators cannot remove admins.
@@ -82,7 +84,8 @@ class MemberDetailDialog extends StatelessWidget {
     final currentMember = group.getMember(currentUserId);
     if (currentMember == null) return false;
     if (currentMember.status != GroupMemberStatus.active) return false;
-    return GroupRolePermissions.canMember(currentMember, GroupAction.inviteMember);
+    return GroupRolePermissions.canMember(
+        currentMember, GroupAction.inviteMember);
   }
 
   /// Show the management section iff at least one action is available.
@@ -446,7 +449,8 @@ class MemberDetailDialog extends StatelessWidget {
   }
 
   Widget _buildAIRating() {
-    final rating = MemberRatingCalculator.calculateRating(member, contributions);
+    final rating =
+        MemberRatingCalculator.calculateRating(member, contributions);
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
       child: MemberStarRating(
@@ -649,7 +653,8 @@ class MemberDetailDialog extends StatelessWidget {
   }
 
   String _getInitials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    final parts =
+        name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return '?';
     if (parts.length == 1) return parts[0][0].toUpperCase();
     return '${parts[0][0]}${parts[parts.length - 1][0]}'.toUpperCase();

@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:grpc/grpc.dart' show CallOptions;
+import 'package:lazervault/core/utils/friendly_error.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_pb;
+import 'package:get/get.dart';
+import 'package:lazervault/src/features/account_actions/utils/hold_route_resolver.dart';
 
 /// Why money is unavailable, itemised.
 ///
@@ -59,8 +65,20 @@ class _HeldFundsBreakdownSheetState extends State<HeldFundsBreakdownSheet> {
       _error = null;
     });
     try {
+      // AUTHENTICATE THE CALL. This was issued with no CallOptions, so no
+      // bearer token was sent and accounts-service answered UNAUTHENTICATED —
+      // which friendlyError faithfully renders as "Your session has expired.
+      // Please sign in again." to a user who is perfectly well signed in. Every
+      // sibling accounts RPC passes the token (see
+      // account_actions_repository_impl._getCallOptions); this one was simply
+      // missed.
+      final token =
+          await serviceLocator<SecureStorageService>().getAccessToken();
       final res = await widget.client.getMyAccountHolds(
         accounts_pb.GetMyAccountHoldsRequest(accountId: widget.accountId),
+        options: (token != null && token.isNotEmpty)
+            ? CallOptions(metadata: {'authorization': 'Bearer $token'})
+            : null,
       );
       if (!mounted) return;
       setState(() {
@@ -70,7 +88,12 @@ class _HeldFundsBreakdownSheetState extends State<HeldFundsBreakdownSheet> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = 'Could not load the breakdown. Please try again.';
+        // Every failure used to collapse into one sentence, so a phone with no
+        // connection was told the breakdown was broken. friendlyError()
+        // separates a connectivity problem (which the user can fix) from a
+        // server-side one (which they cannot), and never leaks raw transport
+        // text either way.
+        _error = friendlyError(e, context: 'load your held-funds breakdown');
         _loading = false;
       });
     }
@@ -146,7 +169,8 @@ class _HeldFundsBreakdownSheetState extends State<HeldFundsBreakdownSheet> {
             Text(
               _error!,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
+              style:
+                  GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
             ),
             SizedBox(height: 12.h),
             TextButton(onPressed: _load, child: const Text('Try again')),
@@ -175,8 +199,8 @@ class _HeldFundsBreakdownSheetState extends State<HeldFundsBreakdownSheet> {
             SizedBox(height: 4.h),
             Text(
               'Your whole balance is available to spend.',
-              style: GoogleFonts.inter(
-                  color: Colors.grey[500], fontSize: 12.5.sp),
+              style:
+                  GoogleFonts.inter(color: Colors.grey[500], fontSize: 12.5.sp),
             ),
           ],
         ),
@@ -207,8 +231,8 @@ class _HeldFundsBreakdownSheetState extends State<HeldFundsBreakdownSheet> {
       decoration: BoxDecoration(
         color: const Color(0xFF4E03D0).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-            color: const Color(0xFF4E03D0).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,12 +256,43 @@ class _HeldFundsBreakdownSheetState extends State<HeldFundsBreakdownSheet> {
     );
   }
 
+  /// Open the screen that explains this hold.
+  ///
+  /// Dismiss-then-push, in that order, and dismiss the WHOLE modal stack.
+  ///
+  /// This sheet is not presented on its own: it opens from the account-actions
+  /// bottom sheet, so two modals are stacked when a row is tapped. Popping
+  /// once would dismiss only this sheet and push the destination on top of a
+  /// still-open account sheet — leaving a stale sheet sitting under the screen
+  /// the user asked for, and returning them to it on Back. `popUntil` past
+  /// every PopupRoute (which ModalBottomSheetRoute is) clears both and lands
+  /// the push on the page underneath, wherever this sheet was opened from.
+  void _openHold(accounts_pb.MyAccountHold h) {
+    final target = HoldRouteResolver.resolve(
+      kind: h.kind,
+      serviceName: h.serviceName,
+      lockType: h.lockType,
+    );
+    if (target == null) return; // non-tappable; the tile renders without a tap
+
+    Navigator.of(context).popUntil((route) => route is! PopupRoute);
+    Get.toNamed(target.route, arguments: target.arguments);
+  }
+
   Widget _holdTile(accounts_pb.MyAccountHold h) {
     final isLock = h.kind == 'lock';
-    final colour =
-        isLock ? const Color(0xFF8B5CF6) : const Color(0xFFF59E0B);
+    final colour = isLock ? const Color(0xFF8B5CF6) : const Color(0xFFF59E0B);
 
-    return Container(
+    // Resolved up front so the chevron appears ONLY on rows that actually go
+    // somewhere. A chevron on a dead row is a promise the sheet cannot keep.
+    final target = HoldRouteResolver.resolve(
+      kind: h.kind,
+      serviceName: h.serviceName,
+      lockType: h.lockType,
+    );
+    final tappable = target != null;
+
+    final tile = Container(
       margin: EdgeInsets.only(bottom: 8.h),
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
@@ -294,8 +349,20 @@ class _HeldFundsBreakdownSheetState extends State<HeldFundsBreakdownSheet> {
               fontWeight: FontWeight.w700,
             ),
           ),
+          if (tappable) ...[
+            SizedBox(width: 4.w),
+            Icon(Icons.chevron_right_rounded,
+                size: 18.sp, color: Colors.grey[600]),
+          ],
         ],
       ),
+    );
+
+    if (!tappable) return tile;
+    return InkWell(
+      onTap: () => _openHold(h),
+      borderRadius: BorderRadius.circular(12.r),
+      child: tile,
     );
   }
 

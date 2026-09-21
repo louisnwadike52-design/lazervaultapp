@@ -60,7 +60,9 @@ class RealtimeIndicator extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  isConnected ? 'Live connection active' : 'Updates when refreshed',
+                  isConnected
+                      ? 'Live connection active'
+                      : 'Updates when refreshed',
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: const Color(0xFF6B7280),

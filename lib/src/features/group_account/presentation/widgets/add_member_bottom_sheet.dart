@@ -355,8 +355,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
     // so stage the invite outright instead of rendering the invite form and
     // waiting for a "+".
     if (_isValidEmail(identifier) || _isValidPhone(identifier)) {
-      final alreadyStaged =
-          _pendingInvites.any((i) => i.email == identifier);
+      final alreadyStaged = _pendingInvites.any((i) => i.email == identifier);
       setState(() {
         _isSearching = false;
         if (!alreadyStaged) {
@@ -378,8 +377,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
     // A contact with no usable handle (neither a valid email nor phone).
     setState(() {
       _isSearching = false;
-      _errorMessage =
-          "$name has no email or phone we can send an invite to.";
+      _errorMessage = "$name has no email or phone we can send an invite to.";
     });
   }
 
@@ -735,12 +733,10 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
               child: Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: PayFlowTheme.accentOnDark
-                      .withValues(alpha: 0.1),
+                  color: PayFlowTheme.accentOnDark.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
-                      color: PayFlowTheme.accentOnDark
-                          .withValues(alpha: 0.3)),
+                      color: PayFlowTheme.accentOnDark.withValues(alpha: 0.3)),
                 ),
                 child: Icon(
                   Icons.contacts,
@@ -1132,8 +1128,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
               width: 48.w,
               height: 48.h,
               decoration: BoxDecoration(
-                color: PayFlowTheme.accentOnDark
-                    .withValues(alpha: 0.1),
+                color: PayFlowTheme.accentOnDark.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: user.profilePicture.isNotEmpty
@@ -1441,8 +1436,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
               decoration: BoxDecoration(
-                color: PayFlowTheme.accentOnDark
-                    .withValues(alpha: 0.1),
+                color: PayFlowTheme.accentOnDark.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(

@@ -32,11 +32,16 @@ import 'package:lazervault/src/features/sprayme/services/sprayme_chat_service.da
 import 'package:lazervault/src/features/sprayme/services/spray_lazerai_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
-import 'package:lazervault/src/features/sprayme/presentation/screens/create_session_screen.dart' show OccasionTheme;
+import 'package:lazervault/src/features/sprayme/presentation/screens/create_session_screen.dart'
+    show OccasionTheme;
+import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:lazervault/core/services/auto_logout_guard.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
+import 'package:lazervault/src/features/sprayme/domain/entities/spray_layout_mode.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/src/features/sprayme/presentation/widgets/nova_typing_indicator.dart';
 part 'spray_room_screen_part1.dart';
 part 'spray_room_screen_part2.dart';
-
 
 class _SprayRoomViewState extends State<_SprayRoomView>
     with TickerProviderStateMixin {
@@ -63,7 +68,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
 
   // Money spray mode
   bool _isSprayMode = false;
-  int _sprayTapCount = 0; // ignore: unused_field — tracked for future spray limit UI
+  int _sprayTapCount =
+      0; // ignore: unused_field — tracked for future spray limit UI
 
   // Immersive mode: long-press the live to hide all chrome (top bar, rail,
   // comments, input) for an unobstructed view — TikTok-style. Back stays.
@@ -103,6 +109,26 @@ class _SprayRoomViewState extends State<_SprayRoomView>
 
   final _random = Random();
 
+  /// The viewer's own layout choice for this room, or null while they are
+  /// following the platform default. Cleared when the room closes — a layout
+  /// picked for one live is not a preference for the next.
+  SprayLayoutMode? _layoutOverride;
+
+  /// The layout to render right now.
+  ///
+  /// Resolution order: the viewer's explicit choice, then the admin-configured
+  /// platform default, then the built-in default (grid).
+  ///
+  /// Read fresh on every build rather than captured in initState, and that is
+  /// deliberate: FeatureFlags is an in-memory SharedPreferences read, so this
+  /// costs nothing, renders the correct layout on the FIRST frame with no
+  /// loading state, and silently adopts a new admin value as soon as the
+  /// background settings refresh lands — no reload, no flicker. A viewer who
+  /// has already chosen a layout is never yanked out of it.
+  SprayLayoutMode get _layoutMode =>
+      _layoutOverride ??
+      sprayLayoutModeFromSetting(FeatureFlags.spraymeLayoutMode);
+
   @override
   void initState() {
     super.initState();
@@ -113,6 +139,17 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     AppActivityBus.instance.ping();
     _engagementTimer = Timer.periodic(
         const Duration(seconds: 15), (_) => AppActivityBus.instance.ping());
+
+    // Hold the screen awake for the whole time this room is open.
+    //
+    // Watching a live is passive by nature: a viewer can go minutes without
+    // touching the screen, so the OS idle timer dims and locks the device
+    // mid-stream. That also pushes the app behind the lock screen, which is
+    // what "the app logged me out" looks like from the outside.
+    //
+    // catchError, not await: a device that refuses the wakelock (or a platform
+    // channel that is not ready yet) must not stop the room from opening.
+    WakelockPlus.enable().catchError((_) {});
     // Resolve the auth user id up front (independent of the wallet).
     serviceLocator<SecureStorageService>().getUserId().then((id) {
       if (mounted && id != null && id.isNotEmpty) {
@@ -125,7 +162,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     // Listen to WebSocket events for animations
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final cubit = context.read<SprayRoomCubit>();
-      _roomCubitRef = cubit; // captured so dispose can flush pending likes safely
+      _roomCubitRef =
+          cubit; // captured so dispose can flush pending likes safely
       cubit.initRoom(widget.sessionId, widget.accessToken);
     });
   }
@@ -166,9 +204,13 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     }
     _isDisposed = true;
     _engagementTimer?.cancel();
+    // Release the screen back to the OS idle timer. Leaving this on would keep
+    // every user's screen awake for the rest of the app session and burn their
+    // battery long after they left the live.
+    WakelockPlus.disable().catchError((_) {});
     // Cancel pending like batch timer
     _likeBatchTimer?.cancel();
-    // Stop the LazerAI wake-word listener
+    // Stop the Nova wake-word listener
     _lazerAi.stopWakeWord();
     // Stop and release THIS room's audio. Do NOT setEnabled(false): GiftSoundService
     // is a process-wide singleton, so disabling it here silences gift/like/spray
@@ -181,7 +223,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
 
   // ─── Animation Triggers ──────────────────────────────────────
 
-  void _triggerGiftAnimation(String emoji, String animationType, int quantity, {String category = 'basic'}) {
+  void _triggerGiftAnimation(String emoji, String animationType, int quantity,
+      {String category = 'basic'}) {
     final screenSize = MediaQuery.of(context).size;
     final effectiveQty = quantity.clamp(1, 20);
 
@@ -194,17 +237,21 @@ class _SprayRoomViewState extends State<_SprayRoomView>
         if (i < 3) _soundService.playGiftSound(category);
         switch (animationType) {
           case 'burst':
-            _addBurstAnimation(emoji, Offset(
-              screenSize.width / 2,
-              screenSize.height * 0.35,
-            ));
+            _addBurstAnimation(
+                emoji,
+                Offset(
+                  screenSize.width / 2,
+                  screenSize.height * 0.35,
+                ));
           case 'rain':
             _addRainAnimation(emoji);
           case 'glow':
-            _addGlowAnimation(emoji, Offset(
-              screenSize.width / 2,
-              screenSize.height * 0.3,
-            ));
+            _addGlowAnimation(
+                emoji,
+                Offset(
+                  screenSize.width / 2,
+                  screenSize.height * 0.3,
+                ));
           case 'shake':
             _triggerShake();
             _addFloatingEmoji(emoji);
@@ -237,9 +284,10 @@ class _SprayRoomViewState extends State<_SprayRoomView>
           startY: startY,
           size: 32 + _random.nextDouble() * 16,
           onComplete: () {
-            if (mounted) setState(() => _floatingEmojis.removeWhere(
-              (w) => w.key == ValueKey('float_$key'),
-            ));
+            if (mounted)
+              setState(() => _floatingEmojis.removeWhere(
+                    (w) => w.key == ValueKey('float_$key'),
+                  ));
           },
         ),
       );
@@ -257,9 +305,10 @@ class _SprayRoomViewState extends State<_SprayRoomView>
           center: center,
           count: 10,
           onComplete: () {
-            if (mounted) setState(() => _burstAnimations.removeWhere(
-              (w) => w.key == ValueKey('burst_$key'),
-            ));
+            if (mounted)
+              setState(() => _burstAnimations.removeWhere(
+                    (w) => w.key == ValueKey('burst_$key'),
+                  ));
           },
         ),
       );
@@ -276,9 +325,10 @@ class _SprayRoomViewState extends State<_SprayRoomView>
           emoji: emoji,
           count: 15,
           onComplete: () {
-            if (mounted) setState(() => _rainAnimations.removeWhere(
-              (w) => w.key == ValueKey('rain_$key'),
-            ));
+            if (mounted)
+              setState(() => _rainAnimations.removeWhere(
+                    (w) => w.key == ValueKey('rain_$key'),
+                  ));
           },
         ),
       );
@@ -295,9 +345,10 @@ class _SprayRoomViewState extends State<_SprayRoomView>
           emoji: emoji,
           center: center,
           onComplete: () {
-            if (mounted) setState(() => _glowAnimations.removeWhere(
-              (w) => w.key == ValueKey('glow_$key'),
-            ));
+            if (mounted)
+              setState(() => _glowAnimations.removeWhere(
+                    (w) => w.key == ValueKey('glow_$key'),
+                  ));
           },
         ),
       );
@@ -314,17 +365,24 @@ class _SprayRoomViewState extends State<_SprayRoomView>
   void _addSprayNote(int denomination) {
     if (_sprayNotes.length >= 15) return;
     final key = _animationKey++;
-    final nairaNote = denomination >= 100000 ? '\u20A61000' :
-                      denomination >= 50000 ? '\u20A6500' :
-                      denomination >= 20000 ? '\u20A6200' :
-                      denomination >= 10000 ? '\u20A6100' :
-                      denomination >= 5000 ? '\u20A650' : '\u20A6${denomination ~/ 100}';
+    final nairaNote = denomination >= 100000
+        ? '\u20A61000'
+        : denomination >= 50000
+            ? '\u20A6500'
+            : denomination >= 20000
+                ? '\u20A6200'
+                : denomination >= 10000
+                    ? '\u20A6100'
+                    : denomination >= 5000
+                        ? '\u20A650'
+                        : '\u20A6${denomination ~/ 100}';
 
     // Use tap position for spray origin, with random spread
     final screenWidth = MediaQuery.of(context).size.width;
     double startX;
     if (_lastTapPosition != null) {
-      startX = (_lastTapPosition!.dx / screenWidth) + (_random.nextDouble() - 0.5) * 0.15;
+      startX = (_lastTapPosition!.dx / screenWidth) +
+          (_random.nextDouble() - 0.5) * 0.15;
     } else {
       startX = 0.3 + _random.nextDouble() * 0.4;
     }
@@ -336,9 +394,10 @@ class _SprayRoomViewState extends State<_SprayRoomView>
           text: nairaNote,
           startX: startX.clamp(0.1, 0.9),
           onComplete: () {
-            if (mounted) setState(() => _sprayNotes.removeWhere(
-              (w) => w.key == ValueKey('note_$key'),
-            ));
+            if (mounted)
+              setState(() => _sprayNotes.removeWhere(
+                    (w) => w.key == ValueKey('note_$key'),
+                  ));
           },
         ),
       );
@@ -395,7 +454,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
         final qty = (event.data['quantity'] as num?)?.toInt() ?? 1;
         final amount = (event.data['amount'] as num?)?.toInt() ?? 0;
         final senderAvatar = event.data['sender_avatar_url'] as String?;
-        final senderName = event.senderName.isNotEmpty ? event.senderName : 'Guest';
+        final senderName =
+            event.senderName.isNotEmpty ? event.senderName : 'Guest';
 
         // Look up animation type and category from gift catalog
         final gift = state.gifts.where((g) => g.id == giftId).firstOrNull;
@@ -432,8 +492,10 @@ class _SprayRoomViewState extends State<_SprayRoomView>
         }
 
         // 3. For premium/luxury/legendary gifts: full-screen entrance animation (repeat per unit, 3s per gift)
-        if (category == 'premium' || category == 'luxury' ||
-            category == 'legendary' || category == 'deluxe') {
+        if (category == 'premium' ||
+            category == 'luxury' ||
+            category == 'legendary' ||
+            category == 'deluxe') {
           for (int i = 0; i < effectiveQty; i++) {
             Future.delayed(Duration(milliseconds: i * 3000), () {
               if (_isDisposed || !mounted) return;
@@ -458,7 +520,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
         final denom = (event.data['denomination'] as num?)?.toInt() ?? 20000;
         final totalAmount = (event.data['total_amount'] as num?)?.toInt() ?? 0;
         final senderAvatar = event.data['sender_avatar_url'] as String?;
-        final senderName = event.senderName.isNotEmpty ? event.senderName : 'Guest';
+        final senderName =
+            event.senderName.isNotEmpty ? event.senderName : 'Guest';
         final currency = state.session?.currency ?? 'NGN';
 
         // Show money banner
@@ -473,7 +536,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
         // TikTok-style name slide
         _nameSlideKey.currentState?.showNameSlide(
           name: senderName,
-          action: 'lazersprayed $currency ${(totalAmount / 100).toStringAsFixed(0)}',
+          action:
+              'lazersprayed $currency ${(totalAmount / 100).toStringAsFixed(0)}',
           emoji: '\u{1F4B5}',
           nameColor: const Color(0xFF10B981),
         );
@@ -514,7 +578,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
       builder: (dialogCtx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Session Ended', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Session Ended', style: TextStyle(color: Colors.white)),
         content: const Text(
           'The host has ended this spray session.',
           style: TextStyle(color: Color(0xFF9CA3AF)),
@@ -552,11 +617,14 @@ class _SprayRoomViewState extends State<_SprayRoomView>
 
     if (!st.canSpray || st.selectedDenomination == null) {
       // Budget exhausted or wallet empty — exit spray mode
-      if (st.sprayRemaining <= 0 || (st.wallet?.balance ?? 0) < (st.selectedDenomination ?? 0)) {
+      if (st.sprayRemaining <= 0 ||
+          (st.wallet?.balance ?? 0) < (st.selectedDenomination ?? 0)) {
         setState(() => _isSprayMode = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(st.sprayRemaining <= 0 ? 'Spray budget used up!' : 'Insufficient wallet balance'),
+            content: Text(st.sprayRemaining <= 0
+                ? 'Spray budget used up!'
+                : 'Insufficient wallet balance'),
             backgroundColor: const Color(0xFFFB923C),
             duration: const Duration(seconds: 2),
           ),
@@ -662,24 +730,30 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     // PopScope intercepts the Android system back (and any pop) so a host who
     // is live doesn't just walk out leaving the stream up (viewers would sit on
     // "Waiting for video…" forever). See _handleBackPressed.
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        _handleBackPressed();
-      },
-      child: BlocListener<SprayLiveCubit, SprayLiveState>(
-        listenWhen: (p, c) => p.isBroadcaster != c.isBroadcaster,
-        listener: (context, live) {
-          final sid = context.read<SprayRoomCubit>().state.session?.id ?? '';
-          if (sid.isEmpty) return;
-          if (live.isBroadcaster) {
-            _lazerAi.startWakeWord(sid);
-          } else {
-            _lazerAi.stopWakeWord();
-          }
+    // AutoLogoutSuppressed defers the inactivity auto-logout for as long as
+    // this route is on screen, and releases it on dispose. The 15s activity
+    // heartbeat above already fakes activity; this states the intent directly
+    // so a change to the heartbeat cannot quietly log a viewer out mid-live.
+    return AutoLogoutSuppressed(
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          _handleBackPressed();
         },
-        child: _buildRoom(context),
+        child: BlocListener<SprayLiveCubit, SprayLiveState>(
+          listenWhen: (p, c) => p.isBroadcaster != c.isBroadcaster,
+          listener: (context, live) {
+            final sid = context.read<SprayRoomCubit>().state.session?.id ?? '';
+            if (sid.isEmpty) return;
+            if (live.isBroadcaster) {
+              _lazerAi.startWakeWord(sid);
+            } else {
+              _lazerAi.stopWakeWord();
+            }
+          },
+          child: _buildRoom(context),
+        ),
       ),
     );
   }
@@ -777,11 +851,13 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline, size: 48.sp, color: const Color(0xFF9CA3AF)),
+                    Icon(Icons.error_outline,
+                        size: 48.sp, color: const Color(0xFF9CA3AF)),
                     SizedBox(height: 12.h),
                     Text(
                       state.error!,
-                      style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                      style: TextStyle(
+                          color: const Color(0xFF9CA3AF), fontSize: 14.sp),
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 20.h),
@@ -789,14 +865,19 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ElevatedButton(
-                          onPressed: () => context.read<SprayRoomCubit>().initRoom(widget.sessionId, widget.accessToken),
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3B82F6)),
-                          child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                          onPressed: () => context
+                              .read<SprayRoomCubit>()
+                              .initRoom(widget.sessionId, widget.accessToken),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF3B82F6)),
+                          child: const Text('Retry',
+                              style: TextStyle(color: Colors.white)),
                         ),
                         SizedBox(width: 12.w),
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Go Back', style: TextStyle(color: Color(0xFF9CA3AF))),
+                          child: const Text('Go Back',
+                              style: TextStyle(color: Color(0xFF9CA3AF))),
                         ),
                       ],
                     ),
@@ -816,10 +897,12 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                 // Background - live video when broadcasting, else host image/gradient.
                 BlocBuilder<SprayLiveCubit, SprayLiveState>(
                   builder: (context, liveState) {
-                    if (liveState.isLiveActive || liveState.phase == SprayLivePhase.connecting) {
+                    if (liveState.isLiveActive ||
+                        liveState.phase == SprayLivePhase.connecting) {
                       return SprayLiveVideoLayer(
                         state: liveState,
                         nameByIdentity: _identityNames(state),
+                        layout: _layoutMode,
                       );
                     }
                     return _buildBackground(state);
@@ -882,7 +965,9 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                   child: Column(
                     children: [
                       // Top bar — in immersive mode, only the back button shows.
-                      _immersive ? _buildImmersiveBackBar() : _buildTopBar(state),
+                      _immersive
+                          ? _buildImmersiveBackBar()
+                          : _buildTopBar(state),
 
                       const Spacer(),
 
@@ -895,10 +980,14 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                             // Calculate available height: total height - top bar - input bar - padding
                             final inputBarHeight = 60.h;
                             final topBarHeight = 60.h;
-                            final availableHeight = constraints.maxHeight - topBarHeight - inputBarHeight - 20.h;
+                            final availableHeight = constraints.maxHeight -
+                                topBarHeight -
+                                inputBarHeight -
+                                20.h;
 
                             return ConstrainedBox(
-                              constraints: BoxConstraints(maxHeight: availableHeight),
+                              constraints:
+                                  BoxConstraints(maxHeight: availableHeight),
                               child: _buildBottomSection(state),
                             );
                           },
@@ -921,9 +1010,11 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                         )
                       else if (!state.sessionEnded && !state.isConnected)
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 8.h),
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 12.w, vertical: 8.h),
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(18.r),
@@ -931,11 +1022,15 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.wifi_off, color: const Color(0xFF9CA3AF), size: 14.sp),
+                                Icon(Icons.wifi_off,
+                                    color: const Color(0xFF9CA3AF),
+                                    size: 14.sp),
                                 SizedBox(width: 6.w),
                                 Text(
                                   'Reconnecting...',
-                                  style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                                  style: TextStyle(
+                                      color: const Color(0xFF9CA3AF),
+                                      fontSize: 12.sp),
                                 ),
                               ],
                             ),
@@ -1016,19 +1111,22 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                     left: 16.w,
                     right: 16.w,
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEF4444).withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.wifi_off, color: Colors.white, size: 16.sp),
+                          Icon(Icons.wifi_off,
+                              color: Colors.white, size: 16.sp),
                           SizedBox(width: 8.w),
                           Expanded(
                             child: Text(
                               'Connection lost. Please rejoin the session.',
-                              style: TextStyle(color: Colors.white, fontSize: 12.sp),
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 12.sp),
                             ),
                           ),
                         ],
@@ -1043,24 +1141,29 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                     left: 16.w,
                     right: 16.w,
                     child: GestureDetector(
-                      onTap: () => context.read<SprayRoomCubit>().refreshWallet(),
+                      onTap: () =>
+                          context.read<SprayRoomCubit>().refreshWallet(),
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12.w, vertical: 8.h),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFB923C).withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.wallet, color: Colors.white, size: 16.sp),
+                            Icon(Icons.wallet,
+                                color: Colors.white, size: 16.sp),
                             SizedBox(width: 8.w),
                             Expanded(
                               child: Text(
                                 'Wallet failed to load. Tap to retry.',
-                                style: TextStyle(color: Colors.white, fontSize: 12.sp),
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 12.sp),
                               ),
                             ),
-                            Icon(Icons.refresh, color: Colors.white, size: 16.sp),
+                            Icon(Icons.refresh,
+                                color: Colors.white, size: 16.sp),
                           ],
                         ),
                       ),
@@ -1074,19 +1177,22 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                     left: 16.w,
                     right: 16.w,
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFF9CA3AF).withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.stop_circle, color: Colors.white, size: 16.sp),
+                          Icon(Icons.stop_circle,
+                              color: Colors.white, size: 16.sp),
                           SizedBox(width: 8.w),
                           Expanded(
                             child: Text(
                               'This session has ended.',
-                              style: TextStyle(color: Colors.white, fontSize: 12.sp),
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 12.sp),
                             ),
                           ),
                         ],
@@ -1139,7 +1245,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
 
   Widget _buildGradientBackground() {
     // Use occasion-based gradient when session has an occasion type
-    final occasionType = context.read<SprayRoomCubit>().state.session?.occasionType ?? '';
+    final occasionType =
+        context.read<SprayRoomCubit>().state.session?.occasionType ?? '';
     final gradientColors = occasionType.isNotEmpty
         ? OccasionTheme.getGradient(occasionType)
         : const [Color(0xFF1A0033), Color(0xFF0D001A)];
@@ -1226,9 +1333,10 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                   CircleAvatar(
                     radius: 14.r,
                     backgroundColor: const Color(0xFF3B82F6),
-                    backgroundImage: state.session?.hostAvatarUrl.isNotEmpty == true
-                        ? NetworkImage(state.session!.hostAvatarUrl)
-                        : null,
+                    backgroundImage:
+                        state.session?.hostAvatarUrl.isNotEmpty == true
+                            ? NetworkImage(state.session!.hostAvatarUrl)
+                            : null,
                     child: state.session?.hostAvatarUrl.isEmpty != false
                         ? Icon(Icons.person, size: 16.sp, color: Colors.white)
                         : null,
@@ -1275,12 +1383,14 @@ class _SprayRoomViewState extends State<_SprayRoomView>
             decoration: BoxDecoration(
               color: const Color(0xFFFFD700).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+              border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.monetization_on, color: const Color(0xFFFFD700), size: 14.sp),
+                Icon(Icons.monetization_on,
+                    color: const Color(0xFFFFD700), size: 14.sp),
                 SizedBox(width: 3.w),
                 Text(
                   '$currency ${_formatAmount(state.totalWorthMajor)}',
@@ -1297,46 +1407,52 @@ class _SprayRoomViewState extends State<_SprayRoomView>
 
           // Connection + participants + likes (tap → viewer list)
           GestureDetector(
-            onTap: () => _showViewersSheet(state),
-            child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 6.w,
-                  height: 6.w,
-                  decoration: BoxDecoration(
-                    color: state.isConnected ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                    shape: BoxShape.circle,
-                  ),
+              onTap: () => _showViewersSheet(state),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
-                SizedBox(width: 4.w),
-                // Realtime "watching now" (WS-connected) when available, else
-                // the persisted participant count.
-                Icon(Icons.visibility_outlined,
-                    color: Colors.white70, size: 14.sp),
-                SizedBox(width: 2.w),
-                Text(
-                  _formatCount(state.viewerCount > 0
-                      ? state.viewerCount
-                      : state.participantCount),
-                  style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6.w,
+                      height: 6.w,
+                      decoration: BoxDecoration(
+                        color: state.isConnected
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFEF4444),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 4.w),
+                    // Realtime "watching now" (WS-connected) when available, else
+                    // the persisted participant count.
+                    Icon(Icons.visibility_outlined,
+                        color: Colors.white70, size: 14.sp),
+                    SizedBox(width: 2.w),
+                    Text(
+                      _formatCount(state.viewerCount > 0
+                          ? state.viewerCount
+                          : state.participantCount),
+                      style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                    ),
+                    SizedBox(width: 6.w),
+                    Icon(Icons.favorite,
+                        color: const Color(0xFFFF1744), size: 12.sp),
+                    SizedBox(width: 2.w),
+                    Text(
+                      _formatCount(state.totalLikeTaps),
+                      style: TextStyle(
+                          color: const Color(0xFFFF1744),
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
-                SizedBox(width: 6.w),
-                Icon(Icons.favorite, color: const Color(0xFFFF1744), size: 12.sp),
-                SizedBox(width: 2.w),
-                Text(
-                  _formatCount(state.totalLikeTaps),
-                  style: TextStyle(color: const Color(0xFFFF1744), fontSize: 12.sp, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          )),
+              )),
         ],
       ),
     );
@@ -1377,12 +1493,15 @@ class _SprayRoomViewState extends State<_SprayRoomView>
         ),
         SizedBox(height: 16.h),
 
-        // Comment button — opens full comments bottom sheet
+        // Nova — the assistant is a PRIMARY control, not buried in More.
+        // Comments moved the other way, into the More sheet: asking Nova about
+        // the live is the action people reach for mid-stream, and it was the
+        // one hidden behind an extra tap.
         _buildActionButton(
-          icon: Icons.chat_bubble_outline,
-          label: 'Chat',
-          color: const Color(0xFF60A5FA),
-          onTap: () => _showCommentsSheet(state),
+          icon: Icons.auto_awesome,
+          label: 'Nova',
+          color: const Color(0xFF7C3AED),
+          onTap: () => _showAIChatSheet(state),
         ),
         SizedBox(height: 16.h),
 
@@ -1505,16 +1624,141 @@ class _SprayRoomViewState extends State<_SprayRoomView>
   }
 
   /// Share a deep link to this live so friends can jump straight in by code.
-  void _shareLive(SprayRoomState state) {
+  /// Let the viewer choose how participants are arranged.
+  ///
+  /// The choice is local to this room and to this viewer — it changes nothing
+  /// for anyone else in the live, and it does not persist past leaving. The
+  /// current platform default is marked so a viewer can tell what they would
+  /// get by not choosing.
+  void _showLayoutSheet() {
+    final platformDefault =
+        sprayLayoutModeFromSetting(FeatureFlags.spraymeLayoutMode);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetCtx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 4.h),
+              child: Text('Layout',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700)),
+            ),
+            for (final mode in SprayLayoutMode.values)
+              ListTile(
+                leading: Icon(mode.icon,
+                    color: mode == _layoutMode
+                        ? const Color(0xFF7C3AED)
+                        : const Color(0xFF9CA3AF)),
+                title: Row(
+                  children: [
+                    Text(mode.label,
+                        style: TextStyle(color: Colors.white, fontSize: 14.sp)),
+                    if (mode == platformDefault) ...[
+                      SizedBox(width: 8.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 1.h),
+                        decoration: BoxDecoration(
+                          color:
+                              const Color(0xFF10B981).withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                        child: Text('Default',
+                            style: TextStyle(
+                                color: const Color(0xFF10B981),
+                                fontSize: 9.sp,
+                                fontWeight: FontWeight.w600)),
+                      ),
+                    ],
+                  ],
+                ),
+                subtitle: Text(mode.description,
+                    style: TextStyle(
+                        color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+                trailing: mode == _layoutMode
+                    ? Icon(Icons.check_rounded,
+                        color: const Color(0xFF7C3AED), size: 20.sp)
+                    : null,
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  if (mode == _layoutMode) return;
+                  HapticFeedback.selectionClick();
+                  setState(() => _layoutOverride = mode);
+                },
+              ),
+            SizedBox(height: 8.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Share an invite to this live.
+  ///
+  /// WHY THIS WAS DEAD
+  /// -----------------
+  /// This was the last caller in the app still using `Share.share(...)`, the
+  /// pre-v11 share_plus API. Every other share surface moved to
+  /// `SharePlus.instance.share(ShareParams(...))`; this one kept calling the
+  /// old entry point, never awaited it, and had no catch — so on failure the
+  /// button did nothing at all and said nothing about it.
+  ///
+  /// It also passed no `sharePositionOrigin`, which iPad REQUIRES to anchor the
+  /// popover; without it the sheet cannot present.
+  Future<void> _shareLive(SprayRoomState state) async {
     final s = state.session;
-    if (s == null) return;
-    final code = s.sessionCode;
+    final code = s?.sessionCode.trim() ?? '';
+
+    // Never share a broken invite. A link with an empty code sends the
+    // recipient to a join screen that cannot resolve anything, which is worse
+    // than telling the host the live is not ready to share yet.
+    if (s == null || code.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("This live isn't ready to share yet."),
+        backgroundColor: Color(0xFFF59E0B),
+      ));
+      return;
+    }
+
     final link = 'https://lazervault.app/lazerspray/join?code=$code';
     final title = s.title.isNotEmpty ? s.title : 'my Lazerspray live';
-    Share.share(
-      'Join $title on Lazerspray 🎉\nTap to watch: $link\nOr enter code $code in the app.',
-      subject: 'Join my Lazerspray live',
-    );
+    final message =
+        'Join $title on Lazerspray 🎉\nTap to watch: $link\nOr enter code $code in the app.';
+
+    // Anchor the iPad popover to the button that was tapped. Falls back to a
+    // safe on-screen rect if the geometry is not available.
+    final box = context.findRenderObject() as RenderBox?;
+    final origin = (box != null && box.hasSize)
+        ? box.localToGlobal(Offset.zero) & box.size
+        : const Rect.fromLTWH(0, 0, 1, 1);
+
+    try {
+      await SharePlus.instance.share(ShareParams(
+        text: message,
+        subject: 'Join my Lazerspray live',
+        sharePositionOrigin: origin,
+      ));
+    } catch (_) {
+      // Copy the invite so the host still has something to send, and say so —
+      // a share button that fails silently is indistinguishable from one that
+      // is not wired up, which is exactly how this one read.
+      await Clipboard.setData(ClipboardData(text: message));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Invite copied — paste it anywhere to share.'),
+        backgroundColor: Color(0xFF7C3AED),
+      ));
+    }
   }
 
   /// Consolidated overflow sheet (the "3-dots"). Keeps the live screen from
@@ -1560,31 +1804,40 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                 spacing: 10.w,
                 runSpacing: 12.h,
                 children: [
-                  _moreTile(Icons.groups_2_outlined, 'Guests', const Color(0xFF10B981),
-                      () {
+                  _moreTile(Icons.groups_2_outlined, 'Guests',
+                      const Color(0xFF10B981), () {
                     Navigator.pop(sheetCtx);
                     _showGuestsSheet(state);
                   }),
-                  _moreTile(Icons.bar_chart, 'Stats', const Color(0xFF3B82F6), () {
+                  _moreTile(Icons.bar_chart, 'Stats', const Color(0xFF3B82F6),
+                      () {
                     Navigator.pop(sheetCtx);
                     _showStatsSheet(state);
                   }),
-                  _moreTile(Icons.smart_toy_outlined, 'AI chat',
-                      const Color(0xFF7C3AED), () {
+                  // Comments live here now; Nova took its place on the main
+                  // rail. Called "Comments", never "Chat", so it reads as
+                  // distinct from talking to Nova.
+                  _moreTile(Icons.chat_bubble_outline, 'Comments',
+                      const Color(0xFF60A5FA), () {
                     Navigator.pop(sheetCtx);
-                    _showAIChatSheet(state);
+                    _showCommentsSheet(state);
                   }),
-                  // Summon the LazerAI voice agent into the live. Also triggers
-                  // automatically when a speaker says "lazerai" (wake-word).
-                  _moreTile(Icons.auto_awesome, 'LazerAI',
+                  _moreTile(_layoutMode.icon, 'Layout', const Color(0xFF10B981),
+                      () {
+                    Navigator.pop(sheetCtx);
+                    _showLayoutSheet();
+                  }),
+                  // Bring Nova into the live as a voice participant. Also
+                  // triggers automatically on the "nova" wake-word.
+                  _moreTile(Icons.record_voice_over_outlined, 'Nova in live',
                       const Color(0xFF4834D4), () async {
                     Navigator.pop(sheetCtx);
                     final err = await _lazerAi.summon(state.session?.id ?? '');
                     if (!mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text(err == null
-                          ? 'LazerAI is joining the live…'
-                          : 'Could not summon LazerAI: $err'),
+                          ? 'Nova is joining the live…'
+                          : 'Could not bring Nova in: $err'),
                       backgroundColor: err == null
                           ? const Color(0xFF4834D4)
                           : const Color(0xFFEF4444),
@@ -1619,16 +1872,27 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                             spacing: 10.w,
                             runSpacing: 12.h,
                             children: [
-                              _moreTile(Icons.flip_camera_ios, 'Flip',
-                                  const Color(0xFF60A5FA), () => cubit.flipCamera()),
-                              _moreTile(live.isMicOn ? Icons.mic : Icons.mic_off,
-                                  live.isMicOn ? 'Mute' : 'Unmute',
-                                  const Color(0xFF60A5FA), () => cubit.toggleMic()),
                               _moreTile(
-                                  live.isCameraOn ? Icons.videocam : Icons.videocam_off,
+                                  Icons.flip_camera_ios,
+                                  'Flip',
+                                  const Color(0xFF60A5FA),
+                                  () => cubit.flipCamera()),
+                              _moreTile(
+                                  live.isMicOn ? Icons.mic : Icons.mic_off,
+                                  live.isMicOn ? 'Mute' : 'Unmute',
+                                  const Color(0xFF60A5FA),
+                                  () => cubit.toggleMic()),
+                              _moreTile(
+                                  live.isCameraOn
+                                      ? Icons.videocam
+                                      : Icons.videocam_off,
                                   live.isCameraOn ? 'Cam off' : 'Cam on',
-                                  const Color(0xFF60A5FA), () => cubit.toggleCamera()),
-                              _moreTile(live.isPaused ? Icons.play_arrow : Icons.pause,
+                                  const Color(0xFF60A5FA),
+                                  () => cubit.toggleCamera()),
+                              _moreTile(
+                                  live.isPaused
+                                      ? Icons.play_arrow
+                                      : Icons.pause,
                                   live.isPaused ? 'Resume' : 'Pause',
                                   live.isPaused
                                       ? const Color(0xFF10B981)
@@ -1637,9 +1901,11 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                                     ? await cubit.resume()
                                     : await cubit.pause();
                                 if (err != null && mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                      content: Text(err),
-                                      backgroundColor: const Color(0xFFEF4444)));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(err),
+                                          backgroundColor:
+                                              const Color(0xFFEF4444)));
                                 }
                               }),
                               _moreTile(
@@ -1652,9 +1918,11 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                                       : const Color(0xFF9CA3AF), () async {
                                 final err = await cubit.toggleRecording();
                                 if (err != null && mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                      content: Text(err),
-                                      backgroundColor: const Color(0xFFEF4444)));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(err),
+                                          backgroundColor:
+                                              const Color(0xFFEF4444)));
                                 }
                               }),
                             ],
@@ -1671,7 +1939,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     );
   }
 
-  Widget _moreTile(IconData icon, String label, Color color, VoidCallback onTap) {
+  Widget _moreTile(
+      IconData icon, String label, Color color, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1703,7 +1972,9 @@ class _SprayRoomViewState extends State<_SprayRoomView>
       listener: (context, live) {
         if (live.error != null && live.error!.isNotEmpty && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(live.error!), backgroundColor: const Color(0xFFEF4444)),
+            SnackBar(
+                content: Text(live.error!),
+                backgroundColor: const Color(0xFFEF4444)),
           );
         }
       },
@@ -1716,19 +1987,26 @@ class _SprayRoomViewState extends State<_SprayRoomView>
             children: [
               if (live.isLiveActive)
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: live.isPaused ? const Color(0xFFFB923C) : const Color(0xFFEF4444),
+                    color: live.isPaused
+                        ? const Color(0xFFFB923C)
+                        : const Color(0xFFEF4444),
                     borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(live.isPaused ? Icons.pause : Icons.circle, size: 8.sp, color: Colors.white),
+                      Icon(live.isPaused ? Icons.pause : Icons.circle,
+                          size: 8.sp, color: Colors.white),
                       SizedBox(width: 6.w),
                       Text(
                         live.isPaused ? 'PAUSED' : 'LIVE',
-                        style: TextStyle(color: Colors.white, fontSize: 11.sp, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w700),
                       ),
                     ],
                   ),
@@ -1766,11 +2044,13 @@ class _SprayRoomViewState extends State<_SprayRoomView>
           ),
           TextButton(
             onPressed: () => cubit.declineCoHostInvite(),
-            child: const Text('Later', style: TextStyle(color: Color(0xFF9CA3AF))),
+            child:
+                const Text('Later', style: TextStyle(color: Color(0xFF9CA3AF))),
           ),
           TextButton(
             onPressed: () => cubit.acceptCoHostInvite(),
-            child: const Text('Join', style: TextStyle(color: Color(0xFF3B82F6))),
+            child:
+                const Text('Join', style: TextStyle(color: Color(0xFF3B82F6))),
           ),
         ],
       ),
@@ -1985,7 +2265,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                             '${p.userName.isNotEmpty ? p.userName : 'Guest'}  ·  box ${p.seatIndex + 1}',
                             p.avatarUrl,
                             trailing: TextButton(
-                              onPressed: () => roomCubit.removeFromSeat(p.userId),
+                              onPressed: () =>
+                                  roomCubit.removeFromSeat(p.userId),
                               child: const Text('Remove',
                                   style: TextStyle(color: Color(0xFFEF4444))),
                             ),
@@ -2047,7 +2328,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
           CircleAvatar(
             radius: 18.r,
             backgroundColor: const Color(0xFF2D2D2D),
-            backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+            backgroundImage:
+                avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
             child: avatarUrl.isEmpty
                 ? const Icon(Icons.person, color: Colors.white, size: 18)
                 : null,
@@ -2071,9 +2353,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     final roomCubit = context.read<SprayRoomCubit>();
     final liveCubit = context.read<SprayLiveCubit>();
     final hostId = roomCubit.state.session?.hostUserId ?? '';
-    final candidates = roomCubit.state.participants
-        .where((p) => p.userId != hostId)
-        .toList();
+    final candidates =
+        roomCubit.state.participants.where((p) => p.userId != hostId).toList();
 
     showModalBottomSheet(
       context: context,
@@ -2092,7 +2373,10 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                   const Icon(Icons.person_add_alt, color: Color(0xFFFFD700)),
                   SizedBox(width: 8.w),
                   Text('Invite a co-host',
-                      style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600)),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -2113,9 +2397,12 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                     return ListTile(
                       leading: CircleAvatar(
                         backgroundColor: const Color(0xFF2D2D2D),
-                        backgroundImage: p.avatarUrl.isNotEmpty ? NetworkImage(p.avatarUrl) : null,
+                        backgroundImage: p.avatarUrl.isNotEmpty
+                            ? NetworkImage(p.avatarUrl)
+                            : null,
                         child: p.avatarUrl.isEmpty
-                            ? const Icon(Icons.person, color: Colors.white, size: 18)
+                            ? const Icon(Icons.person,
+                                color: Colors.white, size: 18)
                             : null,
                       ),
                       title: Text(p.userName.isNotEmpty ? p.userName : 'Guest',
@@ -2127,17 +2414,22 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                           if (isCoHost) {
                             await liveCubit.revokeCoHost(p.userId);
                           } else {
-                            err = await liveCubit.inviteCoHost(userId: p.userId, userName: p.userName);
+                            err = await liveCubit.inviteCoHost(
+                                userId: p.userId, userName: p.userName);
                           }
                           if (err != null && mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(err), backgroundColor: const Color(0xFFEF4444)),
+                              SnackBar(
+                                  content: Text(err),
+                                  backgroundColor: const Color(0xFFEF4444)),
                             );
                           }
                         },
                         child: Text(isCoHost ? 'Remove' : 'Invite',
                             style: TextStyle(
-                                color: isCoHost ? const Color(0xFFEF4444) : const Color(0xFF3B82F6))),
+                                color: isCoHost
+                                    ? const Color(0xFFEF4444)
+                                    : const Color(0xFF3B82F6))),
                       ),
                     );
                   },
@@ -2156,7 +2448,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('End Session?', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('End Session?', style: TextStyle(color: Colors.white)),
         content: const Text(
           'This will end the spray session for all participants. This action cannot be undone.',
           style: TextStyle(color: Color(0xFF9CA3AF)),
@@ -2164,7 +2457,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF9CA3AF))),
+            child: const Text('Cancel',
+                style: TextStyle(color: Color(0xFF9CA3AF))),
           ),
           TextButton(
             onPressed: () async {
@@ -2177,7 +2471,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                 _showSessionEndedDialog();
               }
             },
-            child: const Text('End Session', style: TextStyle(color: Color(0xFFEF4444))),
+            child: const Text('End Session',
+                style: TextStyle(color: Color(0xFFEF4444))),
           ),
         ],
       ),
@@ -2205,7 +2500,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: const Color(0xFF1F1F1F).withValues(alpha: 0.8),
-                border: Border.all(color: effectiveColor.withValues(alpha: 0.5), width: 1.5),
+                border: Border.all(
+                    color: effectiveColor.withValues(alpha: 0.5), width: 1.5),
               ),
               child: Icon(icon, color: effectiveColor, size: 24.sp),
             ),
@@ -2245,7 +2541,6 @@ class _SprayRoomViewState extends State<_SprayRoomView>
       ),
     );
   }
-
 
   // ─── Spray Mode Indicator ───────────────────────────────────
 
@@ -2321,7 +2616,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     if (state.wallet == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Wallet not loaded. Please wait or check your connection.'),
+          content:
+              Text('Wallet not loaded. Please wait or check your connection.'),
           backgroundColor: Color(0xFFFB923C),
         ),
       );
@@ -2346,7 +2642,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
         onSendGift: (gift, quantity) {
           context.read<SprayRoomCubit>().sendGift(gift.id, quantity: quantity);
           // Trigger local animation immediately with category for sound
-          _triggerGiftAnimation(gift.emoji, gift.animationType, quantity, category: gift.category);
+          _triggerGiftAnimation(gift.emoji, gift.animationType, quantity,
+              category: gift.category);
           // Show entrance animation + name slide for each unit (3 seconds per gift)
           final localQty = quantity.clamp(1, 20);
           for (int i = 0; i < localQty; i++) {
@@ -2358,8 +2655,10 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                 emoji: gift.emoji,
                 nameColor: const Color(0xFFFFD700),
               );
-              if (gift.category == 'premium' || gift.category == 'luxury' ||
-                  gift.category == 'legendary' || gift.category == 'deluxe') {
+              if (gift.category == 'premium' ||
+                  gift.category == 'luxury' ||
+                  gift.category == 'legendary' ||
+                  gift.category == 'deluxe') {
                 _addEntranceAnimation(
                   emoji: gift.emoji,
                   giftName: gift.name,
@@ -2379,7 +2678,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     if (state.wallet == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Wallet not loaded. Please wait or check your connection.'),
+          content:
+              Text('Wallet not loaded. Please wait or check your connection.'),
           backgroundColor: Color(0xFFFB923C),
         ),
       );
@@ -2418,7 +2718,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     if (accountId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('No account found. Select an account on the home screen first.'),
+          content: Text(
+              'No account found. Select an account on the home screen first.'),
           backgroundColor: Color(0xFFFB923C),
         ),
       );
@@ -2428,7 +2729,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     double balanceMajor = 0;
     if (details != null) {
       final accNum = details.accountNumber;
-      final last4 = accNum.length >= 4 ? accNum.substring(accNum.length - 4) : accNum;
+      final last4 =
+          accNum.length >= 4 ? accNum.substring(accNum.length - 4) : accNum;
       display = '${details.accountType} •••• $last4';
       balanceMajor = details.balance / 100;
     }
@@ -2513,7 +2815,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
 
   String _formatAmount(double amount) {
     if (amount >= 1000000) return '${(amount / 1000000).toStringAsFixed(1)}M';
-    if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(amount % 1000 == 0 ? 0 : 1)}K';
+    if (amount >= 1000)
+      return '${(amount / 1000).toStringAsFixed(amount % 1000 == 0 ? 0 : 1)}K';
     return amount.toStringAsFixed(0);
   }
 

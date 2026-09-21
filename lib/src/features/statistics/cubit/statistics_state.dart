@@ -64,6 +64,56 @@ class StatisticsLoading extends StatisticsState {
   List<Object?> get props => [loadingMessage];
 }
 
+/// One LazerVault wallet the analytics can be scoped to.
+///
+/// A user holds several accounts per currency (personal, business, savings,
+/// family, campaign), so "my LazerVault spending" is a question about a SET of
+/// wallets, not one. Production carries 24 to 40 accounts per user.
+///
+/// Currency is part of the identity because wallets are only ever aggregated
+/// WITHIN one currency. Adding NGN 100 to USD 5 produces a number that means
+/// nothing, so the selector never offers wallets outside the active currency.
+class StatisticsWallet extends Equatable {
+  final String id;
+  final String name;
+  final String accountType;
+  final String currency;
+  final double balance;
+
+  /// Masked account number, e.g. "••••8300".
+  ///
+  /// Wallets can share a display name — several "Praiz Onah" wallets render as
+  /// identical-looking chips in the scope selector — so the name alone does not
+  /// tell the user which one they are scoping to. This is the part that does.
+  final String maskedAccountNumber;
+
+  const StatisticsWallet({
+    required this.id,
+    required this.name,
+    required this.accountType,
+    required this.currency,
+    this.balance = 0,
+    this.maskedAccountNumber = '',
+  });
+
+  /// "Savings", "Business" — the word a person uses for this wallet.
+  String get typeLabel {
+    final t = accountType.trim();
+    if (t.isEmpty) return 'Wallet';
+    return '${t[0].toUpperCase()}${t.substring(1).toLowerCase()}';
+  }
+
+  /// What identifies this wallet beneath its name: the masked number when we
+  /// have one, otherwise the type. Never empty, so the pill's second line does
+  /// not appear and disappear between wallets.
+  String get identifierLabel =>
+      maskedAccountNumber.trim().isEmpty ? typeLabel : maskedAccountNumber;
+
+  @override
+  List<Object?> get props =>
+      [id, name, accountType, currency, balance, maskedAccountNumber];
+}
+
 /// Loaded state with all statistics data
 class StatisticsLoaded extends StatisticsState {
   final DateTime startDate;
@@ -82,6 +132,13 @@ class StatisticsLoaded extends StatisticsState {
   // When external banks are in scope: empty = ALL linked banks (default),
   // otherwise the SUBSET of linked-account ids the numbers reflect (multi-select).
   final List<String> selectedBankAccountIds;
+  // Wallets the user can scope to, in the ACTIVE currency only (see
+  // StatisticsWallet). Empty until the list loads, or when the user holds one.
+  final List<StatisticsWallet> availableWallets;
+  // When LazerVault is in scope: empty = ALL wallets in the active currency
+  // (default), otherwise the SUBSET the numbers reflect (multi-select). Mirrors
+  // selectedBankAccountIds exactly so both sides use one selection mechanism.
+  final List<String> selectedWalletIds;
   // Honesty signal for the external leg (see ExternalDataStatus).
   final ExternalDataStatus externalStatus;
   // Human-readable reason when externalStatus == unavailable.
@@ -104,6 +161,8 @@ class StatisticsLoaded extends StatisticsState {
     this.includeExternalBanks = true,
     this.source = StatisticsSource.both,
     this.selectedBankAccountIds = const [],
+    this.availableWallets = const [],
+    this.selectedWalletIds = const [],
     this.externalStatus = ExternalDataStatus.notApplicable,
     this.externalError,
     this.isRefreshing = false,
@@ -122,6 +181,8 @@ class StatisticsLoaded extends StatisticsState {
         includeExternalBanks,
         source,
         selectedBankAccountIds,
+        availableWallets,
+        selectedWalletIds,
         externalStatus,
         externalError,
         isRefreshing,
@@ -140,6 +201,8 @@ class StatisticsLoaded extends StatisticsState {
     bool? includeExternalBanks,
     StatisticsSource? source,
     List<String>? selectedBankAccountIds,
+    List<StatisticsWallet>? availableWallets,
+    List<String>? selectedWalletIds,
     ExternalDataStatus? externalStatus,
     String? externalError,
     bool? isRefreshing,
@@ -155,7 +218,10 @@ class StatisticsLoaded extends StatisticsState {
       currentPeriod: currentPeriod ?? this.currentPeriod,
       includeExternalBanks: includeExternalBanks ?? this.includeExternalBanks,
       source: source ?? this.source,
-      selectedBankAccountIds: selectedBankAccountIds ?? this.selectedBankAccountIds,
+      selectedBankAccountIds:
+          selectedBankAccountIds ?? this.selectedBankAccountIds,
+      availableWallets: availableWallets ?? this.availableWallets,
+      selectedWalletIds: selectedWalletIds ?? this.selectedWalletIds,
       externalStatus: externalStatus ?? this.externalStatus,
       externalError: externalError ?? this.externalError,
       isRefreshing: isRefreshing ?? this.isRefreshing,

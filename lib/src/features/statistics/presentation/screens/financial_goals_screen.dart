@@ -16,7 +16,6 @@ import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 part 'financial_goals_screen_widgets.dart';
 
-
 /// Financial Goals Screen
 /// Track and manage financial goals like emergency fund, vacation, car purchase, etc.
 class FinancialGoalsScreen extends StatefulWidget {
@@ -53,7 +52,8 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
         ),
         title: const Text(
           'Financial Goals',
-          style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         actions: [
@@ -100,7 +100,8 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                   child: state.goals.isEmpty
                       ? _buildEmptyState()
                       : RefreshIndicator(
-                          onRefresh: () => context.read<BudgetCubit>().loadFinancialGoals(),
+                          onRefresh: () =>
+                              context.read<BudgetCubit>().loadFinancialGoals(),
                           color: InvoiceThemeColors.primaryPurple,
                           backgroundColor: const Color(0xFF1F1F1F),
                           child: ListView.builder(
@@ -110,7 +111,8 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                             itemBuilder: (context, index) {
                               return _GoalCard(
                                 goal: state.goals[index],
-                                onContribute: () => _contributeToGoal(state.goals[index]),
+                                onContribute: () =>
+                                    _contributeToGoal(state.goals[index]),
                               );
                             },
                           ),
@@ -136,7 +138,8 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
     required double totalSaved,
     required double totalTarget,
   }) {
-    final overallProgress = totalTarget > 0 ? (totalSaved / totalTarget * 100) : 0.0;
+    final overallProgress =
+        totalTarget > 0 ? (totalSaved / totalTarget * 100) : 0.0;
 
     return Container(
       margin: EdgeInsets.all(16.w),
@@ -164,7 +167,10 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
             children: [
               const Text(
                 'Overall Progress',
-                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
               ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
@@ -174,7 +180,10 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                 ),
                 child: Text(
                   '${overallProgress.toStringAsFixed(0)}%',
-                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -188,12 +197,17 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                   children: [
                     Text(
                       'Saved',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12.sp),
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 12.sp),
                     ),
                     SizedBox(height: 4.h),
                     Text(
                       CurrencySymbols.formatAmount(totalSaved),
-                      style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -204,12 +218,17 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                   children: [
                     Text(
                       'Target',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12.sp),
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 12.sp),
                     ),
                     SizedBox(height: 4.h),
                     Text(
                       CurrencySymbols.formatAmount(totalTarget),
-                      style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -244,10 +263,14 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                 width: 80.r,
                 height: 80.r,
                 decoration: BoxDecoration(
-                  color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
+                  color:
+                      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.flag, color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5), size: 40.r),
+                child: Icon(Icons.flag,
+                    color:
+                        InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5),
+                    size: 40.r),
               ),
               SizedBox(height: 16.h),
               Text(
@@ -267,7 +290,8 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: InvoiceThemeColors.primaryPurple,
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                 ),
               ),
             ],
@@ -336,7 +360,10 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                   ),
                   const Text(
                     'Create Financial Goal',
-                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 24.h),
                   TextField(
@@ -355,7 +382,8 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                   ),
                   SizedBox(height: 16.h),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF2D2D2D),
                       borderRadius: BorderRadius.circular(12.r),
@@ -364,9 +392,11 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                       child: DropdownButton<pb.GoalType>(
                         value: selectedType,
                         dropdownColor: const Color(0xFF2D2D2D),
-                        icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
+                        icon: const Icon(Icons.keyboard_arrow_down,
+                            color: Colors.white70),
                         isExpanded: true,
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 14),
                         items: [
                           pb.GoalType.GOAL_TYPE_EMERGENCY_FUND,
                           pb.GoalType.GOAL_TYPE_VACATION,
@@ -384,7 +414,8 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                           );
                         }).toList(),
                         onChanged: (value) {
-                          if (value != null) setSheetState(() => selectedType = value);
+                          if (value != null)
+                            setSheetState(() => selectedType = value);
                         },
                       ),
                     ),
@@ -431,31 +462,37 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                     child: ElevatedButton(
                       onPressed: () {
                         final name = nameController.text.trim();
-                        final target = double.tryParse(targetController.text.trim()) ?? 0;
-                        final monthly = double.tryParse(monthlyController.text.trim()) ?? 0;
+                        final target =
+                            double.tryParse(targetController.text.trim()) ?? 0;
+                        final monthly =
+                            double.tryParse(monthlyController.text.trim()) ?? 0;
 
                         if (name.isEmpty || target <= 0) {
-                          Get.snackbar('Error', 'Please enter a name and target amount',
+                          Get.snackbar(
+                              'Error', 'Please enter a name and target amount',
                               backgroundColor: const Color(0xFFEF4444));
                           return;
                         }
 
                         Get.back();
                         context.read<BudgetCubit>().createFinancialGoal(
-                          name: name,
-                          goalType: selectedType,
-                          targetAmount: target,
-                          monthlyContribution: monthly,
-                          currency: CurrencySymbols.currentCurrency,
-                        );
+                              name: name,
+                              goalType: selectedType,
+                              targetAmount: target,
+                              monthlyContribution: monthly,
+                              currency: CurrencySymbols.currentCurrency,
+                            );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: InvoiceThemeColors.primaryPurple,
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r)),
                       ),
-                      child: const Text('Create Goal', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: const Text('Create Goal',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -491,7 +528,10 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
             ),
             Text(
               'Add money to ${goal.name}',
-              style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8.h),
             Text(
@@ -521,7 +561,8 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  final amount = double.tryParse(amountController.text.trim()) ?? 0;
+                  final amount =
+                      double.tryParse(amountController.text.trim()) ?? 0;
                   if (amount <= 0) {
                     Get.snackbar('Error', 'Please enter a valid amount',
                         backgroundColor: const Color(0xFFEF4444));
@@ -534,9 +575,12 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                   backgroundColor: InvoiceThemeColors.primaryPurple,
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 14.h),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
                 ),
-                child: const Text('Add money', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: const Text('Add money',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
             if (goal.currentAmount > 0) ...[
@@ -545,7 +589,8 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                 width: double.infinity,
                 child: TextButton(
                   onPressed: () {
-                    final amount = double.tryParse(amountController.text.trim()) ?? 0;
+                    final amount =
+                        double.tryParse(amountController.text.trim()) ?? 0;
                     if (amount <= 0) {
                       Get.snackbar('Error', 'Enter the amount to withdraw',
                           backgroundColor: const Color(0xFFEF4444));

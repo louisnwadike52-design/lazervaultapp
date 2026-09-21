@@ -43,8 +43,7 @@ class CashFlowData {
   }
 
   /// Total days in the period.
-  int get totalDays =>
-      periodEnd.difference(periodStart).inDays.clamp(1, 366);
+  int get totalDays => periodEnd.difference(periodStart).inDays.clamp(1, 366);
 
   /// Days remaining in the period.
   int get daysRemaining => (totalDays - daysElapsed).clamp(0, 366);
@@ -158,7 +157,8 @@ class CashFlowInsightsCard extends StatelessWidget {
                 Expanded(
                   child: _MetricTile(
                     label: 'Net Cash Flow',
-                    value: '${data.netCashFlow >= 0 ? '+' : '-'}${CurrencySymbols.formatAmount(data.netCashFlow.abs())}',
+                    value:
+                        '${data.netCashFlow >= 0 ? '+' : '-'}${CurrencySymbols.formatAmount(data.netCashFlow.abs())}',
                     valueColor: netColor,
                   ),
                 ),
@@ -236,14 +236,14 @@ class CashFlowInsightsCard extends StatelessWidget {
       paceColor = const Color(0xFF3B82F6);
       paceIcon = Icons.horizontal_rule;
     } else if (isDown) {
-      paceText = 'Spending down ${change.abs().toStringAsFixed(0)}% vs last period';
+      paceText =
+          'Spending down ${change.abs().toStringAsFixed(0)}% vs last period';
       paceColor = const Color(0xFF10B981);
       paceIcon = Icons.trending_down;
     } else {
       paceText = 'Spending up ${change.toStringAsFixed(0)}% vs last period';
-      paceColor = change > 15
-          ? const Color(0xFFEF4444)
-          : const Color(0xFFFB923C);
+      paceColor =
+          change > 15 ? const Color(0xFFEF4444) : const Color(0xFFFB923C);
       paceIcon = Icons.trending_up;
     }
 
@@ -272,7 +272,8 @@ class CashFlowInsightsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryBar(({String name, double amount, double percentage}) category) {
+  Widget _buildCategoryBar(
+      ({String name, double amount, double percentage}) category) {
     return Padding(
       padding: EdgeInsets.only(bottom: 6.h),
       child: Column(
@@ -308,7 +309,8 @@ class CashFlowInsightsCard extends StatelessWidget {
               value: (category.percentage / 100).clamp(0.0, 1.0),
               minHeight: 4.h,
               backgroundColor: Colors.white.withValues(alpha: 0.05),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
             ),
           ),
         ],

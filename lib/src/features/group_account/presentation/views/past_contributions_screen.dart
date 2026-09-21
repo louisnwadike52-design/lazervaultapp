@@ -24,7 +24,8 @@ class PastContributionsScreen extends StatefulWidget {
   const PastContributionsScreen({super.key});
 
   @override
-  State<PastContributionsScreen> createState() => _PastContributionsScreenState();
+  State<PastContributionsScreen> createState() =>
+      _PastContributionsScreenState();
 }
 
 class _PastContributionsScreenState extends State<PastContributionsScreen>
@@ -78,8 +79,7 @@ class _PastContributionsScreenState extends State<PastContributionsScreen>
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(12.r),
-                border:
-                    Border.all(color: const Color(0xFF2D2D2D), width: 1),
+                border: Border.all(color: const Color(0xFF2D2D2D), width: 1),
               ),
               child: TabBar(
                 controller: _tab,
@@ -127,8 +127,7 @@ class _PastContributionsList extends StatefulWidget {
   const _PastContributionsList({required this.filter});
 
   @override
-  State<_PastContributionsList> createState() =>
-      _PastContributionsListState();
+  State<_PastContributionsList> createState() => _PastContributionsListState();
 }
 
 class _PastContributionsListState extends State<_PastContributionsList>
@@ -171,9 +170,8 @@ class _PastContributionsListState extends State<_PastContributionsList>
 
   void _load() {
     final auth = context.read<AuthenticationCubit>().state;
-    final token = auth is AuthenticationSuccess
-        ? auth.profile.session.accessToken
-        : null;
+    final token =
+        auth is AuthenticationSuccess ? auth.profile.session.accessToken : null;
     context.read<GroupAccountCubit>().loadPastContributions(
           filter: widget.filter,
           accessToken: token,
@@ -208,25 +206,24 @@ class _PastContributionsListState extends State<_PastContributionsList>
           b is PastContributionsLoaded ||
           b is PastContributionsError,
       builder: (context, state) {
-        if (state is PastContributionsLoaded &&
-            state.filter == widget.filter) {
+        if (state is PastContributionsLoaded && state.filter == widget.filter) {
           // Refresh the local cache. Saved on the State so the next
           // rebuild against a sibling-tab state still has data to
           // render — no flicker when the other tab loads.
-          _lastGood =
-              state.entries.cast<PastContributionEntry>().toList();
+          _lastGood = state.entries.cast<PastContributionEntry>().toList();
           _lastGoodEmpty = _lastGood!.isEmpty;
           return _renderList(_lastGood!);
         }
-        if (state is PastContributionsError &&
-            (_lastGood == null)) {
+        if (state is PastContributionsError && (_lastGood == null)) {
           // Only surface the full error view when we don't already
           // have data on screen. If we DO have a cached list, keep
           // showing it and let pull-to-refresh / Retry recover.
-          return _ErrorView(message: state.message, onRetry: () {
-            _kickedOff = true;
-            _load();
-          });
+          return _ErrorView(
+              message: state.message,
+              onRetry: () {
+                _kickedOff = true;
+                _load();
+              });
         }
         // Sibling-tab state OR fresh Loading. If we have cached data,
         // keep rendering it — that's what kills the cross-tab flicker.
@@ -336,8 +333,7 @@ class _PastContributionCard extends StatelessWidget {
                   ),
                 if (entry.removedAtCycleIndex == 0)
                   StatusPill(
-                    text:
-                        entry.selfExit ? 'Left' : 'Removed',
+                    text: entry.selfExit ? 'Left' : 'Removed',
                     color: const Color(0xFF4E03D0),
                     icon: entry.selfExit
                         ? Icons.logout

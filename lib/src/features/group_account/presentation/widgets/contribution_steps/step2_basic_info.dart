@@ -70,7 +70,8 @@ class _Step2BasicInfoState extends State<Step2BasicInfo> {
               SizedBox(height: 32.h),
 
               // Title Field
-              _buildSectionLabel('Title *', '${_titleController.text.length}/100'),
+              _buildSectionLabel(
+                  'Title *', '${_titleController.text.length}/100'),
               SizedBox(height: 8.h),
               _buildTextField(
                 controller: _titleController,
@@ -140,7 +141,8 @@ class _Step2BasicInfoState extends State<Step2BasicInfo> {
               _buildSectionLabel('Target Date *', null),
               SizedBox(height: 8.h),
               _buildDatePicker(
-                selectedDate: formState?.deadline ?? DateTime.now().add(const Duration(days: 30)),
+                selectedDate: formState?.deadline ??
+                    DateTime.now().add(const Duration(days: 30)),
                 onDateSelected: (date) => cubit.updateDeadline(date),
               ),
               SizedBox(height: 40.h),

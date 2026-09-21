@@ -49,6 +49,23 @@ class AIChatCubit extends Cubit<AIChatState> {
     return decoded is Map ? Map<String, dynamic>.from(decoded) : null;
   }
 
+  /// Decode the `_recipient_card` passthrough — same channel and the same
+  /// removal discipline as [_decodeQrCard], so the raw payload never leaks
+  /// into the displayed entities.
+  Map<String, dynamic>? _decodeRecipientCard(Map<String, String>? entitiesMap) {
+    if (entitiesMap == null || !entitiesMap.containsKey('_recipient_card')) {
+      return null;
+    }
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(entitiesMap['_recipient_card']!);
+    } catch (_) {
+      decoded = null;
+    }
+    entitiesMap.remove('_recipient_card');
+    return decoded is Map ? Map<String, dynamic>.from(decoded) : null;
+  }
+
   // Internal state to hold the current messages
   List<ChatMessageEntity> _currentMessages = [];
 
@@ -327,6 +344,7 @@ class AIChatCubit extends Cubit<AIChatState> {
           // ChatReceiptCardV2 / ChatReceiptCardV2List so batch receipts render.
           final dynamic receiptCard = _decodeReceiptCard(entitiesMap);
           final qrCard = _decodeQrCard(entitiesMap);
+          final recipientCard = _decodeRecipientCard(entitiesMap);
 
           final aiMessageEntity = ChatMessageEntity(
             text: response.response,
@@ -343,6 +361,7 @@ class AIChatCubit extends Cubit<AIChatState> {
             receiptData: receiptData,
             receiptCard: receiptCard,
             qrCard: qrCard,
+            recipientCard: recipientCard,
             pinPrompt: pinPrompt,
           );
           _currentMessages.add(aiMessageEntity);
@@ -422,6 +441,7 @@ class AIChatCubit extends Cubit<AIChatState> {
         }
         final dynamic receiptCard = _decodeReceiptCard(entitiesMap);
         final qrCard = _decodeQrCard(entitiesMap);
+        final recipientCard = _decodeRecipientCard(entitiesMap);
         _currentMessages.add(ChatMessageEntity(
           text: response.response,
           isUser: false,
@@ -433,6 +453,7 @@ class AIChatCubit extends Cubit<AIChatState> {
           receiptData: receiptData,
           receiptCard: receiptCard,
           qrCard: qrCard,
+          recipientCard: recipientCard,
           pinPrompt: pinPrompt,
         ));
         emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));

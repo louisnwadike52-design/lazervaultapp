@@ -104,9 +104,25 @@ class PaySplitBillResult {
   final String message;
   final SplitBillEntity updatedBill;
 
+  /// The transaction's OWN status as the server reported it
+  /// (`SplitBillTransaction.status`: pending | completed | failed).
+  ///
+  /// This used to be dropped on the floor. A payer whose transfer was rejected
+  /// by the bank still got a "share paid" result and a receipt, because the
+  /// only thing checked was the envelope's `success` flag — which is true for
+  /// "we accepted and attempted your payment", not for "the money arrived".
+  final String transactionStatus;
+
   const PaySplitBillResult({
     required this.transactionReference,
     required this.message,
     required this.updatedBill,
+    this.transactionStatus = '',
   });
+
+  /// True when the server has already told us this attempt failed.
+  bool get didFail {
+    final s = transactionStatus.trim().toLowerCase();
+    return s == 'failed' || s == 'failure' || s == 'reversed';
+  }
 }

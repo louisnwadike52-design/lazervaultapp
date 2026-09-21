@@ -40,7 +40,7 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
   Future<void> _confirm() async {
     final major = double.tryParse(_amount.text.trim());
     if (major == null || major <= 0) {
-      Get.snackbar('Enter an amount', 'Type the amount to commit to escrow',
+      Get.snackbar('Enter an amount', 'Type the amount to commit to the fund pool',
           backgroundColor: kUpError,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM);
@@ -66,7 +66,7 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
         transactionType: 'uplift_pool_commit',
         amount: major,
         currency: widget.fund.currency,
-        title: 'Commit to escrow',
+        title: 'Commit to pool',
         onPinValidated: (verificationToken) async {
           await _repo.commitPool(
             fundId: widget.fund.id,
@@ -77,7 +77,7 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
           );
           Get.back(result: true);
           Get.snackbar('Committed',
-              '${upNaira(amountKobo, widget.fund.currency)} moved to escrow',
+              '${upNaira(amountKobo, widget.fund.currency)} moved into the fund pool',
               backgroundColor: kUpCard,
               colorText: Colors.white,
               snackPosition: SnackPosition.BOTTOM);
@@ -120,7 +120,7 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
                             fontWeight: FontWeight.w800)),
                     const SizedBox(height: 4),
                     Text(
-                        'Escrow available: ${upNaira(widget.fund.escrowAvailable.toInt(), widget.fund.currency)}',
+                        'Pool available: ${upNaira(widget.fund.escrowAvailable.toInt(), widget.fund.currency)}',
                         style: const TextStyle(
                             color: Colors.white70, fontSize: 12)),
                   ]),
@@ -183,7 +183,7 @@ class _UpliftCommitScreenState extends State<UpliftCommitScreen>
             ),
             const SizedBox(height: 10),
             const Text(
-                'Funds are held in escrow and released to businesses per approved milestone.',
+                'Funds are held in the fund pool and released to businesses per approved milestone.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: kUpTextSecondary, fontSize: 12)),
           ],

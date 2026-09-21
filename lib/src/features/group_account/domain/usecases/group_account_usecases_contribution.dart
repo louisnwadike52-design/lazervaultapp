@@ -23,7 +23,8 @@ class GetContributionById extends UseCase<Contribution, String> {
   }
 }
 
-class CreateContribution extends UseCase<Contribution, CreateContributionParams> {
+class CreateContribution
+    extends UseCase<Contribution, CreateContributionParams> {
   final GroupAccountRepository repository;
 
   CreateContribution(this.repository);
@@ -79,7 +80,8 @@ class DeleteContribution extends UseCase<void, String> {
 }
 
 // Contribution Member Use Cases
-class AddMembersToContribution extends UseCase<List<ContributionMember>, AddMembersToContributionParams> {
+class AddMembersToContribution
+    extends UseCase<List<ContributionMember>, AddMembersToContributionParams> {
   final GroupAccountRepository repository;
 
   AddMembersToContribution(this.repository);
@@ -150,7 +152,8 @@ class PreviewMemberExit
 }
 
 // Payment Use Cases
-class GetContributionPayments extends UseCase<List<ContributionPayment>, String> {
+class GetContributionPayments
+    extends UseCase<List<ContributionPayment>, String> {
   final GroupAccountRepository repository;
 
   GetContributionPayments(this.repository);
@@ -161,7 +164,8 @@ class GetContributionPayments extends UseCase<List<ContributionPayment>, String>
   }
 }
 
-class MakeContributionPayment extends UseCase<ContributionPayment, MakePaymentParams> {
+class MakeContributionPayment
+    extends UseCase<ContributionPayment, MakePaymentParams> {
   final GroupAccountRepository repository;
 
   MakeContributionPayment(this.repository);
@@ -183,7 +187,8 @@ class MakeContributionPayment extends UseCase<ContributionPayment, MakePaymentPa
   }
 }
 
-class UpdatePaymentStatus extends UseCase<ContributionPayment, UpdatePaymentStatusParams> {
+class UpdatePaymentStatus
+    extends UseCase<ContributionPayment, UpdatePaymentStatusParams> {
   final GroupAccountRepository repository;
 
   UpdatePaymentStatus(this.repository);
@@ -222,7 +227,8 @@ class GetUserReceipts extends UseCase<List<ContributionReceipt>, String> {
 }
 
 // Transcript Use Cases
-class GenerateContributionTranscript extends UseCase<ContributionTranscript, String> {
+class GenerateContributionTranscript
+    extends UseCase<ContributionTranscript, String> {
   final GroupAccountRepository repository;
 
   GenerateContributionTranscript(this.repository);
@@ -254,6 +260,7 @@ class CreateContributionParams {
   final double? minimumBalance;
   final bool autoPayoutEnabled;
   final Map<String, dynamic>? metadata;
+
   /// Who receives the pot at maturity. one_time only — a rotating
   /// contribution's receiver comes from memberRotationOrder[0].
   final String? payoutReceiverUserId;
@@ -393,8 +400,7 @@ class GetContributionCycleDetails extends UseCase<ContributionCycleDetails,
   GetContributionCycleDetails(this.repository);
 
   @override
-  Future<ContributionCycleDetails> call(
-      GetContributionCycleDetailsParams p) {
+  Future<ContributionCycleDetails> call(GetContributionCycleDetailsParams p) {
     return repository.getContributionCycleDetails(
       contributionId: p.contributionId,
       cycleIndex: p.cycleIndex,
@@ -416,7 +422,8 @@ class RestartContributionParams {
   });
 }
 
-class RestartContribution extends UseCase<Contribution, RestartContributionParams> {
+class RestartContribution
+    extends UseCase<Contribution, RestartContributionParams> {
   final GroupAccountRepository repository;
   RestartContribution(this.repository);
 

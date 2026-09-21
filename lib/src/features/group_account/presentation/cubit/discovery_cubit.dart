@@ -75,7 +75,8 @@ class DiscoveryCubit extends Cubit<DiscoveryState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(DiscoveryError('Failed to load trending crowdfunds: ${e.toString()}'));
+      emit(DiscoveryError(
+          'Failed to load trending crowdfunds: ${e.toString()}'));
     }
   }
 

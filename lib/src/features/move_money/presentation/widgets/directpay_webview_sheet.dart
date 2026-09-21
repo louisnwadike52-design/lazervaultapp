@@ -162,7 +162,8 @@ class _DirectPayWebViewSheetState extends State<_DirectPayWebViewSheet> {
             ),
             child: Row(
               children: [
-                Icon(Icons.lock_outline, color: const Color(0xFF3B82F6), size: 20.sp),
+                Icon(Icons.lock_outline,
+                    color: const Color(0xFF3B82F6), size: 20.sp),
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
@@ -208,7 +209,8 @@ class _DirectPayWebViewSheetState extends State<_DirectPayWebViewSheet> {
               color: const Color(0xFFFB923C).withValues(alpha: 0.15),
               child: Row(
                 children: [
-                  Icon(Icons.timer_off, color: const Color(0xFFFB923C), size: 16.sp),
+                  Icon(Icons.timer_off,
+                      color: const Color(0xFFFB923C), size: 16.sp),
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(

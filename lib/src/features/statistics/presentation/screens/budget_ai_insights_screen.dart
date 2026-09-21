@@ -12,8 +12,9 @@ import 'package:lazervault/src/features/statistics/data/budget_repository.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as stats_pb;
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import '../../utils/transaction_category_labels.dart';
+import '../../utils/analytics_theme.dart';
 part 'budget_ai_insights_screen_widgets.dart';
-
 
 /// Budget AI Insights Screen
 class BudgetAIInsightsScreen extends StatefulWidget {
@@ -29,6 +30,17 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
   // instead of asking the AI to reason over nothing — which returned sparse,
   // generic text that read as "broken".
   bool _noData = false;
+
+  /// The last insights we actually received.
+  ///
+  /// This screen renders off the SHARED BudgetCubit, whose state moves on for
+  /// reasons that have nothing to do with insights: applying an allocation
+  /// emits BudgetCreated and then BudgetsLoaded. Neither matches an insights
+  /// branch, so the builder fell through to its loading fallback and the screen
+  /// sat on a spinner that read as "it is running a new analysis". Holding the
+  /// result here keeps the analysis on screen no matter what else the cubit is
+  /// doing.
+  BudgetAIInsightsData? _lastInsights;
 
   @override
   void initState() {
@@ -67,29 +79,37 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
     }
     final statsState = statisticsCubit.state;
 
-    if (statsState is StatisticsLoaded && statsState.financialAnalytics != null) {
+    if (statsState is StatisticsLoaded &&
+        statsState.financialAnalytics != null) {
       final analytics = statsState.financialAnalytics!;
       if (analytics.hasCurrentPeriod()) {
         monthlyIncome = analytics.currentPeriod.totalIncome;
       }
     }
 
-    if (statsState is StatisticsLoaded && statsState.categoryAnalytics != null) {
+    if (statsState is StatisticsLoaded &&
+        statsState.categoryAnalytics != null) {
       final catAnalytics = statsState.categoryAnalytics!;
       final totalExpenses = catAnalytics.totalExpenses;
       for (final cat in catAnalytics.expenseCategories) {
         // Include sub-category breakdowns so AI can give granular advice
-        final subCats = cat.subCategories.map((sub) => {
-          'name': sub.name,
-          'amount': sub.amount,
-          'transaction_count': sub.transactionCount,
-          'percentage': cat.amount > 0 ? (sub.amount / cat.amount * 100).round() : 0,
-        }).toList();
+        final subCats = cat.subCategories
+            .map((sub) => {
+                  'name': sub.name,
+                  'amount': sub.amount,
+                  'transaction_count': sub.transactionCount,
+                  'percentage': cat.amount > 0
+                      ? (sub.amount / cat.amount * 100).round()
+                      : 0,
+                })
+            .toList();
 
         spendingData.add({
           'category': cat.categoryName,
           'amount': cat.amount,
-          'percentage': totalExpenses > 0 ? (cat.amount / totalExpenses * 100).round() : 0,
+          'percentage': totalExpenses > 0
+              ? (cat.amount / totalExpenses * 100).round()
+              : 0,
           'transaction_count': cat.transactionCount,
           if (subCats.isNotEmpty) 'sub_categories': subCats,
         });
@@ -103,7 +123,8 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
       for (final budget in budgetState.budgets) {
         activeBudgets.add({
           'name': budget.name,
-          'category': budget.category.name,
+          'category':
+              TransactionCategoryLabels.humaniseEnumName(budget.category.name),
           'budget_amount': budget.amount,
           'spent_amount': budget.spentAmount,
           'remaining': budget.amount - budget.spentAmount,
@@ -134,7 +155,8 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
       for (final goal in goalsResponse.goalsList.goals) {
         financialGoals.add({
           'name': goal.name,
-          'goal_type': goal.goalType.name,
+          'goal_type':
+              TransactionCategoryLabels.humaniseEnumName(goal.goalType.name),
           'target_amount': goal.targetAmount,
           'current_amount': goal.currentAmount,
           'monthly_contribution': goal.monthlyContribution,
@@ -160,7 +182,8 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
       for (final alert in alertsResponse.alerts) {
         budgetAlerts.add({
           'budget_name': alert.budgetName,
-          'alert_type': alert.alertType.name,
+          'alert_type':
+              TransactionCategoryLabels.humaniseEnumName(alert.alertType.name),
           'message': alert.message,
           'current_spent': alert.currentSpent,
           'budget_limit': alert.budgetLimit,
@@ -180,14 +203,27 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
     // fabricated placeholder. The AI prompt + insights UI handle the
     // no-data case. spendingData stays empty when there's genuinely none.
 
-    // Extract failed/reversed transactions for AI analysis
+    // Extract failed/reversed transactions for AI analysis.
+    //
+    // These are the only RAW ledger rows on the analytics path: everything else
+    // arrives already mapped through the backend's closed category vocabulary.
+    // Two fields had to stop being sent.
+    //
+    // `reference` is an internal settlement id ("HOLD-CAP-<uuid>",
+    // "INS-PAY-HOLD-<uuid>"). It tells the model nothing about the person's
+    // money, and the prompt asks the model to explain these rows, so it was
+    // being invited to read an internal identifier back to the user.
+    //
+    // `category` is the raw column, so values like `hold_capture` and
+    // `lock_funds` described the plumbing rather than the activity. It now goes
+    // through the same vocabulary every other surface uses.
     List<Map<String, dynamic>> failedTransactions = [];
-    if (statsState is StatisticsLoaded && statsState.failedTransactions != null) {
+    if (statsState is StatisticsLoaded &&
+        statsState.failedTransactions != null) {
       for (final tx in statsState.failedTransactions!.transactions) {
         failedTransactions.add({
-          'reference': tx.reference,
           'amount': tx.amount,
-          'category': tx.category,
+          'category': TransactionCategoryLabels.displayLabel(tx.category),
           'description': tx.description,
           'status': tx.status,
           'date': tx.createdAt,
@@ -206,8 +242,8 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
     final dataSources = <String, dynamic>{'wallet': includesWallet};
     if (statsState is StatisticsLoaded) {
       final includesExternal = statsState.source != StatisticsSource.lazervault;
-      dataSources['linked_banks'] =
-          includesExternal && statsState.externalStatus == ExternalDataStatus.ready;
+      dataSources['linked_banks'] = includesExternal &&
+          statsState.externalStatus == ExternalDataStatus.ready;
       dataSources['linked_banks_status'] = includesExternal
           ? statsState.externalStatus.name // ready | empty | unavailable | ...
           : 'not_included';
@@ -233,19 +269,19 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
     }
 
     context.read<BudgetCubit>().loadAIInsights(
-      monthlyIncome: monthlyIncome,
-      spendingData: spendingData,
-      activeBudgets: activeBudgets,
-      goals: goalNames,
-      riskTolerance: 'moderate',
-      currency: CurrencySymbols.currentCurrency,
-      monthsOfData: 3,
-      financialGoals: financialGoals,
-      upcomingBills: upcomingBills,
-      budgetAlerts: budgetAlerts,
-      failedTransactions: failedTransactions,
-      dataSources: dataSources,
-    );
+          monthlyIncome: monthlyIncome,
+          spendingData: spendingData,
+          activeBudgets: activeBudgets,
+          goals: goalNames,
+          riskTolerance: 'moderate',
+          currency: CurrencySymbols.currentCurrency,
+          monthsOfData: 3,
+          financialGoals: financialGoals,
+          upcomingBills: upcomingBills,
+          budgetAlerts: budgetAlerts,
+          failedTransactions: failedTransactions,
+          dataSources: dataSources,
+        );
   }
 
   @override
@@ -261,7 +297,8 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
         ),
         title: const Text(
           'AI Analytics Insights',
-          style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -286,6 +323,7 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
           }
 
           if (state is BudgetAIInsightsLoaded) {
+            _lastInsights = state.insights;
             return _InsightsView(insights: state.insights);
           }
 
@@ -295,6 +333,12 @@ class _BudgetAIInsightsScreenState extends State<BudgetAIInsightsScreen> {
               onRetry: _loadInsights,
             );
           }
+
+          // Some other BudgetCubit state (BudgetCreated, BudgetsLoaded, …).
+          // If we already have an analysis, keep showing it rather than
+          // replacing real content with a spinner that never resolves.
+          final cached = _lastInsights;
+          if (cached != null) return _InsightsView(insights: cached);
 
           return const _LoadingView();
         },

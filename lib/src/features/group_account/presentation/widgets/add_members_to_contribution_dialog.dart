@@ -42,6 +42,7 @@ class _AddMembersToContributionDialogState
   // Existing group members tab
   List<GroupMember> _groupMembers = [];
   Set<String> _selectedMemberIds = {};
+
   /// Names dropped by the validity filter in the last submit, so the failure
   /// message can name them instead of blaming "invalid user IDs".
   final List<String> _skippedPartial = [];
@@ -197,10 +198,8 @@ class _AddMembersToContributionDialogState
         ?.where((c) => c.id == widget.contribution.id)
         .firstOrNull;
     final source = live?.members ?? widget.contribution.members;
-    _existingMemberUserIds = source
-        .map((m) => m.userId)
-        .where((id) => id.isNotEmpty)
-        .toSet();
+    _existingMemberUserIds =
+        source.map((m) => m.userId).where((id) => id.isNotEmpty).toSet();
   }
 
   void _showError(String message) {
@@ -579,17 +578,15 @@ class _AddMembersToContributionDialogState
             if (!hasUserId) {
               debugPrint(
                   '🟡 AddMembers: Skipping ${m.userName} — no resolvable user id');
-              _skippedPartial.add(m.userName.trim().isEmpty
-                  ? 'A selected member'
-                  : m.userName);
+              _skippedPartial.add(
+                  m.userName.trim().isEmpty ? 'A selected member' : m.userName);
               return false;
             }
             if (m.isPartial) {
               debugPrint(
                   '🟡 AddMembers: Skipping ${m.userName} — account not completed');
-              _skippedPartial.add(m.userName.trim().isEmpty
-                  ? 'A selected member'
-                  : m.userName);
+              _skippedPartial.add(
+                  m.userName.trim().isEmpty ? 'A selected member' : m.userName);
               return false;
             }
             return true;
@@ -939,9 +936,8 @@ class _AddMembersToContributionDialogState
                 width: 20.w,
                 height: 20.w,
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? PayFlowTheme.accentCta
-                      : Colors.transparent,
+                  color:
+                      isSelected ? PayFlowTheme.accentCta : Colors.transparent,
                   border: Border.all(
                     color: isSelected
                         ? PayFlowTheme.accentOnDark
@@ -1401,8 +1397,7 @@ class _AddMembersToContributionDialogState
           children: [
             CircleAvatar(
               radius: 18.r,
-              backgroundColor:
-                  PayFlowTheme.accentOnDark.withValues(alpha: 0.2),
+              backgroundColor: PayFlowTheme.accentOnDark.withValues(alpha: 0.2),
               backgroundImage: user.profilePicture.isNotEmpty
                   ? NetworkImage(user.profilePicture)
                   : null,

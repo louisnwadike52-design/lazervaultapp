@@ -167,20 +167,28 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
             : 'debit';
       }
 
+      // The service-type filter reaches the backend as EITHER a category or a
+      // service name. Resolve both up front, because whether either resolved
+      // decides if the filter can be enforced server-side at all — see the
+      // local fallback after the response.
+      final hasServiceFilter = filters?.serviceTypes?.isNotEmpty == true;
+      final categoryFilter = hasServiceFilter
+          ? _mapServiceTypeToCategory(filters!.serviceTypes!.first)
+          : null;
+      final serviceNameFilter = hasServiceFilter
+          ? _mapServiceTypeToServiceName(filters!.serviceTypes!.first)
+          : null;
+
       // Fetch from gRPC server
       final response = await grpcClient.getTransactionHistory(
         accountId: accountId,
         locale: localeManager.currentLocale,
         type: typeFilter,
-        category: filters?.serviceTypes?.isNotEmpty == true
-            ? _mapServiceTypeToCategory(filters!.serviceTypes!.first)
-            : null,
+        category: categoryFilter,
         status: filters?.statuses?.isNotEmpty == true
             ? _mapStatusToString(filters!.statuses!.first)
             : null,
-        serviceName: filters?.serviceTypes?.isNotEmpty == true
-            ? _mapServiceTypeToServiceName(filters!.serviceTypes!.first)
-            : null,
+        serviceName: serviceNameFilter,
         counterpartyAccount: filters?.counterpartyAccount,
         startDate: filters?.startDate,
         endDate: filters?.endDate,
@@ -190,6 +198,26 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
 
       // Convert proto transactions to unified transactions
       var transactions = response.transactions.map(_convertFromProto).toList();
+
+      // ENFORCE THE SERVICE FILTER LOCALLY when neither a category nor a
+      // service name could be derived for the selected type.
+      //
+      // The Category sheet renders a chip for EVERY TransactionServiceType, but
+      // 23 of the 41 (escrow, lazerfunds, group funds, contributions, split
+      // bill, PayID, payroll, exchange, fee, …) map to neither filter, so the
+      // request went out unfiltered and the backend returned everything. The
+      // chip looked selected and the list did not change — worse than an empty
+      // result, because nothing tells the user the filter did not apply.
+      //
+      // Every row already carries a resolved `serviceType`, so filtering here
+      // is exact. Pages can come back thinner than `limit` (the offset still
+      // walks the unfiltered set); a short page of correct rows beats a full
+      // page of wrong ones, and paging still advances normally.
+      if (hasServiceFilter && categoryFilter == null && serviceNameFilter == null) {
+        final wanted = filters!.serviceTypes!.toSet();
+        transactions =
+            transactions.where((tx) => wanted.contains(tx.serviceType)).toList();
+      }
 
       // MERGE core-payments EXTERNAL transfers (pending / processing / failed /
       // reversed too). A failed or still-pending external transfer never reaches
@@ -945,9 +973,23 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     // (HOLD-CAP-{holdID}, IDEM-…) — the internal one means nothing to the
     // user and doesn't match the receipt/provider trail.
     final metaReference = metadata['reference'] as String?;
+    // Fall back to the ledger reference ONLY when it is a real, quotable one.
+    // Internal bookkeeping references are DERIVED, not issued: accounts-service
+    // builds them as "IDEM-DR-{idempotency key}", and a caller that already
+    // namespaces its key (group-accounts sends "IDEM-DR-{txid}") yields
+    // "IDEM-DR-IDEM-DR-{txid}". That string was reaching contribution receipts
+    // verbatim and reads as corruption. Showing NOTHING beats showing an
+    // internal key the user cannot quote to support and that matches no
+    // provider trail — which is what the comment above always intended.
+    // Deliberately display-only: the STORED reference is untouched, because
+    // changing how it is derived would break idempotency on retries.
+    final ledgerRef = protoTx.reference;
+    final isInternalRef = ledgerRef.startsWith('IDEM-') ||
+        ledgerRef.startsWith('HOLD-CAP-') ||
+        ledgerRef.startsWith('HOLD-REL-');
     final displayReference = (metaReference != null && metaReference.isNotEmpty)
         ? metaReference
-        : (protoTx.reference.isNotEmpty ? protoTx.reference : null);
+        : (ledgerRef.isNotEmpty && !isInternalRef ? ledgerRef : null);
 
     return UnifiedTransaction(
       id: protoTx.id,

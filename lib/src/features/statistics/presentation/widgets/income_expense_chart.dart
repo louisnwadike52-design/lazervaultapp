@@ -77,8 +77,10 @@ class IncomeExpenseChart extends StatelessWidget {
 
   Widget _buildBarChart() {
     final maxValue = income > expenses ? income : expenses;
-    final incomePercentage = (maxValue > 0 ? (income / maxValue) : 0).toDouble();
-    final expensePercentage = (maxValue > 0 ? (expenses / maxValue) : 0).toDouble();
+    final incomePercentage =
+        (maxValue > 0 ? (income / maxValue) : 0).toDouble();
+    final expensePercentage =
+        (maxValue > 0 ? (expenses / maxValue) : 0).toDouble();
 
     return Column(
       children: [

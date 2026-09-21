@@ -1,4 +1,5 @@
 import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_guide_card.dart';
+import 'package:lazervault/src/features/uplift/presentation/widgets/uplift_guide_sheet.dart';
 import 'package:lazervault/src/features/uplift/data/services/uplift_guide_preference.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -86,23 +87,21 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text(
-            "Guides hidden. Turn them back on in Settings, or tap the help icon."),
+            "Guides hidden. Tap the help icon any time for the full walkthrough."),
         backgroundColor: kUpPrimary,
         behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
-  /// The help icon: show this tab's explanation now.
+  /// Re-reads every list after the user creates or edits a fund.
   ///
-  /// Deliberately independent of the "don't show again" choice — that choice is
-  /// about UNPROMPTED appearances, not about being refused help when it is
-  /// asked for.
-  Future<void> _replayGuide(String tab) async {
-    await UpliftGuidePreference.replay(tab);
-    if (!mounted) return;
-    setState(() => _showGuide[tab] = true);
-  }
+  /// A new fund is created OPEN, so it belongs in Discover as well as My Funds —
+  /// `refreshMine()` alone left the landing tab stale until a manual pull, which
+  /// reads as "my fund did not save". Deliberately does NOT raise the loading
+  /// flag: the lists are already on screen, and a full-screen spinner between
+  /// two nearly identical states is a flash, not feedback.
+  Future<void> _refreshAfterFundChange() => _cubit.refreshAfterFundChange();
 
   /// Builds the card for a tab, or nothing when it is not due.
   Widget _guideFor(String tab) {
@@ -120,6 +119,7 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
     _cubit.close();
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -142,16 +142,17 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
               // Persistent way back to the explanation. Always present — the
               // moment someone needs it is exactly the moment they have
               // already dismissed it.
-              Builder(
-                builder: (ctx) => IconButton(
-                  tooltip: 'How Lazerfunds works',
-                  icon:
-                      Icon(Icons.help_outline, color: kUpPrimary, size: 20.sp),
-                  onPressed: () => _replayGuide(
-                    UpliftGuidePreference
-                        .allTabs[DefaultTabController.of(ctx).index],
-                  ),
-                ),
+              IconButton(
+                tooltip: 'How Lazerfunds works',
+                icon: Icon(Icons.help_outline, color: kUpPrimary, size: 20.sp),
+                // The FULL explainer, not a replay of the per-tab card. The
+                // tooltip promises "how Lazerfunds works" — who the two sides
+                // are, what happens between applying and being paid, and where
+                // the money sits in between — which is what the sheet answers.
+                // The per-tab card answers the smaller "what am I looking at"
+                // and still appears on arrival; re-showing it here was the old
+                // behaviour and under-delivered on the label.
+                onPressed: () => showUpliftGuideSheet(context),
               ),
               ServiceVoiceButton(
                 serviceName: 'uplift',
@@ -180,7 +181,7 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
                     color: Colors.white, fontWeight: FontWeight.w600)),
             onPressed: () async {
               await Get.to(() => const CreateUpliftScreen());
-              _cubit.refreshMine();
+              await _refreshAfterFundChange();
             },
           ),
           // Uniform pure-black surface (matches the transparent app bar) — no
@@ -326,17 +327,33 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
                 fund: f,
                 onTap: () async {
                   await Get.to(() => UpliftDetailScreen(fundId: f.id));
-                  _cubit.loadAll();
+                  // Refresh without the loading flag — `loadAll()` blanked the
+                  // whole list behind a spinner every time the user came back
+                  // from a fund they had merely looked at.
+                  await _refreshAfterFundChange();
                 },
-                trailing: TextButton(
-                  onPressed: () async {
-                    await Get.to(() => ApplyUpliftScreen(fund: f));
-                    _cubit.refreshMine();
-                  },
-                  child: const Text('Apply',
-                      style: TextStyle(
-                          color: kUpPrimarySoft, fontWeight: FontWeight.w600)),
-                ),
+                // Discover lists every OPEN fund, including your own. Offering
+                // "Apply" there would walk the user into a server-side refusal
+                // ("you cannot apply to your own fund"), so own funds get a
+                // label instead of an action.
+                trailing: f.isFunder
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: Text('Your fund',
+                            style: TextStyle(
+                                color: kUpTextSecondary,
+                                fontWeight: FontWeight.w600)),
+                      )
+                    : TextButton(
+                        onPressed: () async {
+                          await Get.to(() => ApplyUpliftScreen(fund: f));
+                          await _refreshAfterFundChange();
+                        },
+                        child: const Text('Apply',
+                            style: TextStyle(
+                                color: kUpPrimarySoft,
+                                fontWeight: FontWeight.w600)),
+                      ),
               ),
           if (state.discoverHasMore)
             Padding(
@@ -391,7 +408,7 @@ class _UpliftHomeScreenState extends State<UpliftHomeScreen> {
               backgroundColor: kUpPrimary, foregroundColor: Colors.white),
           onPressed: () async {
             await Get.to(() => const CreateUpliftScreen());
-            _cubit.refreshMine();
+            await _refreshAfterFundChange();
           },
           icon: const Icon(Icons.add),
           label: const Text('Open a fund'),

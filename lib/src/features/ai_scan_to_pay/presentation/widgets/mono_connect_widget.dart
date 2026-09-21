@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/auto_logout_guard.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import '../../../open_banking/presentation/helpers/link_account_gate.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/bank_link_fee_mixin.dart';
 
 /// Production-ready Mono Connect Widget using native SDK
 ///
@@ -78,9 +79,22 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
   var effectiveBvn = customerBvn;
   if (effectiveBvn == null || effectiveBvn.isEmpty) {
     try {
-      final cfg = await serviceLocator<OpenBankingCubit>()
-          .connectConfigQuiet()
-          .timeout(const Duration(seconds: 6));
+      // THIS is the blank screen users reported after tapping Continue on the
+      // connection-fee notice: the fee dialog closes, and then up to six
+      // seconds pass with nothing on screen while the prefill is fetched,
+      // before the Mono sheet finally appears. The tap looked ignored.
+      //
+      // Covered at the chokepoint rather than in the ten call sites, so every
+      // bank-link entry point (deposit, withdrawal, analytics, LazerBeam,
+      // autosave, move-money) gets the same behaviour. Same helper the
+      // virtual-account gate already uses, so the two stages read as one flow.
+      final cfg = await runWithLinkProgress(
+        context,
+        'Preparing your bank connection…',
+        () => serviceLocator<OpenBankingCubit>()
+            .connectConfigQuiet()
+            .timeout(const Duration(seconds: 6)),
+      );
       if (cfg != null) {
         if (effectiveBvn == null || effectiveBvn.isEmpty) {
           effectiveBvn = cfg['customer_bvn'];

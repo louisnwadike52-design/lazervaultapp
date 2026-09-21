@@ -30,7 +30,8 @@ class _ChangeRoleDialogState extends State<ChangeRoleDialog> {
 
   String _getDisplayName() {
     if (widget.member.userName.isNotEmpty) return widget.member.userName;
-    if (widget.member.userUsername != null && widget.member.userUsername!.isNotEmpty) {
+    if (widget.member.userUsername != null &&
+        widget.member.userUsername!.isNotEmpty) {
       return '@${widget.member.userUsername}';
     }
     if (widget.member.email.isNotEmpty) {
@@ -170,7 +171,8 @@ class _ChangeRoleDialogState extends State<ChangeRoleDialog> {
                                   style: GoogleFonts.inter(
                                     fontSize: 14.sp,
                                     fontWeight: FontWeight.w600,
-                                    color: isSelected ? roleColor : Colors.white,
+                                    color:
+                                        isSelected ? roleColor : Colors.white,
                                   ),
                                 ),
                                 Text(
@@ -350,7 +352,8 @@ class RemoveMemberConfirmDialog extends StatelessWidget {
                   ),
                   SizedBox(height: 8.h),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8.r),

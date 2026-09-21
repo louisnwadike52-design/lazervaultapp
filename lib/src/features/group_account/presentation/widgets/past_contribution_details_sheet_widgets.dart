@@ -58,9 +58,8 @@ class _PastContributionDetailsSheetState
 
   void _load() {
     final auth = context.read<AuthenticationCubit>().state;
-    final token = auth is AuthenticationSuccess
-        ? auth.profile.session.accessToken
-        : null;
+    final token =
+        auth is AuthenticationSuccess ? auth.profile.session.accessToken : null;
     context.read<GroupAccountCubit>().loadPastContributionDetails(
           widget.contributionId,
           accessToken: token,
@@ -72,8 +71,7 @@ class _PastContributionDetailsSheetState
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(20.r)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       child: SafeArea(
         top: false,
@@ -116,16 +114,14 @@ class _PastContributionDetailsSheetState
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             Expanded(
-              child:
-                  BlocBuilder<GroupAccountCubit, GroupAccountState>(
+              child: BlocBuilder<GroupAccountCubit, GroupAccountState>(
                 buildWhen: (a, b) =>
                     b is PastContributionDetailsLoading ||
                     b is PastContributionDetailsLoaded ||
                     b is PastContributionDetailsError,
                 builder: (context, state) {
                   if (state is PastContributionDetailsLoading) {
-                    return const Center(
-                        child: LazerVaultLoader.small());
+                    return const Center(child: LazerVaultLoader.small());
                   }
                   if (state is PastContributionDetailsError) {
                     return _ErrorView(
@@ -134,14 +130,12 @@ class _PastContributionDetailsSheetState
                     );
                   }
                   if (state is PastContributionDetailsLoaded) {
-                    final details =
-                        state.details as PastContributionDetails;
+                    final details = state.details as PastContributionDetails;
                     return RefreshIndicator(
                       backgroundColor: const Color(0xFF1F1F1F),
                       color: const Color.fromARGB(255, 78, 3, 208),
                       onRefresh: () async => _load(),
-                      child:
-                          _PastDetailsBody(details: details),
+                      child: _PastDetailsBody(details: details),
                     );
                   }
                   return const SizedBox.shrink();
@@ -173,9 +167,8 @@ class _ClosedCycleRow extends StatelessWidget {
         (double.tryParse('${raw['targetAmount'] ?? 0}') ?? 0) / 100;
     final receiverName = (raw['receiverName'] as String?) ?? '';
     final closedAtStr = raw['endedAt'] as String?;
-    final closedAt = closedAtStr != null
-        ? DateTime.tryParse(closedAtStr)
-        : null;
+    final closedAt =
+        closedAtStr != null ? DateTime.tryParse(closedAtStr) : null;
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
@@ -279,8 +272,7 @@ class _ActiveCycleAtExitBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.history,
-              color: const Color(0xFFFB923C), size: 18.sp),
+          Icon(Icons.history, color: const Color(0xFFFB923C), size: 18.sp),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
