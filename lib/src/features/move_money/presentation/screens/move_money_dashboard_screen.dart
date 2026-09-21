@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/move_money/utils/wallet_beam_scope.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/theme/app_surfaces.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -153,8 +154,13 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
           // Scope the list to the user's OWN wallet-to-wallet moves. Without
           // this the tab listed every payment made from the account — money
           // sent to other people included — under Beam branding.
-          ownAccountNumbers:
-              accounts.map((a) => a.accountNumber).whereType<String>().toSet(),
+          // Both identity levels: the full NUBAN is nullable and absent until
+          // a virtual account exists, and keying on it alone left the set empty
+          // — which falls through to showing every payment under Beam branding.
+          ownAccounts: WalletBeamScope.identities(
+            fullNumbers: accounts.map((a) => a.accountNumber),
+            last4s: accounts.map((a) => a.accountNumberLast4),
+          ),
         );
   }
 

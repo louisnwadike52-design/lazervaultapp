@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/move_money/utils/wallet_beam_scope.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -40,7 +41,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
   bool _hasMore = true;
   String? _accountId;
   AccountSummaryEntity? _primaryAccount;
-  Set<String> _ownAccountNumbers = const {};
+  WalletBeamIdentities _ownAccounts = WalletBeamIdentities.empty;
   // Set when a load fails; drives the inline AppErrorView on first-load
   // failure (vs a transient pagination error which keeps the existing list).
   Object? _loadError;
@@ -78,8 +79,13 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
       _primaryAccount = primary;
       // Kept so the list can be scoped to the user's OWN wallet-to-wallet
       // moves; without it this screen showed every payment from the account.
-      _ownAccountNumbers =
-          accounts.map((a) => a.accountNumber).whereType<String>().toSet();
+      // Both identity levels — see WalletBeamScope.identities. The full NUBAN
+      // is nullable, and keying on it alone left the set empty for accounts
+      // without one, which falls through to showing every payment.
+      _ownAccounts = WalletBeamScope.identities(
+        fullNumbers: accounts.map((a) => a.accountNumber),
+        last4s: accounts.map((a) => a.accountNumberLast4),
+      );
       _loadTransfers(reset: true);
     } else {
       // Accounts not loaded yet — fetch them first
@@ -106,7 +112,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
           accountId: _accountId!,
           limit: _pageSize,
           offset: reset ? 0 : _transfers.length,
-          ownAccountNumbers: _ownAccountNumbers,
+          ownAccounts: _ownAccounts,
         );
   }
 

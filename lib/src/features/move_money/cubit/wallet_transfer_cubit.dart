@@ -60,11 +60,13 @@ class WalletTransferCubit extends Cubit<WalletTransferState> {
     required String accountId,
     int limit = 5,
 
-    /// Every LazerVault account number the user holds.
+    /// Every identity the user's own LazerVault accounts carry.
     ///
-    /// Keeps only wallet-to-wallet moves on the Beam tab. Empty means
-    /// "unknown" and leaves the list unscoped — see [WalletBeamScope].
-    Set<String> ownAccountNumbers = const {},
+    /// Keeps only wallet-to-wallet moves on the Beam tab. Built by
+    /// [WalletBeamScope.identities] so the full-NUBAN and last-4 fallback live
+    /// in one place — keying on the nullable NUBAN alone left the set empty for
+    /// accounts without one, which falls through to showing everything.
+    WalletBeamIdentities ownAccounts = WalletBeamIdentities.empty,
   }) async {
     try {
       if (isClosed) return;
@@ -76,7 +78,7 @@ class WalletTransferCubit extends Cubit<WalletTransferState> {
       );
       if (isClosed) return;
       final scoped =
-          WalletBeamScope.filter(result.transfers, ownAccountNumbers);
+          WalletBeamScope.filter(result.transfers, ownAccounts);
       emit(WalletTransferHistoryLoaded(
         // `total` drives the count the UI prints, so it must describe the list
         // the user is looking at — the unscoped server total would read
@@ -94,7 +96,7 @@ class WalletTransferCubit extends Cubit<WalletTransferState> {
     required String accountId,
     int limit = 20,
     int offset = 0,
-    Set<String> ownAccountNumbers = const {},
+    WalletBeamIdentities ownAccounts = WalletBeamIdentities.empty,
   }) async {
     try {
       if (isClosed) return;
@@ -106,7 +108,7 @@ class WalletTransferCubit extends Cubit<WalletTransferState> {
       );
       if (isClosed) return;
       final scoped =
-          WalletBeamScope.filter(result.transfers, ownAccountNumbers);
+          WalletBeamScope.filter(result.transfers, ownAccounts);
       emit(WalletTransferHistoryLoaded(
         transfers: scoped,
         total: scoped.length,
