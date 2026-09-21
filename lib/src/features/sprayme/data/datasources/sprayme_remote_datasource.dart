@@ -3,6 +3,7 @@ import 'package:lazervault/src/features/sprayme/domain/entities/spray_session.da
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_wallet.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_gift.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_transaction.dart';
+import 'package:lazervault/src/features/sprayme/domain/entities/session_invite.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/session_participant.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_stats.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_action_result.dart';
@@ -96,6 +97,78 @@ class SprayMeRemoteDataSource {
           .toList();
     } on DioException catch (e) {
       throw _mapDioError(e, 'load sessions');
+    }
+  }
+
+  // ─── Session invites (tagging people in) ─────────────────────
+
+  /// Tags people into a session. Host only, enforced server-side.
+  ///
+  /// Re-tagging somebody already invited is a no-op that sends no second
+  /// notification, so [InviteResult.invited] can be shorter than what was
+  /// passed — report what came back, not what was asked for.
+  Future<InviteResult> inviteToSession({
+    required String sessionId,
+    required List<SprayInvitee> invitees,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/v1/sprayme/sessions/$sessionId/invite',
+        data: {
+          'invitees': [
+            for (final i in invitees) {'user_id': i.userId, 'name': i.name},
+          ],
+        },
+      );
+      final list = response.data['invites'] as List<dynamic>? ?? [];
+      return InviteResult(
+        invited: list
+            .whereType<Map<String, dynamic>>()
+            .map(SessionInvite.fromJson)
+            .toList(),
+        alreadyInvited:
+            (response.data['already_invited'] as num?)?.toInt() ?? 0,
+      );
+    } on DioException catch (e) {
+      throw _mapDioError(e, 'tag people into this session');
+    }
+  }
+
+  /// Sessions the signed-in user has been tagged into.
+  Future<List<InvitedSession>> getInvitedSessions() async {
+    try {
+      final response = await _dio.get('/api/v1/sprayme/sessions/invited');
+      final sessions = response.data['sessions'] as List<dynamic>? ?? [];
+      return sessions
+          .whereType<Map<String, dynamic>>()
+          .map(InvitedSession.fromJson)
+          .toList();
+    } on DioException catch (e) {
+      throw _mapDioError(e, 'load your invitations');
+    }
+  }
+
+  /// Who the host has tagged into a session. Host only, enforced server-side.
+  Future<List<SessionInvite>> getSessionInvites(String sessionId) async {
+    try {
+      final response =
+          await _dio.get('/api/v1/sprayme/sessions/$sessionId/invites');
+      final list = response.data['invites'] as List<dynamic>? ?? [];
+      return list
+          .whereType<Map<String, dynamic>>()
+          .map(SessionInvite.fromJson)
+          .toList();
+    } on DioException catch (e) {
+      throw _mapDioError(e, 'load who has been tagged');
+    }
+  }
+
+  /// Dismisses an invite so it leaves the landing page.
+  Future<void> declineInvite(String sessionId) async {
+    try {
+      await _dio.post('/api/v1/sprayme/sessions/$sessionId/invite/decline');
+    } on DioException catch (e) {
+      throw _mapDioError(e, 'dismiss this invitation');
     }
   }
 

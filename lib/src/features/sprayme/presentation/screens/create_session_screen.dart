@@ -1,3 +1,5 @@
+import 'package:lazervault/src/features/sprayme/domain/entities/session_invite.dart';
+import 'package:lazervault/src/features/sprayme/presentation/widgets/tag_people_action.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -51,6 +53,13 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   bool _showSessionCode = false;
   String _sessionCode = '';
   String _sessionId = '';
+  /// People picked BEFORE the session exists.
+  ///
+  /// Invites can only be sent once there is a session to attach them to, so
+  /// the picker's result is held here and flushed in the SessionCreated
+  /// listener. Sending at pick time would create invites pointing at a
+  /// session that may never be created.
+  List<SprayInvitee> _pendingInvitees = const [];
 
   // Image picker state
   File? _selectedImage;
@@ -148,6 +157,33 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         },
       ),
     );
+  }
+
+  /// Sends the invites picked on the form, now that the session exists.
+  ///
+  /// Deliberately NOT awaited by the listener: the host has just created their
+  /// celebration and should land on the code screen immediately. A tagging
+  /// failure surfaces as its own message and can be retried with "Tag more
+  /// people" — it must not hold up the screen they are waiting for.
+  void _flushPendingInvites(String sessionId) {
+    final pending = _pendingInvitees;
+    if (pending.isEmpty) return;
+    _pendingInvitees = const [];
+    TagPeopleAction.send(context, sessionId: sessionId, invitees: pending);
+  }
+
+  Future<void> _pickPeopleForNewSession() async {
+    final picked = await TagPeopleAction.pick(
+      context,
+      initialSelection: _pendingInvitees,
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _pendingInvitees = picked);
+  }
+
+  Future<void> _tagMorePeople() async {
+    if (_sessionId.isEmpty) return;
+    await TagPeopleAction.pickAndSend(context, sessionId: _sessionId);
   }
 
   void _onCreateSession() {
@@ -253,6 +289,9 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                 _sessionCode = state.session.sessionCode;
                 _sessionId = state.session.id;
               });
+              // The session now exists, so the people picked on the form can
+              // actually be tagged.
+              _flushPendingInvites(state.session.id);
             } else if (state is SprayMeError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -332,6 +371,47 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
             _buildLabel('Cover Image (optional)'),
             SizedBox(height: 8.h),
             _buildImagePicker(),
+            SizedBox(height: 20.h),
+
+            // Tag people, BEFORE the session exists. The picks are held and
+            // flushed once it does — see _flushPendingInvites. Sharing a
+            // six-character code out of band was the only way anyone found out
+            // a celebration existed.
+            _buildLabel('Tag people (optional)'),
+            SizedBox(height: 8.h),
+            InkWell(
+              onTap: _pickPeopleForNewSession,
+              borderRadius: BorderRadius.circular(12.r),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A2A2C),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.person_add_alt_1_rounded,
+                        color: const Color(0xFFD946EF), size: 20.sp),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Text(
+                        _pendingInvitees.isEmpty
+                            ? 'Tag friends so they see this on their Lazerspray page'
+                            : '${_pendingInvitees.length} ${_pendingInvitees.length == 1 ? "person" : "people"} tagged',
+                        style: TextStyle(
+                          color: _pendingInvitees.isEmpty
+                              ? const Color(0xFF9CA3AF)
+                              : Colors.white,
+                          fontSize: 13.5.sp,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.chevron_right_rounded,
+                        color: const Color(0xFF6B7280), size: 20.sp),
+                  ],
+                ),
+              ),
+            ),
             SizedBox(height: 32.h),
 
             // Create button
@@ -626,6 +706,32 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               ),
             ),
             SizedBox(height: 24.h),
+
+            // Tag more people, now that the session exists. The code screen
+            // is where a host realises who else should be here.
+            SizedBox(
+              width: double.infinity,
+              height: 52.h,
+              child: OutlinedButton.icon(
+                onPressed: _tagMorePeople,
+                icon: Icon(Icons.person_add_alt_1_rounded, size: 20.sp),
+                label: Text(
+                  'Tag more people',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFD946EF),
+                  side: const BorderSide(color: Color(0xFFD946EF)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 12.h),
 
             // Share button
             SizedBox(

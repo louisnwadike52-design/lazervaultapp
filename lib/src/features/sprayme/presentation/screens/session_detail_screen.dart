@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/sprayme/presentation/widgets/tag_people_action.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -213,6 +214,23 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
                 ),
                 actions: [
+                  // Tag people AFTER creation. A host realises who else should
+                  // be here once the party has started, and the only way to add
+                  // anyone was to send them the six-character code out of band.
+                  //
+                  // Shown only while the session is live: tagging someone into
+                  // a finished celebration is a notification that leads
+                  // nowhere, and the service refuses it anyway.
+                  if (_session!.isActive)
+                    IconButton(
+                      tooltip: 'Tag people',
+                      onPressed: () => TagPeopleAction.pickAndSend(
+                        context,
+                        sessionId: _session!.id,
+                      ),
+                      icon: const Icon(Icons.person_add_alt_1_rounded,
+                          color: Colors.white),
+                    ),
                   IconButton(
                     onPressed: _refresh,
                     icon: const Icon(Icons.refresh, color: Colors.white),

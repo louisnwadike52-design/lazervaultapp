@@ -1,3 +1,6 @@
+import 'package:lazervault/src/features/sprayme/domain/repositories/i_sprayme_repository.dart';
+import 'package:lazervault/src/features/sprayme/domain/entities/session_invite.dart';
+import 'package:lazervault/src/features/sprayme/presentation/widgets/invited_sessions_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -30,6 +33,13 @@ class SprayMeHomeScreen extends StatefulWidget {
 class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
   SprayWallet? _wallet;
   List<SpraySession> _sessions = [];
+
+  /// Celebrations this user has been tagged into by someone else.
+  ///
+  /// Loaded independently of the cubit's session chain: a failure to read
+  /// invitations must not stop the wallet, the user's own sessions or the stats
+  /// from rendering — and an invite list is the least important of the four.
+  List<InvitedSession> _invitedSessions = const [];
 
   /// The signed-in user's id, used only to word the resume banner correctly
   /// ("Re-enter your session" for the host vs "Rejoin session" for a guest).
@@ -69,6 +79,69 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
       _walletError = false;
     });
     context.read<SprayMeCubit>().loadWallet();
+    _loadInvites();
+  }
+
+  /// Reads the sessions this user has been tagged into.
+  ///
+  /// Silent on failure: the section simply does not appear. An error banner
+  /// about invitations, sitting above a wallet that loaded perfectly well,
+  /// would suggest something is wrong with the page.
+  Future<void> _loadInvites() async {
+    try {
+      final invites =
+          await serviceLocator<ISprayMeRepository>().getInvitedSessions();
+      if (!mounted) return;
+      setState(() => _invitedSessions = invites);
+    } catch (_) {
+      // Keep whatever was already on screen.
+    }
+  }
+
+  /// Joins a session the user was tagged into, then opens the room.
+  ///
+  /// An invitee is NOT yet a participant, so the join has to happen first —
+  /// opening the room directly would put them in a broadcast they have no
+  /// participant row for, and their sprays would have nowhere to attribute.
+  /// Joining also marks the invite accepted server-side, which is what stops it
+  /// showing as a pending invitation to a party they are standing in.
+  Future<void> _joinInvitedSession(InvitedSession invite) async {
+    final code = invite.session.sessionCode;
+    if (code.isEmpty) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await serviceLocator<ISprayMeRepository>().joinSession(code);
+      if (!mounted) return;
+      await _openSession(invite.session);
+      if (!mounted) return;
+      _loadInvites();
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', '').trim().isEmpty
+                ? 'Could not join that celebration'
+                : e.toString().replaceFirst('Exception: ', '').trim(),
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  /// Dismisses an invitation so it leaves this page.
+  Future<void> _dismissInvite(InvitedSession invite) async {
+    // Removed locally first so the tap feels immediate; the server call is
+    // idempotent, and a failure only means it reappears on the next refresh.
+    setState(() => _invitedSessions = _invitedSessions
+        .where((i) => i.session.id != invite.session.id)
+        .toList());
+    try {
+      await serviceLocator<ISprayMeRepository>().declineInvite(invite.session.id);
+    } catch (_) {
+      // Left dismissed locally; the next load reconciles.
+    }
   }
 
   Future<void> _refresh() async {
@@ -187,6 +260,18 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
                   SizedBox(height: 20.h),
                   _buildQuickActions(),
                   SizedBox(height: 24.h),
+                  // Invitations, directly under the funds card and above your
+                  // own sessions: an invitation stops being joinable when the
+                  // host ends the party, so it is the more time-limited of the
+                  // two. Hides itself when there are none.
+                  if (_invitedSessions.isNotEmpty) ...[
+                    InvitedSessionsSection(
+                      invites: _invitedSessions,
+                      onJoin: _joinInvitedSession,
+                      onDismiss: _dismissInvite,
+                    ),
+                    SizedBox(height: 24.h),
+                  ],
                   _buildSectionHeader('My Sessions', showViewAll: true),
                   SizedBox(height: 12.h),
                   _buildSessionsList(),
@@ -775,15 +860,51 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
     // actionable thing on this screen; it cannot be paged off the bottom.
     final active = _sessions.where((s) => s.isActive).toList();
     final past = _sessions.where((s) => !s.isActive).toList();
-    final shown = <SpraySession>[
-      ...active,
-      ...past.take(5 - active.length.clamp(0, 5)),
-    ];
+    final shownPast = past.take(5 - active.length.clamp(0, 5)).toList();
 
+    // LABELLED, not merely ordered. Live and finished sessions render as
+    // identical rows, so a list that only sorted them left the user working out
+    // which was which from the row's CTA — and the whole of "View all" exists
+    // to hold the finished ones.
     return Column(
-      children: shown.map((session) {
-        return _buildSessionTile(session);
-      }).toList(),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (active.isNotEmpty) ...[
+          _buildSessionGroupLabel('Live now', const Color(0xFF10B981)),
+          ...active.map(_buildSessionTile),
+        ],
+        if (shownPast.isNotEmpty) ...[
+          if (active.isNotEmpty) SizedBox(height: 14.h),
+          _buildSessionGroupLabel('Ended', const Color(0xFF6B7280)),
+          ...shownPast.map(_buildSessionTile),
+        ],
+      ],
+    );
+  }
+
+  /// A small heading separating live sessions from finished ones.
+  Widget _buildSessionGroupLabel(String text, Color dot) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h, left: 2.w),
+      child: Row(
+        children: [
+          Container(
+            width: 7.w,
+            height: 7.w,
+            decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
+          ),
+          SizedBox(width: 7.w),
+          Text(
+            text,
+            style: TextStyle(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

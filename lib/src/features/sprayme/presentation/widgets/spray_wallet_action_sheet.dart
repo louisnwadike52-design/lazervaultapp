@@ -95,11 +95,19 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
     return major * 100;
   }
 
+  /// Everything a withdrawal can draw on: unspent deposit PLUS earnings.
+  ///
+  /// It used to be earnings alone, so someone who funded ₦10,000 for a party
+  /// and sprayed ₦3,000 could not get their remaining ₦7,000 back — their own
+  /// money, already debited from their main account, with no way out except
+  /// spraying it at someone else.
+  int get _withdrawableKobo =>
+      widget.wallet.balance + widget.wallet.earningsBalance;
+
   bool get _canContinue {
     final kobo = _amountKobo;
     if (kobo == null || _accountId == null || _accountId!.isEmpty) return false;
-    // Withdrawals are capped at the withdrawable earnings balance.
-    if (!_isFund && kobo > widget.wallet.earningsBalance) return false;
+    if (!_isFund && kobo > _withdrawableKobo) return false;
     return true;
   }
 
@@ -114,9 +122,9 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
       _snack('No account found. Pick an account on the home screen first.');
       return;
     }
-    if (!_isFund && kobo > widget.wallet.earningsBalance) {
-      final avail = (widget.wallet.earningsBalance / 100).toStringAsFixed(0);
-      _snack('Insufficient earnings. Available: $_currency $avail');
+    if (!_isFund && kobo > _withdrawableKobo) {
+      final avail = (_withdrawableKobo / 100).toStringAsFixed(0);
+      _snack('Not enough in your wallet. Available: $_currency $avail');
       return;
     }
 
@@ -136,7 +144,7 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
       transactionType: _isFund ? 'spray_wallet_fund' : 'spray_wallet_withdraw',
       amount: kobo / 100,
       currency: _currency,
-      title: _isFund ? 'Fund wallet' : 'Withdraw earnings',
+      title: _isFund ? 'Fund wallet' : 'Withdraw to account',
       message: _isFund
           ? 'Confirm funding your Lazerspray wallet with $_currency ${kobo ~/ 100}'
           : 'Confirm withdrawing $_currency ${kobo ~/ 100} to your account',
@@ -216,7 +224,7 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
                   ),
                   SizedBox(width: 10.w),
                   Text(
-                    _isFund ? 'Fund wallet' : 'Withdraw earnings',
+                    _isFund ? 'Fund wallet' : 'Withdraw to account',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18.sp,
@@ -229,16 +237,36 @@ class _SprayWalletActionSheetState extends State<SprayWalletActionSheet>
               Text(
                 _isFund
                     ? 'Top up your spray balance from your account, so you can buy gifts and spray during a session.'
-                    : 'Move your withdrawable earnings back to your account.',
+                    : 'Move money back to your account — both what you have left to spray and what you have earned.',
                 style:
                     TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
               ),
               SizedBox(height: 16.h),
-              _balanceChip(
-                label: _isFund ? 'Gifts to spray' : 'Earnings (withdrawable)',
-                value: '$_currency ${_isFund ? spendable : earnings}',
-                accent: accent,
-              ),
+              if (_isFund)
+                _balanceChip(
+                  label: 'Gifts to spray',
+                  value: '$_currency $spendable',
+                  accent: accent,
+                )
+              else ...[
+                // Both pots, named and totalled. Showing only the total would
+                // hide which part is unspent deposit and which is earned — and
+                // showing only earnings is what made the rest look unreachable.
+                _balanceChip(
+                  label: 'Available to withdraw',
+                  value:
+                      '$_currency ${(_withdrawableKobo / 100).toStringAsFixed(0)}',
+                  accent: accent,
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  '$_currency $spendable left to spray  ·  $_currency $earnings earned',
+                  style: TextStyle(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ],
               SizedBox(height: 16.h),
               _accountRow(),
               SizedBox(height: 16.h),

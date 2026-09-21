@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/sprayme/domain/entities/session_invite.dart';
 import 'package:lazervault/src/features/sprayme/data/datasources/sprayme_remote_datasource.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_session.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_wallet.dart';
@@ -47,6 +48,25 @@ class SprayMeRepositoryImpl implements ISprayMeRepository {
   @override
   Future<List<SpraySession>> getMySessions({String filter = 'all', int page = 1, int pageSize = 20}) =>
       _dataSource.getMySessions(filter: filter, page: page, pageSize: pageSize);
+
+  @override
+  Future<InviteResult> inviteToSession({
+    required String sessionId,
+    required List<SprayInvitee> invitees,
+  }) =>
+      _dataSource.inviteToSession(sessionId: sessionId, invitees: invitees);
+
+  @override
+  Future<List<InvitedSession>> getInvitedSessions() =>
+      _dataSource.getInvitedSessions();
+
+  @override
+  Future<List<SessionInvite>> getSessionInvites(String sessionId) =>
+      _dataSource.getSessionInvites(sessionId);
+
+  @override
+  Future<void> declineInvite(String sessionId) =>
+      _dataSource.declineInvite(sessionId);
 
   @override
   Future<SprayWallet> getWallet() => _dataSource.getWallet();

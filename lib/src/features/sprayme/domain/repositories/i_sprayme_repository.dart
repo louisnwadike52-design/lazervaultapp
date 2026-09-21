@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/sprayme/domain/entities/session_invite.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_session.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_wallet.dart';
 import 'package:lazervault/src/features/sprayme/domain/entities/spray_gift.dart';
@@ -22,6 +23,23 @@ abstract class ISprayMeRepository {
   Future<void> leaveSession(String sessionId);
   Future<SpraySession> endSession(String sessionId);
   Future<List<SpraySession>> getMySessions({String filter = 'all', int page = 1, int pageSize = 20});
+
+  // ─── Session invites (tagging people in) ─────────────────────
+
+  /// Tags people into a session. Host only, enforced server-side.
+  Future<InviteResult> inviteToSession({
+    required String sessionId,
+    required List<SprayInvitee> invitees,
+  });
+
+  /// Sessions the signed-in user has been tagged into.
+  Future<List<InvitedSession>> getInvitedSessions();
+
+  /// Who the host has tagged. Host only, enforced server-side.
+  Future<List<SessionInvite>> getSessionInvites(String sessionId);
+
+  /// Dismisses an invite so it leaves the landing page.
+  Future<void> declineInvite(String sessionId);
 
   // Wallet
   Future<SprayWallet> getWallet();
