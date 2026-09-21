@@ -13,13 +13,26 @@ class _AIChatSheetState extends State<_AIChatSheet> {
   String get _conversationId => 'sprayme_${widget.sessionId}';
 
   static const _welcome = _ChatMessage(
-    text: 'Ask Nova anything about this Lazerspray session. Try:\n'
-        '\u2022 "Who sprayed the most?"\n'
-        '\u2022 "What\'s the total amount sprayed?"\n'
-        '\u2022 "Show me gift rankings"\n'
-        '\u2022 "How many participants?"',
+    text: "Hey — I'm watching this live with you. Ask me anything about it.",
     isBot: true,
   );
+
+  /// Opening prompts, rendered as tappable chips rather than a bulleted wall of
+  /// text inside the greeting bubble. This is the same affordance the
+  /// per-service chat agents use (QuickActionChips): one tap sends the prompt,
+  /// so the first question costs no typing. They disappear once the
+  /// conversation starts, because a suggestion list competing with real replies
+  /// is noise.
+  static const _starterPrompts = <String>[
+    'Who sprayed the most?',
+    "What's the total sprayed?",
+    'Show me gift rankings',
+    'How many are watching?',
+  ];
+
+  /// True while the sheet is still showing only the greeting.
+  bool get _isFresh =>
+      _messages.length == 1 && identical(_messages.first, _welcome);
 
   @override
   void initState() {
@@ -300,16 +313,39 @@ class _AIChatSheetState extends State<_AIChatSheet> {
           padding: EdgeInsets.symmetric(horizontal: 16.w),
           child: Row(
             children: [
-              Icon(Icons.auto_awesome,
-                  color: const Color(0xFF7C3AED), size: 22.sp),
-              SizedBox(width: 8.w),
-              Text(
-                'Nova',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
+              Container(
+                width: 34.w,
+                height: 34.w,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF7C3AED), Color(0xFF4834D4)],
+                  ),
                 ),
+                child:
+                    Icon(Icons.auto_awesome, color: Colors.white, size: 18.sp),
+              ),
+              SizedBox(width: 10.w),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Nova',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 17.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    'Your Lazerspray assistant',
+                    style: TextStyle(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 11.sp,
+                    ),
+                  ),
+                ],
               ),
               const Spacer(),
               Container(
@@ -339,12 +375,18 @@ class _AIChatSheetState extends State<_AIChatSheet> {
           child: ListView.builder(
             controller: widget.scrollController,
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-            itemCount: _messages.length + (_isLoading ? 1 : 0),
+            // +1 row for the starter chips while the sheet is still fresh.
+            itemCount: _messages.length +
+                (_isLoading ? 1 : 0) +
+                (_isFresh && !_isLoading ? 1 : 0),
             itemBuilder: (context, index) {
-              if (index == _messages.length) {
+              if (index < _messages.length) {
+                return _buildMessageBubble(_messages[index]);
+              }
+              if (_isLoading && index == _messages.length) {
                 return _buildTypingIndicator();
               }
-              return _buildMessageBubble(_messages[index]);
+              return _buildStarterChips();
             },
           ),
         ),
@@ -401,6 +443,49 @@ class _AIChatSheetState extends State<_AIChatSheet> {
           ),
         ),
       ],
+    );
+  }
+
+  /// Tappable opening prompts.
+  ///
+  /// The examples used to live inside the greeting bubble as a bulleted list,
+  /// which the user had to read and then retype. Chips are the affordance the
+  /// per-service chat agents already use: one tap sends the question. They are
+  /// shown ONLY while the conversation is untouched — once real replies exist,
+  /// a suggestion list competing with them is noise.
+  Widget _buildStarterChips() {
+    return Padding(
+      padding: EdgeInsets.only(left: 44.w, top: 4.h, bottom: 8.h),
+      child: Wrap(
+        spacing: 8.w,
+        runSpacing: 8.h,
+        children: _starterPrompts.map((prompt) {
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                _inputController.text = prompt;
+                _sendMessage();
+              },
+              borderRadius: BorderRadius.circular(20.r),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF7C3AED).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20.r),
+                  border: Border.all(
+                      color: const Color(0xFF7C3AED).withValues(alpha: 0.35)),
+                ),
+                child: Text(
+                  prompt,
+                  style: TextStyle(
+                      color: const Color(0xFFC4B5FD), fontSize: 12.sp),
+                ),
+              ),
+            ),
+          );
+        }).toList(growable: false),
+      ),
     );
   }
 
