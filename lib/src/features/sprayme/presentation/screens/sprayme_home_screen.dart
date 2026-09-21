@@ -21,17 +21,7 @@ import 'package:lazervault/src/features/sprayme/presentation/screens/session_det
 import 'package:lazervault/src/features/sprayme/presentation/screens/my_sessions_screen.dart';
 
 class SprayMeHomeScreen extends StatefulWidget {
-  /// Switches the host dashboard's bottom-nav tab.
-  ///
-  /// This screen is a full route pushed OVER the dashboard, and it draws its
-  /// own copy of the bottom nav. Without this callback the only way to honour
-  /// a nav tap was to pop with the index and let the dashboard switch
-  /// afterwards — which left the tab underneath on screen for the whole pop
-  /// animation before it jumped to the tab the user actually tapped.
-  /// Switching first and popping second reveals the correct tab immediately.
-  final void Function(int tabIndex)? onSwitchTab;
-
-  const SprayMeHomeScreen({super.key, this.onSwitchTab});
+  const SprayMeHomeScreen({super.key});
 
   @override
   State<SprayMeHomeScreen> createState() => _SprayMeHomeScreenState();

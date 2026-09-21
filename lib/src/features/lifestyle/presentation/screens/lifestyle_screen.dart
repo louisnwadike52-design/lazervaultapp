@@ -346,18 +346,13 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
       MaterialPageRoute(
         builder: (_) => BlocProvider(
           create: (_) => serviceLocator<SprayMeCubit>(),
-          // Handing the callback down lets the spray screen switch the tab
-          // before it pops, so the dashboard is already on the requested tab
-          // when the pop uncovers it. The .then() below stays as a fallback
-          // for any pop that still returns an index.
-          child: SprayMeHomeScreen(onSwitchTab: widget.onSwitchTab),
+          child: const SprayMeHomeScreen(),
         ),
       ),
-    ).then((tabIndex) {
-      if (tabIndex != null && widget.onSwitchTab != null) {
-        widget.onSwitchTab!(tabIndex);
-      }
-    });
+    );
+    // No pop-result handling: Lazerspray no longer draws its own bottom nav, so
+    // nothing pops an index back. Back simply returns to the Lifestyle tab.
+    // onSwitchTab stays on NewLifestyleScreen for the hub's OTHER destinations.
   }
 
   void _openPlanMyDay() {
@@ -372,7 +367,6 @@ class _NewLifestyleScreenState extends State<NewLifestyleScreen> {
       ),
     );
   }
-
 }
 
 /// One hub destination. Plain data so the three layouts stay renderers.

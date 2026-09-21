@@ -2514,7 +2514,9 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                   itemCount: candidates.length,
                   itemBuilder: (_, i) {
                     final p = candidates[i];
-                    final isCoHost = p.role == 'cohost';
+                    // Entity getter, not a raw string compare: the wire value is
+                    // the protobuf constant name, so 'cohost' never matched.
+                    final isCoHost = p.isCoHost;
                     return ListTile(
                       leading: CircleAvatar(
                         backgroundColor: const Color(0xFF2D2D2D),

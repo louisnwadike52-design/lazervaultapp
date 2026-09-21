@@ -47,9 +47,36 @@ class SprayTransaction {
         return 'Funded wallet';
       case 'withdraw':
         return 'Withdrew from wallet';
+      case 'purchase':
+        return 'Bought gift credit';
       default:
-        return type;
+        // Never fall through to the raw wire value. `type` is a protobuf enum
+        // name, so an unmapped case used to print "TRANSACTION_TYPE_PURCHASE"
+        // straight onto a wallet row. A neutral word is a worse label but not a
+        // broken one.
+        return 'Lazerspray activity';
     }
+  }
+
+  /// Normalises a transaction type from the wire.
+  ///
+  /// lifestyle-gateway emits `t.Type.String()` — the protobuf CONSTANT NAME
+  /// (`TRANSACTION_TYPE_GIFT`), not the short form this entity switches on. So
+  /// every row fell to the default branch and rendered the enum name as its own
+  /// description.
+  ///
+  /// SPRAY is mapped to `money_spray` rather than `spray` because that is the
+  /// name the rest of the app already uses for the same event; renaming it here
+  /// would just move the mismatch somewhere else.
+  static String normalizeType(String? raw) {
+    var s = (raw ?? '').trim();
+    if (s.isEmpty) return '';
+    s = s.toUpperCase();
+    const prefix = 'TRANSACTION_TYPE_';
+    if (s.startsWith(prefix)) s = s.substring(prefix.length);
+    if (s == 'UNSPECIFIED') return '';
+    if (s == 'SPRAY') return 'money_spray';
+    return s.toLowerCase();
   }
 
   double get amountMajor => amount / 100;
@@ -63,7 +90,7 @@ class SprayTransaction {
       senderAvatarUrl: json['sender_avatar_url'] as String? ?? '',
       recipientUserId: json['recipient_user_id'] as String? ?? '',
       recipientName: json['recipient_name'] as String? ?? '',
-      type: json['type'] as String? ?? '',
+      type: normalizeType(json['type'] as String?),
       giftId: json['gift_id'] as String?,
       giftName: json['gift_name'] as String?,
       giftEmoji: json['gift_emoji'] as String?,
