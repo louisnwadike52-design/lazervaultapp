@@ -59,6 +59,43 @@ class SpraySession {
   double get totalSprayedMajor => totalSprayed / 100;
   bool get isActive => status == 'active';
   bool get isEnded => status == 'ended';
+
+  /// Human label for [status], for pills and badges.
+  ///
+  /// NEVER render `status` itself: it is a wire value, and the server sends the
+  /// protobuf enum name. Showing it verbatim put "SESSION_STATUS_ACTIVE" in
+  /// front of users.
+  String get statusLabel => switch (status) {
+        'active' => 'Live',
+        'ended' => 'Ended',
+        'paused' => 'Paused',
+        'scheduled' => 'Scheduled',
+        'cancelled' || 'canceled' => 'Cancelled',
+        _ => status.isEmpty
+            ? 'Unknown'
+            : status[0].toUpperCase() + status.substring(1),
+      };
+
+  /// Normalises a session status from the wire.
+  ///
+  /// lifestyle-gateway emits `s.Status.String()`, which for a protobuf enum is
+  /// the CONSTANT NAME — `SESSION_STATUS_ACTIVE`, not `active`. Every
+  /// comparison here was written against the short form, so `isActive` and
+  /// `isEnded` were BOTH always false: active sessions never showed their Join
+  /// button, ended sessions never showed their total, the re-entry banner could
+  /// never appear, and the raw enum leaked into the status pill as a fallback.
+  ///
+  /// Normalising at the parse boundary fixes every one of those at once and
+  /// keeps working if the gateway is ever changed to send the short form.
+  static String normalizeStatus(String? raw) {
+    var s = (raw ?? '').trim();
+    if (s.isEmpty) return 'active';
+    s = s.toUpperCase();
+    const prefix = 'SESSION_STATUS_';
+    if (s.startsWith(prefix)) s = s.substring(prefix.length);
+    if (s == 'UNSPECIFIED') return 'active';
+    return s.toLowerCase();
+  }
   bool get isLiveVideo => isLive && streamType == 'live_video';
 
   SpraySession copyWith({
@@ -110,7 +147,7 @@ class SpraySession {
       description: json['description'] as String? ?? '',
       occasionType: json['occasion_type'] as String? ?? '',
       sessionCode: json['session_code'] as String? ?? '',
-      status: json['status'] as String? ?? 'active',
+      status: normalizeStatus(json['status'] as String?),
       totalSprayed: (json['total_sprayed'] as num?)?.toInt() ?? 0,
       totalGifts: (json['total_gifts'] as num?)?.toInt() ?? 0,
       totalLikes: (json['total_likes'] as num?)?.toInt() ?? 0,

@@ -19,11 +19,6 @@ import 'package:lazervault/src/features/sprayme/presentation/screens/sprayme_wal
 import 'package:lazervault/src/features/sprayme/presentation/widgets/spray_wallet_action_sheet.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/session_detail_screen.dart';
 import 'package:lazervault/src/features/sprayme/presentation/screens/my_sessions_screen.dart';
-import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_tabs.dart';
-
-/// Bottom-nav index of the Lifestyle tab, which is the tab this screen lives
-/// under. Named so the nav row below cannot drift from it.
-const int _lifestyleTabIndex = 4;
 
 class SprayMeHomeScreen extends StatefulWidget {
   /// Switches the host dashboard's bottom-nav tab.
@@ -216,92 +211,17 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
       ),
       // Bottom navigation bar — matches the main dashboard nav for continuity.
       // "Lifestyle" tab (index 4) is highlighted since SprayMe is part of lifestyle.
-      bottomNavigationBar: _buildBottomNav(),
+      // No bottom nav inside Lazerspray.
+      //
+      // This screen is a pushed route, so the bar it drew was a REPLICA of the
+      // dashboard's — tapping it had to pop back out and switch tabs, which is
+      // not what a nav bar promises. A full-screen feature should own its
+      // chrome; Back is the way out.
+      bottomNavigationBar: null,
     );
   }
 
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF111111),
-        border: Border(top: BorderSide(color: Color(0xFF2D2D2D), width: 0.5)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.h),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // Labels and icons come from the shared destination list, so this
-              // nav names a tab exactly as the dashboard's own navs do. It used
-              // to call index 1 "Budget" while the dashboard's curved nav called
-              // it "Statistics" and the MotionTabBar called it "AI Analytics".
-              for (var i = 0; i < kDashboardTabs.length; i++)
-                _buildNavItem(
-                  kDashboardTabs[i].icon,
-                  kDashboardTabs[i].label,
-                  i,
-                  isActive: i == _lifestyleTabIndex,
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, int tabIndex,
-      {bool isActive = false}) {
-    return GestureDetector(
-      onTap: () {
-        if (isActive) return; // Already on lifestyle
-        HapticFeedback.lightImpact();
-
-        final switchTab = widget.onSwitchTab;
-        if (switchTab != null) {
-          // Switch FIRST so the dashboard underneath has already rebuilt on the
-          // target tab by the time the pop animation uncovers it. Popping first
-          // and switching in the route's .then() is what made the previous tab
-          // flash on screen before the requested one appeared.
-          switchTab(tabIndex);
-          Navigator.of(context).pop();
-          return;
-        }
-        // No callback (e.g. opened from a route that does not host the tabs):
-        // fall back to returning the index so the caller can still switch.
-        Navigator.of(context).pop(tabIndex);
-      },
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color:
-                  isActive ? const Color(0xFF7C3AED) : const Color(0xFF6B7280),
-              size: 22.sp,
-            ),
-            SizedBox(height: 2.h),
-            Text(
-              label,
-              style: TextStyle(
-                color: isActive
-                    ? const Color(0xFF7C3AED)
-                    : const Color(0xFF6B7280),
-                fontSize: 10.sp,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── Header ───────────────────────────────────────────────────────────────────
+// ── Header ───────────────────────────────────────────────────────────────────
 
   Widget _buildHeader() {
     return Row(
@@ -1008,12 +928,14 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
     return GestureDetector(
       onTap: () => _openSession(session),
       child: Container(
-        margin: EdgeInsets.only(bottom: 10.h),
-        padding: EdgeInsets.all(14.w),
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
+          // No hairline border. A 1px #2D2D2D outline on a #1F1F1F fill reads as
+          // a seam rather than an edge; separation comes from the surface being
+          // lighter than the page, which is what the rest of the product does.
+          color: const Color(0xFF181818),
+          borderRadius: BorderRadius.circular(16.r),
         ),
         child: Row(
           children: [
@@ -1111,7 +1033,9 @@ class _SprayMeHomeScreenState extends State<SprayMeHomeScreen> {
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
-                  session.status.toUpperCase(),
+                  // statusLabel, never `status` — the raw value is the protobuf
+                  // enum name and was rendering as "SESSION_STATUS_ENDED".
+                  session.statusLabel,
                   style: TextStyle(
                     color: statusColor,
                     fontSize: 11.sp,

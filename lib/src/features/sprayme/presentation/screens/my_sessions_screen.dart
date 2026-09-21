@@ -357,21 +357,15 @@ class _MySessionsScreenState extends State<MySessionsScreen>
       child: Container(
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              const Color(0xFF1F1F1F),
-              const Color(0xFF252525),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(
-            color: session.isActive
-                ? occasionColors[0].withOpacity(0.3)
-                : const Color(0xFF2D2D2D),
-            width: session.isActive ? 1.5 : 1,
-          ),
+          color: const Color(0xFF181818),
+          borderRadius: BorderRadius.circular(16.r),
+          // Only a LIVE session gets an outline, and it is the occasion colour
+          // doing real work — marking the one card you can still walk into.
+          // The old style outlined every card in #2D2D2D, which read as a seam
+          // around each row and made the list look like a table of boxes.
+          border: session.isActive
+              ? Border.all(color: occasionColors[0].withOpacity(0.45), width: 1.5)
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -445,7 +439,7 @@ class _MySessionsScreenState extends State<MySessionsScreen>
                           ),
                         ),
                       Text(
-                        session.status.toUpperCase(),
+                        session.statusLabel,
                         style: TextStyle(
                           color: statusColor,
                           fontSize: 10.sp,
@@ -741,7 +735,7 @@ class _MySessionsScreenState extends State<MySessionsScreen>
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Text(
-                            session.status.toUpperCase(),
+                            session.statusLabel,
                             style: TextStyle(
                               color: _statusColor(session.status),
                               fontSize: 11.sp,

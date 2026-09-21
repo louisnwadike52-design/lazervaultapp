@@ -1088,6 +1088,10 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     final serviceLower = serviceName.toLowerCase();
     if (serviceLower.contains('deposit')) return TransactionServiceType.deposit;
     if (serviceLower.contains('withdrawal')) return TransactionServiceType.withdrawal;
+    // Lazerspray writes its ledger rows as `sprayme-service`, and there is no
+    // AppServiceName entry for it, so wallet top-ups, sprays and gifts all fell
+    // through to `unknown` and rendered the grey help-outline glyph.
+    if (serviceLower.contains('spray')) return TransactionServiceType.sprayme;
 
     return TransactionServiceType.unknown;
   }

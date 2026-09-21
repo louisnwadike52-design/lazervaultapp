@@ -73,6 +73,13 @@ enum TransactionServiceType {
   // one a member queries. Same purple family so they still read as one product.
   groupContribution('Contribution', Icons.savings_outlined, Color(0xFFA855F7)),
   exchange('Exchange', Icons.currency_exchange, Color(0xFFFB923C)),
+  // Lazerspray had the same hole escrow, lazerfunds and groupContribution each
+  // had: nothing mapped `sprayme-service`, so every wallet top-up, spray and
+  // gift resolved to `unknown` and showed the grey help-outline glyph — the
+  // "?" next to "SprayMe wallet top-up". Celebration glyph because that is
+  // literally what the money is for; fuchsia keeps it distinct from escrow's
+  // violet and lazerfunds' deep purple while staying in the same family.
+  sprayme('Lazerspray', Icons.celebration_outlined, Color(0xFFD946EF)),
 
   // Account-level money flow.
   deposit('Deposit', Icons.add_circle_outline, Color(0xFF10B981)),

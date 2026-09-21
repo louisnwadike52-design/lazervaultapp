@@ -40,7 +40,8 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
   void bind(SpraySession session, String currentUserId) {
     _session = session;
     _currentUserId = currentUserId;
-    _isHost = session.hostUserId.isNotEmpty && session.hostUserId == currentUserId;
+    _isHost =
+        session.hostUserId.isNotEmpty && session.hostUserId == currentUserId;
 
     _wsSub ??= _wsService.events.listen(_onWsEvent);
 
@@ -72,15 +73,19 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
 
   Future<void> goLive({bool recording = false}) async {
     if (_sessionId.isEmpty || !_isHost) return;
-    emit(state.copyWith(phase: SprayLivePhase.connecting, role: 'host', clearError: true));
+    emit(state.copyWith(
+        phase: SprayLivePhase.connecting, role: 'host', clearError: true));
 
     if (!await _ensureCameraMicPermissions()) {
-      emit(state.copyWith(phase: SprayLivePhase.error, error: 'Camera and microphone permission are required to go live.'));
+      emit(state.copyWith(
+          phase: SprayLivePhase.error,
+          error: 'Camera and microphone permission are required to go live.'));
       return;
     }
 
     try {
-      final resp = await _repository.startStream(_sessionId, recordingEnabled: recording);
+      final resp = await _repository.startStream(_sessionId,
+          recordingEnabled: recording);
       final url = resp['url'] as String? ?? '';
       final token = resp['token'] as String? ?? '';
       if (url.isEmpty || token.isEmpty) {
@@ -163,13 +168,19 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
       if (mode == 'hls') {
         final hls = resp['hls_url'] as String? ?? '';
         await _teardownRoom(); // drop any WebRTC room if we were on one
-        emit(state.copyWith(phase: SprayLivePhase.watchingHls, role: 'viewer', hlsUrl: hls, isPaused: paused, clearRoom: true));
+        emit(state.copyWith(
+            phase: SprayLivePhase.watchingHls,
+            role: 'viewer',
+            hlsUrl: hls,
+            isPaused: paused,
+            clearRoom: true));
         return;
       }
 
       final url = resp['url'] as String? ?? '';
       final token = resp['token'] as String? ?? '';
-      if (url.isEmpty || token.isEmpty) throw Exception('live stream unavailable');
+      if (url.isEmpty || token.isEmpty)
+        throw Exception('live stream unavailable');
 
       var publish = role == 'host' || role == 'cohost';
       if (publish && !await _ensureCameraMicPermissions()) {
@@ -182,7 +193,9 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
       }
       await _connectRoom(url, token, publish: publish);
       emit(state.copyWith(
-        phase: publish ? SprayLivePhase.broadcasting : SprayLivePhase.watchingWebRtc,
+        phase: publish
+            ? SprayLivePhase.broadcasting
+            : SprayLivePhase.watchingWebRtc,
         role: publish ? role : 'viewer',
         coHostInvitePending: false,
         isCameraOn: publish,
@@ -208,10 +221,13 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
 
   // ─── Host controls over other broadcasters ─────────────────────
 
-  Future<String?> inviteCoHost({required String userId, String userName = ''}) async {
-    if (!_isHost || _sessionId.isEmpty) return 'only the host can invite co-hosts';
+  Future<String?> inviteCoHost(
+      {required String userId, String userName = ''}) async {
+    if (!_isHost || _sessionId.isEmpty)
+      return 'only the host can invite co-hosts';
     try {
-      await _repository.inviteCoHost(_sessionId, userId: userId, userName: userName);
+      await _repository.inviteCoHost(_sessionId,
+          userId: userId, userName: userName);
       return null;
     } catch (e) {
       return _clean(e);
@@ -255,11 +271,13 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
     final lp = state.room?.localParticipant;
     if (lp == null) return;
     try {
-      final pub = lp.videoTrackPublications.where((p) => p.track != null).firstOrNull;
+      final pub =
+          lp.videoTrackPublications.where((p) => p.track != null).firstOrNull;
       final track = pub?.track;
       if (track is LocalVideoTrack) {
         _frontCamera = !_frontCamera;
-        await track.setCameraPosition(_frontCamera ? CameraPosition.front : CameraPosition.back);
+        await track.setCameraPosition(
+            _frontCamera ? CameraPosition.front : CameraPosition.back);
       }
     } catch (e) {
       debugPrint('flipCamera error: $e');
@@ -311,7 +329,8 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
         final topology = event.data['topology'] as String? ?? '';
         // Only affects non-broadcasting viewers on WebRTC.
         if (topology == 'hls' && state.phase == SprayLivePhase.watchingWebRtc) {
-          unawaited(watch()); // re-resolve — server will now hand back an HLS url
+          unawaited(
+              watch()); // re-resolve — server will now hand back an HLS url
         }
       case 'cohost_invited':
         final target = event.data['user_id'] as String? ?? '';
@@ -343,14 +362,16 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
 
   // ─── LiveKit room plumbing ─────────────────────────────────────
 
-  Future<void> _connectRoom(String url, String token, {required bool publish}) async {
+  Future<void> _connectRoom(String url, String token,
+      {required bool publish}) async {
     await _teardownRoom();
 
     final room = Room();
     _roomListener = room.createListener()
       ..on<RoomDisconnectedEvent>((_) {
         if (isClosed) return;
-        emit(state.copyWith(phase: SprayLivePhase.idle, clearRoom: true, tracks: const []));
+        emit(state.copyWith(
+            phase: SprayLivePhase.idle, clearRoom: true, tracks: const []));
       })
       ..on<TrackSubscribedEvent>((_) => _refreshTracks())
       ..on<TrackUnsubscribedEvent>((_) => _refreshTracks())
@@ -405,7 +426,13 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
       }
     }
 
+    // Nova's presence comes from LiveKit's own participant kind, which the
+    // server sets for a dispatched agent. She publishes audio only, so she is
+    // invisible to the video-track loop below and has to be detected here.
+    var novaPresent = false;
+
     for (final rp in room.remoteParticipants.values) {
+      if (rp.kind == ParticipantKind.AGENT) novaPresent = true;
       if (hostIdentity.isNotEmpty && rp.identity == hostIdentity) {
         hostHasAudio = rp.audioTrackPublications.any((p) => !p.muted);
       }
@@ -431,6 +458,7 @@ class SprayLiveCubit extends Cubit<SprayLiveState> {
     emit(state.copyWith(
       tracks: tracks,
       isAudioOnly: hostHasAudio && !hostVideo,
+      novaInLive: novaPresent,
     ));
   }
 

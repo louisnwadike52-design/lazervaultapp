@@ -1064,8 +1064,21 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                 if (!_immersive)
                   Positioned(
                     right: 12.w,
+                    // Bounded at the TOP as well as the bottom.
+                    //
+                    // With only `bottom:` the column grew upward without limit,
+                    // so on a full rail the topmost control (Like) ended up
+                    // flush against the session header — no breathing room, and
+                    // on a short screen it would have run underneath it.
+                    // Clearing the header explicitly is what gives the rail its
+                    // gap; the scroll view then absorbs any overflow instead of
+                    // the column being clipped.
+                    top: MediaQuery.of(context).padding.top + 76.h,
                     bottom: 160.h,
-                    child: _buildActionColumn(state),
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: _buildActionColumn(state),
+                    ),
                   ),
 
                 // Spray mode tap area — covers screen EXCEPT the right action column
@@ -1497,11 +1510,18 @@ class _SprayRoomViewState extends State<_SprayRoomView>
         // Comments moved the other way, into the More sheet: asking Nova about
         // the live is the action people reach for mid-stream, and it was the
         // one hidden behind an extra tap.
-        _buildActionButton(
-          icon: Icons.auto_awesome,
-          label: 'Nova',
-          color: const Color(0xFF7C3AED),
-          onTap: () => _showAIChatSheet(state),
+        // Highlighted while Nova is actually connected to the room (LiveKit
+        // ParticipantKind.AGENT), so the control reflects her real presence
+        // rather than whether a summon was ever requested.
+        BlocBuilder<SprayLiveCubit, SprayLiveState>(
+          buildWhen: (p, c) => p.novaInLive != c.novaInLive,
+          builder: (context, live) => _buildActionButton(
+            icon: Icons.auto_awesome,
+            label: live.novaInLive ? 'Nova · live' : 'Nova',
+            color: const Color(0xFF7C3AED),
+            active: live.novaInLive,
+            onTap: () => _showAIChatSheet(state),
+          ),
         ),
         SizedBox(height: 16.h),
 
@@ -1829,20 +1849,49 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                   }),
                   // Bring Nova into the live as a voice participant. Also
                   // triggers automatically on the "nova" wake-word.
-                  _moreTile(Icons.record_voice_over_outlined, 'Nova in live',
-                      const Color(0xFF4834D4), () async {
-                    Navigator.pop(sheetCtx);
-                    final err = await _lazerAi.summon(state.session?.id ?? '');
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(err == null
-                          ? 'Nova is joining the live…'
-                          : 'Could not bring Nova in: $err'),
-                      backgroundColor: err == null
-                          ? const Color(0xFF4834D4)
-                          : const Color(0xFFEF4444),
-                    ));
-                  }),
+                  //
+                  // Reads her ACTUAL presence so the tile never invites you to
+                  // summon someone already here, and never claims she is here
+                  // when a dispatch failed.
+                  BlocProvider<SprayLiveCubit>.value(
+                    value: liveCubit,
+                    child: BlocBuilder<SprayLiveCubit, SprayLiveState>(
+                      buildWhen: (p, c) => p.novaInLive != c.novaInLive,
+                      builder: (context, live) => _moreTile(
+                        live.novaInLive
+                            ? Icons.graphic_eq_rounded
+                            : Icons.record_voice_over_outlined,
+                        live.novaInLive ? 'Nova is live' : 'Nova in live',
+                        const Color(0xFF4834D4),
+                        () async {
+                          Navigator.pop(sheetCtx);
+                          if (live.novaInLive) {
+                            // Already here — say so rather than firing a second
+                            // dispatch the gateway would just debounce.
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(
+                              content: Text('Nova is already in this live.'),
+                              backgroundColor: Color(0xFF4834D4),
+                            ));
+                            return;
+                          }
+                          final err =
+                              await _lazerAi.summon(state.session?.id ?? '');
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(err == null
+                                ? 'Nova is joining the live…'
+                                : 'Could not bring Nova in: $err'),
+                            backgroundColor: err == null
+                                ? const Color(0xFF4834D4)
+                                : const Color(0xFFEF4444),
+                          ));
+                        },
+                        active: live.novaInLive,
+                      ),
+                    ),
+                  ),
                 ],
               ),
               // Broadcaster media toggles — only while actually streaming.
@@ -1939,16 +1988,22 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     );
   }
 
-  Widget _moreTile(
-      IconData icon, String label, Color color, VoidCallback onTap) {
+  Widget _moreTile(IconData icon, String label, Color color, VoidCallback onTap,
+      {bool active = false}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 78.w,
         padding: EdgeInsets.symmetric(vertical: 12.h),
         decoration: BoxDecoration(
-          color: const Color(0xFF242424),
+          // Active tints the tile in its own colour and outlines it, so a
+          // feature that is currently RUNNING reads differently from one that
+          // is merely available to start.
+          color:
+              active ? color.withValues(alpha: 0.18) : const Color(0xFF242424),
           borderRadius: BorderRadius.circular(14.r),
+          border:
+              active ? Border.all(color: color.withValues(alpha: 0.7)) : null,
         ),
         child: Column(
           children: [
@@ -1957,7 +2012,10 @@ class _SprayRoomViewState extends State<_SprayRoomView>
             Text(label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.white, fontSize: 11.sp)),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 11.sp,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w400)),
           ],
         ),
       ),
@@ -2485,6 +2543,7 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     required Color color,
     required VoidCallback onTap,
     bool disabled = false,
+    bool active = false,
   }) {
     final effectiveColor = disabled ? color.withValues(alpha: 0.3) : color;
     return GestureDetector(
@@ -2499,9 +2558,25 @@ class _SprayRoomViewState extends State<_SprayRoomView>
               height: 48.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF1F1F1F).withValues(alpha: 0.8),
+                // Active fills the disc in the control's own colour and adds a
+                // glow, so "Nova is in this live" is legible at a glance rather
+                // than needing the label read.
+                color: active
+                    ? effectiveColor.withValues(alpha: 0.28)
+                    : const Color(0xFF1F1F1F).withValues(alpha: 0.8),
                 border: Border.all(
-                    color: effectiveColor.withValues(alpha: 0.5), width: 1.5),
+                  color: effectiveColor.withValues(alpha: active ? 1.0 : 0.5),
+                  width: active ? 2.0 : 1.5,
+                ),
+                boxShadow: active
+                    ? [
+                        BoxShadow(
+                          color: effectiveColor.withValues(alpha: 0.45),
+                          blurRadius: 12,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : null,
               ),
               child: Icon(icon, color: effectiveColor, size: 24.sp),
             ),

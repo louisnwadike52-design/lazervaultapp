@@ -67,6 +67,17 @@ class SprayLiveState {
   /// audio-only broadcast.
   final bool isAudioOnly;
 
+  /// True while Nova (the voice agent) is actually connected to this room.
+  ///
+  /// Read from LiveKit's own ParticipantKind.AGENT on the live participant
+  /// list — not from "we sent a summon request", which only says a dispatch was
+  /// accepted. A dispatch can fail, time out, or the agent can drop, and the
+  /// control would then claim Nova is in a live she never joined.
+  ///
+  /// Nova publishes audio only, so she never appears in [tracks] (video
+  /// publications only) — presence has to come from the participant list.
+  final bool novaInLive;
+
   final String? error;
 
   const SprayLiveState({
@@ -78,6 +89,7 @@ class SprayLiveState {
     this.isCameraOn = true,
     this.isMicOn = true,
     this.isAudioOnly = false,
+    this.novaInLive = false,
     this.isRecording = false,
     this.isPaused = false,
     this.coHostInvitePending = false,
@@ -97,6 +109,7 @@ class SprayLiveState {
     bool clearRoom = false,
     List<SprayLiveTrack>? tracks,
     bool? isAudioOnly,
+    bool? novaInLive,
     String? hlsUrl,
     bool? isCameraOn,
     bool? isMicOn,
@@ -112,6 +125,7 @@ class SprayLiveState {
       room: clearRoom ? null : (room ?? this.room),
       tracks: tracks ?? this.tracks,
       isAudioOnly: isAudioOnly ?? this.isAudioOnly,
+      novaInLive: novaInLive ?? this.novaInLive,
       hlsUrl: hlsUrl ?? this.hlsUrl,
       isCameraOn: isCameraOn ?? this.isCameraOn,
       isMicOn: isMicOn ?? this.isMicOn,
