@@ -2430,19 +2430,82 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                 children: [
                   const Icon(Icons.person_add_alt, color: Color(0xFFFFD700)),
                   SizedBox(width: 8.w),
-                  Text('Invite a co-host',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Bring someone on stage',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600)),
+                        SizedBox(height: 2.h),
+                        Text('Anyone watching can be invited up',
+                            style: TextStyle(
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: 11.sp)),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
+            // EMPTY STATE THAT LEADS SOMEWHERE.
+            //
+            // You can only put someone on stage if they are ALREADY watching —
+            // that is how the backend works (InviteCoHost resolves an existing
+            // participant) and how every live product works. The old copy,
+            // "No one has joined yet to invite.", was true but a dead end: it
+            // named the problem and offered nothing.
+            //
+            // The real next action when nobody is watching is to get people in,
+            // so the empty state hands over the share sheet instead.
             if (candidates.isEmpty)
               Padding(
-                padding: EdgeInsets.all(24.w),
-                child: const Text('No one has joined yet to invite.',
-                    style: TextStyle(color: Color(0xFF9CA3AF))),
+                padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, 24.h),
+                child: Column(
+                  children: [
+                    Icon(Icons.groups_outlined,
+                        size: 40.sp, color: const Color(0xFF3A3A3A)),
+                    SizedBox(height: 12.h),
+                    Text('Nobody is watching yet',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600)),
+                    SizedBox(height: 6.h),
+                    Text(
+                      'You can invite anyone who joins your live up onto the '
+                      'stage. Share it to get people in.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                    ),
+                    SizedBox(height: 16.h),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 46.h,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          _shareLive(roomCubit.state);
+                        },
+                        icon: Icon(Icons.ios_share, size: 18.sp),
+                        label: Text('Share this live',
+                            style: TextStyle(
+                                fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF7C3AED),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               )
             else
               Flexible(
