@@ -85,3 +85,6 @@ ios/build/
 .env *
 * 2.*
 * [0-9].*
+
+# Kotlin incremental-build cache written by Gradle during an Android build.
+android/.kotlin/
