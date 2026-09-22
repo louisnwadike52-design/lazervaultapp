@@ -104,7 +104,7 @@ class FCYAccountService {
 
   /// Submit the full FCY KYC package. Throws with the backend's precise
   /// missing-field message on incompleteness.
-  Future<String> submit(Map<String, dynamic> body) async {
+  Future<FCYSubmitResult> submit(Map<String, dynamic> body) async {
     final token = await _token();
     final res = await _client
         .post(
@@ -118,8 +118,20 @@ class FCYAccountService {
           fallback: 'We could not submit your request. Please try again.'));
     }
     final d = jsonDecode(res.body) as Map<String, dynamic>;
-    return (d['message'] ?? 'Your account request is being processed.')
-        .toString();
+    final requestId =
+        (d['requestId'] ?? d['request_id'] ?? '').toString().trim();
+    final status = (d['status'] ?? '').toString().trim().toLowerCase();
+    return FCYSubmitResult(
+      message: (d['message'] ?? 'Your account request is being processed.')
+          .toString(),
+      // QUEUED is signalled structurally — an empty request id with status
+      // 'creating' means the package was saved and validated but the provider would
+      // not accept it yet. Read this way and not by looking for a keyword in the
+      // message, which breaks the moment anyone rewords the copy.
+      queued: requestId.isEmpty && status == 'creating',
+      requestId: requestId,
+      status: status,
+    );
   }
 
   /// Pick a document (image or PDF) and upload it via the fcy-document
@@ -218,4 +230,24 @@ class FCYAccountException implements Exception {
   const FCYAccountException(this.message);
   @override
   String toString() => message;
+}
+
+/// Outcome of an FCY submission.
+///
+/// [queued] distinguishes "saved but the provider would not take it yet" from
+/// "accepted and under review". The two need opposite copy: a queued applicant did
+/// nothing wrong and must not be sent back to re-edit a correct form, so the
+/// distinction is carried as a field rather than inferred from the message text.
+class FCYSubmitResult {
+  const FCYSubmitResult({
+    required this.message,
+    required this.queued,
+    this.requestId = '',
+    this.status = '',
+  });
+
+  final String message;
+  final bool queued;
+  final String requestId;
+  final String status;
 }

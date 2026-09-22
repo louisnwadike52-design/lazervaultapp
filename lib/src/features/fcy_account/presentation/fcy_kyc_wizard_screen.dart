@@ -9,6 +9,7 @@ import '../../../../core/theme/app_surfaces.dart';
 import '../data/fcy_account_service.dart';
 import 'cubit/fcy_kyc_cubit.dart';
 import 'cubit/fcy_kyc_state.dart';
+import 'cubit/fcy_kyc_steps.dart';
 import 'widgets/fcy_document_tile.dart';
 import 'widgets/fcy_kyc_field_input.dart';
 
@@ -50,6 +51,113 @@ class _FcyKycWizardScreenState extends State<FcyKycWizardScreen> {
   Widget build(BuildContext context) {
     final cubit = context.read<FcyKycCubit>();
 
+    // PopScope, because leaving mid-flow silently discards everything: the field
+    // values live on the cubit, which dies with the route, and both uploaded documents
+    // go with it. Re-uploading a passport photo and a utility bill is the most
+    // expensive part of this form to redo, so an accidental swipe-back must ask first.
+    //
+    // canPop is false ONLY while there is something to lose. A user who has entered
+    // nothing gets the normal instant back gesture rather than a pointless prompt.
+    return PopScope(
+      canPop: !_hasUnsavedWork(cubit),
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmDiscard(cubit);
+      },
+      child: _buildScaffold(context, cubit),
+    );
+  }
+
+  /// True when leaving would discard work the user would have to redo.
+  bool _hasUnsavedWork(FcyKycCubit cubit) {
+    if (_uploadingId || _uploadingProof) return true;
+    if ((cubit.idDocumentUrl ?? '').isNotEmpty) return true;
+    if ((cubit.addressProofUrl ?? '').isNotEmpty) return true;
+    // Values seeded from prefill do not count — those are recoverable for free on the
+    // next visit. Only something the USER typed is worth warning about.
+    return cubit.values.entries.any(
+      (e) => e.value.trim().isNotEmpty && !_isPrefilled(cubit, e.key),
+    );
+  }
+
+  bool _isPrefilled(FcyKycCubit cubit, FcyKycFieldId id) {
+    final p = cubit.prefill;
+    switch (id) {
+      case FcyKycFieldId.firstName:
+        return p.firstName.prefilled;
+      case FcyKycFieldId.lastName:
+        return p.lastName.prefilled;
+      case FcyKycFieldId.email:
+        return p.email.prefilled;
+      case FcyKycFieldId.phone:
+        return p.phone.prefilled;
+      case FcyKycFieldId.birthDate:
+        return p.birthDate.prefilled;
+      case FcyKycFieldId.nationality:
+        return p.nationality.prefilled;
+      case FcyKycFieldId.countryOfResidence:
+        return p.countryOfResidence.prefilled;
+      case FcyKycFieldId.addressStreet:
+        return p.addressStreet.prefilled;
+      case FcyKycFieldId.addressCity:
+        return p.addressCity.prefilled;
+      case FcyKycFieldId.addressState:
+        return p.addressState.prefilled;
+      case FcyKycFieldId.addressZip:
+        return p.addressZip.prefilled;
+      case FcyKycFieldId.documentNumber:
+        return p.documentNumber.prefilled;
+      case FcyKycFieldId.documentIssuedCountry:
+        return p.documentIssuedCountry.prefilled;
+      // documentType, employmentStatus and sourceOfIncome are seeded with DEFAULTS
+      // rather than prefill, so they are not user work either.
+      case FcyKycFieldId.documentType:
+      case FcyKycFieldId.employmentStatus:
+      case FcyKycFieldId.sourceOfIncome:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  Future<void> _confirmDiscard(FcyKycCubit cubit) async {
+    final uploading = _uploadingId || _uploadingProof;
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppSurfaces.cardTop,
+        title: Text(
+          uploading ? 'Still uploading' : 'Leave without finishing?',
+          style: TextStyle(color: Colors.white, fontSize: 17.sp),
+        ),
+        content: Text(
+          uploading
+              ? 'A document is still uploading. Leaving now will cancel it.'
+              : "Your answers and any documents you've uploaded won't be saved, "
+                  'and you would need to add them again.',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.7),
+            fontSize: 14.sp,
+            height: 1.45,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text('Keep going',
+                style: TextStyle(color: AppSurfaces.accentPurple)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text('Leave',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.7))),
+          ),
+        ],
+      ),
+    );
+    if (leave == true && mounted) Get.back();
+  }
+
+  Widget _buildScaffold(BuildContext context, FcyKycCubit cubit) {
     return Scaffold(
       backgroundColor: AppSurfaces.pageTop,
       appBar: AppBar(
@@ -63,6 +171,10 @@ class _FcyKycWizardScreenState extends State<FcyKycWizardScreen> {
             // field on step 2 does not cost the whole form.
             if (cubit.step > 0) {
               cubit.back();
+            } else if (_hasUnsavedWork(cubit)) {
+              // Same prompt as the system back gesture — two ways out must not
+              // behave differently.
+              _confirmDiscard(cubit);
             } else {
               Get.back();
             }

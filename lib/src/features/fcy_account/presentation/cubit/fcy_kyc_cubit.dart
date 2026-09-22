@@ -205,15 +205,16 @@ class FcyKycCubit extends Cubit<FcyKycState> implements FcyKycUploads {
 
     emit(const FcyKycSubmitting());
     try {
-      final status = await _service.submit(buildSubmissionBody());
-      // 'creating' with no request id is the queued case: the package was saved and
-      // will be sent automatically when the provider re-enables foreign accounts.
-      // The user must not see this as a failure — nothing they entered was wrong.
+      final result = await _service.submit(buildSubmissionBody());
+      // queued comes back as a FIELD, not as a keyword in the message: the package was
+      // saved and will be sent automatically when the provider re-enables foreign
+      // accounts. The user must not see that as a failure — nothing they entered was
+      // wrong, and telling them otherwise sends them to re-edit a correct form.
       emit(FcyKycSubmitted(
-        message: status.trim().isEmpty
+        message: result.message.trim().isEmpty
             ? 'Your details are in review.'
-            : status,
-        queued: status.toLowerCase().contains('queued'),
+            : result.message,
+        queued: result.queued,
       ));
     } on FCYAccountException catch (e) {
       emit(FcyKycError(e.message));
