@@ -96,6 +96,7 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                   totalSaved: state.totalSaved,
                   totalTarget: state.totalTarget,
                 ),
+                _buildWhatGoalsDoNotice(),
                 Expanded(
                   child: state.goals.isEmpty
                       ? _buildEmptyState()
@@ -130,6 +131,74 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
             child: LazerVaultLoader.small(),
           );
         },
+      ),
+    );
+  }
+
+  /// What goals actually DO, said on the screen itself.
+  ///
+  /// A goal is not a note-to-self here: money moved into one leaves the wallet
+  /// for real, and the AI budgeting and analytics read goals alongside spending
+  /// when they size a budget or write a recommendation. Someone looking at
+  /// "Financial Goals" has no way to know either of those things, and the
+  /// second one changes what the rest of the app tells them.
+  Widget _buildWhatGoalsDoNotice() {
+    return Container(
+      margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 4.h),
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(
+          color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.28),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.lightbulb_outline_rounded,
+            color: InvoiceThemeColors.primaryPurple,
+            size: 18.sp,
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'How goals are used',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 5.h),
+                Text(
+                  'Money you add to a goal is moved out of your wallet and held '
+                  'against it — you can withdraw it back at any time.',
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 12.sp,
+                    height: 1.4,
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Text(
+                  'Your goals also feed AI Budgeting and Analytics: budget '
+                  'suggestions and reports are based on what you spend AND what '
+                  'you are saving towards, so a goal changes the advice you get.',
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 12.sp,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -336,6 +405,17 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
     final monthlyController = TextEditingController();
     pb.GoalType selectedType = pb.GoalType.GOAL_TYPE_CUSTOM;
 
+    // Captured HERE, from the screen's own context, BEFORE the sheet exists.
+    //
+    // Get.bottomSheet renders into GetX's overlay — a route of its own, outside
+    // this screen's widget tree — so the `context` handed to the sheet's
+    // builder has no BudgetCubit ancestor. Reading the cubit off it threw
+    // ProviderNotFound, and because that happened inside an onPressed callback
+    // Flutter swallowed it: the button did nothing, no error surfaced, and no
+    // request was ever sent. The gateway logged 28 GetFinancialGoals calls and
+    // ZERO CreateFinancialGoal.
+    final cubit = context.read<BudgetCubit>();
+
     Get.bottomSheet(
       Container(
         padding: EdgeInsets.all(24.w),
@@ -414,8 +494,9 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                           );
                         }).toList(),
                         onChanged: (value) {
-                          if (value != null)
+                          if (value != null) {
                             setSheetState(() => selectedType = value);
+                          }
                         },
                       ),
                     ),
@@ -475,13 +556,14 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                         }
 
                         Get.back();
-                        context.read<BudgetCubit>().createFinancialGoal(
-                              name: name,
-                              goalType: selectedType,
-                              targetAmount: target,
-                              monthlyContribution: monthly,
-                              currency: CurrencySymbols.currentCurrency,
-                            );
+                        // The captured cubit, not context.read — see above.
+                        cubit.createFinancialGoal(
+                          name: name,
+                          goalType: selectedType,
+                          targetAmount: target,
+                          monthlyContribution: monthly,
+                          currency: CurrencySymbols.currentCurrency,
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: InvoiceThemeColors.primaryPurple,
@@ -506,6 +588,11 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
 
   void _contributeToGoal(pb.FinancialGoal goal) {
     final amountController = TextEditingController();
+
+    // Captured from the SCREEN's context — the sheet's own context lives in
+    // GetX's overlay and has no BudgetCubit ancestor. Same silent failure as
+    // the create sheet: the withdraw button did nothing at all.
+    final cubit = context.read<BudgetCubit>();
 
     Get.bottomSheet(
       Container(
@@ -597,10 +684,11 @@ class _FinancialGoalsScreenState extends State<FinancialGoalsScreen>
                       return;
                     }
                     Get.back();
-                    context.read<BudgetCubit>().withdrawFromGoal(
-                          goalId: goal.id,
-                          amount: amount,
-                        );
+                    // The captured cubit, not context.read — see above.
+                    cubit.withdrawFromGoal(
+                      goalId: goal.id,
+                      amount: amount,
+                    );
                   },
                   child: Text(
                     'Withdraw to wallet',

@@ -624,9 +624,37 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
   final _commentInputController = TextEditingController();
   bool _isSendingComment = false;
 
+  /// Whether this session still accepts comments.
+  ///
+  /// Only a LIVE celebration does. The composer was shown unconditionally, so
+  /// an ended session still offered "Add a comment…" and accepted posts into a
+  /// party that finished — the screenshot that prompted this was a session that
+  /// had ended 20 hours earlier.
+  bool get _canComment => _session?.isActive ?? false;
+
   Future<void> _submitComment() async {
     final text = _commentInputController.text.trim();
     if (text.isEmpty || _isSendingComment) return;
+
+    // Reaching here on an ended session means it ended while the field was
+    // open — the composer is hidden otherwise, but the state can change under
+    // an already-raised keyboard.
+    if (!_canComment) {
+      FocusScope.of(context).unfocus();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('This celebration has ended — comments are closed.'),
+          backgroundColor: Color(0xFF6B7280),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    // Send dismisses the keyboard, the same as tapping outside. Leaving it up
+    // covers the comment the user just posted, so they cannot see it land.
+    FocusScope.of(context).unfocus();
+
     setState(() => _isSendingComment = true);
     // Await the repository directly so we KNOW the outcome: on success clear the
     // field + optimistically show the comment; on failure keep the text and tell
@@ -671,7 +699,36 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
                   },
                 ),
         ),
-        // Comment input bar
+        // Comment input bar — only while the celebration is live.
+        //
+        // An ended session used to show the same composer and accept posts into
+        // a party that had finished. Replaced by a plain statement rather than
+        // a disabled field: a greyed-out box invites tapping to find out why.
+        if (!_canComment)
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 16.h),
+            decoration: const BoxDecoration(
+              color: Color(0xFF111111),
+              border: Border(top: BorderSide(color: Color(0xFF2D2D2D))),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.lock_outline_rounded,
+                    size: 15.sp, color: const Color(0xFF6B7280)),
+                SizedBox(width: 8.w),
+                Text(
+                  'This celebration has ended',
+                  style: TextStyle(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 12.5.sp,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
         Container(
           padding: EdgeInsets.fromLTRB(
             12.w, 8.h, 12.w,

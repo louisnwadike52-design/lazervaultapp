@@ -1,3 +1,4 @@
+import 'package:lazervault/src/features/statistics/data/financial_goals_context.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -134,6 +135,10 @@ class _CategoryAnalysisDetailScreenState
         });
       }
 
+      // Goals are part of the picture the AI reasons over, not just spend.
+      final goalsContext = await FinancialGoalsContext.load();
+      if (!mounted) return;
+
       final aiService = serviceLocator<BudgetAIService>();
       final response = await aiService.getAIInsights(
         // Pass the REAL income even when it is 0. A fabricated placeholder
@@ -142,7 +147,15 @@ class _CategoryAnalysisDetailScreenState
         monthlyIncome: monthlyIncome,
         spendingData: spendingData,
         activeBudgets: const [],
-        goals: const ['Optimize spending'],
+        // The user's REAL goals, not a placeholder.
+        //
+        // This posts to the same endpoint the AI Budgeting screen uses, and
+        // that prompt reasons over financial_goals by name and progress. This
+        // screen used to send the literal ['Optimize spending'] and no goals,
+        // so the model was told the user had none and wrote advice from
+        // spending alone — on the very page people open to ask what to change.
+        goals: goalsContext.namesOr(const ['Optimize spending']),
+        financialGoals: goalsContext.goals,
         riskTolerance: 'moderate',
         currency: CurrencySymbols.currentCurrency,
       );

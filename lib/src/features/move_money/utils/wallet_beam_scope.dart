@@ -114,17 +114,25 @@ class WalletBeamScope {
 
   /// Keep only the user's own wallet-to-wallet moves.
   ///
-  /// When the identity set is EMPTY the list is returned unchanged: we cannot
-  /// judge, and showing slightly too much beats a confident, wrong "no
-  /// transfers yet". That path should now be unreachable in practice —
-  /// [identities] derives suffixes from `accountNumberLast4`, which is
-  /// non-nullable — and that is the point: it used to be reached on every
-  /// account without a NUBAN, which is why the tab still showed everything.
+  /// An empty identity set yields an EMPTY list, not the whole list.
+  ///
+  /// It used to return everything on the reasoning that we cannot judge, and
+  /// showing too much beats a wrong "no transfers yet". That was the wrong
+  /// trade for this screen and it was reported twice: whenever the set came
+  /// back empty — a load race, an account with no NUBAN — the tab quietly
+  /// reverted to listing every payment on the account, split bills and chat
+  /// transfers included, under LazerBeam branding. "Showing too much" here
+  /// means showing transactions that are not LazerBeam at all on a screen whose
+  /// entire promise is that they are.
+  ///
+  /// Empty is honest and self-correcting: the screen renders its "no beam
+  /// transfers" state, and the next load with real identities fills it in.
+  /// Callers that need to tell "none" from "cannot judge" have [ids.isEmpty].
   static List<PaymentsTransferResult> filter(
     List<PaymentsTransferResult> transfers,
     WalletBeamIdentities ids,
   ) {
-    if (ids.isEmpty) return transfers;
+    if (ids.isEmpty) return const [];
     return transfers
         .where((t) => isWalletMove(t, ids))
         .toList(growable: false);

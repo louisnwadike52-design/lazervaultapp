@@ -118,11 +118,48 @@ class _BudgetAllocationReviewScreenState
     return cleaned[0].toUpperCase() + cleaned.substring(1).toLowerCase();
   }
 
-  pb.ExpenseCategory _protoCategory(String raw) =>
-      pb.ExpenseCategory.values.firstWhere(
-        (c) => c.name == raw,
-        orElse: () => pb.ExpenseCategory.EXPENSE_CATEGORY_OTHER,
-      );
+  /// Resolves the recommendation's category onto the proto enum.
+  ///
+  /// THE BUG THIS REPLACES
+  /// ---------------------
+  /// It compared `c.name == raw`, where `c.name` is the ENUM CONSTANT
+  /// (`EXPENSE_CATEGORY_BILLS_UTILITIES`) while `raw` is the recommendation's
+  /// category, which arrives as a human label like `Bills & Utilities`. The two
+  /// could never match, so EVERY budget created from an AI allocation fell
+  /// through to OTHER.
+  ///
+  /// That is not a cosmetic mislabel. Budget alerts match on category, and the
+  /// unclassifiable-spend fallback is ALSO OTHER — so a single unrecognised
+  /// payment incremented every budget the user had at once. In production one
+  /// user's fourteen budgets all sat on category 16 with an identical
+  /// spent_amount, and a Lazerspray cash-out told them they had blown their
+  /// "Service Fees" and "Bills & Utilities" budgets.
+  ///
+  /// Matching is deliberately forgiving — constant name, bare suffix, or human
+  /// label, ignoring case, spaces, ampersands and underscores — because this
+  /// field has carried more than one of those shapes and a silent fall-through
+  /// to OTHER is indistinguishable from a correct answer.
+  pb.ExpenseCategory _protoCategory(String raw) {
+    final needle = _categoryKey(raw);
+    if (needle.isEmpty) return pb.ExpenseCategory.EXPENSE_CATEGORY_OTHER;
+
+    const prefix = 'EXPENSECATEGORY';
+    for (final c in pb.ExpenseCategory.values) {
+      final constant = _categoryKey(c.name); // EXPENSECATEGORYBILLSUTILITIES
+      if (constant == needle) return c;
+      // The bare suffix — BILLSUTILITIES — which is what a human label
+      // ("Bills & Utilities") normalises to.
+      if (constant.startsWith(prefix) &&
+          constant.substring(prefix.length) == needle) {
+        return c;
+      }
+    }
+    return pb.ExpenseCategory.EXPENSE_CATEGORY_OTHER;
+  }
+
+  /// Strips a category string down to comparable letters and digits.
+  static String _categoryKey(String v) =>
+      v.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
 
   Future<void> _apply() async {
     final selected = _rows.where((r) => r.include && r.amount > 0).toList();

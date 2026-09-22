@@ -22,9 +22,12 @@ void main() {
       // AccountSummaryEntity.accountNumber is the full NUBAN and is NULLABLE —
       // it is absent until a virtual account has been provisioned. The first
       // version of this filter keyed on it alone, so for those users the set
-      // came back empty, and an empty set falls through to "return everything".
-      // The Beam tab therefore still listed every payment from the account,
-      // which is exactly the bug the filter was written to fix.
+      // came back empty; back then an empty set returned the WHOLE list, so the
+      // Beam tab still showed every payment on the account.
+      //
+      // The empty case now yields nothing (see the last test), but the set
+      // should not be empty in the first place — last4 is non-nullable and
+      // carries the scope on its own.
       final ids = WalletBeamScope.identities(
         fullNumbers: const [null, null],
         last4s: const ['7890', '4321'],
@@ -112,27 +115,32 @@ void main() {
       expect(WalletBeamScope.filter([_tx('5555558300')], withFull), isEmpty);
     });
 
-    test('a genuinely empty identity set leaves the list UNSCOPED', () {
-      // Preserved deliberately: we cannot judge, and showing slightly too much
-      // beats a confident, wrong "no transfers yet". The fix is that this path
-      // is now unreachable in practice, not that it changed.
+    test('a genuinely empty identity set yields NOTHING, not everything', () {
+      // INVERTED deliberately, after this was reported twice.
+      //
+      // It used to return the whole list on the reasoning that we cannot judge
+      // and showing too much beats a wrong "no transfers yet". That was the
+      // wrong trade for THIS screen: whenever the set came back empty — a load
+      // race, an account with no NUBAN — the Beam tab silently reverted to
+      // listing every payment on the account, split bills and chat transfers
+      // included, under LazerBeam branding. "Too much" here means showing
+      // transactions that are not LazerBeam at all, on a screen whose entire
+      // promise is that they are.
+      //
+      // Empty is honest and self-correcting: the screen shows its no-transfers
+      // state, and the next load with real identities fills it in.
       final all = [_tx('0279098300'), _tx('9999999999')];
+      expect(WalletBeamScope.filter(all, WalletBeamIdentities.empty), isEmpty);
       expect(
-        WalletBeamScope.filter(all, WalletBeamIdentities.empty).length,
-        2,
+        WalletBeamScope.filter(
+          all,
+          WalletBeamScope.identities(
+            fullNumbers: const ['', '   '],
+            last4s: const ['', 'abc'],
+          ),
+        ),
+        isEmpty,
       );
-      expect(
-        WalletBeamScope
-            .filter(
-              all,
-              WalletBeamScope.identities(
-                fullNumbers: const ['', '   '],
-                last4s: const ['', 'abc'],
-              ),
-            )
-            .length,
-        2,
-      );
-    });
+  });
   });
 }
