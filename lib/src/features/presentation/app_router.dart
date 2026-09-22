@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/utilities/safe_args.dart';
 import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/src/features/fcy_account/presentation/fcy_activation_screen.dart';
 import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/send_funds/presentation/chatbot_transfer_screen.dart';
@@ -641,6 +640,8 @@ import 'package:lazervault/src/features/admin_alerts/admin_alerts_screen.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/cubit/plan_my_day_cubit.dart';
 import 'package:lazervault/src/features/plan_my_day/presentation/screens/reminder_management_screen.dart';
 import 'package:lazervault/src/features/presentation/views/notification_screen.dart';
+import '../fcy_account/presentation/fcy_kyc_wizard_screen.dart';
+import '../fcy_account/presentation/cubit/fcy_kyc_cubit.dart';
 
 class AppRouter {
   // Phone+passcode SIGNUP is a multi-screen journey whose working state
@@ -677,11 +678,27 @@ class AppRouter {
       page: () => const OnboardingCarouselScreen(),
       transition: Transition.fadeIn,
     ),
-    // Foreign-currency (USD/GBP/EUR) account activation — the Fincra FCY
-    // KYC + document flow. Self-contained (own service; no cubit needed).
+    // Foreign-currency (USD/GBP/EUR) account activation — the Fincra FCY KYC +
+    // document flow, as a multi-step wizard that prefills what we already hold.
+    //
+    // The cubit is provided HERE, ABOVE the screen, not inside its build(). A
+    // provider created in the screen's own build makes State.context an ancestor
+    // of the provider, so context.read from the screen — or from any modal sheet
+    // it opens, which renders in a separate overlay route — throws
+    // ProviderNotFound. That failure is silent inside an onPressed callback: the
+    // button simply does nothing, which is exactly how goal creation broke.
     GetPage(
       name: AppRoutes.fcyActivation,
-      page: () => const FCYActivationScreen(),
+      page: () {
+        final args = Get.arguments;
+        final currency = (args is Map ? (args['currency'] as String?) : null)
+            ?.trim()
+            .toUpperCase();
+        return BlocProvider(
+          create: (_) => FcyKycCubit(currency: currency ?? 'USD'),
+          child: const FcyKycWizardScreen(),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
     // ── Phone + Passcode auth flow ──────────────────────────────────────

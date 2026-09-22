@@ -7,6 +7,8 @@ import 'package:lazervault/core/services/secure_storage_defaults.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/services/endpoint_registry.dart';
 
+import 'fcy_prefill.dart';
+
 /// Client for the foreign-currency (USD/GBP/EUR/CAD) virtual-account flow:
 ///
 ///   GET  /api/v1/accounts/fcy/status?currency=USD
@@ -65,6 +67,39 @@ class FCYAccountService {
       accountName: (d['accountName'] ?? '').toString(),
       routingDetailsJson: (d['routingDetailsJson'] ?? '').toString(),
     );
+  }
+
+  /// What the form does NOT have to ask for.
+  ///
+  /// Called ONCE when the flow opens, never on the status poll — this reaches
+  /// through to banking-service for a verified identity, and doing that every few
+  /// seconds to redraw a form would be wasteful for data that cannot change while
+  /// the user is filling it in.
+  ///
+  /// NEVER THROWS. A prefill is a convenience: if it is unavailable the form must
+  /// still open and simply ask for everything, which is exactly what
+  /// [FcyPrefill.none] produces. Throwing here would turn a missing nicety into a
+  /// blocked flow.
+  Future<FcyPrefill> prefill(String currency) async {
+    try {
+      final token = await _token();
+      final res = await _client
+          .get(
+            Uri.parse(
+                '${endpointRegistry.httpCore}/accounts/fcy/prefill?currency=$currency'),
+            headers: _headers(token),
+          )
+          .timeout(_timeout);
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        return FcyPrefill.none;
+      }
+      final d = jsonDecode(res.body);
+      if (d is! Map<String, dynamic>) return FcyPrefill.none;
+      return FcyPrefill.fromJson(d);
+    } catch (_) {
+      // Deliberately swallowed — see the note above.
+      return FcyPrefill.none;
+    }
   }
 
   /// Submit the full FCY KYC package. Throws with the backend's precise

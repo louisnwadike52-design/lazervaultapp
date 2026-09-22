@@ -34,6 +34,7 @@ import '../widgets/quick_amount_buttons.dart';
 import '../widgets/source_currency_picker.dart';
 import '../../domain/repositories/i_exchange_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../fcy_account/presentation/fcy_kyc_gate.dart';
 part 'exchange_home_screen_widgets.dart';
 
 
@@ -446,6 +447,23 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
       if (!mounted) return;
 
       if (_mode == ExchangeMode.sendAbroad) {
+        // KYC gate, LAST in the pre-flight chain: every cheaper check (rate,
+        // balance, daily limit) has already run, so nobody is asked to verify
+        // their identity for a transfer that was going to be refused anyway.
+        //
+        // Only the SEND-ABROAD branch is gated. A conversion moves money between
+        // the user's own wallets and carries no foreign-account KYC requirement,
+        // so gating it would block a flow that never needed it.
+        //
+        // Fails OPEN on a lookup error, and returns false after opening the form,
+        // so the user comes back through this same chain rather than being waved
+        // through for having tapped "continue".
+        final kycOk = await ensureFcyKycForPayout(
+          context,
+          destinationCurrency: cubit.toCurrency,
+        );
+        if (!kycOk || !mounted) return;
+
         // Navigate to recipient screen with all data
         Get.toNamed(AppRoutes.exchangeRecipient, arguments: {
           'fromCurrency': cubit.fromCurrency,
