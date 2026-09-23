@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'chat_widget_metadata_hydration.dart';
 import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
 import '../datasources/http_microservice_chat_datasource.dart';
@@ -140,38 +141,14 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
         final entities = msg.entities;
         entities?.remove('transaction_pin');
 
-        // New: receipt_data is stored in metadata field
-        final receiptDataFromMetadata = msg.metadata?['receipt_data'];
-        // Legacy: also check entities._receipt_data for backward compatibility
-        final receiptDataFromEntities = entities?['_receipt_data'];
-
-        if (receiptDataFromMetadata is Map<String, dynamic>) {
-          metadata = {'receipt_data': receiptDataFromMetadata};
-        } else if (receiptDataFromEntities is Map<String, dynamic>) {
-          metadata = {'receipt_data': receiptDataFromEntities};
-        }
-
-        // PIN-prompt history hydration. The chat-agent-gateway saves
-        // `metadata.pin_prompt` alongside `metadata.receipt_data`, but
-        // the prior history mapper ignored it — so a PIN flow
-        // interrupted by an app restart never re-opened on resume.
-        // Stash the raw payload here; a second pass below keeps it
-        // only on the LATEST assistant turn (PIN prompts are
-        // single-use, so re-emitting on an older message would re-open
-        // a modal for a transaction the user already settled).
-        final pinPromptFromMetadata = msg.metadata?['pin_prompt'];
-        if (pinPromptFromMetadata is Map<String, dynamic>) {
-          metadata = (metadata ?? <String, dynamic>{})
-            ..['pin_prompt'] = pinPromptFromMetadata;
-        }
-
-        // ReceiptCard V2 history hydration (single dict or batch list) so
-        // reloaded history renders batch receipts the same as when live.
-        final receiptCardFromMetadata = msg.metadata?['receipt_card'];
-        if (receiptCardFromMetadata is Map || receiptCardFromMetadata is List) {
-          metadata = (metadata ?? <String, dynamic>{})
-            ..['receipt_card'] = receiptCardFromMetadata;
-        }
+        // Same hydration the direct path uses. Previously these two mappers each had
+        // their own copy and drifted: this one grew pin_prompt and receipt_card while
+        // the direct one kept only the legacy receipt, so per-service chats silently
+        // lost both widgets on reload.
+        metadata = hydrateChatWidgetMetadata(
+          storedMetadata: msg.metadata,
+          entities: entities,
+        );
 
         final isUser = msg.role == 'user';
         final mediaType = msg.mediaMetadata?['type'] as String?;
@@ -204,26 +181,14 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
         );
       }).toList();
 
-      // Second pass: PIN prompts are single-use. Strip pin_prompt from
-      // every assistant message EXCEPT the most recent one so the
-      // bottom sheet only re-appears when the prompt was the last
-      // thing the agent said (i.e. genuinely interrupted by an app
-      // restart). Receipt cards stay on every message — they're
-      // history artifacts, not active CTAs.
-      int latestBotIdx = -1;
-      for (var i = messages.length - 1; i >= 0; i--) {
-        if (!messages[i].isUser) {
-          latestBotIdx = i;
-          break;
-        }
-      }
-      for (var i = 0; i < messages.length; i++) {
-        if (i == latestBotIdx) continue;
-        final meta = messages[i].metadata;
-        if (meta != null && meta.containsKey('pin_prompt')) {
-          meta.remove('pin_prompt');
-        }
-      }
+      // A PIN prompt stays in the transcript and is stamped with its outcome, so a
+      // completed transfer still shows the card the user approved. Only the latest one
+      // remains interactive.
+      markSupersededPinPrompts<MicroserviceChatMessageEntity>(
+        messages,
+        isUser: (m) => m.isUser,
+        metadataOf: (m) => m.metadata,
+      );
 
       return Right(messages);
     } catch (e) {
@@ -263,16 +228,17 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
         final entities = msg.entities;
         entities?.remove('transaction_pin');
 
-        // New: receipt_data is stored in metadata field
-        final receiptDataFromMetadata = msg.metadata?['receipt_data'];
-        // Legacy: also check entities._receipt_data for backward compatibility
-        final receiptDataFromEntities = entities?['_receipt_data'];
-
-        if (receiptDataFromMetadata is Map<String, dynamic>) {
-          metadata = {'receipt_data': receiptDataFromMetadata};
-        } else if (receiptDataFromEntities is Map<String, dynamic>) {
-          metadata = {'receipt_data': receiptDataFromEntities};
-        }
+        // Hydrate EVERY renderable widget, not just the legacy receipt.
+        //
+        // This path used to carry `receipt_data` alone, so a service chat (bills hub and
+        // every other service bottom sheet) lost its confirm-transfer card and its V2
+        // receipt the moment the user left and came back. The session path hydrated
+        // both. One shared function now, because two mappers that must agree and are
+        // written separately will diverge again.
+        metadata = hydrateChatWidgetMetadata(
+          storedMetadata: msg.metadata,
+          entities: entities,
+        );
 
         final isUser = msg.role == 'user';
         final mediaType = msg.mediaMetadata?['type'] as String?;
@@ -304,6 +270,15 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
           metadata: metadata,
         );
       }).toList();
+
+      // A PIN prompt stays in the transcript — it is part of what happened — but an
+      // older one must not stay INTERACTIVE, or the auto-opener could raise a secure pad
+      // for a transfer already settled. Stamped with its outcome and rendered read-only.
+      markSupersededPinPrompts<MicroserviceChatMessageEntity>(
+        messages,
+        isUser: (m) => m.isUser,
+        metadataOf: (m) => m.metadata,
+      );
 
       return Right(messages);
     } catch (e) {

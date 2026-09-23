@@ -46,7 +46,7 @@ class ExchangeHistoryActionsSheet {
         BillHistoryAction(
           icon: Icons.replay,
           color: ExchangeTheme.success,
-          label: 'Repeat Exchange',
+          label: 'Redo',
           onTap: () {
             Get.back();
             final isConversion = tx.type.isConversionLike;

@@ -1,4 +1,5 @@
 import 'package:lazervault/core/notifications/notification_target.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 // TransactionServiceType lives in unified_transaction_widgets.dart, which is a
 // `part of` this library — import the parent, not the part.

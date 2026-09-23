@@ -520,21 +520,12 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                 context.read<InvoiceCubit>().loadInvoices();
               },
             ),
-            ListTile(
-              leading:
-                  Icon(Icons.download, color: InvoiceThemeColors.primaryPurple),
-              title: Text(
-                'Export Data',
-                style: InvoiceTextStyles.body16,
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Implement export functionality
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Export feature coming soon')),
-                );
-              },
-            ),
+            // An "Export Data" row sat here over a TODO: it closed the sheet and
+            // toasted "Export feature coming soon". There is no bulk invoice
+            // export on any gateway — individual invoice PDFs are produced per
+            // invoice from the detail screen, which is a different thing — so the
+            // row promised a capability the platform does not have. Removed; add
+            // it back with the endpoint, not before.
             SizedBox(height: MediaQuery.of(context).padding.bottom),
           ],
         ),

@@ -615,7 +615,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
                         },
                         icon: Icon(Icons.repeat_rounded, size: 18.sp),
                         label: Text(
-                          'Repeat',
+                          'Redo',
                           style: GoogleFonts.inter(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,

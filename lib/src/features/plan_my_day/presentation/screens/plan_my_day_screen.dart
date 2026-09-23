@@ -1,4 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -424,6 +425,13 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
   }
 
   /// Thin bar above the board with the single-column ⇄ Kanban layout toggle.
+  ///
+  /// The right-hand button is labelled "Kanban", NOT "Board". There is already a
+  /// top-level view called Board in the Day/Board/People/Reminders switcher, and having
+  /// a second "Board" control inside the Board view made the two read as duplicates of
+  /// each other — a user pressing the inner one reasonably expects to be taken to the
+  /// view they are already looking at. They are different things: one chooses the VIEW,
+  /// this one chooses that view's LAYOUT.
   Widget _boardLayoutBar() {
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 8.h, 12.w, 0),
@@ -436,7 +444,7 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
           }),
           SizedBox(width: 6.w),
           _layoutToggleBtn(
-              Icons.view_week_outlined, 'Board', _kanbanLayout, () {
+              Icons.view_week_outlined, 'Kanban', _kanbanLayout, () {
             if (!_kanbanLayout) _toggleBoardLayout();
           }),
         ],
@@ -940,6 +948,13 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
   /// (connect state, AI digest, summarized emails, build-my-day, drafts,
   /// settings) with its own EmailCubit.
   Widget _emailEntryCard() {
+    // Hidden until Google verification completes — see
+    // FeatureFlags.planMyDayGoogleIntegrations. Returning an empty box rather than
+    // disabling the card: a visible-but-dead entry point invites a tap that can only
+    // end on Google's "Access blocked" page.
+    if (!FeatureFlags.planMyDayGoogleIntegrations) {
+      return const SizedBox.shrink();
+    }
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1020,15 +1035,19 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
       children: [
         Row(
           children: [
-            _dayUtilityChip(
-                Icons.sync_alt_rounded, 'Sync', const Color(0xFF8B5CF6), () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const CalendarSettingsScreen()),
-              );
-            }),
-            SizedBox(width: 8.w),
+            // Google Calendar sync — hidden on the same flag as the Gmail card. The
+            // chip row stays balanced because the SizedBox goes with it.
+            if (FeatureFlags.planMyDayGoogleIntegrations) ...[
+              _dayUtilityChip(
+                  Icons.sync_alt_rounded, 'Sync', const Color(0xFF8B5CF6), () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const CalendarSettingsScreen()),
+                );
+              }),
+              SizedBox(width: 8.w),
+            ],
             _dayUtilityChip(
                 Icons.insights_rounded, 'Insights', const Color(0xFF10B981),
                 () {

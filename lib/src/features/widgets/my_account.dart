@@ -485,7 +485,13 @@ class _MyAccountViewState extends State<_MyAccountView> {
             color: isEmailVerified ? Colors.green : Colors.orange,
             size: 24.sp,
           ),
-          onTap: () {},
+          // Status only — there is no send-verification-email action in the app
+          // (VerifyEmailUseCase consumes a code, it does not issue one), and the
+          // subtitle says "Pending verification" rather than inviting a tap.
+          // `onTap: () {}` still drew an InkWell ripple, so the row looked
+          // pressable and answered every press with nothing; null removes the
+          // ripple as well as the promise.
+          onTap: null,
         ),
         _buildSettingsTile(
           icon: Icons.phone_outlined,
@@ -496,7 +502,9 @@ class _MyAccountViewState extends State<_MyAccountView> {
             color: isPhoneVerified ? Colors.green : Colors.orange,
             size: 24.sp,
           ),
-          onTap: isPhoneVerified ? () {} : _verifyPhoneFromAccount,
+          // Already verified means there is nothing left to do, so the row goes
+          // inert rather than rippling under a press that cannot act.
+          onTap: isPhoneVerified ? null : _verifyPhoneFromAccount,
         ),
         // Identity/KYC document verification is handled entirely by the Mono KYC
         // flow (surfaced via the KYC tier badge above), not from this page.

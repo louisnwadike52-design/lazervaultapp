@@ -657,6 +657,22 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     }
     await _refreshRate();
     if (!mounted) return;
+
+    // The corridor is (source, destination), so changing the SOURCE can change which
+    // rail carries it — and with it the recipient fields and the bank list. Without
+    // this the form keeps the previous rail's spec: the user could fill in fields the
+    // new rail never asked for, or pick a bank from a directory it cannot route to.
+    //
+    // Cleared first so nothing stale is rendered while the new answer is in flight. A
+    // wrong bank code is not a validation error at submit; it is money arriving at the
+    // wrong institution.
+    setState(() {
+      _serverRequirements = null;
+      _railBanks = null;
+    });
+    await _loadServerRequirements();
+    if (!mounted) return;
+
     // Recompute the prediction with the new currency pair (best effort).
     _fetchExchangePrediction();
   }
@@ -667,7 +683,12 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
 
   void _showBankPicker() {
     FocusScope.of(context).unfocus();
-    final banks =
+    // The rail that will carry the money publishes the codes it can route, so its
+    // directory wins. BankRepository's bundled list covers GB/GH/KE/NG/US/ZA and is
+    // correct while Flutterwave carries the corridor — but it is EMPTY for Fincra's
+    // TZS, UGX, XOF and XAF, which left the user on a working form with no bank to
+    // select and no way to submit.
+    final banks = _railBanks ??
         serviceLocator<BankRepository>().cachedSync(_countryConfig.countryCode);
     final popular = banks.take(6).toList();
     String searchQuery = '';
@@ -1636,7 +1657,16 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     'institutioncode', 'bank_code', 'bankcode', 'sortcode', 'sort_code',
     'routing_number', 'routingnumber',
     'institutionname', 'bank_name', 'bankname',
+    // Every spelling of "who is being paid". The camelCase aliases matter as much
+    // as the snake_case ones: Flutterwave publishes beneficiary_name, while Fincra's
+    // African corridors and both Klasha corridors call it accountHolderName.
+    //
+    // Missing them meant the leaf was not recognised as standard, so it fell through
+    // to _extraProviderFields and rendered a SECOND "Recipient Name" box underneath
+    // the one the fixed form already shows — asking the user twice for one value,
+    // which is precisely what this set exists to prevent.
     'beneficiaryname', 'beneficiary_name', 'receivername',
+    'accountholdername', 'account_holder_name', 'accountname', 'account_name',
     'beneficiaryemail', 'email',
     'phone', 'beneficiaryphone',
     'beneficiaryaddress', 'beneficiary_address', 'address',
@@ -1725,6 +1755,13 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
   /// backend. Null until it answers (or if it cannot).
   ExchangeRequirements? _serverRequirements;
 
+  /// The bank directory the ACTIVE rail published, or null when it publishes none.
+  ///
+  /// Null is the normal answer for Flutterwave and Nomba corridors and must not block
+  /// anything — the picker falls back to BankRepository's bundled list, which is exactly
+  /// right for those rails.
+  List<Map<String, String>>? _railBanks;
+
   /// Asks the backend which fields the rail that will CARRY this transfer
   /// needs, and adopts its answer.
   ///
@@ -1762,6 +1799,16 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       // Block rather than render a form for a transfer that will be refused.
       _corridorSupported = resolved != null;
     });
+
+    // Then the rail's bank directory, but only when it actually needs a bank code —
+    // no point asking for a list the form will never show.
+    if (resolved == null || !resolved.requiresBankCode) return;
+    final railBanks = await serviceLocator<PayoutBankDirectoryService>().fetch(
+      destCurrency: _toCurrency,
+      sourceCurrency: _fromCurrency,
+    );
+    if (!mounted || railBanks == null || railBanks.isEmpty) return;
+    setState(() => _railBanks = railBanks);
   }
 
   /// The rule the form should obey: the bundled presentation rule, with its
@@ -1775,8 +1822,33 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     final bundled = FlutterwaveCountryRules.forCurrency(_toCurrency);
     final server = _serverRequirements;
     if (server == null || server.fields.isEmpty) return bundled;
-    if (bundled == null) return null;
-    return bundled.copyWithFields(server.fields);
+    if (bundled == null) {
+      // No bundled rule, but the backend DID publish a field set — so a wired rail
+      // serves this corridor and the form must render.
+      //
+      // This used to return null, which blocked the form outright for every corridor
+      // the bundled Flutterwave map does not describe: Fincra's ZAR/TZS/XOF/XAF/UGX and
+      // Klasha's PHP/CAD, the Philippines included. The backend answered correctly and
+      // the screen dropped the answer on the floor.
+      return ExchangeCountryRule.fromServer(
+        currency: _toCurrency,
+        countryCode: server.countryCode ?? '',
+        countryName: server.countryName ?? '',
+        requiresBankCode: server.requiresBankCode,
+        requiresBranchCode: server.requiresBranch,
+        fields: server.fields,
+      );
+    }
+    // A bundled rule exists, so keep its presentation concerns (dial code, name
+    // resolution, amount bounds) and swap in the active rail's fields. But take
+    // requiresBankCode from the SERVER: the same currency can route on a bank code on
+    // one rail and a SWIFT/BIC on another, and the bundled flag describes Flutterwave.
+    return bundled
+        .copyWithFields(server.fields)
+        .copyWithBankCodeRequirement(
+          requiresBankCode: server.requiresBankCode,
+          requiresBranchCode: server.requiresBranch,
+        );
   }
 
   /// Rule-driven account-number validator used by every bank-field builder

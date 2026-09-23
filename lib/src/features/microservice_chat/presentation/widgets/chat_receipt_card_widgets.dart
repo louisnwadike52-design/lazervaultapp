@@ -193,17 +193,37 @@ class _ChatReceiptCardState extends State<ChatReceiptCard> {
   Widget _buildReceiptCard(TransferReceiptData r, {bool showError = false}) {
     return GestureDetector(
       onTap: () => _openFullScreenReceipt(context),
-      child: Container(
+      child: Builder(builder: (context) {
+      // THREE states, not two.
+      //
+      // This card split on isSuccess alone, so anything that was not a success —
+      // including PENDING — was drawn with the failure icon and red colours. A
+      // transfer that had been accepted and was simply still settling looked like it
+      // had failed, directly under an agent message saying it succeeded.
+      //
+      // Pending is in-progress, not an error: amber, a clock, and wording that says it
+      // is still on its way.
+      // Single source of truth on the model, so the card and the PDF cannot disagree
+      // about what a status means. It also treats an EMPTY status as in-progress rather
+      // than failed — the state a transfer is in before its first status update.
+      final _pending = r.isPending;
+      final Color _tone = r.isSuccess
+          ? const Color(0xFF10B981)
+          : _pending
+              ? const Color(0xFFFB923C)
+              : const Color(0xFFEF4444);
+      final IconData _icon = r.isSuccess
+          ? Icons.check
+          : _pending
+              ? Icons.schedule
+              : Icons.close;
+      return Container(
         width: double.infinity,
         margin: const EdgeInsets.only(top: 8),
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A2E),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: r.isSuccess
-                ? const Color(0xFF10B981).withValues(alpha: 0.3)
-                : const Color(0xFFEF4444).withValues(alpha: 0.3),
-          ),
+          border: Border.all(color: _tone.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,9 +232,7 @@ class _ChatReceiptCardState extends State<ChatReceiptCard> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: r.isSuccess
-                    ? const Color(0xFF10B981).withValues(alpha: 0.1)
-                    : const Color(0xFFEF4444).withValues(alpha: 0.1),
+                color: _tone.withValues(alpha: 0.1),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16),
@@ -226,16 +244,12 @@ class _ChatReceiptCardState extends State<ChatReceiptCard> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: r.isSuccess
-                          ? const Color(0xFF10B981).withValues(alpha: 0.2)
-                          : const Color(0xFFEF4444).withValues(alpha: 0.2),
+                      color: _tone.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      r.isSuccess ? Icons.check : Icons.close,
-                      color: r.isSuccess
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFFEF4444),
+                      _icon,
+                      color: _tone,
                       size: 18,
                     ),
                   ),
@@ -247,11 +261,13 @@ class _ChatReceiptCardState extends State<ChatReceiptCard> {
                         Text(
                           r.isSuccess
                               ? '${r.transferTypeDisplay} Successful'
-                              : '${r.transferTypeDisplay} ${r.status}',
+                              : _pending
+                                  // "Bank Transfer pending" read as a failure. Say what
+                                  // is happening instead of naming a raw status token.
+                                  ? '${r.transferTypeDisplay} in progress'
+                                  : '${r.transferTypeDisplay} ${r.status}',
                           style: TextStyle(
-                            color: r.isSuccess
-                                ? const Color(0xFF10B981)
-                                : const Color(0xFFEF4444),
+                            color: _tone,
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -383,7 +399,8 @@ class _ChatReceiptCardState extends State<ChatReceiptCard> {
             ),
           ],
         ),
-      ),
+      );
+      }),
     );
   }
 

@@ -586,7 +586,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               size: 20.sp,
             ),
             label: Text(
-              'Repeat Transaction',
+              'Redo',
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,

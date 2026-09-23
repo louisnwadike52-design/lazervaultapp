@@ -53,7 +53,15 @@ class UnifiedTransactionReceipt extends StatefulWidget {
     this.fromHistory = false,
     this.showDownload = true,
     this.onRepeat,
-    this.repeatLabel = 'Repeat transaction',
+    // "Redo", not "Repeat transaction".
+    //
+    // The long label was truncated on the receipt's three-button action row
+    // ("Download | Share | Repeat transact…"), and the shorter word is also the
+    // clearer one: this re-opens Send Funds prefilled from the transfer, it does not
+    // schedule a recurring one. "Repeat" reads like recurrence — which is what the
+    // bill-reminder and plan-my-day sheets genuinely mean by it, so keeping the two
+    // ideas under one word made both worse.
+    this.repeatLabel = 'Redo',
     this.repeatColor,
     this.onRefresh,
   });

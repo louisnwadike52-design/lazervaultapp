@@ -347,7 +347,7 @@ class _BatchReceiptDetailedScreenState
         Expanded(
           child: _action(
             icon: Icons.repeat_rounded,
-            label: 'Repeat',
+            label: 'Redo',
             color: btOrange,
             onTap: () => _repeat(r),
           ),

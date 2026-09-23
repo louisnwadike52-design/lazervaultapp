@@ -156,68 +156,42 @@ class CalendarSyncService {
     return CalendarSyncResult.empty();
   }
 
-  /// Connect to Outlook Calendar
-  Future<bool> connectOutlookCalendar({
-    String? accessToken,
-    String? refreshToken,
-  }) async {
-    final headers = await _getHeaders();
-    final response = await http.post(
-      Uri.parse('$_baseUrl/api/v1/planning/calendar/outlook/connect'),
-      headers: headers,
-      body: jsonEncode({
-        if (accessToken != null) 'access_token': accessToken,
-        if (refreshToken != null) 'refresh_token': refreshToken,
-      }),
-    );
-
-    return response.statusCode == 200 || response.statusCode == 201;
-  }
-
-  /// Disconnect from Outlook Calendar
-  Future<bool> disconnectOutlookCalendar() async {
-    final headers = await _getHeaders();
-    final response = await http.post(
-      Uri.parse('$_baseUrl/api/v1/planning/calendar/outlook/disconnect'),
-      headers: headers,
-    );
-
-    return response.statusCode == 200;
-  }
+  // connectOutlookCalendar / disconnectOutlookCalendar used to sit here, POSTing to
+  // /api/v1/planning/calendar/outlook/{connect,disconnect}. Neither route exists —
+  // there is no Outlook handler in planning-service and no gateway mapping — so both
+  // calls could only ever 404, and each would have reported that 404 as a plain
+  // `false`, indistinguishable from a genuine refusal. Removed with the UI that
+  // called them. Re-add alongside a real handler, not before it.
 }
 
 /// Models for calendar sync data
 
+/// Google is the only rail modelled here.
+///
+/// The server's response still carries `outlook_connected`, which it hardcodes to
+/// `false` — those keys are simply ignored. Mirroring a field the platform cannot ever
+/// set true only invites another Outlook CTA to be built on top of it.
 class CalendarSyncStatus {
   final bool googleConnected;
   final String? googleLastSync;
-  final bool outlookConnected;
-  final String? outlookLastSync;
 
   CalendarSyncStatus({
     required this.googleConnected,
     this.googleLastSync,
-    required this.outlookConnected,
-    this.outlookLastSync,
   });
 
   factory CalendarSyncStatus.fromJson(Map<String, dynamic> json) {
     return CalendarSyncStatus(
       googleConnected: json['google_connected'] ?? false,
       googleLastSync: json['google_last_sync'],
-      outlookConnected: json['outlook_connected'] ?? false,
-      outlookLastSync: json['outlook_last_sync'],
     );
   }
 
   factory CalendarSyncStatus.empty() {
-    return CalendarSyncStatus(
-      googleConnected: false,
-      outlookConnected: false,
-    );
+    return CalendarSyncStatus(googleConnected: false);
   }
 
-  bool get hasAnyConnection => googleConnected || outlookConnected;
+  bool get hasAnyConnection => googleConnected;
 }
 
 class GoogleCalendarConnectionResult {

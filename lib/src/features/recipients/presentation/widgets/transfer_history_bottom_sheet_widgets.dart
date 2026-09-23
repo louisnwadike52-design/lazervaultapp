@@ -387,7 +387,7 @@ class TransferHistoryItem extends StatelessWidget {
                                 color: Colors.white, size: 18.sp),
                             SizedBox(width: 8.w),
                             Text(
-                              'Repeat',
+                              'Redo',
                               style: TextStyle(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w600,

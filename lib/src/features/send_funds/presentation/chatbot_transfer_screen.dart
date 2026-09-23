@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/ai_chats/domain/entities/ai_chat_message
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_prompt_card.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_auto_opener.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card_v2.dart';
 part 'chatbot_transfer_screen_widgets.dart';
@@ -34,8 +35,10 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
   // One-shot guard so a chat-driven PIN prompt auto-opens its native masked
   // modal exactly once per transaction (never on rebuild / history replay) —
   // parity with the general chatbot.
-  final Set<String> _autoOpenedPinPrompts = <String>{};
-
+  /// Shared with every other chat surface so the PIN sheet opens under ONE set of
+  /// rules — including the route guard and cancellation memory this screen's local
+  /// one-shot set did not have.
+  final ChatPinAutoOpener _pinAutoOpener = ChatPinAutoOpener();
   // --- Bottom Navigation Items ---
   int _currentIndex = 0;
 
@@ -97,24 +100,13 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
   /// exactly once per transaction_id (parity with the general chatbot). The
   /// ChatPinPromptCard renders with a stable key; this drives its modal.
   void _maybeAutoOpenPinPrompt(List<ChatMessageEntity> messages) {
-    ChatMessageEntity? latest;
-    for (var i = messages.length - 1; i >= 0; i--) {
-      final m = messages[i];
+    final prompts = <Map<String, dynamic>>[];
+    for (final m in messages) {
       if (!m.isUser && m.pinPrompt != null) {
-        latest = m;
-        break;
+        prompts.add(Map<String, dynamic>.from(m.pinPrompt!));
       }
     }
-    if (latest == null) return;
-    final txId = latest.pinPrompt!['transaction_id']?.toString() ?? '';
-    if (txId.isEmpty || _autoOpenedPinPrompts.contains(txId)) return;
-    // Mark consumed BEFORE the async open so a same-frame rebuild can't
-    // double-fire; a manual re-tap on the card is unaffected.
-    _autoOpenedPinPrompts.add(txId);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      ChatPinPromptCard.autoOpenFor(txId);
-    });
+    _pinAutoOpener.sync(context: context, prompts: prompts, isLiveTurn: true);
   }
 
   void _handleSubmitted(String text) async {
@@ -522,6 +514,10 @@ class _ChatbotTransferScreenState extends State<ChatbotTransferScreen> {
                   message.pinPrompt!['transaction_id']?.toString() ?? '',
                 ),
                 payload: message.pinPrompt!,
+                // Dismissing means "not now" — recorded so no rebuild reopens it.
+                onCancelled: () => _pinAutoOpener.noteCancelled(
+                  ChatPinAutoOpener.transactionIdOf(message.pinPrompt!),
+                ),
                 onPinVerified: (verificationToken) async {
                   final payload = message.pinPrompt!;
                   final callbackArgsRaw = payload['callback_args'];

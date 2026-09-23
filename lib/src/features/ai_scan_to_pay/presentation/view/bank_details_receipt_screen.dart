@@ -121,17 +121,11 @@ class _BankDetailsReceiptScreenState extends State<BankDetailsReceiptScreen>
         ),
         onPressed: () => _handleClose(context),
       ),
-      actions: [
-        IconButton(
-          icon: Icon(
-            Icons.download_outlined,
-            color: const Color(0xFF111827),
-            size: 24.r,
-          ),
-          onPressed: () => _downloadReceipt(),
-          tooltip: 'Download receipt',
-        ),
-      ],
+      // The app-bar download icon is gone: `_downloadReceipt` was a TODO plus a
+      // "Receipt download feature coming soon" toast, and there is no PDF
+      // generator for this receipt to call. Sharing (which does work, further
+      // down this file) stays as the way to keep a copy.
+      actions: const [],
     );
   }
 
@@ -538,28 +532,6 @@ Powered by LazerVault
       text: shareText,
       subject: 'Lazervault Payment Receipt',
     ));
-  }
-
-  void _downloadReceipt() {
-    // TODO: Implement PDF generation and download
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.info_outline, color: Colors.white, size: 20.r),
-            SizedBox(width: 8.w),
-            const Expanded(
-              child: Text('Receipt download feature coming soon'),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF4E03D0),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.r),
-        ),
-      ),
-    );
   }
 
   void _copyToClipboard(String text) {

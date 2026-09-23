@@ -199,7 +199,6 @@ import 'package:lazervault/src/features/funds/presentation/view/send_funds/trans
 import 'package:lazervault/src/features/send_funds/presentation/chatbot_transfer_screen.dart';
 import 'package:lazervault/src/features/presentation/views/languages_screen.dart';
 import 'package:lazervault/src/features/presentation/views/my_account_screen.dart';
-import 'package:lazervault/src/features/presentation/views/otp_verification_screen.dart';
 import 'package:lazervault/src/features/presentation/views/password_recovery_screen.dart';
 import 'package:lazervault/src/features/presentation/views/camera_scan_screen.dart';
 import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_screen.dart';
@@ -213,7 +212,6 @@ import 'package:lazervault/src/features/funds/presentation/view/send_funds/trans
 import 'package:lazervault/src/features/presentation/views/set_fingerprint_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/sign_up_screen.dart';
-import 'package:lazervault/src/features/presentation/views/stocks/stocks_screen.dart';
 import 'package:lazervault/src/features/presentation/views/upload_image_scren.dart';
 import 'package:lazervault/src/generated/withdraw.pbgrpc.dart';
 
@@ -1462,6 +1460,18 @@ Future<void> init() async {
     ),
   );
 
+  // The bank list for the recipient form's picker, from the rail that will carry the
+  // corridor. Separate from BankRepository because a bank CODE is a routing identifier
+  // belonging to that rail: BankRepository's bundled directory covers GB/GH/KE/NG/US/ZA,
+  // so Fincra's TZS, UGX, XOF and XAF corridors had an EMPTY picker — a dead end at the
+  // last step of an otherwise working form.
+  serviceLocator.registerLazySingleton<PayoutBankDirectoryService>(
+    () => PayoutBankDirectoryService(
+      dio: serviceLocator<Dio>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
   // Authed HTTP client for pausing/resuming bill-payment reminders. Posts to
   // commerce-gateway's /bills/reminders/{pause,resume} routes; base URL and
   // bearer token resolve exactly like ReportIssueService (endpoint registry +
@@ -2056,6 +2066,13 @@ Future<void> init() async {
       final useHttp = dotenv.env['USE_STOCKS_HTTP']?.toLowerCase() == 'true';
 
       if (useHttp) {
+        // NOT a like-for-like fallback. StockRemoteDataSourceRealImpl throws
+        // UnimplementedError for alerts, stock analysis, trading sessions and
+        // options, and returns empty lists for recommendations/trending. Flipping
+        // USE_STOCKS_HTTP=true therefore BREAKS the price-alert flow (the create
+        // dialog surfaces the failure via AlertsError) rather than degrading it.
+        // It fails loudly, which is correct — but do not treat this branch as a
+        // drop-in for the gRPC path.
         return StockRemoteDataSourceRealImpl(
           client: serviceLocator<http.Client>(),
           baseUrl: dotenv.env['STOCKS_API_URL'] ??
@@ -3073,7 +3090,6 @@ Future<void> init() async {
     ..registerFactory(() => SignUpScreen())
     ..registerFactory(() => EmailSignInScreen())
     ..registerFactory(() => PasscodeSignInScreen())
-    ..registerFactory(() => OTPVerificationScreen())
     ..registerFactory(() => EnableBiometricAccessScreen())
     ..registerFactory(() => PasswordRecoveryScreen())
     ..registerFactory(() => CreateNewPasswordScreen())
@@ -3082,7 +3098,6 @@ Future<void> init() async {
     ..registerFactory(() => FaceScanScreen())
     ..registerFactory(() => FacialLoginScreen())
     ..registerFactory(() => FlightsScreen())
-    ..registerFactory(() => StocksScreen())
     ..registerFactory(() => CBCurrencyExchangeScreen())
     ..registerFactory(() => CryptoFeature.CryptoScreen())
     ..registerFactoryParam<CryptoDetailScreen, Crypto, void>(

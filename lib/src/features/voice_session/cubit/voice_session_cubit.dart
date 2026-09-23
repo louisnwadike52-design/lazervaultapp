@@ -2955,6 +2955,17 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
     // Clear session data on full cleanup
     if (fullCleanup) {
+      // Close the conversation record FIRST — clearing _currentSessionId below throws
+      // the id away, after which nothing can ever close it.
+      //
+      // A full cleanup means this session is over for good, so leaving the record open
+      // is simply wrong: the conversation sat in history with no end time, and every
+      // caller of this method (the sheet's close button, a swipe-dismiss, logout) left
+      // one behind. endSession() on the history cubit is idempotent — it re-stamps
+      // endedAt — so callers that also go through endSession() below are unaffected.
+      if (_currentSessionId != null && _currentSessionId!.isNotEmpty) {
+        _chatHistoryCubit.endSession(_currentSessionId!);
+      }
       _currentSessionId = null;
       _currentAccessToken = null;
       _isMuted = false;

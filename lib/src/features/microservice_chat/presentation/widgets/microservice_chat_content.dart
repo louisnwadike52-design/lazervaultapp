@@ -19,6 +19,7 @@ import 'chat_media_input_bar.dart';
 import 'chat_receipt_card.dart';
 import 'chat_receipt_card_v2.dart';
 import 'chat_pin_prompt_card.dart';
+import 'chat_pin_auto_opener.dart';
 import 'chat_recipient_card.dart';
 import 'chat_reply_widgets.dart';
 import 'quick_action_chips.dart';
@@ -39,6 +40,13 @@ class MicroserviceChatContent extends StatefulWidget {
 
 class _MicroserviceChatContentState extends State<MicroserviceChatContent>
     with SingleTickerProviderStateMixin {
+  /// Opens the secure PIN pad as soon as a turn asks for one, on this surface too.
+  ///
+  /// Every per-service chatbot (bills, crypto, insurance, exchange…) renders through
+  /// here, so without it a money move confirmed in a service chat showed a card the
+  /// user had to find and tap while the message told them a pad was waiting.
+  final ChatPinAutoOpener _pinAutoOpener = ChatPinAutoOpener();
+
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late AnimationController _typingDotsController;
@@ -313,6 +321,16 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
       ),
       body: BlocConsumer<MicroserviceChatCubit, MicroserviceChatState>(
         listener: (context, state) {
+          // Reactive open. Offered on EVERY emission rather than only on success: the
+          // opener's own appearance-based priming is what distinguishes a live prompt
+          // from a replayed historical one, and feeding it uniformly means a state the
+          // cubit adds later cannot silently bypass it.
+          _pinAutoOpener.sync(
+            context: context,
+            prompts: _pinPromptsIn(state.messages),
+            isLiveTurn: state is MicroserviceChatMessageSuccess,
+          );
+
           if (state is MicroserviceChatMessageSuccess) {
             _scrollToBottom();
           } else if (state is MicroserviceChatMessageLoading) {
@@ -446,14 +464,33 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
   /// rounds-trips the verification token back via the cubit's
   /// submitPinVerification method so the agent's bound callback tool
   /// fires with the token (NOT the raw PIN).
+  /// Every pin-prompt payload in the transcript, oldest first.
+  List<Map<String, dynamic>> _pinPromptsIn(List<dynamic> messages) {
+    final out = <Map<String, dynamic>>[];
+    for (final m in messages) {
+      try {
+        if (m.isUser == true) continue;
+        final raw = m.metadata?['pin_prompt'];
+        if (raw is Map) out.add(Map<String, dynamic>.from(raw));
+      } catch (_) {
+        // Never let transcript parsing throw — it would take down the chat list.
+      }
+    }
+    return out;
+  }
+
   Widget _buildPinPromptCard(Map<String, dynamic> payload) {
     final callbackIntent = payload['callback_intent']?.toString() ?? '';
     final callbackArgsRaw = payload['callback_args'];
     final callbackArgs = callbackArgsRaw is Map
         ? Map<String, dynamic>.from(callbackArgsRaw)
         : <String, dynamic>{};
+    final txId = ChatPinAutoOpener.transactionIdOf(payload);
     return ChatPinPromptCard(
+      // Stable key per transaction_id — without it autoOpenFor() has no card to drive.
+      key: ChatPinPromptCard.keyFor(txId),
       payload: payload,
+      onCancelled: () => _pinAutoOpener.noteCancelled(txId),
       onPinVerified: (verificationToken) async {
         await context.read<MicroserviceChatCubit>().submitPinVerification(
               verificationToken: verificationToken,

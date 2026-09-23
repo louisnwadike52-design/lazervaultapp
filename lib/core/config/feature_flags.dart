@@ -421,6 +421,35 @@ class FeatureFlags {
     return _prefs?.getBool(serviceEntranceAnimationEnabled) ?? true;
   }
 
+  // ── Plan My Day: Google integrations (admin-toggled) ─────────────────────
+  /// Visibility of the Gmail and Google Calendar connect surfaces in Plan My Day.
+  ///
+  /// OFF BY DEFAULT, and the reason is external rather than technical. Both flows
+  /// request scopes that Google gates behind its verification process — Gmail asks for
+  /// `gmail.readonly` (RESTRICTED, requiring an annual CASA security assessment) and
+  /// `gmail.send`, and Calendar asks for `calendar.events` / `calendar.readonly` (both
+  /// SENSITIVE). Until that verification completes, the consent screen refuses every
+  /// account that is not on the project's test-user list with
+  /// "Access blocked: Lazervault has not completed the Google verification process".
+  ///
+  /// Ordinary sign-in is unaffected and stays visible: it requests only
+  /// `openid email profile`, which never opens the consent page at all. Same project,
+  /// same client — the difference is purely the scope tier.
+  ///
+  /// So the CTAs are hidden rather than removed. Every code path behind them is intact
+  /// and tested; flipping this key from the admin dashboard restores the feature with no
+  /// redeploy, which is what makes it the right shape for a block we expect to clear.
+  static const String planMyDayGoogleIntegrationsVisible =
+      'plan_my_day_google_integrations_visible';
+
+  /// `false` unless an admin has explicitly enabled it. Synchronous read — call after
+  /// [init]. Offline / first launch resolves to hidden, which is the safe direction:
+  /// showing a connect button that can only end in Google's block page is worse than
+  /// not offering it yet.
+  static bool get planMyDayGoogleIntegrations {
+    return _prefs?.getBool(planMyDayGoogleIntegrationsVisible) ?? false;
+  }
+
   // ── Send Funds flow config ───────────────────────────────────────────────
   /// `true` (SHORT flow) by DEFAULT for every user — the short flow is the
   /// product default on signup. An admin can flip the platform default to the

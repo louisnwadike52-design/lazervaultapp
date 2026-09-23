@@ -16,6 +16,9 @@ class ExchangeRequirements {
   final String provider;
   final String currency;
   final String? countryCode;
+  /// Human-readable destination, e.g. "Philippines". Shown in the form header and
+  /// used when synthesising a rule for a corridor the bundled map does not cover.
+  final String? countryName;
   final bool requiresBankCode;
   final bool requiresBranch;
   final List<ExchangeFieldSpec> fields;
@@ -25,6 +28,7 @@ class ExchangeRequirements {
     required this.currency,
     required this.fields,
     this.countryCode,
+    this.countryName,
     this.requiresBankCode = false,
     this.requiresBranch = false,
   });
@@ -54,6 +58,7 @@ class ExchangeRequirements {
       provider: (json['provider'] as String? ?? '').trim(),
       currency: (json['currency'] as String? ?? '').trim().toUpperCase(),
       countryCode: (json['country'] as String?)?.trim(),
+      countryName: (json['country_name'] as String?)?.trim(),
       requiresBankCode: json['requires_bank_code'] == true,
       requiresBranch: json['requires_branch'] == true,
       fields: fields,
@@ -177,5 +182,92 @@ class TransferRequirementsService {
     // No answer, ever, for this corridor. The bundled map is only an honest
     // stand-in for Flutterwave, so use it only when the caller says it applies.
     return localFallback;
+  }
+}
+
+/// The bank list the corridor's ACTIVE rail can pay out to.
+///
+/// WHY THIS IS SEPARATE FROM [BankRepository]
+/// ------------------------------------------
+/// A bank CODE is a routing identifier belonging to the rail that moves the money, and
+/// the same institution can carry different codes on different rails. [BankRepository]
+/// serves the bundled directory (GB, GH, KE, NG, US, ZA) topped up from banking-service's
+/// Flutterwave-backed `/api/v1/banks` — correct while Flutterwave carries the corridor,
+/// and empty for TZS, UGX, XOF and XAF, which Fincra carries.
+///
+/// An empty picker is a dead end at the final step of an otherwise working corridor: the
+/// form renders, the fields validate, and there is no bank to choose. So corridors whose
+/// rail publishes its own directory read it from here instead.
+class PayoutBankDirectoryService {
+  final Dio _dio;
+  final GrpcCallOptionsHelper _callOptionsHelper;
+  final String baseUrl;
+
+  /// Cached per corridor. The directory changes on the order of months, so one fetch per
+  /// session per corridor is ample — and a cached list keeps the picker populated if the
+  /// network drops while the user is part-way through the form.
+  final Map<String, List<Map<String, String>>> _cache = {};
+
+  PayoutBankDirectoryService({
+    required Dio dio,
+    required GrpcCallOptionsHelper callOptionsHelper,
+    String? baseUrl,
+  })  : _dio = dio,
+        _callOptionsHelper = callOptionsHelper,
+        baseUrl = baseUrl ?? endpointRegistry.httpFinancial;
+
+  static String _key(String source, String dest) =>
+      '${source.toUpperCase()}|${dest.toUpperCase()}';
+
+  /// Returns the rail's bank list, or null when it publishes none.
+  ///
+  /// Null is NOT an error and must not block the form — it means "this rail serves no
+  /// directory here", and the caller falls back to [BankRepository]. That is the normal
+  /// answer for Flutterwave and Nomba corridors, whose banks come from the bundled list.
+  Future<List<Map<String, String>>?> fetch({
+    required String destCurrency,
+    String sourceCurrency = 'NGN',
+  }) async {
+    final key = _key(sourceCurrency, destCurrency);
+    final cached = _cache[key];
+    if (cached != null) return cached;
+
+    try {
+      final opts = await _callOptionsHelper.withAuth();
+      final response = await _dio.get(
+        '$baseUrl/v1/exchange/payout-banks',
+        queryParameters: {
+          'currency': destCurrency.toUpperCase(),
+          'source': sourceCurrency.toUpperCase(),
+        },
+        options: Options(
+          headers: {'Content-Type': 'application/json', ...opts.metadata},
+          validateStatus: (_) => true,
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data is Map) {
+        final raw = (response.data as Map)['banks'];
+        if (raw is! List) return null;
+        final out = <Map<String, String>>[];
+        for (final b in raw) {
+          if (b is! Map) continue;
+          final code = (b['code'] as String? ?? '').trim();
+          final name = (b['name'] as String? ?? '').trim();
+          // Both halves are required: a bank with no code cannot route a payment and
+          // one with no name cannot be chosen. Passing the code through UNCHANGED is
+          // essential — formats vary from numeric sort codes to short alphabetic
+          // tokens, and normalising one would misroute the money.
+          if (code.isEmpty || name.isEmpty) continue;
+          out.add({'code': code, 'name': name});
+        }
+        if (out.isEmpty) return null;
+        _cache[key] = out;
+        return out;
+      }
+    } catch (_) {
+      // Transport failure — fall back to the bundled directory rather than blocking.
+    }
+    return null;
   }
 }

@@ -208,49 +208,12 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
             ),
           ),
 
-          // Bottom action bar
-          Container(
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              border: Border(
-                top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
-              ),
-            ),
-            child: SafeArea(
-              top: false,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _exportConversation(),
-                      icon: Icon(Icons.download_rounded, size: 18.sp),
-                      label: Text('Export'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white.withValues(alpha: 0.7),
-                        side: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.1)),
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: () => _shareConversation(),
-                      icon: Icon(Icons.share_rounded, size: 18.sp),
-                      label: Text('Share'),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF3B82F6),
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // The bottom action bar held Export and Share. Neither was built —
+          // `_exportConversation` and `_shareConversation` were a TODO plus a
+          // "coming soon" toast, and the Share one was a prominent filled BLUE
+          // button, the most-clicked-looking control on the sheet. Removed rather
+          // than left toasting: there is no PDF/export path for a voice
+          // transcript, so the bar only cost users a tap to find that out.
         ],
       ),
     );
@@ -599,28 +562,6 @@ class _VoiceChatHistorySheetState extends State<VoiceChatHistorySheet> {
     } else {
       return DateFormat('MMM d, HH:mm').format(timestamp);
     }
-  }
-
-  void _exportConversation() {
-    // TODO: Implement export to PDF or share
-    Get.snackbar(
-      'Export',
-      'Conversation export feature coming soon',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF1F1F1F),
-      colorText: Colors.white,
-    );
-  }
-
-  void _shareConversation() {
-    // TODO: Implement sharing
-    Get.snackbar(
-      'Share',
-      'Share feature coming soon',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF1F1F1F),
-      colorText: Colors.white,
-    );
   }
 
   void _openFile(String url) {

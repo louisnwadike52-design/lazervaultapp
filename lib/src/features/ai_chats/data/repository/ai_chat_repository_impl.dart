@@ -250,6 +250,35 @@ class AiChatRepositoryImpl implements IAiChatRepository {
                 }
               }
 
+              // The OTHER three widgets a turn can carry.
+              //
+              // This mapper rebuilt the receipts and stopped there, so reloading the
+              // conversation turned a confirm-transfer card, a QR card and a recipient
+              // card back into plain text — the exact widgets a user scrolls back to
+              // find. Each is stored the same way the receipts are (a Map, or a JSON
+              // string on older rows), so they are read the same way.
+              Map<String, dynamic>? asMap(String key) {
+                if (role != 'assistant' || parsedMetadata == null) return null;
+                final raw = parsedMetadata[key];
+                if (raw is Map) return Map<String, dynamic>.from(raw);
+                if (raw is String && raw.isNotEmpty) {
+                  try {
+                    final decoded = jsonDecode(raw);
+                    if (decoded is Map) return Map<String, dynamic>.from(decoded);
+                  } catch (_) {}
+                }
+                return null;
+              }
+
+              // A PIN prompt is a live CTA, not a history artifact — it opens a modal,
+              // and with the chat auto-opener wired an old one would re-open a pad for a
+              // transfer already settled. Only the NEWEST assistant turn may carry one,
+              // which is applied after the list is built (the decision needs the whole
+              // transcript, not one entry).
+              final pinPrompt = asMap('pin_prompt');
+              final qrCard = asMap('qr_card');
+              final recipientCard = asMap('recipient_card');
+
               // Match the live display (see AIChatCubit.sendMediaMessage): voice
               // shows "Sent a voice note" with the transcript inside the player;
               // image shows the caption or "Sent an image". The persisted voice
@@ -268,6 +297,9 @@ class AiChatRepositoryImpl implements IAiChatRepository {
                 timestamp: timestamp,
                 receiptData: receiptData,
                 receiptCard: receiptCard,
+                pinPrompt: pinPrompt,
+                qrCard: qrCard,
+                recipientCard: recipientCard,
                 mediaType: mediaType,
                 mediaUrl: mediaUrl,
                 audioDurationMs: mediaDurationMs,
@@ -279,6 +311,57 @@ class AiChatRepositoryImpl implements IAiChatRepository {
         }
 
         chatEntities.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+        // A superseded PIN prompt STAYS in the transcript — the card is part of what
+        // happened, and scrolling back to see what you approved is the normal reason to
+        // reopen a conversation. It is stamped with its outcome instead, and the card
+        // renders a stamped prompt read-only so the auto-opener can never raise a secure
+        // pad for a transfer that has already run its course.
+        //
+        // "completed" is stamped ONLY when a receipt in this conversation references the
+        // same transaction; the platform reference embeds the chat intent id
+        // (TRF-CHAT-transfer-<id>), which is what makes the match evidence rather than a
+        // guess. Everything else is neutral — a superseded prompt may have been
+        // abandoned, and claiming a completion we cannot show is the worst error here.
+        final receiptRefs = <String>[];
+        for (final e in chatEntities) {
+          final rc = e.receiptCard;
+          void collect(dynamic c) {
+            if (c is Map) {
+              final r = c['reference']?.toString().trim() ?? '';
+              if (r.isNotEmpty) receiptRefs.add(r);
+            }
+          }
+          if (rc is List) {
+            for (final c in rc) {
+              collect(c);
+            }
+          } else {
+            collect(rc);
+          }
+        }
+
+        var latestAssistant = -1;
+        for (var i = chatEntities.length - 1; i >= 0; i--) {
+          if (!chatEntities[i].isUser) {
+            latestAssistant = i;
+            break;
+          }
+        }
+        for (var i = 0; i < chatEntities.length; i++) {
+          if (i == latestAssistant) continue;
+          final prompt = chatEntities[i].pinPrompt;
+          if (prompt == null) continue;
+          final txId = prompt['transaction_id']?.toString().trim() ?? '';
+          final completed =
+              txId.isNotEmpty && receiptRefs.any((r) => r.contains(txId));
+          chatEntities[i] = chatEntities[i].copyWith(
+            pinPrompt: {
+              ...prompt,
+              '_history_state': completed ? 'completed' : 'inactive',
+            },
+          );
+        }
         return Right(chatEntities);
       }
 

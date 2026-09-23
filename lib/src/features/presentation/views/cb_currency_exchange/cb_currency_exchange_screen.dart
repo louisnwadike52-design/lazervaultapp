@@ -896,7 +896,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                         ),
                         icon: Icon(Icons.refresh, color: Colors.white, size: 20.sp),
                         label: Text(
-                          'Repeat',
+                          'Redo',
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 14.sp,

@@ -53,7 +53,6 @@ import 'package:lazervault/src/features/funds/presentation/view/withdraw_funds_s
 import 'package:lazervault/src/features/funds/presentation/view/send_funds/initiate_send_funds_screen.dart';
 import 'package:lazervault/src/features/presentation/views/languages_screen.dart';
 import 'package:lazervault/src/features/presentation/views/my_account_screen.dart';
-import 'package:lazervault/src/features/presentation/views/otp_verification_screen.dart';
 import 'package:lazervault/src/features/presentation/views/password_recovery_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/settings_screen.dart';
 import 'package:lazervault/src/features/presentation/views/verify_password_reset_otp_screen.dart';
@@ -1381,11 +1380,11 @@ class AppRouter {
       page: () => serviceLocator<PasscodeSignInScreen>(),
       transition: Transition.rightToLeft,
     ),
-    GetPage(
-      name: AppRoutes.otpVerification,
-      page: () => serviceLocator<OTPVerificationScreen>(),
-      transition: Transition.rightToLeft,
-    ),
+    // AppRoutes.otpVerification is deliberately unrouted. It pointed at a legacy
+    // OTPVerificationScreen whose "Resend code" button was `onPressed: () {}` —
+    // no route in the app ever navigated here, which is why a dead resend on an
+    // OTP screen went unnoticed. The live OTP surfaces are the auth flow's own
+    // screens. Screen and widget deleted; do not re-point this name at a stub.
     GetPage(
       name: AppRoutes.enableBiometricAccess,
       page: () => serviceLocator<EnableBiometricAccessScreen>(),

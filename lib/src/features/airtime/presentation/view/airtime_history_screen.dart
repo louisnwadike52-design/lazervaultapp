@@ -676,7 +676,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                     },
                     icon: Icon(Icons.repeat, color: Colors.white, size: 20.sp),
                     label: Text(
-                      'Repeat Transaction',
+                      'Redo',
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,

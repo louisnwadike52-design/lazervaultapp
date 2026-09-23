@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
@@ -36,6 +37,9 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
   Map<String, dynamic> _paymentDetails = {};
   String? _investCollectionId;
   late Color _hubAccent;
+
+  /// Guards against a double-tap opening two share sheets.
+  bool _isSharing = false;
 
   @override
   void initState() {
@@ -84,26 +88,57 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
     super.dispose();
   }
 
-  void _shareReceipt() {
-    // TODO: Implement share functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Share functionality coming soon'),
-        backgroundColor: _hubAccent,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
+  /// Shares the receipt as text.
+  ///
+  /// Was a TODO plus a "Share functionality coming soon" toast, reachable from
+  /// TWO buttons on this screen (the app-bar icon and the footer action), so a
+  /// user who had just moved real money got told twice that they could not keep a
+  /// record of it. All the fields were already on hand.
+  ///
+  /// Text rather than PDF deliberately: there is no stock-receipt PDF generator,
+  /// and inventing one here would be the same shortcut in a new place.
+  Future<void> _shareReceipt() async {
+    if (_isSharing) return;
+    setState(() => _isSharing = true);
+    try {
+      final symbol = _selectedStock?.symbol ?? '—';
+      final name = _selectedStock?.name ?? '';
+      final action = _tradeType.toLowerCase() == 'sell' ? 'Sell' : 'Buy';
+      final ccy = _selectedStock?.currency ?? 'NGN';
+      final text = '''
+Lazervault — Stock $action Receipt
 
-  void _downloadReceipt() {
-    // TODO: Implement download functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Receipt downloaded successfully'),
-        backgroundColor: InvestTradingUi.buy,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+$symbol${name.isEmpty ? '' : ' · $name'}
+Shares: $_shares
+Amount: ${CurrencySymbols.formatAmountWithCurrency(_amount, ccy)}
+Fees: ${CurrencySymbols.formatAmountWithCurrency(_fees, ccy)}
+Total: ${CurrencySymbols.formatAmountWithCurrency(_total, ccy)}
+
+Reference: $_transactionId
+Date: ${_transactionDate.toLocal()}
+${_paymentMethod.isEmpty ? '' : 'Paid with: $_paymentMethod'}
+
+Powered by Lazervault''';
+
+      await SharePlus.instance.share(ShareParams(
+        // iOS: a non-zero popover anchor is required — CGRectZero throws
+        // PlatformException and the share silently fails on iPhone/iPad.
+        sharePositionOrigin: const Rect.fromLTWH(0, 0, 1, 1),
+        text: text,
+        subject: 'Stock $action Receipt — $symbol',
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not share receipt: $e'),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
+    }
   }
 
   void _goToHome() {
@@ -543,28 +578,13 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
   Widget _buildActionButtons() {
     return Row(
       children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: _downloadReceipt,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: InvestTradingUi.textPrimary,
-              side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-              padding: EdgeInsets.symmetric(vertical: 14.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14.r),
-              ),
-            ),
-            icon: Icon(Icons.download_rounded, size: 20.sp),
-            label: Text(
-              'Download',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ),
-        SizedBox(width: 12.w),
+        // A "Download" button sat here over `_downloadReceipt`, whose entire body
+        // was a TODO plus a snackbar reading "Receipt downloaded successfully".
+        // That is not an unfinished feature, it is a false confirmation on a money
+        // receipt: the user is told a file was saved, goes looking for it later,
+        // and finds nothing — with no reason to suspect the app rather than their
+        // own device. There is no stock-receipt PDF generator to point it at, so
+        // Share (which now genuinely works) is the only action offered.
         Expanded(
           child: FilledButton.icon(
             onPressed: _shareReceipt,

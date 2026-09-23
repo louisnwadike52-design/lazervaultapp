@@ -326,8 +326,35 @@ class TransferReceiptData {
     }
   }
 
-  bool get isSuccess =>
-      status.toLowerCase() == 'completed' || status.toLowerCase() == 'success';
+  /// Whether the transfer actually landed.
+  ///
+  /// "successful" was missing, and the backend sends exactly that — so a completed
+  /// transfer failed this check and the card drew it with the failure icon and red
+  /// colours. Matching a fixed set rather than a prefix keeps it explicit: a status we
+  /// have never seen must not be guessed into success on a money card.
+  bool get isSuccess => const {
+        'completed',
+        'complete',
+        'success',
+        'successful',
+      }.contains(status.trim().toLowerCase());
+
+  /// Whether it has been accepted and is still settling.
+  ///
+  /// An EMPTY status counts as in-progress, not failed: it means the backend told us
+  /// nothing yet, which is exactly the state a transfer is in between submission and
+  /// its first status update. Rendering that as a failure tells the user their money
+  /// did not move when it is very likely on its way.
+  bool get isPending {
+    if (isSuccess) return false;
+    final s = status.trim().toLowerCase();
+    if (s.isEmpty) return true;
+    return s.contains('pending') ||
+        s.contains('processing') ||
+        s.contains('progress') ||
+        s.contains('queued') ||
+        s.contains('submitted');
+  }
 
   /// Create a copy with updated receiptUrl
   TransferReceiptData copyWith({String? receiptUrl}) {

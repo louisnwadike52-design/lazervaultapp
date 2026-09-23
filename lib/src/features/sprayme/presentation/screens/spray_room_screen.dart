@@ -2249,7 +2249,9 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                         label: 'Request sent — waiting for host',
                         color: const Color(0xFF6B7280),
                         icon: Icons.hourglass_top_rounded,
-                        onTap: () {},
+                        // Status, not an action: the request is already with the
+                        // host and there is nothing for a press to do.
+                        onTap: null,
                       )
                     else
                       _guestPrimaryButton(
@@ -2351,11 +2353,22 @@ class _SprayRoomViewState extends State<_SprayRoomView>
     );
   }
 
+  /// Guest call-to-action. Pass a null [onTap] for a status-only state.
+  ///
+  /// "Request sent — waiting for host" used to pass `() {}`: the button stayed
+  /// fully enabled, so it took presses and splashed for an action that did not
+  /// exist, reading as "this didn't work, press it again" while the request was
+  /// in fact already with the host. Null now gives it real disabled semantics —
+  /// including for screen readers, which previously announced it as actionable.
+  ///
+  /// [disabledBackgroundColor] is pinned to the SAME [color] because the caller
+  /// already picks a muted grey for the waiting state; letting Flutter's default
+  /// disabled fill take over would wash out a deliberate choice.
   Widget _guestPrimaryButton({
     required String label,
     required Color color,
     required IconData icon,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
   }) {
     return SizedBox(
       width: double.infinity,
@@ -2370,6 +2383,8 @@ class _SprayRoomViewState extends State<_SprayRoomView>
                 fontWeight: FontWeight.w600)),
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
+          disabledBackgroundColor: color,
+          disabledForegroundColor: Colors.white,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
           elevation: 0,

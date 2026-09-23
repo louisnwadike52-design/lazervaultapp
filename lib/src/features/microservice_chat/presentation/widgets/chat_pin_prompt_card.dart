@@ -45,6 +45,29 @@ class ChatPinPromptCard extends StatefulWidget {
 
   static final Map<String, GlobalKey<ChatPinPromptCardState>> _cardKeys = {};
 
+  /// Drop the key for a transaction whose card has left the tree.
+  ///
+  /// Without this the map is append-only for the life of the process: one entry per
+  /// money move the user ever makes in a session, each pinning a GlobalKey. Pruning on
+  /// dispose is safe because [keyFor] recreates the entry the moment the card is built
+  /// again — and a card that is not in the tree has no state for [autoOpenFor] to drive
+  /// anyway, so a stale key could only ever be a silent no-op.
+  static void _releaseKey(String transactionId, State state) {
+    final existing = _cardKeys[transactionId];
+    // Only the CURRENT holder may release it. During a list rebuild the replacement
+    // card can be built before the old one disposes, and releasing then would drop the
+    // new card's key and silently break its auto-open.
+    if (existing == null) return;
+    final holder = existing.currentState;
+    // Two safe cases: nothing is attached, or the thing attached is the very state
+    // that is disposing. Anything else means a replacement card already claimed the
+    // key during a list rebuild, and dropping it there would silently break ITS
+    // auto-open — the failure would look exactly like the bug this whole change fixes.
+    if (holder == null || identical(holder, state)) {
+      _cardKeys.remove(transactionId);
+    }
+  }
+
   /// Auto-open the PIN modal for an already-rendered card identified by
   /// [transactionId]. No-op if the card isn't mounted yet, is already open,
   /// or has already completed. Reuses the card's own [_openPinModal] so the
@@ -94,6 +117,17 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
       GetIt.I<ITransactionPinService>();
 
   String _s(String key) => widget.payload[key]?.toString() ?? '';
+
+  /// The outcome stamped onto a superseded prompt when history was rebuilt.
+  ///
+  /// Empty for the live card. "completed" is only ever stamped when a receipt in the
+  /// same conversation references this exact transaction; anything else is "inactive",
+  /// because a superseded prompt may simply have been abandoned and claiming a
+  /// completion we cannot evidence is the one mistake worth avoiding on a money card.
+  String get _historyState => _s('_history_state');
+
+  bool get _isHistorical => _historyState.isNotEmpty;
+  bool get _isHistoricallyCompleted => _historyState == 'completed';
 
   bool get _isExpired {
     final raw = _s('expires_at');
@@ -163,6 +197,14 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
     }
   }
 
+  @override
+  void dispose() {
+    // Release this transaction's GlobalKey so the static map does not grow for the life
+    // of the process. See [_releaseKey] for why the current-holder check matters.
+    ChatPinPromptCard._releaseKey(_s('transaction_id'), this);
+    super.dispose();
+  }
+
   Future<void> _openPinModal() async {
     if (!mounted || _isOpen || _completed || _isExpired) return;
     final transactionId = _s('transaction_id');
@@ -218,8 +260,11 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
     final hasRecipientIdentity =
         recipientName.isNotEmpty || recipientImage.isNotEmpty;
     final feeNum = double.tryParse(fee) ?? 0.0;
-    final disabled = _completed || _isExpired;
-    final accent = _completed
+    // A card rebuilt from history is never interactive again: its PIN pad would be
+    // confirming a transfer that has already run its course.
+    final disabled = _completed || _isExpired || _isHistorical;
+    final succeeded = _completed || _isHistoricallyCompleted;
+    final accent = succeeded
         ? const Color(0xFF10B981)
         : (_isExpired ? const Color(0xFFEF4444) : const Color(0xFF5B45C9));
 
@@ -297,17 +342,32 @@ class ChatPinPromptCardState extends State<ChatPinPromptCard>
             child: ElevatedButton.icon(
               onPressed: disabled ? null : _openPinModal,
               icon: Icon(
-                _completed
+                succeeded
                     ? Icons.check_circle_outline
                     : (_isExpired
                         ? Icons.timer_off_outlined
-                        : Icons.lock_outline),
+                        : _isHistorical
+                            ? Icons.history
+                            : Icons.lock_outline),
                 size: 16,
               ),
               label: Text(
-                _completed
-                    ? 'PIN submitted'
-                    : (_isExpired ? 'Prompt expired' : 'Enter PIN'),
+                // "Request expired", not "Prompt expired". What expired is the
+                // TRANSFER request the card represents — "prompt" names our internal
+                // mechanism, which the user has no reason to know about.
+                //
+                // "Completed" rather than "PIN submitted" once it is done: by the time
+                // this card is read back in history the PIN is long irrelevant, and what
+                // the user wants to know is whether the transfer went through.
+                succeeded
+                    ? 'Completed'
+                    : _isExpired
+                        ? 'Request expired'
+                        // Superseded but with no receipt to prove it ran. Neutral on
+                        // purpose — see _historyState.
+                        : _isHistorical
+                            ? 'No longer active'
+                            : 'Enter PIN',
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,

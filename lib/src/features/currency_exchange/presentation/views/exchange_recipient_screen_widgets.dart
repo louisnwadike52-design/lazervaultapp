@@ -68,6 +68,50 @@ class _CurrencyCountryConfig {
           fieldType: _FieldType.african,
           supportsAutoVerify: true,
         );
+      // Fincra African corridors. Without these they fell to the default branch, which
+      // derives a country code from the first two letters of the CURRENCY — right by
+      // luck for TZS ("TZ") and UGX ("UG"), wrong for XOF ("XO") and XAF ("XA") — and
+      // rendered a white flag with the currency code as the country name.
+      //
+      // They are gated off in production today (Fincra corridors are supported=false
+      // pending float funding), so this is display correctness for the moment they are
+      // switched on, not a live fix.
+      //
+      // supportsAutoVerify is false for all four: account-name resolution is a
+      // Paystack/Flutterwave capability on NG/GH/KE/ZA, and claiming it here would show
+      // a lookup that never returns.
+      case 'TZS':
+        return const _CurrencyCountryConfig(
+          countryCode: 'TZ',
+          countryName: 'Tanzania',
+          flag: '\u{1F1F9}\u{1F1FF}',
+          fieldType: _FieldType.african,
+        );
+      case 'UGX':
+        return const _CurrencyCountryConfig(
+          countryCode: 'UG',
+          countryName: 'Uganda',
+          flag: '\u{1F1FA}\u{1F1EC}',
+          fieldType: _FieldType.african,
+        );
+      // XOF and XAF each span several countries, so no single ISO code is correct.
+      // The recipient's own bank/mobile selection resolves the country at dispatch;
+      // an empty code keeps the form from asserting one that would be wrong for most
+      // users of the currency.
+      case 'XOF':
+        return const _CurrencyCountryConfig(
+          countryCode: '',
+          countryName: 'West Africa (CFA franc)',
+          flag: '\u{1F3F3}\u{FE0F}',
+          fieldType: _FieldType.african,
+        );
+      case 'XAF':
+        return const _CurrencyCountryConfig(
+          countryCode: '',
+          countryName: 'Central Africa (CFA franc)',
+          flag: '\u{1F3F3}\u{FE0F}',
+          fieldType: _FieldType.african,
+        );
       case 'PHP':
         // Klasha corridor — generic bank fields (bank name + account number).
         return const _CurrencyCountryConfig(

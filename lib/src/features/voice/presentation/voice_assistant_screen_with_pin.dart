@@ -28,6 +28,12 @@ class VoiceAssistantScreenWithPIN extends StatefulWidget {
 class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPIN> {
   bool _isListening = false;
   bool _isProcessing = false;
+
+  /// Backs the composer. The field had no controller at all, so the send button
+  /// beside it had nothing to read and was wired to `onPressed: () {}` — tapping
+  /// it silently did nothing while pressing Enter worked, because only
+  /// `onSubmitted` was hooked up.
+  final TextEditingController _composerController = TextEditingController();
   final List<VoiceResponse> _messages = [];
   String? _currentService;
   bool _awaitingPIN = false;
@@ -167,6 +173,7 @@ class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPI
   @override
   void dispose() {
     _pinWorkflowManager?.dispose();
+    _composerController.dispose();
     super.dispose();
   }
 
@@ -188,6 +195,18 @@ class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPI
 
     // Simulate user saying "Send $500 to John"
     await widget.voiceMode.sendTextMessage('Send \$500 to John');
+  }
+
+  /// Sends whatever is in the composer, then clears it.
+  ///
+  /// Enter already went through [_sendMessage] via `onSubmitted`; this is the same
+  /// path for the send button. Clearing here (not in [_sendMessage]) keeps the
+  /// submit-by-keyboard behaviour identical to before.
+  void _sendComposerText() {
+    final text = _composerController.text.trim();
+    if (text.isEmpty) return;
+    _composerController.clear();
+    _sendMessage(text);
   }
 
   void _sendMessage(String text) async {
@@ -308,13 +327,16 @@ class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPI
                           vertical: 12,
                         ),
                       ),
+                      controller: _composerController,
                       onSubmitted: _sendMessage,
                     ),
                   ),
                   const SizedBox(width: 8),
                   IconButton.filled(
                     icon: const Icon(Icons.send),
-                    onPressed: () {},
+                    // Disabled while a turn is in flight, so the same message
+                    // cannot be submitted twice by an impatient second tap.
+                    onPressed: _isProcessing ? null : _sendComposerText,
                   ),
                   const SizedBox(width: 8),
                   IconButton.filled(

@@ -20,6 +20,7 @@ import 'chat_media_input_bar.dart';
 import 'chat_receipt_card.dart';
 import 'chat_receipt_card_v2.dart';
 import 'chat_pin_prompt_card.dart';
+import 'chat_pin_auto_opener.dart';
 import 'chat_recipient_card.dart';
 import 'chat_reply_widgets.dart';
 import 'chat_sessions_drawer.dart';
@@ -34,6 +35,14 @@ class GeneralChatContent extends StatefulWidget {
 
 class _GeneralChatContentState extends State<GeneralChatContent>
     with SingleTickerProviderStateMixin {
+  /// Drives the secure PIN pad open the moment a turn asks for one.
+  ///
+  /// NOVA used to render the confirm-transfer card and stop there: the message said
+  /// "enter your PIN on the secure pad" and no pad appeared, so the user had to notice
+  /// and tap. The AI chat surface already auto-opened, which made the same money move
+  /// behave differently depending on which assistant you asked.
+  final ChatPinAutoOpener _pinAutoOpener = ChatPinAutoOpener();
+
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late AnimationController _typingDotsController;
@@ -283,6 +292,18 @@ class _GeneralChatContentState extends State<GeneralChatContent>
           if (state is GeneralChatSuccess) {
             _scrollToBottom();
           }
+
+          // Reactive: every emission is offered to the opener, which decides whether
+          // anything is eligible. Note this is deliberately NOT gated on
+          // `state is GeneralChatSuccess` alone — loadHistory finishes on that same
+          // state, so the opener's own appearance-based priming is what keeps a
+          // replayed historical prompt from popping a PIN pad. Passing the state
+          // through as well means both guards have to agree before a sheet opens.
+          _pinAutoOpener.sync(
+            context: context,
+            prompts: _pinPromptsIn(state.messages),
+            isLiveTurn: state is GeneralChatSuccess,
+          );
 
           return Column(
             children: [
@@ -790,14 +811,38 @@ class _GeneralChatContentState extends State<GeneralChatContent>
     );
   }
 
+  /// Every pin-prompt payload in the transcript, oldest first.
+  List<Map<String, dynamic>> _pinPromptsIn(List<dynamic> messages) {
+    final out = <Map<String, dynamic>>[];
+    for (final m in messages) {
+      try {
+        if (m.isUser == true) continue;
+        final raw = m.metadata?['pin_prompt'];
+        if (raw is Map) out.add(Map<String, dynamic>.from(raw));
+      } catch (_) {
+        // A message shape without metadata is simply not a prompt. Never let transcript
+        // parsing throw — it would take down the whole chat list.
+      }
+    }
+    return out;
+  }
+
   Widget _buildPinPromptCard(Map<String, dynamic> payload) {
     final callbackIntent = payload['callback_intent']?.toString() ?? '';
     final callbackArgsRaw = payload['callback_args'];
     final callbackArgs = callbackArgsRaw is Map
         ? Map<String, dynamic>.from(callbackArgsRaw)
         : <String, dynamic>{};
+    final txId = ChatPinAutoOpener.transactionIdOf(payload);
     return ChatPinPromptCard(
+      // Stable key per transaction_id. Without it keyFor() never registers this card's
+      // state and autoOpenFor() has nothing to drive — which is why auto-open could not
+      // have worked on this surface even once it was called.
+      key: ChatPinPromptCard.keyFor(txId),
       payload: payload,
+      // Dismissing means "not now". Recorded so a rebuild cannot reopen the sheet the
+      // user just closed; their own "Enter PIN" tap still works.
+      onCancelled: () => _pinAutoOpener.noteCancelled(txId),
       onPinVerified: (verificationToken) async {
         await context.read<GeneralChatCubit>().submitPinVerification(
           verificationToken: verificationToken,

@@ -31,6 +31,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_media_bubble.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_voice_note_player.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_prompt_card.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_pin_auto_opener.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_recipient_card.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card_v2.dart';
@@ -85,7 +86,11 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   // Ensures each chat-driven money-move auto-opens its PIN sheet at most once,
   // never re-opening on widget rebuild or after the user dismisses it. The
   // durable in-chat ChatPinPromptCard still re-opens on manual tap regardless.
-  final Set<String> _autoOpenedPinPrompts = <String>{};
+  /// Shared with every other chat surface so the PIN sheet opens under ONE set of
+  /// rules. Replaces a local one-shot set that had no route guard and no memory of a
+  /// cancellation — so a sheet could appear over a screen the user had navigated to,
+  /// and a dismissal was not recorded anywhere.
+  final ChatPinAutoOpener _pinAutoOpener = ChatPinAutoOpener();
 
   // Media state
   final ImagePicker _imagePicker = ImagePicker();
@@ -267,33 +272,15 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   /// SAME native modal the in-chat card opens — we just drive that card's
   /// state via its stable GlobalKey, so there is one verification code path.
   void _maybeAutoOpenPinPrompt(List<ChatMessageEntity> messages) {
-    // Find the most recent assistant message with a pin_prompt. Iterate from
-    // the end so we only consider the newest prompt of this turn.
-    ChatMessageEntity? latest;
-    for (var i = messages.length - 1; i >= 0; i--) {
-      final m = messages[i];
+    final prompts = <Map<String, dynamic>>[];
+    for (final m in messages) {
       if (!m.isUser && m.pinPrompt != null) {
-        latest = m;
-        break;
+        prompts.add(Map<String, dynamic>.from(m.pinPrompt!));
       }
     }
-    if (latest == null) return;
-
-    final txId = latest.pinPrompt!['transaction_id']?.toString() ?? '';
-    if (txId.isEmpty) return;
-    if (_autoOpenedPinPrompts.contains(txId)) return;
-
-    // Mark consumed BEFORE the async open so a same-frame rebuild can't
-    // double-fire. Manual re-tap on the card is unaffected (it doesn't read
-    // this set) — only the auto-open is one-shot.
-    _autoOpenedPinPrompts.add(txId);
-
-    // Defer to after this frame so the ChatPinPromptCard (and its GlobalKey)
-    // is actually mounted in the rebuilt list before we drive its modal.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      ChatPinPromptCard.autoOpenFor(txId);
-    });
+    // Called only from the AIChatMessageSuccess branch, so this IS a live turn; the
+    // opener still applies its own priming, expiry, cancellation and route guards.
+    _pinAutoOpener.sync(context: context, prompts: prompts, isLiveTurn: true);
   }
 
   @override
@@ -1607,6 +1594,11 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                   message.pinPrompt!['transaction_id']?.toString() ?? '',
                 ),
                 payload: message.pinPrompt!,
+                // Dismissing means "not now". Recorded so no rebuild reopens the sheet
+                // the user just closed; their own "Enter PIN" tap still works.
+                onCancelled: () => _pinAutoOpener.noteCancelled(
+                  ChatPinAutoOpener.transactionIdOf(message.pinPrompt!),
+                ),
                 onPinVerified: (verificationToken) async {
                   final payload = message.pinPrompt!;
                   final callbackArgsRaw = payload['callback_args'];

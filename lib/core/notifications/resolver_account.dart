@@ -67,7 +67,14 @@ NotificationTarget? _resolveAccount(String type, Map<String, String> data) {
   // have 12 unread emails" push on the Reminders screen shows the user a list
   // that has nothing to do with what buzzed.
   if (type.startsWith('planning_email') || type.contains('email_digest')) {
-    return _landing(AppRoutes.emailInbox);
+    // Only when the Gmail surface is actually available. With the integration hidden
+    // (Google verification pending) the inbox is unreachable from the UI, so a digest
+    // push must not become the one door into it — the user would land on a connect
+    // screen whose only outcome is Google's "Access blocked" page. Falls through to the
+    // reminders landing below, which is at least a screen they can use.
+    if (FeatureFlags.planMyDayGoogleIntegrations) {
+      return _landing(AppRoutes.emailInbox);
+    }
   }
   if (_is(type, 'planning_reminder') ||
       _is(type, 'planning') ||

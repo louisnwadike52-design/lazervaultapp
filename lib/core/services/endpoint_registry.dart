@@ -69,6 +69,12 @@ class EndpointRegistry {
     // admin knob; FeatureFlags.applyRemoteSnapshot reads them at boot.
     'dashboard_cards_section_visible',
     'voice_chat_assistant_section_visible',
+    // Plan My Day Gmail + Google Calendar surfaces (hidden by default). Cached
+    // like the other admin knobs so the Plan My Day landing renders WITHOUT the
+    // connect entry points on its first frame — a card that appears and then
+    // disappears a moment later is worse than one that was never offered, and
+    // this one leads to Google's "Access blocked" page until verification clears.
+    'plan_my_day_google_integrations_visible',
     // Bulk SMS service visibility (hidden by default; admin can restore).
     'bulk_sms_visible',
     // African voice-language master gate (English-only when off). Cached so the

@@ -103,6 +103,13 @@ class ChatMessageEntity extends Equatable {
   });
 
   ChatMessageEntity copyWith({
+    /// Removes the PIN prompt instead of keeping it.
+    ///
+    /// `copyWith` cannot null a field through its optional parameters — a null argument
+    /// is indistinguishable from "not passed" and falls through to the existing value.
+    /// History needs to CLEAR superseded prompts so the chat auto-opener cannot raise a
+    /// secure pad for a transfer that was already settled, so the intent is explicit.
+    bool clearPinPrompt = false,
     String? text,
     bool? isUser,
     DateTime? timestamp,
@@ -148,7 +155,7 @@ class ChatMessageEntity extends Equatable {
       receiptCard: receiptCard ?? this.receiptCard,
       qrCard: qrCard ?? this.qrCard,
       recipientCard: recipientCard ?? this.recipientCard,
-      pinPrompt: pinPrompt ?? this.pinPrompt,
+      pinPrompt: clearPinPrompt ? null : (pinPrompt ?? this.pinPrompt),
     );
   }
 

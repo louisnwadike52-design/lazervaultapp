@@ -8,20 +8,17 @@ import 'package:lazervault/src/features/transaction_history/presentation/screens
 import 'package:lazervault/src/features/presentation/views/languages_screen.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/screens/lifestyle_screen.dart';
 import 'package:lazervault/src/features/presentation/views/my_account_screen.dart';
-import 'package:lazervault/src/features/presentation/views/otp_verification_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/settings_screen.dart';
 import 'package:lazervault/src/features/presentation/views/input_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/new_card_screen.dart';
 import 'package:lazervault/src/features/presentation/views/notification_screen.dart';
 import 'package:lazervault/src/features/presentation/views/review_funds_transfer_screen.dart';
-import 'package:lazervault/src/features/presentation/views/review_transfer_funds_screen.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/add_recipient_screen.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/select_recipient_screen.dart';
 import 'package:lazervault/src/features/presentation/views/send_fund_receipt_screen.dart';
 import 'package:lazervault/src/features/presentation/views/set_fingerprint_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/sign_up_screen.dart';
-import 'package:lazervault/src/features/presentation/views/transfer_funds_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_list_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/cubit/crowdfund_cubit.dart';
 import 'package:lazervault/src/features/ai_chats/presentation/view/ai_chats_screen.dart';
@@ -118,8 +115,6 @@ class Screen {
         return const SignUpScreen();
       case ScreenName.signIn:
         return const PasscodeSignInScreen();
-      case ScreenName.otpVerification:
-        return const OTPVerificationScreen();
       case ScreenName.reviewFundsTransfer:
         return ReviewFundsTransferScreen(
           recipient: param1,
@@ -134,16 +129,6 @@ class Screen {
       case ScreenName.sendFundReceipt:
         return SendFundReceiptScreen(
           transaction: param1 as Transaction,
-        );
-      case ScreenName.transferFunds:
-        return TransferFundsScreen(
-          user: param1 as User,
-          transaction: param2 as TransferTransaction,
-        );
-      case ScreenName.reviewTransferFunds:
-        return ReviewTransferFundsScreen(
-          user: param1 as User,
-          transaction: param2 as TransferTransaction,
         );
       case ScreenName.transactionHistory:
         return const DashboardTransactionHistoryScreen();
@@ -180,9 +165,6 @@ class Screen {
               serviceLocator<CrowdfundCubit>()..loadCrowdfunds(),
           child: const CrowdfundListScreen(),
         );
-      case ScreenName.planMyDay:
-        // Placeholder - implement PlanMyDay screen when needed
-        return const SizedBox.shrink();
     }
   }
 }
@@ -201,8 +183,6 @@ enum ScreenName {
   sendFundReceipt('Receipt'),
   reviewFundsTransfer('Review your transfer'),
   requestFunds('Request Payment'),
-  transferFunds('Transfer'),
-  reviewTransferFunds('Confirmation'),
   profileSettings('Settings'),
   languages('Languages'),
   setFingerPrint('Set Fingerprint'),
@@ -210,13 +190,11 @@ enum ScreenName {
   changePin('Change Pin'),
   signUP('Sign Up'),
   signIn('Sign In'),
-  otpVerification('Verify OTP'),
   transactionHistory('Transaction History'),
   aiChat('AI Chat'),
   currencyExchange('Currency Exchange'),
   moveMoney('Beam'),
   lifeStyle('Life Style'),
-  planMyDay('Plan My Day'),
   crowdfund('Crowdfunding');
 
   final String displayName;
@@ -233,7 +211,6 @@ List<Screen> screens = [
   Screen(name: ScreenName.sendFunds),
   Screen(name: ScreenName.inputPin),
   Screen(name: ScreenName.sendFundReceipt),
-  Screen(name: ScreenName.otpVerification),
   Screen(name: ScreenName.transactionHistory),
   Screen(name: ScreenName.aiChat),
   Screen(name: ScreenName.currencyExchange),

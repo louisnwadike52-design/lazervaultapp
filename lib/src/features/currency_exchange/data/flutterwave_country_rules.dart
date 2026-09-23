@@ -67,6 +67,96 @@ class ExchangeCountryRule {
     this.purposeOfPaymentOptions = const [],
   });
 
+  /// Builds a rule from the BACKEND's answer alone, for a corridor this bundled map
+  /// does not describe.
+  ///
+  /// WHY THIS HAD TO EXIST
+  /// --------------------
+  /// This map covers NGN, GHS, KES, USD, GBP and EUR — Flutterwave's corridors, because
+  /// that is the rail it was written for. The recipient screen grafted the backend's
+  /// field specs onto a bundled rule and returned NULL when no bundled rule existed, so
+  /// a corridor served by any other rail could not render a form at all no matter what
+  /// the backend published.
+  ///
+  /// That silently blocked every corridor beyond the original six: Fincra's ZAR, TZS,
+  /// XOF, XAF and UGX, and Klasha's PHP and CAD — including the Philippines, which no
+  /// other rail serves. The backend would answer correctly, `_corridorSupported` would
+  /// flip to true, and the form still had no rule to render from.
+  ///
+  /// WHAT IS AND IS NOT CARRIED OVER
+  /// ------------------------------
+  /// The backend serves the things that are properties of the RAIL — the field specs,
+  /// the country, whether a bank code or branch code is needed. Everything else in a
+  /// rule is client presentation that the backend does not serve, so it takes the
+  /// permissive default rather than a guess:
+  ///
+  ///   * dialCode is empty. It only prefixes an optional phone field; a wrong dial code
+  ///     would corrupt a real phone number, so none is better than a guessed one.
+  ///   * supportsPaystackNameResolve is false — no account-name lookup, which degrades
+  ///     to typing the name rather than blocking anything.
+  ///   * omitBeneficiaryName is false, so the name field RENDERS. Suppressing it would
+  ///     send a payout with no payee name.
+  ///   * supportsBeneficiaryType is false. Confirmation-of-Payee is a UK/EU/US bank
+  ///     behaviour and these corridors do not run it.
+  ///   * The amount bounds are deliberately wide. They are a client convenience —
+  ///     the authoritative per-currency limits are admin-tunable and enforced
+  ///     server-side — so narrow guesses here would reject valid transfers, which is
+  ///     the worse error of the two.
+  factory ExchangeCountryRule.fromServer({
+    required String currency,
+    required String countryCode,
+    required String countryName,
+    required bool requiresBankCode,
+    required bool requiresBranchCode,
+    required List<ExchangeFieldSpec> fields,
+  }) {
+    return ExchangeCountryRule(
+      currency: currency,
+      countryCode: countryCode,
+      countryName: countryName.isEmpty ? currency : countryName,
+      dialCode: '',
+      requiresBankCode: requiresBankCode,
+      requiresBranchCode: requiresBranchCode,
+      supportsPaystackNameResolve: false,
+      omitBeneficiaryName: false,
+      supportsBeneficiaryType: false,
+      minAmount: 0,
+      // Finite, not double.infinity: the bound is rendered into a validation message
+      // ("Maximum transfer is …"), and formatting infinity would put the word
+      // "Infinity" in front of a user.
+      maxAmount: 1000000000,
+      fields: fields,
+    );
+  }
+
+  /// Returns this rule with its bank-code / branch-code requirements replaced.
+  ///
+  /// Needed because requiresBankCode is a property of the RAIL, not the currency. The
+  /// bundled flag describes Flutterwave, and the same destination can route on a bank
+  /// code on one rail and a SWIFT/BIC on another — so grafting the server's field specs
+  /// onto a bundled rule while keeping the bundled flag would render a bank picker the
+  /// active rail does not use, or omit one it requires.
+  ExchangeCountryRule copyWithBankCodeRequirement({
+    required bool requiresBankCode,
+    required bool requiresBranchCode,
+  }) {
+    return ExchangeCountryRule(
+      currency: currency,
+      countryCode: countryCode,
+      countryName: countryName,
+      dialCode: dialCode,
+      requiresBankCode: requiresBankCode,
+      requiresBranchCode: requiresBranchCode,
+      supportsPaystackNameResolve: supportsPaystackNameResolve,
+      omitBeneficiaryName: omitBeneficiaryName,
+      supportsBeneficiaryType: supportsBeneficiaryType,
+      minAmount: minAmount,
+      maxAmount: maxAmount,
+      fields: fields,
+      purposeOfPaymentOptions: purposeOfPaymentOptions,
+    );
+  }
+
   /// Returns this rule with its field specs replaced by [newFields].
   ///
   /// Used to graft the BACKEND's field requirements onto the bundled rule.

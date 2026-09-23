@@ -115,6 +115,10 @@ class _InputPinState extends State<InputPin> with CodeAutoFill {
               animationDuration: const Duration(milliseconds: 200),
               enableActiveFill: true,
               keyboardType: TextInputType.number,
+              // Required by PinCodeTextField and deliberately empty: the PIN is
+              // read from _pinController (see the length check below), so there is
+              // nothing to do per keystroke. NOT a stub — do not "fix" it by
+              // mirroring the value into state.
               onChanged: (value) {},
               beforeTextPaste: (text) => true,
             ),

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:lazervault/src/features/plan_my_day/presentation/google_connect_error.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lazervault/src/features/plan_my_day/services/calendar_sync_service.dart';
@@ -17,9 +20,7 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
   final CalendarSyncService _calendarSyncService = getIt<CalendarSyncService>();
 
   bool _googleConnected = false;
-  bool _outlookConnected = false;
   String? _googleLastSync;
-  String? _outlookLastSync;
   bool _syncing = false;
   bool _loading = true;
 
@@ -74,25 +75,23 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
                     onSync: () => _syncGoogleCalendar(),
                     isSyncing: _syncing,
                   ),
-                  SizedBox(height: 20.h),
 
-                  // Outlook Calendar Section
-                  _buildCalendarSection(
-                    title: 'Outlook Calendar',
-                    icon: Icons.event,
-                    iconColor: const Color(0xFF0078D4),
-                    isConnected: _outlookConnected,
-                    lastSync: _outlookLastSync,
-                    onConnect: () => _connectOutlookCalendar(),
-                    onDisconnect: () => _disconnectOutlookCalendar(),
-                    onSync: () => _syncOutlookCalendar(),
-                    isSyncing: _syncing,
-                  ),
-
-                  SizedBox(height: 24.h),
-
-                  // Sync Settings
-                  _buildSyncSettings(),
+                  // Outlook Calendar and the "Sync Settings" switch card used to
+                  // sit here. Both were removed rather than hidden because
+                  // neither was ever wired to anything:
+                  //
+                  //   * Outlook's connect/sync handlers only showed a "coming
+                  //     soon" snackbar, and the server's GetCalendarSyncStatus
+                  //     hardcodes OutlookConnected: false — there is no Outlook
+                  //     OAuth client, token store, or sync path to turn on.
+                  //   * The three switches (Auto-sync, Sync past events, Create
+                  //     events in calendar) passed `(value) {}`. They animated,
+                  //     persisted nothing, and no sync code ever read them, so
+                  //     reopening the screen silently reverted every choice.
+                  //
+                  // A control that cannot do what it says is worse than an
+                  // absent one: it spends the user's trust on a no-op. Restore
+                  // either only alongside the backend that honours it.
                 ],
               ),
             ),
@@ -119,7 +118,7 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
           SizedBox(width: 12.w),
           Expanded(
             child: Text(
-              'Connect your calendar to sync events between Lazervault and your external calendars.',
+              'Connect Google Calendar to sync events between Lazervault and your calendar.',
               style: TextStyle(
                 color: Colors.grey[300],
                 fontSize: 14.sp,
@@ -294,88 +293,6 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
     );
   }
 
-  Widget _buildSyncSettings() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Sync Settings',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          _buildSettingItem(
-            'Auto-sync',
-            'Automatically sync changes every hour',
-            true,
-            (value) {},
-          ),
-          SizedBox(height: 12.h),
-          _buildSettingItem(
-            'Sync past events',
-            'Include events from the past 30 days',
-            false,
-            (value) {},
-          ),
-          SizedBox(height: 12.h),
-          _buildSettingItem(
-            'Create events in calendar',
-            'New Lazervault events are added to connected calendars',
-            true,
-            (value) {},
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSettingItem(
-    String title,
-    String description,
-    bool value,
-    Function(bool) onChanged,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                ),
-              ),
-              Text(
-                description,
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: 12.sp,
-                ),
-              ),
-            ],
-          ),
-        ),
-        Switch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: const Color(0xFF3B82F6),
-        ),
-      ],
-    );
-  }
-
   Future<void> _loadSyncStatus() async {
     setState(() {
       _loading = true;
@@ -387,8 +304,6 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
         setState(() {
           _googleConnected = status.googleConnected;
           _googleLastSync = status.googleLastSync;
-          _outlookConnected = status.outlookConnected;
-          _outlookLastSync = status.outlookLastSync;
           _loading = false;
         });
       }
@@ -409,121 +324,122 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
     }
   }
 
+  // Google Calendar scopes.
+  //
+  // Narrow on purpose: `calendar.events` covers reading and writing the events we sync,
+  // and `calendar.readonly` is what lets us enumerate which calendars exist. Neither
+  // grants the full `auth/calendar` scope, which would also allow deleting calendars —
+  // permission we never exercise and should not ask a user to hand over.
+  static const List<String> _calendarScopes = [
+    'https://www.googleapis.com/auth/calendar.events',
+    'https://www.googleapis.com/auth/calendar.readonly',
+  ];
+
+  bool _googleInitialized = false;
+
+  Future<void> _ensureGoogleInitialized() async {
+    if (_googleInitialized) return;
+    await GoogleSignIn.instance.initialize(
+      serverClientId: dotenv.env['GMAIL_WEB_CLIENT_ID'] ?? '',
+    );
+    _googleInitialized = true;
+  }
+
+  /// Connect Google Calendar through the SAME Google Sign-In the app already uses.
+  ///
+  /// WHAT THIS REPLACED
+  /// ------------------
+  /// A dialog that told the user to open Google Calendar, find a calendar ID and paste
+  /// it into a text field — a field with no controller, so whatever they typed was
+  /// discarded. It then ran `await Future.delayed(1s)` under a `// Simulate connection`
+  /// comment and called the service with no auth code at all.
+  ///
+  /// So the screen asked a user to do clerical work, threw the result away, and showed a
+  /// result that did not come from anything they did. The service has always accepted an
+  /// `authCode`; nothing was ever passing one.
+  ///
+  /// This is the flow EmailCubit.connect already uses for Gmail, with calendar scopes:
+  /// authenticate, obtain a one-time server auth code, hand that to the backend, which
+  /// exchanges it for a refresh token. No client IDs or calendar IDs are ever typed by a
+  /// user.
   Future<void> _connectGoogleCalendar() async {
-    // Show Google Sign-In flow
-    // In real implementation, use google_sign_in package
-    // For now, we'll show a dialog explaining how to connect
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1F1F1F),
-        title: const Text(
-          'Connect Google Calendar',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'To connect your Google Calendar:',
-              style: TextStyle(color: Colors.grey[300]),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '1. Open Google Calendar on your device\n'
-              '2. Go to Settings → Share with specific people\n'
-              '3. Add your calendar email or use calendar ID\n'
-              '4. Copy the calendar URL/ID\n'
-              '5. Enter it below',
-              style: TextStyle(color: Colors.grey[400], fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: 'Calendar ID (optional)',
-                labelStyle: TextStyle(color: Colors.grey[400]),
-                hintText: 'e.g., abc123@group.calendar.google.com',
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                filled: true,
-                fillColor: const Color(0xFF2D2D2D),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey[800]!),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Color(0xFF3B82F6)),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              setState(() {
-                _syncing = true;
-              });
+    setState(() => _syncing = true);
+    try {
+      await _ensureGoogleInitialized();
 
-              try {
-                // Simulate connection - in production, use google_sign_in
-                await Future.delayed(const Duration(seconds: 1));
+      final GoogleSignInAccount user;
+      try {
+        user = await GoogleSignIn.instance.authenticate(scopeHint: _calendarScopes);
+      } on GoogleSignInException catch (e) {
+        if (!mounted) return;
+        setState(() => _syncing = false);
+        // Cancelling is a decision, not a failure — say so neutrally rather than
+        // showing a red error for something the user chose.
+        // A cancellation is a decision, and an unverified-app refusal is a Cloud
+        // Console state — neither is a red error the user can retry into working.
+        final cancelled = GoogleConnectError.isCancelled(e);
+        final notApproved = GoogleConnectError.isNotApprovedForThisAccount(e);
+        _toast(
+          GoogleConnectError.message(e, feature: 'Google Calendar'),
+          cancelled || notApproved
+              ? const Color(0xFF3B82F6)
+              : const Color(0xFFEF4444),
+        );
+        return;
+      }
 
-                final result = await _calendarSyncService.connectGoogleCalendar();
+      // The one-time server auth code is what the backend exchanges for a refresh
+      // token. Without it there is nothing to connect WITH, so stop here rather than
+      // calling the service and reporting a success that never happened — which is
+      // exactly what the old flow did.
+      final serverAuth =
+          await user.authorizationClient.authorizeServer(_calendarScopes);
+      final serverAuthCode = serverAuth?.serverAuthCode;
+      if (serverAuthCode == null || serverAuthCode.isEmpty) {
+        if (!mounted) return;
+        setState(() => _syncing = false);
+        _toast(
+          "Couldn't get calendar permission. Please try connecting again.",
+          const Color(0xFFEF4444),
+        );
+        return;
+      }
 
-                if (mounted) {
-                  setState(() {
-                    _googleConnected = result.success;
-                    _syncing = false;
-                  });
+      final result = await _calendarSyncService.connectGoogleCalendar(
+        authCode: serverAuthCode,
+      );
+      if (!mounted) return;
+      setState(() {
+        _googleConnected = result.success;
+        _syncing = false;
+      });
 
-                  // "Not configured" is not a failure — the server just doesn't
-                  // have Google sync set up yet. Show a calm, neutral message.
-                  final String text;
-                  final Color bg;
-                  if (result.success) {
-                    text = 'Google Calendar connected successfully';
-                    bg = const Color(0xFF10B981);
-                  } else if (result.notConfigured) {
-                    text = result.message?.isNotEmpty == true
-                        ? result.message!
-                        : 'Calendar sync is coming soon';
-                    bg = const Color(0xFF3B82F6);
-                  } else {
-                    text = 'Failed to connect Google Calendar';
-                    bg = const Color(0xFFEF4444);
-                  }
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(text), backgroundColor: bg),
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  setState(() {
-                    _syncing = false;
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Failed to connect: $e'),
-                      backgroundColor: const Color(0xFFEF4444),
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
-            ),
-            child: const Text('Connect', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+      if (result.success) {
+        _toast('Google Calendar connected', const Color(0xFF10B981));
+      } else if (result.notConfigured) {
+        // The server has no Google OAuth credentials yet (the planning-service
+        // handler is still a stub). Not the user's problem and not a failure they
+        // can act on, so it reads as a calm coming-soon rather than a red error.
+        _toast(
+          result.message?.isNotEmpty == true
+              ? result.message!
+              : 'Calendar sync is coming soon',
+          const Color(0xFF3B82F6),
+        );
+      } else {
+        _toast('Failed to connect Google Calendar', const Color(0xFFEF4444));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _syncing = false);
+      _toast('Failed to connect: $e', const Color(0xFFEF4444));
+    }
+  }
+
+  void _toast(String text, Color background) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(text), backgroundColor: background),
     );
   }
 
@@ -620,30 +536,6 @@ class _CalendarSettingsScreenState extends State<CalendarSettingsScreen> {
         );
       }
     }
-  }
-
-  Future<void> _connectOutlookCalendar() async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Outlook Calendar integration coming soon'),
-      ),
-    );
-  }
-
-  Future<void> _disconnectOutlookCalendar() async {
-    setState(() {
-      _outlookConnected = false;
-      _outlookLastSync = null;
-    });
-  }
-
-  Future<void> _syncOutlookCalendar() async {
-    // Not implemented yet
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Outlook Calendar sync coming soon'),
-      ),
-    );
   }
 
   String _formatSyncTime(String? isoTime) {

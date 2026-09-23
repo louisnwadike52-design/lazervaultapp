@@ -539,8 +539,7 @@ class _TagPaymentConfirmationScreenState
                 '${displayAccount.currency} ${displayAccount.availableBalance.toStringAsFixed(2)}',
             insufficientFunds: !hasEnough,
             isSelected: true,
-            onTap: () {},
-            // No change affordance — see above.
+            // No tap and no change affordance — see above.
             onChangeTap: null,
           );
         }
@@ -557,7 +556,10 @@ class _TagPaymentConfirmationScreenState
     required String subtitle,
     bool insufficientFunds = false,
     required bool isSelected,
-    required VoidCallback onTap,
+    // Optional: the card is a selected-state display, not a chooser. It was
+    // `required` and its only call site satisfied it with `() {}`, which made the
+    // whole surface look like a tap target that answers nothing.
+    VoidCallback? onTap,
     VoidCallback? onChangeTap,
   }) {
     return GestureDetector(

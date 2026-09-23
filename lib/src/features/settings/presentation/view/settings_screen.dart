@@ -77,10 +77,6 @@ const bool _kTrustedDevicesEnabled =
     true; // backed by AuthService ListDevices/RevokeDevice
 const bool _kLoginActivityEnabled =
     true; // backed by AuthService GetLoginHistory
-const bool _kDataSharingEnabled = false; // no rpc
-const bool _kMarketingOptInEnabled = false; // no rpc
-const bool _kAnalyticsOptInEnabled = false; // no rpc
-const bool _kInAppCategoriesEnabled = false; // no rpc
 const bool _kCardSettingsEnabled = false; // cards feature is off
 
 // Brand colours used throughout the accordion. Kept here so a future
@@ -1660,13 +1656,6 @@ class _SettingsViewState extends State<_SettingsView> {
           if (mounted) setState(() {});
         },
       ),
-      if (_kInAppCategoriesEnabled)
-        _navTile(
-          icon: Icons.category_outlined,
-          title: 'In-App Notifications',
-          subtitle: 'Choose which categories to receive',
-          onTap: () {},
-        ),
       if (_kCardSettingsEnabled)
         _navTile(
           icon: Icons.card_membership_outlined,
@@ -1681,30 +1670,13 @@ class _SettingsViewState extends State<_SettingsView> {
             );
           },
         ),
-      if (_kDataSharingEnabled)
-        _switchTile(
-          icon: Icons.share_outlined,
-          title: 'Data Sharing',
-          subtitle: 'Share aggregate usage with partners',
-          value: false,
-          onChanged: (_) {},
-        ),
-      if (_kMarketingOptInEnabled)
-        _switchTile(
-          icon: Icons.campaign_outlined,
-          title: 'Marketing emails',
-          subtitle: 'Promotions and product news',
-          value: false,
-          onChanged: (_) {},
-        ),
-      if (_kAnalyticsOptInEnabled)
-        _switchTile(
-          icon: Icons.analytics_outlined,
-          title: 'Analytics',
-          subtitle: 'Help us improve the app',
-          value: false,
-          onChanged: (_) {},
-        ),
+      // Data Sharing, Marketing emails, Analytics and In-App Notification
+      // categories used to sit here as `_switchTile(value: false, onChanged: (_)
+      // {})` behind `const false` guards. There is no RPC behind any of them, so
+      // each was a switch that would animate and persist nothing. They are gone
+      // rather than guarded: a `const bool` is one character from shipping, and
+      // the guard made the stubs look deliberate instead of unfinished. Build the
+      // tile when the RPC exists.
     ]);
   }
 

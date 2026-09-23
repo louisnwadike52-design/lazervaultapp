@@ -177,6 +177,19 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
     WidgetsBinding.instance.addObserver(this);
 
+    // Subscribe to the shared talk mode for the LIFETIME of the sheet.
+    //
+    // This used to happen only on the path that STARTS a session. Open the sheet on a
+    // session that is already running — re-expanding the minimised bubble is the common
+    // way — and nothing here was listening. Tapping the mode chip then persisted the
+    // change through the controller and the sheet never heard about it: the label kept
+    // saying "Hands-free", and `setInteractionMode` was never applied to the cubit, so
+    // the microphone carried on in the old mode too. The control appeared inert.
+    //
+    // Safe to call here as well as on session start: it cancels any previous
+    // subscription first, and the controller's load() is documented as repeatable.
+    unawaited(_applyInteractionModeFromSettings());
+
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
@@ -350,9 +363,27 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     // isn't showing) so a live-session bubble can never outlive the call.
     VoiceMiniBubbleController.instance.hide();
 
-    // End the voice session (stops recording, disconnects LiveKit, cleans up)
+    // END the call, not just disconnect the media.
+    //
+    // This used to call disconnectFromLiveKitRoom, which tears down LiveKit and the
+    // socket but never emits VoiceSessionEnded — so nothing else in the app learned the
+    // call was over. Closing the sheet with the X looked like hanging up and was not:
+    // the session ended silently, with no end reason recorded and none of the work that
+    // hangs off VoiceSessionEnded happening.
+    //
+    // endSession() does the same teardown AND closes the session properly. The reason
+    // is stamped so an operator can tell a deliberate close from a dropped connection.
     final cubit = context.read<VoiceSessionCubit>();
-    cubit.disconnectFromLiveKitRoom(fullCleanup: true);
+
+    // Do not re-end an already-ended session.
+    //
+    // This same handler backs the close button on the call-ended / rating view, which is
+    // only reachable BECAUSE the session ended. Ending it again would emit a second
+    // terminal state to every listener and re-stamp the conversation's endedAt, moving
+    // the recorded end time to whenever the user got round to dismissing the screen.
+    if (cubit.state is! VoiceSessionEnded) {
+      cubit.endSession(endReason: 'closed_by_user');
+    }
 
     // Dismiss any active dialog first
     _dismissActiveDialog();
@@ -899,9 +930,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     // disconnect, and keeps the session live when the sheet is minimized into
     // the floating bubble).
     if (!_isClosing && !_isMinimizing) {
+      // Reached when the sheet is dismissed by gesture — swipe down, or the system
+      // back — rather than through the X or the minimise button. That is still the user
+      // ending the call, so it ends it the same way the X does. It previously only
+      // disconnected, leaving the session unterminated exactly as the X did.
       context
           .read<VoiceSessionCubit>()
-          .disconnectFromLiveKitRoom(fullCleanup: true);
+          .endSession(endReason: 'sheet_dismissed');
     }
     super.dispose();
   }

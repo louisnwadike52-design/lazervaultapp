@@ -2548,11 +2548,34 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   }
 
   // Price Alert Dialog
+  /// Create a price alert.
+  ///
+  /// This dialog used to be entirely decorative: the price field had no
+  /// controller, the Alert Type dropdown was `onChanged: (value) {}`, and
+  /// "Create Alert" ran `Navigator.pop` + a haptic buzz over the comment
+  /// "// Implement alert creation". The user filled it in, felt the tap land,
+  /// watched it close — and no alert existed. Simulated success is the worst
+  /// failure mode here: nothing prompts them to check, so they rely on an alert
+  /// that will never fire.
+  ///
+  /// The whole rail was already built — StockCubit.createAlert → repository →
+  /// remote data source → investment-gateway's InvestmentsServiceProxy →
+  /// investments-service CreatePriceAlert. Only this dialog was missing.
   void _showPriceAlertDialog() {
     Navigator.pop(context);
+    // Captured before the dialog's own context shadows it, so the cubit is
+    // resolved from the screen that actually provides it.
+    final cubit = context.read<StockCubit>();
+    final priceController = TextEditingController();
+    // Defaulted rather than nullable: the field is required and the dropdown
+    // always shows a value, so there is no state where the form looks complete
+    // but the type is unset.
+    var alertChoice = _StockAlertChoice.abovePrice;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
         backgroundColor: Colors.grey[900],
         title: Row(
           children: [
@@ -2583,9 +2606,10 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               ),
               style: TextStyle(color: Colors.white),
               keyboardType: TextInputType.number,
+              controller: priceController,
             ),
             SizedBox(height: 16.h),
-            DropdownButtonFormField<String>(
+            DropdownButtonFormField<_StockAlertChoice>(
               decoration: InputDecoration(
                 labelText: 'Alert Type',
                 labelStyle: TextStyle(color: Colors.grey[400]),
@@ -2595,13 +2619,17 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               ),
               dropdownColor: Colors.grey[800],
               style: TextStyle(color: Colors.white),
-              items: ['Above Price', 'Below Price', 'Price Change %'].map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (value) {},
+              initialValue: alertChoice,
+              items: _StockAlertChoice.values
+                  .map((c) => DropdownMenuItem<_StockAlertChoice>(
+                        value: c,
+                        child: Text(c.label),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                if (value == null) return;
+                setDialogState(() => alertChoice = value);
+              },
             ),
           ],
         ),
@@ -2613,13 +2641,32 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
             onPressed: () {
+              final target = double.tryParse(priceController.text.trim());
+              // Refuse instead of sending 0: an alert at zero would never fire
+              // for an "above" condition and fire instantly for "below", and the
+              // user would have no way to tell which they got.
+              if (target == null || target <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Enter a target price above zero'),
+                    backgroundColor: Color(0xFFEF4444),
+                  ),
+                );
+                return;
+              }
               Navigator.pop(context);
               HapticFeedback.lightImpact();
-              // Implement alert creation
+              cubit.createAlert(
+                symbol: widget.stock.symbol,
+                type: alertChoice.type,
+                targetValue: target,
+                condition: alertChoice.condition,
+              );
             },
             child: Text('Create Alert', style: TextStyle(color: Colors.white)),
           ),
         ],
+        ),
       ),
     );
   }
@@ -4794,3 +4841,22 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     }
   }
 } 
+
+/// The three alert shapes the dialog offers, each carrying the domain pair it
+/// maps to.
+///
+/// The dropdown previously held bare display strings with no mapping at all, so
+/// there was nothing to convert an "Above Price" choice into the (AlertType,
+/// AlertCondition) the repository needs. Keeping the label beside the pair means
+/// a new option cannot be added to the menu without also stating how it maps.
+enum _StockAlertChoice {
+  abovePrice('Above Price', AlertType.price, AlertCondition.above),
+  belowPrice('Below Price', AlertType.price, AlertCondition.below),
+  percentChange('Price Change %', AlertType.percentChange, AlertCondition.above);
+
+  const _StockAlertChoice(this.label, this.type, this.condition);
+
+  final String label;
+  final AlertType type;
+  final AlertCondition condition;
+}

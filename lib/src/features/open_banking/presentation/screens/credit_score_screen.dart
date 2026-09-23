@@ -147,16 +147,77 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
             current is CreditScoreAIInsightsLoaded ||
             current is CreditScoreAIInsightsError ||
             current is OpenBankingLoading ||
+            // THE STATES THAT STRANDED THIS SCREEN.
+            //
+            // _emitError does not always emit OpenBankingError: a network failure emits
+            // OpenBankingOffline and an unavailable/circuit-broken service emits
+            // ServiceUnavailable. Neither was listed here, so buildWhen returned false
+            // and the builder NEVER RAN — the page simply kept whatever it had last
+            // drawn, which after tapping Refresh was the full-screen loader. That is the
+            // infinite spinner: not a request that never finished, but a failure the UI
+            // was never told about.
+            current is OpenBankingOffline ||
+            current is ServiceUnavailable ||
             current is OpenBankingError,
         builder: (context, state) {
-          if (state is OpenBankingLoading || state is CreditScoreRefreshing) {
+          final busy = state is OpenBankingLoading || state is CreditScoreRefreshing;
+          _busy = busy;
+
+          // A BLOCKING loader only when there is genuinely nothing to show.
+          //
+          // This used to replace the whole screen — tab bar, score, everything — for
+          // any loading state, which is what "Refresh Score" looked like: the content
+          // vanished and the page read as somewhere else entirely. It then stayed that
+          // way, because a load is not one request: CreditScoreLoaded makes the listener
+          // fire fetchCreditScoreHistory (which emits OpenBankingLoading again) and
+          // fetchAICreditInsights, so whichever of those settles last decides the final
+          // frame. If that was a loading state, the screen never came back.
+          //
+          // The cubit is a lazySingleton shared across the open-banking screens, so its
+          // last state also survives leaving and re-entering this page — a stale loading
+          // state would blank the screen on arrival with no request in flight.
+          //
+          // Keeping the last good data on screen makes every one of those orderings
+          // harmless: a refresh updates in place instead of tearing the page down.
+          if (busy && _lastScore == null && _multiSourceScores == null) {
             return const Center(
               child: LazerVaultLoader.small(),
             );
           }
 
+          // Busy with data already on screen: keep rendering it. The pull-to-refresh
+          // indicator and the button's own state already say something is happening.
+          if (busy) {
+            if (widget.showAllSources && _multiSourceScores != null) {
+              return _buildTabbedContent(_multiSourceScores!);
+            }
+            return _buildContent(_lastScore, _lastHistory);
+          }
+
           if (state is OpenBankingError) {
             return _buildErrorState(state);
+          }
+
+          // Offline / service-unavailable. Keep any data already on screen — a failed
+          // REFRESH must not destroy a score the user could still read — and say what
+          // happened rather than leaving them to guess from a frozen page.
+          if (state is OpenBankingOffline || state is ServiceUnavailable) {
+            final message = state is ServiceUnavailable
+                ? state.message
+                : 'You appear to be offline. Your last known score is shown below.';
+            if (_lastScore != null || _multiSourceScores != null) {
+              return Column(
+                children: [
+                  _buildInlineNotice(message),
+                  Expanded(
+                    child: widget.showAllSources && _multiSourceScores != null
+                        ? _buildTabbedContent(_multiSourceScores!)
+                        : _buildContent(_lastScore, _lastHistory),
+                  ),
+                ],
+              );
+            }
+            return _buildConnectivityState(message);
           }
 
           // Multi-source tabbed view
@@ -173,7 +234,10 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
           }
 
           if (state is CreditScoreHistoryLoaded) {
-            return _buildContent(null, state.history);
+            _lastHistory = state.history;
+            // Pass the cached score, not null: history arrives AFTER the score and
+            // rendering it alone showed a page with no score on it.
+            return _buildContent(_lastScore, state.history);
           }
 
           // AI insights states - show content with cached score
@@ -183,9 +247,17 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
             if (_multiSourceScores != null) {
               return _buildTabbedContent(_multiSourceScores!);
             }
-            return _buildContent(null, null);
+            return _buildContent(_lastScore, _lastHistory);
           }
 
+          // Unknown state. Render what we have rather than a spinner with nothing
+          // behind it — an unlisted state must not be able to strand the page.
+          if (widget.showAllSources && _multiSourceScores != null) {
+            return _buildTabbedContent(_multiSourceScores!);
+          }
+          if (_lastScore != null) {
+            return _buildContent(_lastScore, _lastHistory);
+          }
           return const Center(
             child: LazerVaultLoader.small(),
           );
@@ -194,8 +266,17 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
     );
   }
 
-  // Keep track of last loaded score for when history loads
+  // Last good data, kept so a refresh (or a sibling screen's fetch on the shared
+  // singleton cubit) never leaves this page blank.
   CreditScoreEntity? _lastScore;
+  CreditScoreHistoryEntity? _lastHistory;
+
+  /// Whether a refresh is in flight, so the button can say so.
+  ///
+  /// Now that a refresh no longer replaces the page with a loader, the button is the
+  /// only thing that can show it is working — without this, pressing it looks like
+  /// nothing happened and invites a second press.
+  bool _busy = false;
 
   Widget _buildTabbedContent(MultiSourceCreditScores scores) {
     return TabBarView(
@@ -306,6 +387,87 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
   static const int _minTransactionsForScore = 5;
   bool _hasEnoughDataForScore(CreditScoreEntity s) =>
       s.transactionsAnalyzed >= _minTransactionsForScore && s.confidence >= 0.35;
+
+  /// A thin banner above content that is still readable but may be out of date.
+  ///
+  /// Deliberately not a snackbar: the reason the number on screen might be stale should
+  /// stay visible while the user is reading it, not vanish after a few seconds.
+  Widget _buildInlineNotice(String message) {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 0),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFB923C).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.cloud_off_rounded,
+              color: const Color(0xFFFB923C), size: 18.sp),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(color: const Color(0xFFFDBA74), fontSize: 12.sp),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Full-page state for offline / unavailable with NOTHING cached to fall back on.
+  ///
+  /// Has a retry, because this is the one case the user can actually act on — and
+  /// because without it the screen would be a dead end with no way forward but back.
+  Widget _buildConnectivityState(String message) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.cloud_off_rounded,
+                color: const Color(0xFFFB923C), size: 44.sp),
+            SizedBox(height: 16.h),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+            ),
+            SizedBox(height: 20.h),
+            ElevatedButton.icon(
+              onPressed: () {
+                if (widget.showAllSources) {
+                  context.read<OpenBankingCubit>().fetchMultiSourceCreditScores(
+                        userId: widget.userId,
+                        linkedAccountId: widget.linkedAccountId,
+                      );
+                } else {
+                  context.read<OpenBankingCubit>().fetchCreditScore(
+                        userId: widget.userId,
+                        linkedAccountId: widget.linkedAccountId,
+                      );
+                }
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try again'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildContent(CreditScoreEntity? score, CreditScoreHistoryEntity? history) {
     if (score != null) _lastScore = score;
@@ -1146,14 +1308,27 @@ class _CreditScoreScreenState extends State<CreditScoreScreen>
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () {
-          context.read<OpenBankingCubit>().refreshCreditScore(
-                userId: widget.userId,
-                linkedAccountId: score.linkedAccountId,
-              );
-        },
-        icon: const Icon(Icons.refresh),
-        label: const Text('Refresh Score'),
+        // Disabled while in flight: a second press starts a second refresh against the
+        // same shared cubit, and the two races decide which result the page settles on.
+        onPressed: _busy
+            ? null
+            : () {
+                context.read<OpenBankingCubit>().refreshCreditScore(
+                      userId: widget.userId,
+                      linkedAccountId: score.linkedAccountId,
+                    );
+              },
+        icon: _busy
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : const Icon(Icons.refresh),
+        label: Text(_busy ? 'Refreshing…' : 'Refresh Score'),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF3B82F6),
           foregroundColor: Colors.white,

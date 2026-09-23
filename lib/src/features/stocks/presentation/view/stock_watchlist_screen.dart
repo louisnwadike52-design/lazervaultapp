@@ -20,10 +20,45 @@ class StockWatchlistScreen extends StatefulWidget {
 }
 
 class _StockWatchlistScreenState extends State<StockWatchlistScreen> {
+  /// Whether the search field is showing. The magnifier used to call a
+  /// `_showSearch` that only toasted "Search functionality coming soon".
+  bool _searching = false;
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _loadWatchlist();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  /// Filters the loaded watchlist by symbol or name.
+  ///
+  /// Local on purpose: the watchlist is already fully in memory from
+  /// `loadWatchlist`, so filtering needs no request and works offline. Matching
+  /// covers both fields because people look for "AAPL" and for "Apple".
+  List<Stock> _filtered(List<Stock> all) {
+    final q = _searchController.text.trim().toLowerCase();
+    if (q.isEmpty) return all;
+    return all
+        .where((s) =>
+            s.symbol.toLowerCase().contains(q) ||
+            s.name.toLowerCase().contains(q))
+        .toList();
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _searching = !_searching;
+      // Clear on close so reopening does not silently re-apply an old filter to
+      // a list the user believes is complete.
+      if (!_searching) _searchController.clear();
+    });
   }
 
   void _loadWatchlist() {
@@ -50,6 +85,7 @@ class _StockWatchlistScreenState extends State<StockWatchlistScreen> {
           child: Column(
             children: [
               _buildHeader(),
+              if (_searching) _buildSearchField(),
               Expanded(
                 child: BlocBuilder<StockCubit, StockState>(
                   builder: (context, state) {
@@ -57,12 +93,21 @@ class _StockWatchlistScreenState extends State<StockWatchlistScreen> {
                       return _buildLoadingState();
                     }
 
-                    final watchlist = state is WatchlistLoaded
+                    final loaded = state is WatchlistLoaded
                         ? state.stocks
                         : <Stock>[];
 
-                    if (watchlist.isEmpty) {
+                    if (loaded.isEmpty) {
                       return _buildEmptyState();
+                    }
+
+                    final watchlist = _filtered(loaded);
+
+                    // A watchlist that HAS entries but none matching must not
+                    // fall through to the "your watchlist is empty" state — that
+                    // reads as data loss rather than a filter with no hits.
+                    if (watchlist.isEmpty) {
+                      return _buildNoSearchResults();
                     }
 
                     return RefreshIndicator(
@@ -146,7 +191,7 @@ class _StockWatchlistScreenState extends State<StockWatchlistScreen> {
                 color: Colors.white,
                 size: 20.sp,
               ),
-              onPressed: _showSearch,
+              onPressed: _toggleSearch,
             ),
           ),
         ],
@@ -409,12 +454,65 @@ class _StockWatchlistScreenState extends State<StockWatchlistScreen> {
     );
   }
 
-  void _showSearch() {
-    Get.snackbar(
-      'Search',
-      'Search functionality coming soon',
-      backgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.2),
-      colorText: Colors.white,
+  Widget _buildSearchField() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      child: TextField(
+        controller: _searchController,
+        autofocus: true,
+        style: TextStyle(color: Colors.white, fontSize: 14.sp),
+        // Rebuilds on every keystroke so the list filters as the user types —
+        // the BlocBuilder below reads _filtered() during build.
+        onChanged: (_) => setState(() {}),
+        decoration: InputDecoration(
+          hintText: 'Search symbol or name',
+          hintStyle: TextStyle(
+              color: Colors.white.withValues(alpha: 0.4), fontSize: 14.sp),
+          prefixIcon: Icon(Icons.search,
+              color: Colors.white.withValues(alpha: 0.4), size: 20.sp),
+          suffixIcon: IconButton(
+            icon: Icon(Icons.close,
+                color: Colors.white.withValues(alpha: 0.6), size: 20.sp),
+            onPressed: _toggleSearch,
+          ),
+          filled: true,
+          fillColor: Colors.white.withValues(alpha: 0.06),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoSearchResults() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off_rounded,
+                color: Colors.white.withValues(alpha: 0.3), size: 48.sp),
+            SizedBox(height: 12.h),
+            Text(
+              'No match for "${_searchController.text.trim()}"',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7), fontSize: 14.sp),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              'Your watchlist still has its other entries.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4), fontSize: 12.sp),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

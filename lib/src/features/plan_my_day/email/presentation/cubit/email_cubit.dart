@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:lazervault/src/features/plan_my_day/presentation/google_connect_error.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -211,12 +212,12 @@ class EmailCubit extends Cubit<EmailState> {
         user = await GoogleSignIn.instance.authenticate(scopeHint: _gmailScopes);
       } on GoogleSignInException catch (e) {
         if (isClosed) return;
-        if (e.code == GoogleSignInExceptionCode.canceled) {
-          emit(EmailNotConnected(message: 'Sign-in was cancelled'));
-        } else {
-          emit(EmailNotConnected(
-              message: 'Google sign-in failed: ${e.description ?? e.code.name}'));
-        }
+        // Includes the unverified-app case: Google blocks consent for any account that
+        // is not a listed tester while the consent screen is in Testing, and the Gmail
+        // scopes are RESTRICTED so that stays true until verification completes. The
+        // message says who can fix it rather than inviting a retry that cannot succeed.
+        emit(EmailNotConnected(
+            message: GoogleConnectError.message(e, feature: 'Gmail')));
         return;
       }
 
