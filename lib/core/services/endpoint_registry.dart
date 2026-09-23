@@ -75,6 +75,11 @@ class EndpointRegistry {
     // disappears a moment later is worse than one that was never offered, and
     // this one leads to Google's "Access blocked" page until verification clears.
     'plan_my_day_google_integrations_visible',
+    // Duplicate Weekly/Reminders shortcut chips on the Plan My Day landing page.
+    // Hidden by default: Reminders is already a tab on that screen and weekly
+    // grouping is a task property. Both destinations are real, so this is a
+    // visibility choice an admin can reverse, not a stub.
+    'plan_my_day_duplicate_shortcuts_visible',
     // Bulk SMS service visibility (hidden by default; admin can restore).
     'bulk_sms_visible',
     // African voice-language master gate (English-only when off). Cached so the

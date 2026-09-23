@@ -1065,19 +1065,24 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
                 ),
               );
             }),
-            SizedBox(width: 8.w),
-            _dayUtilityChip(Icons.calendar_view_week_rounded, 'Weekly',
-                const Color(0xFFF59E0B), () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => BlocProvider(
-                    create: (_) => serviceLocator<PlanMyDayCubit>(),
-                    child: const WeeklySummaryScreen(),
+            // Weekly — a duplicate. Weekly grouping is a property of a task, not a
+            // separate destination. Hidden on the same flag as the Reminders chip
+            // below; the SizedBox goes with it so the row stays balanced.
+            if (FeatureFlags.planMyDayDuplicateShortcuts) ...[
+              SizedBox(width: 8.w),
+              _dayUtilityChip(Icons.calendar_view_week_rounded, 'Weekly',
+                  const Color(0xFFF59E0B), () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider(
+                      create: (_) => serviceLocator<PlanMyDayCubit>(),
+                      child: const WeeklySummaryScreen(),
+                    ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ],
           ],
         ),
         SizedBox(height: 8.h),
@@ -1092,11 +1097,16 @@ class _PlanMyDayScreenState extends State<PlanMyDayScreen> {
                 const Color(0xFFFB923C), () {
               Navigator.push(context, HabitsScreen.route());
             }),
-            SizedBox(width: 8.w),
-            _dayUtilityChip(Icons.notifications_active_outlined, 'Reminders',
-                const Color(0xFF4E03D0), () {
-              Navigator.push(context, ReminderManagementScreen.route());
-            }),
+            // Reminders — a duplicate of the TAB at index 3 on this same screen,
+            // down to the icon. Offering both invites the reader to wonder how
+            // they differ; they do not.
+            if (FeatureFlags.planMyDayDuplicateShortcuts) ...[
+              SizedBox(width: 8.w),
+              _dayUtilityChip(Icons.notifications_active_outlined, 'Reminders',
+                  const Color(0xFF4E03D0), () {
+                Navigator.push(context, ReminderManagementScreen.route());
+              }),
+            ],
           ],
         ),
       ],

@@ -450,6 +450,25 @@ class FeatureFlags {
     return _prefs?.getBool(planMyDayGoogleIntegrationsVisible) ?? false;
   }
 
+  /// The duplicate "Weekly" and "Reminders" shortcut chips on the Plan My Day
+  /// landing page.
+  ///
+  /// Hidden because both already exist elsewhere and better: Reminders is a
+  /// top-level TAB on this very screen (index 3, same icon), and weekly grouping
+  /// is a property of a task, not a separate destination. Two routes to the same
+  /// place is not twice the access — it is a reader wondering whether they differ.
+  ///
+  /// Kept behind a flag rather than deleted because, unlike the Outlook stub,
+  /// both destinations are REAL and working screens — only redundant here. The
+  /// flag is the switch to bring them back without a redeploy if that judgement
+  /// changes. Default OFF, and deliberately left OFF in the dashboard too.
+  static const String planMyDayDuplicateShortcutsVisible =
+      'plan_my_day_duplicate_shortcuts_visible';
+
+  static bool get planMyDayDuplicateShortcuts {
+    return _prefs?.getBool(planMyDayDuplicateShortcutsVisible) ?? false;
+  }
+
   // ── Send Funds flow config ───────────────────────────────────────────────
   /// `true` (SHORT flow) by DEFAULT for every user — the short flow is the
   /// product default on signup. An admin can flip the platform default to the

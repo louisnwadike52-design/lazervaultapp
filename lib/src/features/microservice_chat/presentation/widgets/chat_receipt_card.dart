@@ -1,11 +1,17 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart';
+// `part` files share this library's imports, so the live-status poll in
+// chat_receipt_card_widgets.dart resolves Timer/serviceLocator/the datasource
+// from here — adding them there instead would not compile.
 part 'chat_receipt_card_widgets.dart';
 
 
@@ -25,6 +31,12 @@ class TransferReceiptData {
   final String senderAccountId;
   final int newBalance;
   final String newBalanceDisplay;
+
+  /// Balance BEFORE the transfer, so the card shows the movement rather than just
+  /// its endpoint. Empty when the backend could not derive it exactly (it needs
+  /// the fee); a figure that is wrong by the fee would read as missing money, so
+  /// the row is omitted instead of estimated.
+  final String balanceBeforeDisplay;
   final int fee;
   final String feeDisplay;
   final DateTime timestamp;
@@ -47,6 +59,7 @@ class TransferReceiptData {
     this.senderAccountId = '',
     this.newBalance = 0,
     this.newBalanceDisplay = '',
+    this.balanceBeforeDisplay = '',
     this.fee = 0,
     this.feeDisplay = '0.00',
     required this.timestamp,
@@ -227,6 +240,12 @@ class TransferReceiptData {
       senderAccountId: json['sender_account_id']?.toString() ?? '',
       newBalance: _parseIntSafe(json['new_balance']),
       newBalanceDisplay: json['new_balance_display']?.toString() ?? '',
+      // The agent sends this on receipt_data; the ReceiptCard `extra` bag spells
+      // it the same way, so both shapes land here.
+      balanceBeforeDisplay: (json['balance_before_display'] ??
+              json['balance_before'] ??
+              '')
+          .toString(),
       fee: _parseIntSafe(json['fee']),
       feeDisplay: json['fee_display']?.toString() ?? '0.00',
       timestamp: _parseTimestamp(json['timestamp']),
@@ -356,13 +375,31 @@ class TransferReceiptData {
         s.contains('submitted');
   }
 
-  /// Create a copy with updated receiptUrl
-  TransferReceiptData copyWith({String? receiptUrl}) {
+  /// Settled one way or the other — nothing left to poll for.
+  ///
+  /// Deliberately NOT `!isSuccess && !isPending`: an unrecognised status is
+  /// neither, and treating it as terminal would stop the live poll on the one
+  /// case where we most need to keep looking.
+  bool get isFailure => const {
+        'failed',
+        'failure',
+        'reversed',
+        'cancelled',
+        'canceled',
+        'declined',
+      }.contains(status.trim().toLowerCase());
+
+  /// Create a copy with an updated receiptUrl and/or status.
+  ///
+  /// [status] exists for the live poll: the card re-renders in place when a
+  /// transfer moves from pending to settled, so a receipt sitting in an old
+  /// conversation stops claiming a state that expired hours ago.
+  TransferReceiptData copyWith({String? receiptUrl, String? status}) {
     return TransferReceiptData(
       receiptId: receiptId,
       type: type,
       transferType: transferType,
-      status: status,
+      status: status ?? this.status,
       amount: amount,
       amountDisplay: amountDisplay,
       currency: currency,
@@ -373,6 +410,7 @@ class TransferReceiptData {
       senderAccountId: senderAccountId,
       newBalance: newBalance,
       newBalanceDisplay: newBalanceDisplay,
+      balanceBeforeDisplay: balanceBeforeDisplay,
       fee: fee,
       feeDisplay: feeDisplay,
       timestamp: timestamp,

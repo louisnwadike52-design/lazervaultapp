@@ -112,11 +112,73 @@ class _ChatReceiptCardState extends State<ChatReceiptCard> {
   TransferReceiptData? _loadedReceipt;
   String? _errorMessage;
 
+  /// Live-status poll for a receipt that is still settling.
+  ///
+  /// A chat receipt is rendered once and then sits in the transcript forever. A
+  /// transfer that was "in progress" when it was drawn stayed "in progress" on
+  /// reopening the chat a day later, even though it had long since landed — the
+  /// card showed the status as at render time, not the status now. Users then
+  /// re-send, or contact support about money they already have.
+  ///
+  /// Bounded on purpose: it polls only while the status is non-terminal, stops
+  /// the moment it settles, and gives up after [_maxStatusPolls]. A transcript
+  /// can hold many receipts, and an unbounded timer per card would have every
+  /// old conversation quietly hammering the gateway forever.
+  Timer? _statusTimer;
+  int _statusPolls = 0;
+  bool _statusFetching = false;
+  static const int _maxStatusPolls = 20;
+  static const Duration _statusInterval = Duration(seconds: 6);
+
   @override
   void initState() {
     super.initState();
     // Show loading skeleton first, then load receipt data
     _loadReceiptData();
+  }
+
+  @override
+  void dispose() {
+    _statusTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Start polling if — and only if — this receipt has somewhere to go.
+  void _maybeStartStatusPolling(TransferReceiptData r) {
+    if (r.isSuccess || r.isFailure) return; // already settled
+    if (r.reference.isEmpty) return; // nothing to look up by
+    _statusTimer?.cancel();
+    _statusTimer = Timer.periodic(_statusInterval, (_) => _refreshStatus());
+    // Check once immediately: reopening an old chat should correct a stale card
+    // now, not six seconds from now.
+    unawaited(_refreshStatus());
+  }
+
+  Future<void> _refreshStatus() async {
+    if (_statusFetching || !mounted) return;
+    final current = _loadedReceipt;
+    if (current == null) return;
+    if (_statusPolls >= _maxStatusPolls) {
+      _statusTimer?.cancel();
+      return;
+    }
+    _statusFetching = true;
+    _statusPolls++;
+    try {
+      final snap = await serviceLocator<IPaymentsTransferDataSource>()
+          .getTransferStatus(reference: current.reference);
+      if (!mounted || snap == null || snap.status.isEmpty) return;
+      if (snap.status.toLowerCase() == current.status.toLowerCase()) return;
+      // Re-render silently with the new status — no toast, no jump. The user
+      // sees the icon and label settle; nothing demands their attention.
+      setState(() => _loadedReceipt = current.copyWith(status: snap.status));
+      if (snap.isTerminal) _statusTimer?.cancel();
+    } catch (_) {
+      // Keep the last known status. A failed poll must never downgrade a card
+      // that already reads as successful.
+    } finally {
+      _statusFetching = false;
+    }
   }
 
   Future<void> _loadReceiptData() async {
@@ -172,6 +234,11 @@ class _ChatReceiptCardState extends State<ChatReceiptCard> {
         });
       }
     }
+
+    // Start the live-status poll once, whichever branch above resolved. Hooking
+    // it per-branch missed the PDF-unavailable and connection-error paths — and
+    // those are exactly the cases where a receipt is most likely still settling.
+    if (mounted) _maybeStartStatusPolling(widget.receipt);
   }
 
   @override
@@ -188,6 +255,30 @@ class _ChatReceiptCardState extends State<ChatReceiptCard> {
 
     // Show the actual receipt card
     return _buildReceiptCard(_loadedReceipt!);
+  }
+
+  /// One balance line. Tabular figures so "before" and "after" line up on the
+  /// decimal — the whole point of showing them together is the comparison.
+  Widget _balanceRow(String label, String value, {bool muted = false}) {
+    final color = muted ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(color: color, fontSize: 11),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: muted ? const Color(0xFF6B7280) : Colors.white,
+            fontSize: 12,
+            fontWeight: muted ? FontWeight.w400 : FontWeight.w600,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildReceiptCard(TransferReceiptData r, {bool showError = false}) {
@@ -356,6 +447,39 @@ class _ChatReceiptCardState extends State<ChatReceiptCard> {
                 ],
               ),
             ),
+
+            // Balance before → after.
+            //
+            // The card carried neither: new_balance was parsed and then never
+            // rendered, so the only place a balance appeared was the markdown
+            // table the agent used to print underneath — which is exactly the
+            // duplicate this card replaces. Showing both ends makes the movement
+            // checkable on the card itself.
+            //
+            // The "before" row is omitted when the backend could not derive it
+            // exactly (it needs the fee); a figure wrong by the fee reads as
+            // missing money.
+            if (r.newBalanceDisplay.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Column(
+                  children: [
+                    if (r.balanceBeforeDisplay.isNotEmpty)
+                      _balanceRow(
+                        'Balance before',
+                        '${r.balanceBeforeDisplay} ${r.currency}',
+                        muted: true,
+                      ),
+                    if (r.balanceBeforeDisplay.isNotEmpty)
+                      const SizedBox(height: 4),
+                    _balanceRow(
+                      'Balance after',
+                      '${r.newBalanceDisplay} ${r.currency}',
+                    ),
+                  ],
+                ),
+              ),
+            ],
 
             // Tap to view / Loading indicator
             Container(

@@ -222,15 +222,24 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// Master switch for OPEN-MIC acoustic barge-in (interrupt the agent by talking
   /// over it) in on_device mode.
   ///
-  /// OFF by default: on a loudspeaker there is NO acoustic echo cancellation on
-  /// the raw `speech_to_text` mic (unlike LiveKit mode, which has hardware AEC), so
-  /// keeping the recognizer open while the agent speaks makes it transcribe the
+  /// OFF for CONTINUOUS: on a loudspeaker there is NO acoustic echo cancellation
+  /// on the raw `speech_to_text` mic (unlike LiveKit mode, which has hardware AEC),
+  /// so keeping the recognizer open while the agent speaks makes it transcribe the
   /// agent's OWN TTS and fire a false barge-in that cuts the audio — the user then
   /// hears nothing. So we PAUSE the recognizer while the agent speaks and re-arm on
   /// agent_caption_end (clean hands-free turn-taking). Barge-in stays fully working
-  /// in LiveKit mode (native interruption + AEC). Re-enable here only once on-device
-  /// AEC / headset-gating is in place.
-  static const bool _bargeInEnabled = false;
+  /// in LiveKit mode (native interruption + AEC).
+  ///
+  /// ON for PUSH-TO-TALK, and the echo argument above is exactly why it is safe
+  /// there: the mic is not open. It opens only inside a gesture the user is
+  /// physically making, so the recognizer cannot drift into transcribing the
+  /// agent's own speech — there is no open window for the echo to arrive in. A
+  /// user who holds the talk button while the agent is mid-sentence is
+  /// unambiguously interrupting on purpose, and the old blanket `false` meant that
+  /// press was swallowed: `_listeningPermitted()` returned false for the whole
+  /// agent turn, so the one gesture that says "stop talking and listen to me" did
+  /// nothing at all.
+  bool get _bargeInEnabled => isPushToTalk;
 
   /// Minimum non-echo words before we treat speech-over-agent as a real
   /// interruption (avoids cutting the agent off on a stray blip / partial echo).
@@ -1171,15 +1180,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
         return;
       }
 
-      if (_onDeviceMode) {
-        // On-device mode: the app owns the mic for speech_to_text, so DON'T publish
-        // it to LiveKit (avoids iOS audio-session contention). LiveKit stays
-        // connected for the agent's TTS downlink + the user-text data channel.
-        await _room!.localParticipant?.setMicrophoneEnabled(false);
-      } else {
-        // Legacy server-STT path: publish the mic so the gateway can transcribe.
-        await _room!.localParticipant?.setMicrophoneEnabled(true);
-      }
+      await _applyCaptureOwnership();
 
       // Connect to voice WebSocket service for visual feedback events
       _connectWebSocket();
@@ -1272,12 +1273,40 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       _sttInitialized = true;
       print(
           'VoiceSessionCubit: speech_to_text initialized available=$_sttAvailable');
+      _reportSttUnavailable();
     } catch (e) {
       _sttAvailable = false;
       _sttInitialized = true;
       print('VoiceSessionCubit: speech_to_text init failed: $e');
+      _reportSttUnavailable();
     }
   }
+
+  /// Tell the user when the recognizer is unusable.
+  ///
+  /// An unavailable recognizer (permission refused, no speech service on the
+  /// device, locale unsupported) used to produce a single `print` and nothing
+  /// else: every listen path then returned false at the `!_sttAvailable` gate, so
+  /// the session looked completely normal — orb, captions, connected state — and
+  /// simply never heard anything. The user has no way to tell that from "the
+  /// agent is ignoring me", and no reason to go looking in system settings.
+  ///
+  /// A caption is used rather than a hard error state so an already-running
+  /// conversation is not torn down: in LiveKit capture mode the session is still
+  /// perfectly usable without the on-device recognizer.
+  void _reportSttUnavailable() {
+    if (_sttAvailable || isClosed) return;
+    _currentAgentCaption =
+        'Microphone or speech recognition is unavailable. Check that Lazervault '
+        'has microphone and speech-recognition permission in system settings.';
+    _emitCaptionUpdate();
+  }
+
+  /// True when on-device capture is required but the recognizer is unusable.
+  ///
+  /// The UI reads this to explain a mic that will never hear anything, instead of
+  /// leaving the user pressing a talk button that silently does nothing.
+  bool get sttUnavailable => _onDeviceMode && _sttInitialized && !_sttAvailable;
 
   /// Start a listening window. speech_to_text auto-finalises the turn after
   /// [pauseFor] of trailing silence (automatic end-of-turn detection) and streams
@@ -1332,25 +1361,46 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     final next = valid.contains(m) ? m : 'continuous';
     if (next == _interactionMode) return;
     final wasPtt = isPushToTalk;
+    final wasOnDevice = _onDeviceMode;
+    // A turn captured under the OLD mode must not be silently binned. Switching
+    // mid-hold (the user changes mode from the settings sheet without releasing)
+    // used to drop whatever had been said so far on the floor.
+    final pending = _joinTurn(_turnAccumulator, _lastPartialText);
     _interactionMode = next;
     // Switching between hands-free and tap-to-speak changes WHO captures the
     // mic, so re-resolve it here too: the session-start value was correct only
     // for the mode in force at connect time.
     _onDeviceMode = _resolveOnDeviceMode();
+    // Move the LiveKit mic track to match the new owner. Without this the track
+    // keeps the previous mode's state — see _applyCaptureOwnership.
+    if (wasOnDevice != _onDeviceMode) {
+      unawaited(_applyCaptureOwnership());
+    }
     // The capture owner may have just flipped; tell the agent so its STT
     // gating follows, instead of waiting for the next spoken turn to correct it.
+    // Announced unconditionally: 'interaction' changes even when the owner does
+    // not, and the agent's turn handling reads it.
     _announceCaptureMode();
+    // A new mode starts a fresh turn — one barge-in per agent turn, and the old
+    // mode's accumulator must not bleed into the next capture.
+    _bargedInThisTurn = false;
     // The gesture the button binds, its label, and the docked bar's hint all
     // read the mode — repaint them, or the UI keeps offering the old gesture.
     _emitCaptionUpdate();
     if (isPushToTalk) {
-      // Entering PTT: close the mic; it reopens only on a gesture.
+      // Entering PTT: flush anything already spoken, then close the mic; it
+      // reopens only on a gesture.
       _pttActive = false;
+      if (pending.isNotEmpty) _dispatchUserTurn(pending);
       unawaited(stopLocalListening());
     } else if (wasPtt) {
-      // Back to continuous: resume hands-free listening if it's the user's turn.
+      // Back to continuous: flush the in-flight PTT turn (the release that would
+      // have dispatched it is never coming), then resume hands-free listening.
       _pttActive = false;
-      _reArmListeningSoon();
+      if (pending.isNotEmpty) _dispatchUserTurn(pending);
+      // Only the device path re-arms itself. When capture has just moved to
+      // LiveKit the server owns the mic and there is nothing local to re-arm.
+      if (_onDeviceMode) _reArmListeningSoon();
     }
   }
 
@@ -1386,6 +1436,31 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   }
 
   Future<void> startLocalListening() async {
+    // Initialise the recognizer HERE, on demand, not only at connect.
+    //
+    // THE DEAD-MIC BUG THIS FIXES
+    // ---------------------------
+    // _initSpeech() used to be reachable only from _startOnDeviceCapture(), which
+    // runs at connect behind `if (_onDeviceMode)`. _onDeviceMode is resolved from
+    // the session-start response as `isPushToTalk || serverInputMode != 'livekit'`
+    // — and at that moment _interactionMode is still its 'continuous' default,
+    // because the real mode arrives from VoiceTalkModeController.load(), a NETWORK
+    // call the sheet fires unawaited in initState.
+    //
+    // So with the server's default stt_input_mode ('livekit'), connect evaluated
+    // _onDeviceMode = false, skipped _startOnDeviceCapture(), and never
+    // initialised the recognizer. load() then delivered 'hold', setInteractionMode
+    // flipped _onDeviceMode to true — but nothing re-ran init. _sttAvailable stayed
+    // false, _listeningPermitted() returned false forever, and pttBegin opened a
+    // capture window onto a recognizer that was never started: the user held the
+    // button, spoke, and NOTHING happened, silently, for the whole session.
+    //
+    // Demand-driven init removes the ordering dependency entirely — whoever needs
+    // the mic first initialises it. _initSpeech is idempotent (_sttInitialized).
+    if (_onDeviceMode && !_sttInitialized) {
+      await _initSpeech();
+      if (isClosed || _teardownRequested) return;
+    }
     if (!_listeningPermitted()) return;
     if (_speech.isListening || _isLocalListening) return;
     // ONE-TIME VERIFICATION: on the first user-listen after the greeting (not a
@@ -1674,13 +1749,53 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   ///
   /// Best-effort: the agent also adopts on-device on the first user_text packet,
   /// so a dropped announcement costs a slower correction, never a lost turn.
+  /// Point the LiveKit microphone track at whoever owns capture RIGHT NOW.
+  ///
+  /// In on-device mode the app owns the mic for `speech_to_text`, so the track is
+  /// NOT published (publishing both causes iOS audio-session contention and makes
+  /// the server transcribe the same speech a second time). In LiveKit mode the
+  /// track must be published or the gateway has no audio to transcribe.
+  ///
+  /// THE BUG THIS FIXES: this ran ONLY at connect, so a live talk-mode switch left
+  /// the track in the previous mode's state. Switching hands-free → push-to-talk
+  /// left the mic PUBLISHED while the device recognizer also ran (dual capture:
+  /// every turn transcribed twice, by two engines, arriving split); switching back
+  /// left it UNPUBLISHED with the device recognizer stopped, so the server had no
+  /// audio and hands-free heard nothing at all.
+  ///
+  /// Mute wins over everything — a muted session must never publish, whatever the
+  /// capture owner is.
+  Future<void> _applyCaptureOwnership() async {
+    final lp = _room?.localParticipant;
+    if (lp == null) return;
+    final shouldPublish = !_onDeviceMode && !_isMuted;
+    try {
+      await lp.setMicrophoneEnabled(shouldPublish);
+      print(
+          'VoiceSessionCubit: capture owner=${_onDeviceMode ? 'device' : 'livekit'} '
+          'micPublished=$shouldPublish mode=$_interactionMode');
+    } catch (e) {
+      // A failed track toggle must not kill the session — the other capture path
+      // may still work, and the next switch retries.
+      print('VoiceSessionCubit: setMicrophoneEnabled($shouldPublish) failed: $e');
+    }
+  }
+
   void _announceCaptureMode() {
     final room = _room;
-    if (room == null || !_onDeviceMode) return;
+    // Announce BOTH directions.
+    //
+    // This used to `return` when !_onDeviceMode, so it could only ever say
+    // "on_device" — there was no packet that meant "I have STOPPED capturing,
+    // you take over". Combined with the server latching _client_stt on the first
+    // announcement, one push-to-talk turn disabled server STT for the rest of the
+    // session, and switching back to hands-free left NOBODY transcribing: the app
+    // had stopped its recognizer and the server was still gated off.
+    if (room == null) return;
     try {
       final payload = utf8.encode(jsonEncode({
         'type': 'client_capture',
-        'mode': 'on_device',
+        'mode': _onDeviceMode ? 'on_device' : 'livekit',
         'interaction': _interactionMode,
       }));
       unawaited(room.localParticipant?.publishData(

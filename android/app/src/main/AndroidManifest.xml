@@ -198,5 +198,32 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+
+        <!-- Speech recognition. REQUIRED on Android 11+ (API 30), and its absence
+             is why the voice assistant heard nothing.
+
+             Package-visibility filtering hides every other app from us unless we
+             declare what we intend to resolve. The device's RecognitionService
+             lives in another package (Google app / Speech Services), so without
+             these entries SpeechRecognizer.isRecognitionAvailable() reports false,
+             speech_to_text's initialize() returns false, and every listen call in
+             VoiceSessionCubit returns early at the `!_sttAvailable` gate — with no
+             error, because a missing service is indistinguishable from silence.
+             Hold-to-talk, tap, double-tap AND hands-free all went dead the same
+             way: the mic itself was fine (RECORD_AUDIO is a separate mechanism,
+             which is why voice notes still recorded normally), but nothing was
+             ever transcribed.
+
+             The speech_to_text plugin ships an EMPTY manifest and contributes no
+             queries entry of its own, so this has to be declared here.
+
+             RecognitionService covers the bound-service API the plugin uses;
+             RECOGNIZE_SPEECH covers the intent-based fallback path. -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
+        </intent>
+        <intent>
+            <action android:name="android.speech.action.RECOGNIZE_SPEECH"/>
+        </intent>
     </queries>
 </manifest>
