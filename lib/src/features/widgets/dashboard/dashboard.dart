@@ -87,22 +87,34 @@ class _DashboardState extends State<Dashboard> {
     // Server-driven account-update announcement (VA provider migration):
     // shown once per user per version, after first frame so it can never
     // block dashboard load. Best-effort end to end.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
+      // ONE dialog, not two.
+      //
+      // These both speak during a virtual-account provider migration — the
+      // broadcast announcement and the per-user number change — and they used to
+      // fire together in this callback with no coordination, so the user got two
+      // modals stacked on each other.
+      //
+      // The per-user one goes first because it is strictly more informative: it
+      // names the affected accounts and shows their real old and new numbers,
+      // where the broadcast is generic admin-authored copy. If it had something
+      // to say, the broadcast stands down for this session.
+      final reportedSpecificChange =
+          await _announceAccountNumberChanges(walkthroughUserId);
+      if (!mounted || reportedSpecificChange) return;
       AccountUpdateAnnouncementService.instance
           .maybeShow(context, userId: walkthroughUserId);
-      // Per-user, automatic counterpart to the broadcast above: fires only for
-      // the user whose deposit account number actually changed (a virtual
-      // account provider switch re-points or re-mints it), and shows their real
-      // old and new numbers rather than generic admin-authored copy.
-      _announceAccountNumberChanges(walkthroughUserId);
     });
   }
 
   /// Reads the current account summaries and reports any number that changed
   /// since this device last saw it. Silent when nothing moved.
-  void _announceAccountNumberChanges(String userId) {
-    if (userId.isEmpty) return;
+  ///
+  /// Returns true when a modal was shown, so the caller can skip the broadcast
+  /// announcement instead of stacking a second dialog on top.
+  Future<bool> _announceAccountNumberChanges(String userId) async {
+    if (userId.isEmpty) return false;
     try {
       final state = context.read<AccountCardsSummaryCubit>().state;
       final List<AccountSummaryEntity> accounts;
@@ -113,11 +125,14 @@ class _DashboardState extends State<Dashboard> {
       } else {
         // Summaries not in yet. The check is cheap and idempotent, so it runs
         // again on the next dashboard build rather than being forced here.
-        return;
+        return false;
       }
-      AccountNumberChangeWatcher.instance
+      return await AccountNumberChangeWatcher.instance
           .check(context, userId: userId, accounts: accounts);
-    } catch (_) {/* never break the dashboard over an announcement */}
+    } catch (_) {
+      // Never break the dashboard over an announcement.
+      return false;
+    }
   }
 
   @override

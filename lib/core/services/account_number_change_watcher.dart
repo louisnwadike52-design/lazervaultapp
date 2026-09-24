@@ -43,15 +43,17 @@ class AccountNumberChangeWatcher {
   ///
   /// Best effort end to end: any failure leaves the baseline untouched so the
   /// change is simply reported on a later load rather than lost.
-  Future<void> check(
+  /// Returns true when a modal was shown, so the caller can stand the broadcast
+  /// announcement down rather than stacking a second dialog on top of this one.
+  Future<bool> check(
     BuildContext context, {
     required String userId,
     required List<AccountSummaryEntity> accounts,
   }) async {
-    if (userId.isEmpty || accounts.isEmpty) return;
+    if (userId.isEmpty || accounts.isEmpty) return false;
     // One announcement per user per app session. A provider switch can move
     // several accounts at once and a stack of modals would be worse than one.
-    if (_shownForUserId == userId) return;
+    if (_shownForUserId == userId) return false;
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -75,7 +77,7 @@ class AccountNumberChangeWatcher {
 
         changes.add(_AccountNumberChange(
           accountId: id,
-          label: a.displayName,
+          label: _labelFor(a),
           previous: previous,
           current: current,
           bankName: (a.bankName ?? '').trim(),
@@ -83,10 +85,35 @@ class AccountNumberChangeWatcher {
         await prefs.setString(key, current);
       }
 
-      if (changes.isEmpty || !context.mounted) return;
+      if (changes.isEmpty || !context.mounted) return false;
       _shownForUserId = userId;
       await _showModal(context, changes);
-    } catch (_) {/* never break the dashboard over an announcement */}
+      return true;
+    } catch (_) {
+      // Never break the dashboard over an announcement.
+      return false;
+    }
+  }
+
+  /// How an account should be NAMED in the modal.
+  ///
+  /// [AccountSummaryEntity.displayName] is the account TYPE, deliberately — it is
+  /// what differentiates rows in a picker, and accountLabel holds the account
+  /// HOLDER's name for personal accounts, which would render every row as the
+  /// same person.
+  ///
+  /// Family accounts are the exception, and the reason this exists: a user can
+  /// have several, so "Family & Friends" does not identify which one moved. For
+  /// those the backend fills accountLabel with the FAMILY name, which is what the
+  /// dashboard carousel titles the card with — so the modal now says "Household"
+  /// and matches the card the user is looking at.
+  static String _labelFor(AccountSummaryEntity a) {
+    if (a.accountTypeEnum == VirtualAccountType.family) {
+      final name = (a.accountLabel ?? '').trim();
+      if (name.isNotEmpty) return name;
+      return 'Family & Friends';
+    }
+    return a.displayName;
   }
 
   Future<void> _showModal(
