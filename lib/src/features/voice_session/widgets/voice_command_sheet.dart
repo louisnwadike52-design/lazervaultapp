@@ -177,6 +177,16 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
     WidgetsBinding.instance.addObserver(this);
 
+    // The floating bubble and this sheet must never be on screen together.
+    //
+    // _reopen() hides the overlay on its own path, but that is only ONE of the
+    // ways back to full screen: opening a fresh sheet from the dashboard mic, a
+    // service voice button, or the maximise control all leave the overlay
+    // mounted on the root Overlay, where it floats above the sheet — which is
+    // what the user saw. Hiding here covers every entry point at once, and
+    // hide() is a no-op when nothing is showing.
+    VoiceMiniBubbleController.instance.hide();
+
     // Subscribe to the shared talk mode for the LIFETIME of the sheet.
     //
     // This used to happen only on the path that STARTS a session. Open the sheet on a
@@ -2539,16 +2549,20 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     // Avatar shrunk further (compact header was 44, full was 132) so the
     // conversation gets more vertical room.
     final double size = compact ? 34.w : 76.w;
-    // The avatar sits on a near-black sheet, so the ACTIVE colours have to be
-    // light to read at all: #5B45C9 speaking-violet was darker than the glow
-    // ring behind it, which is why "the AI is talking" was invisible. Idle
-    // stays deep — the contrast between deep-idle and light-active is the
-    // whole signal.
+    // The avatar sits on a near-black sheet, so what carries "the AI is
+    // talking" is the CONTRAST between the deep idle tone and the active one —
+    // not the absolute lightness of either. #5B45C9 once failed here because it
+    // was darker than the glow ring behind it and the speaking state vanished.
+    //
+    // #A78BFA fixed that but overshot: a violet-400 wash read as washed-out
+    // lavender against the app's purple. Both ends now step down together —
+    // active to violet-500, idle deeper to match — which keeps the same
+    // separation while sitting in the dashboard's purple family.
     final Color glowColor = isSpeaking
-        ? const Color(0xFFA78BFA)
+        ? const Color(0xFF8B5CF6)
         : isListening
             ? const Color(0xFF34D399)
-            : const Color(0xFF3D2F8B);
+            : const Color(0xFF2A1F5E);
     final bool animate = isSpeaking || isListening;
 
     final Widget avatar = AnimatedBuilder(
@@ -4408,14 +4422,16 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 callbackArgs: callbackArgs,
               );
             } else {
-              await cubit.notifyPinCompleted(true, reference: verificationToken);
+              await cubit.notifyPinCompleted(true,
+                  reference: verificationToken);
             }
           },
         );
 
         if (success || verified) return;
 
-        reason = lastPinFailureReason; // 'locked' | 'exhausted' | null (cancelled)
+        reason =
+            lastPinFailureReason; // 'locked' | 'exhausted' | null (cancelled)
         // A lockout or an exhausted attempt count is the server's FINAL answer.
         // Re-presenting the pad there would invite the user to type into
         // something guaranteed to reject them.

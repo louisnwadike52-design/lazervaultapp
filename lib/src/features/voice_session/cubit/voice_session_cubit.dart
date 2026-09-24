@@ -1336,8 +1336,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   ///
   /// Push-to-talk always captures on device; hands-free follows the admin
   /// setting. See the session-start handler for why.
-  bool _resolveOnDeviceMode() =>
-      isPushToTalk || _serverInputMode != 'livekit';
+  bool _resolveOnDeviceMode() => isPushToTalk || _serverInputMode != 'livekit';
 
   /// Whether the current interaction mode is a push-to-talk style (not continuous).
   bool get isPushToTalk =>
@@ -1409,6 +1408,19 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   Future<void> pttBegin() async {
     if (!isPushToTalk) return;
     _pttActive = true;
+    // REACHING FOR THE BUTTON *IS* THE INTERRUPTION.
+    //
+    // Acoustic barge-in still runs, but it needs two non-echo words before it
+    // fires (_bargeInMinWords), so Nova talked over the first half of the
+    // sentence and the user ended up competing with her. A deliberate press is
+    // a far clearer signal of intent than the audio is, and it arrives earlier.
+    //
+    // _triggerBargeIn clears the speaking flags and publishes {'type':'interrupt'}
+    // on lv-user-text, which the gateway turns into session.interrupt(force=True).
+    // Guarded on _agentSpeaking so a press in silence costs nothing.
+    if (_agentSpeaking) {
+      _triggerBargeIn();
+    }
     _awaitingAgentReply = false; // a fresh user turn overrides any pending wait
     // Tell the UI the capture window is OPEN.
     //
@@ -1487,7 +1499,16 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           // a mid-sentence breath, short enough to feel responsive. iOS endpoints
           // more eagerly, so give it a longer native pause window to reduce
           // mid-sentence finals (the client silence timer above is the backstop).
-          pauseFor: Duration(milliseconds: _isIOS ? 3200 : 2500),
+          //
+          // PUSH-TO-TALK gets the full listen window instead. This was the third
+          // and last clock that could end a gesture turn early: the platform
+          // recognizer simply STOPS after pauseFor, so holding the button through
+          // a long pause left the mic dead with no further partials, and whatever
+          // had been said up to that point was all the turn ever contained.
+          // In a gesture mode nothing but the gesture may end capture.
+          pauseFor: isPushToTalk
+              ? const Duration(seconds: 60)
+              : Duration(milliseconds: _isIOS ? 3200 : 2500),
           localeId: await _resolveSttLocaleId(),
         ),
       );
@@ -1585,6 +1606,18 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       }
       _turnSilenceTimer?.cancel();
       _endOfTurnTimer?.cancel();
+      // PUSH-TO-TALK NEVER ARMS A CLOCK.
+      //
+      // In hold / tap / double_tap the user tells us when they are done — by
+      // releasing, tapping back, or double-tapping again. That gesture is the
+      // whole point of the mode, and pttEnd() already force-dispatches on it.
+      //
+      // This timer used to arm regardless, so a natural pause of ~2.2s (iOS) /
+      // 1.4s (Android) mid-sentence dispatched the turn while the finger was
+      // still down — the turn was sent before the user had finished, and the
+      // rest of the sentence became the NEXT turn. Returning here is what makes
+      // "pause shouldn't affect it sending" true.
+      if (isPushToTalk) return;
       // Wait longer when the coalesced turn clearly isn't finished (ends in a
       // continuation word) so a mid-thought pause doesn't split the speech.
       final graceWindow = _looksIncomplete(_turnAccumulator)
@@ -1625,6 +1658,11 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // is what makes end-of-turn detection reliable even when the platform STT never
     // emits a finalResult after the pause. Dispatch the WHOLE accumulated turn.
     _turnSilenceTimer?.cancel();
+    // Same reason as the grace timer above: in a gesture mode the user's finger
+    // (or their second tap) decides when the turn ends, not a stopwatch. This
+    // one fired at ~3.2s (iOS) / 2.5s (Android) of silence, so a slower speaker
+    // was cut off mid-thought even while actively holding the button.
+    if (isPushToTalk) return;
     // Same adaptive rule for the pure-silence path: an unfinished-sounding turn
     // gets the longer window so a natural pause doesn't finalise it early.
     final silenceWindow =
@@ -1777,7 +1815,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     } catch (e) {
       // A failed track toggle must not kill the session — the other capture path
       // may still work, and the next switch retries.
-      print('VoiceSessionCubit: setMicrophoneEnabled($shouldPublish) failed: $e');
+      print(
+          'VoiceSessionCubit: setMicrophoneEnabled($shouldPublish) failed: $e');
     }
   }
 
@@ -1804,7 +1843,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
             topic: _userTextTopic,
           ) ??
           Future.value());
-      print('VoiceSessionCubit: announced on-device capture ($_interactionMode)');
+      print(
+          'VoiceSessionCubit: announced on-device capture ($_interactionMode)');
     } catch (e) {
       print('VoiceSessionCubit: capture announcement failed: $e');
     }
