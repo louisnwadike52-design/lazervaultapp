@@ -635,10 +635,11 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   Widget _buildPttTalkButton(VoiceSessionState state) {
     final cubit = context.read<VoiceSessionCubit>();
     // "Live" means the mic is genuinely open, which is a different question in
-    // each mode: a PTT capture window in hold/tap/double-tap, and simply
-    // listening in continuous. Feeding the same flag either way is what lets
-    // the waves mean ONE thing — "I can hear you" — in every mode.
-    final micLive = _isPtt ? cubit.isPttCapturing : cubit.isLocalListening;
+    // each mode. The cubit owns that decision now: isLocalListening is
+    // permanently false on a server configured for livekit STT, so reading it
+    // directly here left the mic grey through an entire hands-free turn — the
+    // reported "his mic icon should be animating green too".
+    final micLive = cubit.micIsHearingUser;
     return VoiceTalkButton(
       mode: _interactionMode,
       capturing: micLive,

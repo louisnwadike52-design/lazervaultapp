@@ -179,6 +179,18 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // server-STT path (publish mic, server captions) verbatim.
   bool _onDeviceMode = true;
 
+  /// LiveKit's own voice-activity detection on the LOCAL mic.
+  ///
+  /// The mic indicator was driven by [isLocalListening], which is permanently
+  /// false whenever the server configures `inputMode: 'livekit'` — startLocal-
+  /// Listening is gated on [_onDeviceMode]. So in hands-free on a livekit server
+  /// the user's mic never turned green while they spoke, and the one piece of
+  /// feedback telling them they were being heard was simply absent.
+  ///
+  /// This is mode-independent: LiveKit reports it from the published track, so it
+  /// is true in exactly the case on-device listening cannot cover.
+  bool _localUserSpeaking = false;
+
   /// What the SERVER asked for this session ('livekit' or on-device). Kept so a
   /// mid-session talk-mode switch can re-resolve capture without a reconnect.
   String? _serverInputMode;
@@ -312,8 +324,28 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   // Client-side silence timer (reset on every partial). Longer on iOS to tolerate
   // natural pauses before we finalise a turn ourselves.
-  static final Duration _turnSilenceWindow =
-      Duration(milliseconds: _isIOS ? 3200 : 2500);
+  //
+  // Raised from 3200/2500: people asked for room to pause mid-sentence without
+  // the turn being sent. This only delays the END of a turn — a short complete
+  // command still dispatches as soon as the recognizer finalises it — so the cost
+  // of being generous here is small and the cost of being mean is a sentence cut
+  // in half.
+  static int get _turnSilenceDefaultMs => _isIOS ? 4000 : 3200;
+  static int get _graceDefaultMs => _isIOS ? 2800 : 2000;
+
+  /// Server overrides for the two endpointing windows, from
+  /// `/voice/session/start`. Null until the session reports them, and null
+  /// forever on an older server — so the platform defaults above stay in force.
+  ///
+  /// Tunable from the admin console because the right value depends on speech
+  /// rate and language, which is not something an app release should have to
+  /// guess at per market.
+  int? _silenceWindowMsOverride;
+  int? _graceWindowMsOverride;
+
+  Duration get _turnSilenceWindow => Duration(
+        milliseconds: _silenceWindowMsOverride ?? _turnSilenceDefaultMs,
+      );
 
   // ── Long-turn coalescing (don't split a long sentence) ──
   // Platform recognizers (notably Android) fire finalResult MID-thought after a
@@ -331,8 +363,13 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // longer grace: its recognizer restart is slower, so a mid-sentence pause +
   // the re-arm dead window can otherwise exceed the Android grace and dispatch
   // half a sentence.
-  static final Duration _endOfTurnGraceWindow =
-      Duration(milliseconds: _isIOS ? 2200 : 1400);
+  //
+  // Raised from 2200/1400 for the same reason as the silence window: this is the
+  // gap after the recognizer says "final" in which a continuation is still
+  // absorbed, and it was firing while people were still thinking.
+  Duration get _endOfTurnGraceWindow => Duration(
+        milliseconds: _graceWindowMsOverride ?? _graceDefaultMs,
+      );
 
   // ── Adaptive (semantic) endpointing — stop splitting speeches ──
   // A big cause of "split speeches" on BOTH platforms is a fixed timeout firing
@@ -385,9 +422,23 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     'transfer',
   };
   static const Duration _incompleteExtraWait = Duration(milliseconds: 1600);
-  static final Duration _endOfTurnGraceWindowLong =
+
+  /// Accepts a server-supplied endpointing window, or null.
+  ///
+  /// Null for anything unusable — absent, non-numeric, or outside the range a
+  /// human would tolerate — so a bad admin value falls back to the platform
+  /// default instead of breaking turn-taking for everyone on that build.
+  static int? _clampWindowMs(dynamic raw) {
+    final num? value = raw is num ? raw : num.tryParse(raw?.toString() ?? '');
+    if (value == null) return null;
+    final ms = value.round();
+    if (ms < 600 || ms > 15000) return null;
+    return ms;
+  }
+
+  Duration get _endOfTurnGraceWindowLong =>
       _endOfTurnGraceWindow + _incompleteExtraWait;
-  static final Duration _turnSilenceWindowLong =
+  Duration get _turnSilenceWindowLong =>
       _turnSilenceWindow + _incompleteExtraWait;
 
   /// True when [text] most likely isn't a finished thought — it ends in a
@@ -425,6 +476,18 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   /// Whether the on-device recognizer is currently listening.
   bool get isLocalListening => _isLocalListening;
+
+  /// True when the microphone is genuinely picking the user up, whichever input
+  /// path this session is using.
+  ///
+  /// The mic indicator must mean ONE thing — "I can hear you" — in all four
+  /// modes, and no single underlying flag covers them:
+  ///   * hold / tap / double-tap: the PTT capture window is open.
+  ///   * hands-free, on-device STT: local listening is running.
+  ///   * hands-free, livekit STT: neither of the above is ever true, so this
+  ///     falls to LiveKit's voice-activity detection on the published track.
+  bool get micIsHearingUser =>
+      isPttCapturing || _isLocalListening || _localUserSpeaking;
 
   // ── Caption state for real-time transcription display ──
 
@@ -1005,6 +1068,21 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           _onDeviceMode = _resolveOnDeviceMode();
           print(
               'VoiceSessionCubit: inputMode=${data['inputMode'] ?? 'on_device(default)'} -> onDeviceMode=$_onDeviceMode');
+          // Endpointing windows, admin-tunable. Same rail as inputMode above.
+          //
+          // Clamped rather than trusted: a zero or negative value would dispatch
+          // a turn the instant the recognizer paused, and an absurdly large one
+          // would make the agent look dead. The bounds are the usable range, not
+          // a guess — below ~600ms is inside a normal mid-sentence pause, and
+          // above 15s the user has long since assumed it is broken.
+          _silenceWindowMsOverride = _clampWindowMs(data['turnSilenceMs']);
+          _graceWindowMsOverride = _clampWindowMs(data['endOfTurnGraceMs']);
+          if (_silenceWindowMsOverride != null ||
+              _graceWindowMsOverride != null) {
+            print(
+                'VoiceSessionCubit: endpointing override silence=$_silenceWindowMsOverride grace=$_graceWindowMsOverride');
+          }
+
           // Admin biometrics policy (drives on_device verification + enforcement).
           final bio = data['biometrics'];
           if (bio is Map) {
@@ -1129,12 +1207,22 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // Setup LiveKit listeners
     _roomEventsListener = _room!.createListener()
       ..on<RoomDisconnectedEvent>((event) {
+        // Same reason as in teardown: no trailing SpeakingChangedEvent arrives
+        // when the room drops, so the flag has to be cleared here or the mic
+        // reads as live on a dead session.
+        _localUserSpeaking = false;
         if (isClosed) return;
         _disconnectWebSocket();
         emit(VoiceSessionDisconnected());
       })
       ..on<SpeakingChangedEvent>((event) {
         if (event.participant == _room?.localParticipant) {
+          // Recorded BEFORE the visual-feedback guard below. That guard exists to
+          // stop a dialog's state being overwritten, but the mic indicator should
+          // still tell the truth about whether we can hear the user while one is
+          // open.
+          _localUserSpeaking = event.participant.isSpeaking;
+
           // Don't overwrite visual feedback states (dialogs are showing)
           if (_isVisualFeedbackActive) return;
 
@@ -3225,6 +3313,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     _agentSpeaking = false;
     _bargedInThisTurn = false;
     _isLocalListening = false;
+    // Or the mic indicator stays green after the session ends: LiveKit sends no
+    // final "stopped speaking" event when the room goes away.
+    _localUserSpeaking = false;
     _bioAttemptedThisSession = false;
     _bioInProgress = false;
     _bioCancelled =
