@@ -34,7 +34,8 @@ class ChatMediaBubble extends StatelessWidget {
     // log when it's a non-null unexpected value so the drift is diagnosable
     // (a null mediaType is a normal text bubble and stays silent).
     if (mediaType != null) {
-      debugPrint('[ChatMediaBubble] unexpected mediaType: "$mediaType" — rendering nothing');
+      debugPrint(
+          '[ChatMediaBubble] unexpected mediaType: "$mediaType" — rendering nothing');
     }
     return const SizedBox.shrink();
   }
@@ -222,7 +223,8 @@ class _VoiceNotePlayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final player = ChatVoiceNotePlayer.instance;
-    final accentColor = isUser ? const Color(0xFF3B82F6) : const Color(0xFF10B981);
+    final accentColor =
+        isUser ? const Color(0xFF3B82F6) : const Color(0xFF10B981);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,14 +285,16 @@ class _VoiceNotePlayer extends StatelessWidget {
                     final pos = player.position.value;
                     final isPlaying = player.playing.value;
                     final progress = dur.inMilliseconds > 0
-                        ? (pos.inMilliseconds / dur.inMilliseconds).clamp(0.0, 1.0)
+                        ? (pos.inMilliseconds / dur.inMilliseconds)
+                            .clamp(0.0, 1.0)
                         : 0.0;
                     return _buildRow(
                       accentColor: accentColor,
                       isPlaying: isPlaying,
                       progress: progress,
-                      timeLabel:
-                          isPlaying ? _formatDuration(pos) : _formatDuration(dur),
+                      timeLabel: isPlaying
+                          ? _formatDuration(pos)
+                          : _formatDuration(dur),
                       hasError: false,
                     );
                   },
@@ -382,7 +386,8 @@ class _VoiceNotePlayer extends StatelessWidget {
                     Text(
                       'Audio unavailable',
                       style: TextStyle(
-                        color: isUser ? Colors.white70 : const Color(0xFFEF4444),
+                        color:
+                            isUser ? Colors.white70 : const Color(0xFFEF4444),
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                       ),
@@ -422,9 +427,34 @@ class _WaveformPainter extends CustomPainter {
     final barWidth = size.width / (barCount * 2);
     // Pre-determined "waveform" heights for visual effect
     const heights = [
-      0.3, 0.5, 0.7, 0.4, 0.9, 0.6, 0.8, 0.3, 0.7, 0.5,
-      0.9, 0.4, 0.6, 0.8, 0.3, 0.7, 0.5, 0.9, 0.4, 0.6,
-      0.8, 0.5, 0.3, 0.7, 0.9, 0.4, 0.6, 0.5,
+      0.3,
+      0.5,
+      0.7,
+      0.4,
+      0.9,
+      0.6,
+      0.8,
+      0.3,
+      0.7,
+      0.5,
+      0.9,
+      0.4,
+      0.6,
+      0.8,
+      0.3,
+      0.7,
+      0.5,
+      0.9,
+      0.4,
+      0.6,
+      0.8,
+      0.5,
+      0.3,
+      0.7,
+      0.9,
+      0.4,
+      0.6,
+      0.5,
     ];
 
     for (int i = 0; i < barCount; i++) {

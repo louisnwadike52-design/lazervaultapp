@@ -107,12 +107,29 @@ class ChatSessionsDrawer extends StatelessWidget {
     return BlocBuilder<ChatSessionsCubit, ChatSessionsState>(
       builder: (context, state) {
         final (sessions, currentId, isLoading, errorMsg) = switch (state) {
-          ChatSessionsInitial() => (<ChatSessionSummary>[], null as String?, true, null as String?),
-          ChatSessionsLoading(:final sessions, :final currentId) =>
-            (sessions, currentId, true, null as String?),
-          ChatSessionsLoaded(:final sessions, :final currentId) =>
-            (sessions, currentId, false, null as String?),
-          ChatSessionsError(:final sessions, :final currentId, :final message) =>
+          ChatSessionsInitial() => (
+              <ChatSessionSummary>[],
+              null as String?,
+              true,
+              null as String?
+            ),
+          ChatSessionsLoading(:final sessions, :final currentId) => (
+              sessions,
+              currentId,
+              true,
+              null as String?
+            ),
+          ChatSessionsLoaded(:final sessions, :final currentId) => (
+              sessions,
+              currentId,
+              false,
+              null as String?
+            ),
+          ChatSessionsError(
+            :final sessions,
+            :final currentId,
+            :final message
+          ) =>
             (sessions, currentId, false, message),
         };
 
@@ -149,8 +166,7 @@ class ChatSessionsDrawer extends StatelessWidget {
                       .switchTo(session.sessionId);
                   if (context.mounted) Navigator.of(context).maybePop();
                 },
-                onLongPress: () =>
-                    _showSessionActionSheet(context, session),
+                onLongPress: () => _showSessionActionSheet(context, session),
               );
             },
           ),
@@ -205,10 +221,8 @@ class ChatSessionsDrawer extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             TextButton(
-              onPressed: () =>
-                  context.read<ChatSessionsCubit>().initialize(),
-              child: const Text('Retry',
-                  style: TextStyle(color: _brandPurple)),
+              onPressed: () => context.read<ChatSessionsCubit>().initialize(),
+              child: const Text('Retry', style: TextStyle(color: _brandPurple)),
             ),
           ],
         ),
@@ -244,18 +258,17 @@ class ChatSessionsDrawer extends StatelessWidget {
                 ),
               ),
               ListTile(
-                leading:
-                    const Icon(Icons.edit_outlined, color: _textPrimary),
-                title: const Text('Rename',
-                    style: TextStyle(color: _textPrimary)),
+                leading: const Icon(Icons.edit_outlined, color: _textPrimary),
+                title:
+                    const Text('Rename', style: TextStyle(color: _textPrimary)),
                 onTap: () async {
                   Navigator.of(ctx).pop();
                   await _showRenameDialog(context, cubit, session);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.delete_outline,
-                    color: Color(0xFFEF4444)),
+                leading:
+                    const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
                 title: const Text('Delete',
                     style: TextStyle(color: Color(0xFFEF4444))),
                 onTap: () async {
@@ -271,16 +284,16 @@ class ChatSessionsDrawer extends StatelessWidget {
     );
   }
 
-  Future<void> _showRenameDialog(
-      BuildContext context, ChatSessionsCubit cubit, ChatSessionSummary session) async {
+  Future<void> _showRenameDialog(BuildContext context, ChatSessionsCubit cubit,
+      ChatSessionSummary session) async {
     final controller = TextEditingController(text: session.title);
     final newTitle = await showDialog<String>(
       context: context,
       builder: (ctx) {
         return AlertDialog(
           backgroundColor: _card,
-          title: const Text('Rename chat',
-              style: TextStyle(color: _textPrimary)),
+          title:
+              const Text('Rename chat', style: TextStyle(color: _textPrimary)),
           content: TextField(
             controller: controller,
             autofocus: true,
@@ -301,14 +314,12 @@ class ChatSessionsDrawer extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel',
-                  style: TextStyle(color: _textSecondary)),
+              child:
+                  const Text('Cancel', style: TextStyle(color: _textSecondary)),
             ),
             TextButton(
-              onPressed: () =>
-                  Navigator.of(ctx).pop(controller.text.trim()),
-              child: const Text('Save',
-                  style: TextStyle(color: _brandPurple)),
+              onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
+              child: const Text('Save', style: TextStyle(color: _brandPurple)),
             ),
           ],
         );
@@ -320,8 +331,8 @@ class ChatSessionsDrawer extends StatelessWidget {
     await cubit.rename(sessionId: session.sessionId, title: newTitle);
   }
 
-  Future<void> _confirmAndDelete(
-      BuildContext context, ChatSessionsCubit cubit, ChatSessionSummary session) async {
+  Future<void> _confirmAndDelete(BuildContext context, ChatSessionsCubit cubit,
+      ChatSessionSummary session) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -335,8 +346,8 @@ class ChatSessionsDrawer extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel',
-                style: TextStyle(color: _textSecondary)),
+            child:
+                const Text('Cancel', style: TextStyle(color: _textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -386,14 +397,11 @@ class _SessionRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: borderColor, width: 1),
             ),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
                 Icon(
-                  isCurrent
-                      ? Icons.chat_bubble
-                      : Icons.chat_bubble_outline,
+                  isCurrent ? Icons.chat_bubble : Icons.chat_bubble_outline,
                   color: isCurrent
                       ? ChatSessionsDrawer._brandPurple
                       : ChatSessionsDrawer._textSecondary,

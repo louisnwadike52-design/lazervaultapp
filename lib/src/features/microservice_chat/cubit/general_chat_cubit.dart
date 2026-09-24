@@ -198,19 +198,21 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
       (history) {
         if (history.isNotEmpty) {
           // Map MicroserviceChatMessageEntity to GeneralChatMessageEntity
-          final historyMessages = history.map((msg) => GeneralChatMessageEntity(
-            text: msg.isUser ? maskIfPin(msg.text) : msg.text,
-            isUser: msg.isUser,
-            timestamp: msg.timestamp,
-            serviceRoutedTo: msg.serviceRoutedTo,
-            metadata: msg.metadata,
-            // Preserve media fields from history
-            mediaType: msg.mediaType,
-            mediaUrl: msg.mediaUrl,
-            localMediaPath: msg.localMediaPath,
-            audioDurationMs: msg.audioDurationMs,
-            transcript: msg.transcript,
-          )).toList();
+          final historyMessages = history
+              .map((msg) => GeneralChatMessageEntity(
+                    text: msg.isUser ? maskIfPin(msg.text) : msg.text,
+                    isUser: msg.isUser,
+                    timestamp: msg.timestamp,
+                    serviceRoutedTo: msg.serviceRoutedTo,
+                    metadata: msg.metadata,
+                    // Preserve media fields from history
+                    mediaType: msg.mediaType,
+                    mediaUrl: msg.mediaUrl,
+                    localMediaPath: msg.localMediaPath,
+                    audioDurationMs: msg.audioDurationMs,
+                    transcript: msg.transcript,
+                  ))
+              .toList();
 
           // Replace welcome message with actual history
           _currentMessages = historyMessages;
@@ -237,184 +239,193 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
     _isSending = true;
 
     try {
-    final authState = authCubit.state;
-    if (authState is! AuthenticationSuccess) {
-      emit(GeneralChatError(
-        errorMessage: 'User not authenticated',
-        messages: List.from(_currentMessages),
-      ));
-      return;
-    }
-
-    // Swipe-to-reply: never fold a quote into a PIN turn. The AI sees the quote
-    // prepended so its reply is grounded in the referenced message; the stored
-    // bubble keeps only the typed text.
-    final isReply = replyToText != null &&
-        replyToText.trim().isNotEmpty &&
-        !isPinText(text.trim());
-    final messageForAI = isReply
-        ? _withReplyContext(text, replyToText, replyToIsUser ?? false)
-        : text;
-
-    // Add user message immediately
-    final userMessage = GeneralChatMessageEntity(
-      text: text,
-      isUser: true,
-      timestamp: DateTime.now(),
-      replyToText: isReply ? replyToText.trim() : null,
-      replyToIsUser: isReply ? (replyToIsUser ?? false) : null,
-    );
-    _currentMessages.add(userMessage);
-
-    emit(GeneralChatLoading(messages: List.from(_currentMessages)));
-
-    // Reply language and data-scoping region are DISTINCT axes: `language` picks
-    // the response language; `locale` (+ account/country/currency) picks which
-    // region's data the request reads/writes. Region comes from the active
-    // dashboard, NOT the chosen language.
-    final scope = _regionScope();
-
-    final result = await sendMessageUseCase(
-      message: messageForAI,
-      sessionId: _sessionId,
-      userId: authState.profile.user.id,
-      accessToken: '', // Access token is managed by GrpcCallOptionsHelper
-      sourceContext: 'general', // Always 'general' for this screen
-      language: _language,
-      locale: scope.locale,
-      accountId: scope.accountId,
-      currency: scope.currency,
-      userCountry: scope.country,
-    );
-
-    result.fold(
-      (failure) {
+      final authState = authCubit.state;
+      if (authState is! AuthenticationSuccess) {
         emit(GeneralChatError(
-          errorMessage: failure.message,
+          errorMessage: 'User not authenticated',
           messages: List.from(_currentMessages),
         ));
-      },
-      (response) {
-        // Extract enhanced response fields
-        final serviceRoutedTo = response.serviceRoutedTo;
-        final intentClassification = response.intentClassification;
-        final conversationState = response.conversationState;
-        final shouldSwitchService = response.shouldSwitchService;
-        final previousService = response.previousService;
+        return;
+      }
 
-        // Update current service if switched
-        if (shouldSwitchService == true && previousService != null) {
-          _currentService = serviceRoutedTo;
-          if (!_conversationServices.contains(serviceRoutedTo)) {
-            _conversationServices.add(serviceRoutedTo);
+      // Swipe-to-reply: never fold a quote into a PIN turn. The AI sees the quote
+      // prepended so its reply is grounded in the referenced message; the stored
+      // bubble keeps only the typed text.
+      final isReply = replyToText != null &&
+          replyToText.trim().isNotEmpty &&
+          !isPinText(text.trim());
+      final messageForAI = isReply
+          ? _withReplyContext(text, replyToText, replyToIsUser ?? false)
+          : text;
+
+      // Add user message immediately
+      final userMessage = GeneralChatMessageEntity(
+        text: text,
+        isUser: true,
+        timestamp: DateTime.now(),
+        replyToText: isReply ? replyToText.trim() : null,
+        replyToIsUser: isReply ? (replyToIsUser ?? false) : null,
+      );
+      _currentMessages.add(userMessage);
+
+      emit(GeneralChatLoading(messages: List.from(_currentMessages)));
+
+      // Reply language and data-scoping region are DISTINCT axes: `language` picks
+      // the response language; `locale` (+ account/country/currency) picks which
+      // region's data the request reads/writes. Region comes from the active
+      // dashboard, NOT the chosen language.
+      final scope = _regionScope();
+
+      final result = await sendMessageUseCase(
+        message: messageForAI,
+        sessionId: _sessionId,
+        userId: authState.profile.user.id,
+        accessToken: '', // Access token is managed by GrpcCallOptionsHelper
+        sourceContext: 'general', // Always 'general' for this screen
+        language: _language,
+        locale: scope.locale,
+        accountId: scope.accountId,
+        currency: scope.currency,
+        userCountry: scope.country,
+      );
+
+      result.fold(
+        (failure) {
+          emit(GeneralChatError(
+            errorMessage: failure.message,
+            messages: List.from(_currentMessages),
+          ));
+        },
+        (response) {
+          // Extract enhanced response fields
+          final serviceRoutedTo = response.serviceRoutedTo;
+          final intentClassification = response.intentClassification;
+          final conversationState = response.conversationState;
+          final shouldSwitchService = response.shouldSwitchService;
+          final previousService = response.previousService;
+
+          // Update current service if switched
+          if (shouldSwitchService == true && previousService != null) {
+            _currentService = serviceRoutedTo;
+            if (!_conversationServices.contains(serviceRoutedTo)) {
+              _conversationServices.add(serviceRoutedTo);
+            }
           }
-        }
 
-        // Add system message if service switched
-        List<GeneralChatMessageEntity> updatedMessages = List.from(_currentMessages);
+          // Add system message if service switched
+          List<GeneralChatMessageEntity> updatedMessages =
+              List.from(_currentMessages);
 
-        if (shouldSwitchService == true && previousService != null && previousService.isNotEmpty) {
-          final switchMessage = GeneralChatMessageEntity(
-            text: '🔄 Switching to ${_getServiceDisplayName(serviceRoutedTo)} service...\n\n${intentClassification.reasoning}',
+          if (shouldSwitchService == true &&
+              previousService != null &&
+              previousService.isNotEmpty) {
+            final switchMessage = GeneralChatMessageEntity(
+              text:
+                  '🔄 Switching to ${_getServiceDisplayName(serviceRoutedTo)} service...\n\n${intentClassification.reasoning}',
+              isUser: false,
+              timestamp: DateTime.now(),
+              serviceRoutedTo: 'gateway',
+              metadata: {
+                'type': 'service_switch',
+                'from': previousService,
+                'to': serviceRoutedTo,
+                'confidence': intentClassification.confidence,
+                'isSystemMessage': true,
+              },
+            );
+            updatedMessages.add(switchMessage);
+          }
+
+          // Add bot response with enhanced metadata
+          // Debug log receipt data ALWAYS
+          print(
+              '🧾 [RECEIPT] response.receiptData is null: ${response.receiptData == null}');
+          if (response.receiptData != null) {
+            print(
+                '🧾 [RECEIPT] Receipt data keys: ${response.receiptData!.keys}');
+          }
+
+          // Pluck bill-payment metadata fields (surfaced by chat-products-service
+          // via main.py) so the chat UI can render quick-action chips and a
+          // deep-link button under the receipt card.
+          final responseMeta = response.metadata ?? const {};
+          final quickActions = (responseMeta['quick_actions'] as List?)
+              ?.whereType<String>()
+              .toList(growable: false);
+          final billType = responseMeta['bill_type'] as String?;
+          final lastPaymentId = responseMeta['last_payment_id'] as String?;
+
+          final botMessage = GeneralChatMessageEntity(
+            text: response.response,
             isUser: false,
             timestamp: DateTime.now(),
-            serviceRoutedTo: 'gateway',
+            serviceRoutedTo: serviceRoutedTo,
             metadata: {
-              'type': 'service_switch',
-              'from': previousService,
-              'to': serviceRoutedTo,
-              'confidence': intentClassification.confidence,
-              'isSystemMessage': true,
+              'intent_confidence': intentClassification.confidence,
+              'intent_service': intentClassification.service,
+              'intent_reasoning': intentClassification.reasoning,
+              'suggested_action': intentClassification.suggestedAction,
+              'message_count': conversationState.messageCount,
+              'key_entities': conversationState.keyEntities,
+              'isSystemMessage': false,
+              if (response.receiptData != null)
+                'receipt_data': response.receiptData,
+              // Surface the PIN prompt so general_chat_content renders the
+              // transaction PIN bottom sheet (_buildPinPromptCard reads
+              // metadata['pin_prompt']). Without this the general path collected
+              // the prompt server-side but never showed the sheet.
+              if (response.pinPrompt != null) 'pin_prompt': response.pinPrompt,
+              // Surface the ReceiptCard V2 payload (single dict or batch list) so
+              // general_chat_content renders ChatReceiptCardV2 / …List. Without
+              // this the batch flow completed but showed no receipt cards.
+              if (response.receiptCard != null)
+                'receipt_card': response.receiptCard,
+              'recipient_card': response.recipientCard,
+              'analytics_card': response.analyticsCard,
+              // Surface the classified LLM-provider error code (set by
+              // chat-agent-gateway's llm_failover module) so the chat content
+              // widget can render the downgrade banner + retry CTA. The
+              // gateway already swapped the assistant response_text for a
+              // friendly user-facing message; this signal lets the UI add
+              // an inline note explaining the provider degradation without
+              // exposing raw error strings.
+              if (response.llmErrorCode != null &&
+                  response.llmErrorCode!.isNotEmpty)
+                'llm_error_code': response.llmErrorCode,
+              if (quickActions != null && quickActions.isNotEmpty)
+                'quick_actions': quickActions,
+              if (billType != null && billType.isNotEmpty)
+                'bill_type': billType,
+              if (lastPaymentId != null && lastPaymentId.isNotEmpty)
+                'last_payment_id': lastPaymentId,
             },
           );
-          updatedMessages.add(switchMessage);
-        }
+          updatedMessages.add(botMessage);
+          print(
+              '🧾 [RECEIPT] Bot message metadata keys: ${botMessage.metadata?.keys.toList()}');
+          print(
+              '🧾 [RECEIPT] Bot message has receipt_data: ${botMessage.metadata?['receipt_data'] != null}');
 
-        // Add bot response with enhanced metadata
-        // Debug log receipt data ALWAYS
-        print('🧾 [RECEIPT] response.receiptData is null: ${response.receiptData == null}');
-        if (response.receiptData != null) {
-          print('🧾 [RECEIPT] Receipt data keys: ${response.receiptData!.keys}');
-        }
+          // Invalidate recipient cache after successful transfer (auto-save may have added a new one)
+          if (response.receiptData != null) {
+            print('🧾 [RECEIPT] Invalidating transfer caches...');
+            _invalidateTransferRelatedCaches();
+          }
 
-        // Pluck bill-payment metadata fields (surfaced by chat-products-service
-        // via main.py) so the chat UI can render quick-action chips and a
-        // deep-link button under the receipt card.
-        final responseMeta = response.metadata ?? const {};
-        final quickActions = (responseMeta['quick_actions'] as List?)
-            ?.whereType<String>()
-            .toList(growable: false);
-        final billType = responseMeta['bill_type'] as String?;
-        final lastPaymentId = responseMeta['last_payment_id'] as String?;
-
-        final botMessage = GeneralChatMessageEntity(
-          text: response.response,
-          isUser: false,
-          timestamp: DateTime.now(),
-          serviceRoutedTo: serviceRoutedTo,
-          metadata: {
-            'intent_confidence': intentClassification.confidence,
-            'intent_service': intentClassification.service,
-            'intent_reasoning': intentClassification.reasoning,
-            'suggested_action': intentClassification.suggestedAction,
-            'message_count': conversationState.messageCount,
-            'key_entities': conversationState.keyEntities,
-            'isSystemMessage': false,
-            if (response.receiptData != null)
-              'receipt_data': response.receiptData,
-            // Surface the PIN prompt so general_chat_content renders the
-            // transaction PIN bottom sheet (_buildPinPromptCard reads
-            // metadata['pin_prompt']). Without this the general path collected
-            // the prompt server-side but never showed the sheet.
-            if (response.pinPrompt != null)
-              'pin_prompt': response.pinPrompt,
-            // Surface the ReceiptCard V2 payload (single dict or batch list) so
-            // general_chat_content renders ChatReceiptCardV2 / …List. Without
-            // this the batch flow completed but showed no receipt cards.
-            if (response.receiptCard != null)
-              'receipt_card': response.receiptCard,
-              'recipient_card': response.recipientCard,
-            // Surface the classified LLM-provider error code (set by
-            // chat-agent-gateway's llm_failover module) so the chat content
-            // widget can render the downgrade banner + retry CTA. The
-            // gateway already swapped the assistant response_text for a
-            // friendly user-facing message; this signal lets the UI add
-            // an inline note explaining the provider degradation without
-            // exposing raw error strings.
-            if (response.llmErrorCode != null && response.llmErrorCode!.isNotEmpty)
-              'llm_error_code': response.llmErrorCode,
-            if (quickActions != null && quickActions.isNotEmpty)
-              'quick_actions': quickActions,
-            if (billType != null && billType.isNotEmpty)
-              'bill_type': billType,
-            if (lastPaymentId != null && lastPaymentId.isNotEmpty)
-              'last_payment_id': lastPaymentId,
-          },
-        );
-        updatedMessages.add(botMessage);
-        print('🧾 [RECEIPT] Bot message metadata keys: ${botMessage.metadata?.keys.toList()}');
-        print('🧾 [RECEIPT] Bot message has receipt_data: ${botMessage.metadata?['receipt_data'] != null}');
-
-        // Invalidate recipient cache after successful transfer (auto-save may have added a new one)
-        if (response.receiptData != null) {
-          print('🧾 [RECEIPT] Invalidating transfer caches...');
-          _invalidateTransferRelatedCaches();
-        }
-
-        _currentMessages = updatedMessages;
-        emit(GeneralChatSuccess(
-          messages: List.from(_currentMessages),
-          currentService: _currentService,
-          conversationServices: List.from(_conversationServices),
-          intentClassification: {
-            'service': intentClassification.service,
-            'confidence': intentClassification.confidence,
-            'reasoning': intentClassification.reasoning,
-            'suggestedAction': intentClassification.suggestedAction,
-          },
-        ));
-      },
-    );
+          _currentMessages = updatedMessages;
+          emit(GeneralChatSuccess(
+            messages: List.from(_currentMessages),
+            currentService: _currentService,
+            conversationServices: List.from(_conversationServices),
+            intentClassification: {
+              'service': intentClassification.service,
+              'confidence': intentClassification.confidence,
+              'reasoning': intentClassification.reasoning,
+              'suggestedAction': intentClassification.suggestedAction,
+            },
+          ));
+        },
+      );
     } finally {
       _isSending = false;
     }
@@ -459,7 +470,7 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
       // recognises this is a PIN-callback turn rather than a fresh ask.
       final result = await sendMessageUseCase(
         message: userPromptText.isEmpty
-            ? '__pin_verified__'  // sentinel the agent's prompt recognises
+            ? '__pin_verified__' // sentinel the agent's prompt recognises
             : userPromptText,
         sessionId: _sessionId,
         userId: authState.profile.user.id,
@@ -498,7 +509,9 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
                 'receipt_data': response.receiptData,
               if (response.receiptCard != null)
                 'receipt_card': response.receiptCard,
-                'recipient_card': response.recipientCard,
+              'recipient_card': response.recipientCard,
+              'analytics_card': response.analyticsCard,
+              'analytics_card': response.analyticsCard,
             },
           );
           _currentMessages.add(botMessage);
@@ -530,119 +543,125 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
     _isSending = true;
 
     try {
-    final authState = authCubit.state;
-    if (authState is! AuthenticationSuccess) {
-      emit(GeneralChatError(
-        errorMessage: 'User not authenticated',
-        messages: List.from(_currentMessages),
-      ));
-      return;
-    }
-
-    // Validate file exists and check size before reading into memory
-    final file = File(localFilePath);
-    if (!file.existsSync()) {
-      emit(GeneralChatError(
-        errorMessage: 'The media file could not be found. Please try again.',
-        messages: List.from(_currentMessages),
-      ));
-      return;
-    }
-
-    final fileSize = file.lengthSync();
-    final maxSize = mediaType == 'image' ? _maxImageSize : _maxAudioSize;
-    if (fileSize > maxSize) {
-      final maxMB = maxSize ~/ (1024 * 1024);
-      emit(GeneralChatError(
-        errorMessage: 'File is too large (max ${maxMB}MB). Please choose a smaller file.',
-        messages: List.from(_currentMessages),
-      ));
-      return;
-    }
-    if (fileSize == 0) {
-      emit(GeneralChatError(
-        errorMessage: 'The file appears to be empty. Please try again.',
-        messages: List.from(_currentMessages),
-      ));
-      return;
-    }
-
-    // Read file and base64-encode
-    final bytes = await file.readAsBytes();
-    if (isClosed) return;
-    final base64Data = base64Encode(bytes);
-
-    // Add user message with media preview immediately
-    final displayText = text.isNotEmpty
-        ? text
-        : (mediaType == 'image' ? 'Sent an image' : 'Sent a voice note');
-    final userMessage = GeneralChatMessageEntity(
-      text: displayText,
-      isUser: true,
-      timestamp: DateTime.now(),
-      mediaType: mediaType,
-      localMediaPath: localFilePath,
-      audioDurationMs: audioDurationMs,
-    );
-    _currentMessages.add(userMessage);
-    emit(GeneralChatLoading(messages: List.from(_currentMessages)));
-
-    final scope = _regionScope();
-
-    final result = await sendMessageUseCase(
-      message: text,
-      sessionId: _sessionId,
-      userId: authState.profile.user.id,
-      accessToken: '',
-      sourceContext: 'general',
-      language: _language,
-      locale: scope.locale,
-      accountId: scope.accountId,
-      currency: scope.currency,
-      userCountry: scope.country,
-      mediaBase64: base64Data,
-      mediaType: mediaType,
-      mediaMimeType: mimeType,
-    );
-
-    if (isClosed) return;
-    result.fold(
-      (failure) {
+      final authState = authCubit.state;
+      if (authState is! AuthenticationSuccess) {
         emit(GeneralChatError(
-          errorMessage: failure.message,
+          errorMessage: 'User not authenticated',
           messages: List.from(_currentMessages),
         ));
-      },
-      (response) {
-        // Update the user message with the media URL returned by backend
-        // The backend stores media and returns the URL in metadata.media.url
-        final mediaMetadata = response.metadata?['media'] as Map<String, dynamic>?;
-        final mediaUrl = mediaMetadata?['url'] as String?;
+        return;
+      }
 
-        // Find and update the user message we added earlier
-        final userMsgIndex = _currentMessages.indexWhere(
-          (m) => m.isUser && m.timestamp == _currentMessages.lastWhere((m) => m.isUser).timestamp,
-        );
-
-        if (userMsgIndex >= 0 && mediaUrl != null) {
-          final updatedUserMsg = _currentMessages[userMsgIndex].copyWith(mediaUrl: mediaUrl);
-          _currentMessages[userMsgIndex] = updatedUserMsg;
-        }
-
-        final botMessage = GeneralChatMessageEntity(
-          text: response.response,
-          isUser: false,
-          timestamp: DateTime.now(),
-          serviceRoutedTo: response.serviceRoutedTo,
-        );
-        _currentMessages.add(botMessage);
-        emit(GeneralChatSuccess(
+      // Validate file exists and check size before reading into memory
+      final file = File(localFilePath);
+      if (!file.existsSync()) {
+        emit(GeneralChatError(
+          errorMessage: 'The media file could not be found. Please try again.',
           messages: List.from(_currentMessages),
-          currentService: _currentService,
-          conversationServices: List.from(_conversationServices),
         ));
-      },
-    );
+        return;
+      }
+
+      final fileSize = file.lengthSync();
+      final maxSize = mediaType == 'image' ? _maxImageSize : _maxAudioSize;
+      if (fileSize > maxSize) {
+        final maxMB = maxSize ~/ (1024 * 1024);
+        emit(GeneralChatError(
+          errorMessage:
+              'File is too large (max ${maxMB}MB). Please choose a smaller file.',
+          messages: List.from(_currentMessages),
+        ));
+        return;
+      }
+      if (fileSize == 0) {
+        emit(GeneralChatError(
+          errorMessage: 'The file appears to be empty. Please try again.',
+          messages: List.from(_currentMessages),
+        ));
+        return;
+      }
+
+      // Read file and base64-encode
+      final bytes = await file.readAsBytes();
+      if (isClosed) return;
+      final base64Data = base64Encode(bytes);
+
+      // Add user message with media preview immediately
+      final displayText = text.isNotEmpty
+          ? text
+          : (mediaType == 'image' ? 'Sent an image' : 'Sent a voice note');
+      final userMessage = GeneralChatMessageEntity(
+        text: displayText,
+        isUser: true,
+        timestamp: DateTime.now(),
+        mediaType: mediaType,
+        localMediaPath: localFilePath,
+        audioDurationMs: audioDurationMs,
+      );
+      _currentMessages.add(userMessage);
+      emit(GeneralChatLoading(messages: List.from(_currentMessages)));
+
+      final scope = _regionScope();
+
+      final result = await sendMessageUseCase(
+        message: text,
+        sessionId: _sessionId,
+        userId: authState.profile.user.id,
+        accessToken: '',
+        sourceContext: 'general',
+        language: _language,
+        locale: scope.locale,
+        accountId: scope.accountId,
+        currency: scope.currency,
+        userCountry: scope.country,
+        mediaBase64: base64Data,
+        mediaType: mediaType,
+        mediaMimeType: mimeType,
+      );
+
+      if (isClosed) return;
+      result.fold(
+        (failure) {
+          emit(GeneralChatError(
+            errorMessage: failure.message,
+            messages: List.from(_currentMessages),
+          ));
+        },
+        (response) {
+          // Update the user message with the media URL returned by backend
+          // The backend stores media and returns the URL in metadata.media.url
+          final mediaMetadata =
+              response.metadata?['media'] as Map<String, dynamic>?;
+          final mediaUrl = mediaMetadata?['url'] as String?;
+
+          // Find and update the user message we added earlier
+          final userMsgIndex = _currentMessages.indexWhere(
+            (m) =>
+                m.isUser &&
+                m.timestamp ==
+                    _currentMessages.lastWhere((m) => m.isUser).timestamp,
+          );
+
+          if (userMsgIndex >= 0 && mediaUrl != null) {
+            final updatedUserMsg =
+                _currentMessages[userMsgIndex].copyWith(mediaUrl: mediaUrl);
+            _currentMessages[userMsgIndex] = updatedUserMsg;
+          }
+
+          final botMessage = GeneralChatMessageEntity(
+            text: response.response,
+            isUser: false,
+            timestamp: DateTime.now(),
+            serviceRoutedTo: response.serviceRoutedTo,
+          );
+          _currentMessages.add(botMessage);
+          emit(GeneralChatSuccess(
+            messages: List.from(_currentMessages),
+            currentService: _currentService,
+            conversationServices: List.from(_conversationServices),
+          ));
+        },
+      );
     } finally {
       _isSending = false;
     }
@@ -668,7 +687,8 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
   String _withReplyContext(String userText, String replyToText, bool fromUser) {
     final quoted = replyToText.trim();
     if (quoted.isEmpty) return userText;
-    final capped = quoted.length > 600 ? '${quoted.substring(0, 600)}…' : quoted;
+    final capped =
+        quoted.length > 600 ? '${quoted.substring(0, 600)}…' : quoted;
     final author = fromUser ? 'the user' : 'the assistant';
     return 'Replying to $author\'s earlier message: "$capped"\n\n$userText';
   }

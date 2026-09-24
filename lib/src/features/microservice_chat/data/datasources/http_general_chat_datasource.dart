@@ -55,9 +55,11 @@ class GeneralChatRequest {
       if (currency.isNotEmpty) 'currency': currency,
       if (userCountry.isNotEmpty) 'user_country': userCountry,
       if (metadata.isNotEmpty) 'metadata': metadata,
-      if (mediaBase64 != null && mediaBase64!.isNotEmpty) 'media_base64': mediaBase64,
+      if (mediaBase64 != null && mediaBase64!.isNotEmpty)
+        'media_base64': mediaBase64,
       if (mediaType != null && mediaType!.isNotEmpty) 'media_type': mediaType,
-      if (mediaMimeType != null && mediaMimeType!.isNotEmpty) 'media_mime_type': mediaMimeType,
+      if (mediaMimeType != null && mediaMimeType!.isNotEmpty)
+        'media_mime_type': mediaMimeType,
     };
   }
 }
@@ -132,6 +134,11 @@ class GeneralChatResponse {
   /// `recipient_card` — the confirmed transfer counterparty, surfaced
   /// top-level by chat-agent-gateway exactly like receipt_card.
   final dynamic recipientCard;
+
+  /// `analytics_card` — period totals plus chart series, surfaced top-level by
+  /// chat-agent-gateway on the same rail as receipt_card. Drives
+  /// ChatAnalyticsCard so "how am I doing?" renders as charts.
+  final dynamic analyticsCard;
   // Classified LLM-provider error code (insufficient_credit /
   // model_not_found / auth_failed / provider_rate_limit / timeout / …).
   // Surfaced top-level by the chat-agent-gateway so the cubit can
@@ -152,6 +159,7 @@ class GeneralChatResponse {
     this.pinPrompt,
     this.receiptCard,
     this.recipientCard,
+    this.analyticsCard,
     this.llmErrorCode,
     this.metadata,
   });
@@ -159,7 +167,8 @@ class GeneralChatResponse {
   factory GeneralChatResponse.fromJson(Map<String, dynamic> json) {
     // Debug log receipt data
     print('🧾 [fromJson] JSON keys: ${json.keys.toList()}');
-    print('🧾 [fromJson] Has receipt_data key: ${json.containsKey('receipt_data')}');
+    print(
+        '🧾 [fromJson] Has receipt_data key: ${json.containsKey('receipt_data')}');
     if (json.containsKey('receipt_data')) {
       print('🧾 [fromJson] receipt_data value: ${json['receipt_data']}');
     }
@@ -180,6 +189,7 @@ class GeneralChatResponse {
       // receipt_card is a Map (single) or a List (batch) — keep it dynamic.
       receiptCard: json['receipt_card'],
       recipientCard: json['recipient_card'],
+      analyticsCard: json['analytics_card'],
       llmErrorCode: json['llm_error_code'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
     );
@@ -275,7 +285,8 @@ class HttpGeneralChatDataSource implements GeneralChatDataSource {
       // Media messages need longer timeouts:
       // - sendTimeout: uploading large base64 over 2G/3G can be slow
       // - receiveTimeout: server processes GCS upload + Whisper/Vision + agent
-      final hasMedia = request.mediaBase64 != null && request.mediaBase64!.isNotEmpty;
+      final hasMedia =
+          request.mediaBase64 != null && request.mediaBase64!.isNotEmpty;
 
       final response = await dio.post(
         '$baseUrl/chat',
@@ -294,10 +305,13 @@ class HttpGeneralChatDataSource implements GeneralChatDataSource {
       if (response.statusCode == 200) {
         final responseData = response.data as Map<String, dynamic>;
         // Debug log entire response
-        print('🧾 [DATASOURCE] Full response keys: ${responseData.keys.toList()}');
-        print('🧾 [DATASOURCE] Has receipt_data: ${responseData.containsKey('receipt_data')}');
+        print(
+            '🧾 [DATASOURCE] Full response keys: ${responseData.keys.toList()}');
+        print(
+            '🧾 [DATASOURCE] Has receipt_data: ${responseData.containsKey('receipt_data')}');
         if (responseData.containsKey('receipt_data')) {
-          print('🧾 [DATASOURCE] receipt_data: ${responseData['receipt_data']}');
+          print(
+              '🧾 [DATASOURCE] receipt_data: ${responseData['receipt_data']}');
         }
         return GeneralChatResponse.fromJson(
           responseData,

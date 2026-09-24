@@ -90,14 +90,12 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
     _currentMessages = [];
     // Seed scoped context (P2P conversation id / peer) so it round-trips to the
     // agent as entities from the very first message.
-    _entities = seedEntities != null
-        ? Map<String, dynamic>.from(seedEntities!)
-        : {};
+    _entities =
+        seedEntities != null ? Map<String, dynamic>.from(seedEntities!) : {};
     // Capture the seed as immutable scope so it survives the agent's
     // replace-every-turn entity ownership (see [_scopeEntities]).
-    _scopeEntities = seedEntities != null
-        ? Map<String, dynamic>.from(seedEntities!)
-        : {};
+    _scopeEntities =
+        seedEntities != null ? Map<String, dynamic>.from(seedEntities!) : {};
     _isSending = false;
     emit(MicroserviceChatInitial(messages: _currentMessages));
   }
@@ -127,7 +125,8 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           if (_currentMessages.isEmpty) {
             emit(MicroserviceChatInitial(messages: _currentMessages));
           } else {
-            emit(MicroserviceChatMessageSuccess(messages: List.from(_currentMessages)));
+            emit(MicroserviceChatMessageSuccess(
+                messages: List.from(_currentMessages)));
           }
         },
       );
@@ -154,7 +153,8 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
         if (_currentMessages.isEmpty) {
           emit(MicroserviceChatInitial(messages: _currentMessages));
         } else {
-          emit(MicroserviceChatMessageSuccess(messages: List.from(_currentMessages)));
+          emit(MicroserviceChatMessageSuccess(
+              messages: List.from(_currentMessages)));
         }
       },
     );
@@ -207,7 +207,8 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
       );
       _currentMessages.add(userMessage);
 
-      emit(MicroserviceChatMessageLoading(messages: List.from(_currentMessages)));
+      emit(MicroserviceChatMessageLoading(
+          messages: List.from(_currentMessages)));
 
       final localeManager = serviceLocator<LocaleManager>();
       final locale = localeManager.currentLocale;
@@ -293,6 +294,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             final pinPrompt = _entities.remove('_pin_prompt_pending');
             final receiptCard = _entities.remove('_receipt_card_pending');
             final recipientCard = _entities.remove('_recipient_card_pending');
+            final analyticsCard = _entities.remove('_analytics_card_pending');
 
             final messageMetadata = <String, dynamic>{};
             if (receiptData is Map<String, dynamic>) {
@@ -324,6 +326,13 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
               messageMetadata['recipient_card'] =
                   Map<String, dynamic>.from(recipientCard);
             }
+            // Charts for a "how am I doing?" turn — the same sentinel rail
+            // as the receipt card, because this gRPC path carries no
+            // top-level metadata of its own.
+            if (analyticsCard is Map) {
+              messageMetadata['analytics_card'] =
+                  Map<String, dynamic>.from(analyticsCard);
+            }
 
             final botMessage = MicroserviceChatMessageEntity(
               text: chatResponse.response,
@@ -334,7 +343,8 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             );
             _currentMessages.add(botMessage);
 
-            emit(MicroserviceChatMessageSuccess(messages: List.from(_currentMessages)));
+            emit(MicroserviceChatMessageSuccess(
+                messages: List.from(_currentMessages)));
           },
         );
         return;
@@ -363,17 +373,22 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
         },
         (chatResponse) {
           // Extract transient receipt_data from entities (same pattern as direct path)
-          final responseEntities = Map<String, dynamic>.from(chatResponse.entities);
+          final responseEntities =
+              Map<String, dynamic>.from(chatResponse.entities);
           final receiptData = responseEntities.remove('_receipt_data');
-          final quickActions = (responseEntities.remove('_quick_actions') as List?)
-              ?.whereType<String>()
-              .toList(growable: false);
+          final quickActions =
+              (responseEntities.remove('_quick_actions') as List?)
+                  ?.whereType<String>()
+                  .toList(growable: false);
           final billType = responseEntities['last_bill_type'] as String?;
           final lastPaymentId = responseEntities['last_payment_id'] as String?;
           // New chat protocol — pin_prompt + receipt_card sentinels.
           final pinPrompt = responseEntities.remove('_pin_prompt_pending');
           final receiptCard = responseEntities.remove('_receipt_card_pending');
-          final recipientCard = responseEntities.remove('_recipient_card_pending');
+          final recipientCard =
+              responseEntities.remove('_recipient_card_pending');
+          final analyticsCard =
+              responseEntities.remove('_analytics_card_pending');
 
           final messageMetadata = <String, dynamic>{};
           if (receiptData is Map<String, dynamic>) {
@@ -405,6 +420,13 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             messageMetadata['recipient_card'] =
                 Map<String, dynamic>.from(recipientCard);
           }
+          // Charts for a "how am I doing?" turn — the same sentinel rail
+          // as the receipt card, because this gRPC path carries no
+          // top-level metadata of its own.
+          if (analyticsCard is Map) {
+            messageMetadata['analytics_card'] =
+                Map<String, dynamic>.from(analyticsCard);
+          }
           // AI "jump to message": the locate tool returns deterministic anchors
           // under the TRANSIENT `_jump_to_messages` key. Remove it (so it never
           // persists into a later turn and re-shows a stale "Show in chat") and
@@ -427,7 +449,8 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           );
           _currentMessages.add(botMessage);
 
-          emit(MicroserviceChatMessageSuccess(messages: List.from(_currentMessages)));
+          emit(MicroserviceChatMessageSuccess(
+              messages: List.from(_currentMessages)));
         },
       );
     } finally {
@@ -462,7 +485,8 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
 
       // No user bubble for the PIN submission — the user already
       // tapped through a native modal; another bubble would clutter.
-      emit(MicroserviceChatMessageLoading(messages: List.from(_currentMessages)));
+      emit(MicroserviceChatMessageLoading(
+          messages: List.from(_currentMessages)));
 
       final locale = serviceLocator<LocaleManager>().currentLocale;
 
@@ -505,6 +529,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             final receiptData = _entities.remove('_receipt_data');
             final receiptCard = _entities.remove('_receipt_card_pending');
             final recipientCard = _entities.remove('_recipient_card_pending');
+            final analyticsCard = _entities.remove('_analytics_card_pending');
             final pinPrompt = _entities.remove('_pin_prompt_pending');
             final messageMetadata = <String, dynamic>{};
             if (receiptData is Map<String, dynamic>) {
@@ -522,6 +547,13 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             if (recipientCard is Map) {
               messageMetadata['recipient_card'] =
                   Map<String, dynamic>.from(recipientCard);
+            }
+            // Charts for a "how am I doing?" turn — the same sentinel rail
+            // as the receipt card, because this gRPC path carries no
+            // top-level metadata of its own.
+            if (analyticsCard is Map) {
+              messageMetadata['analytics_card'] =
+                  Map<String, dynamic>.from(analyticsCard);
             }
             if (pinPrompt is Map) {
               messageMetadata['pin_prompt'] =
@@ -568,7 +600,10 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           final responseEntities =
               Map<String, dynamic>.from(chatResponse.entities);
           final receiptCard = responseEntities.remove('_receipt_card_pending');
-          final recipientCard = responseEntities.remove('_recipient_card_pending');
+          final recipientCard =
+              responseEntities.remove('_recipient_card_pending');
+          final analyticsCard =
+              responseEntities.remove('_analytics_card_pending');
           final messageMetadata = <String, dynamic>{};
           if (receiptCard != null) {
             messageMetadata['receipt_card'] = receiptCard;
@@ -581,6 +616,13 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           if (recipientCard is Map) {
             messageMetadata['recipient_card'] =
                 Map<String, dynamic>.from(recipientCard);
+          }
+          // Charts for a "how am I doing?" turn — the same sentinel rail
+          // as the receipt card, because this gRPC path carries no
+          // top-level metadata of its own.
+          if (analyticsCard is Map) {
+            messageMetadata['analytics_card'] =
+                Map<String, dynamic>.from(analyticsCard);
           }
           final botMessage = MicroserviceChatMessageEntity(
             text: chatResponse.response,
@@ -615,122 +657,127 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
     _isSending = true;
 
     try {
-    final authState = authCubit.state;
-    if (authState is! AuthenticationSuccess) {
-      emit(MicroserviceChatMessageError(
-        errorMessage: 'User not authenticated',
-        messages: List.from(_currentMessages),
-      ));
-      return;
-    }
-
-    // Validate file exists and check size before reading into memory
-    final file = File(localFilePath);
-    if (!file.existsSync()) {
-      emit(MicroserviceChatMessageError(
-        errorMessage: 'The media file could not be found. Please try again.',
-        messages: List.from(_currentMessages),
-      ));
-      return;
-    }
-
-    final fileSize = file.lengthSync();
-    final maxSize = mediaType == 'image' ? _maxImageSize : _maxAudioSize;
-    if (fileSize > maxSize) {
-      final maxMB = maxSize ~/ (1024 * 1024);
-      emit(MicroserviceChatMessageError(
-        errorMessage: 'File is too large (max ${maxMB}MB). Please choose a smaller file.',
-        messages: List.from(_currentMessages),
-      ));
-      return;
-    }
-    if (fileSize == 0) {
-      emit(MicroserviceChatMessageError(
-        errorMessage: 'The file appears to be empty. Please try again.',
-        messages: List.from(_currentMessages),
-      ));
-      return;
-    }
-
-    // Read file and base64-encode
-    final bytes = await file.readAsBytes();
-    if (isClosed) return;
-    final base64Data = base64Encode(bytes);
-
-    // Add user message with media preview immediately
-    final displayText = text.isNotEmpty
-        ? text
-        : (mediaType == 'image' ? 'Sent an image' : 'Sent a voice note');
-    final userMessage = MicroserviceChatMessageEntity(
-      text: displayText,
-      isUser: true,
-      timestamp: DateTime.now(),
-      mediaType: mediaType,
-      localMediaPath: localFilePath,
-      audioDurationMs: audioDurationMs,
-    );
-    _currentMessages.add(userMessage);
-    emit(MicroserviceChatMessageLoading(messages: List.from(_currentMessages)));
-
-    final locale = serviceLocator<LocaleManager>().currentLocale;
-
-    // Always use standard (Python gateway) path for media
-    final result = await sendMessageUseCase(
-      message: text,
-      sessionId: _sessionId,
-      userId: authState.profile.user.id,
-      accessToken: '',
-      sourceContext: sourceContext,
-      language: 'en',
-      locale: locale,
-      mediaBase64: base64Data,
-      mediaType: mediaType,
-      mediaMimeType: mimeType,
-    );
-
-    if (isClosed) return;
-    result.fold(
-      (failure) {
+      final authState = authCubit.state;
+      if (authState is! AuthenticationSuccess) {
         emit(MicroserviceChatMessageError(
-          errorMessage: failure.message,
+          errorMessage: 'User not authenticated',
           messages: List.from(_currentMessages),
         ));
-      },
-      (chatResponse) {
-        // Extract transient receipt_data (same pattern as sendMessage)
-        final responseEntities = Map<String, dynamic>.from(chatResponse.entities);
-        final receiptData = responseEntities.remove('_receipt_data');
-        final quickActions = (responseEntities.remove('_quick_actions') as List?)
-            ?.whereType<String>()
-            .toList(growable: false);
-        final billType = responseEntities['last_bill_type'] as String?;
-        final lastPaymentId = responseEntities['last_payment_id'] as String?;
+        return;
+      }
 
-        final messageMetadata = <String, dynamic>{};
-        if (receiptData is Map<String, dynamic>) {
-          messageMetadata['receipt_data'] = receiptData;
-          _invalidateTransferRelatedCaches();
-        }
-        if (quickActions != null && quickActions.isNotEmpty) {
-          messageMetadata['quick_actions'] = quickActions;
-        }
-        if (billType != null && billType.isNotEmpty) {
-          messageMetadata['bill_type'] = billType;
-        }
-        if (lastPaymentId != null && lastPaymentId.isNotEmpty) {
-          messageMetadata['last_payment_id'] = lastPaymentId;
-        }
+      // Validate file exists and check size before reading into memory
+      final file = File(localFilePath);
+      if (!file.existsSync()) {
+        emit(MicroserviceChatMessageError(
+          errorMessage: 'The media file could not be found. Please try again.',
+          messages: List.from(_currentMessages),
+        ));
+        return;
+      }
 
-        final botMessage = MicroserviceChatMessageEntity(
-          text: chatResponse.response,
-          isUser: false,
-          timestamp: DateTime.now(),
-          metadata: messageMetadata.isEmpty ? null : messageMetadata,
-        );
-        _currentMessages.add(botMessage);
-        emit(MicroserviceChatMessageSuccess(messages: List.from(_currentMessages)));
-      },
-    );
+      final fileSize = file.lengthSync();
+      final maxSize = mediaType == 'image' ? _maxImageSize : _maxAudioSize;
+      if (fileSize > maxSize) {
+        final maxMB = maxSize ~/ (1024 * 1024);
+        emit(MicroserviceChatMessageError(
+          errorMessage:
+              'File is too large (max ${maxMB}MB). Please choose a smaller file.',
+          messages: List.from(_currentMessages),
+        ));
+        return;
+      }
+      if (fileSize == 0) {
+        emit(MicroserviceChatMessageError(
+          errorMessage: 'The file appears to be empty. Please try again.',
+          messages: List.from(_currentMessages),
+        ));
+        return;
+      }
+
+      // Read file and base64-encode
+      final bytes = await file.readAsBytes();
+      if (isClosed) return;
+      final base64Data = base64Encode(bytes);
+
+      // Add user message with media preview immediately
+      final displayText = text.isNotEmpty
+          ? text
+          : (mediaType == 'image' ? 'Sent an image' : 'Sent a voice note');
+      final userMessage = MicroserviceChatMessageEntity(
+        text: displayText,
+        isUser: true,
+        timestamp: DateTime.now(),
+        mediaType: mediaType,
+        localMediaPath: localFilePath,
+        audioDurationMs: audioDurationMs,
+      );
+      _currentMessages.add(userMessage);
+      emit(MicroserviceChatMessageLoading(
+          messages: List.from(_currentMessages)));
+
+      final locale = serviceLocator<LocaleManager>().currentLocale;
+
+      // Always use standard (Python gateway) path for media
+      final result = await sendMessageUseCase(
+        message: text,
+        sessionId: _sessionId,
+        userId: authState.profile.user.id,
+        accessToken: '',
+        sourceContext: sourceContext,
+        language: 'en',
+        locale: locale,
+        mediaBase64: base64Data,
+        mediaType: mediaType,
+        mediaMimeType: mimeType,
+      );
+
+      if (isClosed) return;
+      result.fold(
+        (failure) {
+          emit(MicroserviceChatMessageError(
+            errorMessage: failure.message,
+            messages: List.from(_currentMessages),
+          ));
+        },
+        (chatResponse) {
+          // Extract transient receipt_data (same pattern as sendMessage)
+          final responseEntities =
+              Map<String, dynamic>.from(chatResponse.entities);
+          final receiptData = responseEntities.remove('_receipt_data');
+          final quickActions =
+              (responseEntities.remove('_quick_actions') as List?)
+                  ?.whereType<String>()
+                  .toList(growable: false);
+          final billType = responseEntities['last_bill_type'] as String?;
+          final lastPaymentId = responseEntities['last_payment_id'] as String?;
+
+          final messageMetadata = <String, dynamic>{};
+          if (receiptData is Map<String, dynamic>) {
+            messageMetadata['receipt_data'] = receiptData;
+            _invalidateTransferRelatedCaches();
+          }
+          if (quickActions != null && quickActions.isNotEmpty) {
+            messageMetadata['quick_actions'] = quickActions;
+          }
+          if (billType != null && billType.isNotEmpty) {
+            messageMetadata['bill_type'] = billType;
+          }
+          if (lastPaymentId != null && lastPaymentId.isNotEmpty) {
+            messageMetadata['last_payment_id'] = lastPaymentId;
+          }
+
+          final botMessage = MicroserviceChatMessageEntity(
+            text: chatResponse.response,
+            isUser: false,
+            timestamp: DateTime.now(),
+            metadata: messageMetadata.isEmpty ? null : messageMetadata,
+          );
+          _currentMessages.add(botMessage);
+          emit(MicroserviceChatMessageSuccess(
+              messages: List.from(_currentMessages)));
+        },
+      );
     } finally {
       _isSending = false;
     }
@@ -758,7 +805,8 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
   String _withReplyContext(String userText, String replyToText, bool fromUser) {
     final quoted = replyToText.trim();
     if (quoted.isEmpty) return userText;
-    final capped = quoted.length > 600 ? '${quoted.substring(0, 600)}…' : quoted;
+    final capped =
+        quoted.length > 600 ? '${quoted.substring(0, 600)}…' : quoted;
     final author = fromUser ? 'the user' : 'the assistant';
     return 'Replying to $author\'s earlier message: "$capped"\n\n$userText';
   }

@@ -33,7 +33,8 @@ abstract class GeneralChatRepository {
   Future<Either<Failure, bool>> clearConversation(String sessionId);
 
   /// Get current conversation state from Redis
-  Future<Either<Failure, ConversationState?>> getConversationState(String sessionId);
+  Future<Either<Failure, ConversationState?>> getConversationState(
+      String sessionId);
 
   /// Get list of available services from gateway
   Future<Either<Failure, List<String>>> getAvailableServices();
@@ -108,7 +109,8 @@ class GeneralChatRepositoryImpl implements GeneralChatRepository {
   }
 
   @override
-  Future<Either<Failure, ConversationState?>> getConversationState(String sessionId) async {
+  Future<Either<Failure, ConversationState?>> getConversationState(
+      String sessionId) async {
     try {
       final result = await dataSource.getConversationState(sessionId);
       return Right(result);

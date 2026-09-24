@@ -94,7 +94,8 @@ class HttpDirectChatDataSource implements MicroserviceChatDataSource {
   }) : baseUrl = baseUrl ?? endpointRegistry.httpChatAgent;
 
   /// Send a direct chat message with entity round-tripping.
-  Future<DirectChatResponse> processDirectChat(DirectChatRequest request) async {
+  Future<DirectChatResponse> processDirectChat(
+      DirectChatRequest request) async {
     try {
       final options = await callOptionsHelper.withAuth();
 
@@ -112,7 +113,8 @@ class HttpDirectChatDataSource implements MicroserviceChatDataSource {
       if (response.statusCode == 200) {
         return DirectChatResponse.fromJson(response.data);
       } else {
-        throw Exception('Failed to process direct chat: ${response.statusMessage}');
+        throw Exception(
+            'Failed to process direct chat: ${response.statusMessage}');
       }
     } on DioException catch (e) {
       throw Exception('Dio error: ${e.message}');

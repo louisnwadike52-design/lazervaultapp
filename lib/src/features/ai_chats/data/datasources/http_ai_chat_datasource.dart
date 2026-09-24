@@ -66,7 +66,8 @@ class HttpAiChatDataSource implements IAiChatDataSource {
         options.headers['X-Service-Name'] = _serviceName;
 
         // Add X-Request-ID (unique per request)
-        options.headers['X-Request-ID'] = ApiHeaders.generateRequestIdWithPrefix('ai-chat');
+        options.headers['X-Request-ID'] =
+            ApiHeaders.generateRequestIdWithPrefix('ai-chat');
 
         // Add account context headers
         final accountId = _accountManager?.activeAccountId;
@@ -147,11 +148,13 @@ class HttpAiChatDataSource implements IAiChatDataSource {
       final accessToken = await _secureStorageService.getAccessToken() ?? '';
 
       // Debug logging
-      print('AI Chat Request - User ID: $userId, Has Token: ${accessToken.isNotEmpty}');
+      print(
+          'AI Chat Request - User ID: $userId, Has Token: ${accessToken.isNotEmpty}');
 
       // Load user chat preferences for backend style injection
       final prefs = await SharedPreferences.getInstance();
-      final responseStyle = prefs.getString('ai_chat_settings_response_style') ?? 'balanced';
+      final responseStyle =
+          prefs.getString('ai_chat_settings_response_style') ?? 'balanced';
       final emojiUsage = prefs.getBool('ai_chat_settings_emoji_usage') ?? true;
 
       // Resolve the user-selected chatbot language (defaults to 'en'). An
@@ -226,8 +229,10 @@ class HttpAiChatDataSource implements IAiChatDataSource {
       // Enhanced error logging
       print('AI Chat DioException - Type: ${e.type}, Message: ${e.message}');
       if (e.response != null) {
-        print('AI Chat Response - Status: ${e.response?.statusCode}, Data: ${e.response?.data}');
-        throw Exception('Chat service error: ${e.response?.data['detail'] ?? e.message}');
+        print(
+            'AI Chat Response - Status: ${e.response?.statusCode}, Data: ${e.response?.data}');
+        throw Exception(
+            'Chat service error: ${e.response?.data['detail'] ?? e.message}');
       }
       throw Exception('Failed to connect to chat service: ${e.message}');
     }

@@ -27,7 +27,8 @@ class RecipientModel {
       accountNumber: recipient.accountNumber,
       bankName: recipient.bankName,
       isFavorite: recipient.isFavorite,
-      sortCode: '', // The proto Recipient doesn't have sortCode, so we use an empty string
+      sortCode:
+          '', // The proto Recipient doesn't have sortCode, so we use an empty string
     );
   }
 
@@ -60,4 +61,4 @@ class RecipientModel {
       sortCode: sortCode ?? this.sortCode,
     );
   }
-} 
+}

@@ -134,9 +134,9 @@ class ChatSessionsDataSource {
       title: (raw['title'] as String? ?? 'New chat').trim(),
       firstMessagePreview: '',
       createdAt: DateTime.now().toUtc(),
-      lastActivity: DateTime.tryParse(
-              '${raw['last_activity'] as String? ?? ''}Z') ??
-          DateTime.now().toUtc(),
+      lastActivity:
+          DateTime.tryParse('${raw['last_activity'] as String? ?? ''}Z') ??
+              DateTime.now().toUtc(),
       messageCount: 0,
       activeService: '',
     );

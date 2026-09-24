@@ -43,6 +43,14 @@ const String kChatMetaPinPrompt = 'pin_prompt';
 const String kChatMetaQrCard = 'qr_card';
 const String kChatMetaRecipientCard = 'recipient_card';
 
+/// The analytics card — period totals plus chart series.
+///
+/// A history artifact in the strongest sense: the numbers describe the period the turn
+/// was asked about, so a chart drawn for "how did August go?" must not silently redraw
+/// itself from September's data on reload. Storing the rendered payload rather than
+/// re-querying is what pins it to the question that produced it.
+const String kChatMetaAnalyticsCard = 'analytics_card';
+
 /// Rebuilds the widget metadata for ONE stored message.
 ///
 /// [storedMetadata] is the message's persisted `metadata`; [entities] is the agent's
@@ -87,7 +95,11 @@ Map<String, dynamic>? hydrateChatWidgetMetadata({
 
   // QR and recipient cards. Both are history artifacts like a receipt — they describe
   // something the turn produced — so they are kept on EVERY message, not just the last.
-  for (final key in const [kChatMetaQrCard, kChatMetaRecipientCard]) {
+  for (final key in const [
+    kChatMetaQrCard,
+    kChatMetaRecipientCard,
+    kChatMetaAnalyticsCard,
+  ]) {
     final v = storedMetadata?[key];
     if (v is Map || v is List) put(key, v);
   }
@@ -139,6 +151,7 @@ void markSupersededPinPrompts<T>(
         if (r.isNotEmpty) references.add(r);
       }
     }
+
     if (card is List) {
       for (final c in card) {
         collect(c);
@@ -163,7 +176,8 @@ void markSupersededPinPrompts<T>(
     if (prompt is! Map) continue;
 
     final txId = prompt['transaction_id']?.toString().trim() ?? '';
-    final completed = txId.isNotEmpty && references.any((r) => r.contains(txId));
+    final completed =
+        txId.isNotEmpty && references.any((r) => r.contains(txId));
 
     // Write a COPY back rather than mutating the prompt in place.
     //

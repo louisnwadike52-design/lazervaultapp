@@ -56,10 +56,14 @@ Future<void> showServiceChatBottomSheet(
     backgroundColor: Colors.transparent,
     builder: (_) => BlocProvider(
       create: (_) => MicroserviceChatCubit(
-        sendMessageUseCase: serviceLocator<SendMicroserviceChatMessageUseCase>(),
-        directMessageUseCase: isDirect ? serviceLocator<SendDirectChatMessageUseCase>() : null,
-        loadHistoryUseCase: serviceLocator<LoadMicroserviceChatHistoryUseCase>(),
-        loadDirectHistoryUseCase: isDirect ? serviceLocator<LoadDirectChatHistoryUseCase>() : null,
+        sendMessageUseCase:
+            serviceLocator<SendMicroserviceChatMessageUseCase>(),
+        directMessageUseCase:
+            isDirect ? serviceLocator<SendDirectChatMessageUseCase>() : null,
+        loadHistoryUseCase:
+            serviceLocator<LoadMicroserviceChatHistoryUseCase>(),
+        loadDirectHistoryUseCase:
+            isDirect ? serviceLocator<LoadDirectChatHistoryUseCase>() : null,
         authCubit: authCubit,
         sourceContext: sourceContext,
         isDirect: isDirect,
@@ -237,11 +241,11 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
       if (picked != null && mounted) {
         final mimeType = picked.mimeType ?? _inferMimeType(picked.path);
         context.read<MicroserviceChatCubit>().sendMediaMessage(
-          mediaType: 'image',
-          localFilePath: picked.path,
-          mimeType: mimeType,
-          text: _messageController.text.trim(),
-        );
+              mediaType: 'image',
+              localFilePath: picked.path,
+              mimeType: mimeType,
+              text: _messageController.text.trim(),
+            );
         _messageController.clear();
       }
     } catch (_) {
@@ -264,11 +268,11 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
       if (picked != null && mounted) {
         final mimeType = picked.mimeType ?? _inferMimeType(picked.path);
         context.read<MicroserviceChatCubit>().sendMediaMessage(
-          mediaType: 'image',
-          localFilePath: picked.path,
-          mimeType: mimeType,
-          text: _messageController.text.trim(),
-        );
+              mediaType: 'image',
+              localFilePath: picked.path,
+              mimeType: mimeType,
+              text: _messageController.text.trim(),
+            );
         _messageController.clear();
       }
     } catch (_) {
@@ -309,7 +313,8 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
       return;
     }
     final dir = await getTemporaryDirectory();
-    final path = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    final path =
+        '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
     await _audioRecorder.start(
       const RecordConfig(encoder: AudioEncoder.aacLc),
       path: path,
@@ -340,11 +345,11 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
     });
     if (path != null && mounted && durationMs > 500) {
       context.read<MicroserviceChatCubit>().sendMediaMessage(
-        mediaType: 'voice',
-        localFilePath: path,
-        mimeType: 'audio/mp4',
-        audioDurationMs: durationMs,
-      );
+            mediaType: 'voice',
+            localFilePath: path,
+            mimeType: 'audio/mp4',
+            audioDurationMs: durationMs,
+          );
     }
   }
 
@@ -689,107 +694,108 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
                 ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: maxBubbleWidth),
                   child: Container(
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: isUser
-                        ? widget.accentColor
-                        : const Color(0xFF0A0A0A),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20.r),
-                      topRight: Radius.circular(20.r),
-                      bottomLeft: isUser
-                          ? Radius.circular(20.r)
-                          : Radius.circular(4.r),
-                      bottomRight: isUser
-                          ? Radius.circular(4.r)
-                          : Radius.circular(20.r),
+                    padding: EdgeInsets.all(16.w),
+                    decoration: BoxDecoration(
+                      color:
+                          isUser ? widget.accentColor : const Color(0xFF0A0A0A),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20.r),
+                        topRight: Radius.circular(20.r),
+                        bottomLeft: isUser
+                            ? Radius.circular(20.r)
+                            : Radius.circular(4.r),
+                        bottomRight: isUser
+                            ? Radius.circular(4.r)
+                            : Radius.circular(20.r),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Quoted "replied message" block above a sent reply —
+                        // same pattern the P2P bubble + general chat use.
+                        if (message.replyToText != null &&
+                            message.replyToText!.isNotEmpty)
+                          ChatReplyQuoteBlock(
+                            author: (message.replyToIsUser ?? false)
+                                ? 'You'
+                                : 'Lazer',
+                            quotedText: message.replyToText!,
+                          ),
+                        if (message.mediaType != null) ...[
+                          ChatMediaBubble(
+                            mediaType: message.mediaType,
+                            localMediaPath: message.localMediaPath,
+                            mediaUrl: message.mediaUrl,
+                            audioDurationMs: message.audioDurationMs,
+                            transcript: message.transcript,
+                            isUser: isUser,
+                          ),
+                          if (message.text.isNotEmpty &&
+                              message.text != 'Sent an image' &&
+                              message.text != 'Sent a voice note')
+                            SizedBox(height: 8.h),
+                        ],
+                        if (message.mediaType == null ||
+                            (message.text.isNotEmpty &&
+                                message.text != 'Sent an image' &&
+                                message.text != 'Sent a voice note'))
+                          isUser
+                              ? Text(
+                                  message.text,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14.sp,
+                                    color: Colors.white,
+                                    height: 1.4,
+                                  ),
+                                )
+                              : MarkdownBody(
+                                  data: message.text,
+                                  selectable: true,
+                                  styleSheet: MarkdownStyleSheet.fromTheme(
+                                          Theme.of(context))
+                                      .copyWith(
+                                    p: GoogleFonts.inter(
+                                      fontSize: 14.sp,
+                                      color: Colors.white,
+                                      height: 1.45,
+                                    ),
+                                    strong: GoogleFonts.inter(
+                                      fontSize: 14.sp,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    em: GoogleFonts.inter(
+                                      fontSize: 14.sp,
+                                      color:
+                                          Colors.white.withValues(alpha: 0.85),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                    listBullet: GoogleFonts.inter(
+                                      fontSize: 14.sp,
+                                      color: const Color(0xFF9CA3AF),
+                                      height: 1.45,
+                                    ),
+                                    listBulletPadding:
+                                        EdgeInsets.only(right: 6.w),
+                                    listIndent: 16.w,
+                                    blockSpacing: 6.0,
+                                    code: GoogleFonts.robotoMono(
+                                      fontSize: 13.sp,
+                                      color: const Color(0xFF86EFAC),
+                                      backgroundColor:
+                                          Colors.black.withValues(alpha: 0.3),
+                                    ),
+                                    a: GoogleFonts.inter(
+                                      fontSize: 14.sp,
+                                      color: const Color(0xFF60A5FA),
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                      ],
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Quoted "replied message" block above a sent reply —
-                      // same pattern the P2P bubble + general chat use.
-                      if (message.replyToText != null &&
-                          message.replyToText!.isNotEmpty)
-                        ChatReplyQuoteBlock(
-                          author: (message.replyToIsUser ?? false)
-                              ? 'You'
-                              : 'Lazer',
-                          quotedText: message.replyToText!,
-                        ),
-                      if (message.mediaType != null) ...[
-                        ChatMediaBubble(
-                          mediaType: message.mediaType,
-                          localMediaPath: message.localMediaPath,
-                          mediaUrl: message.mediaUrl,
-                          audioDurationMs: message.audioDurationMs,
-                          transcript: message.transcript,
-                          isUser: isUser,
-                        ),
-                        if (message.text.isNotEmpty &&
-                            message.text != 'Sent an image' &&
-                            message.text != 'Sent a voice note')
-                          SizedBox(height: 8.h),
-                      ],
-                      if (message.mediaType == null ||
-                          (message.text.isNotEmpty &&
-                              message.text != 'Sent an image' &&
-                              message.text != 'Sent a voice note'))
-                        isUser
-                            ? Text(
-                                message.text,
-                                style: GoogleFonts.inter(
-                                  fontSize: 14.sp,
-                                  color: Colors.white,
-                                  height: 1.4,
-                                ),
-                              )
-                            : MarkdownBody(
-                          data: message.text,
-                          selectable: true,
-                          styleSheet:
-                              MarkdownStyleSheet.fromTheme(Theme.of(context))
-                                  .copyWith(
-                            p: GoogleFonts.inter(
-                              fontSize: 14.sp,
-                              color: Colors.white,
-                              height: 1.45,
-                            ),
-                            strong: GoogleFonts.inter(
-                              fontSize: 14.sp,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            em: GoogleFonts.inter(
-                              fontSize: 14.sp,
-                              color: Colors.white.withValues(alpha: 0.85),
-                              fontStyle: FontStyle.italic,
-                            ),
-                            listBullet: GoogleFonts.inter(
-                              fontSize: 14.sp,
-                              color: const Color(0xFF9CA3AF),
-                              height: 1.45,
-                            ),
-                            listBulletPadding: EdgeInsets.only(right: 6.w),
-                            listIndent: 16.w,
-                            blockSpacing: 6.0,
-                            code: GoogleFonts.robotoMono(
-                              fontSize: 13.sp,
-                              color: const Color(0xFF86EFAC),
-                              backgroundColor:
-                                  Colors.black.withValues(alpha: 0.3),
-                            ),
-                            a: GoogleFonts.inter(
-                              fontSize: 14.sp,
-                              color: const Color(0xFF60A5FA),
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
                 ),
                 SizedBox(height: 4.h),
                 Text(
@@ -849,9 +855,8 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
                   builder: (context, child) {
                     final double phase =
                         (_typingDotsController.value + index / 3) % 1.0;
-                    final double bounce = (phase < 0.5)
-                        ? (phase * 2)
-                        : (2 - phase * 2);
+                    final double bounce =
+                        (phase < 0.5) ? (phase * 2) : (2 - phase * 2);
                     return Transform.translate(
                       offset: Offset(0, -bounce * 6),
                       child: Container(
@@ -885,7 +890,8 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
             padding: EdgeInsets.all(20.w),
             decoration: const BoxDecoration(
               color: Color(0xFF1F1F1F),
-              border: Border(top: BorderSide(color: Color(0xFF2D2D2D), width: 1)),
+              border:
+                  Border(top: BorderSide(color: Color(0xFF2D2D2D), width: 1)),
             ),
             child: SafeArea(
               child: RecordingIndicator(
@@ -924,7 +930,8 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
                     child: TextField(
                       controller: _messageController,
                       decoration: InputDecoration(
-                        hintText: 'Ask about ${widget.serviceName.toLowerCase()}...',
+                        hintText:
+                            'Ask about ${widget.serviceName.toLowerCase()}...',
                         hintStyle: GoogleFonts.inter(
                           fontSize: 14.sp,
                           color: Colors.grey[500],
@@ -953,9 +960,7 @@ class _ServiceChatBottomSheetState extends State<ServiceChatBottomSheet>
                     width: 48.w,
                     height: 48.w,
                     decoration: BoxDecoration(
-                      color: isLoading
-                          ? Colors.grey
-                          : widget.accentColor,
+                      color: isLoading ? Colors.grey : widget.accentColor,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(

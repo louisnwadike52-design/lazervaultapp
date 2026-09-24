@@ -33,4 +33,4 @@ class ProcessChatUseCase {
       extraMetadata: extraMetadata,
     );
   }
-} 
+}

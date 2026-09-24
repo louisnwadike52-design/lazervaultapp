@@ -41,11 +41,11 @@ class GeneralChatSuccess extends GeneralChatState {
 
   @override
   List<Object?> get props => [
-    messages,
-    currentService,
-    conversationServices,
-    intentClassification,
-  ];
+        messages,
+        currentService,
+        conversationServices,
+        intentClassification,
+      ];
 }
 
 /// Error state

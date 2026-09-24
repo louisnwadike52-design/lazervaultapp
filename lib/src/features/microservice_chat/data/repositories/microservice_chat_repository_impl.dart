@@ -200,7 +200,8 @@ class MicroserviceChatRepositoryImpl implements MicroserviceChatRepository {
   }
 
   @override
-  Future<Either<Failure, List<MicroserviceChatMessageEntity>>> getDirectHistory({
+  Future<Either<Failure, List<MicroserviceChatMessageEntity>>>
+      getDirectHistory({
     required String sourceContext,
     required String sessionId,
     required String accessToken,

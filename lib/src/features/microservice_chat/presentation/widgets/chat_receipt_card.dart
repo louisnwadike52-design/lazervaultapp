@@ -14,7 +14,6 @@ import 'package:lazervault/src/features/widgets/unified_transaction_receipt.dart
 // from here — adding them there instead would not compile.
 part 'chat_receipt_card_widgets.dart';
 
-
 /// Structured receipt data from a successful transfer.
 class TransferReceiptData {
   final String receiptId;
@@ -41,7 +40,8 @@ class TransferReceiptData {
   final String feeDisplay;
   final DateTime timestamp;
   final String? receiptUrl; // Backend-generated PDF URL
-  final String description; // Human-readable description (e.g. "Bill Payment", "Stock Trade")
+  final String
+      description; // Human-readable description (e.g. "Bill Payment", "Stock Trade")
   final Map<String, dynamic> details; // Operation-specific extra fields
 
   const TransferReceiptData({
@@ -242,16 +242,17 @@ class TransferReceiptData {
       newBalanceDisplay: json['new_balance_display']?.toString() ?? '',
       // The agent sends this on receipt_data; the ReceiptCard `extra` bag spells
       // it the same way, so both shapes land here.
-      balanceBeforeDisplay: (json['balance_before_display'] ??
-              json['balance_before'] ??
-              '')
-          .toString(),
+      balanceBeforeDisplay:
+          (json['balance_before_display'] ?? json['balance_before'] ?? '')
+              .toString(),
       fee: _parseIntSafe(json['fee']),
       feeDisplay: json['fee_display']?.toString() ?? '0.00',
       timestamp: _parseTimestamp(json['timestamp']),
       receiptUrl: _rewriteUrlForEmulator(json['receipt_url']?.toString()),
       description: json['description']?.toString() ?? '',
-      details: json['details'] is Map ? Map<String, dynamic>.from(json['details'] as Map) : const {},
+      details: json['details'] is Map
+          ? Map<String, dynamic>.from(json['details'] as Map)
+          : const {},
     );
   }
 

@@ -9,7 +9,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/chat_receipt_pdf_service.dart';
 part 'chat_receipt_card_v2_widgets.dart';
 
-
 /// ChatReceiptCardV2 — generic in-chat receipt card.
 ///
 /// Consumes the JSON shape emitted by `chat_services_shared/receipt_protocol.py`
@@ -371,8 +370,7 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
               ),
               const SizedBox(width: 8),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(6),
@@ -406,7 +404,8 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
             children: [
               Expanded(
                 child: TextButton.icon(
-                  onPressed: _s('deeplink_route').isEmpty ? null : _openDeeplink,
+                  onPressed:
+                      _s('deeplink_route').isEmpty ? null : _openDeeplink,
                   icon: const Icon(Icons.open_in_new, size: 14),
                   label: Text(
                     'View receipt',
@@ -435,8 +434,8 @@ class _ChatReceiptCardV2State extends State<ChatReceiptCardV2> {
                           height: 14,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : const Icon(Icons.share_outlined, size: 14),

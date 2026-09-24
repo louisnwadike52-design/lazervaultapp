@@ -22,7 +22,8 @@ class MicroserviceChatScreen extends StatelessWidget {
 
     return BlocProvider(
       create: (_) => MicroserviceChatCubit(
-        sendMessageUseCase: serviceLocator<SendMicroserviceChatMessageUseCase>(),
+        sendMessageUseCase:
+            serviceLocator<SendMicroserviceChatMessageUseCase>(),
         authCubit: authCubit,
         sourceContext: sourceContext,
       )..initializeChat(),

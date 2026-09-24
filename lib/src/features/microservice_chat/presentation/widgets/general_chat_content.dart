@@ -22,6 +22,7 @@ import 'chat_receipt_card_v2.dart';
 import 'chat_pin_prompt_card.dart';
 import 'chat_pin_auto_opener.dart';
 import 'chat_recipient_card.dart';
+import 'chat_analytics_card.dart';
 import 'chat_reply_widgets.dart';
 import 'chat_sessions_drawer.dart';
 import 'quick_action_chips.dart';
@@ -173,11 +174,11 @@ class _GeneralChatContentState extends State<GeneralChatContent>
       );
       if (picked != null && mounted) {
         context.read<GeneralChatCubit>().sendMediaMessage(
-          mediaType: 'image',
-          localFilePath: picked.path,
-          mimeType: picked.mimeType ?? _inferMimeType(picked.path),
-          text: _textController.text.trim(),
-        );
+              mediaType: 'image',
+              localFilePath: picked.path,
+              mimeType: picked.mimeType ?? _inferMimeType(picked.path),
+              text: _textController.text.trim(),
+            );
         _textController.clear();
       }
     } catch (_) {
@@ -199,11 +200,11 @@ class _GeneralChatContentState extends State<GeneralChatContent>
       );
       if (picked != null && mounted) {
         context.read<GeneralChatCubit>().sendMediaMessage(
-          mediaType: 'image',
-          localFilePath: picked.path,
-          mimeType: picked.mimeType ?? _inferMimeType(picked.path),
-          text: _textController.text.trim(),
-        );
+              mediaType: 'image',
+              localFilePath: picked.path,
+              mimeType: picked.mimeType ?? _inferMimeType(picked.path),
+              text: _textController.text.trim(),
+            );
         _textController.clear();
       }
     } catch (_) {
@@ -246,8 +247,7 @@ class _GeneralChatContentState extends State<GeneralChatContent>
       _isRecording = true;
       _recordingDuration = Duration.zero;
     });
-    _recordingTimer =
-        Timer.periodic(const Duration(seconds: 1), (_) {
+    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       setState(() => _recordingDuration += const Duration(seconds: 1));
       if (_recordingDuration >= _maxRecordingDuration) {
@@ -268,11 +268,11 @@ class _GeneralChatContentState extends State<GeneralChatContent>
     });
     if (path != null && mounted && durationMs > 500) {
       context.read<GeneralChatCubit>().sendMediaMessage(
-        mediaType: 'voice',
-        localFilePath: path,
-        mimeType: 'audio/mp4',
-        audioDurationMs: durationMs,
-      );
+            mediaType: 'voice',
+            localFilePath: path,
+            mimeType: 'audio/mp4',
+            audioDurationMs: durationMs,
+          );
     }
   }
 
@@ -308,7 +308,8 @@ class _GeneralChatContentState extends State<GeneralChatContent>
           return Column(
             children: [
               Expanded(
-                child: _buildMessagesList(state.messages, state is GeneralChatLoading),
+                child: _buildMessagesList(
+                    state.messages, state is GeneralChatLoading),
               ),
               if (_replyToText != null)
                 ChatReplyPreviewBar(
@@ -342,12 +343,18 @@ class _GeneralChatContentState extends State<GeneralChatContent>
           // Resolve the current session's title for display in the AppBar.
           // Tap the title to inline-rename — matches ChatGPT's behaviour.
           final (sessions, currentId) = switch (sessionsState) {
-            ChatSessionsLoaded(:final sessions, :final currentId) =>
-              (sessions, currentId),
-            ChatSessionsLoading(:final sessions, :final currentId) =>
-              (sessions, currentId),
-            ChatSessionsError(:final sessions, :final currentId) =>
-              (sessions, currentId),
+            ChatSessionsLoaded(:final sessions, :final currentId) => (
+                sessions,
+                currentId
+              ),
+            ChatSessionsLoading(:final sessions, :final currentId) => (
+                sessions,
+                currentId
+              ),
+            ChatSessionsError(:final sessions, :final currentId) => (
+                sessions,
+                currentId
+              ),
             ChatSessionsInitial() => (const [], null as String?),
           };
           final currentTitle = (currentId == null || currentId.isEmpty)
@@ -369,7 +376,8 @@ class _GeneralChatContentState extends State<GeneralChatContent>
               return InkWell(
                 onTap: (currentId == null || currentId.isEmpty)
                     ? null
-                    : () => _showRenameCurrentDialog(context, currentId, currentTitle),
+                    : () => _showRenameCurrentDialog(
+                        context, currentId, currentTitle),
                 child: Column(
                   children: [
                     Row(
@@ -438,8 +446,8 @@ class _GeneralChatContentState extends State<GeneralChatContent>
       builder: (ctx) {
         return AlertDialog(
           backgroundColor: const Color(0xFF1F1F1F),
-          title: const Text('Rename chat',
-              style: TextStyle(color: Colors.white)),
+          title:
+              const Text('Rename chat', style: TextStyle(color: Colors.white)),
           content: TextField(
             controller: controller,
             autofocus: true,
@@ -464,8 +472,7 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                   style: TextStyle(color: Color(0xFF9CA3AF))),
             ),
             TextButton(
-              onPressed: () =>
-                  Navigator.of(ctx).pop(controller.text.trim()),
+              onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
               child: const Text('Save',
                   style: TextStyle(color: Color(0xFF7C3AED))),
             ),
@@ -474,11 +481,13 @@ class _GeneralChatContentState extends State<GeneralChatContent>
       },
     );
     controller.dispose();
-    if (newTitle == null || newTitle.isEmpty || newTitle == currentTitle) return;
+    if (newTitle == null || newTitle.isEmpty || newTitle == currentTitle)
+      return;
     await cubit.rename(sessionId: sessionId, title: newTitle);
   }
 
-  Widget _buildMessagesList(List<GeneralChatMessageEntity> messages, bool isLoading) {
+  Widget _buildMessagesList(
+      List<GeneralChatMessageEntity> messages, bool isLoading) {
     if (messages.isEmpty && !isLoading) {
       return _buildEmptyState();
     }
@@ -566,7 +575,8 @@ class _GeneralChatContentState extends State<GeneralChatContent>
 
   /// Safely parse receipt_data and build a ChatReceiptCard.
   Widget _buildReceiptCard(dynamic receiptData) {
-    print('🧾 [UI] _buildReceiptCard called with receiptData type: ${receiptData.runtimeType}');
+    print(
+        '🧾 [UI] _buildReceiptCard called with receiptData type: ${receiptData.runtimeType}');
     try {
       Map<String, dynamic> data;
       if (receiptData is Map<String, dynamic>) {
@@ -595,9 +605,11 @@ class _GeneralChatContentState extends State<GeneralChatContent>
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check_circle_outline, color: Color(0xFF10B981), size: 16),
+              Icon(Icons.check_circle_outline,
+                  color: Color(0xFF10B981), size: 16),
               SizedBox(width: 8),
-              Text('Transfer completed', style: TextStyle(color: Color(0xFF10B981), fontSize: 13)),
+              Text('Transfer completed',
+                  style: TextStyle(color: Color(0xFF10B981), fontSize: 13)),
             ],
           ),
         ),
@@ -845,10 +857,10 @@ class _GeneralChatContentState extends State<GeneralChatContent>
       onCancelled: () => _pinAutoOpener.noteCancelled(txId),
       onPinVerified: (verificationToken) async {
         await context.read<GeneralChatCubit>().submitPinVerification(
-          verificationToken: verificationToken,
-          callbackIntent: callbackIntent,
-          callbackArgs: callbackArgs,
-        );
+              verificationToken: verificationToken,
+              callbackIntent: callbackIntent,
+              callbackArgs: callbackArgs,
+            );
       },
     );
   }
@@ -859,8 +871,10 @@ class _GeneralChatContentState extends State<GeneralChatContent>
 
     // Debug log for non-user messages
     if (!isUser) {
-      print('🧾 [UI] Bot message metadata keys: ${message.metadata?.keys.toList()}');
-      print('🧾 [UI] Has receipt_data: ${message.metadata?['receipt_data'] != null}');
+      print(
+          '🧾 [UI] Bot message metadata keys: ${message.metadata?.keys.toList()}');
+      print(
+          '🧾 [UI] Has receipt_data: ${message.metadata?['receipt_data'] != null}');
     }
 
     if (isSystemMessage) {
@@ -892,26 +906,29 @@ class _GeneralChatContentState extends State<GeneralChatContent>
     // the first Bills Hub turn. Tapping a chip sends that label as the next
     // user message — saves the user typing "Pay electricity" verbatim.
     final quickActions = (!isUser)
-        ? (message.metadata?['quick_actions'] as List?)?.whereType<String>().toList(growable: false)
+        ? (message.metadata?['quick_actions'] as List?)
+            ?.whereType<String>()
+            .toList(growable: false)
         : null;
 
     final bubbleRow = Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (!isUser) ...[
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              child: CircleAvatar(
-                backgroundColor: Colors.blue.withValues(alpha: 0.2),
-                child: const Icon(Icons.smart_toy, color: Colors.blue, size: 20),
-              ),
+      mainAxisAlignment:
+          isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!isUser) ...[
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            child: CircleAvatar(
+              backgroundColor: Colors.blue.withValues(alpha: 0.2),
+              child: const Icon(Icons.smart_toy, color: Colors.blue, size: 20),
             ),
-          ],
-          Flexible(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: maxBubbleWidth),
-              child: Container(
+          ),
+        ],
+        Flexible(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxBubbleWidth),
+            child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: isUser ? Colors.blue : Colors.grey[800],
@@ -925,9 +942,8 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                   if (message.replyToText != null &&
                       message.replyToText!.isNotEmpty)
                     ChatReplyQuoteBlock(
-                      author: (message.replyToIsUser ?? false)
-                          ? 'You'
-                          : 'Lazer',
+                      author:
+                          (message.replyToIsUser ?? false) ? 'You' : 'Lazer',
                       quotedText: message.replyToText!,
                     ),
                   if (message.mediaType != null) ...[
@@ -976,7 +992,8 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                                 fontSize: 15,
                                 height: 1.45,
                               ),
-                              listBulletPadding: const EdgeInsets.only(right: 6),
+                              listBulletPadding:
+                                  const EdgeInsets.only(right: 6),
                               listIndent: 16,
                               blockSpacing: 6.0,
                               a: const TextStyle(
@@ -1003,6 +1020,17 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                   // top-level recipient_card (the per-service chat uses the
                   // entities sentinel) — both land in metadata by the time
                   // they get here.
+                  // Charts for a "how am I doing?" turn. Reaches here on
+                  // metadata.analytics_card — the gateway surfaces it
+                  // top-level and persists it with the turn, so reopening
+                  // the thread redraws the chart instead of leaving a
+                  // sentence pointing at one that is gone.
+                  if (!isUser && message.metadata?['analytics_card'] is Map)
+                    ChatAnalyticsCard(
+                      payload: Map<String, dynamic>.from(
+                        message.metadata!['analytics_card'] as Map,
+                      ),
+                    ),
                   if (!isUser && message.metadata?['recipient_card'] is Map)
                     ChatRecipientCard(
                       data: Map<String, dynamic>.from(
@@ -1027,7 +1055,8 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                   // to + highlight them in the P2P chat beneath.
                   if (!isUser &&
                       message.metadata?['jump_to_messages'] is List &&
-                      (message.metadata!['jump_to_messages'] as List).isNotEmpty)
+                      (message.metadata!['jump_to_messages'] as List)
+                          .isNotEmpty)
                     _buildJumpToMessageAction(context, message.metadata!),
                   // "Open full receipt" deep-link under any bill purchase.
                   // Routes to the existing Flutter receipt screen for the bill type.
@@ -1058,17 +1087,17 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                   // to a clear retry timer.
                   if (!isUser &&
                       (message.metadata?['service_response']
-                              is Map<String, dynamic>) &&
+                          is Map<String, dynamic>) &&
                       (message.metadata!['service_response']
                               as Map<String, dynamic>)['rate_limited'] ==
                           true)
                     _buildRateLimitBanner(
-                      (message.metadata!['service_response']
-                              as Map<String, dynamic>)['retry_after_seconds']
-                          as int? ??
+                      (message.metadata!['service_response'] as Map<String,
+                              dynamic>)['retry_after_seconds'] as int? ??
                           30,
                     ),
-                  if (message.serviceRoutedTo != null && message.serviceRoutedTo != 'gateway') ...[
+                  if (message.serviceRoutedTo != null &&
+                      message.serviceRoutedTo != 'gateway') ...[
                     const SizedBox(height: 4),
                     Text(
                       'via ${_getServiceDisplayName(message.serviceRoutedTo!)}',
@@ -1082,14 +1111,14 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                 ],
               ),
             ),
-            ),
           ),
-          if (isUser) ...[
-            const SizedBox(width: 8),
-            _buildUserAvatar(),
-          ],
+        ),
+        if (isUser) ...[
+          const SizedBox(width: 8),
+          _buildUserAvatar(),
         ],
-      );
+      ],
+    );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -1143,7 +1172,8 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                         width: 8,
                         height: 8,
                         decoration: BoxDecoration(
-                          color: Colors.blue.withValues(alpha: 0.4 + bounce * 0.6),
+                          color:
+                              Colors.blue.withValues(alpha: 0.4 + bounce * 0.6),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -1198,9 +1228,13 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                       style: const TextStyle(color: Colors.white),
                       obscureText: _isPinMode,
                       obscuringCharacter: '*',
-                      keyboardType: _isPinMode ? TextInputType.number : TextInputType.text,
+                      keyboardType: _isPinMode
+                          ? TextInputType.number
+                          : TextInputType.text,
                       decoration: InputDecoration(
-                        hintText: _isPinMode ? 'Enter your PIN...' : 'Ask me anything about Lazervault...',
+                        hintText: _isPinMode
+                            ? 'Enter your PIN...'
+                            : 'Ask me anything about Lazervault...',
                         hintStyle: TextStyle(color: Colors.grey[400]),
                         filled: true,
                         fillColor: Colors.grey[800],
@@ -1216,7 +1250,8 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                       minLines: 1,
                       maxLines: _isPinMode ? 1 : 4,
                       onChanged: (text) {
-                        final looksLikePin = RegExp(r'^\d{4,6}$').hasMatch(text.trim());
+                        final looksLikePin =
+                            RegExp(r'^\d{4,6}$').hasMatch(text.trim());
                         if (looksLikePin != _isPinMode) {
                           setState(() => _isPinMode = looksLikePin);
                         }

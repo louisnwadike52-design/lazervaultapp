@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lazervault/core/services/injection_container.dart'; 
+import 'package:lazervault/core/services/injection_container.dart';
 
-// Import AI Chat Cubit 
+// Import AI Chat Cubit
 import '../../cubit/ai_chat_cubit.dart';
 // Import the content widget
-import '../widgets/ai_chat_content.dart'; 
+import '../widgets/ai_chat_content.dart';
 
 // No longer needs Get, ImagePicker, dart:io, Auth Cubit/State, entity, or local ChatMessage
 

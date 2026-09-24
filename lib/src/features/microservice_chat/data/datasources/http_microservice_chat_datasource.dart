@@ -40,9 +40,11 @@ class ChatRequest {
       'language': language,
       'locale': locale,
       'metadata': metadata,
-      if (mediaBase64 != null && mediaBase64!.isNotEmpty) 'media_base64': mediaBase64,
+      if (mediaBase64 != null && mediaBase64!.isNotEmpty)
+        'media_base64': mediaBase64,
       if (mediaType != null && mediaType!.isNotEmpty) 'media_type': mediaType,
-      if (mediaMimeType != null && mediaMimeType!.isNotEmpty) 'media_mime_type': mediaMimeType,
+      if (mediaMimeType != null && mediaMimeType!.isNotEmpty)
+        'media_mime_type': mediaMimeType,
     };
   }
 }
@@ -52,7 +54,8 @@ class ChatResponse {
   final Map<String, dynamic> metadata;
   final Map<String, dynamic>? receiptData;
 
-  ChatResponse({required this.response, required this.metadata, this.receiptData});
+  ChatResponse(
+      {required this.response, required this.metadata, this.receiptData});
 
   factory ChatResponse.fromJson(Map<String, dynamic> json) {
     return ChatResponse(
@@ -115,7 +118,8 @@ class ChatHistoryMessage {
       service: json['service'] as String? ?? '',
       sourceContext: json['source_context'] as String? ?? '',
       timestamp: json['timestamp'] as String? ?? '',
-      mediaMetadata: metadata != null ? metadata['media'] as Map<String, dynamic>? : null,
+      mediaMetadata:
+          metadata != null ? metadata['media'] as Map<String, dynamic>? : null,
       entities: json['entities'] as Map<String, dynamic>?,
       metadata: metadata,
     );
@@ -152,7 +156,8 @@ class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
       // Media messages need longer timeouts:
       // - sendTimeout: uploading large base64 over 2G/3G can be slow
       // - receiveTimeout: server processes GCS upload + Whisper/Vision + agent
-      final hasMedia = request.mediaBase64 != null && request.mediaBase64!.isNotEmpty;
+      final hasMedia =
+          request.mediaBase64 != null && request.mediaBase64!.isNotEmpty;
 
       final response = await dio.post(
         '$baseUrl/chat',
@@ -174,10 +179,12 @@ class HttpMicroserviceChatDataSource implements MicroserviceChatDataSource {
       }
     } on DioException catch (e) {
       if (e.type == DioExceptionType.sendTimeout) {
-        throw Exception('Upload timed out. Your connection may be too slow — try a smaller file or better network.');
+        throw Exception(
+            'Upload timed out. Your connection may be too slow — try a smaller file or better network.');
       }
       if (e.type == DioExceptionType.receiveTimeout) {
-        throw Exception('The server took too long to respond. Please try again.');
+        throw Exception(
+            'The server took too long to respond. Please try again.');
       }
       throw Exception('Network error: ${e.message}');
     } catch (e) {

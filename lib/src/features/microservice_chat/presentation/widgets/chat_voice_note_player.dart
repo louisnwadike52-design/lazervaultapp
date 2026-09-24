@@ -23,8 +23,10 @@ class ChatVoiceNotePlayer {
   /// path). Null when nothing is loaded. Bubbles compare their own id to this.
   final ValueNotifier<String?> currentId = ValueNotifier<String?>(null);
   final ValueNotifier<bool> playing = ValueNotifier<bool>(false);
-  final ValueNotifier<Duration> position = ValueNotifier<Duration>(Duration.zero);
-  final ValueNotifier<Duration> duration = ValueNotifier<Duration>(Duration.zero);
+  final ValueNotifier<Duration> position =
+      ValueNotifier<Duration>(Duration.zero);
+  final ValueNotifier<Duration> duration =
+      ValueNotifier<Duration>(Duration.zero);
 
   /// Id whose last load failed (unplayable URL / missing file) — the bubble for
   /// this id renders the error affordance.
@@ -121,9 +123,10 @@ class ChatVoiceNotePlayer {
 
     // Already the active, loaded note — just seek within it.
     if (currentId.value == id && _loadedId == id) {
-      final dur = (_player.duration != null && _player.duration! > Duration.zero)
-          ? _player.duration!
-          : duration.value;
+      final dur =
+          (_player.duration != null && _player.duration! > Duration.zero)
+              ? _player.duration!
+              : duration.value;
       final target = Duration(milliseconds: (dur.inMilliseconds * f).round());
       try {
         await _player.seek(target);
@@ -214,7 +217,8 @@ class VoiceNoteDurationCache {
         if (hasLocal && File(localPath).existsSync()) {
           d = await probe.setFilePath(localPath);
         } else if (mediaUrl != null &&
-            (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://'))) {
+            (mediaUrl.startsWith('http://') ||
+                mediaUrl.startsWith('https://'))) {
           d = await probe.setUrl(mediaUrl);
         }
         if (d != null && d > Duration.zero) {

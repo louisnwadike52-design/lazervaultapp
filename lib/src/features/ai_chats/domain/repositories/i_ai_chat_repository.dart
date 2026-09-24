@@ -27,4 +27,4 @@ abstract class IAiChatRepository {
     int? offset,
   });
   // Add other methods if needed (e.g., clear chat history on backend?)
-} 
+}

@@ -102,7 +102,8 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer>
 
   // 0 → 1 as the image is dragged toward the dismiss threshold.
   double get _progress => (_dy.abs() / (_dismissThreshold * 2)).clamp(0.0, 1.0);
-  double get _imageScale => 1 - _progress * 0.25; // shrink slightly while dragging
+  double get _imageScale =>
+      1 - _progress * 0.25; // shrink slightly while dragging
   double get _backdropOpacity => 1 - _progress * 0.9; // fade the black backdrop
 
   void _onDragUpdate(DragUpdateDetails d) {

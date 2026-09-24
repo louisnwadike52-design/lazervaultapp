@@ -10,7 +10,8 @@ import '../../domain/entities/ai_chat_message_entity.dart';
 class AiChatRepositoryImpl implements IAiChatRepository {
   final IAiChatDataSource _dataSource;
 
-  AiChatRepositoryImpl({required IAiChatDataSource dataSource}) : _dataSource = dataSource;
+  AiChatRepositoryImpl({required IAiChatDataSource dataSource})
+      : _dataSource = dataSource;
 
   @override
   Future<Either<Failure, ProcessChatResponse>> processChat({
@@ -44,7 +45,8 @@ class AiChatRepositoryImpl implements IAiChatRepository {
       } else if (response is Map<String, dynamic>) {
         // Convert HTTP JSON response to ProcessChatResponse proto
         final protoResponse = ProcessChatResponse()
-          ..response = response['response'] ?? response['message'] ?? 'No response'
+          ..response =
+              response['response'] ?? response['message'] ?? 'No response'
           ..sessionId = response['session_id'] ?? sessionId ?? ''
           ..success = !(response['error'] != null);
 
@@ -67,7 +69,8 @@ class AiChatRepositoryImpl implements IAiChatRepository {
         // ChatReceiptCardV2List — this is what makes batch receipts render in
         // the per-service chat.
         final receiptCard = response['receipt_card'];
-        if (receiptCard != null && (receiptCard is Map || receiptCard is List)) {
+        if (receiptCard != null &&
+            (receiptCard is Map || receiptCard is List)) {
           protoResponse.entities['_receipt_card'] = jsonEncode(receiptCard);
         }
 
@@ -87,14 +90,25 @@ class AiChatRepositoryImpl implements IAiChatRepository {
           protoResponse.entities['_qr_card'] = jsonEncode(qrCard);
         }
 
+        // Same channel for the analytics card. Asked "how am I doing?", every
+        // agent used to answer with a paragraph of figures the user had to hold
+        // in their head — this carries the same numbers as chart series so the
+        // chat can draw what the statistics screens already draw.
+        final analyticsCard = response['analytics_card'];
+        if (analyticsCard != null && analyticsCard is Map) {
+          protoResponse.entities['_analytics_card'] = jsonEncode(analyticsCard);
+        }
+
         // Pass through other entities if present
         final entities = response['entities'];
         if (entities != null && entities is Map) {
           for (final entry in entities.entries) {
             if (entry.key != '_receipt_data' &&
                 entry.key != '_pin_prompt' &&
+                entry.key != '_analytics_card' &&
                 entry.key != '_receipt_card') {
-              protoResponse.entities[entry.key.toString()] = entry.value?.toString() ?? '';
+              protoResponse.entities[entry.key.toString()] =
+                  entry.value?.toString() ?? '';
             }
           }
         }
@@ -104,7 +118,8 @@ class AiChatRepositoryImpl implements IAiChatRepository {
           protoResponse.intent = response['intent'].toString();
         }
         if (response['conversation_state'] != null) {
-          protoResponse.conversationState = response['conversation_state'].toString();
+          protoResponse.conversationState =
+              response['conversation_state'].toString();
         }
 
         return Right(protoResponse);
@@ -166,7 +181,8 @@ class AiChatRepositoryImpl implements IAiChatRepository {
 
         for (var entry in history) {
           if (entry is Map<String, dynamic>) {
-            final timestampStr = entry['timestamp'] ?? DateTime.now().toIso8601String();
+            final timestampStr =
+                entry['timestamp'] ?? DateTime.now().toIso8601String();
             DateTime timestamp;
             try {
               timestamp = DateTime.parse(timestampStr).toLocal();
@@ -176,7 +192,8 @@ class AiChatRepositoryImpl implements IAiChatRepository {
 
             // Add user message if present
             if (entry['query'] != null || entry['content'] != null) {
-              final content = (entry['content'] ?? entry['query'] ?? '').toString();
+              final content =
+                  (entry['content'] ?? entry['query'] ?? '').toString();
               final role = entry['role'] ?? 'user';
 
               // Parse metadata once (stored as a Map or a JSON string in history).
@@ -186,7 +203,8 @@ class AiChatRepositoryImpl implements IAiChatRepository {
                 parsedMetadata = Map<String, dynamic>.from(rawMetadata);
               } else if (rawMetadata is String && rawMetadata.isNotEmpty) {
                 try {
-                  parsedMetadata = jsonDecode(rawMetadata) as Map<String, dynamic>;
+                  parsedMetadata =
+                      jsonDecode(rawMetadata) as Map<String, dynamic>;
                 } catch (_) {
                   parsedMetadata = null;
                 }
@@ -245,8 +263,8 @@ class AiChatRepositoryImpl implements IAiChatRepository {
                 } else if (rawDuration is double) {
                   mediaDurationMs = rawDuration.round();
                 } else if (rawDuration is String && rawDuration.isNotEmpty) {
-                  mediaDurationMs =
-                      int.tryParse(rawDuration) ?? double.tryParse(rawDuration)?.round();
+                  mediaDurationMs = int.tryParse(rawDuration) ??
+                      double.tryParse(rawDuration)?.round();
                 }
               }
 
@@ -264,7 +282,8 @@ class AiChatRepositoryImpl implements IAiChatRepository {
                 if (raw is String && raw.isNotEmpty) {
                   try {
                     final decoded = jsonDecode(raw);
-                    if (decoded is Map) return Map<String, dynamic>.from(decoded);
+                    if (decoded is Map)
+                      return Map<String, dynamic>.from(decoded);
                   } catch (_) {}
                 }
                 return null;
@@ -332,6 +351,7 @@ class AiChatRepositoryImpl implements IAiChatRepository {
               if (r.isNotEmpty) receiptRefs.add(r);
             }
           }
+
           if (rc is List) {
             for (final c in rc) {
               collect(c);
@@ -370,4 +390,4 @@ class AiChatRepositoryImpl implements IAiChatRepository {
       return Left(Failure(message: e.toString(), statusCode: 500));
     }
   }
-} 
+}

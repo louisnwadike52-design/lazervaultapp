@@ -21,6 +21,7 @@ import 'chat_receipt_card_v2.dart';
 import 'chat_pin_prompt_card.dart';
 import 'chat_pin_auto_opener.dart';
 import 'chat_recipient_card.dart';
+import 'chat_analytics_card.dart';
 import 'chat_reply_widgets.dart';
 import 'quick_action_chips.dart';
 
@@ -35,7 +36,8 @@ class MicroserviceChatContent extends StatefulWidget {
   });
 
   @override
-  State<MicroserviceChatContent> createState() => _MicroserviceChatContentState();
+  State<MicroserviceChatContent> createState() =>
+      _MicroserviceChatContentState();
 }
 
 class _MicroserviceChatContentState extends State<MicroserviceChatContent>
@@ -176,11 +178,11 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
       if (picked != null && mounted) {
         final mimeType = picked.mimeType ?? _inferMimeType(picked.path);
         context.read<MicroserviceChatCubit>().sendMediaMessage(
-          mediaType: 'image',
-          localFilePath: picked.path,
-          mimeType: mimeType,
-          text: _textController.text.trim(),
-        );
+              mediaType: 'image',
+              localFilePath: picked.path,
+              mimeType: mimeType,
+              text: _textController.text.trim(),
+            );
         _textController.clear();
       }
     } catch (_) {
@@ -203,11 +205,11 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
       if (picked != null && mounted) {
         final mimeType = picked.mimeType ?? _inferMimeType(picked.path);
         context.read<MicroserviceChatCubit>().sendMediaMessage(
-          mediaType: 'image',
-          localFilePath: picked.path,
-          mimeType: mimeType,
-          text: _textController.text.trim(),
-        );
+              mediaType: 'image',
+              localFilePath: picked.path,
+              mimeType: mimeType,
+              text: _textController.text.trim(),
+            );
         _textController.clear();
       }
     } catch (_) {
@@ -240,7 +242,8 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
       return;
     }
     final dir = await getTemporaryDirectory();
-    final path = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    final path =
+        '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
     await _audioRecorder.start(
       const RecordConfig(encoder: AudioEncoder.aacLc),
       path: path,
@@ -270,11 +273,11 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
     });
     if (path != null && mounted && durationMs > 500) {
       context.read<MicroserviceChatCubit>().sendMediaMessage(
-        mediaType: 'voice',
-        localFilePath: path,
-        mimeType: 'audio/mp4',
-        audioDurationMs: durationMs,
-      );
+            mediaType: 'voice',
+            localFilePath: path,
+            mimeType: 'audio/mp4',
+            audioDurationMs: durationMs,
+          );
     }
   }
 
@@ -365,7 +368,8 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
     );
   }
 
-  Widget _buildMessagesList(List<MicroserviceChatMessageEntity> messages, bool isTyping) {
+  Widget _buildMessagesList(
+      List<MicroserviceChatMessageEntity> messages, bool isTyping) {
     if (messages.isEmpty && !isTyping) {
       return Center(
         child: Column(
@@ -532,9 +536,11 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check_circle_outline, color: Color(0xFF10B981), size: 16),
+              Icon(Icons.check_circle_outline,
+                  color: Color(0xFF10B981), size: 16),
               SizedBox(width: 8),
-              Text('Transfer completed', style: TextStyle(color: Color(0xFF10B981), fontSize: 13)),
+              Text('Transfer completed',
+                  style: TextStyle(color: Color(0xFF10B981), fontSize: 13)),
             ],
           ),
         ),
@@ -547,26 +553,29 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
     final maxBubbleWidth = MediaQuery.of(context).size.width * 0.72;
     // Bill-payment quick-action chips on the first Bills Hub assistant turn.
     final quickActions = (!isUser)
-        ? (message.metadata?['quick_actions'] as List?)?.whereType<String>().toList(growable: false)
+        ? (message.metadata?['quick_actions'] as List?)
+            ?.whereType<String>()
+            .toList(growable: false)
         : null;
 
     final bubbleRow = Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (!isUser) ...[
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              child: CircleAvatar(
-                backgroundColor: Colors.blue.withValues(alpha: 0.2),
-                child: const Icon(Icons.smart_toy, color: Colors.blue, size: 20),
-              ),
+      mainAxisAlignment:
+          isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!isUser) ...[
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            child: CircleAvatar(
+              backgroundColor: Colors.blue.withValues(alpha: 0.2),
+              child: const Icon(Icons.smart_toy, color: Colors.blue, size: 20),
             ),
-          ],
-          Flexible(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: maxBubbleWidth),
-              child: Container(
+          ),
+        ],
+        Flexible(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxBubbleWidth),
+            child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: isUser ? Colors.blue : Colors.grey[800],
@@ -636,7 +645,8 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                                 fontSize: 15,
                                 height: 1.45,
                               ),
-                              listBulletPadding: const EdgeInsets.only(right: 6),
+                              listBulletPadding:
+                                  const EdgeInsets.only(right: 6),
                               listIndent: 16,
                               blockSpacing: 6.0,
                               a: const TextStyle(
@@ -663,6 +673,17 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                   // The same identity the voice HUD has always rendered — chat
                   // showed a line of prose at the one moment a misread costs
                   // money.
+                  // Charts for a "how am I doing?" turn. Reaches here on
+                  // metadata.analytics_card — the gateway surfaces it
+                  // top-level and persists it with the turn, so reopening
+                  // the thread redraws the chart instead of leaving a
+                  // sentence pointing at one that is gone.
+                  if (!isUser && message.metadata?['analytics_card'] is Map)
+                    ChatAnalyticsCard(
+                      payload: Map<String, dynamic>.from(
+                        message.metadata!['analytics_card'] as Map,
+                      ),
+                    ),
                   if (!isUser && message.metadata?['recipient_card'] is Map)
                     ChatRecipientCard(
                       data: Map<String, dynamic>.from(
@@ -703,14 +724,14 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                 ],
               ),
             ),
-            ),
           ),
-          if (isUser) ...[
-            const SizedBox(width: 8),
-            _buildUserAvatar(),
-          ],
+        ),
+        if (isUser) ...[
+          const SizedBox(width: 8),
+          _buildUserAvatar(),
         ],
-      );
+      ],
+    );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -764,7 +785,8 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                         width: 8,
                         height: 8,
                         decoration: BoxDecoration(
-                          color: Colors.blue.withValues(alpha: 0.4 + bounce * 0.6),
+                          color:
+                              Colors.blue.withValues(alpha: 0.4 + bounce * 0.6),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -816,9 +838,13 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                       style: const TextStyle(color: Colors.white),
                       obscureText: _isPinMode,
                       obscuringCharacter: '*',
-                      keyboardType: _isPinMode ? TextInputType.number : TextInputType.text,
+                      keyboardType: _isPinMode
+                          ? TextInputType.number
+                          : TextInputType.text,
                       decoration: InputDecoration(
-                        hintText: _isPinMode ? 'Enter your PIN...' : 'Type your message...',
+                        hintText: _isPinMode
+                            ? 'Enter your PIN...'
+                            : 'Type your message...',
                         hintStyle: TextStyle(color: Colors.grey[400]),
                         filled: true,
                         fillColor: Colors.grey[800],
@@ -834,13 +860,15 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                       minLines: 1,
                       maxLines: _isPinMode ? 1 : 4,
                       onChanged: (text) {
-                        final looksLikePin = RegExp(r'^\d{4,6}$').hasMatch(text.trim());
+                        final looksLikePin =
+                            RegExp(r'^\d{4,6}$').hasMatch(text.trim());
                         if (looksLikePin != _isPinMode) {
                           setState(() => _isPinMode = looksLikePin);
                         }
                       },
                       onSubmitted: (text) {
-                        if (text.trim().isNotEmpty && state is! MicroserviceChatMessageLoading) {
+                        if (text.trim().isNotEmpty &&
+                            state is! MicroserviceChatMessageLoading) {
                           _sendText(text);
                         }
                       },
@@ -849,7 +877,8 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () {
-                      if (_textController.text.trim().isNotEmpty && state is! MicroserviceChatMessageLoading) {
+                      if (_textController.text.trim().isNotEmpty &&
+                          state is! MicroserviceChatMessageLoading) {
                         _sendText(_textController.text);
                       }
                     },

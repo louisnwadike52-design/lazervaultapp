@@ -165,14 +165,16 @@ class RecordingIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final mins = duration.inMinutes;
     final secs = duration.inSeconds % 60;
-    final timeStr = '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -187,7 +189,8 @@ class RecordingIndicator extends StatelessWidget {
           const SizedBox(width: 10),
           Text(
             timeStr,
-            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+                color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
           ),
           const Spacer(),
           GestureDetector(

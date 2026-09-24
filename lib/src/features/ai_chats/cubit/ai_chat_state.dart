@@ -5,7 +5,6 @@ import '../domain/entities/ai_chat_message_entity.dart'; // Import domain entity
 // Ideally, ChatMessage might live in a domain/model layer
 // import '../presentation/view/ai_chats_screen.dart' show ChatMessage;
 
-
 abstract class AIChatState extends Equatable {
   // Keep suggestions accessible in all states
   final List<String> suggestions;
@@ -62,11 +61,11 @@ class AIChatInitial extends AIChatState {
 
 // --- History States ---
 class AIChatHistoryLoading extends AIChatState {
-  const AIChatHistoryLoading({
-    super.suggestions,
-    super.messages, 
-    super.isTyping = true // History loading implies typing/loading state
-  });
+  const AIChatHistoryLoading(
+      {super.suggestions,
+      super.messages,
+      super.isTyping = true // History loading implies typing/loading state
+      });
 
   @override
   AIChatHistoryLoading copyWith({
@@ -85,11 +84,11 @@ class AIChatHistoryLoading extends AIChatState {
 class AIChatHistorySuccess extends AIChatState {
   // History is now part of the base 'messages' field
   // final List<ChatMessageEntity> history;
-  const AIChatHistorySuccess({
-    required super.messages, // Require messages here
-    super.suggestions,
-    super.isTyping // History loaded, not typing
-  });
+  const AIChatHistorySuccess(
+      {required super.messages, // Require messages here
+      super.suggestions,
+      super.isTyping // History loaded, not typing
+      });
 
   @override
   List<Object?> get props => [suggestions, messages, isTyping];
@@ -139,13 +138,13 @@ class AIChatHistoryError extends AIChatState {
 // --- New Message States ---
 // Renamed AIChatLoading to AIChatMessageLoading
 class AIChatMessageLoading extends AIChatState {
-   // Keep track of messages known to the cubit IF needed for context, but UI manages the list
-   // final List<ChatMessageEntity> messages; 
-  const AIChatMessageLoading({
-    required super.messages, // Require current messages
-    super.suggestions,
-    super.isTyping = true // Message is being processed, so typing
-  });
+  // Keep track of messages known to the cubit IF needed for context, but UI manages the list
+  // final List<ChatMessageEntity> messages;
+  const AIChatMessageLoading(
+      {required super.messages, // Require current messages
+      super.suggestions,
+      super.isTyping = true // Message is being processed, so typing
+      });
 
   @override
   AIChatMessageLoading copyWith({
@@ -164,17 +163,17 @@ class AIChatMessageLoading extends AIChatState {
 // Renamed AIChatSuccess to AIChatMessageSuccess
 class AIChatMessageSuccess extends AIChatState {
   // The new message is implicitly the last one in the 'messages' list
-  // final ChatMessageEntity newAiMessage; 
-  const AIChatMessageSuccess({
-    required super.messages, // Require updated messages list
-    super.suggestions,
-    super.isTyping // Message received, not typing
-  });
+  // final ChatMessageEntity newAiMessage;
+  const AIChatMessageSuccess(
+      {required super.messages, // Require updated messages list
+      super.suggestions,
+      super.isTyping // Message received, not typing
+      });
 
   @override
   List<Object?> get props => [suggestions, messages, isTyping];
 
-   @override
+  @override
   AIChatMessageSuccess copyWith({
     List<String>? suggestions,
     List<ChatMessageEntity>? messages,
@@ -220,6 +219,6 @@ class AIChatMessageError extends AIChatState {
 }
 
 // --- Deprecated States (to be removed or refactored if logic depends on them) ---
-// class AIChatLoading extends AIChatState { ... } 
+// class AIChatLoading extends AIChatState { ... }
 // class AIChatSuccess extends AIChatState { ... }
-// class AIChatError extends AIChatState { ... } 
+// class AIChatError extends AIChatState { ... }

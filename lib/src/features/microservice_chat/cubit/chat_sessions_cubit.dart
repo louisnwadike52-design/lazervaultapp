@@ -101,7 +101,8 @@ class ChatSessionsCubit extends Cubit<ChatSessionsState> {
     await _manager.switchTo(sessionId);
   }
 
-  Future<void> rename({required String sessionId, required String title}) async {
+  Future<void> rename(
+      {required String sessionId, required String title}) async {
     try {
       await _manager.rename(sessionId: sessionId, title: title);
     } catch (e) {

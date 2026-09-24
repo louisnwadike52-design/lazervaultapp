@@ -95,8 +95,8 @@ class ChatReplyQuoteBlock extends StatelessWidget {
         color: Colors.white.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(8),
         border: Border(
-          left: BorderSide(
-              color: Colors.white.withValues(alpha: 0.7), width: 3),
+          left:
+              BorderSide(color: Colors.white.withValues(alpha: 0.7), width: 3),
         ),
       ),
       child: Column(
@@ -183,8 +183,8 @@ class ChatReplyPreviewBar extends StatelessWidget {
             onTap: onCancel,
             child: const Padding(
               padding: EdgeInsets.all(6),
-              child: Icon(Icons.close_rounded,
-                  size: 18, color: Color(0xFF9CA3AF)),
+              child:
+                  Icon(Icons.close_rounded, size: 18, color: Color(0xFF9CA3AF)),
             ),
           ),
         ],

@@ -39,7 +39,8 @@ class ConfirmationDataEntity extends Equatable {
   });
 
   @override
-  List<Object?> get props => [actionType, amount, currency, recipientName, recipientId, description];
+  List<Object?> get props =>
+      [actionType, amount, currency, recipientName, recipientId, description];
 }
 
 class ChatMessageEntity extends Equatable {
@@ -66,12 +67,19 @@ class ChatMessageEntity extends Equatable {
   // ChatReceiptCardV2 / ChatReceiptCardV2List so batch receipts render in the
   // per-service chat the same way the general chat renders them.
   final dynamic receiptCard;
+
   /// Scannable QR payload from `metadata.qr_card` — see ChatQrCard.
   final Map<String, dynamic>? qrCard;
 
   /// `recipient_card` — the confirmed transfer counterparty, rendered as an
   /// avatar card rather than a line of prose. See ChatRecipientCard.
   final Map<String, dynamic>? recipientCard;
+
+  /// `analytics_card` — period totals plus chart series for a "how am I doing?"
+  /// or "show my transactions" answer. See ChatAnalyticsCard. Carries numbers
+  /// and labels only; the palette is the app's, because a backend that ships
+  /// hex codes fights dark mode from the wrong side of the wire.
+  final Map<String, dynamic>? analyticsCard;
   // PinPromptIntent payload (chat_services_shared/pin_prompt.py) — drives the
   // inline ChatPinPromptCard so a chat-driven money move collects the PIN in
   // the chat thread instead of telling the user to open a screen.
@@ -97,6 +105,7 @@ class ChatMessageEntity extends Equatable {
     this.transcript,
     this.receiptData,
     this.receiptCard,
+    this.analyticsCard,
     this.qrCard,
     this.recipientCard,
     this.pinPrompt,
@@ -131,6 +140,7 @@ class ChatMessageEntity extends Equatable {
     dynamic receiptCard,
     Map<String, dynamic>? qrCard,
     Map<String, dynamic>? recipientCard,
+    Map<String, dynamic>? analyticsCard,
     Map<String, dynamic>? pinPrompt,
   }) {
     return ChatMessageEntity(
@@ -155,6 +165,7 @@ class ChatMessageEntity extends Equatable {
       receiptCard: receiptCard ?? this.receiptCard,
       qrCard: qrCard ?? this.qrCard,
       recipientCard: recipientCard ?? this.recipientCard,
+      analyticsCard: analyticsCard ?? this.analyticsCard,
       pinPrompt: clearPinPrompt ? null : (pinPrompt ?? this.pinPrompt),
     );
   }
@@ -175,6 +186,7 @@ class ChatMessageEntity extends Equatable {
         receiptCard,
         qrCard,
         recipientCard,
+        analyticsCard,
         pinPrompt,
       ];
 }

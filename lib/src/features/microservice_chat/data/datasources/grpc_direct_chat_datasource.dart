@@ -75,10 +75,9 @@ class GrpcDirectChatDataSource implements MicroserviceChatDataSource {
         serviceRoutedTo: response.serviceRoutedTo,
         sessionId: response.sessionId,
         entities: entities,
-        conversationState:
-            response.conversationState.isNotEmpty
-                ? response.conversationState
-                : 'IDLE',
+        conversationState: response.conversationState.isNotEmpty
+            ? response.conversationState
+            : 'IDLE',
       );
     } on GrpcError catch (e) {
       throw _mapGrpcException(e);
@@ -161,9 +160,8 @@ class GrpcDirectChatDataSource implements MicroserviceChatDataSource {
       return ChatHistoryResponse(
         history: messages,
         totalCount: response.total,
-        sessionId: response.sessionId.isNotEmpty
-            ? response.sessionId
-            : sessionId,
+        sessionId:
+            response.sessionId.isNotEmpty ? response.sessionId : sessionId,
       );
     } on GrpcError catch (e) {
       throw _mapGrpcException(e);
@@ -221,8 +219,7 @@ class GrpcDirectChatDataSource implements MicroserviceChatDataSource {
       case StatusCode.cancelled:
         return Exception('Request was cancelled.');
       case StatusCode.invalidArgument:
-        return Exception(
-            e.message ?? 'Invalid request.');
+        return Exception(e.message ?? 'Invalid request.');
       default:
         return Exception(
             'Chat error (${e.code}): ${e.message ?? 'Unknown error'}');

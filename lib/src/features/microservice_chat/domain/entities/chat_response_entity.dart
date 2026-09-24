@@ -16,5 +16,6 @@ class ChatResponseEntity extends Equatable {
   });
 
   @override
-  List<Object?> get props => [response, entities, serviceRoutedTo, conversationState];
+  List<Object?> get props =>
+      [response, entities, serviceRoutedTo, conversationState];
 }

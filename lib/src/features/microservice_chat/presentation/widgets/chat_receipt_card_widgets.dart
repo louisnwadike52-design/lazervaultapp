@@ -189,14 +189,17 @@ class _ChatReceiptCardState extends State<ChatReceiptCard> {
     if (!mounted) return;
 
     // If receiptUrl is provided, validate it by checking if it's accessible
-    if (widget.receipt.receiptUrl != null && widget.receipt.receiptUrl!.isNotEmpty) {
+    if (widget.receipt.receiptUrl != null &&
+        widget.receipt.receiptUrl!.isNotEmpty) {
       try {
-        final response = await http.head(
-          Uri.parse(widget.receipt.receiptUrl!),
-        ).timeout(
-          const Duration(seconds: 5),
-          onTimeout: () => http.Response('Timeout', 408),
-        );
+        final response = await http
+            .head(
+              Uri.parse(widget.receipt.receiptUrl!),
+            )
+            .timeout(
+              const Duration(seconds: 5),
+              onTimeout: () => http.Response('Timeout', 408),
+            );
 
         if (mounted) {
           if (response.statusCode == 200) {
@@ -285,245 +288,247 @@ class _ChatReceiptCardState extends State<ChatReceiptCard> {
     return GestureDetector(
       onTap: () => _openFullScreenReceipt(context),
       child: Builder(builder: (context) {
-      // THREE states, not two.
-      //
-      // This card split on isSuccess alone, so anything that was not a success —
-      // including PENDING — was drawn with the failure icon and red colours. A
-      // transfer that had been accepted and was simply still settling looked like it
-      // had failed, directly under an agent message saying it succeeded.
-      //
-      // Pending is in-progress, not an error: amber, a clock, and wording that says it
-      // is still on its way.
-      // Single source of truth on the model, so the card and the PDF cannot disagree
-      // about what a status means. It also treats an EMPTY status as in-progress rather
-      // than failed — the state a transfer is in before its first status update.
-      final _pending = r.isPending;
-      final Color _tone = r.isSuccess
-          ? const Color(0xFF10B981)
-          : _pending
-              ? const Color(0xFFFB923C)
-              : const Color(0xFFEF4444);
-      final IconData _icon = r.isSuccess
-          ? Icons.check
-          : _pending
-              ? Icons.schedule
-              : Icons.close;
-      return Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(top: 8),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A1A2E),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _tone.withValues(alpha: 0.3)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with status
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: _tone.withValues(alpha: 0.1),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+        // THREE states, not two.
+        //
+        // This card split on isSuccess alone, so anything that was not a success —
+        // including PENDING — was drawn with the failure icon and red colours. A
+        // transfer that had been accepted and was simply still settling looked like it
+        // had failed, directly under an agent message saying it succeeded.
+        //
+        // Pending is in-progress, not an error: amber, a clock, and wording that says it
+        // is still on its way.
+        // Single source of truth on the model, so the card and the PDF cannot disagree
+        // about what a status means. It also treats an EMPTY status as in-progress rather
+        // than failed — the state a transfer is in before its first status update.
+        final _pending = r.isPending;
+        final Color _tone = r.isSuccess
+            ? const Color(0xFF10B981)
+            : _pending
+                ? const Color(0xFFFB923C)
+                : const Color(0xFFEF4444);
+        final IconData _icon = r.isSuccess
+            ? Icons.check
+            : _pending
+                ? Icons.schedule
+                : Icons.close;
+        return Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(top: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A2E),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _tone.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with status
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: _tone.withValues(alpha: 0.1),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
                 ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: _tone.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      _icon,
-                      color: _tone,
-                      size: 18,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          r.isSuccess
-                              ? '${r.transferTypeDisplay} Successful'
-                              : _pending
-                                  // "Bank Transfer pending" read as a failure. Say what
-                                  // is happening instead of naming a raw status token.
-                                  ? '${r.transferTypeDisplay} in progress'
-                                  : '${r.transferTypeDisplay} ${r.status}',
-                          style: TextStyle(
-                            color: _tone,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          r.transferTypeDisplay,
-                          style: const TextStyle(
-                            color: Color(0xFF9CA3AF),
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.receipt_long,
-                    color: Color(0xFF9CA3AF),
-                    size: 20,
-                  ),
-                ],
-              ),
-            ),
-
-            // Amount
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: Text(
-                '${r.currencySymbol} ${r.amountDisplay}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.5,
-                ),
-              ),
-            ),
-
-            // Recipient
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-              child: Row(
-                children: [
-                  const Icon(Icons.arrow_forward, color: Color(0xFF9CA3AF), size: 14),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      r.recipientName,
-                      style: const TextStyle(
-                        color: Color(0xFFD1D5DB),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Reference + timestamp
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      r.reference,
-                      style: const TextStyle(
-                        color: Color(0xFF6B7280),
-                        fontSize: 11,
-                        fontFamily: 'monospace',
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    DateFormat('HH:mm').format(r.timestamp.toLocal()),
-                    style: const TextStyle(
-                      color: Color(0xFF6B7280),
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Balance before → after.
-            //
-            // The card carried neither: new_balance was parsed and then never
-            // rendered, so the only place a balance appeared was the markdown
-            // table the agent used to print underneath — which is exactly the
-            // duplicate this card replaces. Showing both ends makes the movement
-            // checkable on the card itself.
-            //
-            // The "before" row is omitted when the backend could not derive it
-            // exactly (it needs the fee); a figure wrong by the fee reads as
-            // missing money.
-            if (r.newBalanceDisplay.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: Column(
+                child: Row(
                   children: [
-                    if (r.balanceBeforeDisplay.isNotEmpty)
-                      _balanceRow(
-                        'Balance before',
-                        '${r.balanceBeforeDisplay} ${r.currency}',
-                        muted: true,
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: _tone.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
                       ),
-                    if (r.balanceBeforeDisplay.isNotEmpty)
-                      const SizedBox(height: 4),
-                    _balanceRow(
-                      'Balance after',
-                      '${r.newBalanceDisplay} ${r.currency}',
+                      child: Icon(
+                        _icon,
+                        color: _tone,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            r.isSuccess
+                                ? '${r.transferTypeDisplay} Successful'
+                                : _pending
+                                    // "Bank Transfer pending" read as a failure. Say what
+                                    // is happening instead of naming a raw status token.
+                                    ? '${r.transferTypeDisplay} in progress'
+                                    : '${r.transferTypeDisplay} ${r.status}',
+                            style: TextStyle(
+                              color: _tone,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            r.transferTypeDisplay,
+                            style: const TextStyle(
+                              color: Color(0xFF9CA3AF),
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.receipt_long,
+                      color: Color(0xFF9CA3AF),
+                      size: 20,
                     ),
                   ],
                 ),
               ),
-            ],
 
-            // Tap to view / Loading indicator
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: const BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: Color(0xFF2D2D3D)),
+              // Amount
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                child: Text(
+                  '${r.currencySymbol} ${r.amountDisplay}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
+                  ),
                 ),
               ),
-              child: showError
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.warning_amber_rounded,
-                          color: Color(0xFFF59E0B),
-                          size: 14,
+
+              // Recipient
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                child: Row(
+                  children: [
+                    const Icon(Icons.arrow_forward,
+                        color: Color(0xFF9CA3AF), size: 14),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        r.recipientName,
+                        style: const TextStyle(
+                          color: Color(0xFFD1D5DB),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
-                        const SizedBox(width: 6),
-                        Text(
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Reference + timestamp
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        r.reference,
+                        style: const TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontSize: 11,
+                          fontFamily: 'monospace',
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      DateFormat('HH:mm').format(r.timestamp.toLocal()),
+                      style: const TextStyle(
+                        color: Color(0xFF6B7280),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Balance before → after.
+              //
+              // The card carried neither: new_balance was parsed and then never
+              // rendered, so the only place a balance appeared was the markdown
+              // table the agent used to print underneath — which is exactly the
+              // duplicate this card replaces. Showing both ends makes the movement
+              // checkable on the card itself.
+              //
+              // The "before" row is omitted when the backend could not derive it
+              // exactly (it needs the fee); a figure wrong by the fee reads as
+              // missing money.
+              if (r.newBalanceDisplay.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: Column(
+                    children: [
+                      if (r.balanceBeforeDisplay.isNotEmpty)
+                        _balanceRow(
+                          'Balance before',
+                          '${r.balanceBeforeDisplay} ${r.currency}',
+                          muted: true,
+                        ),
+                      if (r.balanceBeforeDisplay.isNotEmpty)
+                        const SizedBox(height: 4),
+                      _balanceRow(
+                        'Balance after',
+                        '${r.newBalanceDisplay} ${r.currency}',
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              // Tap to view / Loading indicator
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: Color(0xFF2D2D3D)),
+                  ),
+                ),
+                child: showError
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Color(0xFFF59E0B),
+                            size: 14,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Tap to view receipt',
+                            style: TextStyle(
+                              color: Color(0xFFF59E0B),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      )
+                    : const Center(
+                        child: Text(
                           'Tap to view receipt',
                           style: TextStyle(
-                            color: Color(0xFFF59E0B),
+                            color: Color(0xFF3B82F6),
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ],
-                    )
-                  : const Center(
-                      child: Text(
-                        'Tap to view receipt',
-                        style: TextStyle(
-                          color: Color(0xFF3B82F6),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
                       ),
-                    ),
-            ),
-          ],
-        ),
-      );
+              ),
+            ],
+          ),
+        );
       }),
     );
   }

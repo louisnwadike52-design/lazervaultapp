@@ -66,6 +66,23 @@ class AIChatCubit extends Cubit<AIChatState> {
     return decoded is Map ? Map<String, dynamic>.from(decoded) : null;
   }
 
+  /// Decode the `_analytics_card` passthrough — the chart series behind a
+  /// "how am I doing?" answer. Same channel and the same removal discipline as
+  /// [_decodeQrCard], so the raw payload never leaks into displayed entities.
+  Map<String, dynamic>? _decodeAnalyticsCard(Map<String, String>? entitiesMap) {
+    if (entitiesMap == null || !entitiesMap.containsKey('_analytics_card')) {
+      return null;
+    }
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(entitiesMap['_analytics_card']!);
+    } catch (_) {
+      decoded = null;
+    }
+    entitiesMap.remove('_analytics_card');
+    return decoded is Map ? Map<String, dynamic>.from(decoded) : null;
+  }
+
   // Internal state to hold the current messages
   List<ChatMessageEntity> _currentMessages = [];
 
@@ -112,14 +129,14 @@ class AIChatCubit extends Cubit<AIChatState> {
 
   // Load initial message and suggestions
   void initializeChat() {
-     // Load the persisted chatbot language so every request carries it.
-     ChatLanguagePreference.getLanguage().then((lang) {
-       _language = lang;
-     });
-     if (state is! AIChatInitial) {
-       if (isClosed) return;
-       emit(const AIChatInitial());
-     }
+    // Load the persisted chatbot language so every request carries it.
+    ChatLanguagePreference.getLanguage().then((lang) {
+      _language = lang;
+    });
+    if (state is! AIChatInitial) {
+      if (isClosed) return;
+      emit(const AIChatInitial());
+    }
   }
 
   /// Persist and apply the user-selected chatbot response language.
@@ -232,7 +249,9 @@ class AIChatCubit extends Cubit<AIChatState> {
     AppActivityBus.instance.ping();
 
     // Mask PIN-like input (4-6 digits) in the displayed message for security
-    final displayText = RegExp(r'^\d{4,6}$').hasMatch(text.trim()) ? 'Sensitive data ****' : text;
+    final displayText = RegExp(r'^\d{4,6}$').hasMatch(text.trim())
+        ? 'Sensitive data ****'
+        : text;
 
     // Add user message to the internal list immediately for responsiveness
     final userMessageEntity = ChatMessageEntity(
@@ -270,7 +289,9 @@ class AIChatCubit extends Cubit<AIChatState> {
       (failure) {
         _isSending = false;
         // Emit error state, keeping existing messages, set isTyping=false
-        emit(AIChatMessageError(errorMessage: failure.message, messages: List.from(_currentMessages)));
+        emit(AIChatMessageError(
+            errorMessage: failure.message,
+            messages: List.from(_currentMessages)));
       },
       (response) {
         _isSending = false;
@@ -278,12 +299,14 @@ class AIChatCubit extends Cubit<AIChatState> {
           // Parse action buttons from proto response
           List<ActionButtonEntity>? actionButtons;
           if (response.actionButtons.isNotEmpty) {
-            actionButtons = response.actionButtons.map((btn) => ActionButtonEntity(
-              label: btn.label,
-              actionType: btn.actionType,
-              payload: btn.payload,
-              icon: btn.icon.isNotEmpty ? btn.icon : null,
-            )).toList();
+            actionButtons = response.actionButtons
+                .map((btn) => ActionButtonEntity(
+                      label: btn.label,
+                      actionType: btn.actionType,
+                      payload: btn.payload,
+                      icon: btn.icon.isNotEmpty ? btn.icon : null,
+                    ))
+                .toList();
           }
 
           // Parse confirmation data from proto response
@@ -297,7 +320,9 @@ class AIChatCubit extends Cubit<AIChatState> {
               recipientName: cd.recipientName,
               recipientId: cd.recipientId.isNotEmpty ? cd.recipientId : null,
               description: cd.description.isNotEmpty ? cd.description : null,
-              extra: cd.extra.isNotEmpty ? Map<String, String>.from(cd.extra) : null,
+              extra: cd.extra.isNotEmpty
+                  ? Map<String, String>.from(cd.extra)
+                  : null,
             );
           }
 
@@ -321,7 +346,8 @@ class AIChatCubit extends Cubit<AIChatState> {
               : null;
           if (entitiesMap != null && entitiesMap.containsKey('_receipt_data')) {
             try {
-              receiptData = jsonDecode(entitiesMap['_receipt_data']!) as Map<String, dynamic>;
+              receiptData = jsonDecode(entitiesMap['_receipt_data']!)
+                  as Map<String, dynamic>;
             } catch (_) {
               // Ignore malformed receipt data
             }
@@ -333,7 +359,8 @@ class AIChatCubit extends Cubit<AIChatState> {
           Map<String, dynamic>? pinPrompt;
           if (entitiesMap != null && entitiesMap.containsKey('_pin_prompt')) {
             try {
-              pinPrompt = jsonDecode(entitiesMap['_pin_prompt']!) as Map<String, dynamic>;
+              pinPrompt = jsonDecode(entitiesMap['_pin_prompt']!)
+                  as Map<String, dynamic>;
             } catch (_) {
               // Ignore malformed pin prompt
             }
@@ -345,6 +372,7 @@ class AIChatCubit extends Cubit<AIChatState> {
           final dynamic receiptCard = _decodeReceiptCard(entitiesMap);
           final qrCard = _decodeQrCard(entitiesMap);
           final recipientCard = _decodeRecipientCard(entitiesMap);
+          final analyticsCard = _decodeAnalyticsCard(entitiesMap);
 
           final aiMessageEntity = ChatMessageEntity(
             text: response.response,
@@ -352,23 +380,31 @@ class AIChatCubit extends Cubit<AIChatState> {
             timestamp: DateTime.now(),
             type: messageType,
             intent: response.intent.isNotEmpty ? response.intent : null,
-            entities: entitiesMap != null && entitiesMap.isNotEmpty ? entitiesMap : null,
+            entities: entitiesMap != null && entitiesMap.isNotEmpty
+                ? entitiesMap
+                : null,
             requiresConfirmation: response.requiresConfirmation,
             actionButtons: actionButtons,
             confirmationData: confirmationData,
-            conversationState: response.conversationState.isNotEmpty ? response.conversationState : null,
-            sessionId: response.sessionId.isNotEmpty ? response.sessionId : null,
+            conversationState: response.conversationState.isNotEmpty
+                ? response.conversationState
+                : null,
+            sessionId:
+                response.sessionId.isNotEmpty ? response.sessionId : null,
             receiptData: receiptData,
             receiptCard: receiptCard,
             qrCard: qrCard,
             recipientCard: recipientCard,
+            analyticsCard: analyticsCard,
             pinPrompt: pinPrompt,
           );
           _currentMessages.add(aiMessageEntity);
           emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));
         } else {
           emit(AIChatMessageError(
-              errorMessage: response.msg.isNotEmpty ? response.msg : "AI service returned an error.",
+              errorMessage: response.msg.isNotEmpty
+                  ? response.msg
+                  : "AI service returned an error.",
               messages: List.from(_currentMessages)));
         }
       },
@@ -413,12 +449,16 @@ class AIChatCubit extends Cubit<AIChatState> {
     if (isClosed) return;
     result.fold(
       (failure) {
-        emit(AIChatMessageError(errorMessage: failure.message, messages: List.from(_currentMessages)));
+        emit(AIChatMessageError(
+            errorMessage: failure.message,
+            messages: List.from(_currentMessages)));
       },
       (response) {
         if (!response.success) {
           emit(AIChatMessageError(
-              errorMessage: response.msg.isNotEmpty ? response.msg : 'Could not complete that.',
+              errorMessage: response.msg.isNotEmpty
+                  ? response.msg
+                  : 'Could not complete that.',
               messages: List.from(_currentMessages)));
           return;
         }
@@ -428,32 +468,40 @@ class AIChatCubit extends Cubit<AIChatState> {
         Map<String, dynamic>? receiptData;
         if (entitiesMap != null && entitiesMap.containsKey('_receipt_data')) {
           try {
-            receiptData = jsonDecode(entitiesMap['_receipt_data']!) as Map<String, dynamic>;
+            receiptData = jsonDecode(entitiesMap['_receipt_data']!)
+                as Map<String, dynamic>;
           } catch (_) {}
           entitiesMap.remove('_receipt_data');
         }
         Map<String, dynamic>? pinPrompt;
         if (entitiesMap != null && entitiesMap.containsKey('_pin_prompt')) {
           try {
-            pinPrompt = jsonDecode(entitiesMap['_pin_prompt']!) as Map<String, dynamic>;
+            pinPrompt =
+                jsonDecode(entitiesMap['_pin_prompt']!) as Map<String, dynamic>;
           } catch (_) {}
           entitiesMap.remove('_pin_prompt');
         }
         final dynamic receiptCard = _decodeReceiptCard(entitiesMap);
         final qrCard = _decodeQrCard(entitiesMap);
         final recipientCard = _decodeRecipientCard(entitiesMap);
+        final analyticsCard = _decodeAnalyticsCard(entitiesMap);
         _currentMessages.add(ChatMessageEntity(
           text: response.response,
           isUser: false,
           timestamp: DateTime.now(),
           intent: response.intent.isNotEmpty ? response.intent : null,
-          entities: entitiesMap != null && entitiesMap.isNotEmpty ? entitiesMap : null,
-          conversationState: response.conversationState.isNotEmpty ? response.conversationState : null,
+          entities: entitiesMap != null && entitiesMap.isNotEmpty
+              ? entitiesMap
+              : null,
+          conversationState: response.conversationState.isNotEmpty
+              ? response.conversationState
+              : null,
           sessionId: response.sessionId.isNotEmpty ? response.sessionId : null,
           receiptData: receiptData,
           receiptCard: receiptCard,
           qrCard: qrCard,
           recipientCard: recipientCard,
+          analyticsCard: analyticsCard,
           pinPrompt: pinPrompt,
         ));
         emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));
@@ -491,7 +539,8 @@ class AIChatCubit extends Cubit<AIChatState> {
       final maxMB = maxSize ~/ (1024 * 1024);
       if (isClosed) return;
       emit(AIChatMessageError(
-        errorMessage: 'File is too large (max ${maxMB}MB). Please choose a smaller file.',
+        errorMessage:
+            'File is too large (max ${maxMB}MB). Please choose a smaller file.',
         messages: List.from(_currentMessages),
       ));
       return;
@@ -561,7 +610,8 @@ class AIChatCubit extends Cubit<AIChatState> {
           Map<String, dynamic>? mediaReceiptData;
           if (response.entities.containsKey('_receipt_data')) {
             try {
-              mediaReceiptData = jsonDecode(response.entities['_receipt_data']!) as Map<String, dynamic>;
+              mediaReceiptData = jsonDecode(response.entities['_receipt_data']!)
+                  as Map<String, dynamic>;
             } catch (_) {}
           }
           final dynamic mediaReceiptCard =
@@ -571,7 +621,8 @@ class AIChatCubit extends Cubit<AIChatState> {
             text: response.response,
             isUser: false,
             timestamp: DateTime.now(),
-            sessionId: response.sessionId.isNotEmpty ? response.sessionId : null,
+            sessionId:
+                response.sessionId.isNotEmpty ? response.sessionId : null,
             receiptData: mediaReceiptData,
             receiptCard: mediaReceiptCard,
           );
@@ -579,7 +630,9 @@ class AIChatCubit extends Cubit<AIChatState> {
           emit(AIChatMessageSuccess(messages: List.from(_currentMessages)));
         } else {
           emit(AIChatMessageError(
-            errorMessage: response.msg.isNotEmpty ? response.msg : 'AI service returned an error.',
+            errorMessage: response.msg.isNotEmpty
+                ? response.msg
+                : 'AI service returned an error.',
             messages: List.from(_currentMessages),
           ));
         }
@@ -650,8 +703,9 @@ class AIChatCubit extends Cubit<AIChatState> {
 
   /// Notify cubit that settings changed. The actual values are persisted locally
   /// via SharedPreferences and read by the datasource on the next API call.
-  void updateSettings({required String responseStyle, required bool emojiUsage}) {
+  void updateSettings(
+      {required String responseStyle, required bool emojiUsage}) {
     // No-op: settings are read from SharedPreferences by HttpAiChatDataSource.
     // This method exists so the UI can signal the cubit if needed in the future.
   }
-} 
+}

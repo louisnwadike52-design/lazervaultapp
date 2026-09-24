@@ -31,7 +31,8 @@ abstract class SendGeneralChatMessageUseCase {
   });
 }
 
-class SendGeneralChatMessageUseCaseImpl implements SendGeneralChatMessageUseCase {
+class SendGeneralChatMessageUseCaseImpl
+    implements SendGeneralChatMessageUseCase {
   final GeneralChatRepository repository;
 
   SendGeneralChatMessageUseCaseImpl({required this.repository});

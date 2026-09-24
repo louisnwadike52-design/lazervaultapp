@@ -6,18 +6,21 @@ import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'http_microservice_chat_datasource.dart';
 
 abstract class WebSocketMicroserviceChatDataSource {
-  Future<void> connect(String sessionId, String accessToken, String userId, String language, String sourceContext);
+  Future<void> connect(String sessionId, String accessToken, String userId,
+      String language, String sourceContext);
   Future<ChatResponse> sendMessage(String message);
   Stream<ChatResponse> get messageStream;
   Future<void> disconnect();
   bool get isConnected;
 }
 
-class WebSocketMicroserviceChatDataSourceImpl implements WebSocketMicroserviceChatDataSource {
+class WebSocketMicroserviceChatDataSourceImpl
+    implements WebSocketMicroserviceChatDataSource {
   final GrpcCallOptionsHelper callOptionsHelper;
   final String baseUrl;
   WebSocketChannel? _channel;
-  final StreamController<ChatResponse> _messageController = StreamController<ChatResponse>.broadcast();
+  final StreamController<ChatResponse> _messageController =
+      StreamController<ChatResponse>.broadcast();
   bool _isConnected = false;
 
   WebSocketMicroserviceChatDataSourceImpl({

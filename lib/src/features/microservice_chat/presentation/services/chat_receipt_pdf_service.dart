@@ -114,8 +114,8 @@ class ChatReceiptPdfService {
         final label = k
             .toString()
             .split('_')
-            .map((w) =>
-                w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+            .map(
+                (w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
             .join(' ');
         extraRows.add(MapEntry(label, v.toString()));
       });
@@ -149,8 +149,8 @@ class ChatReceiptPdfService {
                       if (timestamp.isNotEmpty) ...[
                         pw.SizedBox(height: 4),
                         pw.Text(timestamp,
-                            style: _style(
-                                fontSize: 11, color: PdfColors.grey600)),
+                            style:
+                                _style(fontSize: 11, color: PdfColors.grey600)),
                       ],
                     ],
                   ),
@@ -176,17 +176,14 @@ class ChatReceiptPdfService {
                           padding: const pw.EdgeInsets.symmetric(
                               horizontal: 12, vertical: 4),
                           decoration: pw.BoxDecoration(
-                            color: PdfColor(
-                                statusColor.red, statusColor.green,
+                            color: PdfColor(statusColor.red, statusColor.green,
                                 statusColor.blue, 0.12),
                             borderRadius: pw.BorderRadius.circular(12),
                           ),
                           child: pw.Text(
                             _badge(status),
                             style: _style(
-                                fontSize: 10,
-                                isBold: true,
-                                color: statusColor),
+                                fontSize: 10, isBold: true, color: statusColor),
                           ),
                         ),
                       ],
@@ -227,8 +224,7 @@ class ChatReceiptPdfService {
                       _detailRow('Total', '$total $currency', isBold: true),
                       pw.SizedBox(height: 4),
                     ],
-                    if (txType.isNotEmpty)
-                      _detailRow('Type', _badge(txType)),
+                    if (txType.isNotEmpty) _detailRow('Type', _badge(txType)),
                     if (reference.isNotEmpty)
                       _detailRow('Reference', reference),
                     if (timestamp.isNotEmpty) _detailRow('Date', timestamp),
@@ -248,8 +244,7 @@ class ChatReceiptPdfService {
               ),
               pw.SizedBox(height: 4),
               pw.Center(
-                child: pw.Text(
-                    'This is an automatically generated receipt.',
+                child: pw.Text('This is an automatically generated receipt.',
                     style: _style(fontSize: 9, color: PdfColors.grey500)),
               ),
             ],
@@ -269,8 +264,7 @@ class ChatReceiptPdfService {
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text(label,
-              style: _style(fontSize: 11, color: PdfColors.grey700)),
+          pw.Text(label, style: _style(fontSize: 11, color: PdfColors.grey700)),
           pw.SizedBox(width: 24),
           pw.Expanded(
             child: pw.Text(

@@ -23,4 +23,4 @@ class GetAIChatHistoryUseCase {
       offset: offset,
     );
   }
-} 
+}

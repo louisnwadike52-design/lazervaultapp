@@ -36,11 +36,11 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/c
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_receipt_card_v2.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_qr_card.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/chat_analytics_card.dart';
 import '../../cubit/ai_chat_cubit.dart';
 import '../../cubit/ai_chat_state.dart';
 import '../../domain/entities/ai_chat_message_entity.dart';
 part 'ai_chat_content_widgets.dart';
-
 
 class AiChatContent extends StatefulWidget {
   /// The dashboard's active bottom-nav index. When it becomes [chatTabIndex]
@@ -58,7 +58,8 @@ class AiChatContent extends StatefulWidget {
   State<AiChatContent> createState() => _AiChatContentState();
 }
 
-class _AiChatContentState extends State<AiChatContent> with TickerProviderStateMixin {
+class _AiChatContentState extends State<AiChatContent>
+    with TickerProviderStateMixin {
   // --- State variables ---
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -202,7 +203,9 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   Future<void> _loadHistory() async {
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is AuthenticationSuccess) {
-      context.read<AIChatCubit>().loadChatHistory(accessToken: authState.profile.session.accessToken);
+      context
+          .read<AIChatCubit>()
+          .loadChatHistory(accessToken: authState.profile.session.accessToken);
     }
   }
 
@@ -301,7 +304,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     super.dispose();
   }
 
-  // --- Methods --- 
+  // --- Methods ---
 
   // REMOVED - Initial suggestions shown based on state.messages in builder
   // void _showInitialSuggestions() { ... }
@@ -355,11 +358,13 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     final accessToken = authState.profile.session.accessToken;
 
     // Call cubit method
-    context.read<AIChatCubit>().sendMessage(messageText, accessToken: accessToken);
+    context
+        .read<AIChatCubit>()
+        .sendMessage(messageText, accessToken: accessToken);
 
     // Set attaching state back to false if an image was sent
     if (image != null && mounted) {
-       setState(() => _isAttaching = false);
+      setState(() => _isAttaching = false);
     }
   }
 
@@ -602,12 +607,12 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       final authState = context.read<AuthenticationCubit>().state;
       if (authState is! AuthenticationSuccess) return;
       context.read<AIChatCubit>().sendMediaMessage(
-        mediaType: 'voice',
-        localFilePath: path,
-        mimeType: 'audio/mp4',
-        accessToken: authState.profile.session.accessToken,
-        audioDurationMs: durationMs,
-      );
+            mediaType: 'voice',
+            localFilePath: path,
+            mimeType: 'audio/mp4',
+            accessToken: authState.profile.session.accessToken,
+            audioDurationMs: durationMs,
+          );
       _scrollToBottom(isDelayed: true);
     }
   }
@@ -671,8 +676,13 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     Get.dialog(
       AlertDialog(
         backgroundColor: InvoiceThemeColors.secondaryBackground,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: Text('Clear Chat', style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Text('Clear Chat',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600)),
         content: Text(
           'This will clear your entire conversation history. This action cannot be undone.',
           style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
@@ -680,7 +690,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('Cancel', style: TextStyle(color: Colors.white70, fontSize: 14.sp)),
+            child: Text('Cancel',
+                style: TextStyle(color: Colors.white70, fontSize: 14.sp)),
           ),
           TextButton(
             onPressed: () async {
@@ -701,7 +712,11 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                     colorText: Colors.white);
               }
             },
-            child: Text('Clear', style: TextStyle(color: Colors.red, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+            child: Text('Clear',
+                style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -715,10 +730,13 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   void _showExportFormatSheet() {
     Widget tile(String label, String sub, IconData icon, ChatExportFormat fmt) {
       return ListTile(
-        leading: Icon(icon, color: InvoiceThemeColors.primaryPurple, size: 22.sp),
+        leading:
+            Icon(icon, color: InvoiceThemeColors.primaryPurple, size: 22.sp),
         title: Text(label,
             style: TextStyle(
-                color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600)),
         subtitle: Text(sub,
             style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
         onTap: () {
@@ -762,8 +780,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                 Icons.grid_on_rounded, ChatExportFormat.csv),
             tile('WhatsApp format', 'Import into a WhatsApp chat',
                 Icons.chat_rounded, ChatExportFormat.whatsapp),
-            tile('Plain text', 'Simple .txt transcript',
-                Icons.notes_rounded, ChatExportFormat.text),
+            tile('Plain text', 'Simple .txt transcript', Icons.notes_rounded,
+                ChatExportFormat.text),
           ],
         ),
       ),
@@ -887,11 +905,12 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           pw.Header(
             level: 0,
             child: pw.Text('Lazervault AI Chat',
-                style: pw.TextStyle(
-                    fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                style:
+                    pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
           ),
           pw.Text('Exported ${fmt.format(DateTime.now())}',
-              style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+              style:
+                  const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
           pw.SizedBox(height: 12),
           ...messages.map((msg) {
             final isUser = msg.isUser;
@@ -939,7 +958,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                 children: [
                   // Handle bar
                   Container(
-                    width: 40.w, height: 4.h,
+                    width: 40.w,
+                    height: 4.h,
                     margin: EdgeInsets.symmetric(vertical: 12.h),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.3),
@@ -951,23 +971,32 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                     padding: EdgeInsets.symmetric(horizontal: 20.w),
                     child: Row(
                       children: [
-                        Icon(Icons.tune_rounded, color: InvoiceThemeColors.primaryPurple, size: 22.sp),
+                        Icon(Icons.tune_rounded,
+                            color: InvoiceThemeColors.primaryPurple,
+                            size: 22.sp),
                         SizedBox(width: 10.w),
-                        Text('AI Settings', style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600)),
+                        Text('AI Settings',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w600)),
                         const Spacer(),
                         GestureDetector(
                           onTap: () => Navigator.of(ctx).pop(),
-                          child: Icon(Icons.close_rounded, color: Colors.white54, size: 22.sp),
+                          child: Icon(Icons.close_rounded,
+                              color: Colors.white54, size: 22.sp),
                         ),
                       ],
                     ),
                   ),
                   SizedBox(height: 8.h),
-                  Divider(color: Colors.white.withValues(alpha: 0.08), height: 1),
+                  Divider(
+                      color: Colors.white.withValues(alpha: 0.08), height: 1),
                   // Settings body
                   Expanded(
                     child: ListView(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20.w, vertical: 16.h),
                       children: [
                         // --- Language ---
                         _settingsLabel('Language'),
@@ -975,13 +1004,16 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                         Text(
                           'The assistant replies in this language and also '
                           'auto-detects the language you type in.',
-                          style: TextStyle(color: Colors.white38, fontSize: 11.sp),
+                          style:
+                              TextStyle(color: Colors.white38, fontSize: 11.sp),
                         ),
                         SizedBox(height: 8.h),
                         _buildChipGroup(
-                          options:
-                              ChatLanguagePreference.supportedLanguages.keys.toList(),
-                          labels: ChatLanguagePreference.supportedLanguages.values
+                          options: ChatLanguagePreference
+                              .supportedLanguages.keys
+                              .toList(),
+                          labels: ChatLanguagePreference
+                              .supportedLanguages.values
                               .toList(),
                           icons: List.filled(
                             ChatLanguagePreference.supportedLanguages.length,
@@ -999,9 +1031,24 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                         _settingsLabel('Response Style'),
                         SizedBox(height: 8.h),
                         _buildChipGroup(
-                          options: const ['concise', 'balanced', 'detailed', 'professional'],
-                          labels: const ['Concise', 'Balanced', 'Detailed', 'Professional'],
-                          icons: const [Icons.short_text_rounded, Icons.balance_rounded, Icons.article_rounded, Icons.business_center_rounded],
+                          options: const [
+                            'concise',
+                            'balanced',
+                            'detailed',
+                            'professional'
+                          ],
+                          labels: const [
+                            'Concise',
+                            'Balanced',
+                            'Detailed',
+                            'Professional'
+                          ],
+                          icons: const [
+                            Icons.short_text_rounded,
+                            Icons.balance_rounded,
+                            Icons.article_rounded,
+                            Icons.business_center_rounded
+                          ],
                           selected: _settings.responseStyle,
                           onSelected: (v) {
                             setModalState(() => _settings.responseStyle = v);
@@ -1016,7 +1063,11 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                         _buildChipGroup(
                           options: const ['small', 'medium', 'large'],
                           labels: const ['Small', 'Medium', 'Large'],
-                          icons: const [Icons.text_fields_rounded, Icons.format_size_rounded, Icons.title_rounded],
+                          icons: const [
+                            Icons.text_fields_rounded,
+                            Icons.format_size_rounded,
+                            Icons.title_rounded
+                          ],
                           selected: _settings.textSize,
                           onSelected: (v) {
                             setModalState(() => _settings.textSize = v);
@@ -1096,7 +1147,9 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                             emojiUsage: _settings.emojiUsage,
                           );
                           if (ctx.mounted) Navigator.of(ctx).pop();
-                          Get.snackbar('Saved', 'AI settings updated',
+                          Get.snackbar(
+                            'Saved',
+                            'AI settings updated',
                             snackPosition: SnackPosition.BOTTOM,
                             backgroundColor: const Color(0xFF1F1F1F),
                             colorText: Colors.white,
@@ -1106,9 +1159,12 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                           backgroundColor: InvoiceThemeColors.primaryPurple,
                           foregroundColor: Colors.white,
                           padding: EdgeInsets.symmetric(vertical: 14.h),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r)),
                         ),
-                        child: Text('Save Settings', style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600)),
+                        child: Text('Save Settings',
+                            style: TextStyle(
+                                fontSize: 15.sp, fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ),
@@ -1131,7 +1187,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       // cards summary cubit (AccountManager.activeAccountDetails is never
       // populated, so it always fell back to the generic line). Pick the active
       // account (else the first) and show its spendable balance in its currency.
-      final summaries = switch (serviceLocator<AccountCardsSummaryCubit>().state) {
+      final summaries =
+          switch (serviceLocator<AccountCardsSummaryCubit>().state) {
         AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
         AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
         _ => const <AccountSummaryEntity>[],
@@ -1144,8 +1201,9 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
         (a) => a.id == activeId,
         orElse: () => summaries.first,
       );
-      final bal =
-          active.availableBalance > 0 ? active.availableBalance : active.balance;
+      final bal = active.availableBalance > 0
+          ? active.availableBalance
+          : active.balance;
       final amount = NumberFormat('#,##0.00').format(bal);
       return 'Preview: Your balance is ${active.currency} $amount';
     } catch (_) {
@@ -1156,7 +1214,11 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   Widget _settingsLabel(String text) {
     return Text(
       text,
-      style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp, fontWeight: FontWeight.w500, letterSpacing: 0.5),
+      style: TextStyle(
+          color: const Color(0xFF9CA3AF),
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.5),
     );
   }
 
@@ -1178,22 +1240,32 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             duration: const Duration(milliseconds: 200),
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
             decoration: BoxDecoration(
-              color: isActive ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.05),
+              color: isActive
+                  ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15)
+                  : Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(10.r),
               border: Border.all(
-                color: isActive ? InvoiceThemeColors.primaryPurple : Colors.white.withValues(alpha: 0.1),
+                color: isActive
+                    ? InvoiceThemeColors.primaryPurple
+                    : Colors.white.withValues(alpha: 0.1),
                 width: isActive ? 1.5 : 1,
               ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icons[i], size: 16.sp, color: isActive ? InvoiceThemeColors.primaryPurple : Colors.white54),
+                Icon(icons[i],
+                    size: 16.sp,
+                    color: isActive
+                        ? InvoiceThemeColors.primaryPurple
+                        : Colors.white54),
                 SizedBox(width: 6.w),
                 Text(
                   labels[i],
                   style: TextStyle(
-                    color: isActive ? InvoiceThemeColors.primaryPurple : Colors.white70,
+                    color: isActive
+                        ? InvoiceThemeColors.primaryPurple
+                        : Colors.white70,
                     fontSize: 13.sp,
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                   ),
@@ -1206,7 +1278,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     );
   }
 
-  Widget _buildSettingsToggle(String title, String subtitle, IconData icon, bool value, ValueChanged<bool> onChanged) {
+  Widget _buildSettingsToggle(String title, String subtitle, IconData icon,
+      bool value, ValueChanged<bool> onChanged) {
     return Padding(
       padding: EdgeInsets.only(bottom: 4.h),
       child: ListTile(
@@ -1219,8 +1292,10 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           ),
           child: Icon(icon, color: Colors.white54, size: 20.sp),
         ),
-        title: Text(title, style: TextStyle(color: Colors.white, fontSize: 14.sp)),
-        subtitle: Text(subtitle, style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+        title:
+            Text(title, style: TextStyle(color: Colors.white, fontSize: 14.sp)),
+        subtitle: Text(subtitle,
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
         trailing: Switch.adaptive(
           value: value,
           onChanged: onChanged,
@@ -1232,7 +1307,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     );
   }
 
-  Widget _buildOptionTile(String title, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildOptionTile(
+      String title, IconData icon, Color color, VoidCallback onTap) {
     return ListTile(
       leading: Container(
         padding: EdgeInsets.all(8.w),
@@ -1242,12 +1318,13 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
         ),
         child: Icon(icon, color: color, size: 20.sp),
       ),
-      title: Text(title, style: TextStyle(color: Colors.white, fontSize: 14.sp)),
+      title:
+          Text(title, style: TextStyle(color: Colors.white, fontSize: 14.sp)),
       onTap: onTap,
     );
   }
 
-  // --- Build methods --- 
+  // --- Build methods ---
 
   // Updated to accept isTyping status
   PreferredSizeWidget _buildAppBar(bool isTyping) {
@@ -1282,7 +1359,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                   width: 1.5,
                 ),
               ),
-              child: Icon(Icons.smart_toy_rounded, color: InvoiceThemeColors.gradientPurple, size: 24.sp),
+              child: Icon(Icons.smart_toy_rounded,
+                  color: InvoiceThemeColors.gradientPurple, size: 24.sp),
             ),
             SizedBox(width: 12.w),
             Column(
@@ -1290,7 +1368,10 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
               children: [
                 Text(
                   'NOVA',
-                  style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600),
                 ),
                 // Pass isTyping down
                 _buildStatusIndicator(isTyping),
@@ -1318,13 +1399,19 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           height: 8.w,
           margin: EdgeInsets.only(right: 4.w),
           decoration: BoxDecoration(
-            color: isTyping ? InvoiceThemeColors.primaryPurple : InvoiceThemeColors.successGreen,
+            color: isTyping
+                ? InvoiceThemeColors.primaryPurple
+                : InvoiceThemeColors.successGreen,
             shape: BoxShape.circle,
           ),
         ),
         Text(
           isTyping ? 'Typing...' : 'Online',
-          style: TextStyle(color: isTyping ? InvoiceThemeColors.primaryPurple : InvoiceThemeColors.successGreen, fontSize: 12.sp),
+          style: TextStyle(
+              color: isTyping
+                  ? InvoiceThemeColors.primaryPurple
+                  : InvoiceThemeColors.successGreen,
+              fontSize: 12.sp),
         ),
       ],
     );
@@ -1342,16 +1429,19 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             Colors.transparent,
           ],
         ),
-        border: Border(bottom: BorderSide(color: InvoiceThemeColors.borderColor)),
+        border:
+            Border(bottom: BorderSide(color: InvoiceThemeColors.borderColor)),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline_rounded, color: InvoiceThemeColors.gradientPurple, size: 18.sp),
+          Icon(Icons.info_outline_rounded,
+              color: InvoiceThemeColors.gradientPurple, size: 18.sp),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
               'Ask me anything — transfers, bills, investments & more',
-              style: TextStyle(color: InvoiceThemeColors.textGray400, fontSize: 12.sp),
+              style: TextStyle(
+                  color: InvoiceThemeColors.textGray400, fontSize: 12.sp),
             ),
           ),
         ],
@@ -1370,7 +1460,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
               color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.lock_rounded, color: InvoiceThemeColors.primaryPurple, size: 48.sp),
+            child: Icon(Icons.lock_rounded,
+                color: InvoiceThemeColors.primaryPurple, size: 48.sp),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -1396,26 +1487,29 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
 
   // Updated to accept the list of messages
   Widget _buildMessagesList(List<ChatMessageEntity> messageEntities) {
-     // Map entities to UI models
-     final messages = messageEntities.map((entity) => ChatMessage.fromEntity(entity)).toList();
+    // Map entities to UI models
+    final messages = messageEntities
+        .map((entity) => ChatMessage.fromEntity(entity))
+        .toList();
 
-     // Add initial bot message if the list is empty
-     if (messages.isEmpty) {
-        messages.add(ChatMessage(
-          text: "Hello! I'm NOVA, your financial assistant. How can I help you today?",
-          isUser: false,
-          timestamp: DateTime.now(),
-        ));
-     }
+    // Add initial bot message if the list is empty
+    if (messages.isEmpty) {
+      messages.add(ChatMessage(
+        text:
+            "Hello! I'm NOVA, your financial assistant. How can I help you today?",
+        isUser: false,
+        timestamp: DateTime.now(),
+      ));
+    }
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: ListView.builder(
         controller: _scrollController,
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-        itemCount: messages.length, 
+        itemCount: messages.length,
         itemBuilder: (context, index) {
-          final message = messages[index]; 
+          final message = messages[index];
           return _buildMessageBubble(message);
         },
       ),
@@ -1423,7 +1517,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   }
 
   // Bubble colors — matching sendfunds chatbot theme
-  static final _userBubbleColor = InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2);
+  static final _userBubbleColor =
+      InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2);
   static const _aiBubbleColor = InvoiceThemeColors.secondaryBackground;
 
   /// Whether to render a message's text bubble. Voice notes carry a "Sent a
@@ -1436,10 +1531,14 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     final bool isUser = message.isUser;
 
     // Render rich message types for AI responses
-    if (!isUser && message.type == ChatMessageType.confirmation && message.confirmationData != null) {
+    if (!isUser &&
+        message.type == ChatMessageType.confirmation &&
+        message.confirmationData != null) {
       return _buildConfirmationCard(message);
     }
-    if (!isUser && message.type == ChatMessageType.actionCard && message.actionButtons != null) {
+    if (!isUser &&
+        message.type == ChatMessageType.actionCard &&
+        message.actionButtons != null) {
       return _buildActionCard(message);
     }
 
@@ -1454,7 +1553,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           right: isUser ? 12.w : 64.w,
         ),
         child: Column(
-          crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment:
+              isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             if (message.mediaType != null) ...[
               ChatMediaBubble(
@@ -1475,7 +1575,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                 clipBehavior: Clip.none,
                 children: [
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                     decoration: BoxDecoration(
                       color: bubbleColor,
                       borderRadius: BorderRadius.only(
@@ -1486,7 +1587,9 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                       ),
                       border: isUser
                           ? null
-                          : Border.all(color: InvoiceThemeColors.borderColor, width: 0.5),
+                          : Border.all(
+                              color: InvoiceThemeColors.borderColor,
+                              width: 0.5),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1494,33 +1597,57 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                         MarkdownBody(
                           data: isUser ? maskIfPin(message.text) : message.text,
                           selectable: !isUser || !isPinText(message.text),
-                          styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                          styleSheet:
+                              MarkdownStyleSheet.fromTheme(Theme.of(context))
+                                  .copyWith(
                             p: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.white,
-                              fontSize: 14.sp * _settings.fontSizeMultiplier,
-                              height: 1.45,
-                            ),
-                            strong: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.white,
-                              fontSize: 14.sp * _settings.fontSizeMultiplier,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            em: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.85),
-                              fontSize: 14.sp * _settings.fontSizeMultiplier,
-                              fontStyle: FontStyle.italic,
-                            ),
-                            code: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontFamily: 'monospace',
-                              backgroundColor: Colors.black.withValues(alpha: 0.2),
-                              color: isUser ? const Color(0xFFD8B4FE) : const Color(0xFFD8B4FE),
-                              fontSize: 13.sp * _settings.fontSizeMultiplier,
-                            ),
-                            listBullet: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: isUser ? const Color(0xFFD8B4FE) : const Color(0xFFD8B4FE),
-                              fontSize: 14.sp * _settings.fontSizeMultiplier,
-                              height: 1.45,
-                            ),
+                                  color: Colors.white,
+                                  fontSize:
+                                      14.sp * _settings.fontSizeMultiplier,
+                                  height: 1.45,
+                                ),
+                            strong: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontSize:
+                                      14.sp * _settings.fontSizeMultiplier,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                            em: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  fontSize:
+                                      14.sp * _settings.fontSizeMultiplier,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                            code: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  fontFamily: 'monospace',
+                                  backgroundColor:
+                                      Colors.black.withValues(alpha: 0.2),
+                                  color: isUser
+                                      ? const Color(0xFFD8B4FE)
+                                      : const Color(0xFFD8B4FE),
+                                  fontSize:
+                                      13.sp * _settings.fontSizeMultiplier,
+                                ),
+                            listBullet: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: isUser
+                                      ? const Color(0xFFD8B4FE)
+                                      : const Color(0xFFD8B4FE),
+                                  fontSize:
+                                      14.sp * _settings.fontSizeMultiplier,
+                                  height: 1.45,
+                                ),
                             listBulletPadding: EdgeInsets.only(right: 6.w),
                             listIndent: 16.w,
                             blockSpacing: 6.0,
@@ -1548,7 +1675,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                     right: isUser ? -7.w : null,
                     left: isUser ? null : -7.w,
                     child: CustomPaint(
-                      painter: BubbleTailPainter(color: bubbleColor, isUser: isUser),
+                      painter:
+                          BubbleTailPainter(color: bubbleColor, isUser: isUser),
                       size: Size(10.w, 12.h),
                     ),
                   ),
@@ -1573,6 +1701,11 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             // on the same message.
             if (!isUser && message.qrCard != null)
               ChatQrCard(payload: message.qrCard!),
+            // Charts for a "how am I doing?" / "show my transactions" turn.
+            // Independent of the receipt cards: this is a read, not a money
+            // move, so the two never appear on the same message.
+            if (!isUser && message.analyticsCard != null)
+              ChatAnalyticsCard(payload: message.analyticsCard!),
             // The confirmed counterparty, as a card with their avatar. The
             // voice HUD has rendered this identity all along; chat showed a
             // line of prose at the one moment a misread costs money.
@@ -1646,7 +1779,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             bottomLeft: Radius.circular(4.r),
             bottomRight: Radius.circular(18.r),
           ),
-          border: Border.all(color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.25)),
+          border: Border.all(
+              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.25)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1654,8 +1788,12 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             if (message.text.isNotEmpty) ...[
               MarkdownBody(
                 data: message.text,
-                styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-                  p: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white, fontSize: 14.sp),
+                styleSheet:
+                    MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                  p: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: Colors.white, fontSize: 14.sp),
                 ),
               ),
               SizedBox(height: 12.h),
@@ -1669,9 +1807,12 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
               ),
               child: Column(
                 children: [
-                  _buildConfirmRow('Action', cd.actionType.replaceAll('_', ' ').toUpperCase()),
-                  if (cd.amount.isNotEmpty) _buildConfirmRow('Amount', '${cd.currency} ${cd.amount}'),
-                  if (cd.recipientName.isNotEmpty) _buildConfirmRow('To', cd.recipientName),
+                  _buildConfirmRow('Action',
+                      cd.actionType.replaceAll('_', ' ').toUpperCase()),
+                  if (cd.amount.isNotEmpty)
+                    _buildConfirmRow('Amount', '${cd.currency} ${cd.amount}'),
+                  if (cd.recipientName.isNotEmpty)
+                    _buildConfirmRow('To', cd.recipientName),
                   if (cd.description != null && cd.description!.isNotEmpty)
                     _buildConfirmRow('Note', cd.description!),
                 ],
@@ -1691,7 +1832,9 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Center(
-                        child: Text('Cancel', style: TextStyle(color: Colors.white70, fontSize: 14.sp)),
+                        child: Text('Cancel',
+                            style: TextStyle(
+                                color: Colors.white70, fontSize: 14.sp)),
                       ),
                     ),
                   ),
@@ -1707,7 +1850,11 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Center(
-                        child: Text('Confirm', style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                        child: Text('Confirm',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ),
@@ -1716,7 +1863,10 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             ),
             if (_settings.showTimestamps) ...[
               SizedBox(height: 4.h),
-              Text(_formatTime(message.timestamp), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10.sp)),
+              Text(_formatTime(message.timestamp),
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 10.sp)),
             ],
           ],
         ),
@@ -1730,9 +1880,16 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+          Text(label,
+              style:
+                  TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
           Flexible(
-            child: Text(value, style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w500),
+            child: Text(
+              value,
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w500),
               textAlign: TextAlign.end,
             ),
           ),
@@ -1763,8 +1920,12 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                 ),
                 child: MarkdownBody(
                   data: message.text,
-                  styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-                    p: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white, fontSize: 14.sp),
+                  styleSheet:
+                      MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                    p: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: Colors.white, fontSize: 14.sp),
                   ),
                 ),
               ),
@@ -1789,20 +1950,30 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                     },
                     child: Container(
                       margin: EdgeInsets.only(right: 8.w),
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12),
+                        color: InvoiceThemeColors.primaryPurple
+                            .withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.35)),
+                        border: Border.all(
+                            color: InvoiceThemeColors.primaryPurple
+                                .withValues(alpha: 0.35)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (btn.icon != null && btn.icon!.isNotEmpty) ...[
-                            Icon(Icons.arrow_forward_rounded, color: InvoiceThemeColors.primaryPurple, size: 14.sp),
+                            Icon(Icons.arrow_forward_rounded,
+                                color: InvoiceThemeColors.primaryPurple,
+                                size: 14.sp),
                             SizedBox(width: 4.w),
                           ],
-                          Text(btn.label, style: TextStyle(color: InvoiceThemeColors.primaryPurple, fontSize: 12.sp, fontWeight: FontWeight.w500)),
+                          Text(btn.label,
+                              style: TextStyle(
+                                  color: InvoiceThemeColors.primaryPurple,
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
@@ -1812,7 +1983,10 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             ),
             if (_settings.showTimestamps) ...[
               SizedBox(height: 4.h),
-              Text(_formatTime(message.timestamp), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10.sp)),
+              Text(_formatTime(message.timestamp),
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 10.sp)),
             ],
           ],
         ),
@@ -1839,13 +2013,16 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                   animation: _typingDotsController,
                   builder: (context, child) {
                     final double opacity = _typingDotsController.isAnimating
-                                        ? ((index / 3 + _typingDotsController.value) % 1)
-                                        : (index / 3.0);
+                        ? ((index / 3 + _typingDotsController.value) % 1)
+                        : (index / 3.0);
                     return Container(
                       margin: EdgeInsets.symmetric(horizontal: 2.w),
                       height: 8.h,
                       width: 8.w,
-                      decoration: BoxDecoration(color: InvoiceThemeColors.primaryPurple.withValues(alpha: opacity), shape: BoxShape.circle),
+                      decoration: BoxDecoration(
+                          color: InvoiceThemeColors.primaryPurple
+                              .withValues(alpha: opacity),
+                          shape: BoxShape.circle),
                     );
                   },
                 );
@@ -1858,7 +2035,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   }
 
   // Updated to accept the list of messages and suggestions from state
-  Widget _buildInputArea(List<ChatMessageEntity> messages, List<String> suggestions) {
+  Widget _buildInputArea(
+      List<ChatMessageEntity> messages, List<String> suggestions) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -1868,26 +2046,37 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       child: Column(
         children: [
           // Show suggestions if enabled and message list is effectively empty or text field empty
-          if (_settings.quickSuggestions && (messages.isEmpty || _messageController.text.isEmpty))
+          if (_settings.quickSuggestions &&
+              (messages.isEmpty || _messageController.text.isEmpty))
             Container(
               height: 40.h,
               margin: EdgeInsets.only(bottom: 12.h),
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: suggestions.isNotEmpty ? suggestions.length : _defaultSuggestions.length,
+                itemCount: suggestions.isNotEmpty
+                    ? suggestions.length
+                    : _defaultSuggestions.length,
                 itemBuilder: (context, index) {
-                  final suggestionText = suggestions.isNotEmpty ? suggestions[index] : _defaultSuggestions[index];
+                  final suggestionText = suggestions.isNotEmpty
+                      ? suggestions[index]
+                      : _defaultSuggestions[index];
                   return GestureDetector(
                     onTap: () => _handleSubmitted(suggestionText),
                     child: Container(
                       margin: EdgeInsets.only(right: 8.w),
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
+                        color: InvoiceThemeColors.primaryPurple
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3)),
+                        border: Border.all(
+                            color: InvoiceThemeColors.primaryPurple
+                                .withValues(alpha: 0.3)),
                       ),
-                      child: Text(suggestionText, style: TextStyle(color: Colors.white, fontSize: 12.sp)),
+                      child: Text(suggestionText,
+                          style:
+                              TextStyle(color: Colors.white, fontSize: 12.sp)),
                     ),
                   );
                 },
@@ -1917,8 +2106,10 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       onTap: _showImageSourceSheet,
       child: Container(
         padding: EdgeInsets.all(10.w),
-        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.1), shape: BoxShape.circle),
-        child: Icon(Icons.add_photo_alternate_rounded, color: Colors.white.withValues(alpha: 0.7), size: 20.sp),
+        decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1), shape: BoxShape.circle),
+        child: Icon(Icons.add_photo_alternate_rounded,
+            color: Colors.white.withValues(alpha: 0.7), size: 20.sp),
       ),
     );
   }
@@ -2038,12 +2229,14 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                     SizedBox(height: 2.h),
                     Text(
                       subtitle,
-                      style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                      style: TextStyle(
+                          color: const Color(0xFF9CA3AF), fontSize: 12.sp),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.3), size: 22.sp),
+              Icon(Icons.chevron_right_rounded,
+                  color: Colors.white.withValues(alpha: 0.3), size: 22.sp),
             ],
           ),
         ),
@@ -2057,12 +2250,15 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       child: Container(
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(
-          color: _isRecording ? Colors.red.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.1),
+          color: _isRecording
+              ? Colors.red.withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
         child: Icon(
           _isRecording ? Icons.stop : Icons.mic,
-          color: _isRecording ? Colors.red : Colors.white.withValues(alpha: 0.7),
+          color:
+              _isRecording ? Colors.red : Colors.white.withValues(alpha: 0.7),
           size: 20.sp,
         ),
       ),
@@ -2071,7 +2267,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
 
   Widget _buildRecordingIndicator() {
     final minutes = _recordingDuration.inMinutes.toString().padLeft(2, '0');
-    final seconds = (_recordingDuration.inSeconds % 60).toString().padLeft(2, '0');
+    final seconds =
+        (_recordingDuration.inSeconds % 60).toString().padLeft(2, '0');
     return Row(
       children: [
         Container(
@@ -2108,7 +2305,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
               color: Colors.white.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.delete_outline, color: Colors.red[300], size: 20.sp),
+            child:
+                Icon(Icons.delete_outline, color: Colors.red[300], size: 20.sp),
           ),
         ),
         SizedBox(width: 8.w),
@@ -2166,14 +2364,18 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
 
   Widget _buildSendButton() {
     // Send button enabled state depends on text field or attaching state
-    final bool isEnabled = _messageController.text.trim().isNotEmpty || _isAttaching;
+    final bool isEnabled =
+        _messageController.text.trim().isNotEmpty || _isAttaching;
     return GestureDetector(
       onTap: isEnabled ? () => _handleSubmitted(_messageController.text) : null,
       child: Container(
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(
           gradient: isEnabled
-              ? LinearGradient(colors: [InvoiceThemeColors.primaryPurple, InvoiceThemeColors.gradientPurple])
+              ? LinearGradient(colors: [
+                  InvoiceThemeColors.primaryPurple,
+                  InvoiceThemeColors.gradientPurple
+                ])
               : null,
           color: isEnabled ? null : Colors.grey,
           shape: BoxShape.circle,
@@ -2189,90 +2391,87 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AIChatCubit, AIChatState>(
-      listener: (context, state) {
-        // Listener now only handles side-effects not directly tied to build
-        if (!mounted) return; 
+    return BlocConsumer<AIChatCubit, AIChatState>(listener: (context, state) {
+      // Listener now only handles side-effects not directly tied to build
+      if (!mounted) return;
 
-        // Handle errors with Snackbars
-        if (state is AIChatHistoryError) {
-          Get.snackbar('Error Loading History', state.message);
-        } else if (state is AIChatMessageError) {
-          Get.snackbar(
-            'Error', state.errorMessage,
+      // Handle errors with Snackbars
+      if (state is AIChatHistoryError) {
+        Get.snackbar('Error Loading History', state.message);
+      } else if (state is AIChatMessageError) {
+        Get.snackbar('Error', state.errorMessage,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.red.withValues(alpha: 0.8),
-            colorText: Colors.white
-          );
-        }
+            colorText: Colors.white);
+      }
 
-        // Scroll to bottom: instant settle on history load (staggered so it
-        // reaches the true bottom as media expands the list), animated for new messages
-        if (state is AIChatHistorySuccess) {
-          // A prepend (scroll-up "load older") also emits AIChatHistorySuccess —
-          // don't yank the view to the bottom; _loadOlderHistory re-anchors it.
-          if (!_isPrependingOlder) _scrollChatToBottom();
-        } else if (state is AIChatMessageSuccess || state is AIChatMessageLoading) {
-          _scrollToBottom(isDelayed: true);
-        }
+      // Scroll to bottom: instant settle on history load (staggered so it
+      // reaches the true bottom as media expands the list), animated for new messages
+      if (state is AIChatHistorySuccess) {
+        // A prepend (scroll-up "load older") also emits AIChatHistorySuccess —
+        // don't yank the view to the bottom; _loadOlderHistory re-anchors it.
+        if (!_isPrependingOlder) _scrollChatToBottom();
+      } else if (state is AIChatMessageSuccess ||
+          state is AIChatMessageLoading) {
+        _scrollToBottom(isDelayed: true);
+      }
 
-        // Auto-open the transaction-PIN bottom sheet the moment a live turn
-        // (AIChatMessageSuccess — NOT history load) yields an assistant
-        // message carrying a pin_prompt. Dedupe by transaction_id so it opens
-        // exactly once per prompt: never on rebuild, never after dismissal,
-        // and never for historical prompts replayed by loadChatHistory.
-        if (state is AIChatMessageSuccess) {
-          _maybeAutoOpenPinPrompt(state.messages);
-        }
+      // Auto-open the transaction-PIN bottom sheet the moment a live turn
+      // (AIChatMessageSuccess — NOT history load) yields an assistant
+      // message carrying a pin_prompt. Dedupe by transaction_id so it opens
+      // exactly once per prompt: never on rebuild, never after dismissal,
+      // and never for historical prompts replayed by loadChatHistory.
+      if (state is AIChatMessageSuccess) {
+        _maybeAutoOpenPinPrompt(state.messages);
+      }
 
-        // Optional: Print statements for debugging state changes
-        // print("State changed: ${state.runtimeType}, isTyping: ${state.isTyping}, messages: ${state.messages.length}");
-      },
-      builder: (context, state) {
-        // Builder uses the state to construct the UI
-        // Map ChatMessageEntity to ChatMessage UI model here or in build methods
-        final messageEntities = state.messages;
-        final isTyping = state.isTyping;
-        final suggestions = state.suggestions;
+      // Optional: Print statements for debugging state changes
+      // print("State changed: ${state.runtimeType}, isTyping: ${state.isTyping}, messages: ${state.messages.length}");
+    }, builder: (context, state) {
+      // Builder uses the state to construct the UI
+      // Map ChatMessageEntity to ChatMessage UI model here or in build methods
+      final messageEntities = state.messages;
+      final isTyping = state.isTyping;
+      final suggestions = state.suggestions;
 
-        return GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
-          },
-          child: Container(
-            // Keep bottom-nav clearance when the keyboard is closed, but rise
-            // with the keyboard so the input isn't covered. 72.h lifts the
-            // typing area clear of the curved nav bar (it previously sat a few
-            // px behind it).
-            margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom > 0
-                  ? MediaQuery.of(context).viewInsets.bottom
-                  : 72.h,
-            ),
-            decoration: const BoxDecoration(color: InvoiceThemeColors.primaryBackground),
-            child: Scaffold(
-              backgroundColor: Colors.transparent,
-              // Pass isTyping status to AppBar
-              appBar: _buildAppBar(isTyping), 
-              body: Column(
-                children: [
-                  _buildChatHeader(),
-                  // Hide chat history when user is entering a PIN
-                  Expanded(
-                    child: _isPinMode
-                        ? _buildPinOverlay()
-                        : _buildMessagesList(messageEntities),
-                  ),
-                  // Pass isTyping status to indicator
-                  _buildTypingIndicator(isTyping), 
-                  // Pass messages and suggestions to input area
-                  _buildInputArea(messageEntities, suggestions), 
-                ],
-              ),
+      return GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: Container(
+          // Keep bottom-nav clearance when the keyboard is closed, but rise
+          // with the keyboard so the input isn't covered. 72.h lifts the
+          // typing area clear of the curved nav bar (it previously sat a few
+          // px behind it).
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom > 0
+                ? MediaQuery.of(context).viewInsets.bottom
+                : 72.h,
+          ),
+          decoration:
+              const BoxDecoration(color: InvoiceThemeColors.primaryBackground),
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            // Pass isTyping status to AppBar
+            appBar: _buildAppBar(isTyping),
+            body: Column(
+              children: [
+                _buildChatHeader(),
+                // Hide chat history when user is entering a PIN
+                Expanded(
+                  child: _isPinMode
+                      ? _buildPinOverlay()
+                      : _buildMessagesList(messageEntities),
+                ),
+                // Pass isTyping status to indicator
+                _buildTypingIndicator(isTyping),
+                // Pass messages and suggestions to input area
+                _buildInputArea(messageEntities, suggestions),
+              ],
             ),
           ),
-        );
-      }
-    );
+        ),
+      );
+    });
   }
-} 
+}

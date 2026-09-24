@@ -30,8 +30,8 @@ class GrpcAiChatDataSource implements IAiChatDataSource {
   GrpcAiChatDataSource({
     required AIChatServiceClient client,
     required GrpcCallOptionsHelper callOptionsHelper,
-  }) : _client = client,
-       _callOptionsHelper = callOptionsHelper;
+  })  : _client = client,
+        _callOptionsHelper = callOptionsHelper;
 
   @override
   Future<ProcessChatResponse> processChat({
@@ -42,8 +42,10 @@ class GrpcAiChatDataSource implements IAiChatDataSource {
     String? mediaBase64,
     String? mediaType,
     String? mediaMimeType,
-    int? mediaDurationMs, // unused on the gRPC path (HTTP carries media duration)
-    Map<String, dynamic>? extraMetadata, // unused on the gRPC path (HTTP carries PIN-callback metadata)
+    int?
+        mediaDurationMs, // unused on the gRPC path (HTTP carries media duration)
+    Map<String, dynamic>?
+        extraMetadata, // unused on the gRPC path (HTTP carries PIN-callback metadata)
   }) async {
     final request = ProcessChatRequest()..query = query;
     if (sessionId != null) request.sessionId = sessionId;
@@ -72,7 +74,8 @@ class GrpcAiChatDataSource implements IAiChatDataSource {
       );
       return response;
     } on GrpcError catch (e) {
-      throw Exception(friendlyGrpcError(e, 'Failed to communicate with AI service'));
+      throw Exception(
+          friendlyGrpcError(e, 'Failed to communicate with AI service'));
     } catch (e) {
       throw Exception('An unexpected error occurred calling AI service.');
     }

@@ -20,10 +20,10 @@ class AiChatSettings {
   });
 
   double get fontSizeMultiplier => switch (textSize) {
-    'small' => 0.85,
-    'large' => 1.18,
-    _ => 1.0,
-  };
+        'small' => 0.85,
+        'large' => 1.18,
+        _ => 1.0,
+      };
 
   static const _prefix = 'ai_chat_settings_';
 
@@ -64,6 +64,7 @@ class ChatMessage {
   final Map<String, dynamic>? receiptData;
   // ReceiptCard V2 payload — single dict OR a list (batch transfer).
   final dynamic receiptCard;
+
   /// Scannable QR payload — see ChatQrCard.
   final Map<String, dynamic>? qrCard;
   final Map<String, dynamic>? pinPrompt;
@@ -71,6 +72,10 @@ class ChatMessage {
   /// `recipient_card` — the confirmed transfer counterparty, rendered with
   /// their avatar instead of a line of prose.
   final Map<String, dynamic>? recipientCard;
+
+  /// `analytics_card` — period totals plus chart series, so "how am I doing?"
+  /// renders as charts rather than a paragraph of figures.
+  final Map<String, dynamic>? analyticsCard;
 
   ChatMessage({
     required this.text,
@@ -89,6 +94,7 @@ class ChatMessage {
     this.qrCard,
     this.pinPrompt,
     this.recipientCard,
+    this.analyticsCard,
   });
 
   factory ChatMessage.fromEntity(ChatMessageEntity entity) {
@@ -109,6 +115,7 @@ class ChatMessage {
       receiptCard: entity.receiptCard,
       qrCard: entity.qrCard,
       pinPrompt: entity.pinPrompt,
+      analyticsCard: entity.analyticsCard,
     );
   }
 }
@@ -132,24 +139,32 @@ class BubbleTailPainter extends CustomPainter {
       path.moveTo(0, 0);
       path.lineTo(size.width * 0.35, 0);
       path.quadraticBezierTo(
-        size.width, size.height * 0.05,
-        size.width * 0.75, size.height,
+        size.width,
+        size.height * 0.05,
+        size.width * 0.75,
+        size.height,
       );
       path.quadraticBezierTo(
-        size.width * 0.12, size.height * 0.85,
-        0, 0,
+        size.width * 0.12,
+        size.height * 0.85,
+        0,
+        0,
       );
     } else {
       // Left-side tail (mirrored)
       path.moveTo(size.width, 0);
       path.lineTo(size.width * 0.65, 0);
       path.quadraticBezierTo(
-        0, size.height * 0.05,
-        size.width * 0.25, size.height,
+        0,
+        size.height * 0.05,
+        size.width * 0.25,
+        size.height,
       );
       path.quadraticBezierTo(
-        size.width * 0.88, size.height * 0.85,
-        size.width, 0,
+        size.width * 0.88,
+        size.height * 0.85,
+        size.width,
+        0,
       );
     }
     path.close();

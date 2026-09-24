@@ -48,7 +48,9 @@ class MicroserviceChatIcon extends StatelessWidget {
           serviceName: serviceName,
           sourceContext: sourceContext,
           agentDescription: agentDescription,
-          accentColor: chatAccentColor ?? iconColor ?? const Color.fromARGB(255, 78, 3, 208),
+          accentColor: chatAccentColor ??
+              iconColor ??
+              const Color.fromARGB(255, 78, 3, 208),
           isDirect: isDirect,
         );
       },
@@ -59,7 +61,8 @@ class MicroserviceChatIcon extends StatelessWidget {
           shape: BoxShape.circle,
           color: useDarkInner
               ? Colors.white.withValues(alpha: 0.15)
-              : (iconColor ?? const Color.fromARGB(255, 78, 3, 208)).withValues(alpha: 0.1),
+              : (iconColor ?? const Color.fromARGB(255, 78, 3, 208))
+                  .withValues(alpha: 0.1),
           border: Border.all(
             color: useDarkInner
                 ? Colors.white.withValues(alpha: 0.3)

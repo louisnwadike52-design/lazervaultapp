@@ -55,7 +55,8 @@ class BillReceiptDeepLinkButton extends StatelessWidget {
           label: const Text('Open full receipt'),
           style: OutlinedButton.styleFrom(
             foregroundColor: Colors.white,
-            side: BorderSide(color: const Color(0xFF3B82F6).withValues(alpha: 0.6)),
+            side: BorderSide(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.6)),
             padding: const EdgeInsets.symmetric(vertical: 12),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),

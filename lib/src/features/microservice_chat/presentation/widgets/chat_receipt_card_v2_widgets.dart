@@ -104,8 +104,8 @@ class _ChatReceiptFullScreenState extends State<ChatReceiptFullScreen> {
         final label = k
             .toString()
             .split('_')
-            .map((w) =>
-                w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+            .map(
+                (w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
             .join(' ');
         extraRows.add(MapEntry(label, v.toString()));
       });
@@ -132,8 +132,7 @@ class _ChatReceiptFullScreenState extends State<ChatReceiptFullScreen> {
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(20),
-                    border:
-                        Border.all(color: color.withValues(alpha: 0.35)),
+                    border: Border.all(color: color.withValues(alpha: 0.35)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -162,12 +161,12 @@ class _ChatReceiptFullScreenState extends State<ChatReceiptFullScreen> {
                         Text(_s('summary_line'),
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
-                                color: const Color(0xFF9CA3AF),
-                                fontSize: 13)),
+                                color: const Color(0xFF9CA3AF), fontSize: 13)),
                       ],
                       const SizedBox(height: 20),
                       const Divider(color: Color(0xFF2D2D2D)),
-                      if (amount.isNotEmpty) _row('Amount', '$amount $currency'),
+                      if (amount.isNotEmpty)
+                        _row('Amount', '$amount $currency'),
                       if (feeNum > 0) _row('Fee', '$fee $currency'),
                       if (total.isNotEmpty)
                         _row('Total', '$total $currency', bold: true),
