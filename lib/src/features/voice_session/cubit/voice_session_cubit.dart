@@ -35,6 +35,7 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/logger.dart';
+import '../services/voice_note_capture.dart';
 
 class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // --- Configuration ---
@@ -178,6 +179,22 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // `inputMode` field; defaults to on_device. "livekit" restores the legacy
   // server-STT path (publish mic, server captions) verbatim.
   bool _onDeviceMode = true;
+
+  /// Records a gesture-bounded turn as a clip, for the voice-note path.
+  ///
+  /// Null until the admin enables it. Created lazily so a device that never turns
+  /// it on never constructs a third mic consumer.
+  VoiceNoteCapture? _noteCapture;
+
+  /// Admin switch for the voice-note turn path, from /voice/session/start.
+  ///
+  /// OFF by default, deliberately. This adds `record` as a third mic consumer
+  /// beside LiveKit and speech_to_text, and there is no explicit AVAudioSession
+  /// category set anywhere in the app — whichever plugin grabs it first wins. That
+  /// is exactly the contention case, and it needs verifying on a real iOS device
+  /// before it becomes the default for everyone. Until then the working on-device
+  /// path is untouched and this is opt-in per deployment.
+  bool _voiceNoteCapture = false;
 
   /// LiveKit's own voice-activity detection on the LOCAL mic.
   ///
@@ -1075,6 +1092,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           // would make the agent look dead. The bounds are the usable range, not
           // a guess — below ~600ms is inside a normal mid-sentence pause, and
           // above 15s the user has long since assumed it is broken.
+          // Voice-note turn capture for the gesture modes. Absent or false keeps
+          // the on-device streaming path.
+          _voiceNoteCapture = data['voiceNoteCapture'] == true;
           _silenceWindowMsOverride = _clampWindowMs(data['turnSilenceMs']);
           _graceWindowMsOverride = _clampWindowMs(data['endOfTurnGraceMs']);
           if (_silenceWindowMsOverride != null ||
@@ -1517,6 +1537,20 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // user was holding it and the only feedback that the mic was live was the
     // agent eventually replying.
     _emitCaptionUpdate();
+    // On-device STT keeps running whatever happens here: it is what draws the
+    // live captions, so the user still sees words appear while they speak. Its
+    // DISPATCH is already disabled in a gesture mode, so the two do not race to
+    // submit the turn.
+    if (_voiceNoteCapture) {
+      _noteCapture ??= VoiceNoteCapture();
+      // A failed start is not an error the user should see — the on-device
+      // transcript is still being accumulated and will carry the turn.
+      final started = await _noteCapture!.start();
+      if (!started) {
+        print('VoiceSessionCubit: voice-note capture could not start; '
+            'falling back to the on-device transcript');
+      }
+    }
     await startLocalListening();
   }
 
@@ -1531,8 +1565,75 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // Dispatch whatever we have NOW (accumulated finals + the live partial), the
     // same join the silence-timer/native-final paths use. _dispatchUserTurn dedups
     // and drops an empty turn, so a no-speech press is a clean no-op.
-    _dispatchUserTurn(_joinTurn(_turnAccumulator, _lastPartialText));
+    // The on-device transcript, always computed: it is the fallback for every way
+    // the clip path can fail, and the only text available when it is off.
+    final onDevice = _joinTurn(_turnAccumulator, _lastPartialText);
+
+    if (_voiceNoteCapture && _noteCapture != null) {
+      final clip = await _noteCapture!.stop();
+      if (clip != null) {
+        final transcript = await _transcribeTurnClip(clip);
+        // Prefer the clip ONLY when it produced something. An empty or failed
+        // transcription must not discard a turn the on-device recognizer heard.
+        if (transcript != null && transcript.trim().isNotEmpty) {
+          _dispatchUserTurn(transcript.trim());
+          await stopLocalListening();
+          return;
+        }
+      }
+    }
+
+    _dispatchUserTurn(onDevice);
     await stopLocalListening();
+  }
+
+  /// POSTs a recorded turn to the gateway and returns its transcript, or null.
+  ///
+  /// Null on every failure — unreachable, rejected, malformed — because the
+  /// caller's response to all of them is the same: use the on-device transcript.
+  /// A turn is never lost to a transcription problem.
+  Future<String?> _transcribeTurnClip(VoiceNoteClip clip) async {
+    try {
+      // The session's own token, captured at start — the same one the LiveKit
+      // connect and every other voice call on this cubit already use.
+      final token = _currentAccessToken;
+      if (token == null || token.isEmpty) return null;
+      final bytes = await clip.file.readAsBytes();
+      final response = await http
+          .post(
+            Uri.parse('\$_voiceAgentGatewayUrl/voice/transcribe'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode({
+              'session_id': _currentSessionId ?? '',
+              'audio_b64': base64Encode(bytes),
+              'mime': 'audio/m4a',
+              // The selected language, so an African voice note gets its
+              // Whisper prompt instead of drifting into English.
+              'language': _selectedLanguageCode ?? '',
+            }),
+          )
+          // Bounded so a slow transcription cannot leave the user staring at a
+          // turn that never submits; the fallback is immediate and local.
+          .timeout(const Duration(seconds: 12));
+      if (response.statusCode != 200) {
+        print('VoiceSessionCubit: transcribe returned ${response.statusCode}');
+        return null;
+      }
+      final data = jsonDecode(response.body);
+      if (data is Map && data['text'] is String) return data['text'] as String;
+      return null;
+    } catch (e) {
+      print('VoiceSessionCubit: transcribe failed: $e');
+      return null;
+    } finally {
+      // The clip has done its job either way.
+      try {
+        if (await clip.file.exists()) await clip.file.delete();
+      } catch (_) {/* a stray temp file is the OS's problem */}
+    }
   }
 
   Future<void> startLocalListening() async {
@@ -3316,6 +3417,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // Or the mic indicator stays green after the session ends: LiveKit sends no
     // final "stopped speaking" event when the room goes away.
     _localUserSpeaking = false;
+    // Release the recorder and drop any clip still on disk. A recorder left open
+    // holds the audio session, which is what makes the NEXT session's mic dead —
+    // and an abandoned temp file is a voice note nobody asked to keep.
+    final capture = _noteCapture;
+    _noteCapture = null;
+    if (capture != null) unawaited(capture.dispose());
     _bioAttemptedThisSession = false;
     _bioInProgress = false;
     _bioCancelled =
