@@ -2875,7 +2875,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                        'Member removed. ${CurrencySymbols.currentSymbol}${state.returnedBalance.toStringAsFixed(2)} returned to pool'),
+                        'Member removed. ${CurrencySymbols.formatAmount(state.returnedBalance)} returned to pool'),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -2939,10 +2939,19 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                        'Account deleted. ${CurrencySymbols.currentSymbol}${state.returnedBalance.toStringAsFixed(2)} returned'),
+                        'Account closed. ${CurrencySymbols.formatAmount(state.returnedBalance)} returned'),
                     backgroundColor: Colors.green,
                   ),
                 );
+                // The dashboard carousel reads the regular accounts list, so
+                // without this the closed account's card stays on the dashboard —
+                // with its old balance — until something else refreshes it.
+                //
+                // Every other branch in this listener already refreshes, which
+                // made the omission easy to miss: funding, allocating and
+                // changing the distribution mode all do it, and the only two that
+                // do not are the two that actually REMOVE a card.
+                _refreshDashboardSummaries();
                 Get.back(); // Go back to previous screen
               } else if (state is FamilyAccountLeft) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -2951,6 +2960,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                     backgroundColor: Colors.green,
                   ),
                 );
+                // Same reason: leaving removes the account from this user's list.
+                _refreshDashboardSummaries();
                 Get.back(); // Pop back to the list
               }
             },

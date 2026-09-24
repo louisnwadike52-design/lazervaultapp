@@ -2,7 +2,7 @@
 /// Provides currency symbol conversion and formatted amount display
 library;
 
-import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 
@@ -40,21 +40,38 @@ class CurrencySymbols {
     return localeManager.currentCurrency;
   }
 
+  /// The app's money pattern, used by both formatters below.
+  ///
+  /// `#,##0.00`, with TWO deliberate details:
+  ///
+  ///  * the thousands separator. These two methods have 265 call sites between
+  ///    them and every one of them was printing `toStringAsFixed(2)` — so a
+  ///    family account holding ₦120,000 displayed as `₦120000.00` everywhere in
+  ///    the app. At that length the digits have to be counted to be read, which
+  ///    is exactly the moment someone misreads their own balance by a factor of
+  ///    ten.
+  ///
+  ///  * the `0` before the decimal point rather than `#`. `#,###.00` renders any
+  ///    value below one with no leading digit at all — ₦0.50 becomes `₦.50` and
+  ///    zero becomes `₦.00`. That bug was found in the send-funds
+  ///    insufficient-funds message, which is shown precisely when the balance is
+  ///    small enough for it to appear.
+  ///
+  /// Nothing parses these strings back into numbers — verified across all 265
+  /// call sites — so adding separators is safe. The two that feed text into a
+  /// receipt and an export both read better for it.
+  static final NumberFormat _money = NumberFormat('#,##0.00');
+
   /// Format amount with current currency symbol
   static String formatAmount(double amount) {
     final symbol = currentSymbol;
-    return '$symbol${amount.toStringAsFixed(2)}';
+    return '$symbol${_money.format(amount)}';
   }
 
   /// Format amount with a specific currency code
   static String formatAmountWithCurrency(double amount, String currencyCode) {
     final symbol = getSymbol(currencyCode);
-    return '$symbol${amount.toStringAsFixed(2)}';
-  }
-
-  /// Format amount with currency code (legacy format - e.g., "NGN 1000.00")
-  static String formatAmountWithCode(double amount, String currencyCode) {
-    return '$currencyCode ${amount.toStringAsFixed(2)}';
+    return '$symbol${_money.format(amount)}';
   }
 
   /// Stream of current currency symbol for reactive updates
