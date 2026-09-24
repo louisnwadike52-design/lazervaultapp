@@ -31,7 +31,6 @@ import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_m
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_state.dart';
-import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_config.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_modal.dart';
 import 'package:lazervault/src/features/funds/presentation/view/scheduled_transfers_list_screen.dart';
@@ -46,6 +45,9 @@ import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart' as pb;
 import 'package:lazervault/src/features/p2p_chat/domain/repositories/p2p_chat_repository.dart';
 import 'package:uuid/uuid.dart';
+import 'package:lazervault/core/shared_widgets/server_refusal_sheet.dart';
+import 'dart:async';
+import 'package:lazervault/core/utils/logger.dart';
 
 class InitiateSendFunds extends StatefulWidget {
   final RecipientModel? recipient;
@@ -128,7 +130,6 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   // Tracks the pending recipient save so we can await it before navigation.
   // Prevents race condition where Get.offAllNamed disposes the tree before
   // the fire-and-forget save completes (especially when recurring is enabled).
-  Future<void>? _pendingRecipientSave;
 
   // Informational, READ-ONLY transfer success prediction (non-blocking).
   // Owned by this screen so it survives the confirmation dialog's lifecycle.
@@ -1122,18 +1123,23 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       final String message;
       if (isExternalTransfer && estimatedFee > 0) {
         message =
-            'Insufficient balance. Amount ($currencySymbol${NumberFormat('#,###.00').format(transferAmountMajor)}) + Fee ($currencySymbol${NumberFormat('#,###.00').format(estimatedFee)}) = $currencySymbol${NumberFormat('#,###.00').format(totalRequired)} exceeds your balance of $currencySymbol${NumberFormat('#,###.00').format(availableBalance)}';
+            'Insufficient balance. Amount ($currencySymbol${NumberFormat('#,##0.00').format(transferAmountMajor)}) + Fee ($currencySymbol${NumberFormat('#,##0.00').format(estimatedFee)}) = $currencySymbol${NumberFormat('#,##0.00').format(totalRequired)} exceeds your balance of $currencySymbol${NumberFormat('#,##0.00').format(availableBalance)}';
       } else {
         message =
-            'Your balance ($currencySymbol${NumberFormat('#,###.00').format(availableBalance)}) is insufficient for this transfer of $currencySymbol${NumberFormat('#,###.00').format(transferAmountMajor)}. Please top up your account or use a different account.';
+            'Your balance ($currencySymbol${NumberFormat('#,##0.00').format(availableBalance)}) is insufficient for this transfer of $currencySymbol${NumberFormat('#,##0.00').format(transferAmountMajor)}. Please top up your account or use a different account.';
       }
-      Get.snackbar(
-        'Insufficient Funds',
-        message,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.7),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 5),
+      // A refusal, not a failure, and the longest message in this flow: the fee
+      // variant names four separate figures and then explains the arithmetic
+      // between them. Five seconds of translucent red over the bottom of the form
+      // was not enough to read it, let alone act on it — and "top up your account"
+      // is an instruction with somewhere to go, so it gets a button.
+      showServerRefusal(
+        context,
+        title: 'Insufficient funds',
+        message: message,
+        hint: 'Nothing has been sent.',
+        actionLabel: 'Add money',
+        onAction: () => Get.toNamed(AppRoutes.depositFunds),
       );
       return;
     }
@@ -1434,7 +1440,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                       if (totalRequired > availableBalance) {
                                         Get.snackbar(
                                           'Insufficient Funds',
-                                          'Amount ($currencySymbol${NumberFormat('#,###.00').format(transferAmountMajor)}) + Fee ($currencySymbol${NumberFormat('#,###.00').format(feeMajor)}) = $currencySymbol${NumberFormat('#,###.00').format(totalRequired)} exceeds your balance of $currencySymbol${NumberFormat('#,###.00').format(availableBalance)}',
+                                          'Amount ($currencySymbol${NumberFormat('#,##0.00').format(transferAmountMajor)}) + Fee ($currencySymbol${NumberFormat('#,##0.00').format(feeMajor)}) = $currencySymbol${NumberFormat('#,##0.00').format(totalRequired)} exceeds your balance of $currencySymbol${NumberFormat('#,##0.00').format(availableBalance)}',
                                           snackPosition: SnackPosition.BOTTOM,
                                           backgroundColor:
                                               Colors.red.withValues(alpha: 0.7),
@@ -2558,15 +2564,48 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                   );
                   final addRecipientUseCase =
                       serviceLocator<AddRecipientUseCase>();
-                  _pendingRecipientSave = addRecipientUseCase(
+                  final savedName = recipientToSave.name;
+                  // Deliberately not awaited: saving a recipient is a side effect
+                  // of the transfer and must never delay or block it. `unawaited`
+                  // says so explicitly — the field this used to be assigned to was
+                  // never read by anything, so it only looked like it was awaited.
+                  unawaited(addRecipientUseCase(
                     recipient: recipientToSave,
                     accessToken: accessToken,
                   ).then((result) {
                     result.fold(
-                      (failure) => print(
-                          "Warning: Failed to save recipient: ${failure.message}"),
+                      (failure) {
+                        // The user ticked a box asking for this. A failure used to
+                        // go to `print`, which is invisible in a release build — so
+                        // the recipient simply was not there next time and nothing
+                        // had said why.
+                        //
+                        // Get.snackbar rather than ScaffoldMessenger because by now
+                        // the transfer has completed and this screen is usually
+                        // gone; Get does not need a live context. And the wording
+                        // leads with the transfer, so a failed bookmark can never
+                        // read as a failed payment.
+                        AppLogger.error(
+                          'Failed to save recipient after transfer',
+                          error: failure.message,
+                          flow: 'transfer',
+                        );
+                        Get.snackbar(
+                          'Transfer sent',
+                          "Couldn't save $savedName to your recipients. You can "
+                              'add them from the Recipients screen.',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor:
+                              Colors.orange.withValues(alpha: 0.85),
+                          colorText: Colors.white,
+                          duration: const Duration(seconds: 4),
+                        );
+                      },
                       (saved) {
-                        print("Listener: Recipient saved with id: ${saved.id}");
+                        // Everything below touches State and the BuildContext
+                        // AFTER an async gap, and on the normal path the transfer
+                        // has already navigated away — so the widget is gone.
+                        if (!mounted) return;
                         // Update local reference so subsequent transfers
                         // recognize this recipient as already saved.
                         _recipient = saved;
@@ -2586,7 +2625,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                         }
                       },
                     );
-                  });
+                  }));
                 }
               }
             }
