@@ -22,6 +22,7 @@ import 'package:lazervault/src/features/voice_session/widgets/voice_language_voi
 import 'package:lazervault/src/features/voice_session/widgets/voice_customization_sheet.dart'
     show kMyVoiceSentinelId;
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_guidance_section.dart';
 import 'package:lazervault/core/services/injection_container.dart'
     show serviceLocator;
 
@@ -482,6 +483,17 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
         // Central voice settings screen stays dark — render the PIN section in
         // its dark palette (the settings-hub accordion uses the light default).
         const VoiceTxPinSection(dark: true),
+
+        SizedBox(height: 28.h),
+        // Guidance replay. The standing on/off switch lives in the settings hub's
+        // Guides group with the other guide toggles; what was missing is a way for
+        // someone who has already seen the tip to ask for it again.
+        _buildSectionHeader('Help'),
+        SizedBox(height: 12.h),
+        VoiceGuidanceSection(
+          userId: _getCurrentUserId() ?? '',
+          dark: true,
+        ),
       ],
     );
   }

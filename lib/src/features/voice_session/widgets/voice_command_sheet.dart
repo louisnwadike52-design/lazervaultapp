@@ -40,6 +40,7 @@ import 'package:lazervault/src/features/voice_session/widgets/voice_talk_afforda
 import 'package:lazervault/src/features/voice/services/voice_talk_mode_controller.dart';
 import 'package:lazervault/src/features/ai_chats/presentation/widgets/ai_chat_content.dart'
     show BubbleTailPainter;
+import 'voice_session_tip_bar.dart';
 part 'voice_command_sheet_widgets.dart';
 
 class VoiceCommandSheet extends StatefulWidget {
@@ -139,6 +140,10 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   // running transcript history is ALWAYS shown (it accumulates + scrolls); the
   // forum chip is a shortcut to the fuller standalone history sheet, not a
   // show/hide toggle, so there is no _showHistory flag any more.
+  /// Who the guidance tip's 'seen' mark belongs to. Set when the session
+  /// starts; the tip renders nothing until it is known.
+  String? _guidanceUserId;
+
   bool _showCaptions = true;
   // Conversation display mode, toggled by the chat (forum) chip:
   //  • true  = CONTINUOUS — the whole session transcript shows + scrolls in realtime.
@@ -532,6 +537,11 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is AuthenticationSuccess) {
       userId = authState.profile.userId;
+    }
+    // Also kept for the guidance tip's per-user "seen" mark, so a second account
+    // on this device gets its own first run rather than inheriting one.
+    if (mounted && userId != null && userId != _guidanceUserId) {
+      setState(() => _guidanceUserId = userId);
     }
     context.read<VoiceSessionCubit>().startVoiceSession(
           accessToken: token,
@@ -1312,6 +1322,23 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
                       // Compact header: avatar + Nova + live status + (fullscreen/close)
                       _buildSessionHeader(state),
+
+                      // First-run guidance. A banner rather than a pre-sheet
+                      // dialog: a session that opens behind something you must
+                      // dismiss before you can speak is a worse first experience
+                      // than a line you can ignore. Self-dismisses, never blocks
+                      // the mic, and re-showable from either settings screen.
+                      if (_guidanceUserId != null)
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          child: VoiceSessionTipBar(
+                            userId: _guidanceUserId!,
+                            // VoiceTalkMode owns this copy, so the tip states the
+                            // gesture for the mode the user is ACTUALLY in.
+                            modeHint:
+                                VoiceTalkMode.explanation(_interactionMode),
+                          ),
+                        ),
 
                       // Always-visible secondary controls (captions, history, settings,
                       // language, customize voice) — pulled out of the header so none are

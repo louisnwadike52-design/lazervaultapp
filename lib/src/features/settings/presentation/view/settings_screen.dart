@@ -1,4 +1,5 @@
 import 'package:lazervault/src/features/uplift/data/services/uplift_guide_preference.dart';
+import 'package:lazervault/src/features/voice_session/data/voice_guide_preference.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/services/endpoint_registry.dart';
 import 'package:lazervault/core/services/inactivity_preference.dart';
@@ -104,6 +105,14 @@ class _SettingsViewState extends State<_SettingsView> {
   /// synchronously. Loaded on init and written through on change, so it
   /// cannot drift from what the Lazerfunds screen actually does.
   bool _lazerfundsGuidesDismissed = false;
+
+  /// Voice guidance is per-USER, so it cannot be read until the profile is
+  /// in. Loaded in the profile listener rather than initState.
+  bool _voiceGuidesDismissed = false;
+
+  /// The uid whose voice-guidance flag has already been read, so the async
+  /// load runs once per user rather than on every rebuild.
+  String? _voiceGuidesUidLoaded;
 
   /// Last successfully-loaded profile state. Cached so that a background
   /// ProfileLoading (triggered by a preference toggle) does NOT blank the whole
@@ -935,6 +944,17 @@ class _SettingsViewState extends State<_SettingsView> {
         // guide on the deposit screen. Reads the SAME uid-scoped flag the modal's
         // "Don't show this again" checkbox writes, so the two stay in sync.
         final uid = user?.id ?? '';
+        // Voice guidance is uid-scoped, so it can only be read once the profile
+        // is in. Guarded on the cached value so this does not re-read on every
+        // rebuild of a screen that rebuilds often.
+        if (uid.isNotEmpty && _voiceGuidesUidLoaded != uid) {
+          _voiceGuidesUidLoaded = uid;
+          VoiceGuidePreference.isDismissed(uid).then((v) {
+            if (mounted && v != _voiceGuidesDismissed) {
+              setState(() => _voiceGuidesDismissed = v);
+            }
+          });
+        }
         final depositGuideOn = uid.isNotEmpty
             ? FeatureFlags.depositBalanceGuideEnabled(uid)
             : true;
@@ -999,6 +1019,55 @@ class _SettingsViewState extends State<_SettingsView> {
                   // this promise is real rather than a switch that does nothing.
                   ? 'Each tab will explain itself again next time you open it.'
                   : 'The help icon on Lazerfunds still brings them back.',
+              type: AppSnackbarType.success,
+            );
+          },
+        );
+        // Voice guidance: the in-session tip that states the gesture for the
+        // current interaction mode. Same two-flag shape as the Lazerfunds guides
+        // above — turning it back ON clears the per-surface "seen" marks, so the
+        // promise the subtitle makes is real rather than a switch that silently
+        // does nothing.
+        final voiceGuidesTile = _switchTile(
+          icon: Icons.record_voice_over_outlined,
+          title: 'Voice tips',
+          keywords: const [
+            'voice',
+            'tips',
+            'guide',
+            'guides',
+            'nova',
+            'assistant',
+            'hold to talk',
+            'tap to talk',
+            'push to talk',
+            'coach',
+            'how it works',
+            'first time',
+          ],
+          subtitle: 'Explain how to talk to the assistant when a session opens',
+          value: !_voiceGuidesDismissed,
+          onChanged: (v) async {
+            // The preference is uid-scoped, so with no profile there is nothing
+            // to write. Says so rather than flipping a switch that cannot
+            // persist — the settings screen renders before the profile lands.
+            if (uid.isEmpty) {
+              showAppSnackbar(
+                'Not ready yet',
+                'Give the profile a moment to load, then try again.',
+                type: AppSnackbarType.info,
+              );
+              return;
+            }
+            await VoiceGuidePreference.setDismissed(uid, !v);
+            if (!mounted) return;
+            setState(() => _voiceGuidesDismissed = !v);
+            showAppSnackbar(
+              v ? 'Voice tips on' : 'Voice tips off',
+              v
+                  ? 'The next voice session will explain the gesture for '
+                      'your talk mode again.'
+                  : 'You can turn these back on here whenever you want.',
               type: AppSnackbarType.success,
             );
           },
@@ -1104,6 +1173,8 @@ class _SettingsViewState extends State<_SettingsView> {
             ),
             SizedBox(height: 10.h),
             lazerfundsGuidesTile,
+            SizedBox(height: 10.h),
+            voiceGuidesTile,
             SizedBox(height: 18.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
