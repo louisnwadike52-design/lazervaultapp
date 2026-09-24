@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import '../cubit/business_analytics_cubit.dart';
 import '../cubit/business_analytics_state.dart';
 import '../widgets/analytics_period_selector.dart';
+import '../widgets/analytics_section_refresh.dart';
 import '../widgets/analytics_summary_cards.dart';
 import '../widgets/category_pie_chart.dart';
 import '../widgets/monthly_trend_line_chart.dart';
@@ -181,6 +182,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     );
   }
 
+  /// Human name for a period key, for the "Loading Week…" line.
+  static String? _periodLabel(String? period) => switch (period) {
+        'week' => 'Week',
+        'month' => 'Month',
+        'quarter' => 'Quarter',
+        'year' => 'Year',
+        _ => null,
+      };
+
   Widget _buildOverviewTab(BusinessAnalyticsLoaded state) {
     return RefreshIndicator(
       onRefresh: _refresh,
@@ -191,18 +201,35 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         padding: EdgeInsets.symmetric(vertical: 16.h),
         children: [
           AnalyticsPeriodSelector(
-            selectedPeriod: state.selectedPeriod,
+            // The chip the user TAPPED, not the one whose data is still on
+            // screen: the highlight has to move on touch or the tap reads as
+            // ignored while the fetch is in flight.
+            selectedPeriod: state.refreshingPeriod ?? state.selectedPeriod,
             onPeriodChanged: (period) {
               context.read<BusinessAnalyticsCubit>().changePeriod(period);
             },
           ),
           SizedBox(height: 16.h),
-          AnalyticsSummaryCards(analytics: state.financialAnalytics),
-          SizedBox(height: 20.h),
-          RevenueExpenseBarChart(months: state.monthlyTrends.months),
-          SizedBox(height: 20.h),
-          CategoryPieChart(categoryAnalytics: state.categoryAnalytics),
-          SizedBox(height: 20.h),
+          // Everything below the chips is the DATA. Only this is covered while a
+          // period change is in flight, so the header, tabs and chips stay put.
+          AnalyticsSectionRefresh(
+            isRefreshing: state.isChangingPeriod,
+            pendingLabel: _periodLabel(state.refreshingPeriod),
+            error: state.refreshError,
+            onRetry: () => context
+                .read<BusinessAnalyticsCubit>()
+                .changePeriod(state.refreshingPeriod ?? state.selectedPeriod),
+            child: Column(
+              children: [
+                AnalyticsSummaryCards(analytics: state.financialAnalytics),
+                SizedBox(height: 20.h),
+                RevenueExpenseBarChart(months: state.monthlyTrends.months),
+                SizedBox(height: 20.h),
+                CategoryPieChart(categoryAnalytics: state.categoryAnalytics),
+                SizedBox(height: 20.h),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -220,21 +247,38 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         padding: EdgeInsets.symmetric(vertical: 16.h),
         children: [
           AnalyticsPeriodSelector(
-            selectedPeriod: state.selectedPeriod,
+            // The chip the user TAPPED, not the one whose data is still on
+            // screen: the highlight has to move on touch or the tap reads as
+            // ignored while the fetch is in flight.
+            selectedPeriod: state.refreshingPeriod ?? state.selectedPeriod,
             onPeriodChanged: (period) {
               context.read<BusinessAnalyticsCubit>().changePeriod(period);
             },
           ),
           SizedBox(height: 16.h),
-          _buildSalesRevenueHeader(state),
-          SizedBox(height: 20.h),
-          RevenueExpenseBarChart(months: state.monthlyTrends.months),
-          SizedBox(height: 20.h),
-          if (incomeCategories.isNotEmpty) ...[
-            _buildCategoryList(
-                'Wallet inflows', incomeCategories, const Color(0xFF10B981)),
-            SizedBox(height: 20.h),
-          ],
+          // Everything below the chips is the DATA. Only this is covered while a
+          // period change is in flight, so the header, tabs and chips stay put.
+          AnalyticsSectionRefresh(
+            isRefreshing: state.isChangingPeriod,
+            pendingLabel: _periodLabel(state.refreshingPeriod),
+            error: state.refreshError,
+            onRetry: () => context
+                .read<BusinessAnalyticsCubit>()
+                .changePeriod(state.refreshingPeriod ?? state.selectedPeriod),
+            child: Column(
+              children: [
+                _buildSalesRevenueHeader(state),
+                SizedBox(height: 20.h),
+                RevenueExpenseBarChart(months: state.monthlyTrends.months),
+                SizedBox(height: 20.h),
+                if (incomeCategories.isNotEmpty) ...[
+                  _buildCategoryList('Wallet inflows', incomeCategories,
+                      const Color(0xFF10B981)),
+                  SizedBox(height: 20.h),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -332,18 +376,35 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         padding: EdgeInsets.symmetric(vertical: 16.h),
         children: [
           AnalyticsPeriodSelector(
-            selectedPeriod: state.selectedPeriod,
+            // The chip the user TAPPED, not the one whose data is still on
+            // screen: the highlight has to move on touch or the tap reads as
+            // ignored while the fetch is in flight.
+            selectedPeriod: state.refreshingPeriod ?? state.selectedPeriod,
             onPeriodChanged: (period) {
               context.read<BusinessAnalyticsCubit>().changePeriod(period);
             },
           ),
           SizedBox(height: 16.h),
-          _buildExpenseHeader(state.financialAnalytics),
-          SizedBox(height: 20.h),
-          MonthlyTrendLineChart(timeSeries: state.expenseTimeSeries),
-          SizedBox(height: 20.h),
-          CategoryPieChart(categoryAnalytics: state.categoryAnalytics),
-          SizedBox(height: 20.h),
+          // Everything below the chips is the DATA. Only this is covered while a
+          // period change is in flight, so the header, tabs and chips stay put.
+          AnalyticsSectionRefresh(
+            isRefreshing: state.isChangingPeriod,
+            pendingLabel: _periodLabel(state.refreshingPeriod),
+            error: state.refreshError,
+            onRetry: () => context
+                .read<BusinessAnalyticsCubit>()
+                .changePeriod(state.refreshingPeriod ?? state.selectedPeriod),
+            child: Column(
+              children: [
+                _buildExpenseHeader(state.financialAnalytics),
+                SizedBox(height: 20.h),
+                MonthlyTrendLineChart(timeSeries: state.expenseTimeSeries),
+                SizedBox(height: 20.h),
+                CategoryPieChart(categoryAnalytics: state.categoryAnalytics),
+                SizedBox(height: 20.h),
+              ],
+            ),
+          ),
         ],
       ),
     );

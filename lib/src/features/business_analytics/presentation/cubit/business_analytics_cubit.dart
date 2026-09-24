@@ -53,6 +53,22 @@ class BusinessAnalyticsCubit extends Cubit<BusinessAnalyticsState> {
       return;
     }
 
+    // A period change with data already on screen KEEPS that screen.
+    //
+    // Emitting a bare Loading here is what made a filter tap look like a page
+    // reload: the screen swapped its whole body for a full-page spinner, so the
+    // header, the tabs and the chips all vanished and came back. Staying on
+    // Loaded leaves the chrome in place and lets the data sections show their own
+    // loader — the tapped chip is highlighted from refreshingPeriod, so the UI
+    // never claims the old period's numbers belong to the new one.
+    final previous = state;
+    if (previous is BusinessAnalyticsLoaded) {
+      emit(previous.copyWith(refreshingPeriod: period));
+      await _fetchAndCache(period, background: false);
+      return;
+    }
+
+    // Nothing on screen yet (cold open), so a full-page loader is honest.
     emit(BusinessAnalyticsLoading());
     await _fetchAndCache(period, background: false);
   }
@@ -148,10 +164,24 @@ class BusinessAnalyticsCubit extends Cubit<BusinessAnalyticsState> {
           loaded; // memo for instant period/tab switches
       // Only surface if the user is still viewing this period (a background
       // revalidation must not clobber a period the user has since switched to).
+      // Fresh state, so refreshingPeriod and refreshError are both null again.
       if (_currentPeriod == period) emit(loaded);
     } catch (e) {
       // Foreground: surface the error. Background: keep the stale cache silently.
       if (!background && _currentPeriod == period) {
+        final previous = state;
+        if (previous is BusinessAnalyticsLoaded && previous.isChangingPeriod) {
+          // A failed PERIOD CHANGE must not take the page with it. Emitting
+          // BusinessAnalyticsError here threw away figures the user was reading
+          // over what is often a transient blip. The chip snaps back to the
+          // period whose numbers are actually on screen, and the section that
+          // asked reports the failure.
+          emit(previous.copyWith(
+            clearRefreshingPeriod: true,
+            refreshError: e.toString(),
+          ));
+          return;
+        }
         emit(BusinessAnalyticsError(message: e.toString()));
       }
     }
