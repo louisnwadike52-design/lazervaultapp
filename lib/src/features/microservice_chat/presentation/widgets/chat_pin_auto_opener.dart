@@ -43,11 +43,28 @@ import 'chat_pin_prompt_card.dart';
 ///   * EXPIRY — an expired prompt cannot be completed; the card renders it as expired and
 ///     the sheet would only fail.
 class ChatPinAutoOpener {
-  /// Transaction ids already auto-opened once.
-  final Set<String> _opened = <String>{};
+  /// How many times each id had APPEARED in the transcript when it was opened.
+  ///
+  /// A count rather than a flag, because "already opened" and "asked again" are
+  /// otherwise indistinguishable. The chat derives a prompt's transaction_id from
+  /// (user, kind, amount, counterparty, 60-second bucket) — that determinism is
+  /// the saga's double-send guard — so asking twice for the same transfer inside a
+  /// minute produces the SAME id. With a flag, the second ask was swallowed: the
+  /// pad never reappeared and the user was told to enter a PIN on a pad that was
+  /// not there. A re-ask appends a NEW prompt message, so the id's occurrence
+  /// count rises, while a mere rebuild passes the same list and it does not.
+  final Map<String, int> _openedAt = <String, int>{};
 
-  /// Transaction ids the user dismissed. Never auto-opened again.
-  final Set<String> _cancelled = <String>{};
+  /// Same, for ids the user dismissed.
+  ///
+  /// Dismissing means "not now", and that must survive rebuilds — but not an
+  /// explicit re-ask. Someone who closes the pad and then types "send it again"
+  /// has changed their mind, and refusing to reopen would strand them.
+  final Map<String, int> _cancelledAt = <String, int>{};
+
+  /// Occurrences seen on the last sync, so noteCancelled can stamp the right
+  /// count without the card having to know about transcript positions.
+  final Map<String, int> _lastSeenCount = <String, int>{};
 
   /// Prompts that were already in the transcript when this opener started watching.
   ///
@@ -70,7 +87,13 @@ class ChatPinAutoOpener {
   /// card through a GlobalKey, so with no card mounted an open is a no-op and there is
   /// nothing else observable. Read-only view — callers cannot mutate the guard sets.
   @visibleForTesting
-  Set<String> get debugOpened => Set.unmodifiable(_opened);
+  Set<String> get debugOpened => Set.unmodifiable(_openedAt.keys);
+
+  /// How many times each id has been auto-opened, for tests that need to tell a
+  /// re-ask (2) from a rebuild (1).
+  @visibleForTesting
+  Map<String, int> get debugOpenCounts => Map.unmodifiable(_openCounts);
+  final Map<String, int> _openCounts = <String, int>{};
 
   /// Extracts the transaction id a prompt payload refers to.
   static String transactionIdOf(Map<String, dynamic> payload) =>
@@ -95,7 +118,9 @@ class ChatPinAutoOpener {
   /// sheet the user just closed, which reads as the app refusing to take no for an answer.
   void noteCancelled(String transactionId) {
     if (transactionId.isEmpty) return;
-    _cancelled.add(transactionId);
+    // Stamped at the count the prompt was at when dismissed, so only a LATER
+    // appearance — a genuine re-ask — can reopen it.
+    _cancelledAt[transactionId] = _lastSeenCount[transactionId] ?? 1;
   }
 
   /// Forget everything. Call when the conversation changes.
@@ -104,8 +129,10 @@ class ChatPinAutoOpener {
   /// live prompt should open it, and leaving these sets populated across sessions would
   /// also leak ids for the lifetime of the screen.
   void reset() {
-    _opened.clear();
-    _cancelled.clear();
+    _openedAt.clear();
+    _cancelledAt.clear();
+    _openCounts.clear();
+    _lastSeenCount.clear();
     _preexisting.clear();
     _primed = false;
   }
@@ -140,11 +167,25 @@ class ChatPinAutoOpener {
     final txId = transactionIdOf(payload);
     if (txId.isEmpty) return;
     if (_preexisting.contains(txId)) return;
-    if (_opened.contains(txId) || _cancelled.contains(txId)) return;
     if (isExpired(payload)) return;
 
+    // How many prompt messages in the transcript carry this id. A rebuild does
+    // not change it; a re-ask does, because the agent appends a new message.
+    var occurrences = 0;
+    for (final p in prompts) {
+      if (transactionIdOf(p) == txId) occurrences++;
+    }
+    _lastSeenCount[txId] = occurrences;
+
+    // Open only for an appearance we have not already acted on. This is what
+    // makes a repeat "send ₦500 to Chris" inside the same minute reopen the pad
+    // even though the derived transaction_id is identical.
+    if (occurrences <= (_openedAt[txId] ?? 0)) return;
+    if (occurrences <= (_cancelledAt[txId] ?? 0)) return;
+
     // Marked before the await so a rebuild in the same frame cannot open twice.
-    _opened.add(txId);
+    _openedAt[txId] = occurrences;
+    _openCounts[txId] = (_openCounts[txId] ?? 0) + 1;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // The route can change between the state emission and this callback — the user may

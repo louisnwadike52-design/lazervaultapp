@@ -62,7 +62,8 @@ void main() {
       expect(opener.debugOpened, contains('tx-1'));
     });
 
-    testWidgets('opens once per transaction, however many rebuilds', (tester) async {
+    testWidgets('opens once per transaction, however many rebuilds',
+        (tester) async {
       // A chat list rebuilds constantly — typing indicators, scroll, incoming messages.
       // Re-opening on every rebuild would trap the user in a modal.
       final opener = ChatPinAutoOpener();
@@ -163,7 +164,8 @@ void main() {
       expect(opener.debugOpened, isNot(contains('tx-exp')));
     });
 
-    testWidgets('an unreadable expiry is treated as still valid', (tester) async {
+    testWidgets('an unreadable expiry is treated as still valid',
+        (tester) async {
       // The server is the authority on expiry. Refusing to open on a timestamp we failed
       // to parse would block a perfectly valid transfer.
       final opener = ChatPinAutoOpener();
@@ -219,6 +221,121 @@ void main() {
       // The next conversation's history primes and opens nothing.
       opener.sync(context: ctx, prompts: [prompt('tx-2')], isLiveTurn: true);
       expect(opener.debugOpened, isEmpty);
+    });
+
+    testWidgets('a repeat of the SAME transfer reopens the pad',
+        (tester) async {
+      // THE REPORTED BUG. The chat derives transaction_id from
+      // (user, kind, amount, counterparty, 60-second bucket) — deliberately, so
+      // the saga can refuse a double-send. Asking "send ₦500 to Chris" twice
+      // inside one minute therefore produces the SAME id, and the old flag-based
+      // guard swallowed the second ask: the assistant said "enter your PIN on the
+      // secure pad" and no pad appeared.
+      //
+      // A re-ask appends a NEW prompt message, so the id occurs twice in the
+      // transcript. That is what distinguishes it from a rebuild.
+      final opener = ChatPinAutoOpener();
+      late BuildContext ctx;
+      await tester.pumpWidget(MaterialApp(home: Builder(builder: (c) {
+        ctx = c;
+        return const SizedBox();
+      })));
+
+      opener.sync(context: ctx, prompts: const [], isLiveTurn: true);
+      opener.sync(context: ctx, prompts: [prompt('tx-500')], isLiveTurn: true);
+      expect(opener.debugOpenCounts['tx-500'], 1);
+
+      // Rebuilds in between must still not reopen.
+      for (var i = 0; i < 3; i++) {
+        opener.sync(
+            context: ctx, prompts: [prompt('tx-500')], isLiveTurn: true);
+      }
+      expect(opener.debugOpenCounts['tx-500'], 1,
+          reason: 'a rebuild passes the same list and must not reopen');
+
+      // The user asks again; the agent emits another prompt with the same id.
+      opener.sync(
+        context: ctx,
+        prompts: [prompt('tx-500'), prompt('tx-500')],
+        isLiveTurn: true,
+      );
+      expect(opener.debugOpenCounts['tx-500'], 2,
+          reason:
+              'asking again is a new intent even when the derived id repeats');
+    });
+
+    testWidgets('a re-ask overrides an earlier dismissal', (tester) async {
+      // Dismissing means "not now" and must survive rebuilds. But someone who
+      // closes the pad and then asks again has changed their mind, and refusing
+      // to reopen strands them with a card they already tried to use.
+      final opener = ChatPinAutoOpener();
+      late BuildContext ctx;
+      await tester.pumpWidget(MaterialApp(home: Builder(builder: (c) {
+        ctx = c;
+        return const SizedBox();
+      })));
+
+      opener.sync(context: ctx, prompts: const [], isLiveTurn: true);
+      opener.sync(context: ctx, prompts: [prompt('tx-500')], isLiveTurn: true);
+      opener.noteCancelled('tx-500');
+
+      // Rebuilds after the dismissal: still closed.
+      for (var i = 0; i < 3; i++) {
+        opener.sync(
+            context: ctx, prompts: [prompt('tx-500')], isLiveTurn: true);
+      }
+      expect(opener.debugOpenCounts['tx-500'], 1);
+
+      // Re-asked.
+      opener.sync(
+        context: ctx,
+        prompts: [prompt('tx-500'), prompt('tx-500')],
+        isLiveTurn: true,
+      );
+      expect(opener.debugOpenCounts['tx-500'], 2);
+    });
+
+    testWidgets('a repeat already in history does not open on first sight',
+        (tester) async {
+      // Two identical prompts loaded from history are still history. Priming
+      // records them and opens nothing, regardless of how many there are.
+      final opener = ChatPinAutoOpener();
+      late BuildContext ctx;
+      await tester.pumpWidget(MaterialApp(home: Builder(builder: (c) {
+        ctx = c;
+        return const SizedBox();
+      })));
+
+      opener.sync(
+        context: ctx,
+        prompts: [prompt('tx-old'), prompt('tx-old')],
+        isLiveTurn: true,
+      );
+      opener.sync(
+        context: ctx,
+        prompts: [prompt('tx-old'), prompt('tx-old')],
+        isLiveTurn: true,
+      );
+      expect(opener.debugOpened, isEmpty);
+    });
+
+    testWidgets('reset forgets the counts too', (tester) async {
+      // Switching conversation must not leave an id looking "already opened at
+      // count 2" in a transcript where it appears once.
+      final opener = ChatPinAutoOpener();
+      late BuildContext ctx;
+      await tester.pumpWidget(MaterialApp(home: Builder(builder: (c) {
+        ctx = c;
+        return const SizedBox();
+      })));
+
+      opener.sync(context: ctx, prompts: const [], isLiveTurn: true);
+      opener.sync(context: ctx, prompts: [prompt('tx-1')], isLiveTurn: true);
+      expect(opener.debugOpenCounts['tx-1'], 1);
+
+      opener.reset();
+      expect(opener.debugOpened, isEmpty);
+      expect(opener.debugOpenCounts, isEmpty);
     });
   });
 }
