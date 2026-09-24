@@ -3,6 +3,29 @@ import 'package:http/http.dart' as http;
 
 import 'package:lazervault/core/services/endpoint_registry.dart';
 
+/// What a health probe actually established.
+///
+/// The old probe returned a bool, which merged two completely different facts:
+/// "our gateway answered with a 5xx" and "we could not reach anything at all".
+/// Only the first is evidence about OUR servers. The second is equally
+/// consistent with the user's phone having no working data — and reporting it as
+/// "Our servers are being worked on" tells someone a falsehood about us at the
+/// exact moment they are deciding whether to trust us with their money.
+enum BackendReachability {
+  /// Our gateway answered below 500. It is alive, whatever else is true.
+  healthy,
+
+  /// Our gateway — or Cloudflare in front of it — answered with a 5xx. Something
+  /// reached our infrastructure and our infrastructure reported a problem, so
+  /// this is definitively ours no matter what the device's network is doing.
+  serverError,
+
+  /// Nothing answered: socket error, DNS failure, timeout. AMBIGUOUS — this is
+  /// what a real outage looks like AND what a phone with no data looks like, and
+  /// the two cannot be told apart from this signal alone.
+  unreachable,
+}
+
 /// App-global "re-check the backend now" signal.
 ///
 /// The [AppStartupGate] only probes on launch, on resume, and on the
@@ -69,7 +92,7 @@ class ServerStatusService {
   /// [endpointRegistry.httpCore] ends in `/api/v1`.
   Uri _healthUri() => Uri.parse('${endpointRegistry.httpCore}/health');
 
-  Future<bool> _probeOnce({Duration? timeout}) async {
+  Future<BackendReachability> _probeOnce({Duration? timeout}) async {
     try {
       final resp = await _client.get(_healthUri()).timeout(timeout ?? _timeout);
       // ANY response below 500 means OUR GATEWAY ANSWERED, and that is the
@@ -91,9 +114,15 @@ class ServerStatusService {
       // when a dependency (auth, accounts, redis) is failing, which is exactly
       // when the maintenance modal SHOULD appear. Same for Cloudflare's
       // 502/523 when the origin is gone.
-      return resp.statusCode < 500;
+      return resp.statusCode < 500
+          ? BackendReachability.healthy
+          // A 5xx is an ANSWER. Cloudflare's 502/523 when the origin is gone, or
+          // our own /health returning 503 because auth/accounts/redis is failing.
+          // Either way something spoke for us, so the fault is ours to report.
+          : BackendReachability.serverError;
     } catch (_) {
-      return false; // socket/DNS/timeout → edge unreachable (machine off, etc.)
+      // socket/DNS/timeout. Says nothing about whose fault it is — see the enum.
+      return BackendReachability.unreachable;
     }
   }
 
@@ -102,13 +131,60 @@ class ServerStatusService {
   /// returning true the instant ANY probe succeeds and false only after ALL
   /// attempts fail — so the maintenance modal only appears when the server is
   /// really, really down, not on a transient blip.
-  Future<bool> isBackendHealthy() async {
+  Future<BackendReachability> checkReachability() async {
+    var sawServerError = false;
     for (var attempt = 0; attempt < _healthAttempts; attempt++) {
-      final healthy =
+      final outcome =
           await _probeOnce(timeout: attempt == 0 ? _timeout : _retryTimeout);
-      if (healthy) return true;
+      if (outcome == BackendReachability.healthy) {
+        return BackendReachability.healthy;
+      }
+      // Remembered across attempts: one 5xx anywhere in the burst is proof our
+      // infrastructure is reachable and unwell, which outranks later timeouts.
+      if (outcome == BackendReachability.serverError) sawServerError = true;
       if (attempt < _healthAttempts - 1) {
         await Future<void>.delayed(_retryGap);
+      }
+    }
+    return sawServerError
+        ? BackendReachability.serverError
+        : BackendReachability.unreachable;
+  }
+
+  /// Well-known captive-portal probes, used ONLY to answer "does this device
+  /// have working internet at all". Deliberately two, on separate operators, so
+  /// one of them being blocked or down cannot alone convince us the user is
+  /// offline.
+  ///
+  /// Neither request carries any data about the user — they are bare GETs to
+  /// endpoints whose entire purpose is to return an empty 204, and they are the
+  /// same ones Android itself uses.
+  static const List<String> _internetProbeUrls = <String>[
+    'https://cp.cloudflare.com/generate_204',
+    'https://connectivitycheck.gstatic.com/generate_204',
+  ];
+
+  static const Duration _internetProbeTimeout = Duration(seconds: 4);
+
+  /// True when the device can actually reach the public internet.
+  ///
+  /// This is the check that separates "our servers are down" from "your phone
+  /// has no data". `connectivity_plus` cannot do it: it reports the RADIO state,
+  /// so a phone showing four bars of 4G with an exhausted data bundle, a captive
+  /// portal, or a broken APN reports itself as perfectly online.
+  ///
+  /// Exactly 204 counts. That is the point of a `generate_204` endpoint: real
+  /// internet returns an empty 204, while a captive portal returns its own login
+  /// page with a 200 or a redirect — so anything else means the connection is
+  /// intercepted, which for our purposes is not working internet.
+  Future<bool> hasWorkingInternet() async {
+    for (final url in _internetProbeUrls) {
+      try {
+        final resp =
+            await _client.get(Uri.parse(url)).timeout(_internetProbeTimeout);
+        if (resp.statusCode == 204) return true;
+      } catch (_) {
+        // Try the next operator before concluding anything.
       }
     }
     return false;

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dio/dio.dart' as dio;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/utils/friendly_error.dart';
@@ -81,18 +82,23 @@ void main() {
   });
 
   group('friendlyGrpcError', () {
-    test('never leaks "expected 200, got 503" — maps to network message', () {
+    test('never leaks "expected 200, got 503" — and names it as OURS', () {
       final e = GrpcError.custom(
         StatusCode.unknown,
         'expected 200, got 503',
       );
-      expect(friendlyGrpcError(e, 'fallback'), networkErrorMessage);
+      // Used to be networkErrorMessage, i.e. "check your connection". A 503 is
+      // our gateway answering. The user's connection carried it perfectly.
+      expect(friendlyGrpcError(e, 'fallback'), serverErrorMessage);
     });
 
-    test('unavailable maps to network message', () {
+    test('unavailable with no other evidence names both possibilities', () {
+      // gRPC unavailable is produced BOTH by a dead socket and by a dead server,
+      // and nothing here distinguishes them — so the honest message says so
+      // rather than picking one and being wrong half the time.
       expect(
         friendlyGrpcError(GrpcError.unavailable('x'), 'fallback'),
-        networkErrorMessage,
+        unreachableErrorMessage,
       );
     });
 
@@ -116,9 +122,101 @@ void main() {
   });
 
   group('friendlyError', () {
-    test('gRPC transport error → network message', () {
+    test('a 5xx behind a gRPC error is reported as our problem', () {
       final e = GrpcError.custom(StatusCode.unknown, 'expected 200, got 503');
-      expect(friendlyError(e), networkErrorMessage);
+      expect(friendlyError(e), serverErrorMessage);
+    });
+  });
+
+  /// The bug this split exists for.
+  ///
+  /// Reported from a device during signup: a card reading "Our servers are being
+  /// worked on right now" — which was correct that time, but the same code path
+  /// produced "Network error. Please check your connection and try again."
+  /// whenever OUR server returned a 5xx. Someone whose signup failed on our 503
+  /// was told their connection was broken: they would restart the router, switch
+  /// to mobile data, and retry into the same outage.
+  ///
+  /// Three outcomes now, because there are three genuinely different situations
+  /// and only two of them are knowable.
+  group('whose fault is it', () {
+    test('a 5xx is ours, in every shape it arrives in', () {
+      expect(isServerError(GrpcError.internal('panic: nil pointer')), isTrue);
+      expect(isServerError(GrpcError.custom(StatusCode.unknown, 'got 502')),
+          isTrue);
+      expect(isServerError('expected 200, got 503'), isTrue);
+      expect(isServerError('Scan error: HTTP 530'), isTrue,
+          reason: 'Cloudflare origin-unreachable codes are still our origin');
+      expect(
+        isServerError(dio.DioException(
+          requestOptions: dio.RequestOptions(path: '/x'),
+          response: dio.Response<void>(
+              requestOptions: dio.RequestOptions(path: '/x'), statusCode: 503),
+        )),
+        isTrue,
+      );
+    });
+
+    test('an undeployed service is ours, not a connectivity problem', () {
+      // The method is not registered: the service is down or the gateway route
+      // is missing. Sending the user to check their wifi fixes nothing.
+      expect(isServerError(GrpcError.unimplemented('unknown service Foo')),
+          isTrue);
+      expect(friendlyGrpcError(GrpcError.unimplemented('unknown service Foo')),
+          serverErrorMessage);
+    });
+
+    test('a dead socket is the device, and says so', () {
+      expect(isDeviceTransportError(const SocketException('failed')), isTrue);
+      expect(isDeviceTransportError('Failed host lookup: api.lazervault.app'),
+          isTrue);
+      expect(transportFailureMessage(const SocketException('failed')),
+          networkErrorMessage);
+    });
+
+    test('money copy containing 5xx-looking digits is neither', () {
+      // The reason the HTTP pattern is anchored on "http": these are ordinary
+      // sentences a user should see unchanged.
+      expect(isServerError('You sent NGN 530 to Ada.'), isFalse);
+      expect(sanitizeUserFacingError('You sent NGN 530 to Ada.'),
+          'You sent NGN 530 to Ada.');
+    });
+
+    test('server evidence beats transport evidence when both are present', () {
+      // "connection" appears in plenty of 5xx text. A concrete 5xx is proof; the
+      // word "connection" is not.
+      expect(
+        transportFailureMessage(
+            'HTTP connection completed with 502 instead of 200'),
+        serverErrorMessage,
+      );
+    });
+
+    test('the sanitiser splits the same three ways', () {
+      expect(
+          sanitizeUserFacingError('expected 200, got 503'), serverErrorMessage);
+      expect(sanitizeUserFacingError('SocketException: Connection refused'),
+          networkErrorMessage);
+      expect(
+          sanitizeUserFacingError('bad status code'), unreachableErrorMessage);
+    });
+
+    test('isNetworkError still covers everything it used to', () {
+      // 49 call sites use it for retry and offline control flow. The split
+      // changed the WORDS, and must not have changed the classification.
+      for (final e in <Object>[
+        GrpcError.unavailable('x'),
+        GrpcError.internal('x'),
+        GrpcError.deadlineExceeded('x'),
+        GrpcError.aborted('x'),
+        const SocketException('failed'),
+        TimeoutException('slow'),
+        GrpcError.custom(StatusCode.unknown, 'expected 200, got 503'),
+      ]) {
+        expect(isNetworkError(e), isTrue, reason: '$e');
+      }
+      expect(isNetworkError(GrpcError.alreadyExists('Account already exists.')),
+          isFalse);
     });
   });
 }

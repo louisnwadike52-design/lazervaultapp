@@ -11,6 +11,7 @@ import 'package:lazervault/core/services/app_update_service.dart';
 import 'package:lazervault/src/features/app_update/widgets/forced_update_screen.dart';
 import 'package:lazervault/src/features/app_update/widgets/update_modal.dart';
 import 'package:lazervault/src/features/app_status/widgets/maintenance_screen.dart';
+import 'package:lazervault/src/features/app_status/widgets/outage_copy.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 
@@ -39,7 +40,7 @@ class _AppStartupGateState extends State<AppStartupGate>
     with WidgetsBindingObserver {
   final ServerStatusService _serverStatus = ServerStatusService();
 
-  bool _backendUnhealthy = false;
+  OutageKind? _outage;
   AppUpdateInfo? _forcedInfo;
   bool _running = false;
 
@@ -118,6 +119,29 @@ class _AppStartupGateState extends State<AppStartupGate>
         r == AppRoutes.onboarding;
   }
 
+  /// The create-an-account flow, where the user has nothing with us yet and the
+  /// "your money and data are safe" reassurance is meaningless.
+  ///
+  /// A fixed set rather than a prefix: `/auth/` also covers signing IN, changing
+  /// a passcode and 2FA, where that reassurance is exactly right. If a new
+  /// signup step is added and not listed here it falls back to the sign-in copy,
+  /// which is the behaviour this replaced — so drift degrades, it does not break.
+  static const Set<String> _signUpRoutes = <String>{
+    AppRoutes.signUp,
+    AppRoutes.selectCountry,
+    AppRoutes.phoneEntry,
+    AppRoutes.phoneOtp,
+    AppRoutes.phonePersonalDetails,
+    AppRoutes.phoneEmailVerification,
+    AppRoutes.phonePasscodeCreate,
+    AppRoutes.emailVerification,
+    AppRoutes.passcodeSetup,
+    AppRoutes.bvnSignup,
+    AppRoutes.onboarding,
+  };
+
+  bool _isSignUpFlow() => _signUpRoutes.contains(Get.currentRoute);
+
   // Distinguishes the USER's connectivity from a SERVER outage: if the device
   // itself has no network, a failed health probe is the user's problem (their
   // API calls will snackbar "no connection"), NOT maintenance. Unknown → assume
@@ -131,6 +155,38 @@ class _AppStartupGateState extends State<AppStartupGate>
     }
   }
 
+  /// Decides WHOSE problem this is, or null when there is no problem.
+  ///
+  /// The old logic was `!healthy && deviceOnline()`, which asked the wrong
+  /// question. `deviceOnline()` reads the radio, and a phone with four bars and
+  /// no working data — an exhausted bundle, a captive portal, a broken APN —
+  /// answers yes. So every one of those told the user our servers were down.
+  Future<OutageKind?> _classifyOutage() async {
+    final reach = await _serverStatus.checkReachability();
+    if (!mounted) return null;
+
+    switch (reach) {
+      case BackendReachability.healthy:
+        return null;
+
+      case BackendReachability.serverError:
+        // Something answered for us, with a 5xx. Ours, regardless of the
+        // device's network — and worth not second-guessing with further probes.
+        return OutageKind.server;
+
+      case BackendReachability.unreachable:
+        // Ambiguous. The radio check is free and instant, so it goes first: if
+        // there is no interface at all, we are certainly not the problem.
+        if (!await _deviceOnline()) return OutageKind.connection;
+        if (!mounted) return null;
+        // Radio says connected, which means nothing on its own. Ask whether the
+        // internet is actually reachable, and only claim an outage if it is.
+        final internet = await _serverStatus.hasWorkingInternet();
+        if (!mounted) return null;
+        return internet ? OutageKind.server : OutageKind.connection;
+    }
+  }
+
   Future<void> _run() async {
     if (_running) return;
     _running = true;
@@ -140,18 +196,15 @@ class _AppStartupGateState extends State<AppStartupGate>
       //    the edge is unreachable — i.e. a real server outage blocking sign-in,
       //    not the user's flaky network and never over a logged-in session.
       if (!_isPreLoginScreen()) {
-        if (_backendUnhealthy) setState(() => _backendUnhealthy = false);
+        if (_outage != null) setState(() => _outage = null);
       } else {
-        final healthy = await _serverStatus.isBackendHealthy();
+        final outage = await _classifyOutage();
         if (!mounted) return;
-        final unhealthy =
-            !healthy && await _deviceOnline() && _isPreLoginScreen();
-        if (!mounted) return;
-        if (unhealthy != _backendUnhealthy) {
-          setState(() => _backendUnhealthy = unhealthy);
+        if (outage != _outage) setState(() => _outage = outage);
+        if (outage != null) {
+          return; // can't reach the backend on an auth screen — skip the
+          // update check, which needs the network too.
         }
-        if (unhealthy)
-          return; // edge down on an auth screen — skip update check
       }
 
       // 2) Store-update check (background; reads cached config, offline-safe).
@@ -195,6 +248,10 @@ class _AppStartupGateState extends State<AppStartupGate>
     // unsupported build — and it's independent of backend health (you update
     // via the store). Everything else renders the normal app, with the
     // maintenance modal overlaid on top when the backend is unhealthy.
+    final outage = _outage;
+    final copy = outage == null
+        ? null
+        : OutageCopy.of(outage, isSignUp: _isSignUpFlow());
     final forced = _forcedInfo;
     if (forced != null) {
       return ForcedUpdateScreen(
@@ -208,8 +265,20 @@ class _AppStartupGateState extends State<AppStartupGate>
         // Belt-and-suspenders: only ever paint the maintenance overlay on a
         // pre-login screen, even if a stale `_backendUnhealthy` lingers after a
         // route change (the next `_run` on resume reconciles the flag).
-        if (_backendUnhealthy && _isPreLoginScreen())
-          Positioned.fill(child: MaintenanceModal(onRetry: _run)),
+        if (outage != null && _isPreLoginScreen())
+          Positioned.fill(
+            child: MaintenanceModal(
+              onRetry: _run,
+              icon: copy!.icon,
+              title: copy.title,
+              message: copy.message,
+              // A connection problem may need the user to leave the app to fix
+              // it, so it must be closable. A server outage clears itself.
+              onClose: copy.dismissible
+                  ? () => setState(() => _outage = null)
+                  : null,
+            ),
+          ),
       ],
     );
   }

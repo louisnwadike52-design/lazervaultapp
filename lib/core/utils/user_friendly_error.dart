@@ -21,7 +21,7 @@ String getUserFriendlyErrorMessage(Object? error, {String? fallback}) {
   // Caught before everything else so raw text like "expected 200, got 503"
   // can never be echoed back to the user.
   if (isNetworkError(error)) {
-    return networkErrorMessage;
+    return transportFailureMessage(error);
   }
 
   // gRPC errors
@@ -112,11 +112,11 @@ String _grpcErrorMessage(GrpcError error) {
   // Transport-level failures (incl. non-200 gateway responses surfacing under
   // unknown/internal) collapse to the canonical network message.
   if (isNetworkError(error)) {
-    return networkErrorMessage;
+    return transportFailureMessage(error);
   }
   switch (error.code) {
     case StatusCode.unavailable:
-      return networkErrorMessage;
+      return transportFailureMessage(error);
     case StatusCode.deadlineExceeded:
       return 'This is taking too long. Please check your connection and try again.';
     case StatusCode.unauthenticated:

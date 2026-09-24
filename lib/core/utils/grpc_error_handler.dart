@@ -50,7 +50,7 @@ class GrpcErrorHandler {
       case StatusCode.unknown:
       case StatusCode.internal:
       case StatusCode.aborted:
-        return networkErrorMessage;
+        return transportFailureMessage(error);
       case StatusCode.unauthenticated:
         return 'Your session has expired. Please log in again.';
       case StatusCode.invalidArgument:
@@ -58,7 +58,7 @@ class GrpcErrorHandler {
             'Invalid input. Please check your details and try again.';
       default:
         // Transport-level failures can surface under odd codes — collapse them.
-        if (isNetworkError(error)) return networkErrorMessage;
+        if (isNetworkError(error)) return transportFailureMessage(error);
         // If the server sent a short, meaningful message, prefer it — but never
         // if it looks like raw transport/exception text.
         final msg = error.message ?? '';

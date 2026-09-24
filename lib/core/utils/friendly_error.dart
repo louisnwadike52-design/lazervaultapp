@@ -3,11 +3,30 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:grpc/grpc.dart';
 
-/// The single, canonical message shown for any connectivity / transport-level
-/// failure. Use this everywhere so the wording is consistent across the app and
-/// never exposes raw HTTP/gRPC text (e.g. "expected 200, got 503").
+/// Shown when the DEVICE cannot reach the network: a socket error, a DNS
+/// failure, a connection timeout. The user can often fix this, so it is the only
+/// one of the three that asks them to.
 const String networkErrorMessage =
     'Network error. Please check your connection and try again.';
+
+/// Shown when OUR side is at fault: a 5xx from the gateway or the Cloudflare
+/// edge, a service that panicked, a route that is not deployed.
+///
+/// This exists because every one of those used to produce [networkErrorMessage].
+/// A user whose signup failed on our 503 was told to check their connection —
+/// so they restarted their router, switched to mobile data, and tried again into
+/// the same outage, while the app implied the fault was theirs. Telling someone
+/// their connection is broken when it is not is worse than saying nothing.
+const String serverErrorMessage =
+    'Our servers are having a problem right now. This is not your connection — '
+    'please try again in a moment.';
+
+/// Shown when the failure genuinely could be either, and the app has no evidence
+/// to choose — a gRPC `unavailable`, a deadline exceeded. Naming both is honest;
+/// picking one and being wrong is what the other two constants exist to avoid.
+const String unreachableErrorMessage =
+    'We could not reach LazerVault. Check your connection, or try again in a '
+    'moment.';
 
 /// The single, canonical message shown when a money-moving flow is refused
 /// because the source account is frozen/suspended. accounts-service is the
@@ -95,6 +114,69 @@ bool isNetworkError(Object? error) {
       error is GrpcError ? (error.message ?? '') : error.toString());
 }
 
+/// True when the failure is demonstrably OURS: something on our side answered,
+/// or failed to be deployed at all.
+///
+/// Deliberately narrower than [isNetworkError], and deliberately separate from
+/// it: [isNetworkError] drives retry and offline behaviour at 49 call sites and
+/// its meaning ("transport-class, retryable, never show raw text") is correct.
+/// What was wrong was using that one bucket to choose the user-facing WORDS.
+bool isServerError(Object? error) {
+  if (error == null) return false;
+
+  if (error is DioException) {
+    final status = error.response?.statusCode;
+    if (status != null && status >= 500 && status <= 599) return true;
+  }
+
+  if (error is GrpcError) {
+    // internal: a service panicked or returned a malformed response. Ours.
+    if (error.code == StatusCode.internal) return true;
+    // unimplemented / "unknown service": the method is not registered, which
+    // means the service is not deployed or the gateway route is missing. A
+    // deployment gap, never the user's network.
+    if (error.code == StatusCode.unimplemented) return true;
+    if ((error.message ?? '').toLowerCase().contains('unknown service')) {
+      return true;
+    }
+  }
+
+  return _messageLooksLikeServerFailure(
+      error is GrpcError ? (error.message ?? '') : error.toString());
+}
+
+/// True when the device itself could not get onto the network. Distinct from
+/// [isServerError]: this is the case where "check your connection" is real
+/// advice rather than a misdirection.
+bool isDeviceTransportError(Object? error) {
+  if (error == null) return false;
+  if (error is SocketException) return true;
+
+  if (error is DioException) {
+    switch (error.type) {
+      case DioExceptionType.connectionError:
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
+        return true;
+      default:
+        break;
+    }
+  }
+
+  return _messageLooksLikeTransportFailure(
+      error is GrpcError ? (error.message ?? '') : error.toString());
+}
+
+/// The right wording for a transport-class failure, given what is actually
+/// known about it. Every "return networkErrorMessage" site now calls this.
+String transportFailureMessage(Object? error) {
+  // Server evidence wins: a 5xx is proof, a socket timeout is not.
+  if (isServerError(error)) return serverErrorMessage;
+  if (isDeviceTransportError(error)) return networkErrorMessage;
+  return unreachableErrorMessage;
+}
+
 /// True when [statusCode] (gRPC int code or HTTP status) denotes a
 /// transport/server-class failure that should be surfaced as a network error.
 ///
@@ -144,14 +226,14 @@ bool looksTechnical(String? msg) {
 /// 530 are covered alongside 500/502/503/504).
 final RegExp _httpServerStatusPattern = RegExp(r'http[^0-9a-z]{0,3}5\d\d');
 
-/// Shared substring detector for raw transport text.
-bool _messageLooksLikeNetwork(String raw) {
+/// Raw text that identifies a failure ON OUR SIDE — a 5xx in any of the shapes
+/// the gateway, the tunnel and the gRPC layer write it.
+bool _messageLooksLikeServerFailure(String raw) {
   if (raw.isEmpty) return false;
   final m = raw.toLowerCase();
   return m.contains('expected 200') ||
       m.contains('non-200') ||
       m.contains('got 50') || // got 500/502/503/504
-      m.contains('status code') ||
       m.contains('502') ||
       m.contains('503') ||
       m.contains('504') ||
@@ -159,19 +241,34 @@ bool _messageLooksLikeNetwork(String raw) {
       // "http" prefix on purpose: a bare '530' also appears in ordinary money
       // copy (e.g. "NGN 530"), which must NOT read as a network failure.
       _httpServerStatusPattern.hasMatch(m) ||
-      m.contains('connection') ||
+      // An HTML body where JSON was expected is a gateway or edge error page.
+      m.contains('<html');
+}
+
+/// Raw text that identifies a failure on the DEVICE's side of the wire.
+bool _messageLooksLikeTransportFailure(String raw) {
+  if (raw.isEmpty) return false;
+  final m = raw.toLowerCase();
+  return m.contains('connection') ||
       m.contains('socket') ||
       m.contains('failed host lookup') ||
       m.contains('host lookup') ||
       m.contains('network is unreachable') ||
       m.contains('unreachable') ||
       m.contains('handshake') ||
-      m.contains('<html') ||
-      m.contains('xmlhttprequest') ||
-      m.contains('connection refused') ||
-      m.contains('connection reset') ||
-      m.contains('connection closed') ||
-      m.contains('connection terminated');
+      m.contains('xmlhttprequest');
+}
+
+/// Shared substring detector for raw transport text, either direction. Kept as
+/// the union of the two above so [looksTechnical] and [isNetworkError] behave
+/// exactly as before — only the WORDING split, not the classification that 49
+/// call sites depend on.
+bool _messageLooksLikeNetwork(String raw) {
+  if (raw.isEmpty) return false;
+  final m = raw.toLowerCase();
+  return _messageLooksLikeServerFailure(m) ||
+      _messageLooksLikeTransportFailure(m) ||
+      m.contains('status code');
 }
 
 /// Converts ANY thrown error into a short, user-friendly message.
@@ -199,7 +296,7 @@ String friendlyError(Object? error, {String? context}) {
   // reads as a network error, never as raw transport text or a wrong-credential
   // style message.
   if (isNetworkError(error)) {
-    return networkErrorMessage;
+    return transportFailureMessage(error);
   }
 
   // --- frozen/suspended source account — clean, actionable, code-agnostic ----
@@ -257,7 +354,10 @@ String friendlyError(Object? error, {String? context}) {
 String sanitizeUserFacingError(String? message) {
   final msg = message?.trim() ?? '';
   if (msg.isEmpty) return 'Something went wrong. Please try again.';
-  if (_messageLooksLikeNetwork(msg.toLowerCase())) return networkErrorMessage;
+  final lower = msg.toLowerCase();
+  if (_messageLooksLikeServerFailure(lower)) return serverErrorMessage;
+  if (_messageLooksLikeTransportFailure(lower)) return networkErrorMessage;
+  if (lower.contains('status code')) return unreachableErrorMessage;
   // Map the raw frozen/suspended-account error (carries a UUID) to a clean line.
   if (_messageLooksFrozen(msg)) return frozenAccountMessage;
   if (looksTechnical(msg)) return 'Something went wrong. Please try again.';

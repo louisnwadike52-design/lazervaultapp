@@ -7,23 +7,28 @@ import 'package:lazervault/core/utils/friendly_error.dart';
 /// NEVER returns the raw [GrpcError.message] for a transport-level failure — a
 /// non-200 gateway response surfaces as a gRPC error whose message contains raw
 /// text like "expected 200, got 503", which must never reach the user. Such
-/// failures are collapsed to the single [networkErrorMessage]. The server's own
+/// failures are collapsed to a transport message chosen by
+/// [transportFailureMessage], which distinguishes our fault from the user's
+/// connection rather than blaming the connection for both. The server's own
 /// message is only passed through for business-meaningful codes, and only when
 /// it does not look technical.
 String friendlyGrpcError(GrpcError e,
     [String fallback = 'Something went wrong. Please try again.']) {
   // Connectivity / transport failures (incl. non-200 gateway responses) first.
   if (isNetworkError(e)) {
-    return networkErrorMessage;
+    return transportFailureMessage(e);
   }
   // Frozen/suspended source account — clean message instead of the raw
   // "account <uuid> is frozen" the server sends.
   if (isFrozenAccountError(e)) {
     return frozenAccountMessage;
   }
+  // A method that is not registered means the service is not deployed or the
+  // gateway route is missing. That is a deployment gap on our side, so telling
+  // the user to check their connection sends them to fix the wrong thing.
   if (e.code == StatusCode.unimplemented ||
       (e.message != null && e.message!.contains('unknown service'))) {
-    return networkErrorMessage;
+    return serverErrorMessage;
   }
   if (e.code == StatusCode.unauthenticated) {
     return 'Session expired. Please log in again.';
