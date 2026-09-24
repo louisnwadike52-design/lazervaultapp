@@ -111,7 +111,10 @@ void main() {
       // The fallback is now closed; worst case a service reads as words.
       expect(labelForChatService('made_up_service'), 'Made Up Service');
       expect(labelForChatService('split_bills'), 'Split Bills');
-      expect(labelForChatService('lazerbeam'), 'LazerBeam');
+      // "Lazerbeam", not "LazerBeam": the brand is written with one capital in
+      // the strings people read, and the minority spelling was the one reaching
+      // the screen through this map.
+      expect(labelForChatService('lazerbeam'), 'Lazerbeam');
 
       for (final slug in ['p2p_chat', 'lockfunds', 'financial_products']) {
         final label = labelForChatService(slug);

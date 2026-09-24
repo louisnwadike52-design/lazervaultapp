@@ -3,6 +3,7 @@ import 'package:lazervault/core/notifications/notification_route_resolver.dart';
 import 'package:lazervault/core/notifications/notification_service_icon.dart';
 import 'package:lazervault/core/notifications/notification_target.dart';
 import 'package:lazervault/core/types/services.dart';
+import 'package:lazervault/core/config/feature_flags.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/presentation/app_router.dart';
 
@@ -186,10 +187,26 @@ void main() {
     // prefix-only match dropped them to the feed.
     NotificationTarget? r(String t) => NotificationRouteResolver.resolve(t, {});
 
-    // An email digest is about the inbox. It also matches the `planning`
-    // prefix, so without an earlier branch it landed on Reminders — a list
+    // An email digest is about the inbox, and it also matches the `planning`
+    // prefix — so the resolver checks it FIRST, or it lands on Reminders, a list
     // with nothing to do with what buzzed.
-    expect(r('planning_email_digest')!.route, AppRoutes.emailInbox);
+    //
+    // But only when the Gmail surface is reachable. The Google integration is
+    // gated off by default (verification pending), and with it hidden the inbox
+    // has no door in the UI — so a digest push must NOT become the one way there,
+    // because the only thing waiting is Google's "Access blocked" page. It falls
+    // through to Reminders instead, which is at least a screen that works.
+    //
+    // This test asserted the ungated route and started failing when the gate
+    // landed. Both branches are pinned now, so neither the ordering nor the gate
+    // can regress silently.
+    expect(
+      r('planning_email_digest')!.route,
+      FeatureFlags.planMyDayGoogleIntegrations
+          ? AppRoutes.emailInbox
+          : AppRoutes.planReminders,
+      reason: 'a digest goes to the inbox only when that surface is reachable',
+    );
     expect(r('planning_reminder')!.route, AppRoutes.planReminders);
 
     // "scheduled_payroll" does not START with payroll.
