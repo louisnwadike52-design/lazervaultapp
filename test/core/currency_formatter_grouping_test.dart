@@ -102,4 +102,56 @@ void main() {
           source, isNot(contains('state.returnedBalance.toStringAsFixed(2)')));
     });
   });
+
+  group('the sign belongs to the quantity, not the currency', () {
+    // NumberFormat puts the minus where the digits are, so the naive
+    // '$symbol${format(v)}' gives ₦-1,500.00. Every other surface in the
+    // platform writes -₦1,500.00, and the Go family-notification formatter
+    // needed exactly this fix.
+    //
+    // The formatter reads the active locale, so the symbol is asserted by
+    // position rather than by value.
+    late String source;
+
+    setUpAll(() {
+      source =
+          File('lib/core/utils/currency_formatter.dart').readAsStringSync();
+    });
+
+    test('a negative amount puts the minus outside the symbol', () {
+      expect(
+          source, contains("return '-\$symbol\${_money.format(amount.abs())}'"),
+          reason: 'abs() first so the minus is placed by us, not the pattern');
+    });
+
+    test('both public formatters share the one renderer', () {
+      // Two entry points, one place where sign and non-finite handling live —
+      // so the next fix does not have to find both.
+      expect('_render('.allMatches(source).length, 3,
+          reason: 'the definition plus exactly two call sites');
+    });
+
+    test('a non-finite amount is never shown as NaN or infinity', () {
+      // These come from dividing by a zero total — an empty analytics period, a
+      // portfolio with no holdings — which is ordinary. "₦NaN" on a balance
+      // reads as broken money rather than a missing figure.
+      expect(source, contains('amount.isNaN || amount.isInfinite'));
+      expect(source, contains("return '\$symbol—'"));
+    });
+  });
+
+  group('the pattern itself handles the sign the wrong way', () {
+    // Pinned so the reason for _render is visible, not just its existence.
+    test('NumberFormat alone would put the minus inside', () {
+      final money = NumberFormat('#,##0.00');
+      expect('₦${money.format(-1500)}', '₦-1,500.00');
+      expect('-₦${money.format((-1500.0).abs())}', '-₦1,500.00');
+    });
+
+    test('and would render non-finite values verbatim', () {
+      final money = NumberFormat('#,##0.00');
+      expect(money.format(double.nan), 'NaN');
+      expect(money.format(double.infinity), '∞');
+    });
+  });
 }

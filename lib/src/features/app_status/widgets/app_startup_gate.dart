@@ -41,6 +41,26 @@ class _AppStartupGateState extends State<AppStartupGate>
   final ServerStatusService _serverStatus = ServerStatusService();
 
   OutageKind? _outage;
+
+  /// When the user last dismissed a connection problem, and which one.
+  ///
+  /// Without this the dismiss button is decorative: the pre-login poll re-runs
+  /// every 10 seconds, still finds no internet, and puts the card straight back.
+  /// The user would tap "Later", watch it reappear, and reasonably conclude the
+  /// button does nothing.
+  ///
+  /// Only a CONNECTION problem is dismissible, so only that needs remembering.
+  /// A server outage holds the screen until it clears, which it does on its own.
+  DateTime? _outageDismissedAt;
+  OutageKind? _outageDismissedKind;
+
+  /// How long a dismissal holds.
+  ///
+  /// Long enough to go and fix the connection — turn data on, move, top up a
+  /// bundle — without the card interrupting, and short enough that someone who
+  /// forgets is reminded rather than left staring at a sign-in screen that
+  /// silently cannot work.
+  static const Duration _dismissHold = Duration(minutes: 2);
   AppUpdateInfo? _forcedInfo;
   bool _running = false;
 
@@ -197,9 +217,23 @@ class _AppStartupGateState extends State<AppStartupGate>
       //    not the user's flaky network and never over a logged-in session.
       if (!_isPreLoginScreen()) {
         if (_outage != null) setState(() => _outage = null);
+        // Signed in, or off the auth flow entirely — a stale dismissal must not
+        // suppress a genuine problem the next time through.
+        _outageDismissedAt = null;
+        _outageDismissedKind = null;
       } else {
-        final outage = await _classifyOutage();
+        var outage = await _classifyOutage();
         if (!mounted) return;
+        // A dismissed connection problem stays dismissed for a short while. The
+        // check is on KIND as well as time, so a connection problem that turns
+        // out to be a real outage still surfaces immediately — that one is ours
+        // to own and is not dismissible.
+        if (outage == OutageKind.connection &&
+            _outageDismissedKind == OutageKind.connection &&
+            _outageDismissedAt != null &&
+            DateTime.now().difference(_outageDismissedAt!) < _dismissHold) {
+          outage = null;
+        }
         if (outage != _outage) setState(() => _outage = outage);
         if (outage != null) {
           return; // can't reach the backend on an auth screen — skip the
@@ -275,7 +309,11 @@ class _AppStartupGateState extends State<AppStartupGate>
               // A connection problem may need the user to leave the app to fix
               // it, so it must be closable. A server outage clears itself.
               onClose: copy.dismissible
-                  ? () => setState(() => _outage = null)
+                  ? () => setState(() {
+                        _outageDismissedAt = DateTime.now();
+                        _outageDismissedKind = outage;
+                        _outage = null;
+                      })
                   : null,
             ),
           ),

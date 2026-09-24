@@ -62,17 +62,34 @@ class CurrencySymbols {
   /// receipt and an export both read better for it.
   static final NumberFormat _money = NumberFormat('#,##0.00');
 
-  /// Format amount with current currency symbol
-  static String formatAmount(double amount) {
-    final symbol = currentSymbol;
+  /// Renders [amount] under [symbol], with the sign OUTSIDE the symbol.
+  ///
+  /// `NumberFormat` puts the minus where the digits are, so the naive
+  /// `'$symbol${_money.format(v)}'` produces `₦-1,500.00`. The minus belongs to
+  /// the quantity, not to the currency, and every other surface in the platform
+  /// writes it `-₦1,500.00` — the same fix the family-notification formatter
+  /// needed on the Go side.
+  ///
+  /// Non-finite values are caught here rather than rendered. `NumberFormat`
+  /// happily returns "NaN" and "∞", and `₦NaN` on a balance is worse than a
+  /// dash: it looks like a bug in the money rather than a missing figure. These
+  /// arise from a division by a zero total — an empty analytics period, a
+  /// portfolio with no holdings — which is ordinary, not exceptional.
+  static String _render(double amount, String symbol) {
+    if (amount.isNaN || amount.isInfinite) return '$symbol—';
+    if (amount.isNegative) {
+      // abs() first so the minus is placed by us, not by the pattern.
+      return '-$symbol${_money.format(amount.abs())}';
+    }
     return '$symbol${_money.format(amount)}';
   }
 
+  /// Format amount with current currency symbol
+  static String formatAmount(double amount) => _render(amount, currentSymbol);
+
   /// Format amount with a specific currency code
-  static String formatAmountWithCurrency(double amount, String currencyCode) {
-    final symbol = getSymbol(currencyCode);
-    return '$symbol${_money.format(amount)}';
-  }
+  static String formatAmountWithCurrency(double amount, String currencyCode) =>
+      _render(amount, getSymbol(currencyCode));
 
   /// Stream of current currency symbol for reactive updates
   static Stream<String> get currencySymbolStream {
