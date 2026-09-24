@@ -38,8 +38,8 @@ class EscrowEmptyState extends StatelessWidget {
       _EscrowNoSellingEmptyState;
 
   /// Error / load failure with a Retry CTA.
-  const factory EscrowEmptyState.error({Key? key, required VoidCallback onRetry}) =
-      _EscrowErrorEmptyState;
+  const factory EscrowEmptyState.error(
+      {Key? key, required VoidCallback onRetry}) = _EscrowErrorEmptyState;
 
   @override
   Widget build(BuildContext context) {

@@ -84,8 +84,7 @@ class _EscrowInvoiceScreenState extends State<EscrowInvoiceScreen> {
     return n.isEmpty ? '—' : n;
   }
 
-  String _feePayerLabel(String feePayer) =>
-      EscrowRoles.feePayerLabel(feePayer);
+  String _feePayerLabel(String feePayer) => EscrowRoles.feePayerLabel(feePayer);
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +168,8 @@ class _EscrowInvoiceScreenState extends State<EscrowInvoiceScreen> {
               ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-                decoration: InvoiceDecorations.statusBadgeDecoration(statusColor),
+                decoration:
+                    InvoiceDecorations.statusBadgeDecoration(statusColor),
                 child: Text(
                   statusLabel,
                   style: GoogleFonts.inter(
@@ -426,7 +426,8 @@ class _EscrowInvoiceScreenState extends State<EscrowInvoiceScreen> {
     bool filled = false,
   }) {
     return Material(
-      color: filled ? EscrowTheme.primary : InvoiceThemeColors.secondaryBackground,
+      color:
+          filled ? EscrowTheme.primary : InvoiceThemeColors.secondaryBackground,
       borderRadius: BorderRadius.circular(12.r),
       child: InkWell(
         onTap: onTap,
@@ -534,8 +535,7 @@ class _EscrowInvoiceScreenState extends State<EscrowInvoiceScreen> {
       try {
         await EscrowPdfService.shareAgreement(
           _deal!,
-          sharePositionOrigin:
-              EscrowPdfService.shareOriginFromContext(context),
+          sharePositionOrigin: EscrowPdfService.shareOriginFromContext(context),
         );
         return;
       } catch (_) {

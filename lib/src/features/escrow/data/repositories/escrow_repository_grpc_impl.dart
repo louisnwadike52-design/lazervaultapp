@@ -2,7 +2,8 @@ import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/src/core/network/grpc_client.dart';
 import 'package:lazervault/src/core/network/retry_helper.dart';
 import 'package:lazervault/src/generated/escrow.pb.dart' as pb;
-import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as ts;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart'
+    as ts;
 import '../../domain/entities/escrow_deal_entity.dart';
 import '../../domain/entities/escrow_offer_entity.dart';
 import '../../domain/repositories/escrow_repository.dart';
@@ -14,14 +15,17 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
 
   @override
   Future<EscrowFeeQuote> quoteFee(
-      {required double amount, String currency = 'NGN', String offerId = ''}) async {
+      {required double amount,
+      String currency = 'NGN',
+      String offerId = ''}) async {
     return retryWithBackoff(operation: () async {
       final req = pb.QuoteFeeRequest()
         ..amount = amount
         ..currency = currency;
       if (offerId.isNotEmpty) req.offerId = offerId;
       final options = await grpcClient.callOptions;
-      final resp = await grpcClient.escrowClient.quoteFee(req, options: options);
+      final resp =
+          await grpcClient.escrowClient.quoteFee(req, options: options);
       return EscrowFeeQuote(
         amount: resp.amount,
         fee: resp.fee,
@@ -58,7 +62,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
         ..idempotencyKey = idempotencyKey
         ..buyerItemImageUrl = buyerItemImageUrl;
       final options = await grpcClient.callOptions;
-      final resp = await grpcClient.escrowClient.createDeal(req, options: options);
+      final resp =
+          await grpcClient.escrowClient.createDeal(req, options: options);
       return _dealFromProto(resp.deal);
     });
   }
@@ -77,7 +82,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
         ..page = page
         ..limit = limit;
       final options = await grpcClient.callOptions;
-      final resp = await grpcClient.escrowClient.listMyDeals(req, options: options);
+      final resp =
+          await grpcClient.escrowClient.listMyDeals(req, options: options);
       return resp.deals.map(_dealFromProto).toList();
     });
   }
@@ -103,7 +109,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
       ..deliveryNote = deliveryNote
       ..sellerProofImageUrl = sellerProofImageUrl;
     final options = await grpcClient.callOptions;
-    final resp = await grpcClient.escrowClient.markDelivered(req, options: options);
+    final resp =
+        await grpcClient.escrowClient.markDelivered(req, options: options);
     return _dealFromProto(resp.deal);
   }
 
@@ -120,7 +127,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
       ..verificationToken = verificationToken
       ..idempotencyKey = idempotencyKey;
     final options = await grpcClient.callOptions;
-    final resp = await grpcClient.escrowClient.validateRelease(req, options: options);
+    final resp =
+        await grpcClient.escrowClient.validateRelease(req, options: options);
     return _dealFromProto(resp.deal);
   }
 
@@ -135,7 +143,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
       ..reason = reason
       ..idempotencyKey = idempotencyKey;
     final options = await grpcClient.callOptions;
-    final resp = await grpcClient.escrowClient.cancelDeal(req, options: options);
+    final resp =
+        await grpcClient.escrowClient.cancelDeal(req, options: options);
     return _dealFromProto(resp.deal);
   }
 
@@ -150,7 +159,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
       ..reason = reason
       ..evidenceUrl = evidenceUrl;
     final options = await grpcClient.callOptions;
-    final resp = await grpcClient.escrowClient.openDispute(req, options: options);
+    final resp =
+        await grpcClient.escrowClient.openDispute(req, options: options);
     return _dealFromProto(resp.deal);
   }
 
@@ -188,7 +198,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
         ..dealId = dealId
         ..reason = reason;
       final options = await grpcClient.callOptions;
-      final resp = await grpcClient.escrowClient.requestRefund(req, options: options);
+      final resp =
+          await grpcClient.escrowClient.requestRefund(req, options: options);
       return _dealFromProto(resp.deal);
     });
   }
@@ -205,7 +216,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
         ..accept = accept
         ..note = note;
       final options = await grpcClient.callOptions;
-      final resp = await grpcClient.escrowClient.respondRefund(req, options: options);
+      final resp =
+          await grpcClient.escrowClient.respondRefund(req, options: options);
       return _dealFromProto(resp.deal);
     });
   }
@@ -236,10 +248,12 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
         ..deliveryDeadlineDays = deliveryDeadlineDays
         ..condition = condition;
       final options = await grpcClient.callOptions;
-      final resp = await grpcClient.escrowClient.createOffer(req, options: options);
+      final resp =
+          await grpcClient.escrowClient.createOffer(req, options: options);
       // The share token rides the response envelope exactly once — attach it
       // to the entity so the success screen can build the share link.
-      return _offerFromProto(resp.offer).copyWith(shareToken: resp.shareUrlToken);
+      return _offerFromProto(resp.offer)
+          .copyWith(shareToken: resp.shareUrlToken);
     });
   }
 
@@ -248,25 +262,31 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
     // Interactive read behind a visible screen: one retry, not three — the
     // full ladder (3 × 30s deadlines + backoff) held the offer page hostage
     // for ~2 minutes when the service was unreachable.
-    return retryWithBackoff(maxRetries: 1, operation: () async {
-      final req = pb.GetOfferRequest()..offerId = offerId;
-      final options = await grpcClient.callOptions;
-      final resp = await grpcClient.escrowClient.getOffer(req, options: options);
-      return _offerFromProto(resp.offer).copyWith(shareToken: resp.shareUrlToken);
-    });
+    return retryWithBackoff(
+        maxRetries: 1,
+        operation: () async {
+          final req = pb.GetOfferRequest()..offerId = offerId;
+          final options = await grpcClient.callOptions;
+          final resp =
+              await grpcClient.escrowClient.getOffer(req, options: options);
+          return _offerFromProto(resp.offer)
+              .copyWith(shareToken: resp.shareUrlToken);
+        });
   }
 
   @override
   Future<EscrowOfferEntity> getOfferByShareToken(String shareToken) async {
     // Same interactive-read policy; also, the backend rate-limits this by
     // user — blind retries just re-enter the limiter.
-    return retryWithBackoff(maxRetries: 1, operation: () async {
-      final req = pb.GetOfferByShareTokenRequest()..shareToken = shareToken;
-      final options = await grpcClient.callOptions;
-      final resp =
-          await grpcClient.escrowClient.getOfferByShareToken(req, options: options);
-      return _offerFromProto(resp.offer);
-    });
+    return retryWithBackoff(
+        maxRetries: 1,
+        operation: () async {
+          final req = pb.GetOfferByShareTokenRequest()..shareToken = shareToken;
+          final options = await grpcClient.callOptions;
+          final resp = await grpcClient.escrowClient
+              .getOfferByShareToken(req, options: options);
+          return _offerFromProto(resp.offer);
+        });
   }
 
   @override
@@ -283,7 +303,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
         ..page = page
         ..limit = limit;
       final options = await grpcClient.callOptions;
-      final resp = await grpcClient.escrowClient.listMyOffers(req, options: options);
+      final resp =
+          await grpcClient.escrowClient.listMyOffers(req, options: options);
       return resp.offers.map(_offerFromProto).toList();
     });
   }
@@ -300,7 +321,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
         ..accept = accept
         ..note = note;
       final options = await grpcClient.callOptions;
-      final resp = await grpcClient.escrowClient.respondOffer(req, options: options);
+      final resp =
+          await grpcClient.escrowClient.respondOffer(req, options: options);
       return _offerFromProto(resp.offer);
     });
   }
@@ -325,7 +347,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
         ..verificationToken = verificationToken
         ..idempotencyKey = idempotencyKey;
       final options = await grpcClient.callOptions;
-      final resp = await grpcClient.escrowClient.fundOffer(req, options: options);
+      final resp =
+          await grpcClient.escrowClient.fundOffer(req, options: options);
       return _dealFromProto(resp.deal);
     });
   }
@@ -335,7 +358,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
     return retryWithBackoff(operation: () async {
       final req = pb.CancelOfferRequest()..offerId = offerId;
       final options = await grpcClient.callOptions;
-      final resp = await grpcClient.escrowClient.cancelOffer(req, options: options);
+      final resp =
+          await grpcClient.escrowClient.cancelOffer(req, options: options);
       return _offerFromProto(resp.offer);
     });
   }
@@ -391,7 +415,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
 
   // ---- proto → entity mapping ----
 
-  EscrowAttachmentEntity _attachmentFromProto(pb.Attachment a) => EscrowAttachmentEntity(
+  EscrowAttachmentEntity _attachmentFromProto(pb.Attachment a) =>
+      EscrowAttachmentEntity(
         id: a.id,
         purpose: a.purpose,
         mediaKind: a.mediaKind,
@@ -404,7 +429,8 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
         createdAt: a.hasCreatedAt() ? _toDate(a.createdAt) : null,
       );
 
-  EscrowRefundRequestEntity _refundFromProto(pb.RefundRequest r) => EscrowRefundRequestEntity(
+  EscrowRefundRequestEntity _refundFromProto(pb.RefundRequest r) =>
+      EscrowRefundRequestEntity(
         id: r.id,
         dealId: r.dealId,
         requestedBy: r.requestedBy,
@@ -461,10 +487,12 @@ class EscrowRepositoryGrpcImpl implements EscrowRepository {
               ))
           .toList(),
       attachments: d.attachments.map(_attachmentFromProto).toList(),
-      refundRequest: d.hasRefundRequest() ? _refundFromProto(d.refundRequest) : null,
+      refundRequest:
+          d.hasRefundRequest() ? _refundFromProto(d.refundRequest) : null,
     );
   }
 
   DateTime _toDate(ts.Timestamp t) =>
-      DateTime.fromMillisecondsSinceEpoch(t.seconds.toInt() * 1000, isUtc: true).toLocal();
+      DateTime.fromMillisecondsSinceEpoch(t.seconds.toInt() * 1000, isUtc: true)
+          .toLocal();
 }

@@ -7,7 +7,8 @@ import 'package:intl/intl.dart';
 
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 
 import '../../domain/entities/escrow_offer_entity.dart';
 import '../cubit/escrow_cubit.dart';
@@ -174,8 +175,7 @@ class _EscrowOffersListScreenState extends State<EscrowOffersListScreen> {
                       : EscrowTheme.card,
                   borderRadius: BorderRadius.circular(17.r),
                   border: Border.all(
-                      color:
-                          active ? EscrowTheme.primary : EscrowTheme.border),
+                      color: active ? EscrowTheme.primary : EscrowTheme.border),
                 ),
                 child: Text(label,
                     style: GoogleFonts.inter(
@@ -250,16 +250,15 @@ class _EscrowOffersListScreenState extends State<EscrowOffersListScreen> {
                     color: viewerActs
                         ? EscrowTheme.primaryLight
                         : EscrowTheme.textSecondary,
-                    fontWeight:
-                        viewerActs ? FontWeight.w600 : FontWeight.w400,
+                    fontWeight: viewerActs ? FontWeight.w600 : FontWeight.w400,
                     fontSize: 11.5.sp)),
             SizedBox(height: 8.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                    currency_formatter.CurrencySymbols
-                        .formatAmountWithCurrency(o.amount, o.currency),
+                    currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+                        o.amount, o.currency),
                     style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 14.sp,

@@ -23,7 +23,6 @@ import 'escrow_role_labels.dart';
 import 'escrow_theme.dart';
 part 'escrow_receipt_screen_widgets.dart';
 
-
 /// Escrow receipt screen — shown after a deal is funded, released, or refunded.
 ///
 /// Reads `Get.arguments` as a Map:
@@ -444,8 +443,7 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
         _DetailEntry('Platform fee', _money(deal.fee)),
       if (deal.fee > 0 && _viewerId != null)
         ...() {
-          final share =
-              EscrowRoles.dealViewerFeeShare(deal, _viewerIsBuyer);
+          final share = EscrowRoles.dealViewerFeeShare(deal, _viewerIsBuyer);
           return share > 0
               ? [
                   _DetailEntry(
@@ -654,8 +652,7 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
     try {
       // Try PDF first.
       try {
-        final path =
-            await EscrowPdfService.downloadReceipt(_deal!, _kind);
+        final path = await EscrowPdfService.downloadReceipt(_deal!, _kind);
         _showSnackbar('PDF receipt saved to $path');
         return;
       } catch (_) {
@@ -726,8 +723,7 @@ class _EscrowReceiptScreenState extends State<EscrowReceiptScreen>
         await EscrowPdfService.shareReceipt(
           _deal!,
           _kind,
-          sharePositionOrigin:
-              EscrowPdfService.shareOriginFromContext(context),
+          sharePositionOrigin: EscrowPdfService.shareOriginFromContext(context),
         );
         return;
       } catch (_) {

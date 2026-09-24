@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,6 +14,7 @@ import 'package:lazervault/core/shared_widgets/app_loading_button.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/src/features/escrow/presentation/cubit/escrow_action_exception.dart';
 import '../../data/services/escrow_media_upload_service.dart';
 import '../cubit/escrow_cubit.dart';
 import '../widgets/escrow_attachment_picker.dart';
@@ -25,7 +27,6 @@ import 'escrow_theme.dart';
 import 'escrow_party_chat_action.dart';
 part 'escrow_deal_detail_screen_widgets.dart';
 
-
 class EscrowDealDetailScreen extends StatefulWidget {
   const EscrowDealDetailScreen({super.key});
 
@@ -36,7 +37,8 @@ class EscrowDealDetailScreen extends StatefulWidget {
 class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     with TransactionPinMixin<EscrowDealDetailScreen> {
   @override
-  ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
 
   late final String _dealId;
 
@@ -52,26 +54,78 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
     });
   }
 
+  /// True while the PIN sheet owns a release.
+  ///
+  /// The cubit emits EscrowActionSuccess from INSIDE the sheet's callback, so the
+  /// BlocListener below would push the receipt while the sheet is still on top —
+  /// replacing the sheet's route rather than the screen's, and leaving the order
+  /// of two navigations up to which listener ran first. On a money path that is
+  /// not something to leave implicit: the sheet finishes, THEN _release
+  /// navigates, and the listener stands down.
+  bool _releaseOwnedByPinSheet = false;
+
   Future<void> _release(EscrowDealEntity deal) async {
     final cubit = context.read<EscrowCubit>();
     HapticFeedback.mediumImpact();
     final txnId = 'ESCROW-REL-${const Uuid().v4().substring(0, 8)}';
     final idem = const Uuid().v4();
-    String? token;
-    final ok = await validateTransactionPin(
-      context: context,
-      transactionId: txnId,
-      transactionType: 'escrow_release',
-      amount: deal.sellerNet,
-      currency: deal.currency,
-      title: 'Release funds',
-      message: 'Release ${_money(deal.sellerNet, deal.currency)} to ${deal.sellerName}',
-      showProcessingPhase: false,
-      onPinValidated: (t) async => token = t,
-    );
-    if (!ok || token == null) return;
-    await cubit.validateRelease(
-        dealId: deal.id, transactionId: txnId, verificationToken: token!, idempotencyKey: idem);
+    EscrowDealEntity? settled;
+    _releaseOwnedByPinSheet = true;
+    // try/finally: if the sheet throws, a flag left set would silence the
+    // listener's receipt navigation for the rest of the screen's life.
+    try {
+      // The release runs INSIDE the PIN sheet, which stays open through
+      // Verifying → Processing → Released.
+      //
+      // It used to close on `PIN Verified` and only then call validateRelease,
+      // which left the user on a blank screen for the whole settlement — the
+      // reported "blank loading screen" — with no indication that anything was
+      // happening to their money.
+      await validateTransactionPin(
+        context: context,
+        transactionId: txnId,
+        transactionType: 'escrow_release',
+        amount: deal.sellerNet,
+        currency: deal.currency,
+        title: 'Release funds',
+        message:
+            'Release ${_money(deal.sellerNet, deal.currency)} to ${deal.sellerName}',
+        successMessage: 'Funds released',
+        processingSubtitle:
+            'Releasing ${_money(deal.sellerNet, deal.currency)} to ${deal.sellerName}…',
+        successSubtitle: 'The seller has been paid.',
+        failureMessageBuilder: (e) => escrowActionFailureMessage(
+          e,
+          fallback: 'We couldn’t release the funds. Nothing was moved.',
+        ),
+        onPinValidated: (t) async {
+          final released = await cubit.validateRelease(
+            dealId: deal.id,
+            transactionId: txnId,
+            verificationToken: t,
+            idempotencyKey: idem,
+          );
+          // The cubit absorbs its own failure into EscrowError and returns null,
+          // so without this the sheet would show "Funds released" over a release
+          // that did not happen.
+          if (released == null) {
+            final st = cubit.state;
+            throw EscrowActionException(
+              st is EscrowError ? st.message : 'Release failed',
+            );
+          }
+          settled = released;
+        },
+      );
+    } finally {
+      _releaseOwnedByPinSheet = false;
+    }
+    // Straight to the receipt, now that the sheet has closed itself. No blank
+    // screen in between, and no second navigation from the listener.
+    if (settled != null && mounted) {
+      Get.offNamed(AppRoutes.escrowReceipt,
+          arguments: {'deal': settled, 'kind': 'released'});
+    }
   }
 
   /// Surfaces an evidence-attach failure without blocking the action itself.
@@ -178,7 +232,8 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(
                       ctx,
-                      _DeliveryResult(note: noteCtrl.text.trim(), media: media)),
+                      _DeliveryResult(
+                          note: noteCtrl.text.trim(), media: media)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: EscrowTheme.primary,
                     padding: EdgeInsets.symmetric(vertical: 15.h),
@@ -211,7 +266,8 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
       required: false,
     );
     if (reason == null) return;
-    await cubit.cancelDeal(dealId: deal.id, reason: reason, idempotencyKey: const Uuid().v4());
+    await cubit.cancelDeal(
+        dealId: deal.id, reason: reason, idempotencyKey: const Uuid().v4());
   }
 
   Future<void> _dispute(EscrowDealEntity deal) async {
@@ -305,7 +361,8 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
       isScrollControlled: true,
       builder: (ctx) {
         return Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
           child: _sheetShell(
             icon: icon,
             accent: accent,
@@ -331,13 +388,21 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
 
   /// Dispute sheet: a required problem description, an optional evidence
   /// link/description, and optional evidence media (photos and a short video).
-  Future<({String reason, String evidence, List<EscrowMediaUploadResult> media})?>
-      _disputeSheet() async {
+  Future<
+      ({
+        String reason,
+        String evidence,
+        List<EscrowMediaUploadResult> media
+      })?> _disputeSheet() async {
     final reasonCtrl = TextEditingController();
     final evidenceCtrl = TextEditingController();
     List<EscrowMediaUploadResult> media = const [];
     return showModalBottomSheet<
-        ({String reason, String evidence, List<EscrowMediaUploadResult> media})>(
+        ({
+          String reason,
+          String evidence,
+          List<EscrowMediaUploadResult> media
+        })>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -345,12 +410,14 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         return StatefulBuilder(builder: (ctx, setSheetState) {
           final canSubmit = reasonCtrl.text.trim().isNotEmpty;
           return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            padding:
+                EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
             child: _sheetShell(
               icon: Icons.gavel_rounded,
               accent: EscrowTheme.warning,
               title: 'Open a dispute',
-              subtitle: 'Tell us what went wrong. Our team reviews every dispute.',
+              subtitle:
+                  'Tell us what went wrong. Our team reviews every dispute.',
               children: [
                 _sheetLabel('What is the problem?'),
                 _sheetField(reasonCtrl, 'Describe the issue',
@@ -402,7 +469,8 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         return StatefulBuilder(builder: (ctx, setSheetState) {
           final canSubmit = reasonCtrl.text.trim().isNotEmpty;
           return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            padding:
+                EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
             child: _sheetShell(
               icon: Icons.reply_rounded,
               accent: EscrowTheme.amber,
@@ -492,7 +560,8 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
                     SizedBox(height: 2.h),
                     Text(subtitle,
                         style: GoogleFonts.inter(
-                            color: EscrowTheme.textSecondary, fontSize: 11.5.sp)),
+                            color: EscrowTheme.textSecondary,
+                            fontSize: 11.5.sp)),
                   ],
                 ),
               ),
@@ -523,7 +592,8 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
       style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: GoogleFonts.inter(color: EscrowTheme.textSecondary, fontSize: 13.sp),
+        hintStyle: GoogleFonts.inter(
+            color: EscrowTheme.textSecondary, fontSize: 13.sp),
         filled: true,
         fillColor: EscrowTheme.bg,
         contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
@@ -546,7 +616,10 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text('Deal details',
-            style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700)),
         actions: [
           // Needs the loaded deal to know who the other party is, and the
           // AppBar is built outside the BlocConsumer below — so it listens for
@@ -566,13 +639,17 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
       body: BlocConsumer<EscrowCubit, EscrowState>(
         listener: (context, state) {
           if (state is EscrowError) {
-            showAppSnackbar('Escrow Pay', state.message, type: AppSnackbarType.error);
+            showAppSnackbar('Escrow Pay', state.message,
+                type: AppSnackbarType.error);
           }
           if (state is EscrowActionSuccess) {
             final d = state.deal;
             // Terminal money events route to a branded receipt; intermediate
             // actions (delivered / disputed) just refresh the detail in place.
             if (d.isReleased) {
+              // _release navigates once its PIN sheet has finished. Doing it
+              // here as well would push the receipt over a live sheet.
+              if (_releaseOwnedByPinSheet) return;
               Get.offNamed(AppRoutes.escrowReceipt,
                   arguments: {'deal': d, 'kind': 'released'});
             } else if (d.isRefunded) {
@@ -617,7 +694,9 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
                 Expanded(
                   child: Text(deal.title,
                       style: GoogleFonts.inter(
-                          color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w700)),
+                          color: Colors.white,
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w700)),
                 ),
                 EscrowTheme.statusChip(deal.status),
               ],
@@ -681,10 +760,13 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(l, style: GoogleFonts.inter(color: EscrowTheme.textSecondary, fontSize: 12.5.sp)),
+              Text(l,
+                  style: GoogleFonts.inter(
+                      color: EscrowTheme.textSecondary, fontSize: 12.5.sp)),
               Text(v,
                   style: GoogleFonts.inter(
-                      color: Colors.white, fontSize: bold ? 15.sp : 13.sp,
+                      color: Colors.white,
+                      fontSize: bold ? 15.sp : 13.sp,
                       fontWeight: bold ? FontWeight.w700 : FontWeight.w500)),
             ],
           ),
@@ -703,15 +785,19 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
           // YOUR share of the fee, not just who the payer is. Since the fee is
           // normally split, "Escrow fee (split-paid)" told a user the label of
           // a policy instead of what it cost them.
-          row(EscrowRoles.dealFeeRowLabel(deal, isBuyer),
-              _money(EscrowRoles.dealViewerFeeShare(deal, isBuyer), deal.currency)),
+          row(
+              EscrowRoles.dealFeeRowLabel(deal, isBuyer),
+              _money(EscrowRoles.dealViewerFeeShare(deal, isBuyer),
+                  deal.currency)),
           Divider(color: EscrowTheme.border, height: 18.h),
           row(isBuyer ? 'You paid' : 'Buyer paid',
-              _money(deal.buyerTotal, deal.currency), bold: true),
+              _money(deal.buyerTotal, deal.currency),
+              bold: true),
           row(isBuyer ? 'Seller receives' : 'You receive',
               _money(deal.sellerNet, deal.currency)),
           SizedBox(height: 8.h),
-          Text(EscrowRoles.dealFeeExplainer(
+          Text(
+              EscrowRoles.dealFeeExplainer(
                   deal, isBuyer, (v) => _money(v, deal.currency)),
               style: GoogleFonts.inter(
                   color: EscrowTheme.textSecondary,
@@ -725,9 +811,6 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   String _money(double v, String currency) =>
       currency_formatter.CurrencySymbols.formatAmountWithCurrency(v, currency);
 
-
-
-
   Widget _reviewBanner() => Container(
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
@@ -737,11 +820,14 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
         ),
         child: Row(
           children: [
-            Icon(Icons.shield_outlined, color: EscrowTheme.warning, size: 18.sp),
+            Icon(Icons.shield_outlined,
+                color: EscrowTheme.warning, size: 18.sp),
             SizedBox(width: 10.w),
             Expanded(
-              child: Text('This deal is under review for your protection. Release is paused until it clears.',
-                  style: GoogleFonts.inter(color: EscrowTheme.warning, fontSize: 11.5.sp)),
+              child: Text(
+                  'This deal is under review for your protection. Release is paused until it clears.',
+                  style: GoogleFonts.inter(
+                      color: EscrowTheme.warning, fontSize: 11.5.sp)),
             ),
           ],
         ),
@@ -770,7 +856,9 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
           Expanded(
             child: Text(s.text,
                 style: GoogleFonts.inter(
-                    color: color, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                    color: color,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -780,9 +868,14 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
   Widget _section(String title, String body) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: GoogleFonts.inter(color: EscrowTheme.textSecondary, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+          Text(title,
+              style: GoogleFonts.inter(
+                  color: EscrowTheme.textSecondary,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600)),
           SizedBox(height: 6.h),
-          Text(body, style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
+          Text(body,
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
         ],
       );
 
@@ -1033,18 +1126,23 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
       decoration: BoxDecoration(
         color: EscrowTheme.card,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: you ? EscrowTheme.primary : EscrowTheme.border),
+        border:
+            Border.all(color: you ? EscrowTheme.primary : EscrowTheme.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(you ? '$role (you)' : role,
-              style: GoogleFonts.inter(color: EscrowTheme.textSecondary, fontSize: 11.sp)),
+              style: GoogleFonts.inter(
+                  color: EscrowTheme.textSecondary, fontSize: 11.sp)),
           SizedBox(height: 4.h),
           Text(name.isEmpty ? '—' : name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -1056,7 +1154,10 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Timeline',
-            style: GoogleFonts.inter(color: EscrowTheme.textSecondary, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+            style: GoogleFonts.inter(
+                color: EscrowTheme.textSecondary,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600)),
         SizedBox(height: 8.h),
         ...deal.events.map((e) => Padding(
               padding: EdgeInsets.symmetric(vertical: 6.h),
@@ -1065,18 +1166,25 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
                 children: [
                   Container(
                     margin: EdgeInsets.only(top: 4.h, right: 10.w),
-                    width: 8.w, height: 8.w,
-                    decoration: const BoxDecoration(color: EscrowTheme.primary, shape: BoxShape.circle),
+                    width: 8.w,
+                    height: 8.w,
+                    decoration: const BoxDecoration(
+                        color: EscrowTheme.primary, shape: BoxShape.circle),
                   ),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(_eventLabel(e.eventType),
-                            style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5.sp, fontWeight: FontWeight.w600)),
+                            style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 12.5.sp,
+                                fontWeight: FontWeight.w600)),
                         if (e.detail.isNotEmpty)
                           Text(e.detail,
-                              style: GoogleFonts.inter(color: EscrowTheme.textSecondary, fontSize: 11.sp)),
+                              style: GoogleFonts.inter(
+                                  color: EscrowTheme.textSecondary,
+                                  fontSize: 11.sp)),
                       ],
                     ),
                   ),
@@ -1123,27 +1231,27 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
       primary.add(_primaryBtn('Mark as delivered', () => _markDelivered(deal)));
     }
     if (deal.canRelease(uid)) {
-      primary.add(
-          _primaryBtn('Confirm delivery & release funds', () => _release(deal)));
+      primary.add(_primaryBtn(
+          'Confirm delivery & release funds', () => _release(deal)));
     }
     // Seller responds to a pending refund request.
     if (deal.canRespondRefund(uid)) {
       primary.add(_primaryBtn('Accept and refund', () => _acceptRefund(deal)));
-      secondary
-          .add(_secondaryBtn('Decline', EscrowTheme.warning, () => _declineRefund(deal)));
+      secondary.add(_secondaryBtn(
+          'Decline', EscrowTheme.warning, () => _declineRefund(deal)));
     }
     // Buyer asks for a refund after delivery.
     if (deal.canRequestRefund(uid)) {
-      secondary.add(
-          _secondaryBtn('Request a refund', EscrowTheme.amber, () => _requestRefund(deal)));
+      secondary.add(_secondaryBtn(
+          'Request a refund', EscrowTheme.amber, () => _requestRefund(deal)));
     }
     if (deal.canDispute(uid)) {
-      secondary.add(
-          _secondaryBtn('Open a dispute', EscrowTheme.warning, () => _dispute(deal)));
+      secondary.add(_secondaryBtn(
+          'Open a dispute', EscrowTheme.warning, () => _dispute(deal)));
     }
     if (deal.canCancel(uid)) {
-      secondary.add(
-          _secondaryBtn('Cancel & refund', EscrowTheme.error, () => _cancel(deal)));
+      secondary.add(_secondaryBtn(
+          'Cancel & refund', EscrowTheme.error, () => _cancel(deal)));
     }
 
     // Always available: the escrow agreement, and (once money has moved) the
@@ -1219,15 +1327,20 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: EscrowTheme.primary,
               padding: EdgeInsets.symmetric(vertical: 15.h),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r)),
             ),
             child: Text(label,
-                style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700)),
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700)),
           ),
         ),
       );
 
-  Widget _secondaryBtn(String label, Color color, VoidCallback onTap) => Padding(
+  Widget _secondaryBtn(String label, Color color, VoidCallback onTap) =>
+      Padding(
         padding: EdgeInsets.only(bottom: 12.h),
         child: SizedBox(
           width: double.infinity,
@@ -1236,9 +1349,14 @@ class _EscrowDealDetailScreenState extends State<EscrowDealDetailScreen>
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: color),
               padding: EdgeInsets.symmetric(vertical: 14.h),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r)),
             ),
-            child: Text(label, style: GoogleFonts.inter(color: color, fontSize: 13.5.sp, fontWeight: FontWeight.w600)),
+            child: Text(label,
+                style: GoogleFonts.inter(
+                    color: color,
+                    fontSize: 13.5.sp,
+                    fontWeight: FontWeight.w600)),
           ),
         ),
       );

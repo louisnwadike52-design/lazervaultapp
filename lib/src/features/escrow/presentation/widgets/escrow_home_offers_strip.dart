@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -119,7 +120,8 @@ class EscrowHomeOffersStrip extends StatelessWidget {
     // "Who acts next", from this viewer's seat: "Created by you · waiting
     // for X" / "Waiting for you — …" / "Waiting for <name>". Explicit names
     // beat the old role-poetry ("Someone is selling to you").
-    final (String actionLabel, bool viewerActs) = o.nextActionLabel(viewerUserId);
+    final (String actionLabel, bool viewerActs) =
+        o.nextActionLabel(viewerUserId);
     final String subtitle = actionLabel;
     return GestureDetector(
       onTap: () => onOpenOffer(o),
@@ -178,8 +180,8 @@ class EscrowHomeOffersStrip extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-                currency_formatter.CurrencySymbols
-                    .formatAmountWithCurrency(o.amount, o.currency),
+                currency_formatter.CurrencySymbols.formatAmountWithCurrency(
+                    o.amount, o.currency),
                 style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 13.sp,

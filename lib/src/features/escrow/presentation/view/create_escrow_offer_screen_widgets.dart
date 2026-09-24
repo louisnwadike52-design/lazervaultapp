@@ -17,7 +17,9 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
                     fontWeight: FontWeight.w600)),
             SizedBox(height: 8.h),
             Row(children: [
-              for (var i = 0; i < _CreateEscrowOfferScreenState._totalPages; i++) ...[
+              for (var i = 0;
+                  i < _CreateEscrowOfferScreenState._totalPages;
+                  i++) ...[
                 if (i > 0) SizedBox(width: 6.w),
                 Expanded(
                   child: Container(
@@ -76,12 +78,14 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _label(_isSell ? 'What are you selling?' : 'What do you want to buy?'),
+            _label(
+                _isSell ? 'What are you selling?' : 'What do you want to buy?'),
             _field(_titleCtrl,
                 _isSell ? 'e.g. iPhone 13 Pro, 256GB' : 'e.g. PS5 console'),
             SizedBox(height: 14.h),
             _label('Specs / details (optional)'),
-            _field(_descCtrl,
+            _field(
+                _descCtrl,
                 _isSell
                     ? 'Condition, specs, what\'s included…'
                     : 'Exactly what you expect: condition, specs, colour…',
@@ -126,8 +130,7 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
               }),
               borderRadius: BorderRadius.circular(12.r),
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                 decoration: BoxDecoration(
                   color: EscrowTheme.card,
                   borderRadius: BorderRadius.circular(12.r),
@@ -197,8 +200,10 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
         ),
         child: Row(
           children: [
-            Icon(cp == null ? Icons.person_search_outlined : Icons.verified_user,
-                color: EscrowTheme.primary, size: 20.sp),
+            Icon(
+                cp == null ? Icons.person_search_outlined : Icons.verified_user,
+                color: EscrowTheme.primary,
+                size: 20.sp),
             SizedBox(width: 12.w),
             Expanded(
               child: cp == null
@@ -240,15 +245,16 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
           children: [
             _label('Price (NGN)'),
             _field(_amountCtrl, '0.00',
-                keyboard:
-                    const TextInputType.numberWithOptions(decimal: true)),
+                keyboard: const TextInputType.numberWithOptions(decimal: true)),
             SizedBox(height: 6.h),
             Text(
                 'The escrow fee is split evenly by default — half from the buyer, '
                 'half from your proceeds. It is calculated when the buyer pays, '
                 'and they see the exact total before confirming.',
                 style: GoogleFonts.inter(
-                    color: EscrowTheme.textSecondary, fontSize: 11.sp, height: 1.45)),
+                    color: EscrowTheme.textSecondary,
+                    fontSize: 11.sp,
+                    height: 1.45)),
             SizedBox(height: 14.h),
             _coverAllFeesToggle(),
             SizedBox(height: 16.h),
@@ -284,8 +290,9 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
               : EscrowTheme.card,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-              color: on ? EscrowTheme.warning.withValues(alpha: 0.45)
-                        : EscrowTheme.border),
+              color: on
+                  ? EscrowTheme.warning.withValues(alpha: 0.45)
+                  : EscrowTheme.border),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -478,7 +485,8 @@ extension _CreateEscrowOfferWidgets on _CreateEscrowOfferScreenState {
       );
 
   Widget _navButtons() {
-    final isLast = _currentPage == _CreateEscrowOfferScreenState._totalPages - 1;
+    final isLast =
+        _currentPage == _CreateEscrowOfferScreenState._totalPages - 1;
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 12.h),
       child: Row(

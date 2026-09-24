@@ -90,7 +90,8 @@ class EscrowRoles {
     if (buying == null) return null;
     return _badge(
       label: buying ? "You're buying" : "You're selling",
-      icon: buying ? Icons.account_balance_wallet_outlined : Icons.sell_outlined,
+      icon:
+          buying ? Icons.account_balance_wallet_outlined : Icons.sell_outlined,
       color: buying ? EscrowTheme.info : EscrowTheme.success,
       compact: compact,
     );
@@ -200,11 +201,10 @@ class EscrowRoles {
   /// funded.
   static String custodyLine(EscrowOfferEntity o, String viewerUserId) {
     final buying = viewerIsBuyer(o, viewerUserId);
-    final seller = o.sellerName.trim().isEmpty
-        ? 'the seller'
-        : o.sellerName.trim();
-    final buyerName = (o.isBuyRequest ? o.creatorName : o.counterpartyName)
-        .trim();
+    final seller =
+        o.sellerName.trim().isEmpty ? 'the seller' : o.sellerName.trim();
+    final buyerName =
+        (o.isBuyRequest ? o.creatorName : o.counterpartyName).trim();
     final buyer = buyerName.isEmpty ? 'the buyer' : buyerName;
 
     if (o.isConverted) {

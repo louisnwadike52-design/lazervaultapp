@@ -24,7 +24,8 @@ class EscrowOfferEntity {
   final String currency;
   final String feePayerMode;
   final int deliveryDeadlineDays;
-  final String status; // OPEN|AWAITING_FUNDING|CONVERTED|DECLINED|CANCELLED|EXPIRED
+  final String
+      status; // OPEN|AWAITING_FUNDING|CONVERTED|DECLINED|CANCELLED|EXPIRED
   final String declineReason;
   final DateTime? expiresAt;
   final DateTime? fundingDeadlineAt;
@@ -122,8 +123,8 @@ class EscrowOfferEntity {
   /// is waiting on someone else (render muted, with their name so it's
   /// explicit who everyone is waiting for).
   (String, bool) nextActionLabel(String viewerUserId) {
-    final bool mine =
-        viewerIsCreator || (viewerUserId.isNotEmpty && viewerUserId == creatorUserId);
+    final bool mine = viewerIsCreator ||
+        (viewerUserId.isNotEmpty && viewerUserId == creatorUserId);
     final String other = mine
         ? (counterpartyName.isNotEmpty ? counterpartyName : 'a buyer')
         : (creatorName.isNotEmpty ? creatorName : 'the other party');
@@ -135,7 +136,10 @@ class EscrowOfferEntity {
     }
     if (canDecline(viewerUserId)) {
       // Addressed to this viewer but not fundable by them right now.
-      return ('Waiting for you — review this ${isSellOffer ? 'listing' : 'request'}', true);
+      return (
+        'Waiting for you — review this ${isSellOffer ? 'listing' : 'request'}',
+        true
+      );
     }
     if (mine) {
       if (isSellOffer) {

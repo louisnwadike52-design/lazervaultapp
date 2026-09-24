@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:lazervault/src/features/recipients/domain/entities/unified_search_result.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/unified_user_search_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -33,9 +34,11 @@ class CreateEscrowDealScreen extends StatefulWidget {
 class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
     with TransactionPinMixin<CreateEscrowDealScreen> {
   @override
-  ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
 
   final _sellerCtrl = TextEditingController();
+
   /// The seller chosen from the platform directory. Non-null is the ONLY
   /// way past page 1 — see _sellerPicker for why free text is unsafe here.
   UnifiedSearchResult? _seller;
@@ -75,7 +78,9 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
       final state = context.read<AccountCardsSummaryCubit>().state;
       if (state is! AccountCardsSummaryLoaded) {
         final userId = context.read<AuthenticationCubit>().userId ?? '';
-        context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(userId: userId);
+        context
+            .read<AccountCardsSummaryCubit>()
+            .fetchAccountSummaries(userId: userId);
       }
     });
   }
@@ -147,7 +152,8 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
       // A field on page 1 failed — jump back so the user sees it.
       if (_sellerCtrl.text.trim().isEmpty || _titleCtrl.text.trim().isEmpty) {
         _pageController.animateToPage(0,
-            duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut);
       }
       return;
     }
@@ -157,11 +163,13 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
     }
     final amount = double.parse(_amountCtrl.text);
     final accounts = _ngnAccounts();
-    final acct = accounts.firstWhere((a) => a.id.toString() == _selectedAccountId,
+    final acct = accounts.firstWhere(
+        (a) => a.id.toString() == _selectedAccountId,
         orElse: () => accounts.first);
     final buyerTotal = _quote?.buyerTotal ?? amount;
     if (acct.availableBalance < buyerTotal) {
-      _snack('Insufficient balance. You need ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(buyerTotal, acct.currency)}',
+      _snack(
+          'Insufficient balance. You need ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(buyerTotal, acct.currency)}',
           EscrowTheme.error);
       return;
     }
@@ -179,7 +187,8 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
       amount: buyerTotal,
       currency: acct.currency,
       title: 'Fund escrow',
-      message: 'Lock ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(buyerTotal, acct.currency)} in escrow for "${_titleCtrl.text.trim()}"',
+      message:
+          'Lock ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(buyerTotal, acct.currency)} in escrow for "${_titleCtrl.text.trim()}"',
       showProcessingPhase: false,
       onPinValidated: (t) async => token = t,
     );
@@ -227,7 +236,8 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
       final warning = escrowAttachWarning(failed);
       if (warning != null) {
         Get.snackbar(
-          'Some evidence not attached', warning,
+          'Some evidence not attached',
+          warning,
           backgroundColor: EscrowTheme.error,
           colorText: Colors.white,
           snackPosition: SnackPosition.TOP,
@@ -243,7 +253,8 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
 
   void _snack(String m, Color c) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m), backgroundColor: c));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(m), backgroundColor: c));
   }
 
   @override
@@ -255,7 +266,10 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text('New escrow deal',
-            style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700)),
       ),
       body: BlocListener<EscrowCubit, EscrowState>(
         listener: (context, state) {
@@ -314,7 +328,8 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
               return Expanded(
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 250),
-                  margin: EdgeInsets.only(right: i == _totalPages - 1 ? 0 : 6.w),
+                  margin:
+                      EdgeInsets.only(right: i == _totalPages - 1 ? 0 : 6.w),
                   height: 5.h,
                   decoration: BoxDecoration(
                     color: active ? EscrowTheme.primary : EscrowTheme.border,
@@ -371,12 +386,11 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
               hint: '0.00',
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
-              onChanged: _onAmountChanged,
-              validator: (v) {
-                final n = double.tryParse(v ?? '');
-                if (n == null || n <= 0) return 'Enter a valid amount';
-                return null;
-              }),
+              onChanged: _onAmountChanged, validator: (v) {
+            final n = double.tryParse(v ?? '');
+            if (n == null || n <= 0) return 'Enter a valid amount';
+            return null;
+          }),
           SizedBox(height: 16.h),
           _label('Delivery deadline (optional)'),
           _deadlinePicker(),
@@ -452,7 +466,10 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
   Widget _label(String t) => Padding(
         padding: EdgeInsets.only(bottom: 8.h),
         child: Text(t,
-            style: GoogleFonts.inter(color: EscrowTheme.textSecondary, fontSize: 12.5.sp, fontWeight: FontWeight.w600)),
+            style: GoogleFonts.inter(
+                color: EscrowTheme.textSecondary,
+                fontSize: 12.5.sp,
+                fontWeight: FontWeight.w600)),
       );
 
   // Optional deadline selector — sets _deadlineDays (0 = no deadline). After
@@ -468,14 +485,19 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
               decoration: BoxDecoration(
-                color: selected ? EscrowTheme.primary.withValues(alpha: 0.18) : EscrowTheme.card,
+                color: selected
+                    ? EscrowTheme.primary.withValues(alpha: 0.18)
+                    : EscrowTheme.card,
                 borderRadius: BorderRadius.circular(10.r),
-                border: Border.all(color: selected ? EscrowTheme.primary : EscrowTheme.border),
+                border: Border.all(
+                    color: selected ? EscrowTheme.primary : EscrowTheme.border),
               ),
               child: Text(
                 opt.$2,
                 style: GoogleFonts.inter(
-                  color: selected ? EscrowTheme.primary : EscrowTheme.textSecondary,
+                  color: selected
+                      ? EscrowTheme.primary
+                      : EscrowTheme.textSecondary,
                   fontSize: 13.sp,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                 ),
@@ -511,7 +533,9 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
         child: Row(
           children: [
             Icon(
-              picked == null ? Icons.person_search_outlined : Icons.verified_user,
+              picked == null
+                  ? Icons.person_search_outlined
+                  : Icons.verified_user,
               color: picked == null
                   ? EscrowTheme.textSecondary
                   : EscrowTheme.primary,
@@ -608,7 +632,8 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
       style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: GoogleFonts.inter(color: EscrowTheme.textSecondary, fontSize: 13.sp),
+        hintStyle: GoogleFonts.inter(
+            color: EscrowTheme.textSecondary, fontSize: 13.sp),
         filled: true,
         fillColor: EscrowTheme.card,
         contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
@@ -635,21 +660,26 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
           return Container(
             padding: EdgeInsets.all(14.w),
             decoration: BoxDecoration(
-                color: EscrowTheme.card, borderRadius: BorderRadius.circular(12.r)),
+                color: EscrowTheme.card,
+                borderRadius: BorderRadius.circular(12.r)),
             child: Text('Loading accounts…',
-                style: GoogleFonts.inter(color: EscrowTheme.textSecondary, fontSize: 13.sp)),
+                style: GoogleFonts.inter(
+                    color: EscrowTheme.textSecondary, fontSize: 13.sp)),
           );
         }
-        final accounts =
-            state.accountSummaries.where((a) => a.currency.toUpperCase() == 'NGN').toList();
+        final accounts = state.accountSummaries
+            .where((a) => a.currency.toUpperCase() == 'NGN')
+            .toList();
         if (accounts.isEmpty) {
           return Text('No NGN account found',
-              style: GoogleFonts.inter(color: EscrowTheme.error, fontSize: 13.sp));
+              style:
+                  GoogleFonts.inter(color: EscrowTheme.error, fontSize: 13.sp));
         }
         _selectedAccountId ??= accounts.first.id.toString();
         return Container(
           decoration: BoxDecoration(
-              color: EscrowTheme.card, borderRadius: BorderRadius.circular(12.r),
+              color: EscrowTheme.card,
+              borderRadius: BorderRadius.circular(12.r),
               border: Border.all(color: EscrowTheme.border)),
           padding: EdgeInsets.symmetric(horizontal: 14.w),
           child: DropdownButtonHideUnderline(
@@ -657,13 +687,15 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
               value: _selectedAccountId,
               isExpanded: true,
               dropdownColor: EscrowTheme.card,
-              icon: const Icon(Icons.keyboard_arrow_down, color: EscrowTheme.textSecondary),
+              icon: const Icon(Icons.keyboard_arrow_down,
+                  color: EscrowTheme.textSecondary),
               items: accounts
                   .map((a) => DropdownMenuItem(
                         value: a.id.toString(),
                         child: Text(
                             '${a.accountType.toUpperCase()} · ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(a.availableBalance, a.currency)}',
-                            style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
+                            style: GoogleFonts.inter(
+                                color: Colors.white, fontSize: 13.sp)),
                       ))
                   .toList(),
               onChanged: (v) => setState(() => _selectedAccountId = v),
@@ -680,7 +712,9 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(l, style: GoogleFonts.inter(color: EscrowTheme.textSecondary, fontSize: 12.5.sp)),
+              Text(l,
+                  style: GoogleFonts.inter(
+                      color: EscrowTheme.textSecondary, fontSize: 12.5.sp)),
               Text(v,
                   style: GoogleFonts.inter(
                       color: Colors.white,
@@ -699,7 +733,8 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
       child: Column(
         children: [
           row('Deal amount', 'NGN ${q.amount.toStringAsFixed(2)}'),
-          row('Escrow fee (${q.feePayer}-paid)', 'NGN ${q.fee.toStringAsFixed(2)}'),
+          row('Escrow fee (${q.feePayer}-paid)',
+              'NGN ${q.fee.toStringAsFixed(2)}'),
           Divider(color: EscrowTheme.border, height: 16.h),
           row('You pay', 'NGN ${q.buyerTotal.toStringAsFixed(2)}', bold: true),
           row('Seller receives', 'NGN ${q.sellerNet.toStringAsFixed(2)}'),
@@ -708,16 +743,17 @@ class _CreateEscrowDealScreenState extends State<CreateEscrowDealScreen>
     );
   }
 
-
   Widget _disclaimer() => Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.lock_outline, size: 14.sp, color: EscrowTheme.textSecondary),
+          Icon(Icons.lock_outline,
+              size: 14.sp, color: EscrowTheme.textSecondary),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
                 'Your funds are held securely in escrow and only released to the seller after you confirm delivery.',
-                style: GoogleFonts.inter(color: EscrowTheme.textSecondary, fontSize: 11.sp)),
+                style: GoogleFonts.inter(
+                    color: EscrowTheme.textSecondary, fontSize: 11.sp)),
           ),
         ],
       );

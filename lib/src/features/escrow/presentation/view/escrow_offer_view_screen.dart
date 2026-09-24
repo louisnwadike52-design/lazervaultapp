@@ -11,7 +11,8 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import 'package:lazervault/core/shared_widgets/app_snackbar.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
 
@@ -113,19 +114,21 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
   bool _foreignPrompted = false;
   void _maybeWarnForeignViewer(EscrowOfferEntity offer, String userId) {
     if (_foreignPrompted) return;
-    if (!offer.isOpen) return; // taken/terminal links get a status banner instead
+    if (!offer.isOpen)
+      return; // taken/terminal links get a status banner instead
     if (!offer.isForeignViewer(userId)) return;
     _foreignPrompted = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final who =
-          offer.counterpartyName.isNotEmpty ? offer.counterpartyName : 'someone else';
+      final who = offer.counterpartyName.isNotEmpty
+          ? offer.counterpartyName
+          : 'someone else';
       showDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: EscrowTheme.card,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
           title: Text('This escrow isn\'t for you',
               style: GoogleFonts.inter(
                   color: Colors.white,
@@ -135,7 +138,9 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
               'This ${offer.isSellOffer ? 'listing' : 'request'} is addressed to $who. '
               'You can see the details, but only they can confirm or decline it.',
               style: GoogleFonts.inter(
-                  color: EscrowTheme.textSecondary, fontSize: 13.5.sp, height: 1.5)),
+                  color: EscrowTheme.textSecondary,
+                  fontSize: 13.5.sp,
+                  height: 1.5)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
@@ -159,7 +164,8 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
     if (_actionBusy) return;
     final cubit = context.read<EscrowCubit>();
     final note = await _noteSheet(
-      title: offer.isSellOffer ? 'Decline this offer?' : 'Decline this request?',
+      title:
+          offer.isSellOffer ? 'Decline this offer?' : 'Decline this request?',
       subtitle:
           'The ${offer.isSellOffer ? 'seller' : 'buyer'} will be notified. You can add a short reason.',
       confirmLabel: 'Decline',
@@ -275,8 +281,7 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
     if (offer.shareToken.isEmpty) return;
     Clipboard.setData(
         ClipboardData(text: _share.shareUrlForToken(offer.shareToken)));
-    showAppSnackbar('Escrow Pay', 'Link copied',
-        type: AppSnackbarType.success);
+    showAppSnackbar('Escrow Pay', 'Link copied', type: AppSnackbarType.success);
   }
 
   void _showQr(EscrowOfferEntity offer) {
@@ -505,11 +510,16 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
               color: EscrowTheme.textSecondary, fontSize: 12.sp));
     }
     final (label, viewerActs) = EscrowRoles.awaiting(offer, userId);
-    final color = viewerActs ? EscrowTheme.primaryLight : EscrowTheme.textSecondary;
+    final color =
+        viewerActs ? EscrowTheme.primaryLight : EscrowTheme.textSecondary;
     return Row(
       children: [
-        Icon(viewerActs ? Icons.pending_actions_rounded : Icons.hourglass_top_rounded,
-            size: 13.sp, color: color),
+        Icon(
+            viewerActs
+                ? Icons.pending_actions_rounded
+                : Icons.hourglass_top_rounded,
+            size: 13.sp,
+            color: color),
         SizedBox(width: 6.w),
         Expanded(
           child: Text(label,
@@ -779,8 +789,8 @@ class _EscrowOfferViewScreenState extends State<EscrowOfferViewScreen> {
     }
     // The addressed counterparty can DECLINE while the offer is still open.
     if (offer.canDecline(userId)) {
-      out.add(_secondaryBtn(
-          'Decline', EscrowTheme.error, () => _respond(offer)));
+      out.add(
+          _secondaryBtn('Decline', EscrowTheme.error, () => _respond(offer)));
     }
     if (offer.viewerIsCreator || offer.creatorUserId == userId) {
       if (!offer.isTerminal && offer.shareToken.isNotEmpty) {

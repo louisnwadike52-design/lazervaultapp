@@ -102,7 +102,8 @@ class _EscrowMediaViewerState extends State<_EscrowMediaViewer> {
   Widget build(BuildContext context) {
     // The route animation fades the backdrop + chrome so the media (carried by
     // the Hero) reads as expanding out of the grid, not a page push.
-    final fade = CurvedAnimation(parent: widget.animation, curve: Curves.easeOut);
+    final fade =
+        CurvedAnimation(parent: widget.animation, curve: Curves.easeOut);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -169,7 +170,8 @@ class _EscrowMediaViewerState extends State<_EscrowMediaViewer> {
       );
     }
     return AspectRatio(
-      aspectRatio: _video!.value.aspectRatio == 0 ? 1 : _video!.value.aspectRatio,
+      aspectRatio:
+          _video!.value.aspectRatio == 0 ? 1 : _video!.value.aspectRatio,
       child: Stack(
         alignment: Alignment.center,
         children: [

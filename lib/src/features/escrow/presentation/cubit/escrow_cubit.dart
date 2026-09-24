@@ -13,7 +13,9 @@ String _clean(Object e) {
   s = s.replaceAll('Exception: ', '');
   final idx = s.indexOf('message: ');
   if (idx >= 0) s = s.substring(idx + 'message: '.length);
-  return s.trim().isEmpty ? 'Something went wrong. Please try again.' : s.trim();
+  return s.trim().isEmpty
+      ? 'Something went wrong. Please try again.'
+      : s.trim();
 }
 
 class EscrowCubit extends Cubit<EscrowState> {
@@ -141,21 +143,30 @@ class EscrowCubit extends Cubit<EscrowState> {
     }
   }
 
-  Future<void> cancelDeal({required String dealId, String reason = '', required String idempotencyKey}) async {
+  Future<void> cancelDeal(
+      {required String dealId,
+      String reason = '',
+      required String idempotencyKey}) async {
     emit(const EscrowActionInProgress());
     try {
-      final deal = await repository.cancelDeal(dealId: dealId, reason: reason, idempotencyKey: idempotencyKey);
+      final deal = await repository.cancelDeal(
+          dealId: dealId, reason: reason, idempotencyKey: idempotencyKey);
       emit(EscrowActionSuccess('Deal cancelled and refunded', deal));
     } catch (e) {
       emit(EscrowError(_clean(e)));
     }
   }
 
-  Future<void> openDispute({required String dealId, required String reason, String evidenceUrl = ''}) async {
+  Future<void> openDispute(
+      {required String dealId,
+      required String reason,
+      String evidenceUrl = ''}) async {
     emit(const EscrowActionInProgress());
     try {
-      final deal = await repository.openDispute(dealId: dealId, reason: reason, evidenceUrl: evidenceUrl);
-      emit(EscrowActionSuccess('Dispute opened. Our team will review it', deal));
+      final deal = await repository.openDispute(
+          dealId: dealId, reason: reason, evidenceUrl: evidenceUrl);
+      emit(
+          EscrowActionSuccess('Dispute opened. Our team will review it', deal));
     } catch (e) {
       emit(EscrowError(_clean(e)));
     }
@@ -190,21 +201,26 @@ class EscrowCubit extends Cubit<EscrowState> {
   }
 
   /// Buyer asks for a refund after delivery.
-  Future<void> requestRefund({required String dealId, required String reason}) async {
+  Future<void> requestRefund(
+      {required String dealId, required String reason}) async {
     emit(const EscrowActionInProgress());
     try {
-      final deal = await repository.requestRefund(dealId: dealId, reason: reason);
-      emit(EscrowActionSuccess('Refund requested. We let the seller know', deal));
+      final deal =
+          await repository.requestRefund(dealId: dealId, reason: reason);
+      emit(EscrowActionSuccess(
+          'Refund requested. We let the seller know', deal));
     } catch (e) {
       emit(EscrowError(_clean(e)));
     }
   }
 
   /// Seller accepts or declines a pending refund request.
-  Future<void> respondRefund({required String dealId, required bool accept, String note = ''}) async {
+  Future<void> respondRefund(
+      {required String dealId, required bool accept, String note = ''}) async {
     emit(const EscrowActionInProgress());
     try {
-      final deal = await repository.respondRefund(dealId: dealId, accept: accept, note: note);
+      final deal = await repository.respondRefund(
+          dealId: dealId, accept: accept, note: note);
       emit(EscrowActionSuccess(
         accept ? 'Refund sent to the buyer' : 'Sent to our team to review',
         deal,
@@ -288,10 +304,12 @@ class EscrowCubit extends Cubit<EscrowState> {
     }
   }
 
-  Future<void> respondOffer({required String offerId, required bool accept, String note = ''}) async {
+  Future<void> respondOffer(
+      {required String offerId, required bool accept, String note = ''}) async {
     emit(const EscrowActionInProgress());
     try {
-      final offer = await repository.respondOffer(offerId: offerId, accept: accept, note: note);
+      final offer = await repository.respondOffer(
+          offerId: offerId, accept: accept, note: note);
       emit(EscrowOfferActionSuccess(
         accept ? 'Accepted — waiting for the buyer to fund' : 'Offer declined',
         offer,

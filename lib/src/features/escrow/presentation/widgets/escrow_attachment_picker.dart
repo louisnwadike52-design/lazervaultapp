@@ -111,14 +111,16 @@ class _EscrowAttachmentPickerState extends State<EscrowAttachmentPicker> {
               leading: Icon(Icons.photo_camera_outlined,
                   color: EscrowTheme.primary, size: 22.sp),
               title: Text('Take with camera',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp)),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 14.sp)),
               onTap: () => Navigator.pop(ctx, ImageSource.camera),
             ),
             ListTile(
               leading: Icon(Icons.collections_outlined,
                   color: EscrowTheme.primary, size: 22.sp),
               title: Text('Choose from library',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp)),
+                  style:
+                      GoogleFonts.inter(color: Colors.white, fontSize: 14.sp)),
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
             ),
             SizedBox(height: 8.h),

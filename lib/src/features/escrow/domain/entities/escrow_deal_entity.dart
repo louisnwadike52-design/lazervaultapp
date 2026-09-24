@@ -88,10 +88,13 @@ class EscrowDealEntity {
   bool get isDelivered => status == 'DELIVERED';
   bool get isReleased => status == 'RELEASED' || status == 'RESOLVED_RELEASED';
   bool get isRefunded =>
-      status == 'CANCELLED' || status == 'REFUNDED' || status == 'RESOLVED_REFUNDED';
+      status == 'CANCELLED' ||
+      status == 'REFUNDED' ||
+      status == 'RESOLVED_REFUNDED';
   bool get isRefundRequested => status == 'REFUND_REQUESTED';
   bool get isDisputed => status == 'DISPUTED';
-  bool get isActive => isFunded || isDelivered || isDisputed || isRefundRequested;
+  bool get isActive =>
+      isFunded || isDelivered || isDisputed || isRefundRequested;
 
   /// Seller can mark delivered while funded/in-progress.
   bool canMarkDelivered(String userId) => isSeller(userId) && isFunded;
@@ -117,7 +120,8 @@ class EscrowDealEntity {
   /// The seller responds to a pending refund request.
   bool canRespondRefund(String userId) => isSeller(userId) && isRefundRequested;
 
-  String get _sellerLabel => sellerName.trim().isEmpty ? 'the seller' : sellerName;
+  String get _sellerLabel =>
+      sellerName.trim().isEmpty ? 'the seller' : sellerName;
   String get _buyerLabel => buyerName.trim().isEmpty ? 'the buyer' : buyerName;
 
   /// Role- and state-aware progress line, e.g. "Funds held. Waiting for Jane to
@@ -131,7 +135,8 @@ class EscrowDealEntity {
 
     if (requiresAdminReview && (isFunded || isDelivered)) {
       return (
-        text: 'Funds held. Under review for your protection. Release is paused for now.',
+        text:
+            'Funds held. Under review for your protection. Release is paused for now.',
         yourTurn: false,
       );
     }
@@ -140,22 +145,48 @@ class EscrowDealEntity {
       case 'FUNDED':
       case 'IN_PROGRESS':
         return buyer
-            ? (text: 'Funds held. Waiting for $_sellerLabel to deliver.', yourTurn: false)
-            : (text: 'Funds held. Deliver, then $_buyerLabel releases your payment.', yourTurn: true);
+            ? (
+                text: 'Funds held. Waiting for $_sellerLabel to deliver.',
+                yourTurn: false
+              )
+            : (
+                text:
+                    'Funds held. Deliver, then $_buyerLabel releases your payment.',
+                yourTurn: true
+              );
       case 'DELIVERED':
         return buyer
-            ? (text: '$_sellerLabel marked delivered. Review and release when satisfied.', yourTurn: true)
-            : (text: 'Delivered. Waiting for $_buyerLabel to confirm & release.', yourTurn: false);
+            ? (
+                text:
+                    '$_sellerLabel marked delivered. Review and release when satisfied.',
+                yourTurn: true
+              )
+            : (
+                text:
+                    'Delivered. Waiting for $_buyerLabel to confirm & release.',
+                yourTurn: false
+              );
       case 'REFUND_REQUESTED':
         return buyer
-            ? (text: 'You asked for a refund. Waiting for $_sellerLabel to respond.', yourTurn: false)
-            : (text: '$_buyerLabel asked for a refund. Please accept it or decline.', yourTurn: true);
+            ? (
+                text:
+                    'You asked for a refund. Waiting for $_sellerLabel to respond.',
+                yourTurn: false
+              )
+            : (
+                text:
+                    '$_buyerLabel asked for a refund. Please accept it or decline.',
+                yourTurn: true
+              );
       case 'DISPUTED':
         return (text: 'Disputed. Our team is reviewing it.', yourTurn: false);
       case 'RELEASED':
       case 'RESOLVED_RELEASED':
         return buyer
-            ? (text: 'Completed. You released the funds to $_sellerLabel.', yourTurn: false)
+            ? (
+                text: 'Completed. You released the funds to $_sellerLabel.',
+                yourTurn: false
+              )
             : (text: 'Completed. Funds were released to you.', yourTurn: false);
       case 'CANCELLED':
       case 'REFUNDED':
@@ -164,7 +195,10 @@ class EscrowDealEntity {
             ? (text: 'Cancelled. You were refunded.', yourTurn: false)
             : (text: 'Cancelled. No funds changed hands.', yourTurn: false);
       case 'EXPIRED':
-        return (text: 'Expired. The held funds were returned to $_buyerLabel.', yourTurn: false);
+        return (
+          text: 'Expired. The held funds were returned to $_buyerLabel.',
+          yourTurn: false
+        );
       default:
         return (text: '', yourTurn: false);
     }

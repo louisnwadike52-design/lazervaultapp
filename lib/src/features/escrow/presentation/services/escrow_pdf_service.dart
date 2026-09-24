@@ -66,8 +66,7 @@ class EscrowPdfService {
     }
   }
 
-  static String _currencySymbolFor(String code) =>
-      receiptCurrencySymbol(code);
+  static String _currencySymbolFor(String code) => receiptCurrencySymbol(code);
 
   static String _money(double v, String currency) =>
       '${_currencySymbolFor(currency)}${NumberFormat('#,##0.00').format(v)}';
@@ -194,7 +193,8 @@ class EscrowPdfService {
                 _detailRow('Item amount', _money(deal.amount, deal.currency)),
                 _detailRow('Platform fee',
                     '${_money(deal.fee, deal.currency)} (${_feePayerLabel(deal.feePayer)})'),
-                _detailRow('Buyer total', _money(deal.buyerTotal, deal.currency),
+                _detailRow(
+                    'Buyer total', _money(deal.buyerTotal, deal.currency),
                     isBold: true),
                 _detailRow('Seller net', _money(deal.sellerNet, deal.currency),
                     isBold: true),
@@ -287,8 +287,7 @@ class EscrowPdfService {
               _detailsBlock('Parties', [
                 _detailRow('Buyer / Payer',
                     deal.buyerName.trim().isNotEmpty ? deal.buyerName : '—'),
-                _detailRow(
-                    'Seller / Payee',
+                _detailRow('Seller / Payee',
                     deal.sellerName.trim().isNotEmpty ? deal.sellerName : '—'),
               ]),
               pw.SizedBox(height: 20),
@@ -488,7 +487,8 @@ class EscrowPdfService {
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
-                pw.Text('(C) ${DateTime.now().year} LazerVault Technologies Ltd',
+                pw.Text(
+                    '(C) ${DateTime.now().year} LazerVault Technologies Ltd',
                     style: _ts(fontSize: 9, color: PdfColors.grey600)),
                 pw.SizedBox(height: 2),
                 pw.Text('Page 1 of 1',

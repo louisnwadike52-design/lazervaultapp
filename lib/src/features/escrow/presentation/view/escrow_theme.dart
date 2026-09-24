@@ -15,7 +15,8 @@ class EscrowTheme {
   static const Color primaryLight = Color(0xFFA78BFA);
   static const Color success = Color(0xFF10B981);
   static const Color warning = Color(0xFFFB923C);
-  static const Color amber = Color(0xFFF59E0B); // refund-requested attention tone
+  static const Color amber =
+      Color(0xFFF59E0B); // refund-requested attention tone
   static const Color error = Color(0xFFEF4444);
   static const Color info = Color(0xFF3B82F6); // condition grade / neutral fact
 
@@ -74,7 +75,8 @@ class EscrowTheme {
         borderRadius: BorderRadius.circular(6.r),
       ),
       child: Text(label,
-          style: GoogleFonts.inter(color: color, fontSize: 10.5.sp, fontWeight: FontWeight.w700)),
+          style: GoogleFonts.inter(
+              color: color, fontSize: 10.5.sp, fontWeight: FontWeight.w700)),
     );
   }
 
@@ -119,7 +121,8 @@ class EscrowTheme {
         borderRadius: BorderRadius.circular(6.r),
       ),
       child: Text(label,
-          style: GoogleFonts.inter(color: color, fontSize: 10.5.sp, fontWeight: FontWeight.w700)),
+          style: GoogleFonts.inter(
+              color: color, fontSize: 10.5.sp, fontWeight: FontWeight.w700)),
     );
   }
 }

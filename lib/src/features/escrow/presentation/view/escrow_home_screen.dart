@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
+import 'package:lazervault/core/utils/currency_formatter.dart'
+    as currency_formatter;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide Trans;
@@ -127,12 +128,16 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
           onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
           icon: Container(
             padding: EdgeInsets.all(8.w),
-            decoration: const BoxDecoration(color: EscrowTheme.card, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+                color: EscrowTheme.card, shape: BoxShape.circle),
             child: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
           ),
         ),
         title: Text('Escrow Pay',
-            style: GoogleFonts.inter(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w700)),
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700)),
         centerTitle: true,
         actions: [
           ServiceVoiceButton(
@@ -173,69 +178,70 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
         onPressed: _newOfferChooser,
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text('New',
-            style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
+            style: GoogleFonts.inter(
+                color: Colors.white, fontWeight: FontWeight.w600)),
       ),
       body: ServiceEntranceAnimation(
         child: SafeArea(
-        child: Column(
-          children: [
-            _header(),
-            EscrowHomeOffersStrip(
-              offers: _activeOffers,
-              fetchFailed: _offersFetchFailed,
-              viewerUserId: _viewerUserId(context),
-              onOpenOffer: (o) async {
-                // Pass the loaded entity so the offer page renders INSTANTLY
-                // and refreshes in the background — no blank loading screen.
-                await Get.toNamed(AppRoutes.escrowOfferView,
-                    arguments: {'offerId': o.id, 'offer': o});
-                _reload();
-              },
-              onSeeAll: () async {
-                await Get.toNamed(AppRoutes.escrowOffers);
-                _reload();
-              },
-              onRetry: _loadActiveOffers,
-            ),
-            _roleTabs(),
-            _statusFilterRow(),
-            Expanded(
-              child: BlocConsumer<EscrowCubit, EscrowState>(
-                listener: (context, state) {
-                  if (state is EscrowError) {
-                    showAppSnackbar('Escrow Pay', state.message,
-                        type: AppSnackbarType.error);
-                  }
+          child: Column(
+            children: [
+              _header(),
+              EscrowHomeOffersStrip(
+                offers: _activeOffers,
+                fetchFailed: _offersFetchFailed,
+                viewerUserId: _viewerUserId(context),
+                onOpenOffer: (o) async {
+                  // Pass the loaded entity so the offer page renders INSTANTLY
+                  // and refreshes in the background — no blank loading screen.
+                  await Get.toNamed(AppRoutes.escrowOfferView,
+                      arguments: {'offerId': o.id, 'offer': o});
+                  _reload();
                 },
-                builder: (context, state) {
-                  if (state is EscrowLoading || state is EscrowInitial) {
-                    return const EscrowListShimmer();
-                  }
-                  if (state is EscrowError) {
-                    return EscrowEmptyState.error(onRetry: _reload);
-                  }
-                  if (state is EscrowDealsLoaded) {
-                    final deals = _applyStatusFilter(state.deals);
-                    if (deals.isEmpty) return _empty();
-                    return RefreshIndicator(
-                      color: EscrowTheme.primary,
-                      onRefresh: () async => _reload(),
-                      child: ListView.separated(
-                        padding: EdgeInsets.all(16.w),
-                        itemCount: deals.length,
-                        separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                        itemBuilder: (context, i) =>
-                            _dealCard(deals[i], state.currentUserId),
-                      ),
-                    );
-                  }
-                  return const EscrowListShimmer();
+                onSeeAll: () async {
+                  await Get.toNamed(AppRoutes.escrowOffers);
+                  _reload();
                 },
+                onRetry: _loadActiveOffers,
               ),
-            ),
-          ],
+              _roleTabs(),
+              _statusFilterRow(),
+              Expanded(
+                child: BlocConsumer<EscrowCubit, EscrowState>(
+                  listener: (context, state) {
+                    if (state is EscrowError) {
+                      showAppSnackbar('Escrow Pay', state.message,
+                          type: AppSnackbarType.error);
+                    }
+                  },
+                  builder: (context, state) {
+                    if (state is EscrowLoading || state is EscrowInitial) {
+                      return const EscrowListShimmer();
+                    }
+                    if (state is EscrowError) {
+                      return EscrowEmptyState.error(onRetry: _reload);
+                    }
+                    if (state is EscrowDealsLoaded) {
+                      final deals = _applyStatusFilter(state.deals);
+                      if (deals.isEmpty) return _empty();
+                      return RefreshIndicator(
+                        color: EscrowTheme.primary,
+                        onRefresh: () async => _reload(),
+                        child: ListView.separated(
+                          padding: EdgeInsets.all(16.w),
+                          itemCount: deals.length,
+                          separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                          itemBuilder: (context, i) =>
+                              _dealCard(deals[i], state.currentUserId),
+                        ),
+                      );
+                    }
+                    return const EscrowListShimmer();
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -278,12 +284,15 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
               children: [
                 Text('Buy & sell safely with escrow',
                     style: GoogleFonts.inter(
-                        color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700)),
                 SizedBox(height: 4.h),
                 Text(
                     'Agree first, pay into escrow, release after delivery is confirmed.',
                     style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.9), fontSize: 11.5.sp)),
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: 11.5.sp)),
               ],
             ),
           ),
@@ -318,7 +327,11 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 12.w),
-      child: Row(children: [tab('All', ''), tab('Buying', 'buyer'), tab('Selling', 'seller')]),
+      child: Row(children: [
+        tab('All', ''),
+        tab('Buying', 'buyer'),
+        tab('Selling', 'seller')
+      ]),
     );
   }
 
@@ -349,7 +362,9 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
               ),
               child: Text(label,
                   style: GoogleFonts.inter(
-                      color: active ? EscrowTheme.primary : EscrowTheme.textSecondary,
+                      color: active
+                          ? EscrowTheme.primary
+                          : EscrowTheme.textSecondary,
                       fontSize: 12.5.sp,
                       fontWeight: active ? FontWeight.w700 : FontWeight.w500)),
             ),
@@ -417,7 +432,9 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
-                          color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
+                          color: Colors.white,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w700)),
                 ),
                 EscrowTheme.statusChip(deal.status),
               ],
@@ -442,7 +459,8 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
                   child: Text('with $counterparty',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(color: EscrowTheme.textSecondary, fontSize: 12.sp)),
+                      style: GoogleFonts.inter(
+                          color: EscrowTheme.textSecondary, fontSize: 12.sp)),
                 ),
               ],
             ),
@@ -456,8 +474,11 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
                         ? 'You pay ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(deal.buyerTotal, deal.currency)}'
                         : 'You get ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(deal.sellerNet, deal.currency)}',
                     style: GoogleFonts.inter(
-                        color: Colors.white, fontSize: 13.5.sp, fontWeight: FontWeight.w600)),
-                Icon(Icons.chevron_right, color: EscrowTheme.textSecondary, size: 20.sp),
+                        color: Colors.white,
+                        fontSize: 13.5.sp,
+                        fontWeight: FontWeight.w600)),
+                Icon(Icons.chevron_right,
+                    color: EscrowTheme.textSecondary, size: 20.sp),
               ],
             ),
           ],
@@ -488,7 +509,8 @@ class _EscrowHomeScreenState extends State<EscrowHomeScreen> {
                 style: GoogleFonts.inter(
                     color: color,
                     fontSize: 11.5.sp,
-                    fontWeight: s.yourTurn ? FontWeight.w600 : FontWeight.w500)),
+                    fontWeight:
+                        s.yourTurn ? FontWeight.w600 : FontWeight.w500)),
           ),
         ],
       ),

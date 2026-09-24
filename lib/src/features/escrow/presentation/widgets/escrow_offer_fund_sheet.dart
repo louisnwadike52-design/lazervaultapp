@@ -16,6 +16,7 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/src/features/escrow/presentation/cubit/escrow_action_exception.dart';
 
 import '../../domain/entities/escrow_deal_entity.dart';
 import '../../domain/entities/escrow_offer_entity.dart';
@@ -168,8 +169,12 @@ class _EscrowOfferFundSheetState extends State<_EscrowOfferFundSheet>
       HapticFeedback.mediumImpact();
       final txnId = 'ESCROW-${const Uuid().v4().substring(0, 8)}';
       final idem = const Uuid().v4();
-      String? token;
-      final ok = await validateTransactionPin(
+      // Funding runs INSIDE the PIN sheet, same as the release path: the sheet
+      // stays open through Verifying → Processing → Locked in escrow, instead of
+      // closing on "PIN Verified" and leaving the user on a blank screen while
+      // their money moves.
+      EscrowDealEntity? funded;
+      await validateTransactionPin(
         context: context,
         transactionId: txnId,
         transactionType: 'escrow_fund',
@@ -178,19 +183,37 @@ class _EscrowOfferFundSheetState extends State<_EscrowOfferFundSheet>
         title: 'Fund escrow',
         message:
             'Lock ${_money(_payable)} in escrow for "${widget.offer.title}"',
-        showProcessingPhase: false,
-        onPinValidated: (t) async => token = t,
+        successMessage: 'Locked in escrow',
+        processingSubtitle:
+            'Locking ${_money(_payable)} in escrow for "${widget.offer.title}"…',
+        successSubtitle: 'Your money is held until you confirm delivery.',
+        failureMessageBuilder: (e) => escrowActionFailureMessage(
+          e,
+          fallback: 'We couldn’t fund this deal. Nothing was debited.',
+        ),
+        onPinValidated: (t) async {
+          final deal = await cubit.fundOffer(
+            offerId: widget.offer.id,
+            buyerAccountId: acct.spendingAccountId,
+            transactionId: txnId,
+            verificationToken: t,
+            idempotencyKey: idem,
+          );
+          // fundOffer absorbs its failure into EscrowError and returns null, so
+          // the sheet would otherwise announce "Locked in escrow" over a deal
+          // that was never funded.
+          if (deal == null) {
+            final st = cubit.state;
+            throw EscrowActionException(
+              st is EscrowError ? st.message : 'Funding failed',
+            );
+          }
+          funded = deal;
+        },
       );
-      if (!ok || token == null) return;
-
-      final deal = await cubit.fundOffer(
-        offerId: widget.offer.id,
-        buyerAccountId: acct.spendingAccountId,
-        transactionId: txnId,
-        verificationToken: token!,
-        idempotencyKey: idem,
-      );
-      if (deal != null && mounted) Navigator.of(context).pop(deal);
+      // Only hand the deal back on success; the sheet has already shown the
+      // failure and unwound itself otherwise.
+      if (funded != null && mounted) Navigator.of(context).pop(funded);
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
