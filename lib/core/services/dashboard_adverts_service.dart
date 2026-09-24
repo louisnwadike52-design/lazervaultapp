@@ -28,11 +28,17 @@ class DashboardAdvert {
 /// art instead of a single painted placeholder. Admin config fully replaces
 /// these the moment it lands.
 ///
-/// The art is OURS, served from our own storage service on api.lazervault.app.
-/// It replaced five hotlinked images.pexels.com URLs, which were a production
-/// liability three ways over: unlicensed for this use, availability controlled
-/// by a third party, and — at this card's ~3.3:1 crop — mostly cropped away.
-/// Each slide is authored at exactly that ratio so nothing is lost to BoxFit.
+/// The art is served from OUR OWN storage service on api.lazervault.app. It
+/// replaced five HOTLINKED images.pexels.com URLs — same photographs, but a
+/// third party controlled whether they loaded at all, and the raw frames were
+/// 3:2 so the card's ~3.3:1 crop threw away 45% of every one.
+///
+/// Each slide is now a composite: the photograph, a brand-colour wash, and a
+/// left-weighted scrim, flattened to exactly 1242x376 so nothing is lost to
+/// BoxFit. The wash is what lets five photos from five different shoots read as
+/// one strip, and the scrim is what guarantees the overlaid copy stays legible
+/// no matter how bright the frame behind it is. Regenerate with
+/// scripts/compose_slides.py.
 ///
 /// The art deliberately carries NO baked-in text. Copy lives in `title` /
 /// `subtitle` and is drawn by Flutter over the image, so it stays crisp at every
@@ -44,7 +50,7 @@ class DashboardAdvert {
 const List<DashboardAdvert> kSeedDashboardAdverts = <DashboardAdvert>[
   DashboardAdvert(
     imageUrl:
-        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/a9faa295-bc31-408a-8431-9bdc1973bdf4.webp',
+        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/32fbc5ab-c5a9-4631-9cbb-e1e4ac05f731.webp',
     link: '/bills',
     title: 'Pay bills in seconds',
     subtitle: 'Electricity, data, TV and more',
@@ -52,7 +58,7 @@ const List<DashboardAdvert> kSeedDashboardAdverts = <DashboardAdvert>[
   ),
   DashboardAdvert(
     imageUrl:
-        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/dd698680-d040-4bd4-af29-89fa7560ff77.webp',
+        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/f7428d3c-daef-468b-9da2-b44db25c9336.webp',
     link: '/send-funds',
     title: 'Send money instantly',
     subtitle: 'To any bank in Nigeria, free',
@@ -60,7 +66,7 @@ const List<DashboardAdvert> kSeedDashboardAdverts = <DashboardAdvert>[
   ),
   DashboardAdvert(
     imageUrl:
-        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/9a0a3236-7d3b-4ec5-bfed-da8fc981de81.webp',
+        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/ac0d3e4d-4cfb-4791-801e-07d4b10290b0.webp',
     link: '/exchange',
     title: 'Send money home',
     subtitle: 'Great rates across borders',
@@ -68,7 +74,7 @@ const List<DashboardAdvert> kSeedDashboardAdverts = <DashboardAdvert>[
   ),
   DashboardAdvert(
     imageUrl:
-        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/ce691202-fdc7-4acf-aef2-0ebd7fe94236.webp',
+        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/9c1414e7-964b-4259-93c9-5eceaaa62cce.webp',
     link: '/crypto',
     title: 'Buy and sell crypto',
     subtitle: 'Live rates, settled to your wallet',
@@ -76,7 +82,7 @@ const List<DashboardAdvert> kSeedDashboardAdverts = <DashboardAdvert>[
   ),
   DashboardAdvert(
     imageUrl:
-        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/6e9b17e2-d6d7-4896-8ddb-ce3aa27a743c.webp',
+        'https://api.lazervault.app/v1/storage/objects/dashboard-adverts/brand/337d56d1-4ac6-492c-92fe-baea35392861.webp',
     link: '/lock-funds',
     title: 'Save towards your goals',
     subtitle: 'Lock funds and earn as you save',
