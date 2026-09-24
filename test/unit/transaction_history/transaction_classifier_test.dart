@@ -298,7 +298,13 @@ void main() {
       'payroll': TransactionServiceType.payroll,
       'autosave': TransactionServiceType.autosave,
       'lock_funds': TransactionServiceType.lockFunds,
-      'group_contribution': TransactionServiceType.groupFunds,
+      // groupContribution, NOT groupFunds. This test predated the constant and
+      // was left asserting the fold-in. They are deliberately distinct: paying
+      // your share into the pot and the group spending the pot are different
+      // events, and unified_transaction_receipt keys its contribution PDF
+      // branch off groupContribution — folding it back would silently drop
+      // that receipt again.
+      'group_contribution': TransactionServiceType.groupContribution,
       'crowdfund': TransactionServiceType.crowdfund,
       'stocks': TransactionServiceType.stocks,
       'data': TransactionServiceType.data,

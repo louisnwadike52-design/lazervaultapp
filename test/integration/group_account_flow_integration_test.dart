@@ -5,6 +5,7 @@ import 'package:lazervault/src/features/group_account/domain/repositories/group_
 import 'package:lazervault/src/features/group_account/domain/usecases/group_account_usecases.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_state.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mocktail/mocktail.dart';
 
 // ---------------------------------------------------------------------------
@@ -13,6 +14,31 @@ import 'package:mocktail/mocktail.dart';
 
 class MockGroupAccountRepository extends Mock
     implements GroupAccountRepository {}
+
+/// An in-memory stand-in for FlutterSecureStorage.
+///
+/// Without it the cubit falls back to kAppSecureStorage, whose platform channel
+/// has no binding under `flutter test` — every read threw "Binding has not yet
+/// been initialized", _assertSessionUser read that as "no session", and every
+/// test in this file got GroupAccountError('Please log in to view your groups.')
+/// instead of the flow it was asserting. The cubit already accepts an injected
+/// store precisely so tests need not touch the platform.
+class _FakeSecureStorage extends Mock implements FlutterSecureStorage {
+  _FakeSecureStorage(this._values);
+  final Map<String, String> _values;
+
+  @override
+  Future<String?> read({
+    required String key,
+    IOSOptions? iOptions,
+    AndroidOptions? aOptions,
+    LinuxOptions? lOptions,
+    WebOptions? webOptions,
+    MacOsOptions? mOptions,
+    WindowsOptions? wOptions,
+  }) async =>
+      _values[key];
+}
 
 // ---------------------------------------------------------------------------
 // Test fixtures
@@ -148,8 +174,20 @@ final _testContributionMember = ContributionMember(
 // Helper to create a cubit wired to the mock repository
 // ---------------------------------------------------------------------------
 
-GroupAccountCubit _buildCubit(MockGroupAccountRepository repo) {
+/// [sessionUserId] seeds the cubit's secure storage. Pass null for the flows
+/// that assert the UNAUTHENTICATED path — with a user id present
+/// _assertSessionUser rightly lets them through, and the test would be
+/// asserting an error that can no longer happen.
+GroupAccountCubit _buildCubit(
+  MockGroupAccountRepository repo, {
+  String? sessionUserId = 'user-123',
+}) {
   return GroupAccountCubit(
+    // 'user_id' is the cubit's _liveUserIdKey; it must match _testMember.userId
+    // or _assertSessionUser treats it as a user-switch and wipes per-user state.
+    secureStorage: _FakeSecureStorage(
+      sessionUserId == null ? const {} : {'user_id': sessionUserId},
+    ),
     getUserGroups: GetUserGroups(repo),
     getGroupById: GetGroupById(repo),
     createGroup: CreateGroup(repo),
@@ -242,8 +280,8 @@ void main() {
       act: (cubit) => cubit.loadUserGroups('user-123'),
       expect: () => [
         isA<GroupAccountLoading>(),
-        isA<GroupAccountError>()
-            .having((s) => s.message, 'message', contains('Failed to load groups')),
+        isA<GroupAccountError>().having(
+            (s) => s.message, 'message', contains('Failed to load groups')),
       ],
     );
   });
@@ -281,7 +319,7 @@ void main() {
 
   group('Create Group Flow', () {
     blocTest<GroupAccountCubit, GroupAccountState>(
-      'emits Loading then GroupCreated on success',
+      'emits GroupCreated on success',
       setUp: () {
         when(() => mockRepository.getUserGroups('user-123'))
             .thenAnswer((_) async => [_testGroup]);
@@ -305,13 +343,16 @@ void main() {
         description: 'A test group',
       ),
       expect: () => [
-        // createNewGroup emits Loading synchronously
-        isA<GroupAccountLoading>(),
-        // loadUserGroups (from setUserId in build) completes asynchronously
+        // setUserId (in build) kicks off loadUserGroups automatically, so this
+        // lands before anything the act emits. Asserted rather than skipped:
+        // it is real behaviour, and hiding it is how the ordering drifted.
         isA<GroupAccountGroupsLoaded>(),
         // createNewGroup completes asynchronously
         isA<GroupAccountGroupCreated>()
             .having((s) => s.group.name, 'group name', 'Test Group'),
+        // createNewGroup refreshes the list once the group exists, so the
+        // caller's group picker is correct without a manual pull.
+        isA<GroupAccountGroupsLoaded>(),
       ],
       verify: (_) {
         verify(() => mockRepository.createGroup(
@@ -327,7 +368,7 @@ void main() {
 
     blocTest<GroupAccountCubit, GroupAccountState>(
       'emits Error when not authenticated',
-      build: () => _buildCubit(mockRepository),
+      build: () => _buildCubit(mockRepository, sessionUserId: null),
       act: (cubit) => cubit.createNewGroup(
         name: 'Test Group',
         description: 'A test group',
@@ -383,18 +424,21 @@ void main() {
         currency: 'NGN',
       ),
       expect: () => [
+        // setUserId (in build) kicks off loadUserGroups automatically, so this
+        // lands before anything the act emits. Asserted rather than skipped:
+        // it is real behaviour, and hiding it is how the ordering drifted.
+        isA<GroupAccountGroupsLoaded>(),
         // makePaymentToContribution emits Processing synchronously
         isA<ContributionPaymentProcessing>()
             .having((s) => s.amount, 'amount', 50000.0),
-        // loadUserGroups (from setUserId in build) completes asynchronously
-        isA<GroupAccountGroupsLoaded>(),
         // makePaymentToContribution completes
         isA<ContributionPaymentSuccess>()
             .having((s) => s.payment.amount, 'payment amount', 50000.0)
-            .having((s) => s.message, 'message', 'Payment completed successfully'),
+            .having(
+                (s) => s.message, 'message', 'Payment completed successfully'),
         // loadGroupDetails after payment emits Loading then Loaded
-        isA<GroupAccountLoading>(),
-        isA<GroupAccountGroupLoaded>(),
+        // and nothing after it: the optimistic patch already updated the
+        // loaded state, so there is no reload round-trip to observe.
       ],
       verify: (_) {
         verify(() => mockRepository.makeContributionPayment(
@@ -443,19 +487,21 @@ void main() {
         currency: 'NGN',
       ),
       expect: () => [
+        // setUserId (in build) kicks off loadUserGroups automatically, so this
+        // lands before anything the act emits. Asserted rather than skipped:
+        // it is real behaviour, and hiding it is how the ordering drifted.
+        isA<GroupAccountGroupsLoaded>(),
         // makePaymentToContribution emits Processing synchronously
         isA<ContributionPaymentProcessing>(),
         // makePaymentToContribution fails quickly (sync throw)
         isA<ContributionPaymentFailed>()
             .having((s) => s.isInsufficientBalance, 'insufficient', true),
-        // loadUserGroups (from setUserId in build) completes asynchronously
-        isA<GroupAccountGroupsLoaded>(),
       ],
     );
 
     blocTest<GroupAccountCubit, GroupAccountState>(
       'emits Error when not authenticated',
-      build: () => _buildCubit(mockRepository),
+      build: () => _buildCubit(mockRepository, sessionUserId: null),
       act: (cubit) => cubit.makePaymentToContribution(
         contributionId: 'contrib-001',
         groupId: 'group-001',
@@ -464,7 +510,7 @@ void main() {
       ),
       expect: () => [
         isA<GroupAccountError>()
-            .having((s) => s.message, 'message', contains('not authenticated')),
+            .having((s) => s.message, 'message', contains('Please log in')),
       ],
     );
   });
@@ -475,7 +521,7 @@ void main() {
 
   group('Member Management Flow', () {
     blocTest<GroupAccountCubit, GroupAccountState>(
-      'addMember emits Loading then MemberAddedSuccess',
+      'addMember emits MemberAddedSuccess',
       setUp: () {
         when(() => mockRepository.addMemberToGroup(
               groupId: any(named: 'groupId'),
@@ -494,8 +540,12 @@ void main() {
         userName: 'Jane Smith',
         email: 'jane@example.com',
       ),
+      // No GroupAccountLoading: this flow is OPTIMISTIC. The cubit snapshots
+      // the loaded state, patches it immediately, and restores the snapshot if
+      // the call fails — the user never sees a spinner, which is the point.
+      // The test predated that conversion; asserting Loading would force a
+      // regression back to one.
       expect: () => [
-        isA<GroupAccountLoading>(),
         isA<MemberAddedSuccess>()
             .having((s) => s.member.userName, 'name', 'Jane Smith')
             .having((s) => s.groupId, 'group', 'group-001'),
@@ -503,7 +553,7 @@ void main() {
     );
 
     blocTest<GroupAccountCubit, GroupAccountState>(
-      'updateMemberRole emits Loading then Success',
+      'updateMemberRole emits Success',
       setUp: () {
         when(() => mockRepository.updateMemberRole(
               groupId: any(named: 'groupId'),
@@ -523,18 +573,22 @@ void main() {
         memberId: 'member-002',
         newRole: GroupMemberRole.moderator,
       ),
+      // No GroupAccountLoading: this flow is OPTIMISTIC. The cubit snapshots
+      // the loaded state, patches it immediately, and restores the snapshot if
+      // the call fails — the user never sees a spinner, which is the point.
+      // The test predated that conversion; asserting Loading would force a
+      // regression back to one.
       expect: () => [
-        isA<GroupAccountLoading>(),
         isA<GroupAccountSuccess>()
             .having((s) => s.message, 'message', contains('role updated')),
         // loadGroupDetails emits Loading then Loaded
-        isA<GroupAccountLoading>(),
-        isA<GroupAccountGroupLoaded>(),
+        // and nothing after it: the optimistic patch already updated the
+        // loaded state, so there is no reload round-trip to observe.
       ],
     );
 
     blocTest<GroupAccountCubit, GroupAccountState>(
-      'removeMember emits Loading then Success',
+      'removeMember emits Success',
       setUp: () {
         when(() => mockRepository.removeMemberFromGroup(
               groupId: any(named: 'groupId'),
@@ -552,12 +606,16 @@ void main() {
         groupId: 'group-001',
         memberId: 'member-002',
       ),
+      // No GroupAccountLoading: this flow is OPTIMISTIC. The cubit snapshots
+      // the loaded state, patches it immediately, and restores the snapshot if
+      // the call fails — the user never sees a spinner, which is the point.
+      // The test predated that conversion; asserting Loading would force a
+      // regression back to one.
       expect: () => [
-        isA<GroupAccountLoading>(),
         isA<GroupAccountSuccess>()
             .having((s) => s.message, 'message', contains('removed')),
-        isA<GroupAccountLoading>(),
-        isA<GroupAccountGroupLoaded>(),
+        // and nothing after it: the optimistic patch already updated the
+        // loaded state, so there is no reload round-trip to observe.
       ],
     );
   });
@@ -568,7 +626,7 @@ void main() {
 
   group('Contribution Management Flow', () {
     blocTest<GroupAccountCubit, GroupAccountState>(
-      'updateContribution emits Loading then Success',
+      'updateContribution emits Success',
       setUp: () {
         when(() => mockRepository.updateContribution(any()))
             .thenAnswer((_) async => _testContributionPaused);
@@ -583,22 +641,21 @@ void main() {
       act: (cubit) => cubit.updateContributionDetails(
         _testContribution.copyWith(status: ContributionStatus.paused),
       ),
+      // No GroupAccountLoading: this flow is OPTIMISTIC. The cubit snapshots
+      // the loaded state, patches it immediately, and restores the snapshot if
+      // the call fails — the user never sees a spinner, which is the point.
+      // The test predated that conversion; asserting Loading would force a
+      // regression back to one.
       expect: () => [
-        isA<GroupAccountLoading>(),
         isA<GroupAccountSuccess>()
             .having((s) => s.message, 'message', contains('updated')),
-        isA<GroupAccountLoading>(),
-        isA<GroupAccountGroupLoaded>()
-            .having(
-              (s) => s.contributions.first.status,
-              'status',
-              ContributionStatus.paused,
-            ),
+        // and nothing after it — the optimistic patch already applied the
+        // status change to the loaded state.
       ],
     );
 
     blocTest<GroupAccountCubit, GroupAccountState>(
-      'deleteContribution emits Loading then Success',
+      'deleteContribution emits Success',
       setUp: () {
         when(() => mockRepository.deleteContribution('contrib-001'))
             .thenAnswer((_) async {});
@@ -612,13 +669,16 @@ void main() {
       build: () => _buildCubit(mockRepository),
       act: (cubit) =>
           cubit.deleteContributionFromGroup('contrib-001', 'group-001'),
+      // No GroupAccountLoading: this flow is OPTIMISTIC. The cubit snapshots
+      // the loaded state, patches it immediately, and restores the snapshot if
+      // the call fails — the user never sees a spinner, which is the point.
+      // The test predated that conversion; asserting Loading would force a
+      // regression back to one.
       expect: () => [
-        isA<GroupAccountLoading>(),
         isA<GroupAccountSuccess>()
             .having((s) => s.message, 'message', contains('deleted')),
-        isA<GroupAccountLoading>(),
-        isA<GroupAccountGroupLoaded>()
-            .having((s) => s.contributions.length, 'count', 0),
+        // and nothing after it — the optimistic patch already removed the
+        // contribution from the loaded state.
       ],
     );
   });
@@ -652,6 +712,8 @@ void main() {
         isA<GroupAccountLoading>(),
         isA<ContributionMembersAdded>()
             .having((s) => s.members.length, 'count', 1),
+        // This flow DOES reload afterwards — unlike the optimistic member and
+        // contribution edits, it refetches the group to pick up the new rows.
         isA<GroupAccountLoading>(),
         isA<GroupAccountGroupLoaded>(),
       ],
@@ -723,8 +785,7 @@ void main() {
             .thenAnswer((_) async => _testTranscript);
       },
       build: () => _buildCubit(mockRepository),
-      act: (cubit) =>
-          cubit.generateTranscriptForContribution('contrib-001'),
+      act: (cubit) => cubit.generateTranscriptForContribution('contrib-001'),
       expect: () => [
         isA<GroupAccountLoading>(),
         isA<GroupAccountTranscriptGenerated>()
