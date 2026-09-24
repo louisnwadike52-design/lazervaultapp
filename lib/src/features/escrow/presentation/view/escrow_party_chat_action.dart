@@ -146,13 +146,19 @@ class EscrowPartyChatRow extends StatelessWidget {
     final other = escrowCounterpartyFor(deal, viewerUserId);
     if (other == null) return const SizedBox.shrink();
 
+    // NO horizontal padding of its own. The detail screen's SingleChildScrollView
+    // already applies EdgeInsets.all(16.w), and its sibling sections — the
+    // buyer/seller tiles directly above, the timeline directly below — are bare
+    // widgets that inherit it. Adding 16.w here inset this card by 32 while
+    // everything around it sat at 16, so it read as misaligned on the one screen
+    // where the eye has two cards right above to compare it against.
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+      padding: EdgeInsets.only(top: 12.h),
       child: InkWell(
         onTap: () => openEscrowPartyChat(context, deal, viewerUserId),
         borderRadius: BorderRadius.circular(12.r),
         child: Container(
-          padding: EdgeInsets.all(14.w),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
           decoration: BoxDecoration(
             color: const Color(0xFF1C1C1E),
             borderRadius: BorderRadius.circular(12.r),
@@ -161,14 +167,14 @@ class EscrowPartyChatRow extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 36.w,
-                height: 36.w,
+                width: 32.w,
+                height: 32.w,
                 decoration: BoxDecoration(
                   color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10.r),
+                  borderRadius: BorderRadius.circular(9.r),
                 ),
                 child: Icon(Icons.chat_bubble_outline_rounded,
-                    size: 18.sp, color: const Color(0xFF9B6DFF)),
+                    size: 16.sp, color: const Color(0xFF9B6DFF)),
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -176,26 +182,36 @@ class EscrowPartyChatRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
+                      // Sized to sit UNDER the party tiles' names rather than
+                      // compete with them: this is a secondary action, and at
+                      // 14.sp semibold it was reading as another heading.
                       'Message ${other.name}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
                         color: Colors.white,
-                        fontSize: 14.sp,
+                        fontSize: 13.sp,
+                        height: 1.25,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(height: 2.h),
+                    SizedBox(height: 3.h),
                     Text(
                       'Ask about delivery or send an update',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
-                          color: Colors.grey[500], fontSize: 12.sp),
+                        color: Colors.grey[500],
+                        fontSize: 11.sp,
+                        height: 1.25,
+                      ),
                     ),
                   ],
                 ),
               ),
+              SizedBox(width: 8.w),
               Icon(Icons.chevron_right_rounded,
-                  size: 20.sp, color: Colors.grey[600]),
+                  size: 18.sp, color: Colors.grey[600]),
             ],
           ),
         ),
