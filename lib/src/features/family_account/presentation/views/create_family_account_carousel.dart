@@ -310,6 +310,15 @@ class _CreateFamilyAccountCarouselState
         allocations: const [],
         fundingPolicy: _fundingPolicy,
         specificMemberIds: specificMemberIds,
+        // REQUIRED. accountName defaults to '' all the way down
+        // (cubit → repository → grpc data source), and SetupFamilyAccount
+        // rejects an empty one with "family account name is required". This
+        // call omitted it, so setup failed AFTER CreateFamilyAccount had
+        // already succeeded and provisioned the virtual account — leaving the
+        // account permanently at status=pending_setup with real money in it
+        // and a detail page inviting the user to "set it up again".
+        // Observed in production on the Smith Family account.
+        accountName: _nameController.text.trim(),
       ),
     );
 
