@@ -48,6 +48,12 @@ class FcyKycFieldInput extends StatelessWidget {
           Container(
             decoration: AppSurfaces.card(radius: 14, accentAlpha: 0.18),
             child: TextFormField(
+              // Keyed on the field id as well as on the wrapper, because
+              // initialValue is only read when this field's state is CREATED. If
+              // anything ever reuses this state for a different field — a step
+              // change, a reordered list — the new field silently shows the old
+              // field's text, which is the bug that put an address in Occupation.
+              key: ValueKey('fcy_kyc_text_${id.name}'),
               // initialValue rather than a controller: the cubit owns the value,
               // and a controller here would be a second source of truth that has
               // to be kept in step with it.

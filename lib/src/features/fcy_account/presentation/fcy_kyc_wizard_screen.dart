@@ -305,6 +305,22 @@ class _FcyKycWizardScreenState extends State<FcyKycWizardScreen> {
                         SizedBox(height: 20.h),
                         ...step.fields.map(
                           (id) => FcyKycFieldInput(
+                            // Keyed by field id, and this is load-bearing.
+                            //
+                            // These were an unkeyed positional list, so when the
+                            // wizard moved from one step to the next Flutter
+                            // matched the old and new children BY INDEX — same
+                            // widget type, no key — and reused each
+                            // TextFormField's state. initialValue is only read
+                            // when that state is CREATED, so the reused field
+                            // kept the previous step's text: Occupation came up
+                            // pre-filled with the address, and "Annual income
+                            // from" with the postcode, exactly as reported.
+                            //
+                            // A ValueKey on the field id makes the match by
+                            // identity instead, so a field can only ever inherit
+                            // state from the same field.
+                            key: ValueKey(id),
                             id: id,
                             currency: cubit.currency,
                             value: cubit.values[id] ?? '',
