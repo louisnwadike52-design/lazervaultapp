@@ -87,6 +87,7 @@ class _FamilyActivationSetupScreenState
       TextEditingController();
   final TextEditingController _inviteMonthlyLimitController =
       TextEditingController();
+
   /// Guards the final submit: a second tap would re-send every staged invite
   /// before the server refused the duplicate activation.
   bool _isSubmittingSetup = false;
@@ -440,17 +441,16 @@ class _FamilyActivationSetupScreenState
                   }
                 }
               });
-            // FamilyMemberAdded / FamilyMemberAdding are no longer handled here.
-            // Staging is local and the batch send on submit uses
-            // addMemberAwaitable, which deliberately emits no cubit state — so
-            // these branches could only fire from another screen sharing this
-            // cubit, where reacting would be wrong.
+              // FamilyMemberAdded / FamilyMemberAdding are no longer handled here.
+              // Staging is local and the batch send on submit uses
+              // addMemberAwaitable, which deliberately emits no cubit state — so
+              // these branches could only fire from another screen sharing this
+              // cubit, where reacting would be wrong.
             } else if (state is FamilyAccountSetupCompleted) {
               // Apply spending limits to members if any were set
               _applySpendingLimitsAndNavigate();
               return; // Navigation happens in _applySpendingLimitsAndNavigate
             } else if (state is FamilyAccountError) {
-
               final msg = state.message.toLowerCase();
               if (msg.contains('exceed') || msg.contains('insufficient')) {
                 _showAllocationErrorDialog(context, state.message);
@@ -485,8 +485,7 @@ class _FamilyActivationSetupScreenState
                       _buildInviteMembersStep(),
                       // Only when there is something to allocate — see
                       // _needsAllocationStep.
-                      if (_needsAllocationStep)
-                        _buildConfigureAllocationStep(),
+                      if (_needsAllocationStep) _buildConfigureAllocationStep(),
                       _buildSpendingVisibilityStep(),
                       _buildReviewStep(state),
                     ],
@@ -616,8 +615,8 @@ class _FamilyActivationSetupScreenState
             decoration: InputDecoration(
               hintText: 'e.g. The Nwadikes, Weekend Crew…',
               errorText: _accountNameValidationError,
-              errorStyle: TextStyle(
-                  color: const Color(0xFFEF4444), fontSize: 12.sp),
+              errorStyle:
+                  TextStyle(color: const Color(0xFFEF4444), fontSize: 12.sp),
               hintStyle:
                   TextStyle(color: const Color(0xFF6B7280), fontSize: 14.sp),
               counterStyle:
@@ -1487,8 +1486,7 @@ class _FamilyActivationSetupScreenState
                 ),
                 SizedBox(width: 8.w),
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
                     color: const Color(0xFF4E03D0).withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(10.r),

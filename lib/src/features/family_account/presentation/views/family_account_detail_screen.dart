@@ -1895,181 +1895,184 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           maxHeight: MediaQuery.of(context).size.height * 0.85,
         ),
         child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
-        decoration: BoxDecoration(
-          // Lifted surface: lighter than the 0xFF0A0A0A page background.
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        ),
-        child: SingleChildScrollView(
-          // Clears the home indicator so the final option is tappable rather
-          // than sitting under the gesture bar.
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewPadding.bottom + 8.h,
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+          decoration: BoxDecoration(
+            // Lifted surface: lighter than the 0xFF0A0A0A page background.
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
           ),
-          child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle
-            Container(
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
+          child: SingleChildScrollView(
+            // Clears the home indicator so the final option is tappable rather
+            // than sitting under the gesture bar.
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewPadding.bottom + 8.h,
             ),
-            SizedBox(height: 16.h),
-
-            Text(
-              'Account Settings',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 16.h),
-
-            _buildAccountDetailsCard(account),
-            SizedBox(height: 12.h),
-
-            // Spending visibility + funding policy, editable AFTER setup.
-            //
-            // Both are collected by the setup wizard and both are enforced
-            // server-side, but until UpdateFamilySettings existed there was no
-            // writer for them outside SetupFamilyAccount — which refuses to run
-            // once the account leaves pending_setup. A creator who picked the
-            // wrong option in the wizard was stuck with it permanently.
-            if (viewerIsAdmin &&
-                account.status == FamilyAccountStatus.active) ...[
-              _buildOption(
-                Icons.visibility_outlined,
-                'Spending & Funding',
-                'Who can see spending, and who can add money',
-                () {
-                  Get.back();
-                  _showFamilySettingsSheet(account);
-                },
-              ),
-              SizedBox(height: 12.h),
-            ],
-
-            // Account statement — available to every member (read-only export).
-            _buildOption(
-              Icons.receipt_long_outlined,
-              'Account Statement',
-              'View and share a PDF statement',
-              () {
-                Get.back();
-                Get.to(() => FamilyAccountReportScreen(account: account));
-              },
-            ),
-
-            // Role gating mirrors the backend RPCs:
-            //   • Change distribution / freeze / unfreeze: family admin only
-            //   • Delete: creator only
-            //   • Sent invitations: admin only (read-only history of
-            //     invites the admin has sent for this family)
-            // Non-admin members see only the read-only options.
-            if (viewerIsAdmin) ...[
-              _buildOption(
-                Icons.send_outlined,
-                'Invitations',
-                // Renamed from "Sent Invitations": the screen already filters by
-                // pending / declined / expired / removed, so it is the
-                // invitation HISTORY, not just what is outstanding. Called
-                // "Sent" it read as a list of things still in flight, and
-                // nobody looked there for a declined invite.
-                'Pending, declined, expired and past members',
-                () {
-                  Get.back();
-                  Get.toNamed(
-                    AppRoutes.familySentInvitations,
-                    arguments: {'familyId': widget.familyId},
-                  );
-                },
-              ),
-              SizedBox(height: 12.h),
-            ],
-            if (viewerIsAdmin &&
-                account.status == FamilyAccountStatus.active) ...[
-              _buildOption(
-                Icons.swap_horiz,
-                'Change Distribution Mode',
-                'Switch how funds are distributed',
-                () {
-                  Get.back();
-                  _showDistributionModePicker(account);
-                },
-              ),
-              SizedBox(height: 12.h),
-            ],
-            if (viewerIsAdmin)
-              _buildOption(
-                account.status == FamilyAccountStatus.active
-                    ? Icons.ac_unit
-                    : Icons.wb_sunny,
-                account.status == FamilyAccountStatus.active
-                    ? 'Freeze Account'
-                    : 'Unfreeze Account',
-                account.status == FamilyAccountStatus.active
-                    ? 'Temporarily freeze all spending'
-                    : 'Reactivate account',
-                () {
-                  Get.back();
-                  if (account.status == FamilyAccountStatus.active) {
-                    _confirmFreezeAccount(account);
-                  } else {
-                    _confirmUnfreezeAccount(account);
-                  }
-                },
-              ),
-            if (viewerIsAdmin) SizedBox(height: 12.h),
-            if (viewerIsCreator)
-              _buildOption(
-                Icons.delete_outline,
-                'Delete Account',
-                'Permanently delete family account',
-                () {
-                  Get.back();
-                  _confirmDeleteAccount(account);
-                },
-                color: Colors.red,
-              ),
-            // Self-serve leave: any accepted non-creator member. Their
-            // allocation returns to the pool; the creator must delete instead.
-            if (!viewerIsCreator &&
-                _currentUserId != null &&
-                account.members.any((m) =>
-                    m.userId == _currentUserId &&
-                    m.invitationStatus == InvitationStatus.accepted))
-              _buildOption(
-                Icons.exit_to_app,
-                'Leave Family',
-                'Leave this family account',
-                () {
-                  Get.back();
-                  _confirmLeaveFamily(account);
-                },
-                color: Colors.red,
-              ),
-            if (!viewerIsAdmin && !viewerIsCreator)
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
-                child: Text(
-                  'Only family admins can change account settings.',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontSize: 12.sp,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
-                  textAlign: TextAlign.center,
                 ),
-              ),
-            SizedBox(height: 20.h),
-          ],
-        ),
-        ),
+                SizedBox(height: 16.h),
+
+                Text(
+                  'Account Settings',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+
+                _buildAccountDetailsCard(account),
+                SizedBox(height: 12.h),
+
+                // Spending visibility + funding policy, editable AFTER setup.
+                //
+                // Both are collected by the setup wizard and both are enforced
+                // server-side, but until UpdateFamilySettings existed there was no
+                // writer for them outside SetupFamilyAccount — which refuses to run
+                // once the account leaves pending_setup. A creator who picked the
+                // wrong option in the wizard was stuck with it permanently.
+                if (viewerIsAdmin &&
+                    account.status == FamilyAccountStatus.active) ...[
+                  _buildOption(
+                    Icons.visibility_outlined,
+                    'Spending & Funding',
+                    'Who can see spending, and who can add money',
+                    () {
+                      Get.back();
+                      _showFamilySettingsSheet(account);
+                    },
+                  ),
+                  SizedBox(height: 12.h),
+                ],
+
+                // Account statement — available to every member (read-only export).
+                _buildOption(
+                  Icons.receipt_long_outlined,
+                  'Account Statement',
+                  'View and share a PDF statement',
+                  () {
+                    Get.back();
+                    Get.to(() => FamilyAccountReportScreen(account: account));
+                  },
+                ),
+
+                // Role gating mirrors the backend RPCs:
+                //   • Change distribution / freeze / unfreeze: family admin only
+                //   • Delete: creator only
+                //   • Sent invitations: admin only (read-only history of
+                //     invites the admin has sent for this family)
+                // Non-admin members see only the read-only options.
+                if (viewerIsAdmin) ...[
+                  _buildOption(
+                    Icons.send_outlined,
+                    'Invitations',
+                    // Renamed from "Sent Invitations": the screen already filters by
+                    // pending / declined / expired / removed, so it is the
+                    // invitation HISTORY, not just what is outstanding. Called
+                    // "Sent" it read as a list of things still in flight, and
+                    // nobody looked there for a declined invite.
+                    'Pending, declined, expired and past members',
+                    () {
+                      Get.back();
+                      Get.toNamed(
+                        AppRoutes.familySentInvitations,
+                        arguments: {'familyId': widget.familyId},
+                      );
+                    },
+                  ),
+                  SizedBox(height: 12.h),
+                ],
+                if (viewerIsAdmin &&
+                    account.status == FamilyAccountStatus.active) ...[
+                  _buildOption(
+                    Icons.swap_horiz,
+                    'Change Distribution Mode',
+                    'Switch how funds are distributed',
+                    () {
+                      Get.back();
+                      _showDistributionModePicker(account);
+                    },
+                  ),
+                  SizedBox(height: 12.h),
+                ],
+                if (viewerIsAdmin)
+                  _buildOption(
+                    account.status == FamilyAccountStatus.active
+                        ? Icons.ac_unit
+                        : Icons.wb_sunny,
+                    account.status == FamilyAccountStatus.active
+                        ? 'Freeze Account'
+                        : 'Unfreeze Account',
+                    account.status == FamilyAccountStatus.active
+                        ? 'Temporarily freeze all spending'
+                        : 'Reactivate account',
+                    () {
+                      Get.back();
+                      if (account.status == FamilyAccountStatus.active) {
+                        _confirmFreezeAccount(account);
+                      } else {
+                        _confirmUnfreezeAccount(account);
+                      }
+                    },
+                  ),
+                if (viewerIsAdmin) SizedBox(height: 12.h),
+                if (viewerIsCreator)
+                  _buildOption(
+                    Icons.archive_outlined,
+                    'Close Account',
+                    // Not "Permanently delete": the row is archived, funds return,
+                    // the slot frees up, and the history stays readable.
+                    'Return funds, free the slot, keep the history',
+                    () {
+                      Get.back();
+                      _confirmDeleteAccount(account);
+                    },
+                    color: Colors.red,
+                  ),
+                // Self-serve leave: any accepted non-creator member. Their
+                // allocation returns to the pool; the creator must delete instead.
+                if (!viewerIsCreator &&
+                    _currentUserId != null &&
+                    account.members.any((m) =>
+                        m.userId == _currentUserId &&
+                        m.invitationStatus == InvitationStatus.accepted))
+                  _buildOption(
+                    Icons.exit_to_app,
+                    'Leave Family',
+                    'Leave this family account',
+                    () {
+                      Get.back();
+                      _confirmLeaveFamily(account);
+                    },
+                    color: Colors.red,
+                  ),
+                if (!viewerIsAdmin && !viewerIsCreator)
+                  Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
+                    child: Text(
+                      'Only family admins can change account settings.',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 12.sp,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                SizedBox(height: 20.h),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -2088,9 +2091,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
   /// alone", so touching one control cannot reset the other.
   void _showFamilySettingsSheet(FamilyAccount account) {
     bool visibility = account.spendingVisibilityEnabled;
-    String policy = account.fundingPolicy.isEmpty
-        ? 'any_member'
-        : account.fundingPolicy;
+    String policy =
+        account.fundingPolicy.isEmpty ? 'any_member' : account.fundingPolicy;
     // Seeded from the members already flagged as contributors, so reopening the
     // sheet shows the current allow-list rather than an empty one.
     int expiryDays = account.invitationExpiryDays;
@@ -2219,8 +2221,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                               SizedBox(width: 12.w),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(opt.$2,
                                         style: TextStyle(
@@ -2338,7 +2339,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                               horizontal: 14.w, vertical: 8.h),
                           decoration: BoxDecoration(
                             color: selected
-                                ? const Color(0xFF4E03D0).withValues(alpha: 0.25)
+                                ? const Color(0xFF4E03D0)
+                                    .withValues(alpha: 0.25)
                                 : const Color(0xFF141414),
                             borderRadius: BorderRadius.circular(20.r),
                             border: Border.all(
@@ -2749,7 +2751,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           borderRadius: BorderRadius.circular(16.r),
         ),
         title: Text(
-          'Delete ${account.name}?',
+          'Close ${account.name}?',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18.sp,
@@ -2760,7 +2762,17 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'This action cannot be undone. All remaining funds will be returned to your account.',
+              // What actually happens, in order. The old copy said "this action
+              // cannot be undone", which stopped being true when delete became
+              // an ARCHIVE: the account and its history are retained and stay
+              // readable under Previous accounts. Saying otherwise scares people
+              // off a reversible-looking action and hides the part that matters
+              // to them — that the slot comes back.
+              'Any remaining funds return to your account, and this frees up a '
+              'Family & Friends slot.\n\n'
+              'The account and its history are kept — you can still open it '
+              'later under “Previous accounts”. Members lose access '
+              'immediately.',
               style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
             ),
@@ -2791,31 +2803,44 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
             ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              // Match the account NAME (case-insensitive) and send the typed
-              // value AS the confirmation code — the backend validates
-              // confirmation_code == family account name (EqualFold). Sending a
-              // literal like 'USER_CONFIRMED' always failed InvalidArgument.
-              final typed = confirmationController.text.trim();
-              if (typed.toLowerCase() == account.name.trim().toLowerCase()) {
-                Get.back();
-                _cubit.deleteAccount(
-                  familyId: widget.familyId,
-                  confirmationCode: typed,
-                );
-              }
+          // Enabled only once the name matches, rather than a button that
+          // accepts the tap and silently does nothing. The old version returned
+          // early on a mismatch with no message at all, so a typo read as "the
+          // Delete button is broken" — and on a destructive action that is the
+          // worst possible place to leave someone guessing.
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: confirmationController,
+            builder: (context, value, _) {
+              final matches = value.text.trim().toLowerCase() ==
+                  account.name.trim().toLowerCase();
+              return ElevatedButton(
+                // Match the account NAME (case-insensitive) and send the typed
+                // value AS the confirmation code — the backend validates
+                // confirmation_code == family account name (EqualFold). Sending
+                // a literal like 'USER_CONFIRMED' always failed InvalidArgument.
+                onPressed: !matches
+                    ? null
+                    : () {
+                        Get.back();
+                        _cubit.deleteAccount(
+                          familyId: widget.familyId,
+                          confirmationCode: value.text.trim(),
+                        );
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  disabledBackgroundColor: Colors.red.withValues(alpha: 0.35),
+                  disabledForegroundColor: Colors.white.withValues(alpha: 0.6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                ),
+                child: Text(
+                  'Close account',
+                  style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                ),
+              );
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-            ),
-            child: Text(
-              'Delete',
-              style: TextStyle(color: Colors.white, fontSize: 14.sp),
-            ),
           ),
         ],
       ),
@@ -3493,7 +3518,6 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           // state is now a compact badge beside the balance figure on the hero
           // card (_buildAccountStateBadge) — visible from every tab, and next to
           // the number it qualifies.
-
 
           // Funding + spending breakdown (who funded, top spenders, monthly stats).
           _buildFamilyStatsSection(account),
@@ -4892,6 +4916,10 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         return (const Color(0xFFFB923C), Icons.settings, 'Setup');
       case FamilyAccountStatus.closed:
         return (const Color(0xFFEF4444), Icons.cancel, 'Closed');
+      case FamilyAccountStatus.archived:
+        // Grey, not red: retiring an account is a normal thing a creator does,
+        // and red would read as a failure or a freeze.
+        return (const Color(0xFF9CA3AF), Icons.archive, 'Closed');
     }
   }
 

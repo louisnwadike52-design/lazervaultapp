@@ -154,6 +154,7 @@ abstract class FamilyAccountRepository {
     bool? spendingVisibilityEnabled,
     String? fundingPolicy,
     List<String> specificMemberIds = const [],
+
     /// null = leave unchanged; 0 = clear the override and follow the platform
     /// default again.
     int? invitationExpiryDays,

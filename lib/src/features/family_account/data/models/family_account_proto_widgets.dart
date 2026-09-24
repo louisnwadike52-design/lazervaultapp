@@ -247,6 +247,7 @@ class FamilyAccountProto {
   final bool setupCompleted;
   final bool spendingVisibilityEnabled;
   final String fundingPolicy;
+
   /// 0 = no per-account override; follow the platform default.
   final int invitationExpiryDays;
   final String? accountNumber;
@@ -312,7 +313,8 @@ class FamilyAccountProto {
       spendingVisibilityEnabled:
           json['spending_visibility_enabled'] as bool? ?? true,
       fundingPolicy: json['funding_policy'] as String? ?? 'any_member',
-      invitationExpiryDays: (json['invitation_expiry_days'] as num?)?.toInt() ?? 0,
+      invitationExpiryDays:
+          (json['invitation_expiry_days'] as num?)?.toInt() ?? 0,
       accountNumber: json['account_number'] as String?,
       bankName: json['bank_name'] as String?,
       virtualAccountStatus: json['virtual_account_status'] as String?,

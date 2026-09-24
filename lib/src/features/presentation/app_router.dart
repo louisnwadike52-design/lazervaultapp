@@ -152,7 +152,8 @@ import 'package:lazervault/src/features/ai_scan_to_pay/presentation/cubit/ai_sca
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_camera_screen.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_confirm_screen.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_receipt_screen.dart';
-import 'package:lazervault/src/features/ai_scan_to_pay/domain/entities/scan_entities.dart' as scan_entities;
+import 'package:lazervault/src/features/ai_scan_to_pay/domain/entities/scan_entities.dart'
+    as scan_entities;
 // import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_payment_screen.dart';
 // import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_payment_success_screen.dart';
 // import 'package:lazervault/src/features/ai_scan_to_pay/domain/entities/scan_entities.dart';
@@ -309,8 +310,10 @@ import 'package:lazervault/src/features/statistics/presentation/screens/category
 
 // Credit Score & Open Banking imports
 import 'package:lazervault/src/features/open_banking/presentation/screens/credit_score_screen.dart';
-import 'package:lazervault/src/features/open_banking/presentation/screens/linked_accounts_screen.dart' as open_banking;
-import 'package:lazervault/src/features/open_banking/presentation/screens/link_bank_screen.dart' as open_banking;
+import 'package:lazervault/src/features/open_banking/presentation/screens/linked_accounts_screen.dart'
+    as open_banking;
+import 'package:lazervault/src/features/open_banking/presentation/screens/link_bank_screen.dart'
+    as open_banking;
 
 // Tag Pay imports
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
@@ -362,7 +365,8 @@ import 'package:lazervault/src/features/contactless_payment/presentation/view/co
 import 'package:lazervault/src/features/card_acceptance/presentation/view/card_acceptance_screen.dart';
 import 'package:lazervault/src/features/contactless_payment/presentation/view/create_payment_session_screen.dart';
 import 'package:lazervault/src/features/contactless_payment/presentation/view/nfc_reader_screen.dart';
-import 'package:lazervault/src/features/contactless_payment/presentation/view/payment_history_screen.dart' as contactless_history;
+import 'package:lazervault/src/features/contactless_payment/presentation/view/payment_history_screen.dart'
+    as contactless_history;
 import 'package:lazervault/src/features/contactless_payment/domain/repositories/contactless_payment_repository.dart';
 
 // Crowdfund imports
@@ -391,7 +395,8 @@ import 'package:lazervault/src/features/electricity_bill/presentation/view/elect
 import 'package:lazervault/src/features/electricity_bill/presentation/view/meter_input_screen.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/view/payment_confirmation_screen.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/view/payment_processing_screen.dart';
-import 'package:lazervault/src/features/electricity_bill/presentation/view/payment_receipt_screen.dart' as bill_receipt;
+import 'package:lazervault/src/features/electricity_bill/presentation/view/payment_receipt_screen.dart'
+    as bill_receipt;
 import 'package:lazervault/src/features/electricity_bill/presentation/view/payment_history_screen.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/view/beneficiaries_screen.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/view/auto_recharge_list_screen.dart';
@@ -622,6 +627,7 @@ import 'package:lazervault/src/features/family_account/presentation/views/family
 import 'package:lazervault/src/features/family_account/presentation/views/family_account_detail_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_edit_member_limits_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_accounts_list_screen.dart';
+import 'package:lazervault/src/features/family_account/presentation/views/family_archived_accounts_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_pending_invitations_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_sent_invitations_screen.dart';
 
@@ -973,8 +979,11 @@ class AppRouter {
       name: AppRoutes.invoice,
       page: () => MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => serviceLocator<InvoiceCubit>()..loadInvoices()),
-          BlocProvider(create: (_) => serviceLocator<TaggedInvoiceCubit>()..loadIncomingInvoices()),
+          BlocProvider(
+              create: (_) => serviceLocator<InvoiceCubit>()..loadInvoices()),
+          BlocProvider(
+              create: (_) =>
+                  serviceLocator<TaggedInvoiceCubit>()..loadIncomingInvoices()),
         ],
         child: const InvoiceHomeScreen(),
       ),
@@ -1100,7 +1109,8 @@ class AppRouter {
             if (accountCubit != null)
               BlocProvider.value(value: accountCubit)
             else
-              BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+              BlocProvider(
+                  create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
           ],
           child: InvoicePreviewScreen(
             invoice: invoiceArg,
@@ -1126,7 +1136,8 @@ class AppRouter {
         return MultiBlocProvider(
           providers: [
             BlocProvider(create: (_) => serviceLocator<InvoiceCubit>()),
-            BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+            BlocProvider(
+                create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
           ],
           child: InvoicePaymentScreen(
             invoice: invoice,
@@ -1161,12 +1172,17 @@ class AppRouter {
       name: AppRoutes.invoiceItemPayment,
       page: () {
         final args = Get.arguments;
-        final invoice = args is Invoice ? args : (args is Map<String, dynamic> ? args['invoice'] as Invoice? : null);
+        final invoice = args is Invoice
+            ? args
+            : (args is Map<String, dynamic>
+                ? args['invoice'] as Invoice?
+                : null);
         if (invoice == null) return const SizedBox.shrink();
         return MultiBlocProvider(
           providers: [
             BlocProvider(create: (_) => serviceLocator<TaggedInvoiceCubit>()),
-            BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+            BlocProvider(
+                create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
           ],
           child: InvoiceItemPaymentScreen(invoice: invoice),
         );
@@ -1562,7 +1578,8 @@ class AppRouter {
         return MultiBlocProvider(
           providers: [
             BlocProvider(create: (_) => serviceLocator<TransferCubit>()),
-            BlocProvider(create: (_) => serviceLocator<RecurringTransferCubit>()),
+            BlocProvider(
+                create: (_) => serviceLocator<RecurringTransferCubit>()),
             BlocProvider.value(value: serviceLocator<BudgetCubit>()),
           ],
           child: serviceLocator<InitiateSendFundsScreen>(param1: recipient),
@@ -1619,7 +1636,8 @@ class AppRouter {
         return MultiBlocProvider(
           providers: [
             BlocProvider(create: (_) => serviceLocator<AccountActionsCubit>()),
-            BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+            BlocProvider(
+                create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
           ],
           child: StatementExportScreen(initialAccountId: initialAccountId),
         );
@@ -1636,9 +1654,8 @@ class AppRouter {
         // throws "Cannot use parameter value of type 'Null'"). Fall back to
         // the args map itself, then to an empty map.
         final rawArgs = Get.arguments;
-        final args = rawArgs is Map<String, dynamic>
-            ? rawArgs
-            : <String, dynamic>{};
+        final args =
+            rawArgs is Map<String, dynamic> ? rawArgs : <String, dynamic>{};
         final selectedCard = args['selectedCard'] is Map<String, dynamic>
             ? args['selectedCard'] as Map<String, dynamic>
             : args.isNotEmpty
@@ -1686,7 +1703,8 @@ class AppRouter {
           // route so the recipient screen can drive it from its own state once
           // bank + account are known, and so the widget never has to resolve
           // its cubit out of the GetIt container at build time.
-          BlocProvider(create: (_) => serviceLocator<ExchangePredictionCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<ExchangePredictionCubit>()),
         ],
         child: const ExchangeRecipientScreen(),
       ),
@@ -1988,7 +2006,8 @@ class AppRouter {
       page: () {
         final stock = Get.arguments as Stock;
         return BlocProvider(
-          create: (_) => serviceLocator<StockCubit>()..loadStockDetails(stock.symbol),
+          create: (_) =>
+              serviceLocator<StockCubit>()..loadStockDetails(stock.symbol),
           child: serviceLocator<StockChartDetailsScreen>(param1: stock),
         );
       },
@@ -2079,7 +2098,7 @@ class AppRouter {
     //   },
     //   transition: Transition.rightToLeft,
     // ),
-    
+
     // Group Account routes
     // Note: Using BlocProvider.value() instead of BlocProvider(create:) because
     // GroupAccountCubit is a singleton. Using create: would dispose the singleton
@@ -2109,7 +2128,8 @@ class AppRouter {
       name: AppRoutes.createGroup,
       page: () => BlocProvider.value(
         value: serviceLocator<GroupAccountCubit>(),
-        child: const GroupAccountListScreen(), // This will be replaced with CreateGroupScreen later
+        child:
+            const GroupAccountListScreen(), // This will be replaced with CreateGroupScreen later
       ),
       transition: Transition.rightToLeft,
     ),
@@ -2161,7 +2181,7 @@ class AppRouter {
       },
       transition: Transition.rightToLeft,
     ),
-    
+
     // Insurance routes
     GetPage(
       name: AppRoutes.insurance,
@@ -2319,7 +2339,7 @@ class AppRouter {
       ),
       transition: Transition.rightToLeft,
     ),
-GetPage(
+    GetPage(
       name: AppRoutes.airtimePaymentConfirmation,
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeCubit>(),
@@ -2580,7 +2600,8 @@ GetPage(
       page: () => MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => serviceLocator<IntlAirtimeCubit>()),
-          BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
         ],
         child: const IntlReviewScreen(),
       ),
@@ -2855,7 +2876,9 @@ GetPage(
       page: () => BlocProvider.value(
         value: serviceLocator<StatisticsCubit>(),
         child: CategoryAnalysisDetailScreen(
-          analysisType: (Get.arguments as Map<String, dynamic>?)?['type'] as String? ?? 'expense',
+          analysisType:
+              (Get.arguments as Map<String, dynamic>?)?['type'] as String? ??
+                  'expense',
         ),
       ),
       transition: Transition.rightToLeft,
@@ -2946,9 +2969,14 @@ GetPage(
       page: () => BlocProvider.value(
         value: serviceLocator<OpenBankingCubit>(),
         child: CreditScoreScreen(
-          userId: (Get.arguments as Map<String, dynamic>?)?['userId'] as String? ?? '',
-          showAllSources: (Get.arguments as Map<String, dynamic>?)?['showAllSources'] as bool? ?? false,
-          linkedAccountId: (Get.arguments as Map<String, dynamic>?)?['linkedAccountId'] as String?,
+          userId:
+              (Get.arguments as Map<String, dynamic>?)?['userId'] as String? ??
+                  '',
+          showAllSources: (Get.arguments
+                  as Map<String, dynamic>?)?['showAllSources'] as bool? ??
+              false,
+          linkedAccountId: (Get.arguments
+              as Map<String, dynamic>?)?['linkedAccountId'] as String?,
         ),
       ),
       transition: Transition.rightToLeft,
@@ -3110,7 +3138,8 @@ GetPage(
         return MultiBlocProvider(
           providers: [
             BlocProvider(create: (_) => serviceLocator<TagPayCubit>()),
-            BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+            BlocProvider(
+                create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
           ],
           child: TagPaymentConfirmationScreen(tag: tag),
         );
@@ -3143,7 +3172,8 @@ GetPage(
       name: AppRoutes.qrPayHome,
       page: () {
         return BlocProvider(
-          create: (context) => serviceLocator<QRPaymentCubit>()..getRecentActivity(),
+          create: (context) =>
+              serviceLocator<QRPaymentCubit>()..getRecentActivity(),
           child: const QRPayHomeScreen(),
         );
       },
@@ -3185,7 +3215,8 @@ GetPage(
         return MultiBlocProvider(
           providers: [
             BlocProvider(create: (_) => serviceLocator<QRPaymentCubit>()),
-            BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+            BlocProvider(
+                create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
           ],
           child: const QRPaymentConfirmationScreen(),
         );
@@ -3270,7 +3301,8 @@ GetPage(
         return MultiBlocProvider(
           providers: [
             BlocProvider(create: (_) => serviceLocator<IDPayCubit>()),
-            BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+            BlocProvider(
+                create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
           ],
           child: const IDPayPaymentScreen(),
         );
@@ -3449,7 +3481,9 @@ GetPage(
         return MultiBlocProvider(
           providers: [
             BlocProvider(create: (_) => serviceLocator<BeneficiaryCubit>()),
-            BlocProvider(create: (_) => serviceLocator<AutoRechargeCubit>()..getAutoRecharges()),
+            BlocProvider(
+                create: (_) =>
+                    serviceLocator<AutoRechargeCubit>()..getAutoRecharges()),
           ],
           child: const BeneficiariesScreen(),
         );
@@ -3526,7 +3560,8 @@ GetPage(
         final initialCrowdfund =
             args is Map ? args['crowdfund'] as Crowdfund? : null;
         return BlocProvider(
-          create: (_) => serviceLocator<CrowdfundCubit>()..loadCrowdfundDetails(crowdfundId),
+          create: (_) => serviceLocator<CrowdfundCubit>()
+            ..loadCrowdfundDetails(crowdfundId),
           child: CrowdfundDetailsScreen(
             crowdfundId: crowdfundId,
             initialCrowdfund: initialCrowdfund,
@@ -3818,6 +3853,14 @@ GetPage(
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.familyArchivedAccounts,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<FamilyAccountCubit>(),
+        child: const FamilyArchivedAccountsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: AppRoutes.familyActivationSetup,
       page: () {
         final args = Get.arguments as Map<String, dynamic>?;
@@ -4001,8 +4044,10 @@ GetPage(
       name: AppRoutes.cableTVBeneficiaries,
       page: () => MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => serviceLocator<CableTVBeneficiaryCubit>()),
-          BlocProvider(create: (_) => serviceLocator<CableTVAutoRechargeCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<CableTVBeneficiaryCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<CableTVAutoRechargeCubit>()),
         ],
         child: const CableTVBeneficiariesScreen(),
       ),
@@ -4020,8 +4065,10 @@ GetPage(
       name: AppRoutes.cableTVAutoRechargeCreate,
       page: () => MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => serviceLocator<CableTVBeneficiaryCubit>()),
-          BlocProvider(create: (_) => serviceLocator<CableTVAutoRechargeCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<CableTVBeneficiaryCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<CableTVAutoRechargeCubit>()),
           BlocProvider(create: (_) => serviceLocator<CableTVCubit>()),
         ],
         child: const CreateCableTVAutoRechargeScreen(),
@@ -4041,7 +4088,8 @@ GetPage(
       page: () => MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => serviceLocator<CableTVReminderCubit>()),
-          BlocProvider(create: (_) => serviceLocator<CableTVBeneficiaryCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<CableTVBeneficiaryCubit>()),
           BlocProvider(create: (_) => serviceLocator<CableTVCubit>()),
         ],
         child: const CreateCableTVReminderScreen(),
@@ -4133,8 +4181,7 @@ GetPage(
         providers: [
           BlocProvider(
               create: (_) => serviceLocator<EducationBeneficiaryCubit>()),
-          BlocProvider(
-              create: (_) => serviceLocator<EducationReminderCubit>()),
+          BlocProvider(create: (_) => serviceLocator<EducationReminderCubit>()),
         ],
         child: const CreateEducationReminderScreen(),
       ),
@@ -4204,10 +4251,8 @@ GetPage(
       name: AppRoutes.waterBillAutoRechargeCreate,
       page: () => MultiBlocProvider(
         providers: [
-          BlocProvider(
-              create: (_) => serviceLocator<WaterBeneficiaryCubit>()),
-          BlocProvider(
-              create: (_) => serviceLocator<WaterAutoRechargeCubit>()),
+          BlocProvider(create: (_) => serviceLocator<WaterBeneficiaryCubit>()),
+          BlocProvider(create: (_) => serviceLocator<WaterAutoRechargeCubit>()),
         ],
         child: const CreateWaterAutoRechargeScreen(),
       ),
@@ -4225,10 +4270,8 @@ GetPage(
       name: AppRoutes.waterBillRemindersCreate,
       page: () => MultiBlocProvider(
         providers: [
-          BlocProvider(
-              create: (_) => serviceLocator<WaterBeneficiaryCubit>()),
-          BlocProvider(
-              create: (_) => serviceLocator<WaterReminderCubit>()),
+          BlocProvider(create: (_) => serviceLocator<WaterBeneficiaryCubit>()),
+          BlocProvider(create: (_) => serviceLocator<WaterReminderCubit>()),
         ],
         child: const CreateWaterReminderScreen(),
       ),
@@ -4335,8 +4378,7 @@ GetPage(
       name: AppRoutes.internetBillReminderCreate,
       page: () => MultiBlocProvider(
         providers: [
-          BlocProvider(
-              create: (_) => serviceLocator<InternetReminderCubit>()),
+          BlocProvider(create: (_) => serviceLocator<InternetReminderCubit>()),
           BlocProvider(
               create: (_) => serviceLocator<InternetBeneficiaryCubit>()),
         ],
@@ -4979,7 +5021,8 @@ GetPage(
       page: () => MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => serviceLocator<WalletTransferCubit>()),
-          BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
         ],
         child: const WalletTransferFlowScreen(),
       ),
@@ -4995,7 +5038,8 @@ GetPage(
       page: () => MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => serviceLocator<WalletTransferCubit>()),
-          BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
         ],
         child: const WalletHistoryScreen(),
       ),
@@ -5051,8 +5095,10 @@ GetPage(
         };
         // Extract current user's name for backend caching (so the other user sees our name)
         final currentUserName = switch (authCubit.state) {
-          AuthenticationAuthenticated s => '${s.profile.user.firstName} ${s.profile.user.lastName}'.trim(),
-          AuthenticationSuccess s => '${s.profile.user.firstName} ${s.profile.user.lastName}'.trim(),
+          AuthenticationAuthenticated s =>
+            '${s.profile.user.firstName} ${s.profile.user.lastName}'.trim(),
+          AuthenticationSuccess s =>
+            '${s.profile.user.firstName} ${s.profile.user.lastName}'.trim(),
           _ => '',
         };
         return BlocProvider(
@@ -5071,8 +5117,9 @@ GetPage(
               otherUserAvatar:
                   (Get.arguments as Map<String, dynamic>?)?['otherUserAvatar'],
               myName: currentUserName.isNotEmpty ? currentUserName : null,
-              isSavedRecipient:
-                  (Get.arguments as Map<String, dynamic>?)?['isSavedRecipient'] == true,
+              isSavedRecipient: (Get.arguments
+                      as Map<String, dynamic>?)?['isSavedRecipient'] ==
+                  true,
               currentUserId: currentUserId,
             ),
           child: const P2PChatPage(),

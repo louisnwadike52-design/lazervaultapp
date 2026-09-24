@@ -679,6 +679,10 @@ abstract class AppRoutes {
   static const String familySettings = '/family/settings';
   static const String familyActivationSetup = '/family/activation-setup';
 
+  /// Family & Friends accounts the creator has closed. Archived rows are
+  /// excluded from every other read, so this is the only way to reach them.
+  static const String familyArchivedAccounts = '/family/previous-accounts';
+
   // Microservice Chat Routes
   static const String microserviceChat = '/microservice-chat';
   static const String generalChat = '/general-chat';

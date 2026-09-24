@@ -120,6 +120,24 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
           ),
         ),
         centerTitle: true,
+        actions: [
+          // The only way into the closed accounts. Archived rows are excluded
+          // from every other read — carousel, pickers, this list — so without an
+          // entry point here the data is retained and unreachable, which to the
+          // user is indistinguishable from having been deleted.
+          IconButton(
+            tooltip: 'Previous accounts',
+            onPressed: () async {
+              await Get.toNamed(AppRoutes.familyArchivedAccounts);
+              // The archive screen loads with status=archived, which leaves the
+              // shared cubit holding a filtered list. Re-read on the way back or
+              // this screen shows the archive's results under its own title.
+              if (mounted) _onRefresh();
+            },
+            icon: Icon(Icons.archive_outlined,
+                color: Colors.white.withValues(alpha: 0.85), size: 21.sp),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -440,6 +458,8 @@ class _FamilyAccountsListScreenState extends State<FamilyAccountsListScreen>
       FamilyAccountStatus.frozen => const Color(0xFF4E03D0),
       FamilyAccountStatus.pendingSetup => const Color(0xFFFB923C),
       FamilyAccountStatus.closed => const Color(0xFFEF4444),
+      // Grey: a retired account is not an error state.
+      FamilyAccountStatus.archived => const Color(0xFF9CA3AF),
     };
     final statusLabel = account.status.displayName;
 

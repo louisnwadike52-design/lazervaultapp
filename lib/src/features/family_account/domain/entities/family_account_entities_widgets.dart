@@ -7,6 +7,15 @@ enum FamilyAccountStatus {
   frozen,
   closed,
   pendingSetup,
+
+  /// The creator has retired the account: funds returned, the slot freed, the
+  /// row and its history kept and readable under "Previous accounts".
+  ///
+  /// This value has to exist. Without it the status mapper's `default` fell
+  /// through to [active], so a retired account came back to the app claiming to
+  /// be live — it would have been labelled "Active" on the archive screen, and
+  /// any `status == active` branch would have treated it as spendable.
+  archived,
 }
 
 enum FundDistributionMode {
@@ -501,6 +510,10 @@ extension FamilyAccountStatusExtension on FamilyAccountStatus {
         return 'Closed';
       case FamilyAccountStatus.pendingSetup:
         return 'Pending Setup';
+      case FamilyAccountStatus.archived:
+        // "Closed" in the user's words — "archived" is our storage word, and the
+        // action they took was called Close account.
+        return 'Closed';
     }
   }
 }

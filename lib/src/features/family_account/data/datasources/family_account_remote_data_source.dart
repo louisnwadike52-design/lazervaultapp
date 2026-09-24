@@ -79,6 +79,7 @@ abstract class FamilyAccountRemoteDataSource {
     bool? spendingVisibilityEnabled,
     String? fundingPolicy,
     List<String> specificMemberIds = const [],
+
     /// null = leave unchanged; 0 = clear the override and follow the platform
     /// default again.
     int? invitationExpiryDays,
@@ -1001,6 +1002,7 @@ class FamilyAccountRemoteDataSourceImpl
     bool? spendingVisibilityEnabled,
     String? fundingPolicy,
     List<String> specificMemberIds = const [],
+
     /// null = leave unchanged; 0 = clear the override and follow the platform
     /// default again.
     int? invitationExpiryDays,

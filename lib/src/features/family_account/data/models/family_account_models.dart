@@ -14,7 +14,12 @@ FamilyAccountStatus _parseFamilyAccountStatus(String status) {
       return FamilyAccountStatus.closed;
     case 'pending_setup':
       return FamilyAccountStatus.pendingSetup;
+    case 'archived':
+      return FamilyAccountStatus.archived;
     default:
+      // Defaulting to `active` is what made an unrecognised status claim to be
+      // live. Kept for forward compatibility with a server that adds a status
+      // this build has never heard of, but `archived` must never reach it.
       return FamilyAccountStatus.active;
   }
 }
@@ -29,6 +34,8 @@ String _serializeFamilyAccountStatus(FamilyAccountStatus status) {
       return 'closed';
     case FamilyAccountStatus.pendingSetup:
       return 'pending_setup';
+    case FamilyAccountStatus.archived:
+      return 'archived';
   }
 }
 
