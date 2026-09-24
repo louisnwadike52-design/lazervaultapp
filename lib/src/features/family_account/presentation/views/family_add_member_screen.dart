@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 import 'package:lazervault/core/shared_widgets/lazer_vault_loader.dart';
+import 'package:lazervault/core/shared_widgets/server_refusal_sheet.dart';
 
 /// Screen for adding a new member to a Family & Friends account
 /// Allows setting all spending limits and member details
@@ -175,6 +176,20 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
             final msg = state.message.toLowerCase();
             if (msg.contains('exceed') || msg.contains('insufficient')) {
               _showAllocationErrorDialog(context, state.message);
+            } else if (looksLikeServerRefusal(state.message)) {
+              // A business-rule refusal, not a failure. "This user is already at
+              // the 3 Family & Friends accounts limit" is the server explaining
+              // something the inviter has to understand — and a three-second red
+              // snackbar clipped the sentence and dismissed itself before it
+              // could be read.
+              showServerRefusal(
+                context,
+                title: "Couldn't send that invitation",
+                message: state.message,
+                hint: 'Nothing was changed. The person you invited can free up '
+                    'a slot by closing one of their own Family & Friends '
+                    'accounts, or you can invite someone else.',
+              );
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

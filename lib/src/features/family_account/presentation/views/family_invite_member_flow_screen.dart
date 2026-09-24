@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/family_account/presentation/cubit/family
 import 'package:lazervault/src/features/family_account/presentation/widgets/invite_member_steps/contact_method_step.dart';
 import 'package:lazervault/src/features/family_account/presentation/widgets/invite_member_steps/allocation_role_step.dart';
 import 'package:lazervault/src/features/family_account/presentation/widgets/invite_member_steps/review_send_step.dart';
+import 'package:lazervault/core/shared_widgets/server_refusal_sheet.dart';
 
 /// Multi-step wizard flow for inviting a new member to a Family & Friends account
 /// - Step 1: Search & Select User
@@ -148,13 +149,26 @@ class _FamilyInviteMemberFlowScreenState
               );
               Get.back(result: true);
             } else if (state is FamilyAccountError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                  duration: const Duration(seconds: 3),
-                ),
-              );
+              if (looksLikeServerRefusal(state.message)) {
+                // Same reasoning as the add-member screen: a refusal that
+                // explains itself needs to stay on screen long enough to be
+                // read, and to say that nothing was changed.
+                showServerRefusal(
+                  context,
+                  title: "Couldn't send that invitation",
+                  message: state.message,
+                  hint: 'Nothing was changed. You can invite someone else, or '
+                      'try again once they have room.',
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
             }
           },
           child: Column(
