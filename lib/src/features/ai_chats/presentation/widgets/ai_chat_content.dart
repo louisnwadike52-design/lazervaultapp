@@ -41,6 +41,7 @@ import 'package:lazervault/src/features/microservice_chat/presentation/widgets/c
 import '../../cubit/ai_chat_cubit.dart';
 import '../../cubit/ai_chat_state.dart';
 import '../../domain/entities/ai_chat_message_entity.dart';
+import 'package:lazervault/core/services/voice_record_configs.dart';
 part 'ai_chat_content_widgets.dart';
 
 class AiChatContent extends StatefulWidget {
@@ -578,7 +579,12 @@ class _AiChatContentState extends State<AiChatContent>
     final path =
         '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
     await _audioRecorder.start(
-      const RecordConfig(encoder: AudioEncoder.aacLc),
+      // The shared voice-note profile. This was a bare RecordConfig, which
+      // defaults to STEREO — and stereo silently fails to initialise on most
+      // Android mics, recording an empty clip. So voice notes to the assistant
+      // "did not send" on Android while iOS worked, in all four chat surfaces
+      // that omitted it. See voice_record_configs.dart.
+      kVoiceNoteRecordConfig,
       path: path,
     );
     setState(() {

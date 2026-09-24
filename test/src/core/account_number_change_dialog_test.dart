@@ -24,8 +24,7 @@ void main() {
     late String source;
 
     setUpAll(() {
-      final file =
-          File('lib/core/services/account_number_change_watcher.dart');
+      final file = File('lib/core/services/account_number_change_watcher.dart');
       expect(file.existsSync(), isTrue,
           reason: 'account_number_change_watcher.dart moved');
       source = file.readAsStringSync();
@@ -79,7 +78,8 @@ void main() {
       // broadcast is generic admin copy — so it wins when both have something
       // to say.
       final specific = source.indexOf('_announceAccountNumberChanges(');
-      final broadcast = source.indexOf('AccountUpdateAnnouncementService.instance');
+      final broadcast =
+          source.indexOf('AccountUpdateAnnouncementService.instance');
       expect(specific, greaterThan(-1));
       expect(broadcast, greaterThan(-1));
       expect(specific, lessThan(broadcast),
@@ -87,7 +87,8 @@ void main() {
     });
 
     test('the broadcast is skipped when the specific one showed', () {
-      expect(source, contains('if (!mounted || reportedSpecificChange) return;'),
+      expect(
+          source, contains('if (!mounted || reportedSpecificChange) return;'),
           reason: 'without this both fire and the modals stack');
     });
 
